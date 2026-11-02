@@ -1,7 +1,6 @@
 package controlwire
 
 import (
-	"context"
 	"encoding/json"
 	"net"
 	"os"
@@ -15,7 +14,7 @@ func TestUnansweringNamesAFrozenAppOnly(t *testing.T) {
 	if _, ok := Unanswering(dir, time.Second); ok {
 		t.Fatal("no control file counted as frozen")
 	}
-	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
+	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
 	}

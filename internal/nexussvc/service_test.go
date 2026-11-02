@@ -101,7 +101,7 @@ func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
 	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{})
-	ctx := context.Background()
+	ctx := t.Context()
 
 	if _, err := s.SignIn(ctx, "wrong"); err == nil {
 		t.Fatal("bad key accepted")
@@ -128,7 +128,7 @@ func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
 func TestModNameNeedsASignedInAccount(t *testing.T) {
 	store := testStore(t)
 	s := NewService(store, nexusmods.New("Mortar", "1"), &meta.Client{})
-	if _, err := s.ModName(context.Background(), "stardew", 1); !errors.Is(err, ErrSignedOut) {
+	if _, err := s.ModName(t.Context(), "stardew", 1); !errors.Is(err, ErrSignedOut) {
 		t.Fatalf("got %v", err)
 	}
 }
@@ -141,7 +141,7 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
 	m := &meta.Client{CacheDir: t.TempDir(), Now: func() time.Time { return now }}
 	s := NewService(store, c, m)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	if _, err := s.Details(ctx, "stardew", 541); !errors.Is(err, ErrSignedOut) {
 		t.Fatalf("signed out with no cache = %v", err)
@@ -190,7 +190,7 @@ func TestDetailsRefetchesUnversionedCache(t *testing.T) {
 	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
 	m := &meta.Client{CacheDir: t.TempDir(), Now: func() time.Time { return now }}
 	s := NewService(store, c, m)
-	ctx := context.Background()
+	ctx := t.Context()
 	if _, err := s.SignIn(ctx, "k"); err != nil {
 		t.Fatal(err)
 	}
@@ -237,11 +237,11 @@ func TestStartSSOStoresKeyLikePasted(t *testing.T) {
 	if s.SSOAvailable() {
 		t.Fatal("SSO available without a slug")
 	}
-	if _, err := s.StartSSO(context.Background()); err == nil {
+	if _, err := s.StartSSO(t.Context()); err == nil {
 		t.Fatal("StartSSO ran without a slug")
 	}
 	s.sso = sso.Legacy{Slug: "mortar", SocketURL: "ws" + strings.TrimPrefix(ws.URL, "http"), OpenBrowser: func(string) error { return nil }}
-	acct, err := s.StartSSO(context.Background())
+	acct, err := s.StartSSO(t.Context())
 	if err != nil || !acct.SignedIn {
 		t.Fatalf("acct %+v err %v", acct, err)
 	}
@@ -274,7 +274,7 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 	if !s.SSOAvailable() {
 		t.Fatal("SSO unavailable with a client id")
 	}
-	if acct, err := s.StartSSO(context.Background()); err != nil || !acct.SignedIn {
+	if acct, err := s.StartSSO(t.Context()); err != nil || !acct.SignedIn {
 		t.Fatalf("acct %+v err %v", acct, err)
 	}
 	if tok, err := tokenStore.Load(); err != nil || tok.Refresh != "R1" {
@@ -326,7 +326,7 @@ func TestPrimeDetailsAsksOncePerBatch(t *testing.T) {
 	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{CacheDir: t.TempDir()})
-	ctx := context.Background()
+	ctx := t.Context()
 	if _, err := s.SignIn(ctx, "k"); err != nil {
 		t.Fatal(err)
 	}
@@ -372,7 +372,7 @@ func TestPrimeDetailsDoesNotAskAgainForAModNexusDoesNotReturn(t *testing.T) {
 	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	s := NewService(testStore(t), c, &meta.Client{CacheDir: t.TempDir()})
-	ctx := context.Background()
+	ctx := t.Context()
 	if _, err := s.SignIn(ctx, "k"); err != nil {
 		t.Fatal(err)
 	}

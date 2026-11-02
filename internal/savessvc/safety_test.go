@@ -71,7 +71,7 @@ func TestCheckUsesRecordedList(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc := &Service{last: last}
-	ch, err := svc.Check(context.Background(), "stardew", "Farm_1", "")
+	ch, err := svc.Check(t.Context(), "stardew", "Farm_1", "")
 	if err != nil || ch.ContentMissing != 1 || len(ch.Missing) != 1 || ch.Missing[0].Name != "Alpha" {
 		t.Fatalf("check %#v %v", ch, err)
 	}

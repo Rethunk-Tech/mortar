@@ -1,7 +1,6 @@
 package modrinth
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,7 +15,7 @@ func TestPageURLNamesTheSlugAndValidIDRefusesPathTricks(t *testing.T) {
 		_, _ = w.Write([]byte(`{"slug":"sodium"}`))
 	}))
 	t.Cleanup(srv.Close)
-	got, err := Driver{URL: srv.URL, HTTP: srv.Client()}.PageURL(context.Background(), "AANobbMI")
+	got, err := Driver{URL: srv.URL, HTTP: srv.Client()}.PageURL(t.Context(), "AANobbMI")
 	if err != nil || got != "https://modrinth.com/project/sodium" {
 		t.Fatalf("%q %v", got, err)
 	}

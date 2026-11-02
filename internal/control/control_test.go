@@ -79,7 +79,7 @@ func TestPlayCheckNamesEntriesWithLongPaths(t *testing.T) {
 func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	done := make(chan error, 1)
 	go func() {
 		done <- Serve(ctx, dir, "1.2.3", func(_ context.Context, method string, p Params) (any, error) {
@@ -250,7 +250,7 @@ func TestHandleProfilesByNameAndID(t *testing.T) {
 	s := services(t)
 	var events []string
 	s.Emit = func(name string, data any) { events = append(events, fmt.Sprintf("%s:%v", name, data)) }
-	ctx := context.Background()
+	ctx := t.Context()
 
 	created, err := s.Handle(ctx, "profile.create", Params{Game: "stardew", Name: "Spring Farm"})
 	if err != nil {
@@ -306,7 +306,7 @@ func TestHandleTrash(t *testing.T) {
 	s := services(t)
 	var events []string
 	s.Emit = func(name string, data any) { events = append(events, fmt.Sprintf("%s:%v", name, data)) }
-	ctx := context.Background()
+	ctx := t.Context()
 
 	p, err := s.Profiles.Create("stardew", "Gone")
 	if err != nil {
@@ -372,7 +372,7 @@ func TestHandleTrash(t *testing.T) {
 
 func TestHandleProfileCompareAndHistory(t *testing.T) {
 	s := services(t)
-	ctx := context.Background()
+	ctx := t.Context()
 	a, err := s.Profiles.Create("stardew", "A")
 	if err != nil {
 		t.Fatal(err)
@@ -399,7 +399,7 @@ func TestHandleProfileCompareAndHistory(t *testing.T) {
 
 func TestHandleLibraryMethods(t *testing.T) {
 	s := services(t)
-	ctx := context.Background()
+	ctx := t.Context()
 	if _, err := s.Handle(ctx, "profile.create", Params{Game: "stardew", Name: "Farm"}); err != nil {
 		t.Fatal(err)
 	}
@@ -448,7 +448,7 @@ func TestAnInstanceEndingLeavesTheControlFileOfTheOneThatReplacedIt(t *testing.T
 	dir := t.TempDir()
 	path := filepath.Join(dir, controlwire.FileName)
 	echo := func(context.Context, string, Params) (any, error) { return true, nil }
-	ctxA, cancelA := context.WithCancel(context.Background())
+	ctxA, cancelA := context.WithCancel(t.Context())
 	doneA := make(chan error, 1)
 	go func() { doneA <- Serve(ctxA, dir, "a", echo) }()
 	waitFile(t, path, true)
@@ -456,7 +456,7 @@ func TestAnInstanceEndingLeavesTheControlFileOfTheOneThatReplacedIt(t *testing.T
 		t.Fatalf("Live = %d, %v", pid, ok)
 	}
 	first, _ := safefs.ReadFile(path)
-	ctxB, cancelB := context.WithCancel(context.Background())
+	ctxB, cancelB := context.WithCancel(t.Context())
 	doneB := make(chan error, 1)
 	go func() { doneB <- Serve(ctxB, dir, "b", echo) }()
 	for range 200 {

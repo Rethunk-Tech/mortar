@@ -107,7 +107,7 @@ func pairedService(t *testing.T, items *store.Store, emit func(string, any)) (*S
 // pair has joiner enter the code that host shows.
 func pair(t *testing.T, host, joiner *Service, hostAddr string) {
 	t.Helper()
-	code, err := host.PairCode(context.Background())
+	code, err := host.PairCode(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -121,7 +121,7 @@ func TestPairingLocksOutAfterWrongCodes(t *testing.T) {
 	host, hostAddr := pairedService(t, nil, nil)
 	joiner, _ := pairedService(t, nil, nil)
 
-	code, err := host.PairCode(context.Background())
+	code, err := host.PairCode(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -149,7 +149,7 @@ func TestPairing(t *testing.T) {
 	host, hostAddr := pairedService(t, nil, nil)
 	joiner, _ := pairedService(t, nil, nil)
 
-	code, err := host.PairCode(context.Background())
+	code, err := host.PairCode(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -179,7 +179,7 @@ func TestTransferTokenScope(t *testing.T) {
 	service := NewService(Deps{})
 	service.rememberGrant("token", "stardew", []string{"nexus-1-2"})
 
-	request := httptest.NewRequestWithContext(context.Background(), "GET", "http://mortar.test/store/stardew/nexus-9-9", nil)
+	request := httptest.NewRequestWithContext(t.Context(), "GET", "http://mortar.test/store/stardew/nexus-9-9", nil)
 	request.Header.Set("Authorization", "Bearer token")
 	response := httptest.NewRecorder()
 	service.handleStore(response, request)
@@ -187,7 +187,7 @@ func TestTransferTokenScope(t *testing.T) {
 		t.Fatalf("unlisted key status = %d, want 403", response.Code)
 	}
 
-	request = httptest.NewRequestWithContext(context.Background(), "GET", "http://mortar.test/store/stardew/../nexus-1-2", nil)
+	request = httptest.NewRequestWithContext(t.Context(), "GET", "http://mortar.test/store/stardew/../nexus-1-2", nil)
 	request.Header.Set("Authorization", "Bearer token")
 	response = httptest.NewRecorder()
 	service.handleStore(response, request)
@@ -213,7 +213,7 @@ func TestShareRateLimit(t *testing.T) {
 		t.Fatal(err)
 	}
 	for i := range 2 {
-		request := httptest.NewRequestWithContext(context.Background(), "POST", "http://mortar.test/share", bytes.NewReader(body))
+		request := httptest.NewRequestWithContext(t.Context(), "POST", "http://mortar.test/share", bytes.NewReader(body))
 		request.RemoteAddr = "192.0.2.10:4000"
 		response := httptest.NewRecorder()
 		service.handleShare(response, request)
@@ -554,7 +554,7 @@ func TestAddPeerDropsOurInstance(t *testing.T) {
 		AddrV4:     net.ParseIP("192.0.2.1"),
 		InfoFields: []string{"instance=" + service.instanceID},
 	})
-	peers, err := service.Peers(context.Background())
+	peers, err := service.Peers(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -677,7 +677,7 @@ func TestPeersReportPairing(t *testing.T) {
 		})
 	}
 	got := map[string]bool{}
-	peers, err := service.Peers(context.Background())
+	peers, err := service.Peers(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -747,7 +747,7 @@ func TestRateLimitedPeerIsRefusedBeforeItsBodyIsRead(t *testing.T) {
 		t.Fatal("first receive refused")
 	}
 	body := &trackedBody{}
-	request := httptest.NewRequestWithContext(context.Background(), "POST", "http://mortar.test/share", body)
+	request := httptest.NewRequestWithContext(t.Context(), "POST", "http://mortar.test/share", body)
 	request.RemoteAddr = "192.0.2.20:4000"
 	response := httptest.NewRecorder()
 	service.handleShare(response, request)
@@ -806,7 +806,7 @@ func TestRateLimitedPeerNamingAPairedSenderIsRefusedBeforeItsBody(t *testing.T) 
 		t.Fatal("first receive refused")
 	}
 	body := &trackedBody{}
-	request := httptest.NewRequestWithContext(context.Background(), "POST", "http://mortar.test/share", body)
+	request := httptest.NewRequestWithContext(t.Context(), "POST", "http://mortar.test/share", body)
 	request.RemoteAddr = "192.0.2.20:4000"
 	request.Header.Set(senderHeader, "laptop")
 	response := httptest.NewRecorder()

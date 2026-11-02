@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"reflect"
@@ -23,7 +22,7 @@ func TestBoundCallErrorCarriesUsererrKind(t *testing.T) {
 	if err := bindings.Add(application.NewService(&kindProbe{})); err != nil {
 		t.Fatal(err)
 	}
-	_, err := bindings.Get(&application.CallOptions{MethodName: reflect.TypeFor[kindProbe]().PkgPath() + ".kindProbe.Fail"}).Call(context.Background(), nil)
+	_, err := bindings.Get(&application.CallOptions{MethodName: reflect.TypeFor[kindProbe]().PkgPath() + ".kindProbe.Fail"}).Call(t.Context(), nil)
 	var cerr *application.CallError
 	if !errors.As(err, &cerr) {
 		t.Fatalf("err = %#v", err)

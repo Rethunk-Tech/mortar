@@ -1,7 +1,6 @@
 package meta
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -49,7 +48,7 @@ func TestEmptyCacheDirCachesUnderTheDataFolder(t *testing.T) {
 		t.Fatalf("cache dir %q, want a cache folder under %q", got, dir)
 	}
 	for range 2 {
-		if _, err := c.Page(context.Background(), 7); err != nil {
+		if _, err := c.Page(t.Context(), 7); err != nil {
 			t.Fatal(err)
 		}
 	}

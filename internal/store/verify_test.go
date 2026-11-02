@@ -1,7 +1,6 @@
 package store
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"slices"
@@ -24,7 +23,7 @@ func addZip(t *testing.T, s *Store, files map[string]string) string {
 func TestVerifyReportsMissingChangedAndExtraFiles(t *testing.T) {
 	s := newStore(t)
 	key := addZip(t, s, map[string]string{"Mod/a.txt": "aaa", "Mod/b.txt": "bbb", "Mod/c.txt": "ccc"})
-	ctx := context.Background()
+	ctx := t.Context()
 	if d, err := s.Verify(ctx, "stardew", key); err != nil || !d.Empty() {
 		t.Fatalf("fresh item = %+v, %v", d, err)
 	}
@@ -52,13 +51,13 @@ func TestVerifyBaselinesAnItemStoredWithoutHashes(t *testing.T) {
 	if err := os.Remove(s.manifestPath("stardew", key)); err != nil {
 		t.Fatal(err)
 	}
-	if d, err := s.Verify(context.Background(), "stardew", key); err != nil || !d.Empty() {
+	if d, err := s.Verify(t.Context(), "stardew", key); err != nil || !d.Empty() {
 		t.Fatalf("baseline = %+v, %v", d, err)
 	}
 	if err := os.WriteFile(filepath.Join(s.root, blobsDir, strings.TrimPrefix(key, "local-"), "Mod", "a.txt"), []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if d, _ := s.Verify(context.Background(), "stardew", key); len(d.Changed) != 1 {
+	if d, _ := s.Verify(t.Context(), "stardew", key); len(d.Changed) != 1 {
 		t.Fatalf("after baseline = %+v", d)
 	}
 }
@@ -70,7 +69,7 @@ func TestRefsOnlyListsDueItemsAndRemoveForgetsThem(t *testing.T) {
 	if due, _ := s.Refs(true, now); len(due) != 1 {
 		t.Fatalf("never verified is due: %v", due)
 	}
-	if _, err := s.Verify(context.Background(), "stardew", key); err != nil {
+	if _, err := s.Verify(t.Context(), "stardew", key); err != nil {
 		t.Fatal(err)
 	}
 	if due, _ := s.Refs(true, now); len(due) != 0 {
@@ -100,7 +99,7 @@ func TestQuarantineSetsAsideAndRestores(t *testing.T) {
 	if err := restore(); err != nil {
 		t.Fatal(err)
 	}
-	if d, err := s.Verify(context.Background(), "stardew", key); err != nil || !d.Empty() {
+	if d, err := s.Verify(t.Context(), "stardew", key); err != nil || !d.Empty() {
 		t.Fatalf("restored = %+v, %v", d, err)
 	}
 }

@@ -1,7 +1,6 @@
 package github
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -50,7 +49,7 @@ func TestDownloadRefusesABodyOverTheCap(t *testing.T) {
 	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("data")) }))
 	t.Cleanup(srv.Close)
 	over := filepath.Join(t.TempDir(), "over.bin")
-	err := Download(context.Background(), srv.Client(), srv.URL, over, 3, nil)
+	err := Download(t.Context(), srv.Client(), srv.URL, over, 3, nil)
 	if err == nil || !strings.Contains(err.Error(), "larger than 3 B") || !errors.Is(err, safefs.ErrTooLarge) {
 		t.Fatalf("body over the cap: err = %v", err)
 	}
@@ -64,7 +63,7 @@ func TestDownloadReportsGitHubsLimitBeforeTheStatus(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	var limit *RateLimitError
-	err := Download(context.Background(), srv.Client(), srv.URL, filepath.Join(t.TempDir(), "m.zip"), 1<<20, nil)
+	err := Download(t.Context(), srv.Client(), srv.URL, filepath.Join(t.TempDir(), "m.zip"), 1<<20, nil)
 	if !errors.As(err, &limit) || errors.Is(err, download.ErrLinkExpired) {
 		t.Fatalf("a 403 with no calls left: err = %v", err)
 	}
@@ -76,7 +75,7 @@ func TestDownloadNamesMortarWhenNoRangeResumes(t *testing.T) {
 		w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
 	}))
 	t.Cleanup(srv.Close)
-	err := Download(context.Background(), srv.Client(), srv.URL, filepath.Join(t.TempDir(), "m.zip"), 1<<20, nil)
+	err := Download(t.Context(), srv.Client(), srv.URL, filepath.Join(t.TempDir(), "m.zip"), 1<<20, nil)
 	if err == nil || err.Error() != "the download server sent a range Mortar could not resume" {
 		t.Fatalf("err = %v", err)
 	}
@@ -94,7 +93,7 @@ func TestVerify(t *testing.T) {
 	}))
 	defer srv.Close()
 	m := func() *meta.Client { return &meta.Client{UpdatesURL: srv.URL, CacheDir: t.TempDir()} }
-	ctx := context.Background()
+	ctx := t.Context()
 	if ok, err := Verify(ctx, m(), "Some.Mod", "owner", "repo"); !ok || err != nil {
 		t.Fatalf("match = %v, %v", ok, err)
 	}

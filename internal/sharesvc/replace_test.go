@@ -1,7 +1,6 @@
 package sharesvc
 
 import (
-	"context"
 	"slices"
 	"testing"
 
@@ -46,14 +45,14 @@ func TestReplaceRemovesExtrasAndQueuesTheShare(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := link(t, "Cozy", share.Ref{ModID: 100, FileID: 1})
-	pv, err := s.PreviewLink(context.Background(), "stardew", text, prof.ID)
+	pv, err := s.PreviewLink(t.Context(), "stardew", text, prof.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !slices.Contains(pv.Replace.Remove, "A.Drop") && !slices.ContainsFunc(pv.Replace.Remove, func(n string) bool { return n != "" }) {
 		t.Fatalf("plan = %+v", pv.Replace)
 	}
-	if _, err := s.Replace(context.Background(), "stardew", pv.Session, prof.ID, nil, false); err != nil {
+	if _, err := s.Replace(t.Context(), "stardew", pv.Session, prof.ID, nil, false); err != nil {
 		t.Fatal(err)
 	}
 	got, err := s.find("stardew", prof.ID)
@@ -70,7 +69,7 @@ func TestReplaceRemovesExtrasAndQueuesTheShare(t *testing.T) {
 
 func TestReplaceNeedsAProfile(t *testing.T) {
 	s, _ := newService(t, true)
-	_, err := s.Replace(context.Background(), "stardew", "nope", "", nil, false)
+	_, err := s.Replace(t.Context(), "stardew", "nope", "", nil, false)
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -91,11 +90,11 @@ func TestReplaceKeepsTheSharedOrderAsModsArrive(t *testing.T) {
 		}
 	}
 	text := link(t, "Cozy", share.Ref{ModID: 200, FileID: 2}, share.Ref{ModID: 900, FileID: 9}, share.Ref{ModID: 100, FileID: 1})
-	pv, err := s.PreviewLink(context.Background(), "stardew", text, prof.ID)
+	pv, err := s.PreviewLink(t.Context(), "stardew", text, prof.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.Replace(context.Background(), "stardew", pv.Session, prof.ID, nil, false)
+	res, err := s.Replace(t.Context(), "stardew", pv.Session, prof.ID, nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}

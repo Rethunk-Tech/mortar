@@ -3,7 +3,6 @@
 package launchsvc
 
 import (
-	"context"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -54,7 +53,7 @@ func serverEnv(t *testing.T) (svc *Service, profileID, installDir string, inst g
 func TestAServerProfileStartsTheServerWithTheProfilesMods(t *testing.T) {
 	svc, pid, installDir, inst := serverEnv(t)
 	g := game.Find(vsGame)
-	client, err := svc.planProfile(context.Background(), g, inst, pid, launchplan.ModeProfile, "", "", "")
+	client, err := svc.planProfile(t.Context(), g, inst, pid, launchplan.ModeProfile, "", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +63,7 @@ func TestAServerProfileStartsTheServerWithTheProfilesMods(t *testing.T) {
 	if _, err := svc.profiles.SetServerMode(vsGame, pid, true); err != nil {
 		t.Fatal(err)
 	}
-	plan, err := svc.planProfile(context.Background(), g, inst, pid, launchplan.ModeProfile, "", "", "")
+	plan, err := svc.planProfile(t.Context(), g, inst, pid, launchplan.ModeProfile, "", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +98,7 @@ func TestAServerRunsOnWindowsBuildsAsItsExecutable(t *testing.T) {
 	if _, err := svc.profiles.SetServerMode(vsGame, pid, true); err != nil {
 		t.Fatal(err)
 	}
-	plan, err := svc.planProfile(context.Background(), game.Find(vsGame), inst, pid, launchplan.ModeProfile, "", "", "")
+	plan, err := svc.planProfile(t.Context(), game.Find(vsGame), inst, pid, launchplan.ModeProfile, "", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -23,7 +23,7 @@ func serve(t *testing.T, states ...launchsvc.State) (dir string, asked func() []
 func serveRuns(t *testing.T, recordAfter int, states ...launchsvc.State) (dir string, asked func() []control.Params) {
 	t.Helper()
 	dir = t.TempDir()
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	var mu sync.Mutex
 	var requests []control.Params
 	statusCalls := 0

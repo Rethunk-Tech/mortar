@@ -142,7 +142,7 @@ func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
 	path := filepath.Join(dir, downloadsDir, items[0].ID+filepath.Ext("a-1.0.zip"))
 	seedPartial(t, path, body[:half], map[string]any{"expectedSize": int64(len(body)), "url": srv.URL + "/cdn/old.zip"})
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	wait := Run(ctx, s, make(chan nxmsvc.Assignment))
 	t.Cleanup(func() {
 		cancel()

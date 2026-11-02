@@ -419,7 +419,7 @@ func TestAQueuedItemIsNamedBeforeItsTurn(t *testing.T) {
 	f := newFixture(t)
 	f.s.Pause()
 	assigned := make(chan nxmsvc.Assignment, 1)
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	wait := Run(ctx, f.s, assigned)
 	t.Cleanup(func() {
 		cancel()
@@ -693,7 +693,7 @@ func TestARejectedLinkCanBeRetried(t *testing.T) {
 	f := newFixture(t)
 	client := f.s.d.Client
 	f.s.d.Client = func() (*nexusmods.Client, error) { return nil, fmt.Errorf("sign in") }
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	assigned := make(chan nxmsvc.Assignment)
 	wait := Run(ctx, f.s, assigned)
 	t.Cleanup(func() {

@@ -47,7 +47,7 @@ func leaveCrashedLaunch(t *testing.T, svc *Service) crashedLaunch {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.placed, err = d.Apply(context.Background(), plan); err != nil {
+	if c.placed, err = d.Apply(t.Context(), plan); err != nil {
 		t.Fatal(err)
 	}
 	if c.swapped, err = savesiso.Apply(c.savesDir, c.saves, c.prof, true); err != nil {
@@ -60,7 +60,7 @@ func TestRecoverGameDeploysPutsBackWhatACrashedLaunchChanged(t *testing.T) {
 	svc, _ := startEnv(t)
 	svc.procDir = t.TempDir()
 	c := leaveCrashedLaunch(t, svc)
-	found, err := svc.RecoverGameDeploys(context.Background(), "stardew")
+	found, err := svc.RecoverGameDeploys(t.Context(), "stardew")
 	if err != nil || !found {
 		t.Fatalf("found %v, err %v", found, err)
 	}
@@ -73,7 +73,7 @@ func TestRecoverGameDeploysPutsBackWhatACrashedLaunchChanged(t *testing.T) {
 	if deploy.HasJournal(c.deployDir) || savesiso.HasJournal(c.savesDir) {
 		t.Fatal("a journal is left after recovery")
 	}
-	if found, _ := svc.RecoverGameDeploys(context.Background(), "stardew"); found {
+	if found, _ := svc.RecoverGameDeploys(t.Context(), "stardew"); found {
 		t.Fatal("recovery found a journal that was already finished")
 	}
 }
@@ -83,7 +83,7 @@ func TestRecoverGameDeploysLeavesAnActiveLaunchAlone(t *testing.T) {
 	svc.procDir = t.TempDir()
 	c := leaveCrashedLaunch(t, svc)
 	svc.set(Status{Game: "stardew", Install: svc.selectedSlot(game.Find("stardew")).inst, State: Launching, Profile: p.ID})
-	if _, err := svc.RecoverGameDeploys(context.Background(), "stardew"); err != nil {
+	if _, err := svc.RecoverGameDeploys(t.Context(), "stardew"); err != nil {
 		t.Fatal(err)
 	}
 	if !deploy.HasJournal(c.deployDir) || !savesiso.HasJournal(c.savesDir) {
@@ -115,12 +115,12 @@ func TestUnwindTakesBackTheDeployAndTheSaveSwap(t *testing.T) {
 	c := leaveCrashedLaunch(t, svc)
 	d := &deploy.Place{}
 	dep := &deployment{d: d, m: c.placed, saves: &c.swapped}
-	cancelled, cancel := context.WithCancel(context.Background())
+	cancelled, cancel := context.WithCancel(t.Context())
 	cancel()
 	dep.unwind(cancelled)
-	dep.unwind(context.Background())
+	dep.unwind(t.Context())
 	var nilDep *deployment
-	nilDep.unwind(context.Background())
+	nilDep.unwind(t.Context())
 	if b, _ := safefs.ReadFile(c.dll); string(b) != "the player's own" {
 		t.Fatalf("the player's file = %q", b)
 	}
@@ -133,7 +133,7 @@ func TestUnwindTakesBackTheDeployAndTheSaveSwap(t *testing.T) {
 }
 
 func TestRecoverGameDeploysFindsEitherJournal(t *testing.T) {
-	if found, err := mustService(t).RecoverGameDeploys(context.Background(), "nosuchgame"); found || err != nil {
+	if found, err := mustService(t).RecoverGameDeploys(t.Context(), "nosuchgame"); found || err != nil {
 		t.Fatalf("an unknown game: found %v, err %v", found, err)
 	}
 	for _, only := range []string{"deploy", "saves"} {
@@ -145,11 +145,11 @@ func TestRecoverGameDeploysFindsEitherJournal(t *testing.T) {
 			}
 		} else {
 			d := &deploy.Place{}
-			if err := d.Purge(context.Background(), c.placed); err != nil {
+			if err := d.Purge(t.Context(), c.placed); err != nil {
 				t.Fatal(err)
 			}
 		}
-		found, err := svc.RecoverGameDeploys(context.Background(), "stardew")
+		found, err := svc.RecoverGameDeploys(t.Context(), "stardew")
 		if err != nil || !found {
 			t.Fatalf("only the %s journal: found %v, err %v", only, found, err)
 		}
@@ -174,7 +174,7 @@ func TestAnUnreadableProcessListCountsAsInUse(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc.procDir = blocker
-	if _, err := svc.RecoverGameDeploys(context.Background(), "stardew"); err != nil {
+	if _, err := svc.RecoverGameDeploys(t.Context(), "stardew"); err != nil {
 		t.Fatal(err)
 	}
 	if !deploy.HasJournal(c.deployDir) || !savesiso.HasJournal(c.savesDir) {
@@ -192,7 +192,7 @@ func TestAFailedDeployTakesBackWhatItPlaced(t *testing.T) {
 	}
 	plan := &launchplan.Plan{Files: []launchplan.PlanFile{{Src: good, Dst: "a.dll"}}}
 	// Canceled once the journal is written: the deploy fails with its record on disk and nothing placed yet.
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 	if _, err := startDeploy(ctx, inst, plan, nil); err == nil {
 		t.Fatal("a canceled deploy succeeded")
@@ -201,7 +201,7 @@ func TestAFailedDeployTakesBackWhatItPlaced(t *testing.T) {
 		t.Fatal("the canceled deploy left its journal")
 	}
 	missingPlan := &launchplan.Plan{Files: []launchplan.PlanFile{{Src: missing, Dst: "b.dll"}}}
-	if _, err := startDeploy(context.Background(), inst, missingPlan, nil); err == nil {
+	if _, err := startDeploy(t.Context(), inst, missingPlan, nil); err == nil {
 		t.Fatal("a deploy with a missing source succeeded")
 	}
 	if b, _ := safefs.ReadFile(filepath.Join(inst.Dir, "a.dll")); string(b) != "the player's own" {
@@ -231,7 +231,7 @@ func TestSwapSavesGivesTheProfileItsOwnAndUndoesIt(t *testing.T) {
 	}
 	_, selected := svc.installs(g)
 	dep := &deployment{}
-	if err := svc.swapSaves(context.Background(), "stardew", selected, p.ID, "", dep); err != nil {
+	if err := svc.swapSaves(t.Context(), "stardew", selected, p.ID, "", dep); err != nil {
 		t.Fatal(err)
 	}
 	if dep.saves == nil || dep.finish == nil {
@@ -242,10 +242,10 @@ func TestSwapSavesGivesTheProfileItsOwnAndUndoesIt(t *testing.T) {
 	}
 	// A crash leaves the swap; the next launch finishes it before making its own.
 	again := &deployment{}
-	if err := svc.swapSaves(context.Background(), "stardew", selected, p.ID, "", again); err != nil {
+	if err := svc.swapSaves(t.Context(), "stardew", selected, p.ID, "", again); err != nil {
 		t.Fatalf("a launch after a crashed one: %v", err)
 	}
-	again.unwind(context.Background())
+	again.unwind(t.Context())
 	if b, _ := safefs.ReadFile(filepath.Join(shared, "shared.sav")); string(b) != "shared" {
 		t.Fatalf("the shared saves after the undo = %q", b)
 	}
@@ -254,7 +254,7 @@ func TestSwapSavesGivesTheProfileItsOwnAndUndoesIt(t *testing.T) {
 		t.Fatal(err)
 	}
 	none := &deployment{}
-	if err := svc.swapSaves(context.Background(), "stardew", selected, p.ID, "", none); err != nil || none.saves != nil {
+	if err := svc.swapSaves(t.Context(), "stardew", selected, p.ID, "", none); err != nil || none.saves != nil {
 		t.Fatalf("a shared-saves profile was swapped: %v %+v", err, none)
 	}
 }

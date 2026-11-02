@@ -1,7 +1,6 @@
 package source
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -44,11 +43,11 @@ func TestWithin(t *testing.T) {
 }
 
 func TestCutoffContext(t *testing.T) {
-	if !CutoffOf(WithCutoff(context.Background(), time.Time{})).IsZero() {
+	if !CutoffOf(WithCutoff(t.Context(), time.Time{})).IsZero() {
 		t.Fatal("zero cutoff must not be set")
 	}
 	c := ParseCutoff("2024-02-10")
-	if !CutoffOf(WithCutoff(context.Background(), c)).Equal(c) {
+	if !CutoffOf(WithCutoff(t.Context(), c)).Equal(c) {
 		t.Fatal("cutoff lost")
 	}
 }

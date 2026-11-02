@@ -3,7 +3,6 @@ package nativehost
 import (
 	"bufio"
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -54,7 +53,7 @@ func listenControl(t *testing.T, settingsJSON string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
+	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -73,13 +73,13 @@ func TestTwoInstallsOfOneGameAreClaimedSideBySide(t *testing.T) {
 		close(release)
 		waitSettled(t, svc)
 	}()
-	if err := svc.Start(context.Background(), "stardew", a, false); err != nil {
+	if err := svc.Start(t.Context(), "stardew", a, false); err != nil {
 		t.Fatal(err)
 	}
-	if err := svc.Start(context.Background(), "stardew", b, false); err != nil {
+	if err := svc.Start(t.Context(), "stardew", b, false); err != nil {
 		t.Fatalf("a second install must be claimable while the first prepares: %v", err)
 	}
-	if err := svc.Start(context.Background(), "stardew", a, false); err == nil {
+	if err := svc.Start(t.Context(), "stardew", a, false); err == nil {
 		t.Fatal("a second launch on the same install must be refused")
 	}
 	svc.mu.Lock()

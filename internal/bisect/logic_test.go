@@ -32,7 +32,7 @@ func TestFindUsesFakeRunnerToNarrowFailingGroup(t *testing.T) {
 		{ID: "e"},
 	}
 	var tested [][]string
-	got, err := find(context.Background(), mods, func(_ context.Context, disabled []string) (bool, error) {
+	got, err := find(t.Context(), mods, func(_ context.Context, disabled []string) (bool, error) {
 		tested = append(tested, append([]string(nil), disabled...))
 		if slices.Contains(disabled, "pack") {
 			return false, nil
@@ -59,7 +59,7 @@ func TestFindKeepsALibraryOnWhileAnythingThatNeedsItIsOn(t *testing.T) {
 	for _, id := range []string{"a", "b", "c", "d", "e", "f", "g"} {
 		mods = append(mods, Mod{ID: id, Dependencies: []string{"lib"}})
 	}
-	got, err := find(context.Background(), mods, func(_ context.Context, off []string) (bool, error) {
+	got, err := find(t.Context(), mods, func(_ context.Context, off []string) (bool, error) {
 		if slices.Contains(off, "lib") {
 			for _, m := range mods[1:] {
 				if !slices.Contains(off, m.ID) {
@@ -75,7 +75,7 @@ func TestFindKeepsALibraryOnWhileAnythingThatNeedsItIsOn(t *testing.T) {
 }
 
 func TestFindBlamesNobodyWhenEveryModOnRunsClean(t *testing.T) {
-	_, err := find(context.Background(), []Mod{{ID: "a"}, {ID: "b"}}, func(context.Context, []string) (bool, error) {
+	_, err := find(t.Context(), []Mod{{ID: "a"}, {ID: "b"}}, func(context.Context, []string) (bool, error) {
 		return false, nil
 	}, nil)
 	if !errors.Is(err, ErrNoCrash) {

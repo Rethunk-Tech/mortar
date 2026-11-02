@@ -1,7 +1,6 @@
 package control
 
 import (
-	"context"
 	"errors"
 	"testing"
 
@@ -42,7 +41,7 @@ func TestLinksListsOwnersPerScheme(t *testing.T) {
 		},
 		ownerErrs: map[string]error{"curseforge": errors.New("no handler")},
 	})}
-	res, ok, err := svc.handleMore(context.Background(), "links", Params{})
+	res, ok, err := svc.handleMore(t.Context(), "links", Params{})
 	if err != nil || !ok {
 		t.Fatalf("links: %v ok=%v", err, ok)
 	}

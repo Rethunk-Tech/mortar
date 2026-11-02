@@ -1,7 +1,6 @@
 package nexussvc
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -52,7 +51,7 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{})
-	ctx := context.Background()
+	ctx := t.Context()
 	if _, err := s.Endorse(ctx, "stardew", 541, "1.55.0"); !errors.Is(err, ErrSignedOut) {
 		t.Fatalf("signed out endorse = %v", err)
 	}
@@ -117,7 +116,7 @@ func TestRefusalsKeepTheirWording(t *testing.T) {
 	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{})
-	ctx := context.Background()
+	ctx := t.Context()
 
 	status.Store(http.StatusUnauthorized)
 	_, err := s.SignIn(ctx, "bad")
@@ -151,7 +150,7 @@ func TestRateLimitWordingHoldsOnReads(t *testing.T) {
 	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{CacheDir: t.TempDir()})
-	ctx := context.Background()
+	ctx := t.Context()
 	if _, err := s.SignIn(ctx, "key"); err != nil {
 		t.Fatal(err)
 	}

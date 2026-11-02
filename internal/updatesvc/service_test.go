@@ -48,7 +48,7 @@ func TestDevBuildsAndVersionsNeverCheck(t *testing.T) {
 		if err != nil || s.Info().Off != "dev" || f.cfg != nil {
 			t.Fatalf("%+v: off %q, configured %v, %v", c, s.Info().Off, f.cfg != nil, err)
 		}
-		if _, err := s.Check(context.Background()); !errors.Is(err, errOff) {
+		if _, err := s.Check(t.Context()); !errors.Is(err, errOff) {
 			t.Fatalf("%+v: check %v", c, err)
 		}
 	}
@@ -61,7 +61,7 @@ func TestPackagedBuildsNeverCheck(t *testing.T) {
 	if err != nil || s.Info().Off != "packaged" || f.cfg != nil {
 		t.Fatalf("off %q, configured %v, %v", s.Info().Off, f.cfg != nil, err)
 	}
-	if _, err := s.Check(context.Background()); !errors.Is(err, errOff) {
+	if _, err := s.Check(t.Context()); !errors.Is(err, errOff) {
 		t.Fatalf("check %v", err)
 	}
 }
@@ -73,17 +73,17 @@ func TestOnlyASignedReleaseInstalls(t *testing.T) {
 	if err != nil || f.cfg == nil || f.cfg.CurrentVersion != "1.0.0" || string(f.cfg.PublicKey) != "key" {
 		t.Fatalf("configured %+v, %v", f.cfg, err)
 	}
-	if _, err := s.Check(context.Background()); !errors.Is(err, errUnsigned) {
+	if _, err := s.Check(t.Context()); !errors.Is(err, errUnsigned) {
 		t.Fatalf("unsigned: %v", err)
 	}
-	if err := s.Install(context.Background()); !errors.Is(err, errNone) || f.downloaded {
+	if err := s.Install(t.Context()); !errors.Is(err, errNone) || f.downloaded {
 		t.Fatalf("install after unsigned: %v, downloaded %v", err, f.downloaded)
 	}
 	f.rel.Verification.Signature = []byte{2}
-	if rel, err := s.Check(context.Background()); err != nil || rel.Version != "1.1.0" {
+	if rel, err := s.Check(t.Context()); err != nil || rel.Version != "1.1.0" {
 		t.Fatalf("signed: %+v, %v", rel, err)
 	}
-	if err := s.Install(context.Background()); err != nil || !f.downloaded {
+	if err := s.Install(t.Context()); err != nil || !f.downloaded {
 		t.Fatalf("install: %v, downloaded %v", err, f.downloaded)
 	}
 }
@@ -91,14 +91,14 @@ func TestOnlyASignedReleaseInstalls(t *testing.T) {
 func TestCheckKeepsAStagedRelease(t *testing.T) {
 	f := &fake{rel: &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}}
 	s := signedService(t, f)
-	if _, err := s.Check(context.Background()); err != nil {
+	if _, err := s.Check(t.Context()); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.Install(context.Background()); err != nil {
+	if err := s.Install(t.Context()); err != nil {
 		t.Fatal(err)
 	}
 	f.rel = nil
-	rel, err := s.Check(context.Background())
+	rel, err := s.Check(t.Context())
 	if err != nil || rel == nil || rel.Version != "1.1.0" || !rel.Staged {
 		t.Fatalf("check after install: %+v, %v", rel, err)
 	}
@@ -113,7 +113,7 @@ func TestRestartWaitsUntilInstallHasStaged(t *testing.T) {
 	}
 	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
 	s := signedService(t, f)
-	if _, err := s.Check(context.Background()); err != nil {
+	if _, err := s.Check(t.Context()); err != nil {
 		t.Fatal(err)
 	}
 	done := make(chan error, 1)
@@ -145,7 +145,7 @@ func TestRestartDoesNotHoldTheMutex(t *testing.T) {
 	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Check(context.Background()); err != nil {
+	if _, err := s.Check(t.Context()); err != nil {
 		t.Fatal(err)
 	}
 	done := make(chan error, 1)
@@ -207,7 +207,7 @@ func TestInstallReleasesTheMutexDuringDownload(t *testing.T) {
 	f := &stall{dlHold: hold, dlStart: started}
 	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
 	s := signedService(t, f)
-	if _, err := s.Check(context.Background()); err != nil {
+	if _, err := s.Check(t.Context()); err != nil {
 		t.Fatal(err)
 	}
 	done := make(chan error, 1)
@@ -273,7 +273,7 @@ func TestClassifyCheckError(t *testing.T) {
 func TestCheckNetworkErrorHidesTheGoChain(t *testing.T) {
 	f := &fake{err: errors.New("updater: all providers failed: endpoint: fetch manifest: Get ...: wsarecv: connection timed out")}
 	s := signedService(t, f)
-	rel, err := s.Check(context.Background())
+	rel, err := s.Check(t.Context())
 	if rel != nil || !errors.Is(err, errUnreachable) {
 		t.Fatalf("check = %+v, %v", rel, err)
 	}
@@ -286,7 +286,7 @@ func TestCheckMissingManifestIsNotUpToDate(t *testing.T) {
 	f := &fake{}
 	s := signedService(t, f)
 	s.empty = func(context.Context) error { return errors.New("HTTP 404") }
-	rel, err := s.Check(context.Background())
+	rel, err := s.Check(t.Context())
 	if rel != nil || !errors.Is(err, errNoRelease) {
 		t.Fatalf("missing manifest = %+v, %v", rel, err)
 	}
@@ -296,7 +296,7 @@ func TestCheckNilReleaseIsCurrentWhenTheManifestExists(t *testing.T) {
 	f := &fake{}
 	s := signedService(t, f)
 	s.empty = func(context.Context) error { return nil }
-	rel, err := s.Check(context.Background())
+	rel, err := s.Check(t.Context())
 	if rel != nil || err != nil {
 		t.Fatalf("current = %+v, %v", rel, err)
 	}
@@ -304,7 +304,7 @@ func TestCheckNilReleaseIsCurrentWhenTheManifestExists(t *testing.T) {
 
 func TestProbePublished(t *testing.T) {
 	t.Parallel()
-	ctx := context.Background()
+	ctx := t.Context()
 	ok := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
@@ -353,7 +353,7 @@ func TestASecondInstallWaitsForTheFirst(t *testing.T) {
 	f := &stall{dlHold: hold, dlStart: started}
 	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
 	s := signedService(t, f)
-	if _, err := s.Check(context.Background()); err != nil {
+	if _, err := s.Check(t.Context()); err != nil {
 		t.Fatal(err)
 	}
 	first := make(chan error, 1)

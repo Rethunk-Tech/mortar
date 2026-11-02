@@ -74,7 +74,7 @@ func TestRunIgnoresStaleLog(t *testing.T) {
 	if err := os.Chtimes(log, old, old); err != nil {
 		t.Fatal(err)
 	}
-	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) { return make(chan error), nil }, Command{LogFile: log, Failure: HintSteam}, fast, func([]string) {})
+	err := Run(t.Context(), func(string, string, ...string) (<-chan error, error) { return make(chan error), nil }, Command{LogFile: log, Failure: HintSteam}, fast, func([]string) {})
 	var f *Failure
 	if !errors.As(err, &f) || f.Hint != HintSteam {
 		t.Fatalf("err = %v, want a steam-hint failure", err)
@@ -101,7 +101,7 @@ func TestRunStartsWhenTheGameIsUpButItsLogIsLate(t *testing.T) {
 
 func TestRunStartError(t *testing.T) {
 	boom := errors.New("boom")
-	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) { return nil, boom }, Command{Failure: HintFlatpakFS}, fast, nil)
+	err := Run(t.Context(), func(string, string, ...string) (<-chan error, error) { return nil, boom }, Command{Failure: HintFlatpakFS}, fast, nil)
 	var f *Failure
 	if !errors.As(err, &f) || !errors.Is(err, boom) || f.Hint != HintFlatpakFS {
 		t.Fatalf("err = %v", err)
@@ -115,7 +115,7 @@ func TestRunKeepsFollowingUntilContextDone(t *testing.T) {
 	}
 	var mu sync.Mutex
 	var lines []string
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	err := Run(ctx, run, Command{LogFile: log}, fast, func(l []string) {
 		mu.Lock()
 		lines = append(lines, l...)
@@ -159,7 +159,7 @@ func TestRunSurfacesExitWhenLogIsUnchanged(t *testing.T) {
 	log := filepath.Join(t.TempDir(), "SMAPI-latest.txt")
 	done := make(chan error, 1)
 	done <- &exitStatus{code: 7}
-	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) {
+	err := Run(t.Context(), func(string, string, ...string) (<-chan error, error) {
 		return done, nil
 	}, Command{LogFile: log, Failure: HintSteam}, fast, func([]string) {})
 	var x *ExitError
@@ -186,7 +186,7 @@ func TestRunStartsWhenReadyWithoutALog(t *testing.T) {
 
 func TestRunFailsWhenReadyNeverSeesAProcess(t *testing.T) {
 	t.Parallel()
-	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) {
+	err := Run(t.Context(), func(string, string, ...string) (<-chan error, error) {
 		return make(chan error), nil
 	}, Command{Failure: HintSteam, Ready: func() bool { return false }}, fast, nil)
 	var f *Failure
@@ -215,7 +215,7 @@ func TestRunSurfacesARelayNonZeroExit(t *testing.T) {
 	log := filepath.Join(t.TempDir(), "SMAPI-latest.txt")
 	done := make(chan error, 1)
 	done <- &exitStatus{code: 1}
-	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) {
+	err := Run(t.Context(), func(string, string, ...string) (<-chan error, error) {
 		return done, nil
 	}, Command{LogFile: log, Failure: HintSteam, Relay: true}, fast, func([]string) {})
 	var x *ExitError

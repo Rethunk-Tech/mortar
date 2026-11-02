@@ -193,7 +193,7 @@ func TestWinePrefixBottle(t *testing.T) {
 
 	var ran []string
 	run := func(_ context.Context, argv []string) error { ran = argv; return nil }
-	if err := Run(context.Background(), run, inst, "/x/SMAPI.exe", "--mods-path", "/m"); err != nil {
+	if err := Run(t.Context(), run, inst, "/x/SMAPI.exe", "--mods-path", "/m"); err != nil {
 		t.Fatal(err)
 	}
 	want := []string{"flatpak", "run", "--command=bottles-cli", "com.usebottles.bottles", "run", "-b", "My Games", "-e", "/x/SMAPI.exe", "--", "--mods-path", "/m"}
@@ -205,7 +205,7 @@ func TestWinePrefixBottle(t *testing.T) {
 		t.Fatalf("native argv = %q", argv)
 	}
 	inst.Platform = "linux"
-	if err := Run(context.Background(), run, inst, "a"); err == nil {
+	if err := Run(t.Context(), run, inst, "a"); err == nil {
 		t.Fatal("a non-bottle install must not be wrapped")
 	}
 }

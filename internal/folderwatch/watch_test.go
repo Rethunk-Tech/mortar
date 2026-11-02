@@ -38,7 +38,7 @@ func (g *got) wait(t *testing.T, n int) []string {
 
 func start(t *testing.T, targets func() []Target) *got {
 	g := &got{}
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	done := make(chan struct{})
 	go func() {
 		_ = Run(ctx, Deps{Targets: targets, Emit: g.emit, Quiet: 50 * time.Millisecond, Stable: 300 * time.Millisecond, Retarget: 50 * time.Millisecond})
@@ -166,7 +166,7 @@ func TestRetargetKeepsPendingEvent(t *testing.T) {
 			var mu sync.Mutex
 			game := "sims4"
 			g := &got{}
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			done := make(chan struct{})
 			go func() {
 				_ = Run(ctx, Deps{Targets: func() []Target {
@@ -202,7 +202,7 @@ func TestChangedSignalRetargetsAtOnce(t *testing.T) {
 	cur := a
 	g := &got{}
 	changed := make(chan struct{}, 1)
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	done := make(chan struct{})
 	go func() {
 		_ = Run(ctx, Deps{Targets: func() []Target {

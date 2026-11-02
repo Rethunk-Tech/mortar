@@ -1,7 +1,6 @@
 package itch
 
 import (
-	"context"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -21,10 +20,10 @@ func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := &Service{Store: store, Driver: fake(t)}
-	if _, err := s.SignIn(context.Background(), "bad"); err == nil || s.Account().SignedIn {
+	if _, err := s.SignIn(t.Context(), "bad"); err == nil || s.Account().SignedIn {
 		t.Fatalf("a rejected key signed in: %v", err)
 	}
-	acct, err := s.SignIn(context.Background(), " k1 ")
+	acct, err := s.SignIn(t.Context(), " k1 ")
 	if err != nil || !acct.SignedIn || acct.Name != "farmer" {
 		t.Fatalf("sign in = %+v, %v", acct, err)
 	}

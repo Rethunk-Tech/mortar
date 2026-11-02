@@ -63,21 +63,21 @@ func TestCheckFindsDamageAndRepairReextractsFromTheArchive(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if sum, err := s.Check(context.Background()); err != nil || sum.Checked != 1 || len(sum.Damaged) != 0 {
+	if sum, err := s.Check(t.Context()); err != nil || sum.Checked != 1 || len(sum.Damaged) != 0 {
 		t.Fatalf("clean check = %+v, %v", sum, err)
 	}
 	dir, _ := s.d.Items.Path("stardew", key)
 	if err := os.Remove(filepath.Join(dir, "Mod", "a.txt")); err != nil {
 		t.Fatal(err)
 	}
-	sum, err := s.Check(context.Background())
+	sum, err := s.Check(t.Context())
 	if err != nil || len(sum.Damaged) != 1 || sum.Damaged[0].Missing != 1 || sum.Damaged[0].Name != "Pack.zip" {
 		t.Fatalf("damaged check = %+v, %v", sum, err)
 	}
 	if got, err := s.Repair(t.Context(), "stardew", "p1", key); err != nil || got.Status != "restored" {
 		t.Fatalf("repair = %+v, %v", got, err)
 	}
-	if sum, _ := s.Check(context.Background()); len(sum.Damaged) != 0 {
+	if sum, _ := s.Check(t.Context()); len(sum.Damaged) != 0 {
 		t.Fatalf("still damaged after repair: %+v", sum)
 	}
 }
@@ -126,7 +126,7 @@ func TestPassWaitsWhileBusyThenVerifies(t *testing.T) {
 	s, downloads, _ := newService(t)
 	key, _ := s.d.Items.AddArchive(t.Context(), "stardew", zipFile(t, downloads, "Pack.zip", map[string]string{"a": "a"}))
 	s.d.Busy = func() bool { return true }
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), 100*time.Millisecond)
 	defer cancel()
 	s.pass(ctx)
 	if due, _ := s.d.Items.Refs(true, time.Now()); len(due) != 1 || due[0].Key != key {
@@ -153,14 +153,14 @@ func TestCheckBaselinesANexusItemFromItsArchiveWhenTheMD5Matches(t *testing.T) {
 		t.Fatal(err)
 	}
 	s.d.NexusMD5 = func(context.Context, string, int, int) (string, error) { return "0000", nil }
-	if sum, _ := s.Check(context.Background()); len(sum.Damaged) != 0 {
+	if sum, _ := s.Check(t.Context()); len(sum.Damaged) != 0 {
 		t.Fatalf("a different MD5 must fall back to the current files: %+v", sum)
 	}
 	if err := os.Remove(filepath.Join(dir, "..", "..", ".manifests", "stardew", key+".json")); err != nil {
 		t.Fatal(err)
 	}
 	s.d.NexusMD5 = func(context.Context, string, int, int) (string, error) { return md5, nil }
-	sum, err := s.Check(context.Background())
+	sum, err := s.Check(t.Context())
 	if err != nil || len(sum.Damaged) != 1 || sum.Damaged[0].Changed != 1 {
 		t.Fatalf("baseline from the archive = %+v, %v", sum, err)
 	}

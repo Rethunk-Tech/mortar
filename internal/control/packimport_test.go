@@ -58,7 +58,7 @@ func TestPackImportFetchesACodeAndQueuesItIntoANamedProfile(t *testing.T) {
 		SignedIn: func() bool { return true }, Premium: func() bool { return false },
 		Env: func(string) problems.Environment { return problems.Environment{} },
 	})
-	ctx := context.Background()
+	ctx := t.Context()
 
 	pv, err := s.Handle(ctx, "pack.import", Params{Game: "lethal-company", Value: key, Preview: true})
 	if got, ok := pv.(sharesvc.Preview); err != nil || !ok || got.Name != "Just some mods" || len(got.Mods) < 2 || len(q.got) != 0 {

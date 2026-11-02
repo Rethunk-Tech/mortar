@@ -1,7 +1,6 @@
 package curseforge
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -27,7 +26,7 @@ func TestStandingsFlagsInactiveAbandonedDeletedAndUnavailableMods(t *testing.T) 
 	}))
 	t.Cleanup(srv.Close)
 	d := Driver{URL: srv.URL, Key: func() string { return "k" }}
-	got, err := d.Standings(context.Background(), "1", []string{"1", "2", "3", "4", "5", "6", "name"})
+	got, err := d.Standings(t.Context(), "1", []string{"1", "2", "3", "4", "5", "6", "name"})
 	if err != nil {
 		t.Fatal(err)
 	}

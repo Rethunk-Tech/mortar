@@ -1,7 +1,6 @@
 package meta
 
 import (
-	"context"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -14,10 +13,10 @@ func TestFutureStampedUpdateAnswerIsNotFresh(t *testing.T) {
 	c := server(t, &down, &hits)
 	now := time.Now()
 	c.Now = func() time.Time { return now }
-	c.CheckUpdates(context.Background(), cpRequest)
+	c.CheckUpdates(t.Context(), cpRequest)
 	now = now.Add(-30 * 24 * time.Hour) // clock set back a month
 	before := hits.Load()
-	c.CheckUpdates(context.Background(), cpRequest)
+	c.CheckUpdates(t.Context(), cpRequest)
 	// A stale answer is served while a background refresh asks again; a fresh one is never asked again.
 	for range 200 {
 		if hits.Load() != before {

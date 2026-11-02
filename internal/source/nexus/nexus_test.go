@@ -1,7 +1,6 @@
 package nexus
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -28,7 +27,7 @@ func TestSearchQueryAndPaging(t *testing.T) {
 		_, _ = w.Write([]byte(`{"data":{"mods":{"totalCount":27,"nodes":[{"modId":1348,"name":"SpaceCore","summary":"s","author":"a","version":"1","endorsements":233359,"downloads":1,"pictureUrl":"p","updatedAt":"t","adultContent":true,"modCategory":{"name":"Cheats"}}]}}}`))
 	}))
 	t.Cleanup(srv.Close)
-	page, err := Driver{URL: srv.URL}.Search(context.Background(), source.Query{Game: "stardew", Key: "stardewvalley", Text: "space", Page: 2, Version: "test"})
+	page, err := Driver{URL: srv.URL}.Search(t.Context(), source.Query{Game: "stardew", Key: "stardewvalley", Text: "space", Page: 2, Version: "test"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +57,7 @@ func TestSearchQueryAndPaging(t *testing.T) {
 
 func TestSearchNeedsTheGameKey(t *testing.T) {
 	t.Parallel()
-	if _, err := (Driver{}).Search(context.Background(), source.Query{Game: "g", Page: 1}); err == nil {
+	if _, err := (Driver{}).Search(t.Context(), source.Query{Game: "g", Page: 1}); err == nil {
 		t.Fatal("want an error without a Nexus key")
 	}
 }
@@ -72,7 +71,7 @@ func TestSearchTextCannotEscapeItsStringLiteral(t *testing.T) {
 		_, _ = w.Write([]byte(`{"data":{"mods":{"totalCount":0,"nodes":[]}}}`))
 	}))
 	t.Cleanup(srv.Close)
-	_, err := Driver{URL: srv.URL}.Search(context.Background(), source.Query{Key: "stardewvalley", Text: "a\" }) { x } #\\\x01", Page: 1})
+	_, err := Driver{URL: srv.URL}.Search(t.Context(), source.Query{Key: "stardewvalley", Text: "a\" }) { x } #\\\x01", Page: 1})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +93,7 @@ func TestEmptySearchListsMostEndorsedWithoutNameFilter(t *testing.T) {
 		_, _ = w.Write([]byte(`{"data":{"mods":{"totalCount":0,"nodes":[]}}}`))
 	}))
 	t.Cleanup(srv.Close)
-	if _, err := (Driver{URL: srv.URL}).Search(context.Background(), source.Query{Game: "g", Key: "gk", Page: 1}); err != nil {
+	if _, err := (Driver{URL: srv.URL}).Search(t.Context(), source.Query{Game: "g", Key: "gk", Page: 1}); err != nil {
 		t.Fatal(err)
 	}
 	if strings.Contains(gotBody, "name:") || !strings.Contains(gotBody, "endorsements") {
@@ -112,7 +111,7 @@ func TestCategoryFiltersAndSortBuildTheQuery(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	q := source.Query{Game: "g", Key: "gk", Page: 1, Categories: []string{"Maps", "Audio"}, ExcludeCategories: []string{"Misc"}, Sort: source.SortDownloads}
-	if _, err := (Driver{URL: srv.URL}).Search(context.Background(), q); err != nil {
+	if _, err := (Driver{URL: srv.URL}).Search(t.Context(), q); err != nil {
 		t.Fatal(err)
 	}
 	for _, want := range []string{`op:OR, filter:[`, `{value:\"Maps\"}, {value:\"Misc\", op:NOT_EQUALS}`, `{value:\"Audio\"}`, "downloads:{direction:DESC}"} {
@@ -149,7 +148,7 @@ func TestSearchAsksForTheQuerysPageSize(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	d := Driver{URL: srv.URL}
-	if _, err := d.Search(context.Background(), source.Query{Key: "stardewvalley", Page: 2, Size: d.MaxPageSize()}); err != nil {
+	if _, err := d.Search(t.Context(), source.Query{Key: "stardewvalley", Page: 2, Size: d.MaxPageSize()}); err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(gotBody, "count: 80, offset: 80") {

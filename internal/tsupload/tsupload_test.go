@@ -1,7 +1,6 @@
 package tsupload
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -24,7 +23,7 @@ func TestRefusedTokenReadsTheStatus(t *testing.T) {
 
 func TestUploadNeedsAToken(t *testing.T) {
 	keyring.MockInit()
-	_, err := Upload(context.Background(), Client, Site, "x.zip", "team", "c", nil)
+	_, err := Upload(t.Context(), Client, Site, "x.zip", "team", "c", nil)
 	if usererr.KindOf(err) != usererr.Permission {
 		t.Fatalf("err = %v", err)
 	}
@@ -49,7 +48,7 @@ func TestClientKeepsTheTokenOnItsHost(t *testing.T) {
 		http.Redirect(w, r, other.URL, http.StatusFound)
 	}))
 	defer home.Close()
-	if _, err := Upload(context.Background(), Client, home.URL+"/", "x.zip", "team", "c", nil); err == nil {
+	if _, err := Upload(t.Context(), Client, home.URL+"/", "x.zip", "team", "c", nil); err == nil {
 		t.Fatal("cross-host redirect accepted")
 	}
 }

@@ -1,7 +1,6 @@
 package updatesvc
 
 import (
-	"context"
 	"testing"
 
 	"github.com/wailsapp/wails/v3/pkg/updater"
@@ -25,7 +24,7 @@ func TestBackgroundTick(t *testing.T) {
 			got = append(got, emitted{name, r})
 		}
 		return f, s, func() []emitted {
-			s.backgroundTick(context.Background(), emit)
+			s.backgroundTick(t.Context(), emit)
 			return got
 		}
 	}
@@ -45,10 +44,10 @@ func TestBackgroundTick(t *testing.T) {
 	})
 	t.Run("already staged", func(t *testing.T) {
 		f, s, tick := newTick(func() bool { return true })
-		if _, err := s.Check(context.Background()); err != nil {
+		if _, err := s.Check(t.Context()); err != nil {
 			t.Fatal(err)
 		}
-		if err := s.Install(context.Background()); err != nil {
+		if err := s.Install(t.Context()); err != nil {
 			t.Fatal(err)
 		}
 		f.downloaded = false

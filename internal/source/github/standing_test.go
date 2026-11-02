@@ -1,7 +1,6 @@
 package github
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -23,7 +22,7 @@ func TestStandingsFlagsArchivedRepositories(t *testing.T) {
 		}
 	}))
 	t.Cleanup(srv.Close)
-	got, err := (&Driver{URL: srv.URL}).Standings(context.Background(), "1", []string{"me/old", "me/live", "me/gone", "bad"})
+	got, err := (&Driver{URL: srv.URL}).Standings(t.Context(), "1", []string{"me/old", "me/live", "me/gone", "bad"})
 	if err != nil || len(got) != 1 || got["me/old"].State != "archived" {
 		t.Fatalf("%+v %v", got, err)
 	}
@@ -35,7 +34,7 @@ func TestStandingsStopsWhenGitHubIsBusy(t *testing.T) {
 		w.WriteHeader(http.StatusForbidden)
 	}))
 	t.Cleanup(srv.Close)
-	_, err := (&Driver{URL: srv.URL}).Standings(context.Background(), "1", []string{"me/a", "me/b"})
+	_, err := (&Driver{URL: srv.URL}).Standings(t.Context(), "1", []string{"me/a", "me/b"})
 	if !errors.Is(err, source.ErrBusy) {
 		t.Fatalf("err = %v, want busy", err)
 	}

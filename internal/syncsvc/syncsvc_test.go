@@ -72,7 +72,7 @@ func newMachine(t *testing.T, folder, name string, clock *time.Time) (*Service, 
 
 func scan(t *testing.T, s *Service) []Offer {
 	t.Helper()
-	offers, err := s.Scan(context.Background())
+	offers, err := s.Scan(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +89,7 @@ func shared1(t *testing.T, folder string) string {
 }
 
 func TestTwoMachinesOfferApplyAndConflict(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	folder := t.TempDir()
 	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	a, ma := newMachine(t, folder, "Desktop", &clock)
@@ -155,7 +155,7 @@ func TestSyncIsOffWithoutAFolder(t *testing.T) {
 }
 
 func TestResolveRefusesARevisionOtherThanTheOneShown(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	folder := t.TempDir()
 	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	a, ma := newMachine(t, folder, "Desktop", &clock)
@@ -186,7 +186,7 @@ func TestVersionFileAheadOfPayloadIsNotOfferedUntilItArrives(t *testing.T) {
 	scan(t, a)
 	scan(t, b)
 	offers0 := scan(t, b)
-	_ = b.Resolve(context.Background(), "stardew", "main", offers0[0].Revision, Theirs)
+	_ = b.Resolve(t.Context(), "stardew", "main", offers0[0].Revision, Theirs)
 	// A writes v2; the sync tool delivers the version file to B before the payload.
 	old, _ := safefs.ReadFile(filepath.Join(folder, "stardew", "main.mortar"))
 	ma.set("main", "v2")
@@ -195,7 +195,7 @@ func TestVersionFileAheadOfPayloadIsNotOfferedUntilItArrives(t *testing.T) {
 	if offers := scan(t, b); len(offers) != 0 {
 		t.Fatalf("offered before the payload arrived: %+v", offers)
 	}
-	if err := b.Resolve(context.Background(), "stardew", "main", "", Theirs); err == nil {
+	if err := b.Resolve(t.Context(), "stardew", "main", "", Theirs); err == nil {
 		t.Fatal("Resolve must wait for the payload")
 	}
 	// Payload v2 now arrives.
@@ -204,7 +204,7 @@ func TestVersionFileAheadOfPayloadIsNotOfferedUntilItArrives(t *testing.T) {
 	if len(offers) != 1 {
 		t.Fatalf("want the real v2 offered, got %d", len(offers))
 	}
-	if err := b.Resolve(context.Background(), "stardew", "main", offers[0].Revision, Theirs); err != nil || mb.profiles["local-Main"] != "v2" {
+	if err := b.Resolve(t.Context(), "stardew", "main", offers[0].Revision, Theirs); err != nil || mb.profiles["local-Main"] != "v2" {
 		t.Fatalf("B has %q, err %v", mb.profiles["local-Main"], err)
 	}
 }
@@ -219,7 +219,7 @@ func TestFailedApplyOfANewProfileLeavesNothingBehind(t *testing.T) {
 	scan(t, a)
 	offers := scan(t, b)
 	mb.applyErr = errors.New("offline")
-	if err := b.Resolve(context.Background(), "stardew", "main", offers[0].Revision, Theirs); err == nil {
+	if err := b.Resolve(t.Context(), "stardew", "main", offers[0].Revision, Theirs); err == nil {
 		t.Fatal("want the apply error")
 	}
 	if len(mb.profiles) != 0 {
@@ -258,7 +258,7 @@ func TestAVersionFileAheadOfItsPayloadShowsAsStalled(t *testing.T) {
 	copyFile(fa, fb, "main.mortar")
 	copyFile(fa, fb, "main.sync.json")
 	offers := scan(t, b)
-	if err := b.Resolve(context.Background(), "stardew", "main", offers[0].Revision, Theirs); err != nil {
+	if err := b.Resolve(t.Context(), "stardew", "main", offers[0].Revision, Theirs); err != nil {
 		t.Fatal(err)
 	}
 	ma.set("main", "a2")

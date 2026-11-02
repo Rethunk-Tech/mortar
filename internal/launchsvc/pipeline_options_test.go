@@ -3,7 +3,6 @@
 package launchsvc
 
 import (
-	"context"
 	"path/filepath"
 	"testing"
 
@@ -74,7 +73,7 @@ func TestSwapOptionsSeedsTheProfileAndReturnsThePlayersFile(t *testing.T) {
 	_, selected := svc.installs(g)
 	writeFile(t, target, "[options]\nModsDisabled = 1\n")
 	dep := &deployment{}
-	if err := svc.swapOptions(context.Background(), optionsGame, selected, pid, "", dep); err != nil {
+	if err := svc.swapOptions(t.Context(), optionsGame, selected, pid, "", dep); err != nil {
 		t.Fatal(err)
 	}
 	if dep.options == nil || dep.finish == nil {
@@ -85,7 +84,7 @@ func TestSwapOptionsSeedsTheProfileAndReturnsThePlayersFile(t *testing.T) {
 		t.Fatal("the first launch seeds the profile copy from the player's file")
 	}
 	writeFile(t, target, "[options]\nplayed = 1\n")
-	dep.unwind(context.Background())
+	dep.unwind(t.Context())
 	if testfs.Read(t, target) != "[options]\nModsDisabled = 1\n" {
 		t.Fatalf("the player's file after the launch = %q", testfs.Read(t, target))
 	}
@@ -99,7 +98,7 @@ func TestSwapOptionsAfterACrashIsRecoveredAtNextLaunchAndStart(t *testing.T) {
 	g := game.Find(optionsGame)
 	_, selected := svc.installs(g)
 	writeFile(t, target, "player")
-	if err := svc.swapOptions(context.Background(), optionsGame, selected, pid, "", &deployment{}); err != nil {
+	if err := svc.swapOptions(t.Context(), optionsGame, selected, pid, "", &deployment{}); err != nil {
 		t.Fatal(err)
 	}
 	dir, err := optionsJournal(selected.ID)
@@ -109,7 +108,7 @@ func TestSwapOptionsAfterACrashIsRecoveredAtNextLaunchAndStart(t *testing.T) {
 	if left := svc.LeftoverJournals(optionsGame); len(left) != 1 {
 		t.Fatalf("leftover journals = %v", left)
 	}
-	if found, err := svc.RecoverGameDeploys(context.Background(), optionsGame); err != nil || !found {
+	if found, err := svc.RecoverGameDeploys(t.Context(), optionsGame); err != nil || !found {
 		t.Fatalf("recover at start: %v %v", found, err)
 	}
 	if testfs.Read(t, target) != "player" || savesiso.HasFileJournal(dir) {
@@ -122,7 +121,7 @@ func TestSwapOptionsSkipsAGameWithoutTheRole(t *testing.T) {
 	g := game.Find("stardew")
 	_, selected := svc.installs(g)
 	dep := &deployment{}
-	if err := svc.swapOptions(context.Background(), "stardew", selected, p.ID, "", dep); err != nil || dep.options != nil {
+	if err := svc.swapOptions(t.Context(), "stardew", selected, p.ID, "", dep); err != nil || dep.options != nil {
 		t.Fatalf("a game without an options role was swapped: %v %+v", err, dep)
 	}
 }
@@ -134,14 +133,14 @@ func TestSwapOptionsEditModeChangesOnlyTheProfilesCopy(t *testing.T) {
 	_, selected := svc.installs(g)
 	writeFile(t, target, player)
 	dep := &deployment{}
-	if err := svc.swapOptions(context.Background(), optionsGame, selected, pid, "", dep); err != nil {
+	if err := svc.swapOptions(t.Context(), optionsGame, selected, pid, "", dep); err != nil {
 		t.Fatal(err)
 	}
 	want := "[options]\r\nModsDisabled = 0\r\nOther = 5\r\nScriptMods = 1\r\n"
 	if got := testfs.Read(t, target); got != want {
 		t.Fatalf("the game sees %q, want %q", got, want)
 	}
-	dep.unwind(context.Background())
+	dep.unwind(t.Context())
 	if got := testfs.Read(t, target); got != player {
 		t.Fatalf("the player's file changed: %q", got)
 	}
@@ -158,13 +157,13 @@ func TestSwapOptionsWarnModeLeavesTheBytesAlone(t *testing.T) {
 	_, selected := svc.installs(g)
 	writeFile(t, target, player)
 	dep := &deployment{}
-	if err := svc.swapOptions(context.Background(), optionsGame, selected, pid, "", dep); err != nil {
+	if err := svc.swapOptions(t.Context(), optionsGame, selected, pid, "", dep); err != nil {
 		t.Fatal(err)
 	}
 	if got := testfs.Read(t, target); got != player {
 		t.Fatalf("warn mode edited the file: %q", got)
 	}
-	dep.unwind(context.Background())
+	dep.unwind(t.Context())
 	if got := testfs.Read(t, dep.options.Profile); got != player {
 		t.Fatalf("profile copy = %q", got)
 	}
@@ -175,10 +174,10 @@ func TestPlanProfileListsPackagesThatOnlyTheLayoutPutsInTheProfile(t *testing.T)
 	g := game.Find(optionsGame)
 	_, selected := svc.installs(g)
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "m.zip"), map[string]string{"R/x.pkg": "x"})
-	if _, err := svc.profiles.InstallArchive(context.Background(), optionsGame, pid, zip); err != nil {
+	if _, err := svc.profiles.InstallArchive(t.Context(), optionsGame, pid, zip); err != nil {
 		t.Fatal(err)
 	}
-	plan, err := svc.planProfile(context.Background(), g, selected, pid, launchplan.ModeProfile, "", "", "")
+	plan, err := svc.planProfile(t.Context(), g, selected, pid, launchplan.ModeProfile, "", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -194,13 +193,13 @@ func TestSwapOptionsLeavesAFileMortarCannotEditAndStillLaunches(t *testing.T) {
 	_, selected := svc.installs(g)
 	writeFile(t, target, utf16)
 	dep := &deployment{}
-	if err := svc.swapOptions(context.Background(), optionsGame, selected, pid, "", dep); err != nil {
+	if err := svc.swapOptions(t.Context(), optionsGame, selected, pid, "", dep); err != nil {
 		t.Fatalf("a file Mortar cannot edit stopped the launch: %v", err)
 	}
 	if got := testfs.Read(t, target); got != utf16 {
 		t.Fatalf("the game's file was changed: %q", got)
 	}
-	dep.unwind(context.Background())
+	dep.unwind(t.Context())
 	if got := testfs.Read(t, target); got != utf16 || testfs.Read(t, dep.options.Profile) != utf16 {
 		t.Fatal("the player's file or the profile copy changed")
 	}

@@ -55,7 +55,7 @@ func TestExportModpackReimportsAsTheSamePackages(t *testing.T) {
 		t.Fatalf("result %+v", res)
 	}
 
-	pv, err := s.read(context.Background(), dest)
+	pv, err := s.read(t.Context(), dest)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +83,7 @@ func TestExportR2zReimportsAsTheSameModList(t *testing.T) {
 	if _, err := s.ExportR2z("lethal-company", "p1", dest); err != nil {
 		t.Fatal(err)
 	}
-	pv, err := s.read(context.Background(), dest)
+	pv, err := s.read(t.Context(), dest)
 	if err != nil {
 		t.Fatal(err)
 	}

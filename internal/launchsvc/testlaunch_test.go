@@ -18,7 +18,7 @@ func TestAStartIsLaunchingFromAcceptanceAndATestLaunchReportsItsFailure(t *testi
 		<-release
 		return errors.New("the game did not start in time")
 	}
-	if err := svc.Start(context.Background(), "stardew", p.ID, false); err != nil {
+	if err := svc.Start(t.Context(), "stardew", p.ID, false); err != nil {
 		t.Fatal(err)
 	}
 	if st, err := svc.Status("stardew"); err != nil || st.State != Launching {
@@ -34,7 +34,7 @@ func TestAStartIsLaunchingFromAcceptanceAndATestLaunchReportsItsFailure(t *testi
 	}
 
 	svc.EnsureLoader = func(context.Context, string, string, bool) error { return errors.New("the game did not start in time") }
-	res, err := svc.TestLaunch(context.Background(), "stardew", p.ID, "")
+	res, err := svc.TestLaunch(t.Context(), "stardew", p.ID, "")
 	if err == nil || res.ReachedTitle {
 		t.Fatalf("a failed start reported %+v, %v", res, err)
 	}
@@ -45,12 +45,12 @@ func TestATestLaunchWithFieldsIgnoresTheDefaultPreset(t *testing.T) {
 	if _, err := svc.profiles.SetLaunchPresets("stardew", p.ID, []profile.LaunchPreset{{ID: "d", Name: "Debug", LaunchOptions: "--from-preset"}}, "d"); err != nil {
 		t.Fatal(err)
 	}
-	ctx := context.WithValue(context.Background(), specKey{}, profile.LaunchSpec{Options: "--shown"})
+	ctx := context.WithValue(t.Context(), specKey{}, profile.LaunchSpec{Options: "--shown"})
 	spec, err := svc.launchSpec(ctx, "stardew", p.ID, "")
 	if err != nil || spec.Options != "--shown" {
 		t.Fatalf("spec = %+v, %v", spec, err)
 	}
-	if spec, err = svc.launchSpec(context.Background(), "stardew", p.ID, ""); err != nil || spec.Options != "--from-preset" {
+	if spec, err = svc.launchSpec(t.Context(), "stardew", p.ID, ""); err != nil || spec.Options != "--from-preset" {
 		t.Fatalf("without fields the default preset applies: %+v, %v", spec, err)
 	}
 }

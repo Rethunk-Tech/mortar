@@ -2,7 +2,6 @@ package sharesvc
 
 import (
 	"bytes"
-	"context"
 	"encoding/base64"
 	"path/filepath"
 	"slices"
@@ -65,17 +64,17 @@ func TestProblemChoicesTravelInAFileAndApplyOnImport(t *testing.T) {
 		return base64.RawStdEncoding.EncodeToString(buf.Bytes())
 	}
 
-	without, err := s.PreviewData(context.Background(), "stardew", send(share.Include{Notes: true}), "")
+	without, err := s.PreviewData(t.Context(), "stardew", send(share.Include{Notes: true}), "")
 	if err != nil || without.Choices != 0 {
 		t.Fatalf("a file sent without problem choices previews %d choices, %v", without.Choices, err)
 	}
 
 	encoded := send(share.OwnInclude())
-	pv, err := s.PreviewData(context.Background(), "stardew", encoded, "")
+	pv, err := s.PreviewData(t.Context(), "stardew", encoded, "")
 	if err != nil || pv.Choices != 2 {
 		t.Fatalf("preview choices = %d, %v; want the dismissal and the win", pv.Choices, err)
 	}
-	res, err := s.Import(context.Background(), "stardew", pv.Session, "", nil, false)
+	res, err := s.Import(t.Context(), "stardew", pv.Session, "", nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}

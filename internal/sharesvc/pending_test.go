@@ -1,7 +1,6 @@
 package sharesvc
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"slices"
@@ -243,7 +242,7 @@ func TestWantedFileItemMatchesGitHubAsset(t *testing.T) {
 // it downloaded.
 func TestSharedArrivalKeepsThePlayersReorder(t *testing.T) {
 	s, _ := newService(t, true)
-	ctx := context.Background()
+	ctx := t.Context()
 	prof, err := s.d.Profiles.Create("stardew", "Mine")
 	if err != nil {
 		t.Fatal(err)

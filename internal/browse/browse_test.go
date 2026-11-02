@@ -41,7 +41,7 @@ var (
 
 func TestSearchDispatchesBySourceWithCatalogKey(t *testing.T) {
 	c := &Client{Version: "v", Installed: func(src, id string) bool { return src == "fake" && id == "2" }}
-	page, err := c.search(context.Background(), catalog, " FAKE ", "text", 0, Filter{})
+	page, err := c.search(t.Context(), catalog, " FAKE ", "text", 0, Filter{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func TestSearchDispatchesBySourceWithCatalogKey(t *testing.T) {
 func TestSearchRefusesSourcesTheGameLacksOrCannotSearch(t *testing.T) {
 	c := &Client{}
 	for _, id := range []string{"nexus", "pageonly", "nope"} {
-		if _, err := c.search(context.Background(), catalog, id, "x", 1, Filter{}); !errors.Is(err, ErrUnknownSource) {
+		if _, err := c.search(t.Context(), catalog, id, "x", 1, Filter{}); !errors.Is(err, ErrUnknownSource) {
 			t.Fatalf("%s: got %v", id, err)
 		}
 	}
@@ -104,7 +104,7 @@ var (
 
 func TestSearchAllInterleavesAndNamesFailedSources(t *testing.T) {
 	game := components.GameInfo{ID: "m", Sources: []components.GameSource{{ID: "alpha"}, {ID: "beta"}, {ID: "broken"}}}
-	page, err := (&Client{}).searchAll(context.Background(), game, "x", 1, Filter{})
+	page, err := (&Client{}).searchAll(t.Context(), game, "x", 1, Filter{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,10 +118,10 @@ func TestSearchAllInterleavesAndNamesFailedSources(t *testing.T) {
 	if page.Total != 48 || page.Pages != 3 || fmt.Sprint(page.Failed) != "[broken]" {
 		t.Fatalf("page %+v", page)
 	}
-	if _, err := (&Client{}).searchAll(context.Background(), components.GameInfo{ID: "z", Sources: []components.GameSource{{ID: "broken"}}}, "x", 1, Filter{}); err == nil {
+	if _, err := (&Client{}).searchAll(t.Context(), components.GameInfo{ID: "z", Sources: []components.GameSource{{ID: "broken"}}}, "x", 1, Filter{}); err == nil {
 		t.Fatal("all sources failing must be an error")
 	}
-	off, err := (&Client{Off: []string{"alpha", "broken"}}).searchAll(context.Background(), game, "x", 1, Filter{})
+	off, err := (&Client{Off: []string{"alpha", "broken"}}).searchAll(t.Context(), game, "x", 1, Filter{})
 	if err != nil || len(off.Items) != 1 || off.Items[0].ID != "b1" || len(off.Failed) != 0 {
 		t.Fatalf("sources turned off are still searched: %+v %v", off, err)
 	}
@@ -147,7 +147,7 @@ func TestAdultHitsAreDroppedUnlessOptedIn(t *testing.T) {
 		show       bool
 		items, tot int
 	}{{false, 2, 29}, {true, 3, 30}} {
-		page, err := (&Client{ShowAdult: tc.show}).search(context.Background(), g, "adultsrc", "", 1, Filter{})
+		page, err := (&Client{ShowAdult: tc.show}).search(t.Context(), g, "adultsrc", "", 1, Filter{})
 		if err != nil || len(page.Items) != tc.items || page.Total != tc.tot {
 			t.Fatalf("show=%v: %+v %v", tc.show, page, err)
 		}
@@ -159,7 +159,7 @@ func TestEmptySearchListsTopModsAndIsCached(t *testing.T) {
 	fake.calls = 0
 	topCache = map[string]topEntry{"expired": {}}
 	for range 3 {
-		if _, err := c.search(context.Background(), catalog, "fake", "", 1, Filter{}); err != nil {
+		if _, err := c.search(t.Context(), catalog, "fake", "", 1, Filter{}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -169,7 +169,7 @@ func TestEmptySearchListsTopModsAndIsCached(t *testing.T) {
 	if _, kept := topCache["expired"]; kept {
 		t.Fatal("an expired top answer survived an insert")
 	}
-	if _, err := c.search(context.Background(), catalog, "fake", "x", 1, Filter{}); err != nil || fake.calls != 2 {
+	if _, err := c.search(t.Context(), catalog, "fake", "x", 1, Filter{}); err != nil || fake.calls != 2 {
 		t.Fatalf("a text search must not be cached: calls %d err %v", fake.calls, err)
 	}
 }
@@ -196,14 +196,14 @@ var (
 func TestFilterReachesSourcesAndIncludeSkipsSourcesWithoutCategories(t *testing.T) {
 	game := components.GameInfo{ID: "cf", Sources: []components.GameSource{{ID: "alpha"}, {ID: "catsrc", Key: "k"}}}
 	f := Filter{Include: []string{"Maps"}, Exclude: []string{"x"}, Sort: source.SortName}
-	page, err := (&Client{}).searchAll(context.Background(), game, "q", 1, f)
+	page, err := (&Client{}).searchAll(t.Context(), game, "q", 1, f)
 	if err != nil || len(page.Items) != 1 || page.Items[0].Source != "catsrc" {
 		t.Fatalf("include must leave only the categorized source: %+v %v", page, err)
 	}
 	if fmt.Sprintf("%v %v %s", cat.got.Categories, cat.got.ExcludeCategories, cat.got.Sort) != "[Maps] [x] name" {
 		t.Fatalf("query %+v", cat.got)
 	}
-	page, err = (&Client{}).searchAll(context.Background(), game, "q", 1, Filter{Exclude: []string{"x"}})
+	page, err = (&Client{}).searchAll(t.Context(), game, "q", 1, Filter{Exclude: []string{"x"}})
 	if err != nil || len(page.Items) < 2 {
 		t.Fatalf("exclude-only keeps every source: %+v %v", page, err)
 	}
@@ -219,11 +219,11 @@ func (*lockedCats) Categories(context.Context, string) ([]string, error) {
 func TestCategoriesSayWhyOnlyWhenNoSourceGaveAny(t *testing.T) {
 	game := components.GameInfo{ID: "why", Sources: []components.GameSource{{ID: "lockedcats"}, {ID: "catsrc"}}}
 	locked := &lockedCats{}
-	names, err := categoriesOf(context.Background(), game, []source.Source{locked, cat})
+	names, err := categoriesOf(t.Context(), game, []source.Source{locked, cat})
 	if err != nil || len(names) != 2 {
 		t.Fatalf("one source answering is enough: %v %v", names, err)
 	}
-	if _, err := categoriesOf(context.Background(), game, []source.Source{locked}); err == nil || !strings.Contains(err.Error(), "keyring is locked") {
+	if _, err := categoriesOf(t.Context(), game, []source.Source{locked}); err == nil || !strings.Contains(err.Error(), "keyring is locked") {
 		t.Fatalf("err = %v, want the failing source's reason", err)
 	}
 }
@@ -237,7 +237,7 @@ func (*signedOutCats) Categories(context.Context, string) ([]string, error) {
 
 func TestCategoriesOfASignedOutSourceAreNoneAndNoError(t *testing.T) {
 	game := components.GameInfo{ID: "signedout", Sources: []components.GameSource{{ID: "signedoutcats"}}}
-	names, err := categoriesOf(context.Background(), game, []source.Source{&signedOutCats{}})
+	names, err := categoriesOf(t.Context(), game, []source.Source{&signedOutCats{}})
 	if err != nil || len(names) != 0 {
 		t.Fatalf("signed out must read as no categories: %v %v", names, err)
 	}
@@ -250,7 +250,7 @@ func (*gatedCats) Unavailable() string { return "this build has no API key" }
 
 func TestCategoriesSkipASourceBrowseShowsAsUnavailable(t *testing.T) {
 	game := components.GameInfo{ID: "gated", Sources: []components.GameSource{{ID: "gatedcats"}}}
-	names, err := categoriesOf(context.Background(), game, []source.Source{&gatedCats{}})
+	names, err := categoriesOf(t.Context(), game, []source.Source{&gatedCats{}})
 	if err != nil || len(names) != 0 {
 		t.Fatalf("an unavailable source was asked: %v %v", names, err)
 	}
@@ -296,7 +296,7 @@ func TestHiddenHitsDoNotShortenAPage(t *testing.T) {
 		topCache = map[string]topEntry{}
 		var ids []string
 		for p := 1; p <= 3; p++ {
-			page, err := tc.c.search(context.Background(), g, "bigsrc", "x", p, tc.f)
+			page, err := tc.c.search(t.Context(), g, "bigsrc", "x", p, tc.f)
 			if err != nil || len(page.Items) != source.PageSize {
 				t.Fatalf("%s, page %d: %d items, %+v, %v", name, p, len(page.Items), page, err)
 			}
@@ -326,18 +326,18 @@ var _ = source.Register(partialSource{id: "partial"})
 func TestAPartlyFailedSourceNamesItsFailedPartsInEverySearchShape(t *testing.T) {
 	one := components.GameInfo{ID: "m", Sources: []components.GameSource{{ID: "partial"}}}
 	for name, f := range map[string]Filter{"plain": {}, "filtered": {Installed: ModeHide}} {
-		page, err := (&Client{}).search(context.Background(), one, "partial", "x", 1, f)
+		page, err := (&Client{}).search(t.Context(), one, "partial", "x", 1, f)
 		if err != nil || fmt.Sprint(page.Failed) != "[Partial site (Create a Sim)]" {
 			t.Fatalf("%s: %+v %v", name, page, err)
 		}
 	}
 	all := components.GameInfo{ID: "m", Sources: []components.GameSource{{ID: "partial"}, {ID: "broken"}}}
-	page, err := (&Client{}).searchAll(context.Background(), all, "x", 1, Filter{})
+	page, err := (&Client{}).searchAll(t.Context(), all, "x", 1, Filter{})
 	if err != nil || fmt.Sprint(page.Failed) != "[Partial site (Create a Sim) broken]" {
 		t.Fatalf("all: %+v %v", page, err)
 	}
 	topCache = map[string]topEntry{}
-	topPage, err := searchCached(context.Background(), "partial", partialSource{id: "partial"}, source.Query{Game: "m", Key: "k", Page: 1})
+	topPage, err := searchCached(t.Context(), "partial", partialSource{id: "partial"}, source.Query{Game: "m", Key: "k", Page: 1})
 	if err != nil || len(topPage.Failed) != 1 {
 		t.Fatalf("%+v %v", topPage, err)
 	}
@@ -348,7 +348,7 @@ func TestAPartlyFailedSourceNamesItsFailedPartsInEverySearchShape(t *testing.T) 
 
 func TestHiddenHitsAreDroppedAndNotCounted(t *testing.T) {
 	c := &Client{Hidden: func(it Item) bool { return it.Source == "fake" && it.ID == "1" }}
-	page, err := c.search(context.Background(), catalog, "fake", "", 1, Filter{})
+	page, err := c.search(t.Context(), catalog, "fake", "", 1, Filter{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -384,7 +384,7 @@ func TestHitsDroppedFromPageOneDoNotEndTheSearchBeforeTheLastUpstreamPage(t *tes
 	topCache = map[string]topEntry{}
 	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "src21"}}}
 	c := &Client{Hidden: func(it Item) bool { return it.ID == "0" }}
-	page, err := c.search(context.Background(), g, "src21", "x", 1, Filter{})
+	page, err := c.search(t.Context(), g, "src21", "x", 1, Filter{})
 	if err != nil || len(page.Items) != 20 || page.Items[19].ID != "20" {
 		t.Fatalf("the 21st upstream hit must fill page 1: %d items, %v", len(page.Items), err)
 	}
@@ -404,7 +404,7 @@ var _ = source.Register(excludingSource{})
 func TestHitsASourceLeftOutForExcludedCategoriesStayCountedAsHidden(t *testing.T) {
 	topCache = map[string]topEntry{}
 	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "excluding"}}}
-	page, err := (&Client{}).search(context.Background(), g, "excluding", "", 1, Filter{Exclude: []string{"Maps"}})
+	page, err := (&Client{}).search(t.Context(), g, "excluding", "", 1, Filter{Exclude: []string{"Maps"}})
 	if err != nil || page.Hidden != 2 {
 		t.Fatalf("hidden = %d, %v", page.Hidden, err)
 	}
@@ -453,7 +453,7 @@ func TestPagesPastTheScanLimitOfABigSourceAreFull(t *testing.T) {
 	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "deep"}}}
 	c := &Client{Hidden: func(it Item) bool { return it.ID == "3" }}
 	for p := 1; p <= 12; p++ {
-		page, err := c.search(context.Background(), g, "deep", "", p, Filter{})
+		page, err := c.search(t.Context(), g, "deep", "", p, Filter{})
 		if err != nil || len(page.Items) != source.PageSize {
 			t.Fatalf("page %d: %d items, %v", p, len(page.Items), err)
 		}
@@ -462,7 +462,7 @@ func TestPagesPastTheScanLimitOfABigSourceAreFull(t *testing.T) {
 			t.Fatalf("page %d starts at %s, want %s", p, page.Items[0].ID, want)
 		}
 	}
-	page, err := c.search(context.Background(), g, "deep", "", 2000, Filter{})
+	page, err := c.search(t.Context(), g, "deep", "", 2000, Filter{})
 	if err != nil || len(page.Items) != source.PageSize || page.Total != 40000 {
 		t.Fatalf("page 2000: %d items, total %d, %v", len(page.Items), page.Total, err)
 	}
@@ -471,11 +471,11 @@ func TestPagesPastTheScanLimitOfABigSourceAreFull(t *testing.T) {
 func TestALimitOnlySourceOffersPageThree(t *testing.T) {
 	freshBrowse()
 	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "limitonly"}}}
-	page, err := (&Client{}).search(context.Background(), g, "limitonly", "", 2, Filter{})
+	page, err := (&Client{}).search(t.Context(), g, "limitonly", "", 2, Filter{})
 	if err != nil || page.Total <= 2*source.PageSize {
 		t.Fatalf("page 2 total %d offers no page 3, %v", page.Total, err)
 	}
-	page, err = (&Client{}).search(context.Background(), g, "limitonly", "", 3, Filter{})
+	page, err = (&Client{}).search(t.Context(), g, "limitonly", "", 3, Filter{})
 	if err != nil || len(page.Items) != source.PageSize || page.Items[0].ID != "40" {
 		t.Fatalf("page 3: %+v, %v", page.Items, err)
 	}
@@ -485,8 +485,8 @@ func TestAFixedTotalSourceCountsTheSamePagesOnEveryPage(t *testing.T) {
 	freshBrowse()
 	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "bigsrc"}}}
 	c := &Client{Hidden: func(it Item) bool { n, _ := strconv.Atoi(it.ID); return n%2 != 0 }}
-	one, err1 := c.search(context.Background(), g, "bigsrc", "", 1, Filter{})
-	three, err3 := c.search(context.Background(), g, "bigsrc", "", 3, Filter{})
+	one, err1 := c.search(t.Context(), g, "bigsrc", "", 1, Filter{})
+	three, err3 := c.search(t.Context(), g, "bigsrc", "", 3, Filter{})
 	if err1 != nil || err3 != nil || one.Total != three.Total {
 		t.Fatalf("totals %d and %d, %v %v", one.Total, three.Total, err1, err3)
 	}
@@ -496,7 +496,7 @@ func TestTheSourcePageCacheKeepsAtMostItsCap(t *testing.T) {
 	freshBrowse()
 	s := numberedSource{id: "deep", real: 40000}
 	for p := 1; p <= topCap+10; p++ {
-		if _, err := searchCached(context.Background(), "deep", s, source.Query{Game: "g", Page: p}); err != nil {
+		if _, err := searchCached(t.Context(), "deep", s, source.Query{Game: "g", Page: p}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -531,7 +531,7 @@ func TestAPageAskedBeforeThePageBeforeItStartsWhereThatPageEnds(t *testing.T) {
 	cursors = map[string]cursorEntry{}
 	c := &Client{ShowAdult: true, Hidden: func(it Item) bool { return it.ID == "0" }}
 	pageIDs := func(p int) []string {
-		page, err := c.search(context.Background(), g, "hugesrc", "", p, Filter{})
+		page, err := c.search(t.Context(), g, "hugesrc", "", p, Filter{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -565,13 +565,13 @@ func TestSourcesOffNeverTurnsEveryAvailableSourceOff(t *testing.T) {
 func TestForgetMakesTheNextSearchReadTheSourceAgain(t *testing.T) {
 	c := &Client{}
 	for range 2 {
-		if _, err := c.search(context.Background(), catalog, "fake", "again", 1, Filter{}); err != nil {
+		if _, err := c.search(t.Context(), catalog, "fake", "again", 1, Filter{}); err != nil {
 			t.Fatal(err)
 		}
 	}
 	before := fake.calls
 	Forget("fake")
-	if _, err := c.search(context.Background(), catalog, "fake", "again", 1, Filter{}); err != nil || fake.calls != before+1 {
+	if _, err := c.search(t.Context(), catalog, "fake", "again", 1, Filter{}); err != nil || fake.calls != before+1 {
 		t.Fatalf("calls %d after forgetting, want %d: %v", fake.calls, before+1, err)
 	}
 }
@@ -591,16 +591,16 @@ func TestRefreshDropsTheGamesPagesAndRebuildsStoredListings(t *testing.T) {
 	source.Register(r)
 	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "fake", Key: "gkey"}, {ID: "refreshable", Key: "rkey"}}}
 	c := &Client{}
-	if _, err := c.search(context.Background(), g, "fake", "refresh", 1, Filter{}); err != nil {
+	if _, err := c.search(t.Context(), g, "fake", "refresh", 1, Filter{}); err != nil {
 		t.Fatal(err)
 	}
 	before := fake.calls
 	forgetGame("other")
-	if _, err := c.search(context.Background(), g, "fake", "refresh", 1, Filter{}); err != nil || fake.calls != before {
+	if _, err := c.search(t.Context(), g, "fake", "refresh", 1, Filter{}); err != nil || fake.calls != before {
 		t.Fatalf("another game's refresh dropped this game's page: %d calls, want %d", fake.calls, before)
 	}
 	refreshGame(g, "v")
-	if _, err := c.search(context.Background(), g, "fake", "refresh", 1, Filter{}); err != nil || fake.calls != before+1 {
+	if _, err := c.search(t.Context(), g, "fake", "refresh", 1, Filter{}); err != nil || fake.calls != before+1 {
 		t.Fatalf("calls %d after the game's refresh, want %d: %v", fake.calls, before+1, err)
 	}
 	if fmt.Sprint(r.keys) != "[rkey]" {

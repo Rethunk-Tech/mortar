@@ -1,7 +1,6 @@
 package itch
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -44,18 +43,18 @@ func fake(t *testing.T) Driver {
 func TestSearchAndResolve(t *testing.T) {
 	t.Parallel()
 	d := fake(t)
-	page, err := d.Search(context.Background(), source.Query{Key: "stardew", Text: "cool", Page: 1})
+	page, err := d.Search(t.Context(), source.Query{Key: "stardew", Text: "cool", Page: 1})
 	if err != nil || len(page.Items) != 1 || page.Items[0].ID != "7" || page.Items[0].Author != "a" || page.Total != 1 {
 		t.Fatalf("%+v %v", page, err)
 	}
-	if next, err := d.Search(context.Background(), source.Query{Key: "stardew", Text: "cool", Page: 2}); err != nil || len(next.Items) != 0 {
+	if next, err := d.Search(t.Context(), source.Query{Key: "stardew", Text: "cool", Page: 2}); err != nil || len(next.Items) != 0 {
 		t.Fatalf("itch.io answers every hit on page 1; page 2 = %+v %v", next, err)
 	}
-	r, err := d.Resolve(context.Background(), "7", "")
+	r, err := d.Resolve(t.Context(), "7", "")
 	if err != nil || r.UploadID != "2" || r.URL != "https://cdn/cool.zip" || r.Size != 9 {
 		t.Fatalf("%+v %v", r, err)
 	}
-	if _, err := d.Resolve(context.Background(), "7", "nope.zip"); err == nil {
+	if _, err := d.Resolve(t.Context(), "7", "nope.zip"); err == nil {
 		t.Fatal("unknown upload resolved")
 	}
 	if d.ModPageURL("", "7") != "https://itch.io/games/7" {
@@ -66,17 +65,17 @@ func TestSearchAndResolve(t *testing.T) {
 func TestKeyHandling(t *testing.T) {
 	t.Parallel()
 	d := fake(t)
-	if name, err := d.Validate(context.Background(), " k1 "); err != nil || name != "farmer" {
+	if name, err := d.Validate(t.Context(), " k1 "); err != nil || name != "farmer" {
 		t.Fatalf("%q %v", name, err)
 	}
-	if _, err := d.Validate(context.Background(), "bad"); !errors.Is(err, ErrBadKey) {
+	if _, err := d.Validate(t.Context(), "bad"); !errors.Is(err, ErrBadKey) {
 		t.Fatalf("bad key: %v", err)
 	}
 	none := Driver{Key: func() (string, error) { return " ", nil }}
 	if none.Unavailable() != "needs an itch.io API key" || d.Unavailable() != "" {
 		t.Fatal("unavailable text")
 	}
-	if _, err := none.Search(context.Background(), source.Query{Key: "x"}); !errors.Is(err, ErrNeedsKey) {
+	if _, err := none.Search(t.Context(), source.Query{Key: "x"}); !errors.Is(err, ErrNeedsKey) {
 		t.Fatalf("search without key: %v", err)
 	}
 }
@@ -89,7 +88,7 @@ func TestOtherStatusIsReportedNotParsed(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	d := Driver{URL: srv.URL, Key: func() (string, error) { return "k1", nil }}
-	_, err := d.Search(context.Background(), source.Query{Key: "k", Text: "x"})
+	_, err := d.Search(t.Context(), source.Query{Key: "k", Text: "x"})
 	if se, ok := errors.AsType[*source.StatusError](err); !ok || se.Code != http.StatusBadGateway {
 		t.Fatalf("err = %v, want the 502 as a status error", err)
 	}

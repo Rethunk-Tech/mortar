@@ -1,7 +1,6 @@
 package vsmoddb
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -40,7 +39,7 @@ func fake(t *testing.T) Driver {
 
 func TestSearchKeepsTheLastPageOfTheLimitAndDropsExcludedTags(t *testing.T) {
 	d := fake(t)
-	first, err := d.Search(context.Background(), source.Query{Page: source.FirstPage, ExcludeCategories: []string{"library"}})
+	first, err := d.Search(t.Context(), source.Query{Page: source.FirstPage, ExcludeCategories: []string{"library"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +47,7 @@ func TestSearchKeepsTheLastPageOfTheLimitAndDropsExcludedTags(t *testing.T) {
 	if first.Total != source.PageSize+1 || first.Hidden != 1 || first.Items[0].URL != siteURL+"/bee" || first.Items[0].Endorsements != 7 {
 		t.Fatalf("first page = %+v", first)
 	}
-	second, err := d.Search(context.Background(), source.Query{Page: source.FirstPage + 1, Text: "b"})
+	second, err := d.Search(t.Context(), source.Query{Page: source.FirstPage + 1, Text: "b"})
 	if err != nil || len(second.Items) != source.PageSize || second.Items[0].ID != "2-22" {
 		t.Fatalf("second page = %+v, %v", second, err)
 	}
@@ -57,15 +56,15 @@ func TestSearchKeepsTheLastPageOfTheLimitAndDropsExcludedTags(t *testing.T) {
 func TestResolvePrefersTheNewestStableReleaseAndMatchesAReleaseID(t *testing.T) {
 	d := fake(t)
 	for _, tc := range []struct{ version, want string }{{"", "1.14.3"}, {"3", "2.0.0-rc.1"}, {"1.14.3", "1.14.3"}} {
-		r, err := d.Resolve(context.Background(), "890-4405", tc.version)
+		r, err := d.Resolve(t.Context(), "890-4405", tc.version)
 		if err != nil || r.Version != tc.want || r.ID != "890-4405" {
 			t.Fatalf("Resolve(%q) = %+v, %v", tc.version, r, err)
 		}
 	}
-	if _, err := d.Resolve(context.Background(), "890", "9.9"); err == nil {
+	if _, err := d.Resolve(t.Context(), "890", "9.9"); err == nil {
 		t.Fatal("a release the mod lacks resolved")
 	}
-	items, err := d.Items(context.Background(), "", "", []string{"890-4405", "nope"})
+	items, err := d.Items(t.Context(), "", "", []string{"890-4405", "nope"})
 	if err != nil || items["890-4405"].Version != "1.14.3" || len(items) != 1 {
 		t.Fatalf("items = %+v, %v", items, err)
 	}
@@ -78,12 +77,12 @@ func TestCategoriesHandsOutACopyOfTheCachedTags(t *testing.T) {
 	tags.Lock()
 	tags.ids, tags.names = map[string]string{"library": "1"}, []string{"Library"}
 	tags.Unlock()
-	got, err := Driver{}.Categories(context.Background(), "")
+	got, err := Driver{}.Categories(t.Context(), "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	got[0] = "changed"
-	if again, _ := (Driver{}).Categories(context.Background(), ""); again[0] != "Library" {
+	if again, _ := (Driver{}).Categories(t.Context(), ""); again[0] != "Library" {
 		t.Fatalf("the cache changed: %v", again)
 	}
 }
@@ -92,7 +91,7 @@ func TestSearchOfAnUnknownCategoryIsEmpty(t *testing.T) {
 	tags.Lock()
 	tags.ids, tags.names = map[string]string{"library": "1"}, []string{"Library"}
 	tags.Unlock()
-	got, err := fake(t).Search(context.Background(), source.Query{Page: source.FirstPage, Categories: []string{"nope"}})
+	got, err := fake(t).Search(t.Context(), source.Query{Page: source.FirstPage, Categories: []string{"nope"}})
 	if err != nil || len(got.Items) != 0 || got.Total != 0 {
 		t.Fatalf("page = %+v, %v", got, err)
 	}

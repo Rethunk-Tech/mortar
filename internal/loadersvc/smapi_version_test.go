@@ -55,7 +55,7 @@ func TestEnsureHonoursPin(t *testing.T) {
 	if applyErr != nil {
 		t.Fatal(applyErr)
 	}
-	if _, err := svc.Ensure(context.Background(), "stardew", "", false); err != nil {
+	if _, err := svc.Ensure(t.Context(), "stardew", "", false); err != nil {
 		t.Fatal(err)
 	}
 	if fake.installed != "4.0.0" {
@@ -71,7 +71,7 @@ func TestInstallVersionUsesCache(t *testing.T) {
 	if err := svc.items.AddLoaderDir(t.Context(), "stardew", store.LoaderKey("smapi", "4.0.0"), dir); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := svc.InstallVersion(context.Background(), "stardew", "", "4.0.0"); err != nil {
+	if _, err := svc.InstallVersion(t.Context(), "stardew", "", "4.0.0"); err != nil {
 		t.Fatal(err)
 	}
 	if fake.downloads != 1 {
@@ -81,7 +81,7 @@ func TestInstallVersionUsesCache(t *testing.T) {
 
 func TestInstallVersionUnknown(t *testing.T) {
 	svc, _ := testServiceWithReleases(t, []string{"4.1.0"})
-	_, err := svc.InstallVersion(context.Background(), "stardew", "", "9.9.9")
+	_, err := svc.InstallVersion(t.Context(), "stardew", "", "9.9.9")
 	if !errors.Is(err, errUnknownVersion) {
 		t.Fatalf("err = %v, want unknown SMAPI", err)
 	}
@@ -102,7 +102,7 @@ func TestInstallVersionReplacesASharedSMAPI(t *testing.T) {
 	if err := os.Symlink(filepath.Join(staging, "StardewModdingAPI.dll"), filepath.Join(folder, "StardewModdingAPI.dll")); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := svc.InstallVersion(context.Background(), "stardew", "", "4.0.0"); err != nil {
+	if _, err := svc.InstallVersion(t.Context(), "stardew", "", "4.0.0"); err != nil {
 		t.Fatal(err)
 	}
 	if fake.downloads != 1 {
@@ -122,7 +122,7 @@ func TestListVersionsReusesTheReleaseListUntilItGoesStale(t *testing.T) {
 	}
 	list := func() []string {
 		t.Helper()
-		got, err := svc.ListVersions(context.Background(), "stardew", "smapi")
+		got, err := svc.ListVersions(t.Context(), "stardew", "smapi")
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -1,7 +1,6 @@
 package modio
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -58,7 +57,7 @@ func fake(t *testing.T) Driver {
 
 func TestSearch(t *testing.T) {
 	t.Parallel()
-	page, err := fake(t).Search(context.Background(), source.Query{
+	page, err := fake(t).Search(t.Context(), source.Query{
 		Key: "3659", Text: "timber", Page: 2, Size: 50, Sort: source.SortDownloads,
 		Categories: []string{"Mod"}, ExcludeCategories: []string{"Map"},
 	})
@@ -80,7 +79,7 @@ func TestSearch(t *testing.T) {
 func TestDetailsResolveAndLatest(t *testing.T) {
 	t.Parallel()
 	d := fake(t)
-	ctx := context.Background()
+	ctx := t.Context()
 	det, err := d.Details(ctx, "3659", "42", "")
 	if err != nil || det.Description != "Hello **you**" || det.Changelog != "fixed" || len(det.Versions) != 2 || det.Versions[1] != "7" ||
 		len(det.Dependencies) != 1 || det.Dependencies[0] != "Harmony" || det.Categories[0] != "Mod" {
@@ -108,20 +107,20 @@ func TestDetailsResolveAndLatest(t *testing.T) {
 func TestTokenAndGameKey(t *testing.T) {
 	t.Parallel()
 	d := fake(t)
-	if name, err := d.Validate(context.Background(), "tok"); err != nil || name != "nomad" {
+	if name, err := d.Validate(t.Context(), "tok"); err != nil || name != "nomad" {
 		t.Fatalf("%q %v", name, err)
 	}
-	if _, err := d.Validate(context.Background(), "revoked"); !errors.Is(err, ErrBadToken) {
+	if _, err := d.Validate(t.Context(), "revoked"); !errors.Is(err, ErrBadToken) {
 		t.Fatalf("revoked token: %v", err)
 	}
 	none := Driver{URL: d.URL, Token: func() (string, error) { return "", secret.ErrNotFound }}
 	if none.Unavailable() == "" {
 		t.Fatal("no token but available")
 	}
-	if _, err := none.Search(context.Background(), source.Query{Key: "3659"}); !errors.Is(err, ErrNeedsToken) {
+	if _, err := none.Search(t.Context(), source.Query{Key: "3659"}); !errors.Is(err, ErrNeedsToken) {
 		t.Fatalf("search without token: %v", err)
 	}
-	if _, err := (Driver{Token: d.Token}).Search(context.Background(), source.Query{Key: "evil.host/x"}); err == nil {
+	if _, err := (Driver{Token: d.Token}).Search(t.Context(), source.Query{Key: "evil.host/x"}); err == nil {
 		t.Fatal("a non-numeric game key reached the address")
 	}
 }

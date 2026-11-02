@@ -1,7 +1,6 @@
 package nexussvc
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -69,7 +68,7 @@ func TestTrackedMissingFiltersDomainAndProfileMods(t *testing.T) {
 	}
 	s := NewService(store, c, &meta.Client{})
 	s.Profiles = profiles
-	ctx := context.Background()
+	ctx := t.Context()
 	if _, err := s.SignIn(ctx, "k"); err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +90,7 @@ func TestTrackedMissingIsEmptyWhenTheKeyIsGone(t *testing.T) {
 	if _, err := Authed(store, nexusmods.New("Mortar", "1")); !errors.Is(err, ErrSignedOut) {
 		t.Fatalf("a remembered account without a stored key is signed out: %v", err)
 	}
-	missing, err := s.TrackedMissing(context.Background(), "stardew", "any")
+	missing, err := s.TrackedMissing(t.Context(), "stardew", "any")
 	if err != nil || len(missing) != 0 {
 		t.Fatalf("signed out lists nothing and is not an error: %v %v", missing, err)
 	}

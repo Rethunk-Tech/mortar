@@ -2,7 +2,6 @@ package packsvc
 
 import (
 	"archive/zip"
-	"context"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -67,10 +66,10 @@ func TestRestoreOnAnotherComputerQueuesTheModsFromTheirSources(t *testing.T) {
 	freshItems, fresh := testenv.Stores(t)
 	q := &fakeQueue{}
 	s := &Service{Profiles: fresh, Queue: q}
-	if _, err := s.Restore(context.Background(), dest, "lethal-company"); err == nil {
+	if _, err := s.Restore(t.Context(), dest, "lethal-company"); err == nil {
 		t.Fatal("a backup of another game's profile must be refused")
 	}
-	res, err := s.Restore(context.Background(), dest, "")
+	res, err := s.Restore(t.Context(), dest, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -148,7 +147,7 @@ func TestBackupWithModsRestoresOffline(t *testing.T) {
 		dataHome(t)
 		freshItems, fresh := testenv.Stores(t)
 		q := &fakeQueue{}
-		res, err := (&Service{Profiles: fresh, Queue: q}).Restore(context.Background(), path, "")
+		res, err := (&Service{Profiles: fresh, Queue: q}).Restore(t.Context(), path, "")
 		if err != nil || res.Queued != queued || len(res.Unavailable) != 0 {
 			t.Fatalf("%s: %+v, %v", path, res, err)
 		}
@@ -178,7 +177,7 @@ func TestBackupOfAFolderGameProfileCarriesTheSplitArchiveOnceAndReplacesTray(t *
 	_, fresh := testenv.Stores(t)
 	freshTray := filepath.Join(t.TempDir(), "Tray")
 	fresh.TrayFolder = func(string, string) (string, error) { return freshTray, nil }
-	res, err := (&Service{Profiles: fresh, Queue: &fakeQueue{}}).Restore(context.Background(), dest, "")
+	res, err := (&Service{Profiles: fresh, Queue: &fakeQueue{}}).Restore(t.Context(), dest, "")
 	if err != nil {
 		t.Fatal(err)
 	}

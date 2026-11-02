@@ -1,7 +1,6 @@
 package sharesvc
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"slices"
@@ -49,14 +48,14 @@ func TestExternalImportWritesEachModsOwnConfigWithinTheCap(t *testing.T) {
 		{ID: "smapi:Me.A", SourcePath: filepath.Join(src, "A"), Enabled: true, Config: []byte(`"profile"`)},
 		{ID: "smapi:Me.B", SourcePath: filepath.Join(src, "B"), Enabled: true, Config: big},
 	}}
-	pv, err := s.PreviewExternal(context.Background(), "stardew", external, "")
+	pv, err := s.PreviewExternal(t.Context(), "stardew", external, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if pv.Settings != 1 || !slices.Equal(pv.SkippedSettings, []string{"Me.B/config.json"}) {
 		t.Fatalf("settings = %d, skipped = %v", pv.Settings, pv.SkippedSettings)
 	}
-	res, err := s.Import(context.Background(), "stardew", pv.Session, "", nil, false)
+	res, err := s.Import(t.Context(), "stardew", pv.Session, "", nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,7 +1,6 @@
 package meta
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -22,8 +21,8 @@ func TestCheckUpdatesAsksAgainAfterAnotherBuildCached(t *testing.T) {
 	t.Cleanup(srv.Close)
 	c := &Client{HTTP: srv.Client(), CacheDir: t.TempDir(), UpdatesURL: srv.URL}
 	req := UpdateRequest{Mods: []smapiweb.InstalledMod{{ID: "A.Mod", Version: "1.0.0"}}}
-	c.CheckUpdates(context.Background(), req)
-	c.CheckUpdates(context.Background(), req)
+	c.CheckUpdates(t.Context(), req)
+	c.CheckUpdates(t.Context(), req)
 	if n := asked.Load(); n != 1 {
 		t.Fatalf("this build's cache answers the second check: asked %d times", n)
 	}
@@ -38,7 +37,7 @@ func TestCheckUpdatesAsksAgainAfterAnotherBuildCached(t *testing.T) {
 		cached.Value[k] = v
 	}
 	_ = diskcache.PutEntry(cache, updatesFile, cached)
-	c.CheckUpdates(context.Background(), req)
+	c.CheckUpdates(t.Context(), req)
 	if n := asked.Load(); n != 2 {
 		t.Fatalf("another build's cache is asked again: asked %d times", n)
 	}
@@ -51,7 +50,7 @@ func TestCheckUpdatesAsksAgainAfterAnotherBuildCached(t *testing.T) {
 	other := smapiweb.InstalledMod{ID: "B.Mod", Version: "2.0.0"}
 	cached.Value[req.key(other)] = diskcache.Entry[smapiweb.UpdateResult]{Fetched: time.Now(), Value: smapiweb.UpdateResult{ID: "B.Mod", Known: true}, Stamp: "another-build"}
 	_ = diskcache.PutEntry(cache, updatesFile, cached)
-	c.CheckUpdates(context.Background(), req)
+	c.CheckUpdates(t.Context(), req)
 	cached, _ = diskcache.Peek[map[string]diskcache.Entry[smapiweb.UpdateResult]](cache, updatesFile)
 	if _, kept := cached.Value[req.key(other)]; !kept {
 		t.Fatal("a check of one mod dropped another build's answer for a mod it did not ask about")
@@ -76,10 +75,10 @@ func TestCheckUpdatesServesAnOldAnswerAndAsksAgainInTheBackground(t *testing.T) 
 	now := time.Now()
 	c := &Client{HTTP: srv.Client(), CacheDir: t.TempDir(), UpdatesURL: srv.URL, Now: func() time.Time { return now }}
 	req := UpdateRequest{Mods: []smapiweb.InstalledMod{{ID: "A.Mod", Version: "1.0.0"}}}
-	c.CheckUpdates(context.Background(), req)
+	c.CheckUpdates(t.Context(), req)
 	now = now.Add(2 * time.Hour)
 	start := time.Now()
-	got := c.CheckUpdates(context.Background(), req)
+	got := c.CheckUpdates(t.Context(), req)
 	if waited := time.Since(start); waited > time.Second || !got[0].Known || got[0].Compatibility != "Ok" {
 		t.Fatalf("the old answer waited %v for the API: %+v", waited, got[0])
 	}

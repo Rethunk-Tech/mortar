@@ -64,7 +64,7 @@ func TestPreviewLinkCollection(t *testing.T) {
 			},
 		},
 	})
-	pv, err := s.PreviewLink(context.Background(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", "")
+	pv, err := s.PreviewLink(t.Context(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func TestClassifyCollectionURL(t *testing.T) {
 
 func TestPreviewLinkCollectionWrongGame(t *testing.T) {
 	s, _ := newService(t, true)
-	_, err := s.PreviewLink(context.Background(), "stardew", "https://www.nexusmods.com/games/fallout4/collections/cozy-farm", "")
+	_, err := s.PreviewLink(t.Context(), "stardew", "https://www.nexusmods.com/games/fallout4/collections/cozy-farm", "")
 	if err == nil || !strings.Contains(err.Error(), "Stardew") {
 		t.Fatalf("wrong game: %v", err)
 	}
@@ -120,11 +120,11 @@ func collectionService(t *testing.T, fm fakeMeta) (*Service, *profile.Store) {
 
 func TestImportCollectionRecordsRefOnNewProfile(t *testing.T) {
 	s, _ := cozyCollectionService(t, 3)
-	pv, err := s.PreviewLink(context.Background(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", "")
+	pv, err := s.PreviewLink(t.Context(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.Import(context.Background(), "stardew", pv.Session, "", nil, false)
+	res, err := s.Import(t.Context(), "stardew", pv.Session, "", nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,11 +140,11 @@ func TestImportCollectionRecordsRefOnNewProfile(t *testing.T) {
 func TestImportCollectionRecordsRefOnExistingProfile(t *testing.T) {
 	s, profiles := cozyCollectionService(t, 2)
 	p := testenv.Profile(t, profiles, "stardew", "Mine")
-	pv, err := s.PreviewLink(context.Background(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", p.ID)
+	pv, err := s.PreviewLink(t.Context(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", p.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.Import(context.Background(), "stardew", pv.Session, p.ID, nil, false)
+	res, err := s.Import(t.Context(), "stardew", pv.Session, p.ID, nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -161,11 +161,11 @@ func TestImportCollectionRecordsRefOnExistingProfile(t *testing.T) {
 			Files: []nexusmods.CollectionFile{{ModID: 100, FileID: 1}},
 		},
 	}
-	pv, err = s.PreviewCollectionUpdate(context.Background(), "stardew", p.ID)
+	pv, err = s.PreviewCollectionUpdate(t.Context(), "stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err = s.Import(context.Background(), "stardew", pv.Session, p.ID, nil, false)
+	res, err = s.Import(t.Context(), "stardew", pv.Session, p.ID, nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -177,7 +177,7 @@ func TestImportCollectionRecordsRefOnExistingProfile(t *testing.T) {
 func TestCollectionStatusNewerSameAndError(t *testing.T) {
 	s, profiles := cozyCollectionService(t, 5)
 	p := testenv.Profile(t, profiles, "stardew", "Linked")
-	st, err := s.CollectionStatus(context.Background(), "stardew", p.ID)
+	st, err := s.CollectionStatus(t.Context(), "stardew", p.ID)
 	if err != nil || st.Linked {
 		t.Fatalf("unlinked: %+v, %v", st, err)
 	}
@@ -186,18 +186,18 @@ func TestCollectionStatusNewerSameAndError(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	st, err = s.CollectionStatus(context.Background(), "stardew", p.ID)
+	st, err = s.CollectionStatus(t.Context(), "stardew", p.ID)
 	if err != nil || !st.Linked || st.Revision != 3 || st.Latest != 5 || st.Name != "Cozy Farm" ||
 		st.URL != "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm" {
 		t.Fatalf("newer: %+v, %v", st, err)
 	}
 	s.d.Meta = fakeMeta{coll: nexusmods.Collection{Name: "Cozy Farm", Revision: 3}}
-	st, err = s.CollectionStatus(context.Background(), "stardew", p.ID)
+	st, err = s.CollectionStatus(t.Context(), "stardew", p.ID)
 	if err != nil || st.Latest != 3 || st.Revision != 3 {
 		t.Fatalf("same: %+v, %v", st, err)
 	}
 	s.d.Meta = fakeMeta{collErr: errors.New("nexus down")}
-	st, err = s.CollectionStatus(context.Background(), "stardew", p.ID)
+	st, err = s.CollectionStatus(t.Context(), "stardew", p.ID)
 	if err != nil || !st.Linked || st.Latest != 0 || st.Revision != 3 {
 		t.Fatalf("error: %+v, %v", st, err)
 	}
@@ -279,7 +279,7 @@ func TestCollectionImportAppliesArchiveForPremiumOnly(t *testing.T) {
 			},
 			Env: func(string) problems.Environment { return stardewEnv }, Queue: rec,
 		})
-		pv, err := s.PreviewLink(context.Background(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", "")
+		pv, err := s.PreviewLink(t.Context(), "stardew", "https://www.nexusmods.com/games/stardewvalley/collections/cozy-farm", "")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -294,7 +294,7 @@ func TestCollectionImportAppliesArchiveForPremiumOnly(t *testing.T) {
 		if len(fetched) != 0 {
 			t.Fatal("archive fetched before Import")
 		}
-		res, err := s.Import(context.Background(), "stardew", pv.Session, "", nil, false)
+		res, err := s.Import(t.Context(), "stardew", pv.Session, "", nil, false)
 		if err != nil {
 			t.Fatal(err)
 		}

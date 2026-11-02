@@ -1,7 +1,6 @@
 package modrinth
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -48,7 +47,7 @@ func fake(t *testing.T) Driver {
 
 func TestSearchBuildsFacetsAndMapsHits(t *testing.T) {
 	t.Parallel()
-	page, err := fake(t).Search(context.Background(), source.Query{
+	page, err := fake(t).Search(t.Context(), source.Query{
 		Key: "fabric", Text: "sod", Page: 2, Version: "1.2", Sort: source.SortDownloads,
 		Categories: []string{"Optimization"}, ExcludeCategories: []string{"quilt"},
 	})
@@ -64,24 +63,24 @@ func TestSearchBuildsFacetsAndMapsHits(t *testing.T) {
 func TestResolveAndVersions(t *testing.T) {
 	t.Parallel()
 	d := fake(t)
-	r, err := d.Resolve(context.Background(), "AANobbMI", "", "1.2", nil)
+	r, err := d.Resolve(t.Context(), "AANobbMI", "", "1.2", nil)
 	if err != nil || r.URL != "https://cdn/y.jar" || r.Digest != "sha512:cd" || r.Size != 7 || r.Version != "2.0" || len(r.Dependencies) != 1 || r.Dependencies[0] != (Dependency{ProjectID: "P1", VersionID: "V1"}) {
 		t.Fatalf("%+v %v", r, err)
 	}
-	if r, err = d.Resolve(context.Background(), "AANobbMI", "1.0", "1.2", nil); err != nil || r.Digest != "" || r.FileName != "o.jar" {
+	if r, err = d.Resolve(t.Context(), "AANobbMI", "1.0", "1.2", nil); err != nil || r.Digest != "" || r.FileName != "o.jar" {
 		t.Fatalf("%+v %v", r, err)
 	}
-	if _, err = d.Resolve(context.Background(), "AANobbMI", "9", "1.2", nil); err == nil {
+	if _, err = d.Resolve(t.Context(), "AANobbMI", "9", "1.2", nil); err == nil {
 		t.Fatal("unknown version resolved")
 	}
-	if v, _ := d.Versions(context.Background(), "AANobbMI", "1.2"); strings.Join(v, ",") != "2.0,1.0" {
+	if v, _ := d.Versions(t.Context(), "AANobbMI", "1.2"); strings.Join(v, ",") != "2.0,1.0" {
 		t.Fatalf("%v", v)
 	}
 }
 
 func TestCategoriesAndLinks(t *testing.T) {
 	t.Parallel()
-	got, err := fake(t).Categories(context.Background(), "")
+	got, err := fake(t).Categories(t.Context(), "")
 	if err != nil || strings.Join(got, ",") != "adventure,fabric" {
 		t.Fatalf("%v %v", got, err)
 	}
@@ -124,7 +123,7 @@ func TestLatestChecksEveryFileInOneBatch(t *testing.T) {
 	t.Cleanup(srv.Close)
 	d := Driver{URL: srv.URL, HTTP: srv.Client()}
 	src := components.GameSource{ID: "modrinth", Loaders: []string{"fabric"}, GameVersions: []string{"1.21"}}
-	got, err := d.Latest(context.Background(), src, "", []source.InstalledFile{
+	got, err := d.Latest(t.Context(), src, "", []source.InstalledFile{
 		{ID: "sodium", Version: "0.5.0", Digest: "sha512:aa11"},
 		{ID: "lithium", Version: "1.0", Digest: "sha512:BB22"},
 		{ID: "local", Version: "1", Digest: ""},
@@ -139,7 +138,7 @@ func TestLatestChecksEveryFileInOneBatch(t *testing.T) {
 		t.Errorf("requests = %v", asked)
 	}
 	before, after := source.VersionRef{ID: "AANobbMI", Version: "0.5.0"}, source.VersionRef{ID: "AANobbMI", Version: "0.6.0"}
-	deps, _ := d.Dependencies(context.Background(), "", "", []source.VersionRef{before, after, {ID: "x", Version: "1"}})
+	deps, _ := d.Dependencies(t.Context(), "", "", []source.VersionRef{before, after, {ID: "x", Version: "1"}})
 	if strings.Join(deps[before], ",") != "P1,P8" || strings.Join(deps[after], ",") != "P1,P9" || len(deps) != 2 {
 		t.Errorf("dependencies = %v", deps)
 	}
@@ -152,7 +151,7 @@ func TestLatestSaysBusyWhenRateLimited(t *testing.T) {
 		w.WriteHeader(http.StatusTooManyRequests)
 	}))
 	t.Cleanup(srv.Close)
-	_, err := Driver{URL: srv.URL, HTTP: srv.Client()}.Latest(context.Background(), components.GameSource{Loaders: []string{"fabric"}}, "", []source.InstalledFile{{Digest: "sha512:aa"}})
+	_, err := Driver{URL: srv.URL, HTTP: srv.Client()}.Latest(t.Context(), components.GameSource{Loaders: []string{"fabric"}}, "", []source.InstalledFile{{Digest: "sha512:aa"}})
 	if !errors.Is(err, source.ErrBusy) {
 		t.Fatalf("err = %v, want ErrBusy", err)
 	}
@@ -164,7 +163,7 @@ func TestLatestAsksNothingWithoutLoaders(t *testing.T) {
 		t.Errorf("asked %s without loaders", r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
-	got, err := Driver{URL: srv.URL, HTTP: srv.Client()}.Latest(context.Background(), components.GameSource{ID: "modrinth"}, "", []source.InstalledFile{{Digest: "sha512:aa"}})
+	got, err := Driver{URL: srv.URL, HTTP: srv.Client()}.Latest(t.Context(), components.GameSource{ID: "modrinth"}, "", []source.InstalledFile{{Digest: "sha512:aa"}})
 	if err != nil || len(got) != 0 {
 		t.Fatalf("latest = %+v %v", got, err)
 	}
@@ -178,7 +177,7 @@ func TestResolvePassesLoadersThrough(t *testing.T) {
 		_, _ = w.Write([]byte(`[{"id":"v","project_id":"p","version_number":"1","files":[{"url":"u","filename":"f.jar","primary":true}]}]`))
 	}))
 	t.Cleanup(srv.Close)
-	if _, err := (Driver{URL: srv.URL, HTTP: srv.Client()}).Resolve(context.Background(), "p", "", "", []string{"fabric", "quilt"}); err != nil {
+	if _, err := (Driver{URL: srv.URL, HTTP: srv.Client()}).Resolve(t.Context(), "p", "", "", []string{"fabric", "quilt"}); err != nil {
 		t.Fatal(err)
 	}
 	if got != `["fabric","quilt"]` {
@@ -188,7 +187,7 @@ func TestResolvePassesLoadersThrough(t *testing.T) {
 
 func TestDetailsReadsTheProjectBody(t *testing.T) {
 	t.Parallel()
-	det, err := fake(t).Details(context.Background(), "", "AANobbMI", "")
+	det, err := fake(t).Details(t.Context(), "", "AANobbMI", "")
 	if err != nil || det.Description != "# Sodium\n\nFast." || strings.Join(det.Versions, ",") != "2.0,1.0" ||
 		strings.Join(det.Dependencies, ",") != "P1" || strings.Join(det.Categories, ",") != "fabric,optimization" {
 		t.Fatalf("%+v %v", det, err)
@@ -206,7 +205,7 @@ func TestLatestAsksForBetasOnTheBetaChannel(t *testing.T) {
 		_, _ = w.Write([]byte(`{}`))
 	}))
 	t.Cleanup(srv.Close)
-	_, err := Driver{URL: srv.URL, HTTP: srv.Client()}.Latest(context.Background(), components.GameSource{Loaders: []string{"fabric"}}, "", []source.InstalledFile{
+	_, err := Driver{URL: srv.URL, HTTP: srv.Client()}.Latest(t.Context(), components.GameSource{Loaders: []string{"fabric"}}, "", []source.InstalledFile{
 		{Digest: "sha512:aa", Channel: "optional"}, {Digest: "sha512:bb", Channel: "beta"}, {Digest: "sha512:cc"},
 	})
 	if err != nil || strings.Join(types, ";") != "release;release+beta;release+beta+alpha" {
@@ -223,7 +222,7 @@ func TestSearchAsksForTheQuerysPageSize(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	d := Driver{URL: srv.URL, HTTP: srv.Client()}
-	if _, err := d.Search(context.Background(), source.Query{Key: "fabric", Page: 2, Size: d.MaxPageSize()}); err != nil {
+	if _, err := d.Search(t.Context(), source.Query{Key: "fabric", Page: 2, Size: d.MaxPageSize()}); err != nil {
 		t.Fatal(err)
 	}
 	if got != "100/100" {

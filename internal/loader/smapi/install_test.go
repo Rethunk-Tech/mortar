@@ -49,7 +49,7 @@ func TestLatestFromRecordedResponseIsCached(t *testing.T) {
 	defer srv.Close()
 	g := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}
 	for range 2 {
-		v, err := g.Latest(context.Background(), components.GameInfo{})
+		v, err := g.Latest(t.Context(), components.GameInfo{})
 		if err != nil || v != "4.5.2" {
 			t.Fatalf("latest = %q, %v", v, err)
 		}
@@ -69,7 +69,7 @@ func TestTheRegisteredLoaderCachesUnderTheDataFolder(t *testing.T) {
 	defer srv.Close()
 	g := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip"}
 	for range 2 {
-		if _, err := g.Latest(context.Background(), components.GameInfo{}); err != nil {
+		if _, err := g.Latest(t.Context(), components.GameInfo{}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -92,7 +92,7 @@ func TestLatestSkipsPrereleaseAndUsesStaleCacheOnFailure(t *testing.T) {
 	}))
 	defer srv.Close()
 	g := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}
-	if v, err := g.Latest(context.Background(), components.GameInfo{}); err != nil || v != "4.8.0" {
+	if v, err := g.Latest(t.Context(), components.GameInfo{}); err != nil || v != "4.8.0" {
 		t.Fatalf("latest = %q, %v", v, err)
 	}
 	fail = true
@@ -105,17 +105,17 @@ func TestLatestSkipsPrereleaseAndUsesStaleCacheOnFailure(t *testing.T) {
 		}
 	}
 	put(time.Now().Add(-2 * cacheTTL))
-	if v, err := g.Latest(context.Background(), components.GameInfo{}); err != nil || v != "4.8.0" {
+	if v, err := g.Latest(t.Context(), components.GameInfo{}); err != nil || v != "4.8.0" {
 		t.Fatalf("stale fallback = %q, %v", v, err)
 	}
 	put(time.Now().Add(24 * time.Hour))
 	fail = false
 	body = `[{"tag_name":"4.9.1","assets":[{"name":"SMAPI-4.9.1-installer.zip"}]}]`
-	if v, err := g.Latest(context.Background(), components.GameInfo{}); err != nil || v != "4.9.1" {
+	if v, err := g.Latest(t.Context(), components.GameInfo{}); err != nil || v != "4.9.1" {
 		t.Fatalf("an answer stamped after a clock set back was served: %q, %v", v, err)
 	}
 	fail = true
-	if _, err := (Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}).Latest(context.Background(), components.GameInfo{}); err == nil {
+	if _, err := (Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}).Latest(t.Context(), components.GameInfo{}); err == nil {
 		t.Fatal("no cache and a failing API must error")
 	}
 }
@@ -131,7 +131,7 @@ func TestLatestIgnoresTheEarlierCacheShape(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(g.CacheDir, cacheFile), []byte(old), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if v, err := g.Latest(context.Background(), components.GameInfo{}); err != nil || v != "4.8.0" {
+	if v, err := g.Latest(t.Context(), components.GameInfo{}); err != nil || v != "4.8.0" {
 		t.Fatalf("latest = %q, %v", v, err)
 	}
 }
@@ -143,7 +143,7 @@ func TestRateLimitMessage(t *testing.T) {
 		http.Error(w, `{"message":"API rate limit exceeded"}`, http.StatusForbidden)
 	}))
 	defer srv.Close()
-	_, err := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}.Latest(context.Background(), components.GameInfo{})
+	_, err := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir()}.Latest(t.Context(), components.GameInfo{})
 	if err == nil || !strings.Contains(err.Error(), "rate limit") || !strings.Contains(err.Error(), "try again after") {
 		t.Fatalf("err = %v", err)
 	}
@@ -335,7 +335,7 @@ func TestInstallWindowsBuildRunsInstallerThroughExec(t *testing.T) {
 	pkg := loader.Package{ID: ID, Version: "9.9.9", Archive: archive}
 	progress := func(loader.Step) {}
 
-	if _, err := (Loader{}).Install(context.Background(), loader.Target{InstallDir: dir}, pkg, progress); err == nil {
+	if _, err := (Loader{}).Install(t.Context(), loader.Target{InstallDir: dir}, pkg, progress); err == nil {
 		t.Fatal("a Windows build with no runtime must not be installed into")
 	}
 	var argv []string
@@ -345,7 +345,7 @@ func TestInstallWindowsBuildRunsInstallerThroughExec(t *testing.T) {
 		return nil
 	}
 	target := loader.Target{InstallDir: dir, Exec: exec, Bundled: func(string, string) error { return nil }}
-	if v, err := (Loader{}).Install(context.Background(), target, pkg, progress); err != nil || v != "9.9.9" {
+	if v, err := (Loader{}).Install(t.Context(), target, pkg, progress); err != nil || v != "9.9.9" {
 		t.Fatalf("install = %q, %v", v, err)
 	}
 	if filepath.Base(argv[0]) != "SMAPI.Installer.exe" || strings.Join(argv[1:], " ") != "--install --no-prompt --game-path "+dir {
@@ -386,7 +386,7 @@ func TestFetchRefusesUnverifiedInstaller(t *testing.T) {
 		l := g
 		l.ReleasesURL = strings.TrimSuffix(g.ReleasesURL, "/releases") + path
 		dest := filepath.Join(t.TempDir(), "i.zip")
-		if err := l.Fetch(context.Background(), components.GameInfo{}, "9.9.9", dest); err == nil {
+		if err := l.Fetch(t.Context(), components.GameInfo{}, "9.9.9", dest); err == nil {
 			t.Fatalf("%s: unverified installer accepted", path)
 		}
 		if _, err := os.Stat(dest); err == nil {
@@ -402,7 +402,7 @@ func TestVersionsLeaveOutReleasesWithoutADigest(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	l := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip"}
-	got, err := l.Versions(context.Background(), components.GameInfo{})
+	got, err := l.Versions(t.Context(), components.GameInfo{})
 	if err != nil || len(got) != 1 || got[0] != "4.5.2" {
 		t.Fatalf("versions = %v, %v", got, err)
 	}

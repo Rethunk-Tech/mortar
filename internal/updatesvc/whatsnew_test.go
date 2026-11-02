@@ -1,7 +1,6 @@
 package updatesvc
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,7 +18,7 @@ func TestWhatsNewOfflineKeepsLastRun(t *testing.T) {
 	}))
 	defer srv.Close()
 	s := &Service{info: Info{Version: "1.1.0"}, dir: dir, gh: &github.Client{HTTP: srv.Client(), APIBase: srv.URL, CacheDir: t.TempDir()}}
-	got, err := s.WhatsNew(context.Background())
+	got, err := s.WhatsNew(t.Context())
 	if err != nil || got.Version != "" {
 		t.Fatalf("offline skip: %+v, %v", got, err)
 	}
@@ -47,7 +46,7 @@ func TestWhatsNewAfterSkippedVersionsListsEachRelease(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := &Service{info: Info{Version: "1.2.0"}, dir: dir, gh: &github.Client{HTTP: srv.Client(), APIBase: srv.URL, CacheDir: t.TempDir()}}
-	got, err := s.WhatsNew(context.Background())
+	got, err := s.WhatsNew(t.Context())
 	if err != nil || got.Notes != "two" || len(got.Earlier) != 1 || got.Earlier[0] != (ReleaseNotes{Version: "1.1.1", Notes: "one one", Available: true}) {
 		t.Fatalf("what's new = %+v, %v", got, err)
 	}

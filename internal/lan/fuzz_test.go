@@ -2,7 +2,6 @@ package lan
 
 import (
 	"bytes"
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
@@ -39,7 +38,7 @@ func FuzzHandshake(f *testing.F) {
 	service.mu.Lock()
 	service.enabled = true
 	service.mu.Unlock()
-	if _, err := service.PairCode(context.Background()); err != nil {
+	if _, err := service.PairCode(f.Context()); err != nil {
 		f.Fatal(err)
 	}
 	handler := service.handler()

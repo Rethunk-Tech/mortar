@@ -197,13 +197,13 @@ func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 		<-release
 		return errors.New("boom")
 	}
-	if err := svc.Start(context.Background(), "stardew", p.ID, false); err != nil {
+	if err := svc.Start(t.Context(), "stardew", p.ID, false); err != nil {
 		t.Fatal(err)
 	}
 	if id := <-asked; id != "stardew" {
 		t.Fatalf("ensured %q", id)
 	}
-	if err := svc.Start(context.Background(), "stardew", p.ID, false); err == nil {
+	if err := svc.Start(t.Context(), "stardew", p.ID, false); err == nil {
 		t.Fatal("a second Start while the loader installs must be refused")
 	}
 	close(release)
@@ -233,7 +233,7 @@ func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
 	if err := svc.Send(t.Context(), "stardew", "help"); err == nil {
 		t.Fatal("Send while idle must fail")
 	}
-	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
+	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -306,7 +306,7 @@ func TestConcurrentStartsLaunchOnce(t *testing.T) {
 	for range 2 {
 		wg.Go(func() {
 			<-gate
-			if svc.Start(context.Background(), "stardew", p.ID, false) != nil {
+			if svc.Start(t.Context(), "stardew", p.ID, false) != nil {
 				refused.Add(1)
 			}
 		})
@@ -354,7 +354,7 @@ func TestStartWithAnInstalledLoaderWaitsForEnsureLoader(t *testing.T) {
 		<-release
 		return errors.New("update failed")
 	}
-	if err := svc.Start(context.Background(), "stardew", p.ID, false); err != nil {
+	if err := svc.Start(t.Context(), "stardew", p.ID, false); err != nil {
 		t.Fatal(err)
 	}
 	<-asked
@@ -403,7 +403,7 @@ func TestAProcessWithoutACommandLineLocksEveryProfileUnlessMortarLaunchedIt(t *t
 
 func TestStartLoaderUsesAppLifetime(t *testing.T) {
 	svc, p := startEnv(t)
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 	SetLife(svc, ctx)
 	saw := make(chan context.Context, 1)
@@ -411,7 +411,7 @@ func TestStartLoaderUsesAppLifetime(t *testing.T) {
 		saw <- ctx
 		return ctx.Err()
 	}
-	if err := svc.Start(context.Background(), "stardew", p.ID, true); err != nil {
+	if err := svc.Start(t.Context(), "stardew", p.ID, true); err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { waitSettled(t, svc) })
@@ -500,7 +500,7 @@ func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
 		}
 	}
 	svc.EnsureLoader = func(context.Context, string, string, bool) error { return nil }
-	if err := svc.Start(context.Background(), "stardew", p.ID, true); err != nil {
+	if err := svc.Start(t.Context(), "stardew", p.ID, true); err != nil {
 		t.Fatal(err)
 	}
 	deadline := time.Now().Add(10 * time.Second)
@@ -523,7 +523,7 @@ func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
 
 func TestStartPresetRefusesAnUnknownPreset(t *testing.T) {
 	svc, p := startEnv(t)
-	if err := svc.StartPreset(context.Background(), "stardew", p.ID, "", "nope", false); err == nil {
+	if err := svc.StartPreset(t.Context(), "stardew", p.ID, "", "nope", false); err == nil {
 		t.Fatal("unknown preset accepted")
 	}
 	svc.mu.Lock()
@@ -539,7 +539,7 @@ func TestInstallTargetedCallsRefuseAnUnknownInstall(t *testing.T) {
 	if _, err := svc.StatusInstall("stardew", "nope"); err == nil {
 		t.Fatal("status of an unknown install")
 	}
-	if err := svc.StartPreset(context.Background(), "stardew", p.ID, "nope", "", false); err == nil {
+	if err := svc.StartPreset(t.Context(), "stardew", p.ID, "nope", "", false); err == nil {
 		t.Fatal("start on an unknown install")
 	}
 }
@@ -584,7 +584,7 @@ func TestRecoverSkipsAJournalOfALaunchStillPreparing(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc.preparing[keyOf(sl)] = "p"
-	if _, err := svc.RecoverGameDeploys(context.Background(), "stardew"); err != nil {
+	if _, err := svc.RecoverGameDeploys(t.Context(), "stardew"); err != nil {
 		t.Fatal(err)
 	}
 	if !savesiso.HasJournal(journal) {
@@ -594,7 +594,7 @@ func TestRecoverSkipsAJournalOfALaunchStillPreparing(t *testing.T) {
 		t.Fatalf("a preparing launch's journal is reported as leftover: %v", left)
 	}
 	delete(svc.preparing, keyOf(sl))
-	if _, err := svc.RecoverGameDeploys(context.Background(), "stardew"); err != nil {
+	if _, err := svc.RecoverGameDeploys(t.Context(), "stardew"); err != nil {
 		t.Fatal(err)
 	}
 	if savesiso.HasJournal(journal) {

@@ -1,7 +1,6 @@
 package avscan
 
 import (
-	"context"
 	"net"
 	"path/filepath"
 	"runtime"
@@ -15,7 +14,7 @@ import (
 func fakeClamd(t *testing.T) goavscan.Clamd {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "clamd.sock")
-	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "unix", path)
+	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "unix", path)
 	if err != nil {
 		t.Skipf("no unix sockets: %v", err)
 	}
@@ -37,17 +36,17 @@ func fakeClamd(t *testing.T) goavscan.Clamd {
 
 func TestClamdVersionNamesTheDaemon(t *testing.T) {
 	t.Parallel()
-	if got := clamdProduct(context.Background(), fakeClamd(t)); got.Text != "clamd 1.0.1" || got.Code != "" {
+	if got := clamdProduct(t.Context(), fakeClamd(t)); got.Text != "clamd 1.0.1" || got.Code != "" {
 		t.Fatalf("product = %+v", got)
 	}
-	if got := clamdProduct(context.Background(), goavscan.Clamd{Socket: filepath.Join(t.TempDir(), "none.sock")}); got.Text != "No antivirus found" || got.Code != "none" {
+	if got := clamdProduct(t.Context(), goavscan.Clamd{Socket: filepath.Join(t.TempDir(), "none.sock")}); got.Text != "No antivirus found" || got.Code != "none" {
 		t.Fatalf("product = %+v", got)
 	}
 }
 
 func TestOffScansNothing(t *testing.T) {
 	t.Parallel()
-	if got, found, err := New(Config{Mode: ModeOff}).Scan(context.Background(), t.TempDir()); found || err != nil {
+	if got, found, err := New(Config{Mode: ModeOff}).Scan(t.Context(), t.TempDir()); found || err != nil {
 		t.Fatalf("got %+v, %v", got, err)
 	}
 }
@@ -59,7 +58,7 @@ func TestOnlyAnUnnamedCommandDetectionIsNamedAfterItsProgram(t *testing.T) {
 	}
 	dir := t.TempDir()
 	testfs.WriteAt(t, filepath.Join(dir, "a"), []byte("x"))
-	got, found, err := New(Config{Mode: ModeCommand, Command: "false"}).Scan(context.Background(), dir)
+	got, found, err := New(Config{Mode: ModeCommand, Command: "false"}).Scan(t.Context(), dir)
 	if err != nil || !found || got.Name != "detected by false" {
 		t.Errorf("got %+v, %v, %v", got, found, err)
 	}

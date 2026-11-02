@@ -68,11 +68,11 @@ func TestSourceLimitPacesStartsAndCapsConcurrency(t *testing.T) {
 	if l.take(now.Add(time.Second)) != 0 {
 		t.Error("a token did not refill")
 	}
-	release, err := l.acquire(context.Background(), func() time.Time { return now.Add(time.Hour) })
+	release, err := l.acquire(t.Context(), func() time.Time { return now.Add(time.Hour) })
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), 20*time.Millisecond)
 	defer cancel()
 	if _, err := l.acquire(ctx, time.Now); err == nil {
 		t.Error("a second fetch got past the cap of one")

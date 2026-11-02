@@ -1,7 +1,6 @@
 package nexussvc
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -54,7 +53,7 @@ func TestTrackedForCardAnswersFromDiskAndRefreshesInBackground(t *testing.T) {
 	if err := s.UseDataDir(t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
-	ctx := context.Background()
+	ctx := t.Context()
 	if _, err := s.SignIn(ctx, "k"); err != nil {
 		t.Fatal(err)
 	}

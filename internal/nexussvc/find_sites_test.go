@@ -27,7 +27,7 @@ func TestModDBSourcesMatchOneModIDAndSkipAmbiguousOrUnknown(t *testing.T) {
 		}
 		return e
 	}
-	got := modDBSources(context.Background(), []profile.Entry{
+	got := modDBSources(t.Context(), []profile.Entry{
 		entry("carryon", local, "carryon"),
 		entry("pair", local, "carryon", "carryon"),
 		entry("split", local, "carryon", "chiseltools"),

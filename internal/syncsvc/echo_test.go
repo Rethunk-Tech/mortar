@@ -89,7 +89,7 @@ func TestTheirsApplyEchoIsNotPushedAndFailedDownloadsAreKept(t *testing.T) {
 	ma.edit("main", 1, 2, 3)
 	scan(t, a)
 	offers := scan(t, b)
-	if err := b.Resolve(context.Background(), "stardew", "main", offers[0].Revision, Theirs); err != nil {
+	if err := b.Resolve(t.Context(), "stardew", "main", offers[0].Revision, Theirs); err != nil {
 		t.Fatal(err)
 	}
 	// The downloads finish after the apply, which bumps the profile; mod 3 failed.
@@ -118,7 +118,7 @@ func TestAnEditWhileDownloadsFinishSyncsAndKeepsTheMissingMod(t *testing.T) {
 	ma.edit("main", 1, 2, 3)
 	scan(t, a)
 	offers := scan(t, b)
-	if err := b.Resolve(context.Background(), "stardew", "main", offers[0].Revision, Theirs); err != nil {
+	if err := b.Resolve(t.Context(), "stardew", "main", offers[0].Revision, Theirs); err != nil {
 		t.Fatal(err)
 	}
 	mb.note = "my note"
@@ -146,7 +146,7 @@ func TestAModStillMissingKeepsItsPlaceInThePushedOrder(t *testing.T) {
 	ma.edit("main", 1, 3, 2)
 	scan(t, a)
 	offers := scan(t, b)
-	if err := b.Resolve(context.Background(), "stardew", "main", offers[0].Revision, Theirs); err != nil {
+	if err := b.Resolve(t.Context(), "stardew", "main", offers[0].Revision, Theirs); err != nil {
 		t.Fatal(err)
 	}
 	mb.note = "my note"

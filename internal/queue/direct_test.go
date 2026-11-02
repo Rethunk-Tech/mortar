@@ -45,7 +45,7 @@ func TestExpandDirectQueuesDependenciesFirstOnce(t *testing.T) {
 		}
 		return files[id], nil
 	}}}
-	got, err := s.expandPackages(context.Background(), []Request{{Kind: KindInstall, Game: "g", Profile: "p", Source: "modrinth", Package: "root", Name: "Root"}})
+	got, err := s.expandPackages(t.Context(), []Request{{Kind: KindInstall, Game: "g", Profile: "p", Source: "modrinth", Package: "root", Name: "Root"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +70,7 @@ func TestExpandDirectOpensThePageOfAForbiddenFile(t *testing.T) {
 			return DirectFile{}, &curseforge.NotDistributableError{Mod: "Shut", PageURL: "https://www.curseforge.com/projects/20"}
 		},
 	}}
-	_, err := s.expandPackages(context.Background(), []Request{{Kind: KindInstall, Game: "g", Profile: "p", Source: "curseforge", Package: "20"}})
+	_, err := s.expandPackages(t.Context(), []Request{{Kind: KindInstall, Game: "g", Profile: "p", Source: "curseforge", Package: "20"}})
 	if err == nil || opened != "https://www.curseforge.com/projects/20" || !strings.Contains(err.Error(), "Shut") || usererr.KindOf(err) != usererr.External {
 		t.Fatalf("opened %q, err %v", opened, err)
 	}
@@ -83,7 +83,7 @@ func TestExpandDirectPinsCurseForgeFileID(t *testing.T) {
 		asked = version
 		return DirectFile{Version: "Content Patcher 2.9.1", FileID: 777, URL: "u"}, nil
 	}}}
-	got, err := s.expandDirect(context.Background(), Request{Kind: KindInstall, Source: "curseforge", Package: "309243", Version: "Content Patcher 2.9.1", PackageFile: 555})
+	got, err := s.expandDirect(t.Context(), Request{Kind: KindInstall, Source: "curseforge", Package: "309243", Version: "Content Patcher 2.9.1", PackageFile: 555})
 	if err != nil || len(got) != 1 {
 		t.Fatalf("got %v, err %v", got, err)
 	}
@@ -106,7 +106,7 @@ func TestExpandDirectKeepsThePicturePerEntryOnlyForTheRoot(t *testing.T) {
 		}
 		return DirectFile{Version: "1", URL: "u"}, nil
 	}}}
-	got, err := s.expandDirect(context.Background(), Request{Kind: KindInstall, Source: "curseforge", Package: "root", Picture: "https://img/p.png"})
+	got, err := s.expandDirect(t.Context(), Request{Kind: KindInstall, Source: "curseforge", Package: "root", Picture: "https://img/p.png"})
 	if err != nil || len(got) != 2 || got[0].Picture != "" || got[1].Picture != "https://img/p.png" {
 		t.Fatalf("got %+v, err %v", got, err)
 	}

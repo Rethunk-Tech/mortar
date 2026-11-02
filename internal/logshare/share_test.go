@@ -1,7 +1,6 @@
 package logshare
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,7 +20,7 @@ func TestUploadWording(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			srv := httptest.NewServer(tc.handler)
 			t.Cleanup(srv.Close)
-			_, err := Upload(context.Background(), &smapiweb.Client{HTTP: srv.Client(), LogURL: srv.URL}, "log", 0)
+			_, err := Upload(t.Context(), &smapiweb.Client{HTTP: srv.Client(), LogURL: srv.URL}, "log", 0)
 			if err == nil || err.Error() != tc.want {
 				t.Fatalf("got %v, want %q", err, tc.want)
 			}

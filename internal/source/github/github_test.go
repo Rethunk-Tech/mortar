@@ -28,7 +28,7 @@ func TestSearchQueryAndPaging(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	d := &Driver{URL: srv.URL}
-	page, err := d.Search(context.Background(), source.Query{Key: "stardew-valley-mod", Text: "smapi tools", Page: 2})
+	page, err := d.Search(t.Context(), source.Query{Key: "stardew-valley-mod", Text: "smapi tools", Page: 2})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestSearchRateLimit(t *testing.T) {
 		w.WriteHeader(http.StatusForbidden)
 	}))
 	t.Cleanup(srv.Close)
-	_, err := (&Driver{URL: srv.URL, Web: srv.URL}).Search(context.Background(), source.Query{Key: "k", Text: "x", Page: 1})
+	_, err := (&Driver{URL: srv.URL, Web: srv.URL}).Search(t.Context(), source.Query{Key: "k", Text: "x", Page: 1})
 	if !errors.Is(err, source.ErrBusy) || usererr.KindOf(err) != usererr.RateLimited {
 		t.Fatalf("got %v", err)
 	}
@@ -94,7 +94,7 @@ func TestSearchWaitsOutARefusal(t *testing.T) {
 	d := &Driver{URL: srv.URL, Web: srv.URL, Now: func() time.Time { return now }, Topics: func(string) []string { return []string{"a", "b", "c"} }}
 	q := source.Query{Key: "a", Text: "x y", Page: 1}
 	for range 3 {
-		if _, err := d.Search(context.Background(), q); !errors.Is(err, source.ErrBusy) {
+		if _, err := d.Search(t.Context(), q); !errors.Is(err, source.ErrBusy) {
 			t.Fatalf("got %v", err)
 		}
 	}
@@ -102,7 +102,7 @@ func TestSearchWaitsOutARefusal(t *testing.T) {
 		t.Fatalf("asked GitHub %d times while refused", hits)
 	}
 	now = now.Add(30 * time.Second)
-	if _, err := d.Search(context.Background(), q); err != nil {
+	if _, err := d.Search(t.Context(), q); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -129,11 +129,11 @@ func TestSearchSecondaryLimitWaitsAMinute(t *testing.T) {
 	now := time.Unix(1_700_000_000, 0).UTC()
 	d := &Driver{URL: srv.URL, Web: srv.URL, Now: func() time.Time { return now }, Topics: func(string) []string { return []string{"a", "b", "c"} }}
 	q := source.Query{Key: "a", Text: "x y", Page: 1}
-	if _, err := d.Search(context.Background(), q); !errors.Is(err, source.ErrBusy) {
+	if _, err := d.Search(t.Context(), q); !errors.Is(err, source.ErrBusy) {
 		t.Fatalf("got %v", err)
 	}
 	now = now.Add(2 * time.Minute)
-	if _, err := d.Search(context.Background(), q); err != nil {
+	if _, err := d.Search(t.Context(), q); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -149,7 +149,7 @@ func TestSearchCaches(t *testing.T) {
 	now := time.Unix(1_700_000_000, 0).UTC()
 	d := &Driver{URL: srv.URL, Now: func() time.Time { return now }}
 	for _, q := range []source.Query{{Key: "k", Text: "x y", Page: 1}, {Key: "k", Text: "x y", Page: 1}, {Text: "x y", Page: 1}} {
-		if _, err := d.Search(context.Background(), q); err != nil {
+		if _, err := d.Search(t.Context(), q); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -179,7 +179,7 @@ func TestSearchMergesTopicsOnceEachByStars(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	d := &Driver{URL: srv.URL, Web: srv.URL, Topics: func(string) []string { return []string{"a", "b"} }}
-	page, err := d.Search(context.Background(), source.Query{Key: "a", Page: 1})
+	page, err := d.Search(t.Context(), source.Query{Key: "a", Page: 1})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -195,14 +195,14 @@ func TestSearchMergesTopicsOnceEachByStars(t *testing.T) {
 	refuse["topic:b"] = true
 	mu.Unlock()
 	d = &Driver{URL: srv.URL, Web: srv.URL, Topics: d.Topics}
-	if page, err := d.Search(context.Background(), source.Query{Key: "a", Page: 1}); err != nil || len(page.Items) != 2 || fmt.Sprint(page.Failed) != "[topic:b]" {
+	if page, err := d.Search(t.Context(), source.Query{Key: "a", Page: 1}); err != nil || len(page.Items) != 2 || fmt.Sprint(page.Failed) != "[topic:b]" {
 		t.Fatalf("one topic refused: %d items, failed %v, err %v", len(page.Items), page.Failed, err)
 	}
 	mu.Lock()
 	refuse["topic:a"] = true
 	mu.Unlock()
 	d = &Driver{URL: srv.URL, Web: srv.URL, Topics: d.Topics}
-	if _, err := d.Search(context.Background(), source.Query{Key: "a", Page: 1}); !errors.Is(err, source.ErrBusy) {
+	if _, err := d.Search(t.Context(), source.Query{Key: "a", Page: 1}); !errors.Is(err, source.ErrBusy) {
 		t.Fatalf("every topic refused: %v", err)
 	}
 }
@@ -221,11 +221,11 @@ func TestSearchTakesAWordAsAnOwnerToo(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	d := &Driver{URL: srv.URL, Web: srv.URL, Topics: func(string) []string { return []string{"a", "b"} }}
-	page, err := d.Search(context.Background(), source.Query{Key: "a", Text: "Org", Page: 1})
+	page, err := d.Search(t.Context(), source.Query{Key: "a", Text: "Org", Page: 1})
 	if err != nil || len(page.Items) != 1 || page.Items[0].ID != "Org/mod" {
 		t.Fatalf("owner search: %+v, %v", page.Items, err)
 	}
-	if page, err := d.Search(context.Background(), source.Query{Key: "a", Text: "nobody", Page: 1}); err != nil || len(page.Items) != 0 {
+	if page, err := d.Search(t.Context(), source.Query{Key: "a", Text: "nobody", Page: 1}); err != nil || len(page.Items) != 0 {
 		t.Fatalf("no such owner: %+v, %v", page.Items, err)
 	}
 }
@@ -283,7 +283,7 @@ func TestSearchFallsBackToTheSearchPageAsMortar(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	d := &Driver{URL: srv.URL, Web: srv.URL, webGap: time.Nanosecond}
-	page, err := d.Search(context.Background(), source.Query{Key: "a", Text: "x y", Page: 1})
+	page, err := d.Search(t.Context(), source.Query{Key: "a", Text: "x y", Page: 1})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -327,14 +327,14 @@ func TestSearchAsksGraphQLOnceForEveryTopicAndCachesItsPages(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	d := &Driver{URL: srv.URL, LoggedIn: func(context.Context) bool { return true }, Topics: func(string) []string { return []string{"a", "b"} }}
-	page, err := d.Search(context.Background(), source.Query{Key: "a", Page: 1})
+	page, err := d.Search(t.Context(), source.Query{Key: "a", Page: 1})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(page.Items) != 20 || page.Items[0].ID != "o/b" {
 		t.Fatalf("page 1: %d items, first %+v", len(page.Items), page.Items)
 	}
-	if page, err = d.Search(context.Background(), source.Query{Key: "a", Page: 2}); err != nil || len(page.Items) != 6 {
+	if page, err = d.Search(t.Context(), source.Query{Key: "a", Page: 2}); err != nil || len(page.Items) != 6 {
 		t.Fatalf("page 2: %d items, %v", len(page.Items), err)
 	}
 	if strings.Join(asked, ",") != "graphql" {

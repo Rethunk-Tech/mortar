@@ -56,7 +56,7 @@ func TestChannelOffersStableWhenThePrereleaseCheckFails(t *testing.T) {
 		beta:        checkOnly{name: "beta", err: errors.New("github releases: HTTP 403")},
 		includeBeta: func() bool { return true },
 	}
-	if got, err := p.Check(context.Background(), updater.CheckRequest{CurrentVersion: "1.0.0"}); err != nil || got != stable {
+	if got, err := p.Check(t.Context(), updater.CheckRequest{CurrentVersion: "1.0.0"}); err != nil || got != stable {
 		t.Fatalf("got %+v, %v", got, err)
 	}
 }

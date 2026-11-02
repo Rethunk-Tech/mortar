@@ -157,7 +157,7 @@ func TestStoredOptionalFileInstallsOverItsMainFile(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	wait := Run(ctx, s, make(chan nxmsvc.Assignment))
 	defer func() {
 		cancel()

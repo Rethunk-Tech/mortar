@@ -3,7 +3,6 @@ package sharesvc
 import (
 	"archive/zip"
 	"bytes"
-	"context"
 	"encoding/base64"
 	"fmt"
 	"path/filepath"
@@ -32,7 +31,7 @@ func TestImportDataMakesTheSharedProfileWithItsSwitchedOffMods(t *testing.T) {
 	if _, err := share.Write(&payload, "stardew", p, t.TempDir(), share.OwnInclude()); err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.ImportData(context.Background(), "stardew", base64.RawStdEncoding.EncodeToString(payload.Bytes()))
+	res, err := s.ImportData(t.Context(), "stardew", base64.RawStdEncoding.EncodeToString(payload.Bytes()))
 	if err != nil || res.Profile.Name != "From the desk" {
 		t.Fatalf("import = %+v, %v", res, err)
 	}
@@ -43,7 +42,7 @@ func TestImportDataMakesTheSharedProfileWithItsSwitchedOffMods(t *testing.T) {
 	if !queued[100] || !queued[600] {
 		t.Fatalf("queued mods = %v, want the switched-off one too", queued)
 	}
-	if _, err := s.ImportData(context.Background(), "stardew", "not a payload"); err == nil {
+	if _, err := s.ImportData(t.Context(), "stardew", "not a payload"); err == nil {
 		t.Fatal("a bad payload must fail")
 	}
 }
@@ -74,7 +73,7 @@ func TestImportDataPlacesAPairedComputersLocalArchiveFromTheStore(t *testing.T) 
 	if _, err := share.Write(&payload, "stardew", p, t.TempDir(), inc); err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.ImportData(context.Background(), "stardew", base64.RawStdEncoding.EncodeToString(payload.Bytes()))
+	res, err := s.ImportData(t.Context(), "stardew", base64.RawStdEncoding.EncodeToString(payload.Bytes()))
 	if err != nil || len(rec.reqs) != 0 {
 		t.Fatalf("import = %+v, %v; queued %+v", res, err, rec.reqs)
 	}
@@ -95,10 +94,10 @@ func TestASharedFileSaysWhyItCannotBePreviewed(t *testing.T) {
 		t.Fatal(err)
 	}
 	encoded := base64.RawStdEncoding.EncodeToString(other.Bytes())
-	if _, err := s.PreviewData(context.Background(), "stardew", encoded, ""); usererr.KindOf(err) != usererr.OtherGame {
+	if _, err := s.PreviewData(t.Context(), "stardew", encoded, ""); usererr.KindOf(err) != usererr.OtherGame {
 		t.Fatalf("another game's file: %v", err)
 	}
-	if _, err := s.PreviewData(context.Background(), "stardew", "not a payload", ""); usererr.KindOf(err) != usererr.Damaged {
+	if _, err := s.PreviewData(t.Context(), "stardew", "not a payload", ""); usererr.KindOf(err) != usererr.Damaged {
 		t.Fatalf("a damaged payload: %v", err)
 	}
 	var newer bytes.Buffer
@@ -114,7 +113,7 @@ func TestASharedFileSaysWhyItCannotBePreviewed(t *testing.T) {
 		t.Fatal(err)
 	}
 	encoded = base64.RawStdEncoding.EncodeToString(newer.Bytes())
-	if _, err := s.PreviewData(context.Background(), "stardew", encoded, ""); usererr.KindOf(err) != usererr.Outdated {
+	if _, err := s.PreviewData(t.Context(), "stardew", encoded, ""); usererr.KindOf(err) != usererr.Outdated {
 		t.Fatalf("a newer Mortar's file: %v", err)
 	}
 }

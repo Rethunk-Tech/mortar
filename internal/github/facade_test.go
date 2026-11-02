@@ -37,7 +37,7 @@ func TestClientWordsGitHubsAnswers(t *testing.T) {
 		}
 		http.Error(w, "x", status)
 	})
-	ctx := context.Background()
+	ctx := t.Context()
 
 	_, err := c.Releases(ctx, "o", "r")
 	if err == nil || err.Error() != "GitHub's releases API answered 502 Bad Gateway" {
@@ -70,9 +70,9 @@ func TestClientSaysWhenGitHubCannotBeReached(t *testing.T) {
 	srv.Close()
 	c := &Client{APIBase: url, CacheDir: t.TempDir()}
 	for name, err := range map[string]error{
-		"releases": func() error { _, err := c.Releases(context.Background(), "o", "r"); return err }(),
-		"notes":    func() error { _, err := c.ReleaseNotes(context.Background(), "o", "r", "v1"); return err }(),
-		"fetch":    func() error { _, err := FetchReleases(context.Background(), nil, url); return err }(),
+		"releases": func() error { _, err := c.Releases(t.Context(), "o", "r"); return err }(),
+		"notes":    func() error { _, err := c.ReleaseNotes(t.Context(), "o", "r", "v1"); return err }(),
+		"fetch":    func() error { _, err := FetchReleases(t.Context(), nil, url); return err }(),
 	} {
 		if err == nil || !strings.HasPrefix(err.Error(), "could not reach GitHub: ") {
 			t.Fatalf("%s: %v", name, err)
@@ -93,7 +93,7 @@ func TestClientRecordsReachabilityOfNotesToo(t *testing.T) {
 	t.Cleanup(srv.Close)
 	netstate.Record("github", context.DeadlineExceeded)
 	c := &Client{APIBase: srv.URL, CacheDir: t.TempDir()}
-	if _, err := c.ReleaseNotes(context.Background(), "o", "r", "v1"); err != nil {
+	if _, err := c.ReleaseNotes(t.Context(), "o", "r", "v1"); err != nil {
 		t.Fatal(err)
 	}
 	for _, st := range (&netstate.Service{}).States() {
@@ -113,7 +113,7 @@ func TestZeroClientCachesUnderTheDataFolder(t *testing.T) {
 	t.Cleanup(srv.Close)
 	c := &Client{APIBase: srv.URL}
 	for range 2 {
-		if _, err := c.Releases(context.Background(), "o", "r"); err != nil {
+		if _, err := c.Releases(t.Context(), "o", "r"); err != nil {
 			t.Fatal(err)
 		}
 	}

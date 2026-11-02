@@ -71,7 +71,7 @@ func (f *fakeQueue) Add(_ context.Context, reqs []queue.Request) ([]queue.Item, 
 }
 
 func TestExportNeedsTheConfirmation(t *testing.T) {
-	if _, err := (&Service{}).ExportCode(context.Background(), "stardew", "p1", false); err == nil {
+	if _, err := (&Service{}).ExportCode(t.Context(), "stardew", "p1", false); err == nil {
 		t.Error("an unconfirmed export ran")
 	}
 }
@@ -155,7 +155,7 @@ func TestExportCodeCarriesTheConfigFolder(t *testing.T) {
 	ps := &fakeProfiles{dir: dir, list: []profile.Profile{{ID: "p1", Name: "P", Entries: []profile.Entry{
 		{Source: profile.Source{Kind: profile.KindThunderstore, Name: "A-B", Version: "1.0.0"}},
 	}}}}
-	if _, err := (&Service{Profiles: ps, Code: pack.Code{URL: srv.URL}}).ExportCode(context.Background(), "lethal-company", "p1", true); err != nil {
+	if _, err := (&Service{Profiles: ps, Code: pack.Code{URL: srv.URL}}).ExportCode(t.Context(), "lethal-company", "p1", true); err != nil {
 		t.Fatal(err)
 	}
 	_, enc, _ := strings.Cut(body, "\n")
@@ -187,14 +187,14 @@ func TestMirrorClientQueuesTheClientsPackagesIntoTheServerProfile(t *testing.T) 
 		{Source: profile.Source{Kind: profile.KindNexus, ModID: 5}},
 	}}}}, &fakeQueue{}
 	s := &Service{Profiles: ps, Queue: q}
-	res, err := s.MirrorClient(context.Background(), "valheim-server", "srv", "c1")
+	res, err := s.MirrorClient(t.Context(), "valheim-server", "srv", "c1")
 	if err != nil || res.Queued != 1 {
 		t.Fatalf("MirrorClient = %+v, %v", res, err)
 	}
 	if len(q.got) != 1 || q.got[0].Game != "valheim-server" || q.got[0].Profile != "srv" || q.got[0].Package != "Alice-Mod" {
 		t.Fatalf("queued %+v", q.got)
 	}
-	if _, err := s.MirrorClient(context.Background(), "valheim", "srv", "c1"); err == nil {
+	if _, err := s.MirrorClient(t.Context(), "valheim", "srv", "c1"); err == nil {
 		t.Fatal("a client game was treated as a server")
 	}
 }

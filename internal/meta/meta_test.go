@@ -1,7 +1,6 @@
 package meta
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -41,18 +40,18 @@ func TestLookupIgnoresCaseAndCaches(t *testing.T) {
 	var down atomic.Bool
 	var hits atomic.Int32
 	c := server(t, &down, &hits)
-	refs, err := c.Lookup(context.Background(), "PATHOSCHILD.contentpatcher")
+	refs, err := c.Lookup(t.Context(), "PATHOSCHILD.contentpatcher")
 	if err != nil || len(refs) != 4 || refs[1] != (smapiweb.Ref{Site: "Nexus", ID: 1915}) {
 		t.Fatalf("refs = %v, err = %v", refs, err)
 	}
-	if refs, _ := c.Lookup(context.Background(), "nobody.nothing"); refs != nil {
+	if refs, _ := c.Lookup(t.Context(), "nobody.nothing"); refs != nil {
 		t.Fatalf("unknown id gave %v", refs)
 	}
 	// A second client shares only the disk cache.
 	c2 := &Client{HTTP: c.HTTP, CacheDir: c.CacheDir, IndexURL: c.IndexURL}
 	down.Store(true)
 	before := hits.Load()
-	if refs, err := c2.Lookup(context.Background(), "001"); err != nil || len(refs) != 2 || hits.Load() != before {
+	if refs, err := c2.Lookup(t.Context(), "001"); err != nil || len(refs) != 2 || hits.Load() != before {
 		t.Fatalf("cache hit failed: %v %v hits %d->%d", refs, err, before, hits.Load())
 	}
 }
@@ -63,17 +62,17 @@ func TestIndexStaleFallbackAndFailure(t *testing.T) {
 	c := server(t, &down, &hits)
 	now := time.Now()
 	c.Now = func() time.Time { return now }
-	if _, err := c.Lookup(context.Background(), "001"); err != nil {
+	if _, err := c.Lookup(t.Context(), "001"); err != nil {
 		t.Fatal(err)
 	}
 	now = now.Add(60 * 24 * time.Hour)
 	c2 := &Client{HTTP: c.HTTP, CacheDir: c.CacheDir, IndexURL: c.IndexURL, Now: c.Now}
 	down.Store(true)
-	if refs, err := c2.Lookup(context.Background(), "001"); err != nil || len(refs) != 2 {
+	if refs, err := c2.Lookup(t.Context(), "001"); err != nil || len(refs) != 2 {
 		t.Fatalf("stale fallback: %v %v", refs, err)
 	}
 	fresh := &Client{HTTP: c.HTTP, CacheDir: t.TempDir(), IndexURL: c.IndexURL}
-	if _, err := fresh.Lookup(context.Background(), "001"); err == nil {
+	if _, err := fresh.Lookup(t.Context(), "001"); err == nil {
 		t.Fatal("no cache and no network must error")
 	}
 }
@@ -82,16 +81,16 @@ func TestPageIsCachedAndAMissingOneErrors(t *testing.T) {
 	var down atomic.Bool
 	var hits atomic.Int32
 	c := server(t, &down, &hits)
-	p, err := c.Page(context.Background(), 1915)
+	p, err := c.Page(t.Context(), 1915)
 	if err != nil || p.Name != "Content Patcher" || len(p.Downloads) != 2 {
 		t.Fatalf("page = %+v, err = %v", p, err)
 	}
 	down.Store(true)
 	before := hits.Load()
-	if _, err := c.Page(context.Background(), 1915); err != nil || hits.Load() != before {
+	if _, err := c.Page(t.Context(), 1915); err != nil || hits.Load() != before {
 		t.Fatalf("cache hit failed: %v", err)
 	}
-	if _, err := c.Page(context.Background(), 3999); err == nil {
+	if _, err := c.Page(t.Context(), 3999); err == nil {
 		t.Fatal("missing page must error")
 	}
 }
@@ -100,11 +99,11 @@ func TestPageDropsStoragePathFileNames(t *testing.T) {
 	var down atomic.Bool
 	var hits atomic.Int32
 	c := server(t, &down, &hits)
-	if _, err := c.Page(context.Background(), 22743); err != nil {
+	if _, err := c.Page(t.Context(), 22743); err != nil {
 		t.Fatal(err)
 	}
 	// A page read back from the cache is cleaned too.
-	p, err := c.Page(context.Background(), 22743)
+	p, err := c.Page(t.Context(), 22743)
 	if err != nil || len(p.Downloads) != 2 || p.Downloads[0].FileName != "" || p.Downloads[1].FileName != "Alchemistry-22743-2-0-1.zip" {
 		t.Fatalf("downloads = %+v, %v", p.Downloads, err)
 	}
@@ -119,7 +118,7 @@ func TestCheckUpdatesRealFixture(t *testing.T) {
 	var down atomic.Bool
 	var hits atomic.Int32
 	c := server(t, &down, &hits)
-	got := c.CheckUpdates(context.Background(), cpRequest)
+	got := c.CheckUpdates(t.Context(), cpRequest)
 	cp := got[0]
 	if !cp.Known || cp.Suggested == nil || cp.Suggested.Version != "2.9.1" || cp.Compatibility != "Ok" || cp.GitHubRepo != "Pathoschild/StardewMods" {
 		t.Fatalf("content patcher = %+v", cp)
@@ -129,7 +128,7 @@ func TestCheckUpdatesRealFixture(t *testing.T) {
 	}
 	down.Store(true)
 	before := hits.Load()
-	again := c.CheckUpdates(context.Background(), cpRequest)
+	again := c.CheckUpdates(t.Context(), cpRequest)
 	if again[0].Suggested == nil || hits.Load() != before {
 		t.Fatalf("cache hit failed: %+v", again[0])
 	}
@@ -141,10 +140,10 @@ func TestCheckUpdatesStaleThenUnknown(t *testing.T) {
 	c := server(t, &down, &hits)
 	now := time.Now()
 	c.Now = func() time.Time { return now }
-	c.CheckUpdates(context.Background(), cpRequest)
+	c.CheckUpdates(t.Context(), cpRequest)
 	now = now.Add(2 * time.Hour)
 	down.Store(true)
-	got := c.CheckUpdates(context.Background(), cpRequest)
+	got := c.CheckUpdates(t.Context(), cpRequest)
 	if !got[0].Known || got[0].Suggested == nil {
 		t.Fatalf("stale fallback lost the answer: %+v", got[0])
 	}
@@ -152,7 +151,7 @@ func TestCheckUpdatesStaleThenUnknown(t *testing.T) {
 		t.Fatalf("stale fallback lost the no-update answer: %+v", got[1])
 	}
 	cold := &Client{HTTP: c.HTTP, CacheDir: t.TempDir(), UpdatesURL: c.UpdatesURL}
-	for _, r := range cold.CheckUpdates(context.Background(), cpRequest) {
+	for _, r := range cold.CheckUpdates(t.Context(), cpRequest) {
 		if r.Known || r.Suggested != nil || r.ID == "" {
 			t.Fatalf("failure must give unknown, got %+v", r)
 		}
@@ -165,7 +164,7 @@ func TestCheckUpdatesSharesConcurrentAndPausesAfterFailure(t *testing.T) {
 	c := server(t, &down, &hits)
 	var wg sync.WaitGroup
 	for range 5 {
-		wg.Go(func() { c.CheckUpdates(context.Background(), cpRequest) })
+		wg.Go(func() { c.CheckUpdates(t.Context(), cpRequest) })
 	}
 	wg.Wait()
 	if n := hits.Load(); n != 1 {
@@ -176,16 +175,16 @@ func TestCheckUpdatesSharesConcurrentAndPausesAfterFailure(t *testing.T) {
 	now := time.Now()
 	cold.Now = func() time.Time { return now }
 	down.Store(true)
-	cold.CheckUpdates(context.Background(), cpRequest)
+	cold.CheckUpdates(t.Context(), cpRequest)
 	before := hits.Load()
 	now = now.Add(time.Minute)
-	cold.CheckUpdates(context.Background(), cpRequest)
+	cold.CheckUpdates(t.Context(), cpRequest)
 	if hits.Load() != before {
 		t.Fatal("a failed ask must pause further asks")
 	}
 	down.Store(false)
 	now = now.Add(updatesBackoff)
-	if got := cold.CheckUpdates(context.Background(), cpRequest); !got[0].Known {
+	if got := cold.CheckUpdates(t.Context(), cpRequest); !got[0].Known {
 		t.Fatalf("ask after the pause should succeed: %+v", got[0])
 	}
 }
@@ -199,7 +198,7 @@ func TestPageMissingFromDatasetIsCached(t *testing.T) {
 	t.Cleanup(srv.Close)
 	c := &Client{HTTP: srv.Client(), CacheDir: t.TempDir(), PageBase: srv.URL}
 	for range 2 {
-		if _, err := c.Page(context.Background(), 4216); err != nil {
+		if _, err := c.Page(t.Context(), 4216); err != nil {
 			t.Fatalf("a page the dataset lacks is an answer, not an error: %v", err)
 		}
 	}

@@ -1,7 +1,6 @@
 package modrinth
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,7 +15,7 @@ func TestStandingsFlagsArchivedProjectsByIDOrSlug(t *testing.T) {
 		_, _ = w.Write([]byte(`[{"id":"AANobbMI","slug":"sodium","status":"archived"},{"id":"zzz","slug":"fine","status":"approved"},{"id":"qqq","slug":"old-mod","status":"archived"}]`))
 	}))
 	t.Cleanup(srv.Close)
-	got, err := Driver{URL: srv.URL, HTTP: srv.Client()}.Standings(context.Background(), "1", []string{"AANobbMI", "fine", "old-mod"})
+	got, err := Driver{URL: srv.URL, HTTP: srv.Client()}.Standings(t.Context(), "1", []string{"AANobbMI", "fine", "old-mod"})
 	if err != nil || len(got) != 2 || got["AANobbMI"].State != "archived" || got["old-mod"].State != "archived" {
 		t.Fatalf("%+v %v", got, err)
 	}

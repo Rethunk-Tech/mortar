@@ -17,14 +17,14 @@ import (
 
 func TestRunInstallerGivesTheChildAConsoleItCanClear(t *testing.T) {
 	args := []string{"-NoProfile", "-Command", "[Console]::Clear(); exit 0"}
-	if _, err := runInstaller(context.Background(), exec.CommandContext(context.Background(), "powershell.exe", args...)); err != nil {
+	if _, err := runInstaller(t.Context(), exec.CommandContext(t.Context(), "powershell.exe", args...)); err != nil {
 		t.Fatalf("clearing the console failed: %v", err)
 	}
 }
 
 func TestRunInstallerReportsTheChildsFailure(t *testing.T) {
 	args := []string{"-NoProfile", "-Command", "exit 3"}
-	if _, err := runInstaller(context.Background(), exec.CommandContext(context.Background(), "powershell.exe", args...)); err == nil {
+	if _, err := runInstaller(t.Context(), exec.CommandContext(t.Context(), "powershell.exe", args...)); err == nil {
 		t.Fatal("a failing installer reported success")
 	}
 }
@@ -34,14 +34,14 @@ func TestRunInstallerGivesUpOnAnInstallerWaitingForAKey(t *testing.T) {
 	t.Cleanup(func() { installerTimeout = 2 * time.Minute })
 	args := []string{"-NoProfile", "-Command", "Start-Sleep 60"}
 	start := time.Now()
-	if _, err := runInstaller(context.Background(), exec.CommandContext(context.Background(), "powershell.exe", args...)); err == nil || time.Since(start) > 30*time.Second {
+	if _, err := runInstaller(t.Context(), exec.CommandContext(t.Context(), "powershell.exe", args...)); err == nil || time.Since(start) > 30*time.Second {
 		t.Fatalf("a stuck installer was not stopped (err %v after %v)", err, time.Since(start))
 	}
 }
 
 func TestCancelEndsTheInstallerToo(t *testing.T) {
 	pidFile := filepath.Join(t.TempDir(), "pid")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
 	defer cancel()
 	t.Setenv("MORTAR_TEST_OUT", pidFile)
 	cmd := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-Command", "$PID | Out-File -Encoding ascii $env:MORTAR_TEST_OUT; Start-Sleep 60")
@@ -72,7 +72,7 @@ func TestQuotedArgumentKeepsItsTrailingBackslash(t *testing.T) {
 	t.Setenv("MORTAR_TEST_OUT", out)
 	// Built as a struct, not exec.Command: runInstaller reads only Path, Dir and Args.
 	cmd := &exec.Cmd{Path: "powershell.exe", Args: []string{"powershell.exe", "-NoProfile", "-File", writeEcho(t), dir}}
-	if _, err := runInstaller(context.Background(), cmd); err != nil {
+	if _, err := runInstaller(t.Context(), cmd); err != nil {
 		t.Fatal(err)
 	}
 	b, err := os.ReadFile(filepath.Clean(out))

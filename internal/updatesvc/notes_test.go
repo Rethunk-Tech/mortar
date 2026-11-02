@@ -1,7 +1,6 @@
 package updatesvc
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -38,13 +37,13 @@ func TestReleaseNotes(t *testing.T) {
 		{"empty", " ", ReleaseNotes{Version: " "}, 0},
 	} {
 		hits.Store(0)
-		got := s.ReleaseNotes(context.Background(), tc.version)
+		got := s.ReleaseNotes(t.Context(), tc.version)
 		if got != tc.want || hits.Load() != tc.calls {
 			t.Errorf("%s: %+v, %d calls", tc.name, got, hits.Load())
 		}
 	}
 	srv.Close()
-	got := s.ReleaseNotes(context.Background(), "1.4.0")
+	got := s.ReleaseNotes(t.Context(), "1.4.0")
 	if got.Available {
 		t.Errorf("offline: %+v", got)
 	}

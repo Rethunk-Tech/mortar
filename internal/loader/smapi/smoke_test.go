@@ -1,7 +1,6 @@
 package smapi
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -38,7 +37,7 @@ func TestSmokeRealInstaller(t *testing.T) {
 	}
 	g := Loader{CacheDir: t.TempDir(), LogDir: t.TempDir()}
 	// A source that already has SMAPI exercises the update path, which is the same installer run.
-	ctx := context.Background()
+	ctx := t.Context()
 	before, _ := g.Status(loader.Target{InstallDir: copyDir})
 	t.Logf("copy before install: %+v", before)
 	version, err := g.Latest(ctx, components.GameInfo{})

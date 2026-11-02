@@ -45,12 +45,12 @@ func TestRecheckProbesOnlyUnreachableSources(t *testing.T) {
 	probeURL["test"] = srv.URL
 	defer delete(probeURL, "test")
 	Record("test", nil)
-	(&Service{}).Recheck(context.Background())
+	(&Service{}).Recheck(t.Context())
 	if hits != 0 {
 		t.Fatalf("a reachable source was probed")
 	}
 	Record("test", context.DeadlineExceeded)
-	got := (&Service{}).Recheck(context.Background())
+	got := (&Service{}).Recheck(t.Context())
 	if hits != 1 || got[0].Unreachable {
 		t.Fatalf("an HTTP answer, even 403, should clear the failure: hits=%d %+v", hits, got)
 	}

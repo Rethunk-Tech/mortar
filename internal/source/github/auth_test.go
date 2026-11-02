@@ -32,10 +32,10 @@ func TestRequestsCarryGhToken(t *testing.T) {
 		}
 		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader(body)), Request: r}, nil
 	})}}
-	if _, err := d.Search(context.Background(), source.Query{Key: "k", Text: "x", Page: 1}); err != nil {
+	if _, err := d.Search(t.Context(), source.Query{Key: "k", Text: "x", Page: 1}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := d.Details(context.Background(), "", "o/r", ""); err != nil {
+	if _, err := d.Details(t.Context(), "", "o/r", ""); err != nil {
 		t.Fatal(err)
 	}
 	// Signed in, the topic and the word as an owner are one GraphQL request.

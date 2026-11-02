@@ -37,33 +37,33 @@ func TestHealthPassRunsWeeklyFlaggedAndNotWhileRunning(t *testing.T) {
 	seen := &counted{}
 	svc.Emit = seen.emit
 	now := time.Now()
-	svc.healthPass(context.Background(), now)
+	svc.healthPass(t.Context(), now)
 	if seen.len() != 1 {
 		t.Fatalf("first pass checked %d profiles", seen.len())
 	}
-	svc.healthPass(context.Background(), now.Add(time.Hour))
+	svc.healthPass(t.Context(), now.Add(time.Hour))
 	if seen.len() != 1 {
 		t.Fatal("checked again within the week")
 	}
 	svc.FlagHealth("stardew")
-	svc.healthPass(context.Background(), now.Add(time.Hour))
-	svc.healthPass(context.Background(), now.Add(2*time.Hour))
+	svc.healthPass(t.Context(), now.Add(time.Hour))
+	svc.healthPass(t.Context(), now.Add(2*time.Hour))
 	if seen.len() != 2 {
 		t.Fatalf("a flag runs exactly one more check, got %d", seen.len())
 	}
 	e.Running = func(string, string) bool { return true }
-	svc.healthPass(context.Background(), now.Add(8*24*time.Hour))
+	svc.healthPass(t.Context(), now.Add(8*24*time.Hour))
 	if seen.len() != 2 {
 		t.Fatal("checked while the game runs")
 	}
 	e.Running = nil
 	e.GameRunning = func(string) bool { return true }
-	svc.healthPass(context.Background(), now.Add(8*24*time.Hour))
+	svc.healthPass(t.Context(), now.Add(8*24*time.Hour))
 	if seen.len() != 2 {
 		t.Fatal("checked while the game runs, however it was started")
 	}
 	e.GameRunning = nil
-	svc.healthPass(context.Background(), now.Add(8*24*time.Hour))
+	svc.healthPass(t.Context(), now.Add(8*24*time.Hour))
 	if seen.len() != 3 || seen.notices[2].Profile != p.ID {
 		t.Fatalf("a week later = %#v", seen.notices)
 	}
@@ -106,7 +106,7 @@ func TestRunHealthChecksWaitsForStartupToSettle(t *testing.T) {
 	old := healthIdleDelay
 	healthIdleDelay = 100 * time.Millisecond
 	t.Cleanup(func() { healthIdleDelay = old })
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	settled := make(chan struct{})
 	done := make(chan struct{})
 	go func() {
@@ -186,7 +186,7 @@ func TestAnotherBuildsHealthCheckIsNotShownAndRunsAgain(t *testing.T) {
 	if got, _ := svc.HealthBadges("stardew"); len(got) != 0 {
 		t.Fatalf("another build's count is badged: %v", got)
 	}
-	svc.healthPass(context.Background(), now)
+	svc.healthPass(t.Context(), now)
 	if seen.len() != 1 {
 		t.Fatal("another build's check postponed this build's")
 	}

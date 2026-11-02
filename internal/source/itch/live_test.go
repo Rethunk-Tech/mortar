@@ -25,7 +25,7 @@ func TestLive(t *testing.T) {
 	if err != nil {
 		t.Skipf("no itch.io key in the keyring: %v", err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
 	defer cancel()
 	d := Driver{}
 

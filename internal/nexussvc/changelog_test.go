@@ -1,7 +1,6 @@
 package nexussvc
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -31,10 +30,10 @@ func TestGitHubChangelogsRefuseANameThatMovesTheURL(t *testing.T) {
 	t.Cleanup(srv.Close)
 	s := &Service{GitHub: &github.Client{APIBase: srv.URL, CacheDir: t.TempDir()}}
 	for _, repo := range []string{"me/..", "o/r?x", "../x", "o/r/s", "o"} {
-		if _, err := s.ReleaseChangelog(context.Background(), repo); !errors.Is(err, gh.ErrInvalidRepo) {
+		if _, err := s.ReleaseChangelog(t.Context(), repo); !errors.Is(err, gh.ErrInvalidRepo) {
 			t.Errorf("ReleaseChangelog(%q): %v", repo, err)
 		}
-		if _, err := s.UpdateChangelog(context.Background(), "g", 0, repo, "1.0.0", "2.0.0"); !errors.Is(err, gh.ErrInvalidRepo) {
+		if _, err := s.UpdateChangelog(t.Context(), "g", 0, repo, "1.0.0", "2.0.0"); !errors.Is(err, gh.ErrInvalidRepo) {
 			t.Errorf("UpdateChangelog(%q): %v", repo, err)
 		}
 	}

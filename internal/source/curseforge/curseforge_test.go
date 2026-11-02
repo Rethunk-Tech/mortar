@@ -1,7 +1,6 @@
 package curseforge
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -79,7 +78,7 @@ func fake(t *testing.T) Driver {
 
 func TestSearchMapsHitsAndPages(t *testing.T) {
 	t.Parallel()
-	page, err := fake(t).Search(context.Background(), source.Query{Game: "stardew", Key: "4643", Text: "cp", Page: 2, Sort: source.SortDownloads})
+	page, err := fake(t).Search(t.Context(), source.Query{Game: "stardew", Key: "4643", Text: "cp", Page: 2, Sort: source.SortDownloads})
 	if err != nil || page.Total != 41 || len(page.Items) != 2 {
 		t.Fatalf("%+v %v", page, err)
 	}
@@ -90,7 +89,7 @@ func TestSearchMapsHitsAndPages(t *testing.T) {
 	if it.External || !page.Items[1].External {
 		t.Fatalf("external flags: %+v %+v", it, page.Items[1])
 	}
-	deep, err := fake(t).Search(context.Background(), source.Query{Game: "stardew", Key: "4643", Page: 600})
+	deep, err := fake(t).Search(t.Context(), source.Query{Game: "stardew", Key: "4643", Page: 600})
 	if err != nil || len(deep.Items) != 0 {
 		t.Fatalf("past the window: %+v %v", deep, err)
 	}
@@ -99,17 +98,17 @@ func TestSearchMapsHitsAndPages(t *testing.T) {
 func TestCategoriesAndFilters(t *testing.T) {
 	t.Parallel()
 	d := fake(t)
-	names, err := d.Categories(context.Background(), "4643")
+	names, err := d.Categories(t.Context(), "4643")
 	if err != nil || !slices.Equal(names, []string{"Items", "Misc"}) {
 		t.Fatalf("%v %v", names, err)
 	}
 	q := source.Query{Game: "stardew", Key: "4643", Categories: []string{"items"}, ExcludeCategories: []string{"Misc"}}
-	page, err := d.Search(context.Background(), q)
+	page, err := d.Search(t.Context(), q)
 	if err != nil || len(page.Items) != 1 || page.Items[0].ID != "10" || page.Hidden != 1 {
 		t.Fatalf("%+v %v", page, err)
 	}
 	q.Categories = []string{"Nope"}
-	if page, err = d.Search(context.Background(), q); err != nil || len(page.Items) != 0 {
+	if page, err = d.Search(t.Context(), q); err != nil || len(page.Items) != 0 {
 		t.Fatalf("unknown include: %+v %v", page, err)
 	}
 }
@@ -117,15 +116,15 @@ func TestCategoriesAndFilters(t *testing.T) {
 func TestResolvePicksStableAndFollowsRequiredOnly(t *testing.T) {
 	t.Parallel()
 	d := fake(t)
-	r, err := d.Resolve(context.Background(), "10", "")
+	r, err := d.Resolve(t.Context(), "10", "")
 	if err != nil || r.URL != "https://edge/open-2.0.zip" || r.Digest != "sha1:ab" || r.Version != "Open 2.0" || r.VersionID != "102" ||
 		r.Size != 2048 || r.Name != "Open Mod" || strings.Join(r.Dependencies, ",") != "11" {
 		t.Fatalf("%+v %v", r, err)
 	}
-	if r, err = d.Resolve(context.Background(), "10", "Open 2.0"); err != nil || r.VersionID != "102" {
+	if r, err = d.Resolve(t.Context(), "10", "Open 2.0"); err != nil || r.VersionID != "102" {
 		t.Fatalf("by name: %+v %v", r, err)
 	}
-	if _, err = d.Resolve(context.Background(), "10", "Nope"); err == nil {
+	if _, err = d.Resolve(t.Context(), "10", "Nope"); err == nil {
 		t.Fatal("unknown version resolved")
 	}
 }
@@ -134,7 +133,7 @@ func TestForbiddenFilesAreHandedOff(t *testing.T) {
 	t.Parallel()
 	d := fake(t)
 	for _, c := range []struct{ id, version string }{{"20", ""}, {"10", "101"}} {
-		_, err := d.Resolve(context.Background(), c.id, c.version)
+		_, err := d.Resolve(t.Context(), c.id, c.version)
 		manual, ok := errors.AsType[*NotDistributableError](err)
 		if !ok || !strings.HasPrefix(manual.PageURL, "https://www.curseforge.com/stardewvalley/mods/") {
 			t.Fatalf("mod %s: %v", c.id, err)
@@ -144,14 +143,14 @@ func TestForbiddenFilesAreHandedOff(t *testing.T) {
 
 func TestLatestSkipsInstalledAndBeta(t *testing.T) {
 	t.Parallel()
-	got, err := fake(t).Latest(context.Background(), components.GameSource{}, "", []source.InstalledFile{
+	got, err := fake(t).Latest(t.Context(), components.GameSource{}, "", []source.InstalledFile{
 		{ID: "10", Version: "Open 1.0", Digest: "sha1:old"},
 		{ID: "10", Version: "Open 2.0", Digest: "sha1:ab"},
 	})
 	if err != nil || len(got) != 1 || got["sha1:old"].VersionID != "102" || got["sha1:old"].Version != "Open 2.0" {
 		t.Fatalf("%+v %v", got, err)
 	}
-	deps, _ := Driver{}.Dependencies(context.Background(), "", "", []source.VersionRef{{ID: "10", Version: "Open 2.0"}})
+	deps, _ := Driver{}.Dependencies(t.Context(), "", "", []source.VersionRef{{ID: "10", Version: "Open 2.0"}})
 	if strings.Join(deps[source.VersionRef{ID: "10", Version: "Open 2.0"}], ",") != "11" {
 		t.Fatalf("%v", deps)
 	}
@@ -159,7 +158,7 @@ func TestLatestSkipsInstalledAndBeta(t *testing.T) {
 
 func TestDetailsAndLinks(t *testing.T) {
 	t.Parallel()
-	det, err := fake(t).Details(context.Background(), "4643", "10", "")
+	det, err := fake(t).Details(t.Context(), "4643", "10", "")
 	if err != nil || strings.Join(det.Versions, ",") != "Open 3.0b,Open 2.0,Open 1.0" || strings.Join(det.Dependencies, ",") != "11" ||
 		det.Description != "## About\n\nAn *open* mod." {
 		t.Fatalf("%+v %v", det, err)
@@ -175,7 +174,7 @@ func TestWithoutAKeyTheSourceIsUnavailable(t *testing.T) {
 	if d.Unavailable() == "" || source.Unavailable(d) == "" {
 		t.Fatal("a build without a key must report itself unavailable")
 	}
-	if _, err := d.Search(context.Background(), source.Query{Game: "g", Key: "1"}); err == nil {
+	if _, err := d.Search(t.Context(), source.Query{Game: "g", Key: "1"}); err == nil {
 		t.Fatal("search without a key succeeded")
 	}
 	t.Setenv(envKey, "x")

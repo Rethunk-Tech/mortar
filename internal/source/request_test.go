@@ -2,7 +2,6 @@ package source
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -37,7 +36,7 @@ func TestDoJSON(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	call := func(path string, out any) error {
-		return DoJSON(context.Background(), Request{
+		return DoJSON(t.Context(), Request{
 			Service: "Site", URL: srv.URL + path, UserAgent: "Mortar/1",
 			Header: func(h http.Header) { h.Set("X-Key", "k") },
 		}, out)

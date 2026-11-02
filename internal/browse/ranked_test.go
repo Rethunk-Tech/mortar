@@ -76,7 +76,7 @@ func TestRankedPageOneIsTheTopHitsAcrossSources(t *testing.T) {
 	b := &rankSource{id: "rb", downloads: descending(995, 40, 10)}  // 995, 985, ...
 	weak := &rankSource{id: "rw", downloads: descending(50, 40, 1)} // never near the top
 	game := rankGame(t, a, b, weak)
-	page, err := (&Client{}).searchAll(context.Background(), game, "", 1, Filter{Sort: source.SortDownloads})
+	page, err := (&Client{}).searchAll(t.Context(), game, "", 1, Filter{Sort: source.SortDownloads})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,7 +96,7 @@ func TestRankedPageOneIsTheTopHitsAcrossSources(t *testing.T) {
 			t.Fatalf("%s read pages %v; page 1 needs at most 2 of each", s.id, s.pages)
 		}
 	}
-	two, err := (&Client{}).searchAll(context.Background(), game, "", 2, Filter{Sort: source.SortDownloads})
+	two, err := (&Client{}).searchAll(t.Context(), game, "", 2, Filter{Sort: source.SortDownloads})
 	if err != nil || len(two.Items) != source.PageSize || two.Items[0].Downloads > page.Items[len(page.Items)-1].Downloads {
 		t.Fatalf("page 2 must continue below page 1: %v %v", downloadsOf(two.Items), err)
 	}
@@ -106,7 +106,7 @@ func TestRankedLeavesOutAndNamesSourcesThatCannotSort(t *testing.T) {
 	a := &rankSource{id: "rs", downloads: descending(500, 5, 1)}
 	stars := &rankSource{id: "rstars", downloads: descending(9000, 5, 1), sorts: []string{source.SortStars}}
 	game := rankGame(t, a, stars)
-	page, err := (&Client{}).searchAll(context.Background(), game, "", 1, Filter{Sort: source.SortDownloads})
+	page, err := (&Client{}).searchAll(t.Context(), game, "", 1, Filter{Sort: source.SortDownloads})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +119,7 @@ func TestRankedKeepsWhatAFailingSourceAlreadyReturned(t *testing.T) {
 	steady := &rankSource{id: "rsteady", downloads: descending(100, 60, 1)}
 	flaky := &rankSource{id: "rflaky", downloads: descending(1000, 60, 1), failFrom: 3}
 	game := rankGame(t, steady, flaky)
-	page, err := (&Client{}).searchAll(context.Background(), game, "", 3, Filter{Sort: source.SortDownloads})
+	page, err := (&Client{}).searchAll(t.Context(), game, "", 3, Filter{Sort: source.SortDownloads})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,11 +140,11 @@ func TestRankedTotalStaysTheSameOnEveryPage(t *testing.T) {
 		_, _ = fmt.Sscanf(it.ID, "rt%d", &n)
 		return n >= 2*source.PageSize && n%2 == 0
 	}}
-	one, err := c.searchAll(context.Background(), game, "", 1, Filter{Sort: source.SortDownloads})
+	one, err := c.searchAll(t.Context(), game, "", 1, Filter{Sort: source.SortDownloads})
 	if err != nil {
 		t.Fatal(err)
 	}
-	three, err := c.searchAll(context.Background(), game, "", 3, Filter{Sort: source.SortDownloads})
+	three, err := c.searchAll(t.Context(), game, "", 3, Filter{Sort: source.SortDownloads})
 	if err != nil || three.Total != one.Total {
 		t.Fatalf("page 3 total %d, page 1 total %d, %v", three.Total, one.Total, err)
 	}
@@ -175,7 +175,7 @@ func TestRankedPagesStayFullWhenSourcesShareMods(t *testing.T) {
 	source.Register(b)
 	seen := map[string]bool{}
 	for pg := 1; pg <= 10; pg++ {
-		page, err := (&Client{}).searchAll(context.Background(), game, "", pg, Filter{Sort: source.SortDownloads})
+		page, err := (&Client{}).searchAll(t.Context(), game, "", pg, Filter{Sort: source.SortDownloads})
 		if err != nil || len(page.Items) != source.PageSize {
 			t.Fatalf("page %d: %d items, %v", pg, len(page.Items), err)
 		}

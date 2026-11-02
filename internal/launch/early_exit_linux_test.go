@@ -3,7 +3,6 @@
 package launch
 
 import (
-	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -20,7 +19,7 @@ import (
 func runFake(t *testing.T, script string) (time.Duration, error) {
 	t.Helper()
 	began := time.Now()
-	err := Run(context.Background(), Start, Command{Name: "sh", Args: []string{"-c", script}}, Timing{Timeout: 10 * time.Second, Poll: 10 * time.Millisecond}, nil)
+	err := Run(t.Context(), Start, Command{Name: "sh", Args: []string{"-c", script}}, Timing{Timeout: 10 * time.Second, Poll: 10 * time.Millisecond}, nil)
 	return time.Since(began), err
 }
 

@@ -1,7 +1,6 @@
 package support
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -23,7 +22,7 @@ func upload(t *testing.T, handler http.HandlerFunc, log string) (string, error) 
 	srv := httptest.NewServer(handler)
 	t.Cleanup(srv.Close)
 	s := newService(srv.URL, "1.2.3", func(string) problems.Environment { return problems.Environment{} })
-	return s.Upload(context.Background(), "stardew", "", log)
+	return s.Upload(t.Context(), "stardew", "", log)
 }
 
 func TestUploadRedirectIsTheLink(t *testing.T) {
@@ -169,7 +168,7 @@ func TestUploadRefusesALoaderSmapiIoCannotRead(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { called = true }))
 	t.Cleanup(srv.Close)
 	s := newService(srv.URL, "1.2.3", func(string) problems.Environment { return problems.Environment{} })
-	if _, err := s.Upload(context.Background(), "lethal-company", "", "[Info   : BepInEx] hi"); err == nil {
+	if _, err := s.Upload(t.Context(), "lethal-company", "", "[Info   : BepInEx] hi"); err == nil {
 		t.Fatal("a BepInEx log was uploaded to smapi.io")
 	}
 	if called {

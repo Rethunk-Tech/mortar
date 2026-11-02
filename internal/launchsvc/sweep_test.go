@@ -62,7 +62,7 @@ func TestSweepNoChangeSkips(t *testing.T) {
 	if err := svc.settings.RecordLastSweep("stardew", "1.6.15", "smapi", "4.1.10"); err != nil {
 		t.Fatal(err)
 	}
-	rep, err := svc.Sweep(context.Background(), "stardew", "")
+	rep, err := svc.Sweep(t.Context(), "stardew", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +89,7 @@ func TestSweepBrokenWithAndWithoutFix(t *testing.T) {
 	svc.SweepHasUpdate = func(uniqueID mod.ID, _ int) bool {
 		return uniqueID == "smapi:A.Fixable"
 	}
-	rep, err := svc.Sweep(context.Background(), "stardew", "")
+	rep, err := svc.Sweep(t.Context(), "stardew", "")
 	if err != nil {
 		t.Fatal(err)
 	}

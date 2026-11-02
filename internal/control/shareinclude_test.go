@@ -1,7 +1,6 @@
 package control
 
 import (
-	"context"
 	"path/filepath"
 	"testing"
 
@@ -14,7 +13,7 @@ import (
 // The command's link is the window's link: it carries a mod's note only while the "notes" share setting is on.
 func TestShareCommandFollowsTheShareSettings(t *testing.T) {
 	s := services(t)
-	ctx := context.Background()
+	ctx := t.Context()
 	p, err := s.Store.Create("stardew", "Farm")
 	if err != nil {
 		t.Fatal(err)

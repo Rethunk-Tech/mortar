@@ -93,7 +93,7 @@ func packMods(pv Preview) map[string]Mod {
 func TestPreviewLinkReadsABareCodeAndAHashCode(t *testing.T) {
 	s, _ := packService(t)
 	for _, text := range []string{codeKey, "#r2modman\n" + base64.StdEncoding.EncodeToString(r2z(t))} {
-		pv, err := s.PreviewLink(context.Background(), "lethal-company", text, "")
+		pv, err := s.PreviewLink(t.Context(), "lethal-company", text, "")
 		if err != nil || pv.Name != "Just some mods" || pv.Game != "lethal-company" {
 			t.Fatalf("preview %+v, %v", pv, err)
 		}
@@ -140,11 +140,11 @@ func localEntry(t *testing.T, s *Service, profileID, name string) (profile.Entry
 
 func TestImportFromACodeWritesConfigsAndQueuesWhatResolves(t *testing.T) {
 	s, rec := packService(t)
-	pv, err := s.PreviewLink(context.Background(), "lethal-company", codeKey, "")
+	pv, err := s.PreviewLink(t.Context(), "lethal-company", codeKey, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.Import(context.Background(), "lethal-company", pv.Session, "", nil, false)
+	res, err := s.Import(t.Context(), "lethal-company", pv.Session, "", nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -166,11 +166,11 @@ func TestImportFromACodeWritesConfigsAndQueuesWhatResolves(t *testing.T) {
 
 func TestImportAsIsQueuesTheCodesPackagesWithoutDependenciesAndPinsThem(t *testing.T) {
 	s, rec := packService(t)
-	pv, err := s.PreviewLink(context.Background(), "lethal-company", codeKey, "")
+	pv, err := s.PreviewLink(t.Context(), "lethal-company", codeKey, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Import(context.Background(), "lethal-company", pv.Session, "", nil, true); err != nil {
+	if _, err := s.Import(t.Context(), "lethal-company", pv.Session, "", nil, true); err != nil {
 		t.Fatal(err)
 	}
 	if len(rec.reqs) != 1 || !rec.reqs[0].AsIs {
@@ -239,7 +239,7 @@ func TestPreviewFileReadsAnR2zAndALocalProfileFolder(t *testing.T) {
 	if err := os.WriteFile(file, r2z(t), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	pv, err := s.PreviewFile(context.Background(), "lethal-company", file, "")
+	pv, err := s.PreviewFile(t.Context(), "lethal-company", file, "")
 	if err != nil || pv.Name != "Just some mods" || packMods(pv)["Alice-MoreCompany"].Key == "" {
 		t.Fatalf("r2z preview %+v, %v", pv, err)
 	}
@@ -251,15 +251,15 @@ func TestPreviewFileReadsAnR2zAndALocalProfileFolder(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(prof, "mods.yml"), []byte("- name: Alice-MoreCompany\n  versionNumber: {major: 1, minor: 2, patch: 3}\n  enabled: true\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	pv, err = s.PreviewLocalProfile(context.Background(), "lethal-company", prof, "")
+	pv, err = s.PreviewLocalProfile(t.Context(), "lethal-company", prof, "")
 	if err != nil || packMods(pv)["Alice-MoreCompany"].State != StateDownload {
 		t.Fatalf("folder preview %+v, %v", pv, err)
 	}
-	res, err := s.Import(context.Background(), "lethal-company", pv.Session, "", nil, false)
+	res, err := s.Import(t.Context(), "lethal-company", pv.Session, "", nil, false)
 	if err != nil || res.Profile.ImportedFrom != prof {
 		t.Fatalf("imported from %q, %v", res.Profile.ImportedFrom, err)
 	}
-	if _, err := s.PreviewFile(context.Background(), "lethal-company", prof+"/mods.yml", ""); err == nil {
+	if _, err := s.PreviewFile(t.Context(), "lethal-company", prof+"/mods.yml", ""); err == nil {
 		t.Error("a file that is no pack previewed")
 	}
 }
@@ -274,11 +274,11 @@ func TestReplaceFromACodeRemovesThunderstoreModsItLacks(t *testing.T) {
 	if _, err := s.d.Profiles.InstallSource(t.Context(), "lethal-company", prof.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Old-Extra", Version: "1.0.0"}); err != nil {
 		t.Fatal(err)
 	}
-	pv, err := s.PreviewLink(context.Background(), "lethal-company", codeKey, prof.ID)
+	pv, err := s.PreviewLink(t.Context(), "lethal-company", codeKey, prof.ID)
 	if err != nil || len(pv.Replace.Remove) != 1 {
 		t.Fatalf("plan %+v, %v", pv.Replace, err)
 	}
-	if _, err := s.Replace(context.Background(), "lethal-company", pv.Session, prof.ID, nil, false); err != nil {
+	if _, err := s.Replace(t.Context(), "lethal-company", pv.Session, prof.ID, nil, false); err != nil {
 		t.Fatal(err)
 	}
 	got, _ := s.find("lethal-company", prof.ID)
@@ -319,7 +319,7 @@ func TestImportFromAnR2modmanFolderBringsAHandAddedModAsLocal(t *testing.T) {
 
 func TestAPackageTheIndexLacksIsNotRemovedFromTheSite(t *testing.T) {
 	s, _ := packService(t)
-	pv, err := s.PreviewLink(context.Background(), "lethal-company", codeKey, "")
+	pv, err := s.PreviewLink(t.Context(), "lethal-company", codeKey, "")
 	if err != nil {
 		t.Fatal(err)
 	}
