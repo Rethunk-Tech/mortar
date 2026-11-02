@@ -386,7 +386,8 @@ function mortarPalette(
     warning: {
       main: dark ? statusColors.warning : ensureContrast(statusColors.warning, paperSolid),
     },
-    error: { main: dark ? statusColors.error : ensureContrast(statusColors.error, paperSolid) },
+    // Dark red is too dim to read as text on a dark surface, so unlike the bright hues it is lifted there too.
+    error: { main: ensureContrast(statusColors.error, paperSolid) },
   }
 }
 

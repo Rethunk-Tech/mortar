@@ -155,9 +155,7 @@ export function ReleaseEverywhere({
                   <Typography
                     variant="caption"
                     color="error"
-                    title={st.error}
-                    noWrap={true}
-                    sx={{ maxWidth: 200 }}
+                    sx={{ maxWidth: 260, overflowWrap: 'anywhere' }}
                   >
                     {st.error}
                   </Typography>
