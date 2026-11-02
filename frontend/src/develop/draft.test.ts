@@ -83,7 +83,8 @@ test('the template rules are checked before Mortar is asked', () => {
 
 test('remembered parameters are the author step, switches the features step; each step checks only its own', () => {
   expect(stepParams(form, 'author').map((p) => p.id)).toEqual(['team'])
-  expect(stepParams(form, 'mod').map((p) => p.id)).toEqual(['description', 'categories'])
+  expect(stepParams(form, 'mod').map((p) => p.id)).toEqual(['description'])
+  expect(stepParams(form, 'content').map((p) => p.id)).toEqual(['categories'])
   expect(stepParams(form, 'features').map((p) => p.id)).toEqual(['config'])
   const d = {
     ...firstDraft(form, {}),

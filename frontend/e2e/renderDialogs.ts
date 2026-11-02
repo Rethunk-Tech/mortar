@@ -109,7 +109,7 @@ export function dialogKit(h: Helpers) {
     await box('Description').fill('Checks how the wizard looks.')
     for (let at = 0; at < steps; at++) {
       await inDialog(p, /^Next$/)
-      if (at === 0) {
+      if (at === 1) {
         await box('Author').fill('Render Check')
         await box('Thunderstore team').fill('RenderCheck')
         await box('Id prefix').fill('com.rendercheck')
@@ -276,16 +276,16 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
         await shown(p)
       },
     },
-    // The mod step without code: the Code tile off, so only content folders are carried.
+    // The content step without code: the Code tile off, so only content folders are carried.
     {
       ...dialog(
         '',
         (p) =>
           p.getByRole('dialog').last().getByRole('button', { name: 'Code', exact: true }).click(),
         WIZARD_BUDGET,
-        (p) => newModTo(p, 0),
+        (p) => newModTo(p, 1),
       ),
-      name: 'develop-new-mod-content',
+      name: 'develop-new-mod-no-code',
     },
     // A project's Edit dialog, on its Details tab, then its Mods tab.
     {
@@ -314,10 +314,11 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
       name: 'develop-edit-project-mods',
     },
     ...[
-      ['author', 0],
-      ['features', 1],
-      ['dependencies', 2],
-      ['project', 3],
+      ['content', 0],
+      ['author', 1],
+      ['features', 2],
+      ['dependencies', 3],
+      ['project', 4],
     ].map(([step, n]) => ({
       ...dialog(
         '',

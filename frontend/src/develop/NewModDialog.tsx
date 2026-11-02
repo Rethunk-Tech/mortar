@@ -17,7 +17,7 @@ import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/intern
 import { useGameInfo } from '../games/info.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
-import { Field, FieldRow, FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { Field, FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportError, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -103,77 +103,77 @@ const Prerequisites = memo(function PrerequisitesView({
 
 // Memoised on what it shows, so the GitHub owner filled in as the tools arrive leaves the fields alone.
 const ModStep = memo(
-  function ModStepView({
-    draft,
-    form,
-    noCodeOffered,
-    set,
-  }: {
-    draft: Draft
-    form: Form | null
-    noCodeOffered: boolean
-    set: SetDraft
-  }) {
+  function ModStepView({ draft, form, set }: { draft: Draft; form: Form | null; set: SetDraft }) {
     const { t } = useLingui()
     return (
       <>
-        <FieldRow>
-          <TextInput
-            label={t`Mod name`}
-            error={
-              draft.name === '' || validModName(draft.name)
-                ? ''
-                : t`Letters and digits, starting with a capital`
-            }
-            placeholder="ShopDrop"
-            value={draft.name}
-            onChange={(name) => set({ name })}
-            autoFocus={true}
-          />
-          <TextInput
-            label={t`Folder name`}
-            placeholder={draft.name}
-            value={draft.repo}
-            onChange={(repo) => set({ repo })}
-          />
-        </FieldRow>
+        <TextInput
+          label={t`Mod name`}
+          error={
+            draft.name === '' || validModName(draft.name)
+              ? ''
+              : t`Letters and digits, starting with a capital`
+          }
+          placeholder="ShopDrop"
+          value={draft.name}
+          onChange={(name) => set({ name })}
+          autoFocus={true}
+        />
         <Params
           params={stepParams(form, 'mod')}
           all={form?.parameters ?? []}
           draft={draft}
           set={set}
-          code={
-            noCodeOffered
-              ? {
-                  on: draft.kind === '',
-                  set: (on) =>
-                    set({
-                      kind: on ? '' : CONTENT_KIND,
-                      dependencies: null,
-                      values: form?.parameters?.some((p) => p.id === CATEGORIES_PARAM)
-                        ? swapCategories(
-                            draft.values,
-                            on ? [] : CODE_CATEGORIES,
-                            on ? CODE_CATEGORIES : [],
-                          )
-                        : draft.values,
-                    }),
-                }
-              : undefined
-          }
         />
       </>
     )
   },
   (a, b) =>
     a.form === b.form &&
-    a.noCodeOffered === b.noCodeOffered &&
     a.set === b.set &&
-    a.draft.kind === b.draft.kind &&
     a.draft.name === b.draft.name &&
-    a.draft.repo === b.draft.repo &&
     a.draft.values === b.draft.values,
 )
+
+function ContentStep({
+  draft,
+  form,
+  noCodeOffered,
+  set,
+}: {
+  draft: Draft
+  form: Form | null
+  noCodeOffered: boolean
+  set: SetDraft
+}) {
+  return (
+    <Params
+      params={stepParams(form, 'content')}
+      all={form?.parameters ?? []}
+      draft={draft}
+      set={set}
+      code={
+        noCodeOffered
+          ? {
+              on: draft.kind === '',
+              set: (on) =>
+                set({
+                  kind: on ? '' : CONTENT_KIND,
+                  dependencies: null,
+                  values: form?.parameters?.some((p) => p.id === CATEGORIES_PARAM)
+                    ? swapCategories(
+                        draft.values,
+                        on ? [] : CODE_CATEGORIES,
+                        on ? CODE_CATEGORIES : [],
+                      )
+                    : draft.values,
+                }),
+            }
+          : undefined
+      }
+    />
+  )
+}
 
 function ProjectStep({
   draft,
@@ -213,6 +213,12 @@ function ProjectStep({
           </Button>
         </Box>
       </Field>
+      <TextInput
+        label={t`Folder name`}
+        placeholder={draft.name}
+        value={draft.repo}
+        onChange={(repo) => set({ repo })}
+      />
       <SelectField
         label={draft.kind ? t`Installs into` : t`Builds install into`}
         value={draft.profile}
@@ -258,6 +264,7 @@ function useStepLabels() {
   const { t } = useLingui()
   return {
     mod: t`Mod`,
+    content: t`Content`,
     author: t`Author`,
     features: t`Features`,
     dependencies: t`Dependencies`,
@@ -413,8 +420,9 @@ export function NewModDialog({
       closeButton={true}
     >
       {draft.kind ? null : <Prerequisites tools={tools} form={templateForm} />}
-      {step === 'mod' ? (
-        <ModStep draft={draft} form={form} noCodeOffered={noCodeOffered} set={set} />
+      {step === 'mod' ? <ModStep draft={draft} form={form} set={set} /> : null}
+      {step === 'content' ? (
+        <ContentStep draft={draft} form={form} noCodeOffered={noCodeOffered} set={set} />
       ) : null}
       {step === 'author' || step === 'features' ? (
         <Params

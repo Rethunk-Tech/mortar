@@ -82,6 +82,7 @@ export function rememberedOf(d: Draft, form: Form): Remembered {
 }
 
 export const CATEGORIES_PARAM: string = 'categories'
+export const CONTENT_PARAM = 'mortarContent'
 
 // What the Code tile stands for in the categories.
 export const CODE_CATEGORIES = ['mods', 'bepinex']
@@ -117,9 +118,9 @@ function paramIssue(p: Param, raw: string): string {
   return ''
 }
 
-// The wizard's steps: the mod itself, the author details Mortar remembers, what the mod does, its dependencies, and
-// where the project goes.
-const STEPS = ['mod', 'author', 'features', 'dependencies', 'project'] as const
+// The wizard's steps: the mod itself, what it carries and where it is listed, the author details Mortar remembers, what
+// the mod does, its dependencies, and where the project goes.
+const STEPS = ['mod', 'content', 'author', 'features', 'dependencies', 'project'] as const
 export type Step = (typeof STEPS)[number]
 
 /** Where a step sits among the steps shown now; one that is gone (the template had no features) falls to the next. */
@@ -132,12 +133,17 @@ export function stepIndex(steps: Step[], step: Step | null): number {
   return i < 0 ? steps.length - 1 : i
 }
 
-/** The steps this wizard shows: the features only when the form asks any. */
+/** The steps this wizard shows: content and features only when the form asks any. */
 export function wizardSteps(form: Form | null): Step[] {
-  return STEPS.filter((s) => s !== 'features' || !form || stepParams(form, s).length > 0)
+  return STEPS.filter(
+    (s) => (s !== 'features' && s !== 'content') || !form || stepParams(form, s).length > 0,
+  )
 }
 
 const isFeature = (p: Param) => p.kind === 'bool' || (p.kind === 'choice' && !p.multiple)
+
+// What the mod carries comes first: its categories follow from it.
+const CONTENT_STEP = [CONTENT_PARAM, CATEGORIES_PARAM]
 
 /** The parameters a step asks for: remembered ones on the author step, switches and single choices on the features
  * step, the rest on the mod step. */
@@ -146,10 +152,12 @@ export function stepParams(form: Form | null, step: Step): Param[] {
   switch (step) {
     case 'author':
       return (form?.parameters ?? []).filter((p) => p.remember)
+    case 'content':
+      return CONTENT_STEP.flatMap((id) => all.filter((p) => p.id === id))
     case 'features':
-      return all.filter(isFeature)
+      return all.filter((p) => isFeature(p) && !CONTENT_STEP.includes(p.id))
     case 'mod':
-      return all.filter((p) => !isFeature(p))
+      return all.filter((p) => !(isFeature(p) || CONTENT_STEP.includes(p.id)))
     default:
       return []
   }
@@ -233,9 +241,6 @@ export function stepIssue(d: Draft, form: Form | null, step: Step): string {
     if (!MOD_NAME.test(d.name)) {
       return i18n._(msg`Fix the mod name.`)
     }
-    if (!FOLDER.test(d.repo || d.name)) {
-      return i18n._(msg`The folder name holds only letters, digits, dots, dashes and underscores.`)
-    }
   }
   const issue = firstIssue(d, stepParams(form, step), form.parameters ?? [])
   if (issue || step !== 'project') {
@@ -243,6 +248,9 @@ export function stepIssue(d: Draft, form: Form | null, step: Step): string {
   }
   if (d.parent === '') {
     return i18n._(msg`Choose the folder for your mod projects.`)
+  }
+  if (!FOLDER.test(d.repo || d.name)) {
+    return i18n._(msg`The folder name holds only letters, digits, dots, dashes and underscores.`)
   }
   if (d.github && !OWNER.test(d.owner)) {
     return i18n._(msg`Name the account or organisation on ${{ source: sourceLabel('github') }}.`)

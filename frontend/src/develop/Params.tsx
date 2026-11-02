@@ -9,10 +9,15 @@ import {
 import type { Param } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import { Field, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
-import { CONTENT_PARAM } from './assetKinds.ts'
 import { ChoicePicker } from './ChoicePicker.tsx'
 import { ContentTicks } from './ContentTicks.tsx'
-import { CATEGORIES_PARAM, type Draft, requirementIssue, swapCategories } from './draft.ts'
+import {
+  CATEGORIES_PARAM,
+  CONTENT_PARAM,
+  type Draft,
+  requirementIssue,
+  swapCategories,
+} from './draft.ts'
 import { localizedParam } from './ownParams.ts'
 
 // A single choice with this many options or fewer is a row of toggle buttons rather than a menu.

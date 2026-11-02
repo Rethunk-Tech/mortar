@@ -6,10 +6,16 @@ import { AssetForm } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { reportError } from '../toasts/report.ts'
 import { useProjectInfo } from './builds.ts'
 import { findPackage } from './dependencies.ts'
-import { CATEGORIES_PARAM, type Draft, firstDraft, isRemembered, REMEMBERED } from './draft.ts'
+import {
+  CATEGORIES_PARAM,
+  CONTENT_PARAM,
+  type Draft,
+  firstDraft,
+  isRemembered,
+  REMEMBERED,
+} from './draft.ts'
 
 export const CONTENT_KIND = 'content'
-export const CONTENT_PARAM = 'mortarContent'
 
 // A lookup that fails (offline) counts the package as there; only one the source does not list is missing. A package
 // that is neither on Thunderstore nor one of the player's projects makes a pack nothing loads.
