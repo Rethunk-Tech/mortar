@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	gh "github.com/Rethunk-Tech/go-github"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -25,15 +26,14 @@ func (s *Service) githubOrigin(ctx context.Context, dir string) (owner, repo str
 // attaches the newest package. A tag that already has a release gets the package as one more asset, unless it has it.
 // It returns the release's page.
 func (s *Service) UploadGitHub(ctx context.Context, gameID, dir, version string) (string, error) {
-	p, zipPath, err := s.uploadPackage(gameID, dir)
-	if err != nil {
-		return "", err
-	}
-	owner, repo, ok := s.githubOrigin(ctx, p.Dir)
-	if !ok {
-		return "", usererr.Wrap(usererr.Invalid, errors.New("the project has no github.com origin"))
-	}
-	notes, err := releaseNotes(p.Dir, version)
+	var owner, repo string
+	p, zipPath, notes, err := s.prepareUpload(gameID, dir, version, true, func(p settings.DevProject) error {
+		var ok bool
+		if owner, repo, ok = s.githubOrigin(ctx, p.Dir); !ok {
+			return usererr.Wrap(usererr.Invalid, errors.New("the project has no github.com origin"))
+		}
+		return nil
+	})
 	if err != nil {
 		return "", err
 	}

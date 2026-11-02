@@ -92,13 +92,15 @@ func (s *Service) uploadPackage(gameID, dir string) (settings.DevProject, string
 // UploadThunderstore uploads the project's newest package to the game's Thunderstore community under the project's
 // team and categories, as Thunderstore's own CLI does, and returns the package's page.
 func (s *Service) UploadThunderstore(ctx context.Context, gameID, dir string) (string, error) {
-	p, zipPath, err := s.uploadPackage(gameID, dir)
+	community := tsupload.Community(gameID)
+	p, zipPath, _, err := s.prepareUpload(gameID, dir, "", false, func(settings.DevProject) error {
+		if community == "" {
+			return usererr.Wrap(usererr.Invalid, errors.New("this game has no Thunderstore community"))
+		}
+		return nil
+	})
 	if err != nil {
 		return "", err
-	}
-	community := tsupload.Community(gameID)
-	if community == "" {
-		return "", usererr.Wrap(usererr.Invalid, errors.New("this game has no Thunderstore community"))
 	}
 	info, err := projectInfo(p)
 	if err != nil {
@@ -115,6 +117,28 @@ type UploadSite struct {
 	Ready      bool   `json:"ready"`
 }
 
+// uploadSiteTable is each site's probe: whether the game offers it, whether the project's ids for it are filled in,
+// and whether the credentials it needs are kept.
+var uploadSiteTable = []struct {
+	id    string
+	probe func(ctx context.Context, s *Service, p settings.DevProject, gameID, dir string) (offered, configured, ready bool)
+}{
+	{"thunderstore", func(_ context.Context, s *Service, _ settings.DevProject, gameID, dir string) (bool, bool, bool) {
+		return tsupload.Community(gameID) != "", true, s.HasThunderstoreToken(gameID, dir)
+	}},
+	{"nexus", func(_ context.Context, _ *Service, p settings.DevProject, gameID, _ string) (bool, bool, bool) {
+		_, err := nexusAPIKey()
+		return nexusDomain(gameID) != "", readSites(p.Dir).Nexus.FileID != "", err == nil
+	}},
+	{"curseforge", func(_ context.Context, s *Service, p settings.DevProject, gameID, _ string) (bool, bool, bool) {
+		return curseForgeBase(gameID) != "", readSites(p.Dir).CurseForge.ProjectID > 0, s.HasCurseForgeToken()
+	}},
+	{"github", func(ctx context.Context, s *Service, p settings.DevProject, _, _ string) (bool, bool, bool) {
+		_, _, ok := s.githubOrigin(ctx, p.Dir)
+		return ok, true, ok && gh.DefaultAuth.LoggedIn(ctx)
+	}},
+}
+
 // UploadSites lists the sites the game can be uploaded to: Thunderstore when it has a community, Nexus Mods when it
 // has a Nexus domain and CurseForge when its source names an upload subdomain, and GitHub when the project's origin is there. Edit shows the id fields of those; Upload
 // offers the Configured ones.
@@ -124,21 +148,29 @@ func (s *Service) UploadSites(ctx context.Context, gameID, dir string) ([]Upload
 		return nil, err
 	}
 	sites := []UploadSite{}
-	if tsupload.Community(gameID) != "" {
-		sites = append(sites, UploadSite{ID: "thunderstore", Configured: true, Ready: s.HasThunderstoreToken(gameID, dir)})
-	}
-	ids := readSites(p.Dir)
-	if nexusDomain(gameID) != "" {
-		_, err := nexusAPIKey()
-		sites = append(sites, UploadSite{ID: "nexus", Configured: ids.Nexus.FileID != "", Ready: err == nil})
-	}
-	if curseForgeBase(gameID) != "" {
-		sites = append(sites, UploadSite{ID: "curseforge", Configured: ids.CurseForge.ProjectID > 0, Ready: s.HasCurseForgeToken()})
-	}
-	if _, _, ok := s.githubOrigin(ctx, p.Dir); ok {
-		sites = append(sites, UploadSite{ID: "github", Configured: true, Ready: gh.DefaultAuth.LoggedIn(ctx)})
+	for _, t := range uploadSiteTable {
+		if offered, configured, ready := t.probe(ctx, s, p, gameID, dir); offered {
+			sites = append(sites, UploadSite{ID: t.id, Configured: configured, Ready: ready})
+		}
 	}
 	return sites, nil
+}
+
+// prepareUpload is the opening every upload shares: the trusted project and its newest package, the site's own check of
+// the project's ids, and the CHANGELOG notes for version when the site takes any.
+func (s *Service) prepareUpload(gameID, dir, version string, notes bool, check func(p settings.DevProject) error) (p settings.DevProject, zipPath, body string, err error) {
+	if p, zipPath, err = s.uploadPackage(gameID, dir); err != nil {
+		return
+	}
+	if check != nil {
+		if err = check(p); err != nil {
+			return
+		}
+	}
+	if notes {
+		body, err = releaseNotes(p.Dir, version)
+	}
+	return
 }
 
 // releaseNotes is the project's CHANGELOG.md notes for version, empty when it has none.
@@ -156,15 +188,13 @@ func releaseNotes(dir, version string) (string, error) {
 // UploadNexus uploads the project's newest package as the next version of its Nexus Mods file, archiving the one it
 // replaces, and returns the mod's files page (empty without a mod id).
 func (s *Service) UploadNexus(ctx context.Context, gameID, dir, version string) (string, error) {
-	p, zipPath, err := s.uploadPackage(gameID, dir)
-	if err != nil {
-		return "", err
-	}
-	ids := readSites(p.Dir).Nexus
-	if ids.FileID == "" || nexusDomain(gameID) == "" {
-		return "", usererr.Wrap(usererr.Invalid, errors.New("set the project's Nexus Mods file id first"))
-	}
-	notes, err := releaseNotes(p.Dir, version)
+	var ids NexusIDs
+	p, zipPath, notes, err := s.prepareUpload(gameID, dir, version, true, func(p settings.DevProject) error {
+		if ids = readSites(p.Dir).Nexus; ids.FileID == "" || nexusDomain(gameID) == "" {
+			return usererr.Wrap(usererr.Invalid, errors.New("set the project's Nexus Mods file id first"))
+		}
+		return nil
+	})
 	if err != nil {
 		return "", err
 	}
@@ -186,16 +216,14 @@ func (s *Service) UploadNexus(ctx context.Context, gameID, dir, version string) 
 // UploadCurseForge uploads the project's newest package as a release of its CurseForge project and returns the
 // project's files page on the authors site.
 func (s *Service) UploadCurseForge(ctx context.Context, gameID, dir, version string) (string, error) {
-	p, zipPath, err := s.uploadPackage(gameID, dir)
-	if err != nil {
-		return "", err
-	}
-	id := readSites(p.Dir).CurseForge.ProjectID
+	var id int
 	base := curseForgeBase(gameID)
-	if id <= 0 || base == "" {
-		return "", usererr.Wrap(usererr.Invalid, errors.New("set the project's CurseForge project id first"))
-	}
-	notes, err := releaseNotes(p.Dir, version)
+	p, zipPath, notes, err := s.prepareUpload(gameID, dir, version, true, func(p settings.DevProject) error {
+		if id = readSites(p.Dir).CurseForge.ProjectID; id <= 0 || base == "" {
+			return usererr.Wrap(usererr.Invalid, errors.New("set the project's CurseForge project id first"))
+		}
+		return nil
+	})
 	if err != nil {
 		return "", err
 	}
