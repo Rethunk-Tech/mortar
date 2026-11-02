@@ -130,6 +130,7 @@ func pageURL(alias string, assetID int) string {
 // One row past the page tells whether a next page exists; the API gives no total.
 // ponytail: page n downloads n pages, so paging n deep moves O(n²) rows in total: add
 // an offset or cursor param (or cache the first fetch) once the API has one or players page past a few dozen.
+// Measured 2026-11-01: limit=500 took 1.4s (226 kB), 2000 took 1.9s (890 kB), 5000 took 3.3s (2.2 MB), no cap hit; "a few dozen" pages is a guess.
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	page := max(q.Page-source.FirstPage, 0) + 1
 	params := url.Values{"limit": {strconv.Itoa(page*q.Len() + 1)}}
