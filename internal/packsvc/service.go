@@ -58,7 +58,7 @@ type Service struct {
 	Categories func(ctx context.Context, community string) ([]tstore.Category, error)
 
 	catMu   sync.Mutex
-	catList map[string][]Category
+	catList map[string]catEntry
 }
 
 func (s *Service) folder() string {

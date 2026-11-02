@@ -18,12 +18,14 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/Rethunk-Tech/mortar/internal/tsupload"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
@@ -415,7 +417,7 @@ func (s *Service) UploadModpack(ctx context.Context, gameID, profileID string, o
 		return "", usererr.New(usererr.Permission, "add a Thunderstore service account token first")
 	}
 	o.Team = team
-	dir, err := os.MkdirTemp("", "mortar-modpack-")
+	dir, err := scratch.Dir("mortar-modpack-")
 	if err != nil {
 		return "", err
 	}
@@ -440,8 +442,15 @@ type Category struct {
 	Name string `json:"name"`
 }
 
-// ThunderstoreCategories lists the game's Thunderstore community's package categories, asked once per community for
-// the session.
+// categoryTTL is how long a community's category list is reused.
+const categoryTTL = 24 * time.Hour
+
+type catEntry struct {
+	list  []Category
+	until time.Time
+}
+
+// ThunderstoreCategories lists the game's Thunderstore community's package categories, reused for categoryTTL.
 func (s *Service) ThunderstoreCategories(ctx context.Context, gameID string) ([]Category, error) {
 	community := tsupload.Community(gameID)
 	if community == "" || s.Categories == nil {
@@ -449,8 +458,8 @@ func (s *Service) ThunderstoreCategories(ctx context.Context, gameID string) ([]
 	}
 	s.catMu.Lock()
 	defer s.catMu.Unlock()
-	if list, ok := s.catList[community]; ok {
-		return list, nil
+	if e, ok := s.catList[community]; ok && time.Now().Before(e.until) {
+		return e.list, nil
 	}
 	got, err := s.Categories(ctx, community)
 	if err != nil {
@@ -461,9 +470,9 @@ func (s *Service) ThunderstoreCategories(ctx context.Context, gameID string) ([]
 		list[i] = Category{Slug: c.Slug, Name: c.Name}
 	}
 	if s.catList == nil {
-		s.catList = map[string][]Category{}
+		s.catList = map[string]catEntry{}
 	}
-	s.catList[community] = list
+	s.catList[community] = catEntry{list, time.Now().Add(categoryTTL)}
 	return list, nil
 }
 

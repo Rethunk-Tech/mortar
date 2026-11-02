@@ -187,6 +187,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 
 // tags caches the site's tag names and their ids by lower-cased name for the life of the process; the list changes
 // rarely.
+// ponytail: never expires, so a tag added upstream shows after a restart; add a TTL like browse.categoryTTL if that matters.
 var tags struct {
 	sync.Mutex
 	ids   map[string]string

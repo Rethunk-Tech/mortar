@@ -12,7 +12,10 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -152,6 +155,7 @@ func TestModpackLeavesDevHelpersOut(t *testing.T) {
 }
 
 func TestUploadModpackExportsThenSendsAndSubmits(t *testing.T) {
+	datadirtest.Use(t, t.TempDir())
 	keyring.MockInit()
 	var calls []string
 	var zipped int
@@ -200,5 +204,60 @@ func TestUploadModpackExportsThenSendsAndSubmits(t *testing.T) {
 	}
 	if want := []string{"/api/experimental/usermedia/initiate-upload/", "/part/1", "/api/experimental/usermedia/u1/finish-upload/", "/api/experimental/submission/submit/"}; !slices.Equal(calls, want) {
 		t.Errorf("calls = %v", calls)
+	}
+}
+
+func TestUploadModpackRefusesBeforeSendingAnything(t *testing.T) {
+	keyring.MockInit()
+	s := &Service{}
+	o := ModpackOptions{Name: "Pack", Version: "1.0.0"}
+	for _, c := range []struct {
+		game, team string
+		want       usererr.Kind
+	}{
+		{"no-such-game", "Ab", usererr.Invalid},
+		{"lethal-company", "", usererr.Invalid},
+		{"lethal-company", "Ab", usererr.Permission},
+	} {
+		if _, err := s.UploadModpack(t.Context(), c.game, "p1", o, c.team, nil); usererr.KindOf(err) != c.want {
+			t.Errorf("%s/%q: err = %v", c.game, c.team, err)
+		}
+	}
+	if s.HasThunderstoreToken("Ab") {
+		t.Fatal("token before it was set")
+	}
+	if err := s.SetThunderstoreToken("Ab", "tok"); err != nil || !s.HasThunderstoreToken("Ab") {
+		t.Fatalf("set: %v", err)
+	}
+	if err := s.ForgetThunderstoreToken("Ab"); err != nil || s.HasThunderstoreToken("Ab") {
+		t.Fatalf("forget: %v", err)
+	}
+}
+
+func TestThunderstoreCategoriesAreAskedOncePerCommunityUntilTheyExpire(t *testing.T) {
+	var asked int
+	s := &Service{Categories: func(context.Context, string) ([]tstore.Category, error) {
+		asked++
+		return []tstore.Category{{Slug: "mods", Name: "Mods"}}, nil
+	}}
+	if _, err := s.ThunderstoreCategories(t.Context(), "no-such-game"); usererr.KindOf(err) != usererr.Invalid {
+		t.Errorf("a game with no community: %v", err)
+	}
+	for range 2 {
+		got, err := s.ThunderstoreCategories(t.Context(), "lethal-company")
+		if err != nil || len(got) != 1 || got[0].Slug != "mods" {
+			t.Fatalf("categories = %v, %v", got, err)
+		}
+	}
+	if asked != 1 {
+		t.Fatalf("asked %d times, want 1", asked)
+	}
+	for k, e := range s.catList {
+		e.until = time.Now().Add(-time.Second)
+		s.catList[k] = e
+	}
+	_, _ = s.ThunderstoreCategories(t.Context(), "lethal-company")
+	if asked != 2 {
+		t.Fatalf("an expired list was reused: asked %d", asked)
 	}
 }

@@ -43,6 +43,7 @@ func categoriesCached(ctx context.Context, game string, s source.Source, key str
 	e, hit := catCache[id]
 	catMu.Unlock()
 	if !hit || !time.Now().Before(e.until) {
+		// ponytail: concurrent misses each ask the source; add single-flight if a source rate-limits categories.
 		names, err := cat.Categories(ctx, key)
 		// Signed out, the source simply has no categories to offer; nothing is kept, so signing in shows them.
 		if errors.Is(err, source.ErrSignedOut) {
