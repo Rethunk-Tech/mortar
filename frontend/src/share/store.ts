@@ -5,6 +5,7 @@ import type { LanOrigin } from '../lan/resume.ts'
 import { openSettings, useNav } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import type { Destination } from './methods.ts'
 import type { ModListFormat } from './modList.ts'
 
 let runs = 0
@@ -30,21 +31,25 @@ useNav.subscribe((state) => {
 export const useShareDialog = create<{
   profileId: string
   keys: string[]
+  // Where the dialog opens, instead of on the destination grid.
+  destination: Destination | null
   listFormat: ModListFormat
-  open: (profileId: string, keys?: string[]) => void
+  open: (profileId: string, keys?: string[], destination?: Destination) => void
   close: () => void
   setListFormat: (listFormat: ModListFormat) => void
 }>((set) => ({
   profileId: '',
   keys: [],
+  destination: null,
   listFormat: 'markdown',
-  open: (profileId, keys = []) => set({ profileId, keys }),
-  close: () => set({ profileId: '', keys: [] }),
+  open: (profileId, keys, destination) =>
+    set({ profileId, keys: keys ?? [], destination: destination ?? null }),
+  close: () => set({ profileId: '', keys: [], destination: null }),
   setListFormat: (listFormat) => set({ listFormat }),
 }))
 
-export const openShare = (profileId: string, keys: string[] = []) =>
-  useShareDialog.getState().open(profileId, keys)
+export const openShare = (profileId: string, keys: string[] = [], destination?: Destination) =>
+  useShareDialog.getState().open(profileId, keys, destination)
 
 export interface ImportOptions {
   // The profile "Add to" would fill, when the import was opened from one.

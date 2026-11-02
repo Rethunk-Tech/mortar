@@ -849,3 +849,21 @@ func TestFileCarriesTheFavouriteStarAndLinksDoNot(t *testing.T) {
 		t.Fatal("the favourite star changed the share link payload")
 	}
 }
+
+func TestAnExtraFolderModTravelsToAPairedComputer(t *testing.T) {
+	t.Parallel()
+	key := "local-" + strings.Repeat("ef", 32)
+	p := profile.Profile{Name: "Dev", Entries: []profile.Entry{
+		{Key: key, Source: profile.Source{Kind: profile.KindLocal, Name: "MyMod", Folder: "/home/me/mods/MyMod"}},
+	}}
+	inc := OwnInclude()
+	inc.LocalFiles = true
+	var paired bytes.Buffer
+	if _, err := Write(&paired, "stardew", p, t.TempDir(), inc); err != nil {
+		t.Fatal(err)
+	}
+	pv, err := ReadBytes(paired.Bytes())
+	if err != nil || len(pv.Entries) != 1 || pv.Entries[0].Local != key || !pv.Entries[0].MatchesEntry(p.Entries[0]) {
+		t.Fatalf("entries %+v, %v", pv.Entries, err)
+	}
+}

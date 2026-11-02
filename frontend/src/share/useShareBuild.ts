@@ -51,7 +51,7 @@ export function useShareBuild() {
     // An equal set keeps its object, so opening the dialog builds the share once, not again for the reset.
     const defaults = shareIncludeDefaults(useSettings.getState())
     setInclude((cur) => (sameValue(cur, defaults) ? cur : defaults))
-    setDestination(null)
+    setDestination(useShareDialog.getState().destination)
     setFormat('link')
     setLastUsed(null)
     setInfo(null)

@@ -151,3 +151,23 @@ export function initDevWatch() {
     }
   })
 }
+
+/**
+ * Builds each trusted code project that was never built or changed since its last build, so what leaves this computer
+ * is current. Returns the name of the first project that did not build, or null when all did.
+ */
+export async function buildChanged(game: string, dirs: string[]): Promise<string | null> {
+  const info = useProjectInfo.getState().byDir
+  const stale = dirs.filter((dir) => {
+    const built = Math.max(runOf(useDevRuns.getState().byDir, dir).builtAt, info[dir]?.builtAt ?? 0)
+    return built === 0 || info[dir]?.stale === true
+  })
+  await buildAll(game, stale)
+  const failed = stale.find((dir) => runOf(useDevRuns.getState().byDir, dir).build?.ok !== true)
+  if (failed === undefined) {
+    return null
+  }
+  return (
+    useSettings.getState().games?.[game]?.devProjects?.find((p) => p.dir === failed)?.name ?? failed
+  )
+}

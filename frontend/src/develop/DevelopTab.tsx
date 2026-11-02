@@ -2,6 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonGroup, Menu, Typography } from '@mui/material'
 import { useStoredState } from '@rethunk/react-load-hooks'
+import { Events } from '@wailsio/runtime'
 import {
   Check,
   ChevronDown,
@@ -11,6 +12,7 @@ import {
   Hammer,
   Plus,
   SearchX,
+  Send,
   Users,
 } from 'lucide-react'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
@@ -20,15 +22,18 @@ import {
   Forget,
   Move,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
+import { Paired } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { StartInstances } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { installExtraFolder } from '../downloads/autoInstall.ts'
 import { PageActions } from '../game/PageActions.tsx'
+import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { persist } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
+import { openShare } from '../share/store.ts'
 import { CardsView } from '../shell/CardsView.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -41,7 +46,7 @@ import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { AdoptHost } from './AdoptDialog.tsx'
 import { useAdopting } from './adopting.ts'
-import { buildAll, refreshInfo, runOf, useDevRuns, useProjectInfo } from './builds.ts'
+import { buildAll, buildChanged, refreshInfo, runOf, useDevRuns, useProjectInfo } from './builds.ts'
 import { CloneDialog } from './CloneDialog.tsx'
 import { ElsewhereHost } from './ElsewhereDialog.tsx'
 import { useElsewhere } from './elsewhere.ts'
@@ -178,6 +183,66 @@ function TestCopies({ game, profile, dirs }: { game: string; profile: string; di
   )
 }
 
+// Builds what changed, then opens Share on the nearby computers with this profile: the friend gets the current builds
+// with the rest of the mods. Needs a paired computer, the only kind that receives the dev mods' files.
+function SendToPaired({
+  game,
+  profile,
+  projects,
+}: {
+  game: string
+  profile: string
+  projects: DevProject[]
+}) {
+  const { t } = useLingui()
+  const kinds = useDevKinds((s) => s.byDir)
+  const [pairedCount, setPairedCount] = useState(0)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    const look = () =>
+      Paired()
+        .then((list) => setPairedCount((list ?? []).length))
+        .catch(() => undefined)
+    look()
+    return Events.On('lan:paired', look)
+  }, [])
+  const send = async () => {
+    setBusy(true)
+    try {
+      const buildable = projects.filter((p) => !(p.untrusted || kinds[p.dir])).map((p) => p.dir)
+      const failed = await buildChanged(game, buildable)
+      if (failed !== null) {
+        useToasts.getState().push({
+          kind: 'error',
+          title: t`${{ name: failed }} did not build`,
+          body: t`Nothing was sent. Fix the errors on its card and try again.`,
+        })
+        return
+      }
+      openShare(profile, [], 'nearby')
+    } finally {
+      setBusy(false)
+    }
+  }
+  if (pairedCount === 0) {
+    return (
+      <>
+        <span title={t`No computer is paired. Pair one first.`}>
+          <Button variant="outlined" startIcon={<Send size={14} />} disabled={true}>
+            {t`Send to a paired computer…`}
+          </Button>
+        </span>
+        <Button onClick={() => openSettings('general')}>{t`Pair a computer`}</Button>
+      </>
+    )
+  }
+  return (
+    <Button variant="outlined" startIcon={<Send size={14} />} disabled={busy} onClick={send}>
+      {t`Send to a paired computer…`}
+    </Button>
+  )
+}
+
 const NO_PROJECTS: DevProject[] = []
 
 function ProjectGridView({
@@ -297,6 +362,7 @@ export function DevelopTab({ game }: { game: string }) {
           </Button>
         ) : null}
         <BuildAll game={game} projects={here} />
+        {here.length > 0 ? <SendToPaired game={game} profile={openId} projects={here} /> : null}
         {here.length > 0 ? (
           <TestCopies game={game} profile={openId} dirs={here.map((p) => p.dir)} />
         ) : null}
