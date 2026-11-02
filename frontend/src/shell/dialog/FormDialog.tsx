@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, CircularProgress, OutlinedInput, styled, TextField } from '@mui/material'
 import { CircleAlert } from 'lucide-react'
-import { type ReactNode, useId } from 'react'
+import { type FocusEvent, type KeyboardEvent, type ReactNode, useId } from 'react'
 import { space } from '../../theme/density.ts'
 import { useDiscardGuard } from '../useDiscardGuard.tsx'
 import { AppDialog, DialogFooter, type DialogSize } from './AppDialog.tsx'
@@ -218,18 +218,26 @@ export function TextInput({
   autoFocus = false,
   disabled = false,
   type,
+  autoComplete,
+  selectOnFocus = false,
+  onBlur,
+  onEnter,
 }: {
   label: string
   value: string
   onChange: (v: string) => void
   hint?: ReactNode
-  error?: string
+  error?: string | undefined
   maxLength?: number
   multiline?: boolean
-  placeholder?: string
+  placeholder?: string | undefined
   autoFocus?: boolean
   disabled?: boolean
-  type?: 'password'
+  type?: 'text' | 'password' | 'date' | 'number'
+  autoComplete?: string
+  selectOnFocus?: boolean
+  onBlur?: () => void
+  onEnter?: () => void
 }) {
   const id = useId()
   return (
@@ -245,6 +253,16 @@ export function TextInput({
       <OutlinedInput
         id={id}
         type={type}
+        {...(autoComplete === undefined ? {} : { autoComplete })}
+        {...(selectOnFocus
+          ? {
+              onFocus: (e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => e.target.select(),
+            }
+          : {})}
+        {...(onBlur === undefined ? {} : { onBlur })}
+        {...(onEnter === undefined
+          ? {}
+          : { onKeyDown: (e: KeyboardEvent) => e.key === 'Enter' && onEnter() })}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         fullWidth={true}

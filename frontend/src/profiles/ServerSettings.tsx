@@ -1,14 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, MenuItem, TextField, Typography } from '@mui/material'
+import { Box, Button, MenuItem, Typography } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import type { ServerSetting } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/models.ts'
 import {
   MirrorClient,
   ServerSettings as ReadForm,
   SetServerSetting,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
-import { Field, FormSection, SelectField } from '../shell/dialog/FormDialog.tsx'
+import { FormSection, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { listProfiles } from './listProfiles.ts'
@@ -23,7 +23,6 @@ function ServerField({
 }) {
   const { t } = useLingui()
   const [draft, setDraft] = useState(setting.value)
-  const id = useId()
   const error = serverFieldError(setting, draft)
   const commit = () => {
     if (!error && serverFieldChanged(setting, draft)) {
@@ -39,30 +38,20 @@ function ServerField({
   }
   const message = error ? errors[error] : setting.hint
   return (
-    <Field
+    <TextInput
       label={setting.name}
-      htmlFor={id}
+      type={setting.secret ? 'password' : 'text'}
+      autoComplete="off"
+      value={draft}
+      placeholder={
+        setting.secret && setting.set ? t`Saved. Type to change it.` : setting.default || undefined
+      }
       hint={error ? undefined : message}
       error={error ? message : undefined}
-    >
-      <TextField
-        id={id}
-        fullWidth={true}
-        size="small"
-        type={setting.secret ? 'password' : 'text'}
-        autoComplete="off"
-        value={draft}
-        placeholder={
-          setting.secret && setting.set
-            ? t`Saved. Type to change it.`
-            : setting.default || undefined
-        }
-        error={Boolean(error)}
-        onChange={(event) => setDraft(event.target.value)}
-        onBlur={commit}
-        onKeyDown={(event) => event.key === 'Enter' && commit()}
-      />
-    </Field>
+      onChange={setDraft}
+      onBlur={commit}
+      onEnter={commit}
+    />
   )
 }
 

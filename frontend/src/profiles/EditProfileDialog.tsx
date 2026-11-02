@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, TextField, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -8,7 +8,7 @@ import { HeroCover } from '../game/HeroCover.tsx'
 import { baseName } from '../shell/baseName.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { DialogPanel, DialogTabs } from '../shell/dialog/DialogTabs.tsx'
-import { Field, FormDialog, FormSection } from '../shell/dialog/FormDialog.tsx'
+import { Field, FormDialog, FormSection, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AppearancePickers } from './AppearancePickers.tsx'
@@ -150,7 +150,6 @@ function ProfileFields({
   tab,
 }: ProfileFieldsProps) {
   const { t } = useLingui()
-  const nameId = useId()
   const panel = (id: FieldsTab, children: ReactNode) => (
     <DialogPanel ids={ids} panel={id} open={tab === id}>
       {children}
@@ -161,22 +160,15 @@ function ProfileFields({
       {panel(
         'appearance',
         <>
-          <Field label={t`Name`} htmlFor={nameId} error={nameError || undefined}>
-            <TextField
-              id={nameId}
-              fullWidth={true}
-              size="small"
-              autoFocus={focusName}
-              value={name}
-              onChange={(event) => onName(event.target.value)}
-              onFocus={(event) => event.target.select()}
-              error={nameError !== ''}
-              slotProps={{
-                htmlInput: { maxLength: MAX_NAME },
-                root: { sx: { userSelect: 'text' } },
-              }}
-            />
-          </Field>
+          <TextInput
+            label={t`Name`}
+            value={name}
+            onChange={onName}
+            autoFocus={focusName}
+            selectOnFocus={true}
+            error={nameError || undefined}
+            maxLength={MAX_NAME}
+          />
           <AppearancePickers
             profile={profile}
             color={color}

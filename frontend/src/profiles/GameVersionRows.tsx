@@ -1,14 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, TextField, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import {
   CanGetOlderVersion,
   SetGameFolder,
   SetModsUpTo,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { Field } from '../shell/dialog/FormDialog.tsx'
+import { Field, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { OlderVersionDialog } from './OlderVersionDialog.tsx'
@@ -30,7 +30,6 @@ export function GameVersionRows({
   modsUpTo: string
 }) {
   const { t } = useLingui()
-  const dateId = useId()
   const replace = useProfiles((s) => s.replace)
   const [asking, setAsking] = useState(false)
   const { data: steam } = useLoaded(() => CanGetOlderVersion(gameId), [gameId], false)
@@ -70,22 +69,17 @@ export function GameVersionRows({
           {t`This profile runs the game from this folder, an older copy, instead of the selected install.`}
         </Typography>
       </Field>
-      <Field label={t`Mod versions up to`} htmlFor={dateId}>
-        <TextField
-          id={dateId}
-          type="date"
-          size="small"
-          value={modsUpTo}
-          onChange={(e) => {
-            SetModsUpTo(gameId, profileId, e.target.value)
-              .then((p) => p && replace(p))
-              .catch(reportError(t`Could not save the date`))
-          }}
-        />
-        <Typography sx={hint}>
-          {t`Installs from Browse and updates pick the newest version released on or before this date. Mods from sites that list no dates are not filtered.`}
-        </Typography>
-      </Field>
+      <TextInput
+        label={t`Mod versions up to`}
+        type="date"
+        value={modsUpTo}
+        onChange={(date) => {
+          SetModsUpTo(gameId, profileId, date)
+            .then((p) => p && replace(p))
+            .catch(reportError(t`Could not save the date`))
+        }}
+        hint={t`Installs from Browse and updates pick the newest version released on or before this date. Mods from sites that list no dates are not filtered.`}
+      />
       <OlderVersionDialog
         gameId={gameId}
         profileId={profileId}
