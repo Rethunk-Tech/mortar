@@ -472,6 +472,7 @@ msgstr "Reset all"
 msgid "newer in profile"
 msgstr "newer in profile"
 
+#: src/mods/LoadOrderTab.tsx
 #: src/mods/ModMenu.tsx
 msgid "Load later"
 msgstr "Load later"
@@ -619,6 +620,10 @@ msgstr "Could not unhide the mod"
 msgid "; the runtime printed no source line for that method (generated code)."
 msgstr "; the runtime printed no source line for that method (generated code)."
 
+#: src/mods/LoadOrderTab.tsx
+msgid "The order comes from the dependencies each module's SubModule.xml declares, so it cannot be moved here."
+msgstr "The order comes from the dependencies each module's SubModule.xml declares, so it cannot be moved here."
+
 #: src/mods/describe.ts
 msgid "Its {source} page description"
 msgstr "Its {source} page description"
@@ -683,6 +688,10 @@ msgstr "{needChoice} need your choice"
 #: src/mods/problemWhy.ts
 msgid "A mod works better, or only works, with a setting changed. Nothing is wrong yet."
 msgstr "A mod works better, or only works, with a setting changed. Nothing is wrong yet."
+
+#: src/mods/LoadOrderTab.tsx
+msgid "Mods load top to bottom. Move a mod to change when it loads."
+msgstr "Mods load top to bottom. Move a mod to change when it loads."
 
 #: src/mods/Toolbar.tsx
 #: src/mods/typedConfig/ConfigTab.tsx
@@ -3089,6 +3098,10 @@ msgstr "{count, plural, one {Disable # mod} other {Disable # mods}}"
 msgid "Other profiles"
 msgstr "Other profiles"
 
+#: src/mods/LoadOrderTab.tsx
+msgid "Official"
+msgstr "Official"
+
 #: src/mods/describe.ts
 msgid "{name}, a folder no mod owns, has a file path {count} characters long, more than most {os} games can open."
 msgstr "{name}, a folder no mod owns, has a file path {count} characters long, more than most {os} games can open."
@@ -3101,6 +3114,7 @@ msgstr "Combined"
 msgid "{name}'s {source} page says it needs {dep} from outside {source}."
 msgstr "{name}'s {source} page says it needs {dep} from outside {source}."
 
+#: src/mods/LoadOrderTab.tsx
 #: src/mods/ModMenu.tsx
 msgid "Load earlier"
 msgstr "Load earlier"

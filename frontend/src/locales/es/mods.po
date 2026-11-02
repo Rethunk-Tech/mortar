@@ -472,6 +472,7 @@ msgstr ""
 msgid "newer in profile"
 msgstr ""
 
+#: src/mods/LoadOrderTab.tsx
 #: src/mods/ModMenu.tsx
 msgid "Load later"
 msgstr ""
@@ -619,6 +620,10 @@ msgstr ""
 msgid "; the runtime printed no source line for that method (generated code)."
 msgstr ""
 
+#: src/mods/LoadOrderTab.tsx
+msgid "The order comes from the dependencies each module's SubModule.xml declares, so it cannot be moved here."
+msgstr ""
+
 #: src/mods/describe.ts
 msgid "Its {source} page description"
 msgstr ""
@@ -682,6 +687,10 @@ msgstr ""
 
 #: src/mods/problemWhy.ts
 msgid "A mod works better, or only works, with a setting changed. Nothing is wrong yet."
+msgstr ""
+
+#: src/mods/LoadOrderTab.tsx
+msgid "Mods load top to bottom. Move a mod to change when it loads."
 msgstr ""
 
 #: src/mods/Toolbar.tsx
@@ -3089,6 +3098,10 @@ msgstr ""
 msgid "Other profiles"
 msgstr ""
 
+#: src/mods/LoadOrderTab.tsx
+msgid "Official"
+msgstr ""
+
 #: src/mods/describe.ts
 msgid "{name}, a folder no mod owns, has a file path {count} characters long, more than most {os} games can open."
 msgstr ""
@@ -3101,6 +3114,7 @@ msgstr ""
 msgid "{name}'s {source} page says it needs {dep} from outside {source}."
 msgstr ""
 
+#: src/mods/LoadOrderTab.tsx
 #: src/mods/ModMenu.tsx
 msgid "Load earlier"
 msgstr ""
