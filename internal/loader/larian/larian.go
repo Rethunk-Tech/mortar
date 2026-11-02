@@ -44,12 +44,12 @@ func generatedPath(profileDir string) string {
 	return filepath.Join(profileDir, generatedDir, settingsFile)
 }
 
-// gustavDev is the base game's entry, which the game wants first in every modsettings.lsx.
-var gustavDev = larianpak.ModuleInfo{
-	UUID: larianpak.GustavDevUUID, Name: "GustavDev", Folder: "GustavDev", Version64: larianpak.NewVersion64(1, 0, 0, 0),
+// gustavX is the main campaign's entry, listed first as BG3 Mod Manager writes it (MAIN_CAMPAIGN_UUID in DivinityApp.cs).
+var gustavX = larianpak.ModuleInfo{
+	UUID: larianpak.GustavXUUID, Name: "GustavX", Folder: "GustavX", Version64: larianpak.NewVersion64(1, 0, 0, 0),
 }
 
-// Prelaunch lists, after GustavDev, the module of each pak in the profile's mods folder in the profile's mod order.
+// Prelaunch lists, after GustavX, the module of each pak in the profile's mods folder in the profile's mod order.
 // A pak with no meta.lsx is an override the game reads without a list entry.
 func (extension) Prelaunch(p loader.ProfileView) error {
 	info, ok := components.Game(p.Game)
@@ -72,8 +72,8 @@ func (extension) Prelaunch(p loader.ProfileView) error {
 		}
 		return strings.Compare(a, b)
 	})
-	mods := []larianpak.ModuleInfo{gustavDev}
-	seen := map[string]bool{strings.ToLower(gustavDev.UUID): true}
+	mods := []larianpak.ModuleInfo{gustavX}
+	seen := map[string]bool{strings.ToLower(gustavX.UUID): true}
 	for _, path := range paks {
 		mod, err := moduleOf(path)
 		if err != nil {

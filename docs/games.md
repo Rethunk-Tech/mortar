@@ -22,10 +22,10 @@ Nobody on the team owns the game. Sources: PCGamingWiki, a decompiled 1.x Steam 
 
 Sources: Vortex's `game-baldursgate3` extension (`Nexus-Mods/vortex-games`, `game-baldursgate3/index.tsx`: Steam `1086940`, GOG `1456460669`, executables `bin/bg3.exe` and `bin/bg3_dx11.exe`, mods in `%LOCALAPPDATA%/Larian Studios/Baldur's Gate 3/Mods`, load order in `PlayerProfiles/Public/modsettings.lsx`) and Nexus's `baldursgate3`.
 
-- The folder loader places the profile's `.pak` files in the game's `Mods` folder for the run. Its Larian extension (`internal/loader/larian`, on the `modSettings` path role) writes a `modsettings.lsx` from each pak's `meta.lsx` (go-larian), GustavDev first, in the profile's mod order. The deployer sets the player's own `modsettings.lsx` aside and puts it back after the run.
+- The folder loader places the profile's `.pak` files in the game's `Mods` folder for the run. Its Larian extension (`internal/loader/larian`, on the `modSettings` path role) writes a `modsettings.lsx` from each pak's `meta.lsx` (go-larian), GustavX (the main campaign) first, in the profile's mod order. The deployer sets the player's own `modsettings.lsx` aside and puts it back after the run.
 - A pak with no `meta.lsx` (an override) is placed and not listed.
 - Only the Windows build is started, under Proton. `bg3.exe` is the marker; `bg3_dx11.exe` is the other build.
-- Unverified until someone runs the game: the GOG install folder name (`Baldurs Gate 3`), and that the game accepts a `modsettings.lsx` whose GustavDev entry carries Mortar's fixed version.
+- Unverified until someone runs the game: the GOG install folder name (`Baldurs Gate 3`), and that the game accepts a `modsettings.lsx` whose GustavX entry carries Mortar's fixed version.
 - Planet Zoo and Graveyard Keeper are not in the catalog: no r2modman, Gale or Vortex source names a mods folder or a marker for either.
 
 ## Dome Keeper

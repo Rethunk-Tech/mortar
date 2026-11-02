@@ -2,19 +2,17 @@ package larian
 
 import (
 	"bytes"
-	"encoding/binary"
-	"math"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	larianpak "github.com/Rethunk-Tech/go-larian"
+	"github.com/Rethunk-Tech/go-larian/lariantest"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/deploy"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
-	"github.com/pierrec/lz4/v4"
 )
 
 const game = "baldurs-gate-3"
@@ -24,33 +22,6 @@ func meta(uuid, name string) string {
 		`<attribute id="Folder" type="LSString" value="` + name + `"/><attribute id="Name" type="LSString" value="` + name + `"/>` +
 		`<attribute id="UUID" type="FixedString" value="` + uuid + `"/><attribute id="Version64" type="int64" value="36028797018963968"/>` +
 		`</node></children></node></region></save>`
-}
-
-// lspk is an uncompressed LSPK v18 package holding one file.
-func lspk(t *testing.T, name, data string) []byte {
-	t.Helper()
-	const headerLen, entryLen = 40, 272
-	entry := make([]byte, entryLen)
-	copy(entry, name)
-	binary.LittleEndian.PutUint32(entry[256:], headerLen)
-	binary.LittleEndian.PutUint32(entry[264:], uint32(len(data)&math.MaxUint32))
-	binary.LittleEndian.PutUint32(entry[268:], uint32(len(data)&math.MaxUint32))
-	comp := make([]byte, lz4.CompressBlockBound(entryLen))
-	n, err := lz4.CompressBlock(entry, comp, nil)
-	if err != nil || n == 0 {
-		t.Fatalf("compress: %d %v", n, err)
-	}
-	body := append(bytes.Repeat([]byte{0}, headerLen), data...)
-	listOff := len(body)
-	var head [8]byte
-	binary.LittleEndian.PutUint32(head[:], 1)
-	binary.LittleEndian.PutUint32(head[4:], uint32(n&math.MaxUint32))
-	body = append(append(body, head[:]...), comp[:n]...)
-	copy(body, "LSPK")
-	binary.LittleEndian.PutUint32(body[4:], 18)
-	binary.LittleEndian.PutUint64(body[8:], uint64(listOff))
-	binary.LittleEndian.PutUint32(body[16:], uint32((len(body)-listOff)&math.MaxUint32))
-	return body
 }
 
 func write(t *testing.T, path string, b []byte) {
@@ -64,11 +35,11 @@ func TestPrelaunchWritesModSettingsInProfileOrderAndTheDeployerRestoresTheOwn(t 
 	profile := filepath.Join(root, "profile")
 	uuidA, uuidB := "aaaaaaaa-0000-0000-0000-000000000001", "bbbbbbbb-0000-0000-0000-000000000002"
 	for _, p := range []struct{ file, uuid, name string }{{"A.pak", uuidA, "ModA"}, {"B.pak", uuidB, "ModB"}} {
-		pak := lspk(t, "Mods/"+p.name+"/meta.lsx", meta(p.uuid, p.name))
+		pak := lariantest.BuildPak(t, 18, map[string][]byte{"Mods/" + p.name + "/meta.lsx": []byte(meta(p.uuid, p.name))}, larianpak.CompressionNone)
 		write(t, filepath.Join(profile, "Mods", p.file), pak)
 		write(t, filepath.Join(root, "store", p.name, p.file), pak)
 	}
-	write(t, filepath.Join(profile, "Mods", "override.pak"), lspk(t, "Public/x.txt", "x"))
+	write(t, filepath.Join(profile, "Mods", "override.pak"), lariantest.BuildPak(t, 18, map[string][]byte{"Public/x.txt": []byte("x")}, larianpak.CompressionNone))
 	// B is earlier in the profile than A.
 	view := loader.ProfileView{Game: game, Dir: profile, Enabled: []string{filepath.Join(root, "store", "ModB"), filepath.Join(root, "store", "ModA")}}
 	if err := (extension{}).Prelaunch(view); err != nil {
@@ -82,7 +53,7 @@ func TestPrelaunchWritesModSettingsInProfileOrderAndTheDeployerRestoresTheOwn(t 
 	for _, m := range mods {
 		got = append(got, m.UUID)
 	}
-	if want := strings.Join([]string{larianpak.GustavDevUUID, uuidB, uuidA}, ","); strings.Join(got, ",") != want {
+	if want := strings.Join([]string{larianpak.GustavXUUID, uuidB, uuidA}, ","); strings.Join(got, ",") != want {
 		t.Fatalf("order %v, want %s", got, want)
 	}
 
