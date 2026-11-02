@@ -33,5 +33,8 @@
     "@biomejs/biome": "2.6.4",
     "knip": "^6.44.1",
     "pagefind": "1.6.0"
+  },
+  "overrides": {
+    "fflate": "^0.7.5"
   }
 }
