@@ -126,8 +126,7 @@ func BuildHistory(dataDir, gameID, dir string) []PastBuild {
 	var out []PastBuild
 	for _, id := range slices.Sorted(maps.Keys(h.Installs[dir])) {
 		builds := h.Installs[dir][id]
-		for i := len(builds) - 1; i >= 0; i-- {
-			b := builds[i]
+		for i, b := range slices.Backward(builds) {
 			b.Current = i == len(builds)-1
 			out = append(out, b)
 		}

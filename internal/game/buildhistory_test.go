@@ -8,17 +8,16 @@ import (
 	"time"
 )
 
-func writeManifest(t *testing.T, lib, manifest string) string {
+func writeManifest(t *testing.T, lib, manifest string) {
 	t.Helper()
 	steamapps := filepath.Join(lib, "steamapps")
-	if err := os.MkdirAll(filepath.Join(steamapps, "common", "G"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(steamapps, "common", "G"), 0o750); err != nil {
 		t.Fatal(err)
 	}
 	acf := fmt.Sprintf("\"AppState\"\n{\n\"buildid\" \"b%s\"\n\"InstalledDepots\"\n{\n\"2\"\n{\n\"manifest\" \"%s\"\n\"size\" \"5\"\n}\n}\n}\n", manifest, manifest)
 	if err := os.WriteFile(filepath.Join(steamapps, "appmanifest_1.acf"), []byte(acf), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	return filepath.Join(steamapps, "common", "G")
 }
 
 func TestBuildHistory(t *testing.T) {

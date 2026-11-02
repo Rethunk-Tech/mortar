@@ -65,8 +65,8 @@ func (s *Service) steamInstall(gameID string) (appID, library, dir string, err e
 // CanGetOlderVersion reports whether the game's selected install is a Steam one, the only kind Steam's console can
 // download an older version of.
 func (s *Service) CanGetOlderVersion(gameID string) bool {
-	_, _, _, err := s.steamInstall(gameID)
-	return err == nil
+	appID, _, _, err := s.steamInstall(gameID)
+	return err == nil && appID != ""
 }
 
 // OlderVersionDepots lists the depots of the game's Steam install.
