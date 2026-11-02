@@ -37,9 +37,7 @@ const HERO_COMPACT_HEIGHT_PX = 52
 const HERO_COMPACT_BG = 'var(--mortar-hero)'
 const HERO_COMPACT_BORDER = '1px solid var(--mortar-hairline)'
 const COVER_TINT = 'var(--mortar-art-dim-20)'
-const HERO_INSET_PX = 24
 const HERO_BOTTOM_PX = 16
-const HERO_INSET_COMPACT_PX = 12
 
 function CollectionLine({ profile, game }: { profile: Profile; game: string }) {
   const { t } = useLingui()
@@ -214,8 +212,9 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
       <Box
         sx={{
           position: 'absolute',
-          left: HERO_INSET_PX,
-          right: HERO_INSET_PX,
+          // The same gutter as the Home content under it, so the title starts where the buttons and cards do.
+          left: space.gutter,
+          right: space.gutter,
           bottom: HERO_BOTTOM_PX,
           display: 'flex',
           alignItems: 'flex-end',
@@ -223,8 +222,6 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
           [compactAt]: {
             top: 0,
             bottom: 0,
-            left: HERO_INSET_COMPACT_PX,
-            right: HERO_INSET_COMPACT_PX,
             alignItems: 'center',
           },
         }}
