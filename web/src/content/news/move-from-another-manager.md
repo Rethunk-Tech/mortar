@@ -3,7 +3,7 @@ kind: howto
 title: "Move from r2modman, Gale or Vortex"
 summary: "Mortar reads the profiles other managers made, previews them, and leaves the originals as they were."
 date: 2026-10-20
-image: /img/profile-0-4-0.webp
+image: /img/profile.webp
 ---
 
 Mortar reads the profiles your current manager already has.

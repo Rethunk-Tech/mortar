@@ -3,7 +3,7 @@ kind: howto
 title: "Share a profile as a link"
 summary: "Send a whole profile to a friend as one link or a .mortar file, and get everyone on the same mods before you join."
 date: 2026-10-20
-image: /img/mods-0-4-0.webp
+image: /img/mods.webp
 ---
 
 A Mortar profile is one set of mods. Send it to a friend and nobody rebuilds the list by hand.
