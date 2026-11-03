@@ -2,12 +2,13 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Collapse, styled } from '@mui/material'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
+import { space } from '../theme/density.ts'
 
 const chartSx = {
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
   gap: 2,
-  mt: 1,
+  mt: space.gap,
   fontSize: 'small.fontSize',
   color: 'text.secondary',
   '& h4': { m: 0, mb: 0.5, fontSize: 'small.fontSize', fontWeight: 600, color: 'text.primary' },
