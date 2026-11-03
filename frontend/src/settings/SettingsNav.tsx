@@ -132,7 +132,8 @@ export function SettingsNav<Id extends string>({
         bgcolor: 'var(--mortar-nav)',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pb: space.gap }}>
+      {/* A title too wide to sit beside the arrow drops to its own line, which holds the whole nav width. */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.5, pb: space.gap }}>
         <ButtonBase
           aria-label={backLabel}
           onClick={onBack}
@@ -149,7 +150,7 @@ export function SettingsNav<Id extends string>({
         <Typography
           component="h1"
           sx={{
-            fontSize: 20,
+            fontSize: 16,
             fontWeight: 700,
             minWidth: 0,
             lineHeight: 1.2,
