@@ -133,7 +133,9 @@ export function SettingsNav<Id extends string>({
       }}
     >
       {/* A title too wide to sit beside the arrow drops to its own line, which holds the whole nav width. */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.5, pb: space.gap }}>
+      <Box
+        sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.5, pb: space.gap }}
+      >
         <ButtonBase
           aria-label={backLabel}
           onClick={onBack}

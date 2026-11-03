@@ -34,6 +34,28 @@ export function SettingsSection({
   action?: ReactNode
 }) {
   const query = useSettingsSearching()
+  const h3 = (
+    <Box
+      component="h3"
+      sx={{ m: 0, ...(action ? { flex: 1 } : { mt: 1.5, mb: 0.5 }), fontSize: 18, fontWeight: 600 }}
+    >
+      {title}
+    </Box>
+  )
+  let heading: ReactNode = null
+  if (title) {
+    heading = action ? (
+      <Box
+        className="settings-heading"
+        sx={{ display: 'flex', alignItems: 'center', gap: space.pad, mt: 1.5, mb: 0.5 }}
+      >
+        {h3}
+        {action}
+      </Box>
+    ) : (
+      h3
+    )
+  }
   return (
     <Box
       className="settings-section"
@@ -53,21 +75,7 @@ export function SettingsSection({
         ...sx,
       }}
     >
-      {title && action ? (
-        <Box
-          className="settings-heading"
-          sx={{ display: 'flex', alignItems: 'center', gap: space.pad, mt: 1.5, mb: 0.5 }}
-        >
-          <Box component="h3" sx={{ m: 0, flex: 1, fontSize: 18, fontWeight: 600 }}>
-            {title}
-          </Box>
-          {action}
-        </Box>
-      ) : title ? (
-        <Box component="h3" sx={{ m: 0, mt: 1.5, mb: 0.5, fontSize: 18, fontWeight: 600 }}>
-          {title}
-        </Box>
-      ) : null}
+      {heading}
       {description ? (
         <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>{description}</Box>
       ) : null}
