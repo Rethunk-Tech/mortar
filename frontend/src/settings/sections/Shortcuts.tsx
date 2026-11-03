@@ -95,7 +95,7 @@ function ShortcutRow({
   )
 }
 
-export function ResetAllShortcuts() {
+function ResetAllShortcuts() {
   const { t } = useLingui()
   const [confirmReset, setConfirmReset] = useState(false)
   return (
@@ -179,10 +179,14 @@ export function Shortcuts() {
     <Box
       sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, fontSize: 'medium.fontSize' }}
     >
-      {groups.map(([group, name]) => {
+      {groups.map(([group, name], i) => {
         const grouped = SHORTCUTS.filter((row) => row.group === group)
         return grouped.length > 0 ? (
-          <SettingsSection key={group} title={name}>
+          <SettingsSection
+            key={group}
+            title={name}
+            action={i === 0 ? <ResetAllShortcuts /> : undefined}
+          >
             {grouped.map((row) => (
               <ShortcutRow
                 key={row.id}

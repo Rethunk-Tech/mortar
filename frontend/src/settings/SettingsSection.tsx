@@ -22,6 +22,7 @@ export function SettingsSection({
   children,
   sx,
   tiles = true,
+  action,
 }: {
   title?: ReactNode
   description?: ReactNode
@@ -29,6 +30,8 @@ export function SettingsSection({
   sx?: SxProps<Theme>
   // Off for content that brings its own surfaces, such as a form or nested sections.
   tiles?: boolean
+  // Rides at the right of the heading, for an action that covers the whole page.
+  action?: ReactNode
 }) {
   const query = useSettingsSearching()
   return (
@@ -42,7 +45,7 @@ export function SettingsSection({
         // inside components (PrefKeys, sub-sections), so only the rendered result says whether any matched.
         '&:has(> .settings-tiles:empty)': { display: 'none' },
         // The heading's top margin separates it from the section above; the first section has none above it.
-        '&:first-of-type > h3': { mt: 0 },
+        '&:first-of-type > h3, &:first-of-type > .settings-heading': { mt: 0 },
         // A section a Searchable wraps whole is a match itself.
         ...(query
           ? { [`&:not(:has(${SEARCH_HIT})):not(.settings-match > *)`]: { display: 'none' } }
@@ -50,7 +53,17 @@ export function SettingsSection({
         ...sx,
       }}
     >
-      {title ? (
+      {title && action ? (
+        <Box
+          className="settings-heading"
+          sx={{ display: 'flex', alignItems: 'center', gap: space.pad, mt: 1.5, mb: 0.5 }}
+        >
+          <Box component="h3" sx={{ m: 0, flex: 1, fontSize: 18, fontWeight: 600 }}>
+            {title}
+          </Box>
+          {action}
+        </Box>
+      ) : title ? (
         <Box component="h3" sx={{ m: 0, mt: 1.5, mb: 0.5, fontSize: 18, fontWeight: 600 }}>
           {title}
         </Box>
