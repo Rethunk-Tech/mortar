@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Editor is one installed program a project can open in; each installed version is its own.
@@ -18,9 +20,6 @@ type Editor struct {
 // systemEditor as the codeEditor setting opens a project with the system's default app for its solution. An empty
 // setting is the first editor found, and anything else is the program at that path.
 const systemEditor = "system"
-
-// The file types a C# project's editor registers for, which Windows records and desktop Linux types as plain text.
-var projectFileTypes = []string{".sln", ".slnx", ".csproj"}
 
 // Where each editor installs, as globs under environment variables; the order is the order Automatic tries them.
 var editorSites = []struct {
@@ -142,7 +141,7 @@ func (h editorHost) add(list []Editor, e Editor) []Editor {
 
 // versioned adds the version a JetBrains install records, so two versions of an editor can be told apart.
 func versioned(name, program string) string {
-	data, err := os.ReadFile(filepath.Join(filepath.Dir(filepath.Dir(program)), "product-info.json")) //nolint:gosec // G304: beside a program this computer has installed; only its version is read.
+	data, err := safefs.ReadFile(filepath.Join(filepath.Dir(filepath.Dir(program)), "product-info.json"))
 	if err != nil {
 		return name
 	}
@@ -190,19 +189,6 @@ func commandExe(command string) string {
 		return command[:at+len(".exe")]
 	}
 	return ""
-}
-
-// editorLabel names a program found only by its path.
-func editorLabel(program string) string {
-	base := filepath.Base(program)
-	switch editorKindOf(program) {
-	case editorRider:
-		return "Rider"
-	case editorVisualStudio:
-		return "Visual Studio"
-	case editorCodeFamily, editorOther:
-	}
-	return strings.TrimSuffix(base, filepath.Ext(base))
 }
 
 type editorKind int

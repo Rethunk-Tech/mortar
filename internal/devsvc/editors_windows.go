@@ -14,6 +14,9 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
+// The file types a C# project's editor registers for, which Windows records and desktop Linux types as plain text.
+var projectFileTypes = []string{".sln", ".slnx", ".csproj"}
+
 const fileExtsKey = `Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\`
 
 // platformEditors adds what Windows itself knows: every Visual Studio from its installer's vswhere, and every program
@@ -130,4 +133,17 @@ func subKeyNames(root registry.Key, path string) []string {
 		return nil
 	}
 	return names
+}
+
+// editorLabel names a program found only by its path.
+func editorLabel(program string) string {
+	base := filepath.Base(program)
+	switch editorKindOf(program) {
+	case editorRider:
+		return "Rider"
+	case editorVisualStudio:
+		return "Visual Studio"
+	case editorCodeFamily, editorOther:
+	}
+	return strings.TrimSuffix(base, filepath.Ext(base))
 }
