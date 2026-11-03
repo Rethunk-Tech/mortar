@@ -157,6 +157,8 @@ export function initDevWatch() {
  * is current. Returns the name of the first project that did not build, or null when all did.
  */
 async function buildChanged(game: string, dirs: string[]): Promise<string | null> {
+  // Only the Develop tab reads these otherwise, and a send can be the first thing done after a start.
+  await Promise.all(dirs.map((dir) => refreshInfo(game, dir, true)))
   const info = useProjectInfo.getState().byDir
   const stale = dirs.filter((dir) => {
     const built = Math.max(runOf(useDevRuns.getState().byDir, dir).builtAt, info[dir]?.builtAt ?? 0)
