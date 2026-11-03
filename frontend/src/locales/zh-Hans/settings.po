@@ -1153,6 +1153,7 @@ msgstr ""
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyAntivirus.ts
 #: src/settings/prefCopyGraphics.ts
+#: src/settings/sections/CodeEditor.tsx
 #: src/settings/sections/Downloads.tsx
 msgid "Automatic"
 msgstr ""
@@ -1884,6 +1885,10 @@ msgstr ""
 msgid "Delete the caches once after the mod set changes; the game rebuilds them."
 msgstr ""
 
+#: src/settings/sections/CodeEditor.tsx
+msgid "Choose a code editor"
+msgstr ""
+
 #: src/settings/sections/NexusSSO.tsx
 msgid "Sign in to {source}"
 msgstr ""
@@ -2557,6 +2562,10 @@ msgstr ""
 msgid "Grant access"
 msgstr ""
 
+#: src/settings/sections/CodeEditor.tsx
+msgid "Default app for the project"
+msgstr ""
+
 #: src/settings/prefCopy.ts
 msgid "Install Mortar updates automatically"
 msgstr ""
@@ -2784,6 +2793,10 @@ msgstr ""
 msgid "Where Mod Manager Download links install. Empty uses the last opened profile."
 msgstr ""
 
+#: src/settings/sections/CodeEditor.tsx
+msgid "Other program…"
+msgstr ""
+
 #: src/settings/sections/Updates.tsx
 msgid "Updated by your package manager"
 msgstr ""
@@ -2889,6 +2902,10 @@ msgstr ""
 
 #: src/settings/sections/DataHistory.tsx
 msgid "{count, plural, one {# change} other {# changes}}"
+msgstr ""
+
+#: src/settings/sections/CodeEditor.tsx
+msgid "Developing mods"
 msgstr ""
 
 #: src/settings/prefCopyGame.ts
@@ -3331,6 +3348,10 @@ msgstr ""
 msgid "Mods view"
 msgstr ""
 
+#: src/settings/prefCopy.ts
+msgid "Where Open in editor and compiler errors open a mod project"
+msgstr ""
+
 #: src/settings/sections/Appearance.tsx
 msgid "Accent colour"
 msgstr ""
@@ -3576,6 +3597,10 @@ msgstr ""
 
 #: src/settings/sections/General.tsx
 msgid "Scanner in use"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Code editor"
 msgstr ""
 
 #: src/settings/prefCopy.ts

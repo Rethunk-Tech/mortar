@@ -253,6 +253,7 @@ var registry = withDefaults([]pref{
 	loaderPref("umm", pinPref("ummPin", "umm")),
 	loaderPref("shimloader", pinPref("shimloaderPin", "shimloader")),
 	overridable(gameEnum("startFirst", startFirstValues, func(g *GameSettings) *string { return &g.StartFirst })),
+	strPref("codeEditor", ScopeApp, func(s Settings, _ string) string { return s.CodeEditor }, func(s *Settings, _, v string) { s.CodeEditor = v }),
 	strPref("alvrProgram", ScopeApp, func(s Settings, _ string) string { return s.ALVRProgram }, func(s *Settings, _, v string) { s.ALVRProgram = v }),
 	overridable(gameEnum("defaultLaunchMethod", launchMethodValues, func(g *GameSettings) *string { return &g.DefaultLaunchMethod })),
 	overridable(gameInt("instances", MinInstances, MaxInstances, func(g *GameSettings) *int { return &g.Instances })),

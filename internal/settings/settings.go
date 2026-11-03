@@ -227,6 +227,9 @@ type Settings struct {
 	WatchFolders string `json:"watchFolders,omitempty"`
 	// ALVRProgram is ALVR's dashboard, which a game set to start ALVR first runs before the game.
 	ALVRProgram string `json:"alvrProgram,omitempty"`
+	// CodeEditor is where a mod project and a compiler error open: "system" for the default app, the path of a program,
+	// or empty for the first editor found. A path on this computer, so it is neither exported nor imported.
+	CodeEditor string `json:"codeEditor,omitempty"`
 	// AutoInstallFolders is read only to move each folder into the last game's extra mods folders, which install
 	// themselves the same way (written by 0.3.9 to 0.3.13).
 	AutoInstallFolders string `json:"autoInstallFolders,omitempty"`

@@ -71,6 +71,10 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
       label: i18n._(msg`${{ loader: SMAPI }} console window`),
       description: i18n._(msg`Show ${{ loader: SMAPI }}'s own window on a direct launch`),
     },
+    codeEditor: {
+      label: i18n._(msg`Code editor`),
+      description: i18n._(msg`Where Open in editor and compiler errors open a mod project`),
+    },
     lanName: {
       label: i18n._(msg`Device name`),
       description: i18n._(msg`How this Mortar appears to nearby installations`),

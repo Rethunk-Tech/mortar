@@ -1159,6 +1159,7 @@ msgstr "This game's folder"
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyAntivirus.ts
 #: src/settings/prefCopyGraphics.ts
+#: src/settings/sections/CodeEditor.tsx
 #: src/settings/sections/Downloads.tsx
 msgid "Automatic"
 msgstr "Automatic"
@@ -1890,6 +1891,10 @@ msgstr "Share FOMOD choices"
 msgid "Delete the caches once after the mod set changes; the game rebuilds them."
 msgstr "Delete the caches once after the mod set changes; the game rebuilds them."
 
+#: src/settings/sections/CodeEditor.tsx
+msgid "Choose a code editor"
+msgstr "Choose a code editor"
+
 #: src/settings/sections/NexusSSO.tsx
 msgid "Sign in to {source}"
 msgstr "Sign in to {source}"
@@ -2563,6 +2568,10 @@ msgstr "Untrack every mod you track on {source}"
 msgid "Grant access"
 msgstr "Grant access"
 
+#: src/settings/sections/CodeEditor.tsx
+msgid "Default app for the project"
+msgstr "Default app for the project"
+
 #: src/settings/prefCopy.ts
 msgid "Install Mortar updates automatically"
 msgstr "Install Mortar updates automatically"
@@ -2790,6 +2799,10 @@ msgstr "Unhide"
 msgid "Where Mod Manager Download links install. Empty uses the last opened profile."
 msgstr "Where Mod Manager Download links install. Empty uses the last opened profile."
 
+#: src/settings/sections/CodeEditor.tsx
+msgid "Other program…"
+msgstr "Other program…"
+
 #: src/settings/sections/Updates.tsx
 msgid "Updated by your package manager"
 msgstr "Updated by your package manager"
@@ -2896,6 +2909,10 @@ msgstr "The Console opens showing these levels"
 #: src/settings/sections/DataHistory.tsx
 msgid "{count, plural, one {# change} other {# changes}}"
 msgstr "{count, plural, one {# change} other {# changes}}"
+
+#: src/settings/sections/CodeEditor.tsx
+msgid "Developing mods"
+msgstr "Developing mods"
 
 #: src/settings/prefCopyGame.ts
 msgid "Delete the game's rebuildable cache files on the first launch after this profile's mods change"
@@ -3337,6 +3354,10 @@ msgstr "Clean up storage"
 msgid "Mods view"
 msgstr "Mods view"
 
+#: src/settings/prefCopy.ts
+msgid "Where Open in editor and compiler errors open a mod project"
+msgstr "Where Open in editor and compiler errors open a mod project"
+
 #: src/settings/sections/Appearance.tsx
 msgid "Accent colour"
 msgstr "Accent colour"
@@ -3583,6 +3604,10 @@ msgstr "What to do when an installed mod still needs other mods"
 #: src/settings/sections/General.tsx
 msgid "Scanner in use"
 msgstr "Scanner in use"
+
+#: src/settings/prefCopy.ts
+msgid "Code editor"
+msgstr "Code editor"
 
 #: src/settings/prefCopy.ts
 msgid "After each check"

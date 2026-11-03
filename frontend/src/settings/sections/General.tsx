@@ -35,6 +35,7 @@ import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
+import { CodeEditor } from './CodeEditor.tsx'
 import { ImportSettingsDialog } from './DataImport.tsx'
 
 const maxLanPort = 65_535
@@ -368,6 +369,7 @@ export function General() {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
       <StartupAndWindow />
       <Language />
+      <CodeEditor />
       <Antivirus />
       <Sharing />
       <Help />

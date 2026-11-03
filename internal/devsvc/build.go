@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -224,8 +225,8 @@ func (s *Service) OpenProject(gameID, dir string) error {
 	return datadir.Open(p.Dir)
 }
 
-// OpenAt opens file, which must be inside the project in dir, in the first code editor found (VS Code, VSCodium,
-// Rider) at line and column, else in the system's editor for it.
+// OpenAt opens file, which must be inside the project in dir, in the chosen code editor at line and column where it
+// can be told them, else in the system's editor for it.
 func (s *Service) OpenAt(gameID, dir, file string, line, column int) error {
 	p, err := s.project(gameID, dir)
 	if err != nil {
@@ -237,44 +238,69 @@ func (s *Service) OpenAt(gameID, dir, file string, line, column int) error {
 	if !safefs.UnderRoot(p.Dir, file) {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not in the project", file))
 	}
-	at := fmt.Sprintf("%s:%d:%d", file, max(line, 1), max(column, 1))
-	if startEditor([][]string{{"code", "--goto", at}, {"codium", "--goto", at}, {"rider", "--line", strconv.Itoa(max(line, 1)), file}}) {
-		return nil
-	}
-	return datadir.Open(file)
+	return s.openIn(file, file, func(program string) []string {
+		return fileArgs(program, file, max(line, 1), max(column, 1))
+	})
 }
 
-// OpenEditor opens the project's folder in the first code editor found (VS Code, VSCodium, Rider), else in the file
-// manager.
+// OpenEditor opens the project in the chosen code editor, else in the file manager.
 func (s *Service) OpenEditor(gameID, dir string) error {
 	p, err := s.project(gameID, dir)
 	if err != nil {
 		return err
 	}
-	if startEditor([][]string{{"code", p.Dir}, {"codium", p.Dir}, {"rider", p.Dir}}) {
-		return nil
+	solution := solutionIn(p.Dir)
+	target := p.Dir
+	if solution != "" {
+		target = solution
 	}
-	return datadir.Open(p.Dir)
+	return s.openIn(target, p.Dir, func(program string) []string { return projectArgs(program, p.Dir, solution) })
 }
 
-// startEditor runs the first of the editor commands that is installed and starts, and reports whether one did.
-func startEditor(commands [][]string) bool {
-	for _, editor := range commands {
-		if _, err := exec.LookPath(editor[0]); err != nil {
-			continue
-		}
-		cmd, err := toolCommand(context.Background(), editor[0], editor[1:]...)
-		if err != nil {
-			continue
-		}
-		cmd.Env = hostenv.Environ()
-		nowindow.Set(cmd)
-		if err := cmd.Start(); err == nil {
-			go func() { _ = cmd.Wait() }()
-			return true
-		}
+// Editors lists the code editors installed on this computer, each version on its own.
+func (s *Service) Editors() []Editor {
+	host := editorHost{windows: runtime.GOOS == "windows", getenv: os.Getenv, lookPath: exec.LookPath}
+	out := host.find()
+	for _, e := range platformEditors() {
+		out = host.add(out, e)
 	}
-	return false
+	return out
+}
+
+// openIn follows the codeEditor setting: the system's default app for target, the program chosen, or the first editor
+// that starts and else fallback in the system's default app. A chosen program that is gone says so rather than opening
+// something the player did not pick.
+func (s *Service) openIn(target, fallback string, args func(program string) []string) error {
+	switch choice := s.Settings.Get().CodeEditor; choice {
+	case systemEditor:
+		return datadir.Open(target)
+	case "":
+		for _, e := range s.Editors() {
+			if startEditor(e.Path, args(e.Path)) == nil {
+				return nil
+			}
+		}
+		return datadir.Open(fallback)
+	default:
+		if _, err := os.Stat(choice); err != nil {
+			return usererr.Wrap(usererr.NotFound, fmt.Errorf("the code editor %s is not there; choose another in Settings, General", choice))
+		}
+		return startEditor(choice, args(choice))
+	}
+}
+
+func startEditor(program string, args []string) error {
+	cmd, err := toolCommand(context.Background(), program, args...)
+	if err != nil {
+		return err
+	}
+	cmd.Env = hostenv.Environ()
+	nowindow.Set(cmd)
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	go func() { _ = cmd.Wait() }()
+	return nil
 }
 
 func (s *Service) project(gameID, dir string) (settings.DevProject, error) {

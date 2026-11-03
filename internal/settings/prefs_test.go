@@ -92,7 +92,7 @@ func TestAutoEnableRequirementsAlwaysOnly(t *testing.T) {
 	}
 }
 
-var localOnlyKeys = []string{"antivirusSocket", "antivirusCommand", "alvrProgram", "extraModsFolder", "syncOwnFolder", "backupLocation", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "mo2Folder", "packFolder", "lanAllowAnyAddress", "nxmDefaultProfile"}
+var localOnlyKeys = []string{"antivirusSocket", "antivirusCommand", "alvrProgram", "codeEditor", "extraModsFolder", "syncOwnFolder", "backupLocation", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "mo2Folder", "packFolder", "lanAllowAnyAddress", "nxmDefaultProfile"}
 
 func TestPrefsExportImportRoundTrip(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
@@ -119,7 +119,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"reduceMotion": "always", "profileHero": "hidden", "enableRequirements": "never", "disableDependencies": "always",
 		"missingRequirements": "autodownload", "reuseFomodChoices": "false", "driftChecks": "false",
 		"smapiBuilds": "include", "smapiPin": "4.0.0", "bepinex5Pin": "5.4.2100", "bepisloaderPin": "1.7.0", "melonloaderPin": "0.7.2", "returnofmoddingPin": "1.1.30", "gdweavePin": "2.0.14", "lovelyPin": "0.10.0", "northstarPin": "1.31.14", "godotmlPin": "7.0.1", "rivetPin": "0.1.17", "ummPin": "1.1.0", "shimloaderPin": "1.1.7", "autoInstallMortarUpdates": "false", "autoTrackNexus": "true",
-		"defaultLaunchMethod": "direct", "startFirst": "alvr", "alvrProgram": "/opt/alvr/alvr_dashboard", "instances": "2", "delaySeconds": "8", "showSmapiConsole": "false", "skipPlayCheck": "true", "skipIntro": "true", "graphicsApi": "dx12", "protonVersion": "Proton 9.0", "consoleLevel": "debug",
+		"defaultLaunchMethod": "direct", "startFirst": "alvr", "alvrProgram": "/opt/alvr/alvr_dashboard", "codeEditor": "/opt/rider/bin/rider.sh", "instances": "2", "delaySeconds": "8", "showSmapiConsole": "false", "skipPlayCheck": "true", "skipIntro": "true", "graphicsApi": "dx12", "protonVersion": "Proton 9.0", "consoleLevel": "debug",
 		"consoleTimestamps": "false", "consoleFollow": "false", "lanSharing": "true", "lanPort": "47641", "lanAllowAnyAddress": "true", "lanName": "Workshop",
 		"lanAutoAcceptPaired": "true", "downloadFolder": "/var/tmp/mortar-dl",
 		"profileOrder": "name", "autoRetryDownloads": "3",

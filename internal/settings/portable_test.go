@@ -160,7 +160,7 @@ func TestPortableFieldsNameNoAccountOrMachineState(t *testing.T) {
 		"nexusUserId", "nexusName", "nexusPremium", "itchName", "overlayToken", "overlayEnabled", "overlayPort",
 		"gameFolders", "gameStores", "launcherRoots", "launchersConfirmed", "loaders", "lastProfile", "lastPlayed", "hiddenGames",
 		"backgroundImage", "lanStarted", "lanAddresses", "antivirusSocket", "antivirusCommand",
-		"nxmHandled", "nxmPreviousHandlers", "nxmAsked", "nxmPreviousName", "alvrProgram", "autoInstallFolders",
+		"nxmHandled", "nxmPreviousHandlers", "nxmAsked", "nxmPreviousName", "alvrProgram", "codeEditor", "autoInstallFolders",
 		"lastModUpdateDigest", "lastModUpdateDigestAt", "dismissed", "shortcuts",
 		"downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "mo2Folder", "packFolder", "lanAllowAnyAddress",
 	} {

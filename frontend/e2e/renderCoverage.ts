@@ -294,9 +294,22 @@ const modioAccountCase: Case = {
   },
 }
 
+/** The editors the setting finds, which General's own picture shows closed. */
+const codeEditorCase: Case = {
+  name: 'settings-code-editor',
+  setup: openSettings,
+  run: async (p) => {
+    const select = p.getByRole('combobox', { name: 'Code editor' })
+    await select.scrollIntoViewIfNeeded()
+    await select.click()
+    await p.getByRole('option', { name: 'Other program…' }).waitFor()
+  },
+}
+
 export function coverageCases(h: Helpers): Case[] {
   return [
     modioAccountCase,
+    codeEditorCase,
     ...menuCases(h),
     browseSourcesCase(h),
     problemsSectionsCase(h),
