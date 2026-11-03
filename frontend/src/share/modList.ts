@@ -133,8 +133,7 @@ function withDependency(source: Source): { dependency?: string } {
   return dependency ? { dependency } : {}
 }
 
-// Bundled SMAPI mods and the Mortar bridge are left out, matching what a share carries.
-function listItems(profile: Profile | undefined, keys: readonly string[] = []): ModListItem[] {
+function collectItems(profile: Profile | undefined, keys: readonly string[]): ModListItem[] {
   if (!profile) {
     return []
   }
@@ -165,7 +164,17 @@ function listItems(profile: Profile | undefined, keys: readonly string[] = []): 
       }
     }
   }
-  return distinct(items)
+  return items
+}
+
+// Bundled SMAPI mods and the Mortar bridge are left out, matching what a share carries.
+function listItems(profile: Profile | undefined, keys: readonly string[] = []): ModListItem[] {
+  return distinct(collectItems(profile, keys))
+}
+
+/** How many mods the list names once because another has the same name, version, link and state. */
+function repeatedItems(profile: Profile | undefined, keys: readonly string[] = []): number {
+  return collectItems(profile, keys).length - listItems(profile, keys).length
 }
 
 // Names sit in Markdown link text, so the characters that would break a link or emphasis are escaped.
@@ -234,6 +243,7 @@ export {
   formatModList,
   formatPlain,
   listItems,
+  repeatedItems,
   skippedForDependencies,
   splitDiscord,
 }

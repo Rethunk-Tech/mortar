@@ -5284,6 +5284,10 @@ msgstr "Sort: most endorsed"
 msgid "Details copied"
 msgstr "Details copied"
 
+#: src/share/ListFormat.tsx
+msgid "{repeats} more repeat another's name and version"
+msgstr "{repeats} more repeat another's name and version"
+
 #: src/shell/BugReportDialog.tsx
 msgid "Copy and open {app}"
 msgstr "Copy and open {app}"

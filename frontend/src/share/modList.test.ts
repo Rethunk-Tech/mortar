@@ -10,6 +10,7 @@ import {
   formatPlain,
   listItems,
   type ModListItem,
+  repeatedItems,
   skippedForDependencies,
   splitDiscord,
 } from './modList.ts'
@@ -241,4 +242,16 @@ test('the Thunderstore format lists switched-on Thunderstore mods as dependency 
   ]
   expect(formatModList('thunderstore', items)[0]?.text).toBe('Me-A-1.2.3')
   expect(skippedForDependencies(items)).toEqual(['Off', 'Nexus mod'])
+})
+
+test('repeatedItems counts the mods the list names once', () => {
+  const twin = (key: string) =>
+    entry({
+      key,
+      source: source('nexus', { kind: 'nexus', name: 'CP', modId: 1915 }),
+      mods: [{ id: 'A.B', version: '1.0.0', name: 'Same', author: '', folder: '.' }],
+    })
+  const p = profile([twin('a'), twin('b')])
+  expect(listItems(p)).toHaveLength(1)
+  expect(repeatedItems(p)).toBe(1)
 })

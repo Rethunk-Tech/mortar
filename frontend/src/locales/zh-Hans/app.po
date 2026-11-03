@@ -5278,6 +5278,10 @@ msgstr ""
 msgid "Details copied"
 msgstr ""
 
+#: src/share/ListFormat.tsx
+msgid "{repeats} more repeat another's name and version"
+msgstr ""
+
 #: src/shell/BugReportDialog.tsx
 msgid "Copy and open {app}"
 msgstr ""

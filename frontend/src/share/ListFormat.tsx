@@ -15,7 +15,13 @@ import { MONO } from '../theme/theme.ts'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { copyText } from './copyText.ts'
-import { formatModList, listItems, type ModListFormat, skippedForDependencies } from './modList.ts'
+import {
+  formatModList,
+  listItems,
+  type ModListFormat,
+  repeatedItems,
+  skippedForDependencies,
+} from './modList.ts'
 import { useShareDialog } from './store.ts'
 
 // The parts are plain elements styled from the root: picking a format redraws the whole pane, and each Box or
@@ -113,10 +119,13 @@ export function ListFormat() {
   const off = items.filter((item) => !item.enabled).length
   const options = useFormatOptions(thunderstore)
   const count = items.length
+  const repeats = repeatedItems(profile, keys)
   const mods = plural(count, { one: '# mod', other: '# mods' })
   const summary = [
     // The disabled ones are part of the count, not added to it.
     off > 0 ? t`${mods}, ${off} of them disabled` : mods,
+    // The profile's own count includes these; the list names each name, version and link once.
+    repeats > 0 ? t`${repeats} more repeat another's name and version` : '',
     total > 1 ? t`${total} messages` : '',
   ]
     .filter(Boolean)
