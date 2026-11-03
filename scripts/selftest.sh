@@ -12,7 +12,7 @@
 #   scripts/selftest.sh destroy               stop the server and everything running from the sandbox, then delete it
 #   scripts/selftest.sh reap [--hours N] [--yes]  list (and with --yes delete) idle sandboxes under the base dir
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
-#   scripts/selftest.sh prep-shots            ready the running sandbox for product screenshots: the maintainer's Nexus and itch.io keys, no update notices
+#   scripts/selftest.sh prep-shots            ready the running sandbox for product screenshots: the maintainer's Nexus, itch.io and mod.io keys, no update notices
 #   scripts/selftest.sh sims4-install         add only the stand-in The Sims 4 (see sims4_install) to the sandbox (before start)
 #   scripts/selftest.sh ea-fixture FOLDER MARKER  add a fake Bottles bottle holding an EA App install of FOLDER (discovery only)
 #   scripts/selftest.sh regress --fake GAME_ID  launch regress for a game not installed here: a fake install and a dummy window (see regress_fake)
