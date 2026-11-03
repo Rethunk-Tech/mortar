@@ -77,6 +77,31 @@ function ignoreRecheckError() {
   return
 }
 
+let updatesToast = 0
+
+/** One "updates available" toast: a newer count replaces the one still on screen instead of stacking beside it. */
+export function announceUpdates(count: number) {
+  const toasts = useToasts.getState()
+  const title = i18n._(
+    msg`${plural(count, { one: '# mod update available', other: '# mod updates available' })}`,
+  )
+  if (toasts.toasts.some((toast) => toast.id === updatesToast)) {
+    toasts.update(updatesToast, { title, sticky: false })
+    return
+  }
+  updatesToast = toasts.push({
+    kind: 'info',
+    title,
+    action: {
+      label: i18n._(msg`Review`),
+      run: () => {
+        useTab.getState().setTab('mods')
+        useUpdates.getState().setReviewing(true)
+      },
+    },
+  })
+}
+
 const useUpdates = create<{
   updates: UpdatesResult | null
   checkedAt: number | null
@@ -108,19 +133,7 @@ const useUpdates = create<{
       syncBadge()
       const count = countFor(updates, at.id)
       if (stillOpen && !unchanged && count > 0 && useSettings.getState().notifyModUpdates) {
-        useToasts.getState().push({
-          kind: 'info',
-          title: i18n._(
-            msg`${plural(count, { one: '# mod update available', other: '# mod updates available' })}`,
-          ),
-          action: {
-            label: i18n._(msg`Review`),
-            run: () => {
-              useTab.getState().setTab('mods')
-              useUpdates.getState().setReviewing(true)
-            },
-          },
-        })
+        announceUpdates(count)
       }
     } catch (e) {
       toastError(i18n._(msg`Could not check for mod updates`), e, {
