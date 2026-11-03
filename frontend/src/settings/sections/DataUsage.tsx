@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress, Skeleton, useTheme } from '@mui/material'
-import { FolderOpen } from 'lucide-react'
+import { Eraser, FolderOpen, Trash2, Undo2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { Usage as DiskUse } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
 import { DataLocation } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
@@ -218,13 +218,31 @@ export function UsageRows({
   }
   const actions = (
     <>
-      <Button variant="outlined" color="inherit" onClick={onCleanUp} sx={nowrap}>
+      <Button
+        variant="outlined"
+        color="inherit"
+        startIcon={<Eraser size={16} />}
+        onClick={onCleanUp}
+        sx={nowrap}
+      >
         {t`Clean up…`}
       </Button>
-      <Button variant="outlined" color="inherit" onClick={onClearCache} sx={nowrap}>
+      <Button
+        variant="outlined"
+        color="inherit"
+        startIcon={<Trash2 size={16} />}
+        onClick={onClearCache}
+        sx={nowrap}
+      >
         {t`Clear cache…`}
       </Button>
-      <Button variant="outlined" color="inherit" onClick={onDeletedProfiles} sx={nowrap}>
+      <Button
+        variant="outlined"
+        color="inherit"
+        startIcon={<Undo2 size={16} />}
+        onClick={onDeletedProfiles}
+        sx={nowrap}
+      >
         {t`Open recently deleted`}
       </Button>
     </>

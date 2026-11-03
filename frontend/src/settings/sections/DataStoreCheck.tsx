@@ -2,6 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, LinearProgress, Typography } from '@mui/material'
 import { Events } from '@wailsio/runtime'
+import { ShieldCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type {
   Progress,
@@ -85,7 +86,12 @@ export function StoreCheckRow() {
   return (
     <SettingRow label={label} description={text} block={true}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.pad }}>
-        <Button variant="outlined" disabled={running} onClick={start}>
+        <Button
+          variant="outlined"
+          disabled={running}
+          startIcon={<ShieldCheck size={16} />}
+          onClick={start}
+        >
           {t`Check now`}
         </Button>
         {running ? (
