@@ -119,7 +119,25 @@ useNexus.subscribe((s, prev) => {
   }
 })
 
+const signedOutEntry = (): Entry => ({
+  error: errorMessage(new Error('[signed_out] signed out')),
+  signedOut: true,
+})
+
+// Signed out, the page is what the cache holds, and without it the sign-in prompt shows in place of a call Nexus
+// would refuse. Signing in reads it again.
+const loadCached = async (game: string, id: number) => {
+  await mergeCachedDetails(game, [id])
+  const key = nexusKey(game, id)
+  if (!isFull(useNexusDetails.getState().byKey[key])) {
+    put(key, { ...useNexusDetails.getState().byKey[key], ...signedOutEntry() })
+  }
+}
+
 const loadDetails = (game: string, id: number) => {
+  if (!useNexus.getState().signedIn) {
+    return loadCached(game, id)
+  }
   const key = nexusKey(game, id)
   let read = reads.get(key)
   if (!read) {

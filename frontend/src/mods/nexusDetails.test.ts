@@ -8,6 +8,7 @@ import {
   initNexusSeen,
   isNewSinceLooked,
   isNewSource,
+  loadDetails,
   mergeCachedDetails,
   newestOffered,
   nexusEntryOf,
@@ -95,6 +96,12 @@ test('primeDetails applies cache over an error-only entry', async () => {
   await primeDetails('stardew', [2400])
   expect(nexusEntryOf(useNexusDetails.getState().byKey, 'stardew', 2400)).toEqual({ details })
   expect(loads).toEqual([])
+})
+
+test('a page read signed out makes no Nexus call and marks the entry signed out', async () => {
+  await loadDetails('stardew', 2400)
+  expect(loads).toEqual([])
+  expect(nexusEntryOf(useNexusDetails.getState().byKey, 'stardew', 2400)?.signedOut).toBe(true)
 })
 
 const named = (id: number, name: string): Details => ({
