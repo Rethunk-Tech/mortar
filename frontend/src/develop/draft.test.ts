@@ -81,18 +81,17 @@ test('the template rules are checked before Mortar is asked', () => {
   expect(draftIssue(filled, null)).not.toBe('')
 })
 
-test('remembered parameters are the author step, switches the features step; each step checks only its own', () => {
-  expect(stepParams(form, 'author').map((p) => p.id)).toEqual(['team'])
-  expect(stepParams(form, 'mod').map((p) => p.id)).toEqual(['description'])
-  expect(stepParams(form, 'content').map((p) => p.id)).toEqual(['categories'])
-  expect(stepParams(form, 'features').map((p) => p.id)).toEqual(['config'])
+test('remembered parameters join the mod step, switches the content step; each step checks only its own', () => {
+  expect(stepParams(form, 'mod').map((p) => p.id)).toEqual(['description', 'team'])
+  expect(stepParams(form, 'content').map((p) => p.id)).toEqual(['categories', 'config'])
   const d = {
     ...firstDraft(form, {}),
     name: 'ShopDrop',
-    values: { description: 'Lands.', team: '', categories: 'mods' },
+    values: { description: 'Lands.', team: '', categories: 'mods', config: 'false' },
   }
-  expect(stepIssue(d, form, 'mod')).toBe('')
-  expect(stepIssue(d, form, 'author')).not.toBe('')
+  expect(stepIssue(d, form, 'mod')).not.toBe('')
+  expect(stepIssue({ ...d, values: { ...d.values, team: 'Maker' } }, form, 'mod')).toBe('')
+  expect(stepIssue(d, form, 'content')).toBe('')
   expect(stepIssue(d, form, 'project')).not.toBe('')
 })
 

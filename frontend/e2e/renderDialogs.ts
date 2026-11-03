@@ -99,7 +99,7 @@ export function dialogKit(h: Helpers) {
   }
 
   // Everything before the `steps`th Next past New mod's mod step (a code mod): a valid name and description fill it,
-  // and the author's fields are filled on the way, so the case measures only stepping into the step it names.
+  // so the case measures only stepping into the step it names.
   const newModTo = async (p: Page, steps: number) => {
     await developTab(p)
     await button(p, /^New mod…/)
@@ -107,13 +107,11 @@ export function dialogKit(h: Helpers) {
       p.getByRole('dialog').last().getByRole('textbox', { name }).first()
     await box('Mod name').fill('RenderCheck')
     await box('Description').fill('Checks how the wizard looks.')
+    await box('Author').fill('Render Check')
+    await box('Thunderstore team').fill('RenderCheck')
+    await box('Id prefix').fill('com.rendercheck')
     for (let at = 0; at < steps; at++) {
       await inDialog(p, /^Next$/)
-      if (at === 1) {
-        await box('Author').fill('Render Check')
-        await box('Thunderstore team').fill('RenderCheck')
-        await box('Id prefix').fill('com.rendercheck')
-      }
     }
   }
   // The first look for computers takes about 2 s; the action ends when it does, so the idle watch is idle.
@@ -315,10 +313,8 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
     },
     ...[
       ['content', 0],
-      ['author', 1],
-      ['features', 2],
-      ['dependencies', 3],
-      ['project', 4],
+      ['dependencies', 1],
+      ['project', 2],
     ].map(([step, n]) => ({
       ...dialog(
         '',
@@ -329,6 +325,15 @@ function toolAndWizardCases(kit: ReturnType<typeof dialogKit>): Case[] {
       // Named after the first step's case, so the gallery shows the wizard's steps together.
       name: `develop-new-mod-${step}`,
     })),
+    {
+      ...dialog(
+        '',
+        (p) => inDialog(p, /^What this allows$/),
+        WIZARD_BUDGET,
+        (p) => newModTo(p, 3),
+      ),
+      name: 'develop-new-mod-licence',
+    },
   ]
 }
 

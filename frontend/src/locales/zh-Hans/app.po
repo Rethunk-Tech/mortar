@@ -5425,10 +5425,6 @@ msgstr ""
 msgid "{mods}, {off} of them disabled"
 msgstr ""
 
-#: src/develop/NewModDialog.tsx
-msgid "Features"
-msgstr ""
-
 #: src/launch/events.ts
 msgid "{name} updated to {version}: {count, plural, one {# profile needs attention} other {# profiles need attention}}"
 msgstr ""
@@ -6587,10 +6583,13 @@ msgid "Clear search"
 msgstr ""
 
 #: src/develop/EditProjectDialog.tsx
-#: src/develop/NewModDialog.tsx
 #: src/develop/ownParams.ts
 #: src/share/ModpackDialog.tsx
 msgid "Author"
+msgstr ""
+
+#: src/develop/LicenseChart.tsx
+msgid "What this allows"
 msgstr ""
 
 #: src/launch/SaveWarnDialog.tsx

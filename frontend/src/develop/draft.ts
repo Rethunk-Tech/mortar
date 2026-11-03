@@ -118,9 +118,8 @@ function paramIssue(p: Param, raw: string): string {
   return ''
 }
 
-// The wizard's steps: the mod itself, what it carries and where it is listed, the author details Mortar remembers, what
-// the mod does, its dependencies, and where the project goes.
-const STEPS = ['mod', 'content', 'author', 'features', 'dependencies', 'project'] as const
+// The wizard's steps: the mod and who makes it, what it carries and does, its dependencies, and where the project goes.
+const STEPS = ['mod', 'content', 'dependencies', 'project'] as const
 export type Step = (typeof STEPS)[number]
 
 /** Where a step sits among the steps shown now; one that is gone (the template had no features) falls to the next. */
@@ -133,11 +132,9 @@ export function stepIndex(steps: Step[], step: Step | null): number {
   return i < 0 ? steps.length - 1 : i
 }
 
-/** The steps this wizard shows: content and features only when the form asks any. */
+/** The steps this wizard shows: content only when the form asks any. */
 export function wizardSteps(form: Form | null): Step[] {
-  return STEPS.filter(
-    (s) => (s !== 'features' && s !== 'content') || !form || stepParams(form, s).length > 0,
-  )
+  return STEPS.filter((s) => s !== 'content' || !form || stepParams(form, s).length > 0)
 }
 
 const isFeature = (p: Param) => p.kind === 'bool' || (p.kind === 'choice' && !p.multiple)
@@ -145,19 +142,22 @@ const isFeature = (p: Param) => p.kind === 'bool' || (p.kind === 'choice' && !p.
 // What the mod carries comes first: its categories follow from it.
 const CONTENT_STEP = [CONTENT_PARAM, CATEGORIES_PARAM]
 
-/** The parameters a step asks for: remembered ones on the author step, switches and single choices on the features
- * step, the rest on the mod step. */
+/** The parameters a step asks for: what it carries, then its switches and single choices, on the content step; the
+ * rest on the mod step, the remembered author details last. */
 export function stepParams(form: Form | null, step: Step): Param[] {
-  const all = (form?.parameters ?? []).filter((p) => !p.remember)
+  const params = form?.parameters ?? []
+  const all = params.filter((p) => !p.remember)
   switch (step) {
-    case 'author':
-      return (form?.parameters ?? []).filter((p) => p.remember)
     case 'content':
-      return CONTENT_STEP.flatMap((id) => all.filter((p) => p.id === id))
-    case 'features':
-      return all.filter((p) => isFeature(p) && !CONTENT_STEP.includes(p.id))
+      return [
+        ...CONTENT_STEP.flatMap((id) => all.filter((p) => p.id === id)),
+        ...all.filter((p) => isFeature(p) && !CONTENT_STEP.includes(p.id)),
+      ]
     case 'mod':
-      return all.filter((p) => !(isFeature(p) || CONTENT_STEP.includes(p.id)))
+      return [
+        ...all.filter((p) => !(isFeature(p) || CONTENT_STEP.includes(p.id))),
+        ...params.filter((p) => p.remember),
+      ]
     default:
       return []
   }

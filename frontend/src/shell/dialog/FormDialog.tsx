@@ -161,8 +161,14 @@ export function FormSection({
 }
 
 /** Two short fields of equal width side by side; anything longer gets its own row. */
-export function FieldRow({ children }: { children: ReactNode }) {
-  return <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>{children}</Box>
+export function FieldRow({
+  children,
+  columns = '1fr 1fr',
+}: {
+  children: ReactNode
+  columns?: string
+}) {
+  return <Box sx={{ display: 'grid', gridTemplateColumns: columns, gap: 2 }}>{children}</Box>
 }
 
 /**

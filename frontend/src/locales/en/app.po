@@ -5431,10 +5431,6 @@ msgstr "Fits {name}"
 msgid "{mods}, {off} of them disabled"
 msgstr "{mods}, {off} of them disabled"
 
-#: src/develop/NewModDialog.tsx
-msgid "Features"
-msgstr "Features"
-
 #: src/launch/events.ts
 msgid "{name} updated to {version}: {count, plural, one {# profile needs attention} other {# profiles need attention}}"
 msgstr "{name} updated to {version}: {count, plural, one {# profile needs attention} other {# profiles need attention}}"
@@ -6593,11 +6589,14 @@ msgid "Clear search"
 msgstr "Clear search"
 
 #: src/develop/EditProjectDialog.tsx
-#: src/develop/NewModDialog.tsx
 #: src/develop/ownParams.ts
 #: src/share/ModpackDialog.tsx
 msgid "Author"
 msgstr "Author"
+
+#: src/develop/LicenseChart.tsx
+msgid "What this allows"
+msgstr "What this allows"
 
 #: src/launch/SaveWarnDialog.tsx
 msgid "Unknown mod"

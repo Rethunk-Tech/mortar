@@ -17,7 +17,7 @@ import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/intern
 import { useGameInfo } from '../games/info.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
-import { Field, FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { Field, FieldRow, FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportError, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -105,6 +105,8 @@ const Prerequisites = memo(function PrerequisitesView({
 const ModStep = memo(
   function ModStepView({ draft, form, set }: { draft: Draft; form: Form | null; set: SetDraft }) {
     const { t } = useLingui()
+    const params = stepParams(form, 'mod')
+    const author = params.filter((p) => p.remember)
     return (
       <>
         <TextInput
@@ -120,11 +122,16 @@ const ModStep = memo(
           autoFocus={true}
         />
         <Params
-          params={stepParams(form, 'mod')}
+          params={params.filter((p) => !p.remember)}
           all={form?.parameters ?? []}
           draft={draft}
           set={set}
         />
+        {author.length > 0 ? (
+          <FieldRow columns={`repeat(${author.length}, minmax(0, 1fr))`}>
+            <Params params={author} all={form?.parameters ?? []} draft={draft} set={set} />
+          </FieldRow>
+        ) : null}
       </>
     )
   },
@@ -199,26 +206,28 @@ function ProjectStep({
   const where = draft.parent ? `${draft.parent}${sep}${draft.repo || draft.name}` : ''
   return (
     <>
-      <Field label={t`Projects folder`} htmlFor={folderId} hint={where}>
-        <Box sx={{ display: 'flex', gap: space.gap }}>
-          <TextField
-            id={folderId}
-            size="small"
-            fullWidth={true}
-            value={draft.parent}
-            slotProps={{ input: { readOnly: true } }}
-          />
-          <Button variant="outlined" onClick={() => pick().catch(() => undefined)}>
-            {t`Choose…`}
-          </Button>
-        </Box>
-      </Field>
-      <TextInput
-        label={t`Folder name`}
-        placeholder={draft.name}
-        value={draft.repo}
-        onChange={(repo) => set({ repo })}
-      />
+      <FieldRow columns="minmax(0, 2fr) minmax(0, 1fr)">
+        <Field label={t`Projects folder`} htmlFor={folderId} hint={where}>
+          <Box sx={{ display: 'flex', gap: space.gap }}>
+            <TextField
+              id={folderId}
+              size="small"
+              fullWidth={true}
+              value={draft.parent}
+              slotProps={{ input: { readOnly: true } }}
+            />
+            <Button variant="outlined" onClick={() => pick().catch(() => undefined)}>
+              {t`Choose…`}
+            </Button>
+          </Box>
+        </Field>
+        <TextInput
+          label={t`Folder name`}
+          placeholder={draft.name}
+          value={draft.repo}
+          onChange={(repo) => set({ repo })}
+        />
+      </FieldRow>
       <SelectField
         label={draft.kind ? t`Installs into` : t`Builds install into`}
         value={draft.profile}
@@ -265,8 +274,6 @@ function useStepLabels() {
   return {
     mod: t`Mod`,
     content: t`Content`,
-    author: t`Author`,
-    features: t`Features`,
     dependencies: t`Dependencies`,
     project: t`Project`,
   }
@@ -423,14 +430,6 @@ export function NewModDialog({
       {step === 'mod' ? <ModStep draft={draft} form={form} set={set} /> : null}
       {step === 'content' ? (
         <ContentStep draft={draft} form={form} noCodeOffered={noCodeOffered} set={set} />
-      ) : null}
-      {step === 'author' || step === 'features' ? (
-        <Params
-          params={stepParams(form, step)}
-          all={form?.parameters ?? []}
-          draft={draft}
-          set={set}
-        />
       ) : null}
       {step === 'dependencies' ? (
         <DependenciesStep game={game} profile={openId} form={form} draft={draft} set={set} />
