@@ -345,6 +345,7 @@ const SITE: Scene[] = [
     profile: LETHAL_MEASURED,
     developing: LETHAL,
     baldurs: { game: "Baldur's Gate 3", name: 'Main' },
+    coreKeeper: { game: 'Core Keeper', name: 'Main' },
     settings,
     stepMs: STEP_MS,
   }),

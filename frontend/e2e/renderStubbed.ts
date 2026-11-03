@@ -37,7 +37,7 @@ const releaseEverywhereStub = (extra: Record<number, unknown> = {}) =>
       { id: 'nexus', configured: true, ready: false },
       { id: 'github', configured: true, ready: true },
     ],
-    [PACK]: { zip: '/tmp/render.zip', issues: [] },
+    [PACK]: { ok: true, zip: '/tmp/render.zip', issues: [] },
     [UPLOAD_GITHUB]: 'https://github.com/example/mod/releases/tag/v1.0.0',
     ...extra,
   })

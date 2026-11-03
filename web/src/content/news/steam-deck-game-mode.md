@@ -3,7 +3,7 @@ kind: howto
 title: "Play from Steam Deck Game Mode"
 summary: "Set Mortar up once in Desktop Mode, then start each profile from Game Mode like any other game."
 date: 2026-10-20
-image: /img/deck.webp
+image: /img/deck-0-4-0.webp
 ---
 
 Mortar runs on the Steam Deck as the x86_64 AppImage. Set it up once in Desktop Mode, then each profile you add to Steam plays from Game Mode with its own mods.

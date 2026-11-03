@@ -14,12 +14,55 @@ interface Helpers {
   // A profile whose game has mod projects in the Develop tab.
   developing: { game: string; name: string }
   baldurs: { game: string; name: string }
+  coreKeeper: { game: string; name: string }
   settings: (page: Page, section: string) => Promise<void>
   stepMs: number
 }
 
 /** The news posts' scenes: 0.3.13's Change version, Add a game and Multiplayer mod list, and 0.3.14's Develop tab and
  * Preferred source, and 0.5.0's mod.io sign-in, Load order and Release everywhere. */
+// Asks every site once, so each row of the picture shows the site answering.
+async function testEveryAccount(page: Page, stepMs: number) {
+  const main = page.getByRole('main')
+  for (const name of ['Recheck', 'Test']) {
+    const buttons = main.getByRole('button', { name, exact: true })
+    for (const button of await buttons.all()) {
+      if (await button.isEnabled()) {
+        await button.click({ timeout: stepMs })
+      }
+    }
+  }
+  await main
+    .getByText(/has not asked/u)
+    .first()
+    .waitFor({ state: 'detached', timeout: 30_000 })
+}
+
+const accountsScene = (h: Helpers) => ({
+  name: 'accounts',
+  file: 'accounts-0-5-0.png',
+  ...h.desk,
+  profile: h.developing,
+  steps: async (page: Page) => {
+    await h.settings(page, 'Accounts')
+    await testEveryAccount(page, h.stepMs)
+    await page
+      .getByText('mod.io', { exact: true })
+      .first()
+      .evaluate((el) => el.scrollIntoView({ block: 'start' }))
+  },
+})
+
+// The rows are stubbed and the profile empty, so the counts are told to match what the picture shows.
+const showStubbedModCount = (page: Page) =>
+  page.evaluate(() => {
+    for (const el of document.querySelectorAll('span, div')) {
+      if (el.childElementCount === 0 && el.textContent === '0 mods') {
+        el.textContent = '4 mods'
+      }
+    }
+  })
+
 export const releaseScenes = (h: Helpers) => [
   {
     name: 'change-version',
@@ -102,15 +145,17 @@ export const releaseScenes = (h: Helpers) => [
     name: 'modio',
     file: 'modio-0-5-0.png',
     ...h.desk,
-    profile: h.developing,
+    profile: h.coreKeeper,
     steps: async (page) => {
-      await h.settings(page, 'Accounts')
+      await h.click(page, 'tab', 'Browse')
+      await h.click(page, 'button', /^mod\.io/u)
       await page
-        .getByText('mod.io', { exact: true })
+        .getByText(/results/u)
         .first()
-        .evaluate((el) => el.scrollIntoView({ block: 'start' }))
+        .waitFor({ timeout: 20_000 })
     },
   },
+  accountsScene(h),
   {
     name: 'load-order',
     file: 'load-order-0-5-0.png',
@@ -120,6 +165,7 @@ export const releaseScenes = (h: Helpers) => [
       await page.route('**/wails/runtime', loadOrderStub())
       await h.click(page, 'tab', 'Load order')
       await page.getByText('Party Limit Begone', { exact: true }).waitFor({ timeout: h.stepMs })
+      await showStubbedModCount(page)
     },
   },
   {
