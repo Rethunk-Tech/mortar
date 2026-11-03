@@ -91,12 +91,8 @@ jobs:
           cache-key-suffix: ${{ github.ref == 'refs/heads/main' && steps.day.outputs.date || '' }}
           go-version-file: go.mod
 
-      # -race needs cgo and gcc; the runner image ships mingw, and the step fails loudly if it does not.
+      # No race detector: the gate races the shared code, and no Windows-only file starts a goroutine or takes a lock.
       - name: Go tests
         if: steps.changes.outputs.code == 'true'
         shell: bash
-        env:
-          CGO_ENABLED: "1"
-        run: |
-          gcc --version
-          go test -race ./internal/...
+        run: go test ./internal/...
