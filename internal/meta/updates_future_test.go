@@ -17,9 +17,10 @@ func TestFutureStampedUpdateAnswerIsNotFresh(t *testing.T) {
 	now = now.Add(-30 * 24 * time.Hour) // clock set back a month
 	before := hits.Load()
 	c.CheckUpdates(t.Context(), cpRequest)
-	// A stale answer is served while a background refresh asks again; a fresh one is never asked again.
+	// A stale answer is served while a background refresh asks again; a fresh one is never asked again. Waiting for the
+	// refresh to end, not only to ask: it then writes the cache into this test's folder.
 	for range 200 {
-		if hits.Load() != before {
+		if hits.Load() != before && !c.updatesRefreshing.Load() {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)
