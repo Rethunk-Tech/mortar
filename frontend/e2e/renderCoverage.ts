@@ -299,6 +299,10 @@ const codeEditorCase: Case = {
   name: 'settings-code-editor',
   setup: openSettings,
   run: async (p) => {
+    await p
+      .getByRole('navigation', { name: 'Settings sections' })
+      .getByRole('button', { name: 'General', exact: true })
+      .click()
     const select = p.getByRole('combobox', { name: 'Code editor' })
     await select.scrollIntoViewIfNeeded()
     await select.click()
