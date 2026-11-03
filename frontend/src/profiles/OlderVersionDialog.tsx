@@ -112,72 +112,74 @@ export function OlderVersionDialog({
         </DialogFooter>
       }
     >
-      {watching ? (
-        <>
-          <Typography>
-            {t`The command is on your clipboard. Paste it into the ${{ launcher: STEAM }} console and press Enter. Mortar waits for the download to finish.`}
-          </Typography>
-          <Typography sx={{ color: 'text.secondary' }}>
-            {ready ? t`The download is done.` : t`Waiting for ${{ source: STEAM }}…`}
-          </Typography>
-        </>
-      ) : (
-        <>
-          <SelectField label={t`Depot`} value={depotId} onChange={setDepot}>
-            {(data?.depots ?? []).map((d) => (
-              <MenuItem key={d.id} value={d.id}>
-                {d.id}
-              </MenuItem>
-            ))}
-          </SelectField>
-          {builds.length > 0 && (
-            <SelectField
-              label={t`Builds Mortar has seen`}
-              value={
-                builds.some((b) => b.depotId === depotId && b.manifest === wanted)
-                  ? `${depotId}:${wanted}`
-                  : ''
-              }
-              onChange={pickBuild}
-            >
-              {builds.map((b) => (
-                <MenuItem key={`${b.depotId}:${b.manifest}`} value={`${b.depotId}:${b.manifest}`}>
-                  {[
-                    b.seen,
-                    b.buildId && t`build ${{ commit: b.buildId }}`,
-                    b.manifest,
-                    b.current && t`current`,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
+      <div className="app-dialog-form">
+        {watching ? (
+          <>
+            <Typography>
+              {t`The command is on your clipboard. Paste it into the ${{ launcher: STEAM }} console and press Enter. Mortar waits for the download to finish.`}
+            </Typography>
+            <Typography sx={{ color: 'text.secondary' }}>
+              {ready ? t`The download is done.` : t`Waiting for ${{ source: STEAM }}…`}
+            </Typography>
+          </>
+        ) : (
+          <>
+            <SelectField label={t`Depot`} value={depotId} onChange={setDepot}>
+              {(data?.depots ?? []).map((d) => (
+                <MenuItem key={d.id} value={d.id}>
+                  {d.id}
                 </MenuItem>
               ))}
             </SelectField>
-          )}
-          <TextInput
-            label={t`Manifest id of the version`}
-            value={manifest}
-            onChange={setManifest}
-            placeholder="7081337227611034738"
-            hint={
-              <Link
-                component="button"
-                type="button"
-                onClick={() => {
-                  openWeb(`https://steamdb.info/depot/${depotId}/manifests/`).catch(
-                    reportError(t`Could not open the browser`),
-                  )
-                }}
+            {builds.length > 0 && (
+              <SelectField
+                label={t`Builds Mortar has seen`}
+                value={
+                  builds.some((b) => b.depotId === depotId && b.manifest === wanted)
+                    ? `${depotId}:${wanted}`
+                    : ''
+                }
+                onChange={pickBuild}
               >
-                {t`Look up manifests on SteamDB`}
-              </Link>
-            }
-          />
-          <Alert severity="info">
-            {t`The ${{ launcher: STEAM }} console downloads the version. Mortar never asks for your ${{ launcher: STEAM }} login.`}
-          </Alert>
-        </>
-      )}
+                {builds.map((b) => (
+                  <MenuItem key={`${b.depotId}:${b.manifest}`} value={`${b.depotId}:${b.manifest}`}>
+                    {[
+                      b.seen,
+                      b.buildId && t`build ${{ commit: b.buildId }}`,
+                      b.manifest,
+                      b.current && t`current`,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </MenuItem>
+                ))}
+              </SelectField>
+            )}
+            <TextInput
+              label={t`Manifest id of the version`}
+              value={manifest}
+              onChange={setManifest}
+              placeholder="7081337227611034738"
+              hint={
+                <Link
+                  component="button"
+                  type="button"
+                  onClick={() => {
+                    openWeb(`https://steamdb.info/depot/${depotId}/manifests/`).catch(
+                      reportError(t`Could not open the browser`),
+                    )
+                  }}
+                >
+                  {t`Look up manifests on SteamDB`}
+                </Link>
+              }
+            />
+            <Alert severity="info">
+              {t`The ${{ launcher: STEAM }} console downloads the version. Mortar never asks for your ${{ launcher: STEAM }} login.`}
+            </Alert>
+          </>
+        )}
+      </div>
     </AppDialog>
   )
 }
