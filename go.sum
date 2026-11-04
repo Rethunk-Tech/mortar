@@ -44,6 +44,8 @@ github.com/Rethunk-Tech/go-nettrace v0.1.0 h1:nwx2R/p7HGauax19KB1es9rSwr3ROubPEM
 github.com/Rethunk-Tech/go-nettrace v0.1.0/go.mod h1:fy5SH8B/dIoykYgt2alKsyc745KnlMPnArGf+Egqm3s=
 github.com/Rethunk-Tech/go-nexusmods v0.4.0 h1:+uoKwCQpvIw3wyI0HUT928Rsd61cbXwv6JQcvvrkuTs=
 github.com/Rethunk-Tech/go-nexusmods v0.4.0/go.mod h1:SveCytdv94AzTS8R47bPHKkSIeXogEhZAopBsS/4rv8=
+github.com/Rethunk-Tech/go-nexusmods v0.5.0 h1:NiP2QyS3kjUOfXcHCenHMR4ue3G4p2evyZ/GpAfMjSA=
+github.com/Rethunk-Tech/go-nexusmods v0.5.0/go.mod h1:sKZs2TFIEi2Z8XHsepUfQk4GdQ1n4+s4UupKF6ooWD8=
 github.com/Rethunk-Tech/go-safefs v0.6.0 h1:Z8s36Qrbl/tCMAKKCGyS+YmWF4MXoskscepMfWYjY1o=
 github.com/Rethunk-Tech/go-safefs v0.6.0/go.mod h1:OlJOS+MRiL1we4bZjwI59SfZ1P2w7htlhxdP0ZuVBgU=
 github.com/Rethunk-Tech/go-semverish v0.2.0 h1:UrJw6+D1uOclXnkLmpSQAIvzoCqF9XPmXBqRRdA+1lw=

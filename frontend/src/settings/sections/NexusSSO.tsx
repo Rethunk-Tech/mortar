@@ -11,7 +11,6 @@ import {
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected, toastError } from '../../toasts/report.ts'
-import { useToasts } from '../../toasts/store.ts'
 
 type Stage = 'idle' | 'connected' | 'waiting-browser'
 
@@ -31,11 +30,7 @@ export function NexusSSO() {
           return
         }
         setStage('idle')
-        if (state === 'done') {
-          useToasts
-            .getState()
-            .push({ kind: 'success', title: t`Signed in to ${{ source: sourceLabel('nexus') }}` })
-        } else if (state === 'failed' && !cancelled) {
+        if (state === 'failed' && !cancelled) {
           toastError(t`Could not sign in with ${{ source: sourceLabel('nexus') }}`, error)
         }
       }),
@@ -49,9 +44,10 @@ export function NexusSSO() {
     StartSSO().catch(() => setStage('idle'))
   }
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, pb: space.pad }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       <Button
         variant="contained"
+        size="small"
         startIcon={stage === 'idle' ? <LogIn size={16} /> : <CircularProgress size={16} />}
         disabled={stage !== 'idle'}
         onClick={start}
@@ -67,6 +63,7 @@ export function NexusSSO() {
           <Box sx={{ fontSize: 'medium.fontSize' }}>{t`Approve Mortar in your browser…`}</Box>
           <Button
             variant="outlined"
+            size="small"
             color="inherit"
             onClick={() => CancelSSO().catch(reportUnexpected)}
           >

@@ -3,12 +3,14 @@ package nexussvc
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/opener"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
+	nexusmods "github.com/Rethunk-Tech/go-nexusmods"
 	"github.com/Rethunk-Tech/go-nexusmods/sso"
 )
 
@@ -74,7 +76,11 @@ func (s *Service) StartSSO(ctx context.Context) (Account, error) {
 		acct, err = s.signInLegacy(runCtx, onState)
 	}
 	if err != nil {
-		s.emitSSO(SSOState{State: SSOFailed, Error: err.Error(), Cancelled: errors.Is(err, context.Canceled)})
+		cancelled := errors.Is(err, context.Canceled)
+		if !cancelled {
+			slog.Warn("nexus sign-in failed", "err", err)
+		}
+		s.emitSSO(SSOState{State: SSOFailed, Error: err.Error(), Cancelled: cancelled})
 		return Account{}, err
 	}
 	s.emitSSO(SSOState{State: SSODone})
@@ -133,12 +139,12 @@ func (s *Service) signInOAuth(ctx context.Context, o sso.OAuth) (Account, error)
 	if err != nil {
 		return Account{}, err
 	}
-	user, err := s.client.WithBearer(func(context.Context) (string, error) { return t.Access, nil }).Validate(ctx)
+	user, err := o.Identify(ctx, t.Access)
 	if err != nil {
 		return Account{}, nexus.Worded(err)
 	}
 	if err := tokenStore.Save(t); err != nil {
 		return Account{}, err
 	}
-	return s.signedIn(user)
+	return s.signedIn(nexusmods.User{ID: user.ID, Name: user.Name, IsPremium: user.Premium})
 }

@@ -22,7 +22,7 @@ require (
 	github.com/Rethunk-Tech/go-modio v0.1.0
 	github.com/Rethunk-Tech/go-modmanagers v0.2.0
 	github.com/Rethunk-Tech/go-nettrace v0.1.0
-	github.com/Rethunk-Tech/go-nexusmods v0.4.0
+	github.com/Rethunk-Tech/go-nexusmods v0.5.0
 	github.com/Rethunk-Tech/go-safefs v0.6.0
 	github.com/Rethunk-Tech/go-semverish v0.2.0
 	github.com/Rethunk-Tech/go-smapi v0.2.0

@@ -255,7 +255,11 @@ func TestStartSSOStoresKeyLikePasted(t *testing.T) {
 func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 	store := testStore(t)
 	api, _ := serveFixtures(t)
-	idp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	idp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/userinfo" {
+			_, _ = w.Write([]byte(`{"sub":"77","name":"OAuthName","membership_roles":["member","premium"]}`))
+			return
+		}
 		_, _ = w.Write([]byte(`{"access_token":"A1","refresh_token":"R1","expires_in":3600}`))
 	}))
 	defer idp.Close()
@@ -276,7 +280,7 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 	if !s.SSOAvailable() {
 		t.Fatal("SSO unavailable with a client id")
 	}
-	if acct, err := s.StartSSO(t.Context()); err != nil || !acct.SignedIn {
+	if acct, err := s.StartSSO(t.Context()); err != nil || !acct.SignedIn || acct.Name != "OAuthName" || !acct.Premium {
 		t.Fatalf("acct %+v err %v", acct, err)
 	}
 	if tok, err := tokenStore.Load(); err != nil || tok.Refresh != "R1" {

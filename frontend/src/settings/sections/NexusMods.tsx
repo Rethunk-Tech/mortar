@@ -218,10 +218,13 @@ export function NexusSignIn() {
     () =>
       Events.On('nexus:sso', (e) => {
         if (e.data.state === 'done') {
+          useToasts
+            .getState()
+            .push({ kind: 'success', title: t`Signed in to ${{ source: sourceLabel('nexus') }}` })
           offer()
         }
       }),
-    [offer],
+    [offer, t],
   )
   if (signedIn) {
     return nxm.dialog
@@ -229,7 +232,6 @@ export function NexusSignIn() {
   return (
     <Searchable terms={terms}>
       {nxm.dialog}
-      <NexusSSO />
       {keyAllowed ? (
         <SettingRow
           label={t`Personal API key`}
@@ -313,7 +315,9 @@ export function NexusMods() {
               >
                 {t`Sign out`}
               </Button>
-            ) : null
+            ) : (
+              <NexusSSO />
+            )
           }
         />
         <NexusSignIn />
