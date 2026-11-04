@@ -40,14 +40,27 @@ async function testEveryAccount(page: Page, stepMs: number) {
 
 const accountsScene = (h: Helpers) => ({
   name: 'accounts',
-  file: 'accounts-0-5-0.png',
+  file: 'accounts-0-6-0.png',
   ...h.desk,
   profile: h.developing,
   steps: async (page: Page) => {
     await h.settings(page, 'Accounts')
     await testEveryAccount(page, h.stepMs)
     await page
-      .getByText('mod.io', { exact: true })
+      .getByText('Nexus', { exact: true })
+      .first()
+      .evaluate((el) => el.scrollIntoView({ block: 'start' }))
+  },
+})
+
+const requestCountsScene = (h: Helpers) => ({
+  ...accountsScene(h),
+  name: 'request-counts',
+  file: 'request-counts-0-6-0.png',
+  steps: async (page: Page) => {
+    await accountsScene(h).steps(page)
+    await page
+      .getByText('GitHub', { exact: true })
       .first()
       .evaluate((el) => el.scrollIntoView({ block: 'start' }))
   },
@@ -156,6 +169,7 @@ export const releaseScenes = (h: Helpers) => [
     },
   },
   accountsScene(h),
+  requestCountsScene(h),
   {
     name: 'load-order',
     file: 'load-order-0-5-0.png',
@@ -180,7 +194,7 @@ export const releaseScenes = (h: Helpers) => [
       await h.click(page, 'menuitem', /^Upload v/u)
       const dialog = page.getByRole('dialog').last()
       await dialog.getByRole('button', { name: 'Release everywhere' }).click()
-      await dialog.getByText('Skipped: No credentials yet').waitFor({ timeout: h.stepMs })
+      await dialog.getByText('Skipped: Not signed in').waitFor({ timeout: h.stepMs })
     },
   },
 ]

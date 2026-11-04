@@ -52,6 +52,16 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.6.0" date="2026-11-04">
+      <description>
+        <p>Changed</p>
+        <ul>
+          <li>Nexus Mods sign-in now happens in your browser: choose Sign in to Nexus Mods in Settings › Accounts and approve Mortar. Personal API keys are gone, and Mortar deletes a saved one, so sign in again once</li>
+          <li>Nexus Mods and GitHub request counts in Settings › Accounts say what time they reset</li>
+          <li>The Flatpak keeps sign-ins in a sealed file, using your desktop's Secret portal</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.5.0" date="2026-11-03">
       <description>
         <p>New</p>
