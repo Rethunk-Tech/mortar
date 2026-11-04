@@ -142,7 +142,9 @@ func SettleSignIn(ctx context.Context, s *Service) {
 			slog.Warn("nexus: could not forget the account of the retired API key", "err", err)
 		}
 	}
-	if s.Account().SignedIn || !HasSession() {
+	signedIn, session := s.Account().SignedIn, HasSession()
+	slog.Info("nexus: sign-in at startup", "retiredKey", retired, "signedIn", signedIn, "grantKept", session)
+	if signedIn || !session {
 		return
 	}
 	t, err := s.oauth.Fresh(ctx)
@@ -157,7 +159,9 @@ func SettleSignIn(ctx context.Context, s *Service) {
 	}
 	if _, err := s.signedIn(nexusmods.User{ID: user.ID, Name: user.Name, IsPremium: user.Premium}); err != nil {
 		slog.Warn("nexus: could not record the kept sign-in's account", "err", err)
+		return
 	}
+	slog.Info("nexus: the kept sign-in named its account")
 }
 
 // retireAPIKey deletes a kept personal API key and says whether there was one.
