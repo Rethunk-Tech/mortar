@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	github.com/Rethunk-Tech/go-archive v0.2.0
-	github.com/Rethunk-Tech/go-avscan v0.1.0
+	github.com/Rethunk-Tech/go-avscan v0.2.0
 	github.com/Rethunk-Tech/go-bannerlord v0.1.0
 	github.com/Rethunk-Tech/go-bepinex v0.2.0
 	github.com/Rethunk-Tech/go-cfgedit v0.2.0
@@ -35,7 +35,7 @@ require (
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/go-ole/go-ole v1.3.0
 	github.com/godbus/dbus/v5 v5.2.4
-	github.com/google/pprof v0.0.0-20261026192309-dbd0ed30aa88
+	github.com/google/pprof v0.0.0-20261103193413-97e8293de3c4
 	github.com/hashicorp/mdns v1.0.7
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d
 	github.com/wailsapp/wails/v3 v3.0.0
@@ -73,7 +73,7 @@ require (
 	go4.org v0.0.0-20261028031214-ed6929a230fe // indirect
 	golang.org/x/mod v0.42.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
-	modernc.org/libc v1.79.1 // indirect
+	modernc.org/libc v1.80.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 )
