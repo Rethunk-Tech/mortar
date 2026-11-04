@@ -290,11 +290,6 @@
     "url": "https://github.com/andybalholm/brotli"
   },
   {
-    "name": "github.com/coder/websocket",
-    "licence": "ISC",
-    "url": "https://github.com/coder/websocket"
-  },
-  {
     "name": "github.com/fsnotify/fsnotify",
     "licence": "BSD-3-Clause",
     "url": "https://github.com/fsnotify/fsnotify"
