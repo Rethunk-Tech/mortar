@@ -365,10 +365,6 @@ msgstr ""
 msgid "Move the data folder?"
 msgstr ""
 
-#: src/settings/sections/DataMods.tsx
-msgid "Clears cached {source} and {loader} details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower."
-msgstr ""
-
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Fishing skill"
 msgstr ""
@@ -447,10 +443,6 @@ msgstr ""
 
 #: src/settings/sections/DataBackups.tsx
 msgid "Could not trim save backups"
-msgstr ""
-
-#: src/settings/sections/NexusMods.tsx
-msgid "Sign in"
 msgstr ""
 
 #: src/settings/sections/NxmReclaim.tsx
@@ -1728,7 +1720,6 @@ msgid "Trace"
 msgstr ""
 
 #: src/settings/sections/ItchAccount.tsx
-#: src/settings/sections/NexusMods.tsx
 msgid "{source} rejected your API key"
 msgstr ""
 
@@ -1903,10 +1894,6 @@ msgstr ""
 
 #: src/settings/sections/Downloads.tsx
 msgid "{name} ({game})"
-msgstr ""
-
-#: src/settings/sections/NexusMods.tsx
-msgid "Kept in your system keyring. Find it on {source} under Settings, API Keys."
 msgstr ""
 
 #: src/settings/NexusMeter.tsx
@@ -2517,7 +2504,7 @@ msgstr ""
 msgid "Open Weblate"
 msgstr ""
 
-#: src/settings/sections/NexusSSO.tsx
+#: src/settings/sections/NexusMods.tsx
 msgid "Signed in to {source}"
 msgstr ""
 
@@ -3303,6 +3290,10 @@ msgstr ""
 msgid "Fresh and clear"
 msgstr ""
 
+#: src/settings/sections/DataMods.tsx
+msgid "Clears cached {source} and {loader} details and problem scans, for a revoked sign-in or wrong details. Mortar fetches them again, so the next problem check is slower."
+msgstr ""
+
 #: src/settings/prefCopyModsView.ts
 msgid "Author"
 msgstr ""
@@ -3778,10 +3769,6 @@ msgstr ""
 msgid "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, enable Developer mode and choose Load unpacked on the unzipped folder."
 msgstr ""
 
-#: src/settings/sections/NexusMods.tsx
-msgid "{source} account"
-msgstr ""
-
 #: src/settings/sections/ItchAccount.tsx
 msgid "Remove key"
 msgstr ""
@@ -3821,10 +3808,6 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Reuse FOMOD choices"
-msgstr ""
-
-#: src/settings/sections/NexusMods.tsx
-msgid "Personal API key"
 msgstr ""
 
 #: src/settings/sections/HiddenLogSources.tsx

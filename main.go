@@ -1170,6 +1170,7 @@ func run() error {
 	}
 	pick.App = h
 	nexusSvc.App = h
+	go nexussvc.SettleSignIn(context.Background(), nexusSvc)
 	nxmSvc.App = h
 	shareSvc.App = h
 	packs.App = h

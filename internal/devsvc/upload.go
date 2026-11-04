@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/tsupload"
@@ -134,9 +135,8 @@ var uploadSiteTable = []struct {
 		return tsupload.Community(gameID) != "", true, s.HasThunderstoreToken(gameID, dir)
 	}},
 	{"nexus", func(_ context.Context, _ *Service, p settings.DevProject, gameID, _ string) (bool, bool, bool) {
-		_, err := nexusAPIKey()
 		g, _ := components.Game(gameID)
-		return g.NexusDomain() != "", readSites(p.Dir).Nexus.FileID != "", err == nil
+		return g.NexusDomain() != "", readSites(p.Dir).Nexus.FileID != "", nexussvc.HasSession()
 	}},
 	{"curseforge", func(_ context.Context, s *Service, p settings.DevProject, gameID, _ string) (bool, bool, bool) {
 		return curseForgeBase(gameID) != "", readSites(p.Dir).CurseForge.ProjectID > 0, s.HasCurseForgeToken()
@@ -242,15 +242,14 @@ func (s *Service) UploadNexus(ctx context.Context, gameID, dir, version string) 
 	if err != nil {
 		return "", err
 	}
-	key, err := nexusAPIKey()
-	if err != nil {
+	if err := nexusSignedIn(); err != nil {
 		return "", err
 	}
 	info, err := projectInfo(p)
 	if err != nil {
 		return "", err
 	}
-	if err := s.uploadNexus(ctx, key, zipPath, info.Name, ids, version, notes); err != nil {
+	if err := s.uploadNexus(ctx, zipPath, info.Name, ids, version, notes); err != nil {
 		return "", err
 	}
 	return nexusPage(gameID, ids), nil

@@ -59,14 +59,13 @@ type Service struct {
 	// GitHub serves release notes for updates that come from GitHub.
 	GitHub *github.Client
 
-	sso   sso.Legacy
 	oauth sso.OAuth
 	run   ssoRun
 }
 
 // NewService keeps mod page details in m's cache.
 func NewService(store *settings.Store, client *nexusmods.Client, m *meta.Client) *Service {
-	s := &Service{store: store, client: client, meta: m, sso: sso.Legacy{Slug: Slug}, oauth: oauthConfig()}
+	s := &Service{store: store, client: client, meta: m, oauth: oauthConfig()}
 	client.SetLimitsHook(func(lim nexusmods.Limits) {
 		if s.App != nil {
 			a := s.Account()
@@ -104,9 +103,9 @@ func (s *Service) GitHubRate() github.Rate {
 	return gh.CurrentRate()
 }
 
-// SignOut deletes the key and forgets the account.
+// SignOut deletes the grant and forgets the account.
 func (s *Service) SignOut() (Account, error) {
-	if err := errors.Join(forgetKey(), forgetOAuth()); err != nil {
+	if err := forgetOAuth(); err != nil {
 		return Account{}, err
 	}
 	s.forgetTracked()

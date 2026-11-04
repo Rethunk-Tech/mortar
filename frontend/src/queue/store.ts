@@ -148,7 +148,7 @@ export function siteOf(item: Item): string {
 function failureToast(item: Item): Pick<ToastInput, 'title' | 'body' | 'action'> {
   if (item.errorKind === 'auth') {
     return {
-      title: i18n._(msg`${{ source: sourceLabel('nexus') }} rejected your API key`),
+      title: i18n._(msg`${{ source: sourceLabel('nexus') }} rejected your sign-in`),
       action: {
         label: i18n._(msg`Open ${{ source: sourceLabel('nexus') }} settings`),
         run: () => openSettings('accounts'),

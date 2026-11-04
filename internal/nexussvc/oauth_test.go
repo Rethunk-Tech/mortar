@@ -14,15 +14,13 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 
 	"github.com/Rethunk-Tech/go-nexusmods/sso"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/zalando/go-keyring"
 )
 
-func TestOAuthBuildSendsBearerAndNeverTheKey(t *testing.T) {
+func TestCallsSendTheAccessTokenAndNoKey(t *testing.T) {
 	keyring.MockInit()
-	old := ClientID
-	ClientID = "cid"
-	t.Cleanup(func() { ClientID = old })
 	if err := tokenStore.Save(sso.Tokens{Access: "TOK", Refresh: "R", Expires: time.Now().Add(time.Hour)}); err != nil {
 		t.Fatal(err)
 	}
@@ -51,9 +49,6 @@ func TestOAuthBuildSendsBearerAndNeverTheKey(t *testing.T) {
 	}
 	if got.Get("Authorization") != "Bearer TOK" || got.Get("Apikey") != "" {
 		t.Fatalf("headers %v", got)
-	}
-	if _, err := (&Service{}).SignIn(t.Context(), "pasted"); err == nil {
-		t.Fatal("a pasted key signed in while OAuth is configured")
 	}
 }
 
@@ -142,5 +137,52 @@ func TestSignInWordingIsMortars(t *testing.T) {
 	_, err = s.signInOAuth(t.Context(), o)
 	if err == nil || err.Error() != "Port 51762 is in use; close the app using it and try again" {
 		t.Fatalf("error %v", err)
+	}
+}
+
+func TestSettleSignIn(t *testing.T) {
+	store := testStore(t)
+	idp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{"sub":"9","name":"Kept","membership_roles":["member"]}`))
+	}))
+	defer idp.Close()
+	s := NewService(store, nexusmods.New("Mortar", "1"), &meta.Client{})
+	s.oauth.AuthBase = idp.URL
+	ctx := t.Context()
+
+	SettleSignIn(ctx, s) // nothing kept: nothing changes
+	if s.Account().SignedIn {
+		t.Fatal("signed in with nothing kept")
+	}
+
+	if err := secret.Set(retiredKeyItem, "pasted"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.signedIn(nexusmods.User{ID: 1, Name: "Old"}); err != nil {
+		t.Fatal(err)
+	}
+	SettleSignIn(ctx, s)
+	if _, err := secret.Get(retiredKeyItem); !errors.Is(err, secret.ErrNotFound) {
+		t.Fatalf("the key survived: %v", err)
+	}
+	if s.Account().SignedIn {
+		t.Fatal("an account that only had a key stayed signed in")
+	}
+
+	signIn(t, s)
+	if err := secret.Set(retiredKeyItem, "pasted"); err != nil {
+		t.Fatal(err)
+	}
+	SettleSignIn(ctx, s)
+	if a := s.Account(); !a.SignedIn || a.Name != "Ada" {
+		t.Fatalf("an account with a grant was changed: %+v", a)
+	}
+
+	if _, err := s.update(func(v *settings.Settings) { v.NexusUserID, v.NexusName = 0, "" }); err != nil {
+		t.Fatal(err)
+	}
+	SettleSignIn(ctx, s)
+	if a := s.Account(); !a.SignedIn || a.Name != "Kept" {
+		t.Fatalf("a kept grant did not name its account: %+v", a)
 	}
 }

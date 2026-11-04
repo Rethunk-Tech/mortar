@@ -74,7 +74,7 @@ export async function queueWants(
       kind: 'warning',
       title: i18n._(msg`Sign in to ${{ source: sourceLabel('nexus') }} to download`),
       body: i18n._(
-        msg`Downloads come from ${{ source: sourceLabel('nexus') }} with your account, so Mortar needs your API key first.`,
+        msg`Downloads come from ${{ source: sourceLabel('nexus') }} with your account, so sign in first.`,
       ),
       action: { label: i18n._(msg`Open settings`), run: () => openSettings('accounts') },
     })

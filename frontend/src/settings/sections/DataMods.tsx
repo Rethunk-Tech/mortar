@@ -39,7 +39,7 @@ function CacheClearDialog({
       title={t`Clear cache?`}
       body={
         <>
-          {t`Clears cached ${{ source: sourceLabel('nexus') }} and ${{ loader: SMAPI }} details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower.`}
+          {t`Clears cached ${{ source: sourceLabel('nexus') }} and ${{ loader: SMAPI }} details and problem scans, for a revoked sign-in or wrong details. Mortar fetches them again, so the next problem check is slower.`}
           {info === null ? null : (
             <Box component="span" sx={{ display: 'block', mt: space.gap, wordBreak: 'break-all' }}>
               {t`${size} in ${path}`}

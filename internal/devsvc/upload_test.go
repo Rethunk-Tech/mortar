@@ -41,7 +41,7 @@ func TestUploadRefusesAnUntrustedProject(t *testing.T) {
 
 func TestUploadMapsASitesRefusalToAUserError(t *testing.T) {
 	keyring.MockInit()
-	if err := secret.Set("nexus", "k"); err != nil {
+	if err := secret.Set("nexus-oauth", `{"access":"k","refresh":"r","expires":"2099-01-01T00:00:00Z"}`); err != nil {
 		t.Fatal(err)
 	}
 	for _, c := range []struct {

@@ -58,7 +58,7 @@ func TestUploadGuardsRefuseBeforeAnyRequest(t *testing.T) {
 		t.Errorf("a version of two numbers: %v", err)
 	}
 	if _, err := svc.UploadNexus(ctx, "lethal-company", dir, "1.0.0"); err == nil {
-		t.Error("nexus without an API key: want an error")
+		t.Error("nexus without a sign-in: want an error")
 	}
 }
 

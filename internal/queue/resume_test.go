@@ -117,7 +117,7 @@ func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
 	}
 	c := nexusmods.New("Mortar", "test")
 	c.BaseURL, c.HTTP, c.Now = srv.URL, srv.Client(), func() time.Time { return time.Unix(1_000_000, 0).UTC() }
-	client := c.WithKey("secret")
+	client := c.WithBearer(func(context.Context) (string, error) { return "k", nil })
 	var installs int
 	s, err := New(Deps{
 		Client:  func() (*nexusmods.Client, error) { return client, nil },

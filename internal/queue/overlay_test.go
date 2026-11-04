@@ -136,7 +136,7 @@ func TestStoredOptionalFileInstallsOverItsMainFile(t *testing.T) {
 	add(optKey, map[string]string{"Mod/a.png": "opt"})
 	c := nexusmods.New("Mortar", "test")
 	c.BaseURL = "http://127.0.0.1:1"
-	client := c.WithKey("k")
+	client := c.WithBearer(func(context.Context) (string, error) { return "k", nil })
 	s, err := New(Deps{
 		Client:  func() (*nexusmods.Client, error) { return client, nil },
 		Premium: func() bool { return true },

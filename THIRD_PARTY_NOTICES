@@ -583,7 +583,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@lingui/core@6.11.0
+@lingui/core@6.12.0
 licence: MIT
 https://lingui.dev
 
@@ -611,7 +611,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@lingui/message-utils@6.11.0
+@lingui/message-utils@6.12.0
 licence: MIT
 https://lingui.dev
 
@@ -639,7 +639,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@lingui/react@6.11.0
+@lingui/react@6.12.0
 licence: MIT
 https://lingui.dev
 
@@ -944,7 +944,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@tanstack/react-virtual@3.14.25
+@tanstack/react-virtual@3.14.26
 licence: MIT
 https://tanstack.com/virtual
 
@@ -972,7 +972,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@tanstack/virtual-core@3.19.10
+@tanstack/virtual-core@3.19.11
 licence: MIT
 https://tanstack.com/virtual
 
@@ -1829,7 +1829,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/google/pprof@v0.0.0-20261026192309-dbd0ed30aa88
+github.com/google/pprof@v0.0.0-20261103193413-97e8293de3c4
 licence: Apache-2.0
 https://github.com/google/pprof
 
@@ -3011,7 +3011,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-avscan@v0.1.0
+github.com/Rethunk-Tech/go-avscan@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-avscan
 
@@ -3515,7 +3515,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-nexusmods@v0.4.0
+github.com/Rethunk-Tech/go-nexusmods@v0.5.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-nexusmods
 
@@ -4552,7 +4552,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-hast-util-to-jsx-runtime@2.3.6
+hast-util-to-jsx-runtime@2.3.7
 licence: MIT
 https://github.com/syntax-tree/hast-util-to-jsx-runtime
 
@@ -4674,7 +4674,7 @@ THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-inline-style-parser@0.2.7
+inline-style-parser@0.2.9
 licence: MIT
 https://github.com/remarkablemark/inline-style-parser
 
@@ -4735,7 +4735,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-lucide-react@1.66.0
+lucide-react@1.67.0
 licence: MIT
 https://lucide.dev
 
@@ -4785,7 +4785,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-markdown-table@3.0.4
+markdown-table@3.1.0
 licence: MIT
 https://github.com/wooorm/markdown-table
 
@@ -4959,13 +4959,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-mdast-util-gfm-table@2.0.0
+mdast-util-gfm-table@2.0.1
 licence: MIT
 https://github.com/syntax-tree/mdast-util-gfm-table
 
 (The MIT License)
 
-Copyright (c) 2020 Titus Wormer <tituswormer@gmail.com>
+Copyright (c) Titus Wormer <tituswormer@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -5105,7 +5105,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-mdast-util-to-markdown@2.2.1
+mdast-util-to-markdown@2.2.2
 licence: MIT
 https://github.com/syntax-tree/mdast-util-to-markdown
 
@@ -5941,7 +5941,7 @@ Bundled source icon (frontend/src/brand/vendor/modio.svg) from the mod.io SDK, s
 
 --------------------------------------------------------------------------------
 
-modernc.org/libc@v1.79.1
+modernc.org/libc@v1.80.0
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/libc
 
@@ -6626,36 +6626,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-style-to-js@1.1.21
-licence: MIT
-https://github.com/remarkablemark/style-to-js
-
-The MIT License (MIT)
-
-Copyright (c) 2020 Menglin "Mark" Xu <mark@remarkablemark.org>
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
---------------------------------------------------------------------------------
-
-style-to-object@1.0.14
+style-to-object@2.0.2
 licence: MIT
 https://github.com/remarkablemark/style-to-object
 

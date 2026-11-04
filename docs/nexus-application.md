@@ -9,7 +9,7 @@ What Mortar sent Nexus Mods to register (emailed to support@nexusmods.com) and t
 - Legacy SSO is a websocket flow ([Nexus-Mods/sso-integration-demo](https://github.com/Nexus-Mods/sso-integration-demo)): connect to `wss://sso.nexusmods.com`, send `{id, token, protocol: 2}`, open `https://www.nexusmods.com/sso?id=<uuid>&application=<slug>`, receive the user's API key over the socket. It needs a slug only Nexus staff can generate and has no redirect URI.
 - OAuth2 with PKCE ([Nexus-Mods/oauth2-demo-app](https://github.com/Nexus-Mods/oauth2-demo-app)): a public client with a custom-protocol or localhost redirect. Vortex uses `https://users.nexusmods.com/oauth` (userinfo `/oauth/userinfo`), client id `vortex_loopback`, scope `openid profile email`, redirect `http://127.0.0.1:<port>`; its source keeps `nxm://oauth/callback` only as a commented-out earlier value ([constants.ts](https://github.com/Nexus-Mods/Vortex/blob/master/src/renderer/src/extensions/nexus_integration/constants.ts)). Third-party clients such as NexTwist still use `nxm://oauth/callback`.
 
-The reference is Nexus's guide [Using OAuth 2.0 and PKCE in your application](https://modding.wiki/en/api/oauth2-guide): register a client by emailing support@nexusmods.com (name, short description, logo for a dark background, source link, callback URI); public apps use PKCE with a loopback or custom-scheme redirect; V1 and V2 both accept the access token as `Authorization: Bearer`. Support (ticket 269342) asked only for the name, a fixed callback and the scopes. Both flows stay built: the `nexussvc.ClientID` ldflag selects OAuth PKCE, `nexussvc.Slug` alone selects legacy SSO, and with neither set sign-in is hidden ([architecture.md](architecture.md) § Nexus).
+The reference is Nexus's guide [Using OAuth 2.0 and PKCE in your application](https://modding.wiki/en/api/oauth2-guide): register a client by emailing support@nexusmods.com (name, short description, logo for a dark background, source link, callback URI); public apps use PKCE with a loopback or custom-scheme redirect; V1 and V2 both accept the access token as `Authorization: Bearer`. Support (ticket 269342) asked only for the name, a fixed callback and the scopes.
 
 ## Application
 
@@ -32,14 +32,12 @@ Nexus's reply: the primary failing point is personal API keys, which must be rem
 | Callback (fixed, not dynamic) | `http://127.0.0.1:51762/oauth/callback`, address constant `oauthAddr` in `nexussvc`. 51762 is in the IANA dynamic range (49152 to 65535), so no registered service owns it. If it is busy the sign-in fails with "Port 51762 is in use; close the app using it and try again"; there is no fallback port. |
 | Scopes | `public openid profile` (constant `sso.Scope` in go-nexusmods). `public` is what authorises the API calls; `openid` and `profile` identify the account. Not independently confirmed on a Nexus help page (none was reachable); to be checked against the registration form. |
 | Access token on API calls | `Authorization: Bearer <token>` on REST v1 and GraphQL v2, with the usual `Application-Name` and `Application-Version`. Per Nexus's [OAuth guide](https://modding.wiki/en/api/oauth2-guide#token-usage-and-validation). |
-| Personal API keys | Compiled in but inert whenever a client id is built in, and deleted in the release that turns OAuth on. |
+| Personal API keys | Removed. The first start after the update deletes a key an earlier release kept. |
 | Automatic updates | Update checks stay, including the four-hourly background check, which only notifies. Mortar never downloads or installs a Nexus file without the user's confirmation; nothing unattended queues one, and a queue left from a previous session stays paused at startup when it holds a Nexus file. Update before Play is an opt-in setting that runs only when the user presses Play. |
 
 ## Authentication requested
 
 OAuth2 authorization code with PKCE as a public client (no client secret on the user's machine), because Mortar is a desktop app. Redirect URI, scopes and token use are in the table above.
-
-- A build without a client id signs in with the user's personal API key, held in the OS keyring and sent only from the user's own machine, never to a Mortar server (Mortar has none).
 
 ## What Mortar calls
 
@@ -67,4 +65,4 @@ User-Agent: Mortar/<app version>
 
 ## Data handling
 
-User API key/tokens stay in the OS keyring on the user's machine. Mortar runs no server and sends no Nexus data to any third party. Cached Nexus metadata is stored locally for the user's own use.
+User tokens stay in the OS keyring on the user's machine. Mortar runs no server and sends no Nexus data to any third party. Cached Nexus metadata is stored locally for the user's own use.

@@ -135,7 +135,7 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 		"queue.json: download queue without nxm keys",
 	}
 	removed := []string{
-		"Nexus API key (not read from the keyring; stripped if present in settings.json)",
+		"Nexus sign-in (not read from the keyring; a key is stripped if present in settings.json)",
 		"account names, user ids, premium status and e-mail addresses of every download site",
 		"paired computers and their keys (lan/peers.json is never read)",
 		"overlayToken",

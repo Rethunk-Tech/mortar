@@ -1,6 +1,7 @@
 package nexus
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -27,7 +28,7 @@ func modServer(t *testing.T, hits *atomic.Int32) *nexusmods.Client {
 	t.Cleanup(srv.Close)
 	c := nexusmods.New("Mortar", "9.9")
 	c.BaseURL = srv.URL
-	return c.WithKey("k")
+	return c.WithBearer(func(context.Context) (string, error) { return "k", nil })
 }
 
 var wantMod = Mod{Name: "Lookup Anything", Author: "Pathoschild", PictureURL: "https://staticdelivery.nexusmods.com/mods/1303/images/541-0-1482010183.png", EndorsementCount: 201516, Summary: "See live info about whatever's under your cursor when you press F1. Learn a villager's favourite gifts, when a crop will be ready to harvest, how long a fence will last, why your farm animals are unhappy, and more."}

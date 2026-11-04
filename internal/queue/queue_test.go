@@ -114,7 +114,7 @@ func newFixture(t *testing.T) *fixture {
 
 	c := nexusmods.New("Mortar", "test")
 	c.BaseURL, c.HTTP, c.Now = srv.URL, srv.Client(), f.now
-	client := c.WithKey("secret")
+	client := c.WithBearer(func(context.Context) (string, error) { return "k", nil })
 	s, err := New(Deps{
 		Client:  func() (*nexusmods.Client, error) { return client, nil },
 		Premium: f.premium.Load,

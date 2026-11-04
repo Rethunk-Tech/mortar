@@ -16,13 +16,12 @@ import (
 
 const nexusName = "Nexus Mods"
 
-// nexusAPIKey is the personal API key kept for Nexus Mods, an error that asks for one when there is none.
-func nexusAPIKey() (string, error) {
-	key, err := nexussvc.StoredAPIKey()
-	if err != nil || key == "" {
-		return "", usererr.Wrap(usererr.Permission, errors.New("add your Nexus Mods API key in Settings, under Accounts"))
+// nexusSignedIn is an error that asks for a sign-in when no Nexus Mods account is signed in.
+func nexusSignedIn() error {
+	if !nexussvc.HasSession() {
+		return usererr.Wrap(usererr.Permission, errors.New("sign in to Nexus Mods in Settings, under Accounts"))
 	}
-	return key, nil
+	return nil
 }
 
 func nexusPage(gameID string, ids NexusIDs) string {
@@ -35,8 +34,8 @@ func nexusPage(gameID string, ids NexusIDs) string {
 }
 
 // uploadNexus sends the package as the next version of the mod file ids.FileID and adds changelog under the mod page.
-func (s *Service) uploadNexus(ctx context.Context, key, path, name string, ids NexusIDs, version, changelog string) error {
-	c := nexusmods.New("Mortar", s.Version).WithKey(key)
+func (s *Service) uploadNexus(ctx context.Context, path, name string, ids NexusIDs, version, changelog string) error {
+	c := nexussvc.WithSession(nexusmods.New("Mortar", s.Version))
 	c.HTTP = s.httpClient()
 	c.BaseURL = s.nexusAPI
 	err := nexusmods.NewUploader(c).Upload(ctx, nexusmods.Release{

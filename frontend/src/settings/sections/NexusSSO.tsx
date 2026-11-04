@@ -5,7 +5,6 @@ import { LogIn } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
   CancelSSO,
-  SSOAvailable,
   StartSSO,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
@@ -16,11 +15,7 @@ type Stage = 'idle' | 'connected' | 'waiting-browser'
 
 export function NexusSSO() {
   const { t } = useLingui()
-  const [available, setAvailable] = useState(false)
   const [stage, setStage] = useState<Stage>('idle')
-  useEffect(() => {
-    SSOAvailable().then(setAvailable).catch(reportUnexpected)
-  }, [])
   useEffect(
     () =>
       Events.On('nexus:sso', (event) => {
@@ -36,9 +31,6 @@ export function NexusSSO() {
       }),
     [t],
   )
-  if (!available) {
-    return null
-  }
   const start = () => {
     setStage('connected')
     StartSSO().catch(() => setStage('idle'))

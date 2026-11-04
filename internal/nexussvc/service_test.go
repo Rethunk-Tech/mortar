@@ -27,11 +27,20 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
-	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
-	"github.com/coder/websocket"
 	"github.com/zalando/go-keyring"
 )
+
+// signIn is the state a browser sign-in leaves: a grant in the keyring and the account in settings.
+func signIn(t *testing.T, s *Service) {
+	t.Helper()
+	if err := tokenStore.Save(sso.Tokens{Access: "tok", Refresh: "r", Expires: time.Now().Add(time.Hour)}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.signedIn(nexusmods.User{ID: 7, Name: "Ada", IsPremium: true}); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func testStore(t *testing.T) *settings.Store {
 	t.Helper()
@@ -90,43 +99,6 @@ func keepsOutOfSettings(t *testing.T, secrets ...string) {
 	}
 }
 
-func TestSignInOutKeepsKeyOutOfSettings(t *testing.T) {
-	store := testStore(t)
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Apikey") != "secret-key" {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		_, _ = w.Write([]byte(`{"user_id":7,"name":"Ada","is_premium":true}`))
-	}))
-	defer srv.Close()
-	c := nexusmods.New("Mortar", "1")
-	c.BaseURL = srv.URL
-	s := NewService(store, c, &meta.Client{})
-	ctx := t.Context()
-
-	if _, err := s.SignIn(ctx, "wrong"); err == nil {
-		t.Fatal("bad key accepted")
-	}
-	if _, err := secret.Get(keyName); !errors.Is(err, secret.ErrNotFound) || s.Account().SignedIn {
-		t.Fatalf("rejected key left state behind: %v", err)
-	}
-	acct, err := s.SignIn(ctx, " secret-key ")
-	if err != nil || !acct.SignedIn || acct.Name != "Ada" || !acct.Premium {
-		t.Fatalf("sign in = %+v, %v", acct, err)
-	}
-	if got, _ := secret.Get(keyName); got != "secret-key" {
-		t.Fatalf("keyring holds %q", got)
-	}
-	keepsOutOfSettings(t, "secret-key")
-	if acct, err = s.SignOut(); err != nil || acct.SignedIn {
-		t.Fatalf("sign out = %+v, %v", acct, err)
-	}
-	if _, err := secret.Get(keyName); !errors.Is(err, secret.ErrNotFound) {
-		t.Fatal("key survived sign out")
-	}
-}
-
 func TestModNameNeedsASignedInAccount(t *testing.T) {
 	store := testStore(t)
 	s := NewService(store, nexusmods.New("Mortar", "1"), &meta.Client{})
@@ -148,9 +120,7 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 	if _, err := s.Details(ctx, "stardew", 541); !errors.Is(err, ErrSignedOut) {
 		t.Fatalf("signed out with no cache = %v", err)
 	}
-	if _, err := s.SignIn(ctx, "k"); err != nil {
-		t.Fatal(err)
-	}
+	signIn(t, s)
 	hits.Store(0)
 	d, err := s.Details(ctx, "stardew", 541)
 	if err != nil || d.Page.Name != "Lookup Anything" || d.Category != "User Interface" || len(d.Files) != 2 ||
@@ -193,9 +163,7 @@ func TestDetailsRefetchesUnversionedCache(t *testing.T) {
 	m := &meta.Client{CacheDir: t.TempDir(), Now: func() time.Time { return now }}
 	s := NewService(store, c, m)
 	ctx := t.Context()
-	if _, err := s.SignIn(ctx, "k"); err != nil {
-		t.Fatal(err)
-	}
+	signIn(t, s)
 	old := struct {
 		Fetched time.Time `json:"fetched"`
 		Value   Details   `json:"value"`
@@ -219,40 +187,7 @@ func TestDetailsRefetchesUnversionedCache(t *testing.T) {
 	}
 }
 
-func TestStartSSOStoresKeyLikePasted(t *testing.T) {
-	store := testStore(t)
-	api, _ := serveFixtures(t)
-	ws := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c, err := websocket.Accept(w, r, nil)
-		if err != nil {
-			return
-		}
-		_, _, _ = c.Read(r.Context())
-		_ = c.Write(r.Context(), websocket.MessageText, []byte(`{"success":true,"data":{"connection_token":"t"}}`))
-		_ = c.Write(r.Context(), websocket.MessageText, []byte(`{"success":true,"data":{"api_key":"SSOKEY"}}`))
-		_ = c.Close(websocket.StatusNormalClosure, "")
-	}))
-	defer ws.Close()
-	client := nexusmods.New("Mortar", "test")
-	client.BaseURL = api.URL
-	s := NewService(store, client, &meta.Client{})
-	if s.SSOAvailable() {
-		t.Fatal("SSO available without a slug")
-	}
-	if _, err := s.StartSSO(t.Context()); err == nil {
-		t.Fatal("StartSSO ran without a slug")
-	}
-	s.sso = sso.Legacy{Slug: "mortar", SocketURL: "ws" + strings.TrimPrefix(ws.URL, "http"), OpenBrowser: func(string) error { return nil }}
-	acct, err := s.StartSSO(t.Context())
-	if err != nil || !acct.SignedIn {
-		t.Fatalf("acct %+v err %v", acct, err)
-	}
-	if k, _ := secret.Get(keyName); k != "SSOKEY" {
-		t.Fatalf("stored key %q", k)
-	}
-}
-
-func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
+func TestBrowserSignInKeepsTheGrantOutOfSettings(t *testing.T) {
 	store := testStore(t)
 	api, _ := serveFixtures(t)
 	idp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -266,7 +201,6 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 	client := nexusmods.New("Mortar", "test")
 	client.BaseURL = api.URL
 	s := NewService(store, client, &meta.Client{})
-	s.sso = sso.Legacy{Slug: "mortar"}
 	s.oauth = sso.OAuth{ClientID: "cid", Store: oauthStore{}, AuthBase: idp.URL, Addr: "127.0.0.1:0", OpenBrowser: func(raw string) error {
 		u, _ := url.Parse(raw)
 		go func() {
@@ -277,9 +211,6 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 		}()
 		return nil
 	}}
-	if !s.SSOAvailable() {
-		t.Fatal("SSO unavailable with a client id")
-	}
 	if acct, err := s.StartSSO(t.Context()); err != nil || !acct.SignedIn || acct.Name != "OAuthName" || !acct.Premium {
 		t.Fatalf("acct %+v err %v", acct, err)
 	}
@@ -292,11 +223,6 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 	}
 	if _, err := tokenStore.Load(); err == nil {
 		t.Fatal("OAuth tokens survived sign-out")
-	}
-	s.oauth = sso.OAuth{}
-	s.sso = sso.Legacy{}
-	if s.SSOAvailable() {
-		t.Fatal("SSO available with neither flag")
 	}
 }
 
@@ -333,9 +259,7 @@ func TestPrimeDetailsAsksOncePerBatch(t *testing.T) {
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{CacheDir: t.TempDir()})
 	ctx := t.Context()
-	if _, err := s.SignIn(ctx, "k"); err != nil {
-		t.Fatal(err)
-	}
+	signIn(t, s)
 	ids := make([]int, 800)
 	for i := range ids {
 		ids[i] = i + 1
@@ -351,7 +275,7 @@ func TestPrimeDetailsAsksOncePerBatch(t *testing.T) {
 	if _, err := s.Prime(ctx, "lethal-company", ids); err != nil || requests.Load() != before {
 		t.Fatalf("a fresh cache must not be asked again: %d requests, %v", requests.Load()-before, err)
 	}
-	// A key the keyring cannot hand over (locked, or no keyring running) does not hold back the public page data.
+	// A grant the keyring cannot hand over (locked, or no keyring running) does not hold back the public page data.
 	keyring.MockInitWithError(errors.New("the keyring is locked"))
 	if got, err := s.Prime(ctx, "lethal-company", []int{900}); err != nil || got[900].Category != "Misc" {
 		t.Fatalf("locked keyring: %+v, %v", got[900], err)
@@ -379,9 +303,7 @@ func TestPrimeDetailsDoesNotAskAgainForAModNexusDoesNotReturn(t *testing.T) {
 	c.BaseURL = srv.URL
 	s := NewService(testStore(t), c, &meta.Client{CacheDir: t.TempDir()})
 	ctx := t.Context()
-	if _, err := s.SignIn(ctx, "k"); err != nil {
-		t.Fatal(err)
-	}
+	signIn(t, s)
 	for range 3 {
 		if got, err := s.Prime(ctx, "lethal-company", []int{9999}); err != nil || len(got) != 0 {
 			t.Fatalf("got %v, %v", got, err)

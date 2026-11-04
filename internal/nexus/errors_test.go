@@ -1,6 +1,7 @@
 package nexus
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -32,7 +33,7 @@ func TestWordedRateLimitFromTheModule(t *testing.T) {
 	t.Cleanup(srv.Close)
 	c := nexusmods.New("Mortar", "9.9")
 	c.BaseURL = srv.URL
-	_, err := c.WithKey("k").Validate(t.Context())
+	_, err := c.WithBearer(func(context.Context) (string, error) { return "k", nil }).Validate(t.Context())
 	err = Worded(err)
 	var re *RateLimitError
 	if !errors.As(err, &re) || time.Until(re.Reset) < time.Minute || !strings.HasPrefix(err.Error(), "nexus rate limit reached until ") {
@@ -49,7 +50,7 @@ func TestWordedRateLimitFromTheModule(t *testing.T) {
 }
 
 func TestUnauthorizedWording(t *testing.T) {
-	if nexusmods.ErrUnauthorized.Error() != "nexus rejected the API key" {
+	if nexusmods.ErrUnauthorized.Error() != "nexus rejected the sign-in" {
 		t.Fatalf("text = %q", nexusmods.ErrUnauthorized)
 	}
 }

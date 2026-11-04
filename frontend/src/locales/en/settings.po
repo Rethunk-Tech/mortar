@@ -371,10 +371,6 @@ msgstr "Take them back for Mortar?"
 msgid "Move the data folder?"
 msgstr "Move the data folder?"
 
-#: src/settings/sections/DataMods.tsx
-msgid "Clears cached {source} and {loader} details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower."
-msgstr "Clears cached {source} and {loader} details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower."
-
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Fishing skill"
 msgstr "Fishing skill"
@@ -454,10 +450,6 @@ msgstr "Review"
 #: src/settings/sections/DataBackups.tsx
 msgid "Could not trim save backups"
 msgstr "Could not trim save backups"
-
-#: src/settings/sections/NexusMods.tsx
-msgid "Sign in"
-msgstr "Sign in"
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "{name} now opens {source} \"Install with Mod Manager\" links."
@@ -1734,7 +1726,6 @@ msgid "Trace"
 msgstr "Trace"
 
 #: src/settings/sections/ItchAccount.tsx
-#: src/settings/sections/NexusMods.tsx
 msgid "{source} rejected your API key"
 msgstr "{source} rejected your API key"
 
@@ -1910,10 +1901,6 @@ msgstr "Days left"
 #: src/settings/sections/Downloads.tsx
 msgid "{name} ({game})"
 msgstr "{name} ({game})"
-
-#: src/settings/sections/NexusMods.tsx
-msgid "Kept in your system keyring. Find it on {source} under Settings, API Keys."
-msgstr "Kept in your system keyring. Find it on {source} under Settings, API Keys."
 
 #: src/settings/NexusMeter.tsx
 msgid "Daily count resets {when}"
@@ -2523,7 +2510,7 @@ msgstr "Play the game without mods"
 msgid "Open Weblate"
 msgstr "Open Weblate"
 
-#: src/settings/sections/NexusSSO.tsx
+#: src/settings/sections/NexusMods.tsx
 msgid "Signed in to {source}"
 msgstr "Signed in to {source}"
 
@@ -3309,6 +3296,10 @@ msgstr "World"
 msgid "Fresh and clear"
 msgstr "Fresh and clear"
 
+#: src/settings/sections/DataMods.tsx
+msgid "Clears cached {source} and {loader} details and problem scans, for a revoked sign-in or wrong details. Mortar fetches them again, so the next problem check is slower."
+msgstr "Clears cached {source} and {loader} details and problem scans, for a revoked sign-in or wrong details. Mortar fetches them again, so the next problem check is slower."
+
 #: src/settings/prefCopyModsView.ts
 msgid "Author"
 msgstr "Author"
@@ -3784,10 +3775,6 @@ msgstr "Checks the data folder, games, {source} download links and the browser e
 msgid "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, enable Developer mode and choose Load unpacked on the unzipped folder."
 msgstr "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, enable Developer mode and choose Load unpacked on the unzipped folder."
 
-#: src/settings/sections/NexusMods.tsx
-msgid "{source} account"
-msgstr "{source} account"
-
 #: src/settings/sections/ItchAccount.tsx
 msgid "Remove key"
 msgstr "Remove key"
@@ -3828,10 +3815,6 @@ msgstr "Disk space"
 #: src/settings/prefCopy.ts
 msgid "Reuse FOMOD choices"
 msgstr "Reuse FOMOD choices"
-
-#: src/settings/sections/NexusMods.tsx
-msgid "Personal API key"
-msgstr "Personal API key"
 
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Show {name} again"

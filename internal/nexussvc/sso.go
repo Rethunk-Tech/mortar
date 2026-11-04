@@ -8,6 +8,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/opener"
+	"github.com/Rethunk-Tech/mortar/internal/secret"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	nexusmods "github.com/Rethunk-Tech/go-nexusmods"
@@ -35,18 +37,9 @@ type ssoRun struct {
 	cancel context.CancelFunc
 }
 
-// SSOAvailable is whether this build has a Nexus OAuth client id or application slug; the UI hides the button
-// otherwise. A client id selects OAuth PKCE, a slug alone selects legacy SSO.
-func (s *Service) SSOAvailable() bool {
-	return s.oauth.ClientID != "" || s.sso.Slug != ""
-}
-
 // StartSSO signs in through the browser and returns the account. It streams SSOEvent states and ends when the
 // user approves, CancelSSO is called, the wait times out or Nexus refuses. The account is validated before it is kept (OAuth keeps its tokens instead of a key).
 func (s *Service) StartSSO(ctx context.Context) (Account, error) {
-	if !s.SSOAvailable() {
-		return Account{}, errSSOOff
-	}
 	runCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	s.run.mu.Lock()
@@ -63,18 +56,12 @@ func (s *Service) StartSSO(ctx context.Context) (Account, error) {
 	}()
 
 	onState := func(st sso.State) { s.emitSSO(SSOState{State: string(st)}) }
-	var acct Account
-	var err error
-	if s.oauth.ClientID != "" {
-		o := s.oauth
-		if o.OpenBrowser == nil {
-			o.OpenBrowser = s.openBrowser
-		}
-		o.OnState = onState
-		acct, err = s.signInOAuth(runCtx, o)
-	} else {
-		acct, err = s.signInLegacy(runCtx, onState)
+	o := s.oauth
+	if o.OpenBrowser == nil {
+		o.OpenBrowser = s.openBrowser
 	}
+	o.OnState = onState
+	acct, err := s.signInOAuth(runCtx, o)
 	if err != nil {
 		cancelled := errors.Is(err, context.Canceled)
 		if !cancelled {
@@ -96,8 +83,6 @@ func (s *Service) CancelSSO() {
 	}
 }
 
-var errSSOOff = errors.New("nexus single sign-on is not available in this build")
-
 func (s *Service) openBrowser(url string) error {
 	web, err := opener.Web(url)
 	if err != nil {
@@ -113,21 +98,6 @@ func (s *Service) emitSSO(st SSOState) {
 	if s.App != nil {
 		s.App.Emit(SSOEvent, st)
 	}
-}
-
-// signInLegacy runs the slug-based SSO, whose result is a personal API key.
-// Remove with the API-key path once OAuth ships.
-func (s *Service) signInLegacy(ctx context.Context, onState func(sso.State)) (Account, error) {
-	l := s.sso
-	if l.OpenBrowser == nil {
-		l.OpenBrowser = s.openBrowser
-	}
-	l.OnState = onState
-	key, err := l.Run(ctx)
-	if err != nil {
-		return Account{}, err
-	}
-	return s.SignIn(ctx, key)
 }
 
 // signInOAuth authorizes in the browser, checks the access token against Nexus and keeps the grant in the keyring.
@@ -147,4 +117,60 @@ func (s *Service) signInOAuth(ctx context.Context, o sso.OAuth) (Account, error)
 		return Account{}, err
 	}
 	return s.signedIn(nexusmods.User{ID: user.ID, Name: user.Name, IsPremium: user.Premium})
+}
+
+// signedIn records the account the player signed in as.
+func (s *Service) signedIn(user nexusmods.User) (Account, error) {
+	return s.update(func(v *settings.Settings) {
+		v.NexusUserID, v.NexusName, v.NexusPremium = user.ID, user.Name, user.IsPremium
+	})
+}
+
+// retiredKeyItem is the keyring item that held a personal API key before Mortar signed in with OAuth.
+const retiredKeyItem = "nexus"
+
+// SettleSignIn runs once at startup. It deletes a personal API key an earlier release kept, since Nexus allows none once
+// OAuth is in use, and forgets the account that key signed in, so the player sees they need to sign in again. A grant
+// kept with no account recorded (settings restored from a backup, or a test session given to a sandbox) names its account.
+func SettleSignIn(ctx context.Context, s *Service) {
+	retired, err := retireAPIKey()
+	if err != nil {
+		slog.Warn("nexus: could not retire the personal API key", "err", err)
+	}
+	if retired && !HasSession() {
+		if _, err := s.update(func(v *settings.Settings) { v.NexusUserID, v.NexusName, v.NexusPremium = 0, "", false }); err != nil {
+			slog.Warn("nexus: could not forget the account of the retired API key", "err", err)
+		}
+	}
+	if s.Account().SignedIn || !HasSession() {
+		return
+	}
+	t, err := s.oauth.Fresh(ctx)
+	if err != nil {
+		slog.Warn("nexus: could not refresh the kept sign-in", "err", err)
+		return
+	}
+	user, err := s.oauth.Identify(ctx, t.Access)
+	if err != nil {
+		slog.Warn("nexus: could not name the kept sign-in's account", "err", err)
+		return
+	}
+	if _, err := s.signedIn(nexusmods.User{ID: user.ID, Name: user.Name, IsPremium: user.Premium}); err != nil {
+		slog.Warn("nexus: could not record the kept sign-in's account", "err", err)
+	}
+}
+
+// retireAPIKey deletes a kept personal API key and says whether there was one.
+func retireAPIKey() (bool, error) {
+	if _, err := secret.Get(retiredKeyItem); err != nil {
+		if errors.Is(err, secret.ErrNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	if err := secret.Delete(retiredKeyItem); err != nil {
+		return false, err
+	}
+	slog.Info("nexus: deleted the retired personal API key")
+	return true, nil
 }

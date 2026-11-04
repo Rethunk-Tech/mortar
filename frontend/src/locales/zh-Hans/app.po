@@ -125,6 +125,10 @@ msgstr "新配置：{name}"
 msgid "Skip this profile"
 msgstr "跳过此配置"
 
+#: src/queue/store.ts
+msgid "{source} rejected your sign-in"
+msgstr ""
+
 #: src/queue/QueueBody.tsx
 #: src/queue/store.ts
 #: src/toasts/report.ts
@@ -798,10 +802,6 @@ msgstr ""
 
 #: src/firstrun/LoaderStep.tsx
 msgid "{loader} is the loader every {game} mod needs. Mortar puts it in each profile; the game folder stays as it is."
-msgstr ""
-
-#: src/develop/UploadDialog.tsx
-msgid "Add your API key in Settings"
 msgstr ""
 
 #: src/launch/PrePlayDialog.tsx
@@ -1695,6 +1695,10 @@ msgstr ""
 
 #: src/saves/SaveBackupsButton.tsx
 msgid "{name} is replaced by the copy in this backup. The current {name} is backed up first."
+msgstr ""
+
+#: src/queue/actions.ts
+msgid "Downloads come from {source} with your account, so sign in first."
 msgstr ""
 
 #: src/browse/BrowseShow.tsx
@@ -2743,6 +2747,10 @@ msgstr ""
 msgid "Choose a file"
 msgstr ""
 
+#: src/develop/UploadDialog.tsx
+msgid "Sign in in Settings"
+msgstr ""
+
 #: src/share/ModpackDialog.tsx
 msgid "Upload to {source}…"
 msgstr ""
@@ -3298,10 +3306,6 @@ msgstr ""
 
 #: src/share/Included.tsx
 msgid "{count, plural, one {# more mod is left out} other {# more mods are left out}}"
-msgstr ""
-
-#: src/queue/store.ts
-msgid "{source} rejected your API key"
 msgstr ""
 
 #: src/develop/EditProjectDialog.tsx
@@ -4835,10 +4839,6 @@ msgstr ""
 
 #: src/saves/BackupsDialog.tsx
 msgid "None of {names} are in Saves yet; they will be added. The current Saves folder is backed up first."
-msgstr ""
-
-#: src/queue/actions.ts
-msgid "Downloads come from {source} with your account, so Mortar needs your API key first."
 msgstr ""
 
 #: src/share/ListFormat.tsx

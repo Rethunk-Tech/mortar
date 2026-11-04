@@ -146,7 +146,7 @@ func TestNexusRateLimitKeepsItsWordingInTheQueue(t *testing.T) {
 	c := nexusmods.New("Mortar", "1")
 	c.BaseURL = srv.URL
 	s := &Service{}
-	_, err := s.downloadLinks(t.Context(), c.WithKey("k"), nexusmods.Title{Domain: "stardewvalley"}, Item{ModID: 1, FileID: 2}, "", 0)
+	_, err := s.downloadLinks(t.Context(), c.WithBearer(func(context.Context) (string, error) { return "k", nil }), nexusmods.Title{Domain: "stardewvalley"}, Item{ModID: 1, FileID: 2}, "", 0)
 	if err == nil || !strings.HasPrefix(err.Error(), "nexus rate limit reached until ") {
 		t.Fatalf("429 = %v", err)
 	}

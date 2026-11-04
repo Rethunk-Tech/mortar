@@ -151,7 +151,7 @@ function SiteRow({
   } else if (!site.ready) {
     missing = (
       <Button size="small" onClick={site.id === 'nexus' ? onKey : onAsk}>
-        {site.id === 'nexus' ? t`Add your API key in Settings` : t`Add token`}
+        {site.id === 'nexus' ? t`Sign in in Settings` : t`Add token`}
       </Button>
     )
   }

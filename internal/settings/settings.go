@@ -75,11 +75,11 @@ type Settings struct {
 	Loaders map[string]string `json:"loaders"`
 	// Dismissed maps a save folder name to the mod ids whose missing-mod warning the user dismissed for it.
 	Dismissed map[string][]string `json:"dismissed"`
-	// The signed-in Nexus account, for display only; the API key lives in the keyring. Zero NexusUserID means signed out.
+	// The signed-in Nexus account, for display only; the sign-in itself lives in the keyring. Zero NexusUserID means signed out.
 	NexusUserID  int    `json:"nexusUserId"`
 	NexusName    string `json:"nexusName"`
 	NexusPremium bool   `json:"nexusPremium"`
-	// ItchName is the signed-in itch.io account, for display only; the API key lives in the keyring. Empty means signed out.
+	// ItchName is the signed-in itch.io account, for display only; the sign-in itself lives in the keyring. Empty means signed out.
 	ItchName string `json:"itchName"`
 	// ModioName is the signed-in mod.io account, for display only; the access token lives in the keyring. Empty means signed out.
 	ModioName string `json:"modioName"`

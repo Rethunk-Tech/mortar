@@ -58,9 +58,7 @@ func TestEndorseAndTrackActOnSignedInAccount(t *testing.T) {
 	if count, err := s.TrackedCount(ctx, "stardew"); err != nil || count != 0 {
 		t.Fatalf("signed out tracked count = %d %v, want none and no error", count, err)
 	}
-	if _, err := s.SignIn(ctx, "secret-key"); err != nil {
-		t.Fatal(err)
-	}
+	signIn(t, s)
 	if got, err := s.EndorsementOf(ctx, "stardew", 541); err != nil || got != "Abstained" {
 		t.Fatalf("endorsement = %q %v", got, err)
 	}
@@ -118,18 +116,9 @@ func TestRefusalsKeepTheirWording(t *testing.T) {
 	s := NewService(store, c, &meta.Client{})
 	ctx := t.Context()
 
-	status.Store(http.StatusUnauthorized)
-	_, err := s.SignIn(ctx, "bad")
-	if err == nil || err.Error() != "[invalid] nexus rejected the API key" {
-		t.Fatalf("401 = %v", err)
-	}
-
-	status.Store(0)
-	if _, err := s.SignIn(ctx, "key"); err != nil {
-		t.Fatal(err)
-	}
+	signIn(t, s)
 	status.Store(http.StatusTooManyRequests)
-	err = s.Track(ctx, "stardew", 541)
+	err := s.Track(ctx, "stardew", 541)
 	if !strings.HasPrefix(fmt.Sprint(err), "nexus rate limit reached until ") || usererr.KindOf(err) != usererr.RateLimited {
 		t.Fatalf("429 = %v (%s)", err, usererr.KindOf(err))
 	}
@@ -151,9 +140,7 @@ func TestRateLimitWordingHoldsOnReads(t *testing.T) {
 	c.BaseURL = srv.URL
 	s := NewService(store, c, &meta.Client{CacheDir: t.TempDir()})
 	ctx := t.Context()
-	if _, err := s.SignIn(ctx, "key"); err != nil {
-		t.Fatal(err)
-	}
+	signIn(t, s)
 	_, nameErr := s.ModName(ctx, "stardew", 541)
 	_, detailsErr := s.Details(ctx, "stardew", 541)
 	for name, err := range map[string]error{"ModName": nameErr, "Details": detailsErr} {

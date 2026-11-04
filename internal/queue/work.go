@@ -394,7 +394,7 @@ func (s *Service) settle(id string, err error) {
 	case errors.Is(err, nexusmods.ErrPremiumRequired):
 		it.State, it.Progress, it.Speed, it.key = StateWaitingClick, 0, 0, ""
 	case errors.Is(err, nexusmods.ErrUnauthorized):
-		it.State, it.Error = StateFailed, "Nexus rejected your API key: sign in again in Settings"
+		it.State, it.Error = StateFailed, "Nexus rejected your sign-in: sign in again in Settings"
 	case errors.Is(err, nexus.ErrQuarantined):
 		it.State, it.Error = StateFailed, "Nexus has quarantined this file; Mortar will not download it"
 	case errors.As(err, &noSpace):

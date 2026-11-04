@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { NexusSignIn } from '../settings/sections/NexusMods.tsx'
+import { NexusSSO } from '../settings/sections/NexusSSO.tsx'
 import { Panel } from './Panel.tsx'
 
 // Mod Manager Download buttons on Nexus only reach Mortar for a signed-in account, so ask before the first mod.
@@ -27,6 +28,7 @@ export function NexusStep({ onDone }: { onDone: () => void }) {
         {t`Mod Manager Download on ${{ source: sourceLabel('nexus') }} only works in Mortar when you are signed in.`}
       </Typography>
       <NexusSignIn />
+      {signedIn ? null : <NexusSSO />}
       <Box role="status">
         {signedIn ? <Typography>{t`Signed in as ${name}`}</Typography> : null}
       </Box>

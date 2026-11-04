@@ -9,15 +9,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 )
 
-// Build-time values (-ldflags "-X .../nexussvc.Slug=..."); empty leaves the feature off.
-var (
-	// Slug is the application slug Nexus issues for legacy SSO.
-	Slug string
-	// ClientID is the OAuth2 client id Nexus issues; when set it takes precedence over Slug.
-	ClientID string
-)
-
 const (
+	// clientID is the public OAuth client Nexus registered for Mortar. It signs in with PKCE, so no secret ships.
+	clientID = "mortar"
 	// oauthAddr is the one loopback address the sign-in listens on. Nexus registers the callback as a fixed URI, so
 	// there is no fallback port. 51762 sits in the IANA dynamic range, which no service owns.
 	oauthAddr   = "127.0.0.1:51762"
@@ -28,7 +22,7 @@ const (
 
 // oauthConfig is the OAuth sign-in Mortar registered with Nexus, with its grant kept in the keyring.
 func oauthConfig() sso.OAuth {
-	return sso.OAuth{ClientID: ClientID, Addr: oauthAddr, DoneText: doneText, FailText: failText, Store: oauthStore{}}
+	return sso.OAuth{ClientID: clientID, Addr: oauthAddr, DoneText: doneText, FailText: failText, Store: oauthStore{}}
 }
 
 // storedTokens is the keyring item's JSON, which releases since 0.3.8 wrote.

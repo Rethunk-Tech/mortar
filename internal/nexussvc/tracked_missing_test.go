@@ -69,9 +69,7 @@ func TestTrackedMissingFiltersDomainAndProfileMods(t *testing.T) {
 	s := NewService(store, c, &meta.Client{})
 	s.Profiles = profiles
 	ctx := t.Context()
-	if _, err := s.SignIn(ctx, "k"); err != nil {
-		t.Fatal(err)
-	}
+	signIn(t, s)
 	missing, err := s.TrackedMissing(ctx, "stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)
@@ -81,14 +79,14 @@ func TestTrackedMissingFiltersDomainAndProfileMods(t *testing.T) {
 	}
 }
 
-func TestTrackedMissingIsEmptyWhenTheKeyIsGone(t *testing.T) {
+func TestTrackedMissingIsEmptyWhenTheGrantIsGone(t *testing.T) {
 	store := testStore(t)
 	if _, err := store.Update(func(s *settings.Settings) { s.NexusUserID = 7 }); err != nil {
 		t.Fatal(err)
 	}
 	s := NewService(store, nexusmods.New("Mortar", "1"), &meta.Client{})
 	if _, err := Authed(store, nexusmods.New("Mortar", "1")); !errors.Is(err, ErrSignedOut) {
-		t.Fatalf("a remembered account without a stored key is signed out: %v", err)
+		t.Fatalf("a remembered account without a stored grant is signed out: %v", err)
 	}
 	missing, err := s.TrackedMissing(t.Context(), "stardew", "any")
 	if err != nil || len(missing) != 0 {

@@ -54,9 +54,7 @@ func TestTrackedForCardAnswersFromDiskAndRefreshesInBackground(t *testing.T) {
 		t.Fatal(err)
 	}
 	ctx := t.Context()
-	if _, err := s.SignIn(ctx, "k"); err != nil {
-		t.Fatal(err)
-	}
+	signIn(t, s)
 	<-events // sign-in's account event
 	if mods, err := s.trackedForCard(ctx); err != nil || len(mods) != 1 {
 		t.Fatalf("first read waits for Nexus: %v %v", mods, err)

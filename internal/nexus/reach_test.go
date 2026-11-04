@@ -1,6 +1,7 @@
 package nexus
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -26,7 +27,7 @@ func TestObservedHTTPTellsNetstateWhetherNexusAnswered(t *testing.T) {
 	}))
 	c := nexusmods.New("Mortar", "1")
 	c.BaseURL, c.HTTP = srv.URL, ObservedHTTP(http.DefaultTransport)
-	c = c.WithKey("k")
+	c = c.WithBearer(func(context.Context) (string, error) { return "k", nil })
 
 	_, _ = c.Validate(t.Context())
 	if st, ok := nexusState(t); !ok || st.Unreachable {

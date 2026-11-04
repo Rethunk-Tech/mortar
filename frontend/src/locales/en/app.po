@@ -131,6 +131,10 @@ msgstr "New profile: {name}"
 msgid "Skip this profile"
 msgstr "Skip this profile"
 
+#: src/queue/store.ts
+msgid "{source} rejected your sign-in"
+msgstr "{source} rejected your sign-in"
+
 #: src/queue/QueueBody.tsx
 #: src/queue/store.ts
 #: src/toasts/report.ts
@@ -805,10 +809,6 @@ msgstr "Open a .mortar file, an {manager} or {otherManager} .r2z, or a {source} 
 #: src/firstrun/LoaderStep.tsx
 msgid "{loader} is the loader every {game} mod needs. Mortar puts it in each profile; the game folder stays as it is."
 msgstr "{loader} is the loader every {game} mod needs. Mortar puts it in each profile; the game folder stays as it is."
-
-#: src/develop/UploadDialog.tsx
-msgid "Add your API key in Settings"
-msgstr "Add your API key in Settings"
 
 #: src/launch/PrePlayDialog.tsx
 msgid "Pending updates ({count})"
@@ -1702,6 +1702,10 @@ msgstr "Export as {source} modpack"
 #: src/saves/SaveBackupsButton.tsx
 msgid "{name} is replaced by the copy in this backup. The current {name} is backed up first."
 msgstr "{name} is replaced by the copy in this backup. The current {name} is backed up first."
+
+#: src/queue/actions.ts
+msgid "Downloads come from {source} with your account, so sign in first."
+msgstr "Downloads come from {source} with your account, so sign in first."
 
 #: src/browse/BrowseShow.tsx
 msgid "Flag"
@@ -2749,6 +2753,10 @@ msgstr "Export…"
 msgid "Choose a file"
 msgstr "Choose a file"
 
+#: src/develop/UploadDialog.tsx
+msgid "Sign in in Settings"
+msgstr "Sign in in Settings"
+
 #: src/share/ModpackDialog.tsx
 msgid "Upload to {source}…"
 msgstr "Upload to {source}…"
@@ -3305,10 +3313,6 @@ msgstr "Next frame"
 #: src/share/Included.tsx
 msgid "{count, plural, one {# more mod is left out} other {# more mods are left out}}"
 msgstr "{count, plural, one {# more mod is left out} other {# more mods are left out}}"
-
-#: src/queue/store.ts
-msgid "{source} rejected your API key"
-msgstr "{source} rejected your API key"
 
 #: src/develop/EditProjectDialog.tsx
 msgid "Listing"
@@ -4842,10 +4846,6 @@ msgstr "Could not make the list"
 #: src/saves/BackupsDialog.tsx
 msgid "None of {names} are in Saves yet; they will be added. The current Saves folder is backed up first."
 msgstr "None of {names} are in Saves yet; they will be added. The current Saves folder is backed up first."
-
-#: src/queue/actions.ts
-msgid "Downloads come from {source} with your account, so Mortar needs your API key first."
-msgstr "Downloads come from {source} with your account, so Mortar needs your API key first."
 
 #: src/share/ListFormat.tsx
 msgid "{app} takes 2,000 characters a message: paste each one in turn."

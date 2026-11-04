@@ -1,13 +1,11 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, TextField } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
-import { LogIn, LogOut } from 'lucide-react'
-import { type SubmitEvent, useEffect, useId, useState } from 'react'
+import { LogOut } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import {
-  APIKeyAvailable,
-  SignIn,
   SignOut,
   TrackedCount,
   UntrackAll,
@@ -17,14 +15,13 @@ import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { space } from '../../theme/density.ts'
-import { errorKind } from '../../toasts/errorKind.ts'
-import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
+import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { useNexus } from '../nexus.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey } from '../PrefRow.tsx'
-import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
 import { AccountRow, ServiceBlock } from './AccountRow.tsx'
@@ -177,42 +174,10 @@ function NexusModsSignedIn({
   )
 }
 
-/** The Nexus sign-in form and the nxm link offer that follows it; renders only the offer once signed in. */
+/** The nxm link offer that follows a browser sign-in, which ends with an event rather than a promise. */
 export function NexusSignIn() {
   const { t } = useLingui()
-  const keyId = useId()
-  const signedIn = useNexus((s) => s.signedIn)
   const nxm = useNxmHandler(false)
-  const [key, setKey] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [keyAllowed, setKeyAllowed] = useState(true)
-  const [error, setError] = useState<InlineError | null>(null)
-  const terms = `${t`${{ source: sourceLabel('nexus') }} account`} ${t`Personal API key`} ${t`Sign in`}`
-  const relevant = useSettingsRelevant(terms)
-  useEffect(() => {
-    if (relevant) {
-      APIKeyAvailable().then(setKeyAllowed).catch(reportUnexpected)
-    }
-  }, [relevant])
-  const submit = (e: SubmitEvent) => {
-    e.preventDefault()
-    setBusy(true)
-    setError(null)
-    SignIn(key)
-      .then(() => {
-        setKey('')
-        nxm.offer()
-      })
-      .catch((err: unknown) =>
-        setError(
-          errorKind(err) === 'invalid'
-            ? inlineError(err, t`${{ source: sourceLabel('nexus') }} rejected your API key`)
-            : inlineError(err),
-        ),
-      )
-      .finally(() => setBusy(false))
-  }
-  // A sign-in through the browser ends with an event, not a promise; the account update unmounts the form first.
   const { offer } = nxm
   useEffect(
     () =>
@@ -226,53 +191,7 @@ export function NexusSignIn() {
       }),
     [offer, t],
   )
-  if (signedIn) {
-    return nxm.dialog
-  }
-  return (
-    <Searchable terms={terms}>
-      {nxm.dialog}
-      {keyAllowed ? (
-        <SettingRow
-          label={t`Personal API key`}
-          description={t`Kept in your system keyring. Find it on ${{ source: sourceLabel('nexus') }} under Settings, API Keys.`}
-        >
-          <Box
-            component="form"
-            onSubmit={submit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-              <TextField
-                id={keyId}
-                slotProps={{ htmlInput: { 'aria-label': t`Personal API key` } }}
-                type="password"
-                size="small"
-                autoComplete="off"
-                value={key}
-                onChange={(e) => setKey(e.target.value)}
-                sx={{ width: 260, maxWidth: '100%' }}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                startIcon={<LogIn size={16} />}
-                disabled={busy || key.trim() === ''}
-                sx={{ flexShrink: 0 }}
-              >
-                {t`Sign in`}
-              </Button>
-            </Box>
-          </Box>
-        </SettingRow>
-      ) : null}
-      {error ? (
-        <Alert variant="compact" severity="error" title={error.details}>
-          {error.message}
-        </Alert>
-      ) : null}
-    </Searchable>
-  )
+  return nxm.dialog
 }
 
 export function NexusMods() {
