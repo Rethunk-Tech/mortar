@@ -37,7 +37,7 @@ require (
 	github.com/google/pprof v0.0.0-20261103193413-97e8293de3c4
 	github.com/hashicorp/mdns v1.0.7
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d
-	github.com/wailsapp/wails/v3 v3.0.0
+	github.com/wailsapp/wails/v3 v3.1.0
 	github.com/zalando/go-keyring v0.2.8
 	go.yaml.in/yaml/v3 v3.0.6
 	golang.org/x/image v0.47.0
