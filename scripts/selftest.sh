@@ -311,7 +311,7 @@ copy_data() {
   done
 }
 
-# Readies a running sandbox for product screenshots: the maintainer's own Nexus, itch.io and mod.io keys, piped from the real
+# Readies a running sandbox for product screenshots: the maintainer's Nexus test session and own itch.io and mod.io keys, piped from the real
 # keyring into the sandbox's (never printed), so signed-in checks run; Thunderstore upload tokens stay out, since no
 # screen needs them. Mod-update notices are turned off too, or one lands on the bell mid-shot.
 prep_shots() {
@@ -320,7 +320,12 @@ prep_shots() {
     exit 1
   }
   local name copied=0
-  for name in nexus nexus-oauth itch modio; do
+  # An access token alone, so a sandbox cannot rotate the test session's refresh token.
+  if bun "$REPO/scripts/nexus-test-session.ts" grant 2>/dev/null |
+    hidden secret-tool store --label="Password for 'nexus-oauth' on 'mortar'" service mortar username nexus-oauth; then
+    copied=$((copied + 1))
+  fi
+  for name in itch modio; do
     /usr/bin/secret-tool lookup service mortar username "$name" >/dev/null 2>&1 || continue
     /usr/bin/secret-tool lookup service mortar username "$name" |
       hidden secret-tool store --label="Password for '$name' on 'mortar'" service mortar username "$name"

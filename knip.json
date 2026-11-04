@@ -4,7 +4,7 @@
   "ignore": ["web/public/vendor/**"],
   "workspaces": {
     ".": {
-      "entry": ["scripts/site-demo.ts"],
+      "entry": ["scripts/site-demo.ts", "scripts/nexus-test-session.ts"],
       "project": ["scripts/**/*.ts"]
     },
     "frontend": {

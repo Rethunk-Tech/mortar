@@ -59,6 +59,16 @@ The default suite is `scripts/gate.sh` (its header lists the steps).
 
 The regress scripts need the real games and (for Lethal Company) Proton, so they never run in CI.
 
+## Nexus as the maintainer's account
+
+Routes that need Nexus run without a browser on the session in the keyring item `service mortar-test username nexus-oauth`, kept and refreshed only by `scripts/nexus-test-session.ts`, which never prints a token to a terminal. It is its own grant, so a test cannot sign the installed app out.
+
+- `bun scripts/nexus-test-session.ts check` says whose session it is. If Nexus refused it, sign in through a build of Mortar and run `capture`, which moves that build's grant to the test item.
+- In a sandbox: `scripts/selftest.sh prep-shots`, then `restart`; the start names the account from the grant (`nexussvc.SettleSignIn`). The sandbox holds an access token alone, good for hours: run both again when it runs out.
+- `/v1/users/validate.json` refuses an access token; `https://users.nexusmods.com/oauth/userinfo` names the account.
+
+Keep each run under 100 API calls and report the count.
+
 ## Sandbox game launches
 
 Every game a self-test sandbox starts, from its browser view or `regress`, goes through `scripts/launch-guard.sh`: a server build (`-tags server`) starts each direct launch through the program in `MORTAR_LAUNCH_WRAPPER`, which only `scripts/selftest.sh` sets.
