@@ -1347,6 +1347,10 @@ msgstr "Open profile first."
 msgid "Try a different search."
 msgstr "Try a different search."
 
+#: src/develop/ReleaseEverywhere.tsx
+msgid "Not signed in"
+msgstr "Not signed in"
+
 #: src/tools/ToolsManageDialog.tsx
 msgid "The program itself is not touched."
 msgstr "The program itself is not touched."

@@ -1347,6 +1347,10 @@ msgstr ""
 msgid "Try a different search."
 msgstr ""
 
+#: src/develop/ReleaseEverywhere.tsx
+msgid "Not signed in"
+msgstr ""
+
 #: src/tools/ToolsManageDialog.tsx
 msgid "The program itself is not touched."
 msgstr ""

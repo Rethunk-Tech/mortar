@@ -49,8 +49,15 @@ export function ReleaseEverywhere({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  const reason = (s: UploadSite) =>
-    s.id === 'github' ? t`Not signed in with the gh CLI` : t`No credentials yet`
+  const reason = (s: UploadSite) => {
+    if (s.id === 'github') {
+      return t`Not signed in with the gh CLI`
+    }
+    if (s.id === 'nexus') {
+      return t`Not signed in`
+    }
+    return t`No credentials yet`
+  }
   const [states, setStates] = useState<Record<string, State>>(() =>
     Object.fromEntries(
       sites.map((s) => [

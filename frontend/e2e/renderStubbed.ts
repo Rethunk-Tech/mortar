@@ -66,7 +66,7 @@ function releaseEverywhereCase({ developTab, pick }: ReturnType<typeof dialogKit
       await pick(p, /^Upload v/)
       const d = p.getByRole('dialog').last()
       await d.getByRole('button', { name: 'Release everywhere' }).click()
-      await d.getByText('Skipped: No credentials yet').waitFor()
+      await d.getByText('Skipped: Not signed in').waitFor()
       await d.getByRole('button', { name: 'Open page' }).waitFor()
     },
     teardown: (p: Page) => p.unroute('**/wails/runtime', stub),
