@@ -99,7 +99,7 @@ function GitHubQuota() {
         t`${{ remaining: rate.remaining }} of ${{ limit: rate.limit }} requests left`,
         // A reset already past means the count shown is stale; the next request refreshes it.
         new Date(rate.reset).getTime() > Date.now()
-          ? t`resets ${{ when: formatWhen(rate.reset) }}`
+          ? t`resets ${{ when: formatWhen(rate.reset, { withTime: true }) }}`
           : '',
       ]
         .filter(Boolean)
