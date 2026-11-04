@@ -20,3 +20,14 @@ test('the sideload manifest holds the header and finish-args above its modules',
   expect(keys).not.toContain('sdk-extensions')
   expect(keys.at(-1)).toBe('modules')
 })
+
+test('scripts the Flathub build runs with node use no Bun APIs', () => {
+  const template = readFileSync(join(import.meta.dir, 'tech.rethunk.Mortar.yml'), 'utf8')
+  const scripts = [...template.matchAll(/^\s*- node (\S+\.ts)$/gmu)].map((m) => m[1] ?? '')
+  expect(scripts).not.toEqual([])
+  for (const script of scripts) {
+    expect(readFileSync(join(import.meta.dir, '..', '..', '..', script), 'utf8')).not.toMatch(
+      /\bBun\.|bun:/u,
+    )
+  }
+})

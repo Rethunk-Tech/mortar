@@ -1,5 +1,6 @@
 // wails3 emits `export enum` for Go named-string types. erasableSyntaxOnly forbids enums,
 // so each generated enum becomes a const object plus a value-union type.
+import { globSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const ROOT = join(import.meta.dirname, '../frontend/bindings')
@@ -12,11 +13,13 @@ export function rewriteEnums(src: string): string {
 }
 
 if (import.meta.main) {
-  for (const file of new Bun.Glob('**/*.ts').scanSync({ cwd: ROOT, absolute: true })) {
-    const before = await Bun.file(file).text()
+  // Node APIs only: the Flathub build runs this with the SDK's node, which has no Bun global.
+  for (const file of globSync('**/*.ts', { cwd: ROOT })) {
+    const path = join(ROOT, file)
+    const before = readFileSync(path, 'utf8')
     const after = rewriteEnums(before)
     if (after !== before) {
-      await Bun.write(file, after)
+      writeFileSync(path, after)
     }
   }
 }
