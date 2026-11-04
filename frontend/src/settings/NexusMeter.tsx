@@ -30,8 +30,10 @@ export function NexusMeter() {
       {limits.hourly.reset && limits.daily.reset ? (
         <Box sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
           {[
-            t`Hourly count resets ${{ when: formatWhen(limits.hourly.reset) }}`,
-            lowerFirst(t`Daily count resets ${{ when: formatWhen(limits.daily.reset) }}`),
+            t`Hourly count resets ${{ when: formatWhen(limits.hourly.reset, { withTime: true }) }}`,
+            lowerFirst(
+              t`Daily count resets ${{ when: formatWhen(limits.daily.reset, { withTime: true }) }}`,
+            ),
           ].join(' · ')}
         </Box>
       ) : null}
