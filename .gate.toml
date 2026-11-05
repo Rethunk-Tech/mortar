@@ -1,6 +1,11 @@
-# bun run gate is one gate that runs the whole suite: cold it took 52 to 64 s at load, past the 1 minute default.
-[gates.gate]
+# `bun run test` backgrounds its Go half inside bash -c, which gate cannot see into, so left alone both gates
+# compile and run the race tests at once.
+[gates.go]
+run = "GORACE=atexit_sleep_ms=0 go test -race ./... && golangci-lint run --allow-parallel-runners"
 timeout = "3m"
+
+[gates.test]
+run = "bun run test:js"
 
 [gates.e2e]
 run = "bun run --cwd frontend e2e"
