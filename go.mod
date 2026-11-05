@@ -30,11 +30,11 @@ require (
 	github.com/Rethunk-Tech/go-thunderstore v0.3.2
 	github.com/Rethunk-Tech/go-tilemask v0.1.0
 	github.com/Rethunk-Tech/go-winsym v0.2.0
-	github.com/andybalholm/brotli v1.2.7
+	github.com/andybalholm/brotli v1.2.8
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/go-ole/go-ole v1.3.0
 	github.com/godbus/dbus/v5 v5.2.4
-	github.com/google/pprof v0.0.0-20261103193413-97e8293de3c4
+	github.com/google/pprof v0.0.0-20261105003125-4bf881d7fb0b
 	github.com/hashicorp/mdns v1.0.7
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d
 	github.com/wailsapp/wails/v3 v3.1.0
@@ -56,7 +56,7 @@ require (
 	github.com/coder/websocket v1.8.15 // indirect
 	github.com/danieljoos/wincred v1.2.3 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
-	github.com/ebitengine/purego v0.11.1 // indirect
+	github.com/ebitengine/purego v0.11.3 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
@@ -73,7 +73,7 @@ require (
 	golang.org/x/mod v0.42.0 // indirect
 	golang.org/x/term v0.47.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
-	modernc.org/libc v1.80.0 // indirect
+	modernc.org/libc v1.80.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 )

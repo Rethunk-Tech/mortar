@@ -30,7 +30,7 @@
     "site:refresh": "bun run --cwd web refresh"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.4",
+    "@biomejs/biome": "2.6.5",
     "knip": "^6.44.1",
     "pagefind": "1.6.0"
   },
