@@ -183,42 +183,56 @@ func unusedTilesheetPacks(mods []framework.Mod, skip bool) []framework.Cleanup {
 		if containsMod(candidates, im) || im.Folder == "" {
 			continue
 		}
-		paths, complete := modMapFiles(im)
-		if !complete {
-			noteUnstampable()
+		if !recordMapUses(im, candidates, uses, assetsByID, basenamesByID) {
 			mapsUnreadable = true
 		}
-		for _, path := range paths {
-			info, statErr := os.Stat(path)
-			if statErr != nil {
-				noteUnstampable()
-				mapsUnreadable = true
-				continue
-			}
-			noteRead(path, info)
-			ext := strings.ToLower(filepath.Ext(path))
-			scan, readErr := mapScanFor(path, fs.FileInfoToDirEntry(info), ext)
-			if readErr != nil {
-				noteUnstampable()
-				mapsUnreadable = true
-				continue
-			}
-			for _, candidate := range candidates {
-				id := candidate.ModID().Fold()
-				if ext == ".tbin" {
-					if slices.ContainsFunc(basenamesByID[id], func(name string) bool { return tbinNames(path, scan, name) }) {
-						recordTilesheetUse(uses[id], im)
-					}
-					continue
-				}
-				if slices.ContainsFunc(scan.Keys, func(key string) bool {
-					return assetsByID[id][key]
-				}) {
+	}
+	return unusedCleanups(candidates, uses, mapsUnreadable)
+}
+
+// recordMapUses notes which candidates a mod's map files load tilesheets from. It reports false when a map
+// could not be read, since an unread map might use any candidate.
+func recordMapUses(im framework.Mod, candidates []framework.Mod, uses map[string]*tilesheetUse, assetsByID map[string]map[string]bool, basenamesByID map[string][]string) bool {
+	readable := true
+	paths, complete := modMapFiles(im)
+	if !complete {
+		noteUnstampable()
+		readable = false
+	}
+	for _, path := range paths {
+		info, statErr := os.Stat(path)
+		if statErr != nil {
+			noteUnstampable()
+			readable = false
+			continue
+		}
+		noteRead(path, info)
+		ext := strings.ToLower(filepath.Ext(path))
+		scan, readErr := mapScanFor(path, fs.FileInfoToDirEntry(info), ext)
+		if readErr != nil {
+			noteUnstampable()
+			readable = false
+			continue
+		}
+		for _, candidate := range candidates {
+			id := candidate.ModID().Fold()
+			if ext == ".tbin" {
+				if slices.ContainsFunc(basenamesByID[id], func(name string) bool { return tbinNames(path, scan, name) }) {
 					recordTilesheetUse(uses[id], im)
 				}
+				continue
+			}
+			if slices.ContainsFunc(scan.Keys, func(key string) bool {
+				return assetsByID[id][key]
+			}) {
+				recordTilesheetUse(uses[id], im)
 			}
 		}
 	}
+	return readable
+}
+
+func unusedCleanups(candidates []framework.Mod, uses map[string]*tilesheetUse, mapsUnreadable bool) []framework.Cleanup {
 	out := []framework.Cleanup{}
 	for _, candidate := range candidates {
 		use := uses[candidate.ModID().Fold()]
