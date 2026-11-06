@@ -2297,6 +2297,10 @@ msgstr ""
 msgid "Kind"
 msgstr ""
 
+#: src/mods/SelectionBarActions.tsx
+msgid "Share selection…"
+msgstr ""
+
 #: src/mods/updateReview/undoAll.ts
 msgid "Restored the profile from before Update all"
 msgstr ""
@@ -3612,10 +3616,6 @@ msgstr ""
 
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Report to author"
-msgstr ""
-
-#: src/mods/SelectionBarActions.tsx
-msgid "Share selection"
 msgstr ""
 
 #: src/mods/typedConfig/StringWidgets.tsx

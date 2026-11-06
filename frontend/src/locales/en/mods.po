@@ -2297,6 +2297,10 @@ msgstr "This profile is frozen, so {name} is held at {installed}. Install {versi
 msgid "Kind"
 msgstr "Kind"
 
+#: src/mods/SelectionBarActions.tsx
+msgid "Share selection…"
+msgstr "Share selection…"
+
 #: src/mods/updateReview/undoAll.ts
 msgid "Restored the profile from before Update all"
 msgstr "Restored the profile from before Update all"
@@ -3613,10 +3617,6 @@ msgstr "Source"
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Report to author"
 msgstr "Report to author"
-
-#: src/mods/SelectionBarActions.tsx
-msgid "Share selection"
-msgstr "Share selection"
 
 #: src/mods/typedConfig/StringWidgets.tsx
 msgid "Press a key…"

@@ -262,7 +262,7 @@ export function SelectionBarActions({
         <MenuRule />
         {row({ label: t`Also add to…`, icon: <CopyPlus size={16} />, run: openAlso, edits: true })}
         <MenuRule />
-        {row({ label: t`Share selection`, icon: <Share2 size={16} />, run: share, edits: false })}
+        {row({ label: t`Share selection…`, icon: <Share2 size={16} />, run: share, edits: false })}
       </Menu>
     </Box>
   )
