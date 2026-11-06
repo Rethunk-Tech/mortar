@@ -8,6 +8,7 @@ import type { InlineError } from '../toasts/report.ts'
 import { AddAnother, PackageRow } from './DependenciesStep.tsx'
 import { knowPackage, ownProject } from './dependencies.ts'
 import type { DependencyRow } from './projectDependencies.ts'
+import { usePackageList } from './usePackageList.ts'
 
 /** The Edit dialog's dependency list: untick to drop one, switch it between required and optional, or search to add. */
 export function ProjectDependencies({
