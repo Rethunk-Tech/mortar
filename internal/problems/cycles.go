@@ -166,6 +166,15 @@ func (g graph) loops(name func(int) string) []loop {
 	return out
 }
 
+// loopChain names the loop's members in order, closing on the first.
+func loopChain(loop []Dependent) string {
+	names := make([]string, 0, len(loop)+1)
+	for _, d := range loop {
+		names = append(names, d.Name)
+	}
+	return strings.Join(append(names, loop[0].Name), " → ")
+}
+
 func pluginCycleSentence(loop []Dependent) string {
 	const outcome = "so BepInEx stops before loading any plugin"
 	switch len(loop) {
@@ -174,11 +183,7 @@ func pluginCycleSentence(loop []Dependent) string {
 	case 2:
 		return fmt.Sprintf("%s and %s each depend on the other, %s", loop[0].Name, loop[1].Name, outcome)
 	}
-	names := make([]string, 0, len(loop)+1)
-	for _, d := range loop {
-		names = append(names, d.Name)
-	}
-	return fmt.Sprintf("%s depend on each other in a loop, %s", strings.Join(append(names, loop[0].Name), " → "), outcome)
+	return fmt.Sprintf("%s depend on each other in a loop, %s", loopChain(loop), outcome)
 }
 
 func cycleSentence(loop []Dependent, blocksAll bool) string {
@@ -195,11 +200,7 @@ func cycleSentence(loop []Dependent, blocksAll bool) string {
 		}
 		return fmt.Sprintf("%s and %s each wait for the other, so %s", loop[0].Name, loop[1].Name, outcome)
 	}
-	names := make([]string, 0, len(loop)+1)
-	for _, d := range loop {
-		names = append(names, d.Name)
-	}
-	return fmt.Sprintf("%s wait for each other in a loop, so %s", strings.Join(append(names, loop[0].Name), " → "), outcome)
+	return fmt.Sprintf("%s wait for each other in a loop, so %s", loopChain(loop), outcome)
 }
 
 // shortestLoop is the shortest path from start back to itself inside scc, without the closing start.
