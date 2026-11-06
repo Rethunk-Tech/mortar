@@ -4,6 +4,7 @@ import type { Locator, Page } from '@playwright/test'
 
 interface ProfileFacts {
   game: string
+  id: string
   name: string
   mods: number
 }
@@ -22,7 +23,7 @@ function dataProfiles(dataDir: string): ProfileFacts[] {
         }
         const mods = (p.entries ?? []).reduce((n, e) => n + (e.mods?.length ?? 0), 0)
         if (p.name) {
-          found.push({ game, name: p.name, mods })
+          found.push({ game, id, name: p.name, mods })
         }
       } catch {
         // A folder without a readable profile.json is no profile.
@@ -44,6 +45,12 @@ const mostMods = (all: ProfileFacts[]) =>
  */
 export function biggestProfile(dataDir: string): string {
   return mostMods(dataProfiles(dataDir))?.name ?? ''
+}
+
+/** The game and profile ids of the profile with the most mods, which the run opens. */
+export function biggestProfileIds(dataDir: string): { game: string; profile: string } | undefined {
+  const best = mostMods(dataProfiles(dataDir))
+  return best && { game: best.game, profile: best.id }
 }
 
 /** The ids of the games with a profile in the copied data other than the one the run measures, in id order. */

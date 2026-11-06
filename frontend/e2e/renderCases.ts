@@ -1,6 +1,7 @@
 import type { Locator, Page } from '@playwright/test'
 import { openGameSelect, openSettings } from './app.ts'
 import { largeDownloadCases } from './largeDownloadCase.ts'
+import { launchScreenCases } from './launchScreenCase.ts'
 import { pausedDownloadCases } from './pausedDownloadCase.ts'
 import type { Case } from './render-budget.ts'
 import { VIEWPORT } from './renderViewport.ts'
@@ -32,6 +33,7 @@ export function newCases(h: Helpers): Case[] {
   return [
     ...largeDownloadCases(),
     ...pausedDownloadCases(),
+    ...launchScreenCases(),
     {
       name: 'change-version',
       setup: async (p) => {
