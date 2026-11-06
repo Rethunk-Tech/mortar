@@ -46,7 +46,7 @@ func (s *Service) dotnetEnv() []string {
 
 // nugetScratchEnv keeps NuGet's scratch folder, where it takes its cross-process restore locks, in the system temp
 // folder: an IDE restoring the same solution with the default temp would otherwise not share the lock with a restore
-// using the cache's, and the two collide on obj/project.assets.json.
+// using the cache's, and one of the two fails ("Cannot create a file when that file already exists").
 func nugetScratchEnv(goos, systemTemp string) []string {
 	if goos != "windows" {
 		return nil
