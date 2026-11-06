@@ -19,6 +19,25 @@ export const DECOMPILE_MAPPED = 3_170_822_002
 
 export type Stub = (route: Route) => Promise<void>
 /** Answers the named binding calls with the given results; every other call goes on to the server. */
+/**
+ * Answers the backend with stub, opens the Develop tab and its first project's More actions menu. A project without a
+ * released version offers no Upload, and a case that skipped would pass while measuring nothing, so that throws.
+ */
+export async function openUploadMenu(
+  p: Page,
+  stub: Stub,
+  developTab: (p: Page) => Promise<void>,
+): Promise<void> {
+  await p.route('**/wails/runtime', stub)
+  await developTab(p)
+  await p.getByRole('main').getByRole('button', { name: 'More actions' }).first().click()
+  if ((await p.getByRole('menuitem', { name: /^Upload v/ }).count()) === 0) {
+    throw new Error(
+      'the first Develop project offers no Upload; the render data needs a released project',
+    )
+  }
+}
+
 export function stubCalls(answers: Record<number, unknown>): Stub {
   return async (route) => {
     const body = route.request().postData() ?? ''
@@ -56,14 +75,7 @@ function releaseEverywhereCase({ developTab, pick }: ReturnType<typeof dialogKit
   return {
     name: 'develop-release-everywhere',
     setup: async (p: Page) => {
-      await p.route('**/wails/runtime', stub)
-      await developTab(p)
-      await p.getByRole('main').getByRole('button', { name: 'More actions' }).first().click()
-      if ((await p.getByRole('menuitem', { name: /^Upload v/ }).count()) === 0) {
-        throw new Error(
-          'the first Develop project offers no Upload; the render data needs a released project',
-        )
-      }
+      await openUploadMenu(p, stub, developTab)
     },
     run: async (p: Page) => {
       await pick(p, /^Upload v/)
@@ -259,16 +271,7 @@ export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
       return {
         name: 'develop-upload-github',
         setup: async (p: Page) => {
-          await p.route('**/wails/runtime', stub)
-          await developTab(p)
-          await p.getByRole('main').getByRole('button', { name: 'More actions' }).first().click()
-          // The first project must have a released version for Upload to be offered; a case that skipped would
-          // pass while measuring nothing.
-          if ((await p.getByRole('menuitem', { name: /^Upload v/ }).count()) === 0) {
-            throw new Error(
-              'the first Develop project offers no Upload; the render data needs a released project',
-            )
-          }
+          await openUploadMenu(p, stub, developTab)
         },
         run: async (p: Page) => {
           await pick(p, /^Upload v/)
