@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { keepUnchanged } from '@rethunk/react-load-hooks'
-import { forgetLast, getLast, peekLast, putLast, subscribeLast } from './lastGood.ts'
+import { getLast, peekLast, putLast, subscribeLast } from './lastGood.ts'
 
 const countNotifications = (run: () => void) => {
   let calls = 0
@@ -32,13 +32,11 @@ describe('lastGood', () => {
     expect(calls).toBe(1)
   })
 
-  test('keys are isolated and forgetLast drops by prefix', () => {
+  test('keys are isolated', () => {
     putLast('p:a', 1)
-    putLast('p:b', 2)
     putLast('q:a', 3)
-    forgetLast('p:')
-    expect(getLast('p:a')).toBeUndefined()
-    expect(getLast('p:b')).toBeUndefined()
+    putLast('p:a', 2)
+    expect(getLast('p:a')).toBe(2)
     expect(getLast('q:a')).toBe(3)
   })
 

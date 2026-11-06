@@ -60,17 +60,3 @@ export function putLast<T>(
   notify()
   return value
 }
-
-/** Drops every entry whose key starts with `prefix` (a deleted profile, a sign-out). */
-export function forgetLast(prefix: string): void {
-  let dropped = false
-  for (const key of [...entries.keys()]) {
-    if (key.startsWith(prefix)) {
-      entries.delete(key)
-      dropped = true
-    }
-  }
-  if (dropped) {
-    notify()
-  }
-}
