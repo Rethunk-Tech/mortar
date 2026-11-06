@@ -546,7 +546,7 @@ msgstr "{name} ({count})"
 msgid "Could not untrack this mod"
 msgstr "Could not untrack this mod"
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "Show less"
 msgstr "Show less"
 
@@ -778,7 +778,7 @@ msgstr "{loader}'s list marks this mod as broken, obsolete or abandoned for your
 msgid "Error while loading"
 msgstr "Error while loading"
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "Used by: {name}"
 msgstr "Used by: {name}"
 
@@ -903,7 +903,7 @@ msgstr "Cleanup"
 msgid "Group by"
 msgstr "Group by"
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "Needs {name} (missing)"
 msgstr "Needs {name} (missing)"
 
@@ -1681,7 +1681,7 @@ msgstr "Reading the versions…"
 msgid "Choose one"
 msgstr "Choose one"
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "Required: {name}"
 msgstr "Required: {name}"
 
@@ -2268,7 +2268,7 @@ msgstr "Priority {priority}"
 msgid "And {count} more on the {source} page"
 msgstr "And {count} more on the {source} page"
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "Optional: {name}"
 msgstr "Optional: {name}"
 
@@ -2805,7 +2805,7 @@ msgstr "Could not keep the old files"
 msgid "Releases, betas and alphas"
 msgstr "Releases, betas and alphas"
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "{count, plural, one {Used by: # mod} other {Used by: # mods}}"
 msgstr "{count, plural, one {Used by: # mod} other {Used by: # mods}}"
 
@@ -3093,7 +3093,7 @@ msgstr "You have not endorsed this mod. {source} asks that you download and play
 msgid "Checked for updates"
 msgstr "Checked for updates"
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "{count} more required"
 msgstr "{count} more required"
 
@@ -3486,7 +3486,7 @@ msgid "Author"
 msgstr "Author"
 
 #: src/mods/CleanupSection.tsx
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 #: src/mods/ProblemsTab.tsx
 msgid "Unknown mod"
 msgstr "Unknown mod"

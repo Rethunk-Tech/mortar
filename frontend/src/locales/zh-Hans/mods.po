@@ -540,7 +540,7 @@ msgstr ""
 msgid "Could not untrack this mod"
 msgstr ""
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "Show less"
 msgstr ""
 
@@ -772,7 +772,7 @@ msgstr ""
 msgid "Error while loading"
 msgstr ""
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "Used by: {name}"
 msgstr ""
 
@@ -897,7 +897,7 @@ msgstr ""
 msgid "Group by"
 msgstr ""
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "Needs {name} (missing)"
 msgstr ""
 
@@ -1675,7 +1675,7 @@ msgstr ""
 msgid "Choose one"
 msgstr ""
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "Required: {name}"
 msgstr ""
 
@@ -2262,7 +2262,7 @@ msgstr ""
 msgid "And {count} more on the {source} page"
 msgstr ""
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "Optional: {name}"
 msgstr ""
 
@@ -2799,7 +2799,7 @@ msgstr ""
 msgid "Releases, betas and alphas"
 msgstr ""
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "{count, plural, one {Used by: # mod} other {Used by: # mods}}"
 msgstr ""
 
@@ -3087,7 +3087,7 @@ msgstr ""
 msgid "Checked for updates"
 msgstr ""
 
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 msgid "{count} more required"
 msgstr ""
 
@@ -3480,7 +3480,7 @@ msgid "Author"
 msgstr ""
 
 #: src/mods/CleanupSection.tsx
-#: src/mods/LoadOrderTab.tsx
+#: src/mods/LoadOrderRowParts.tsx
 #: src/mods/ProblemsTab.tsx
 msgid "Unknown mod"
 msgstr ""
