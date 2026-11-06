@@ -146,8 +146,35 @@ func TestDropGoneKeepsOnlyFilesThatExist(t *testing.T) {
 	for i := range cacheLimit {
 		m[filepath.Join(dir, "gone", strconv.Itoa(i))] = i
 	}
-	dropGone(m)
-	if len(m) != 1 || m[live] != 1 {
+	var mark sweepMark
+	if !dropGone(m, &mark) || len(m) != 1 || m[live] != 1 {
 		t.Fatalf("kept %d entries", len(m))
+	}
+}
+
+func TestDropGoneSweepsAgainOnlyAfterTheCacheGrew(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	m := map[string]int{}
+	for i := range cacheLimit {
+		p := filepath.Join(dir, strconv.Itoa(i))
+		if err := os.WriteFile(p, nil, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		m[p] = i
+	}
+	var mark sweepMark
+	if !dropGone(m, &mark) {
+		t.Fatal("a cache at the limit was not swept")
+	}
+	m[filepath.Join(dir, "next")] = 0
+	if dropGone(m, &mark) {
+		t.Fatal("a second insert right after a sweep swept again")
+	}
+	for i := range sweepGrowth {
+		m[filepath.Join(dir, "more", strconv.Itoa(i))] = i
+	}
+	if !dropGone(m, &mark) {
+		t.Fatal("a cache that grew by sweepGrowth was not swept")
 	}
 }

@@ -70,7 +70,9 @@ type Service struct {
 	// parsed keeps each .cfg file's parse while its size and time are unchanged: a search and every page of the config
 	// view read every file of the profile again.
 	parsedMu sync.Mutex
-	parsed   map[string]parsedCfg
+	// parsedSweep is the size of parsed after its last sweep of deleted files.
+	parsedSweep sweepMark
+	parsed      map[string]parsedCfg
 
 	// hostKept is the host's values a player chose to keep, written into the .cfg once the game is closed.
 	hostMu   sync.Mutex
@@ -104,7 +106,7 @@ func (s *Service) parseCached(path string, info fs.FileInfo) (*cfgedit.BepInEx, 
 	if s.parsed == nil {
 		s.parsed = map[string]parsedCfg{}
 	}
-	dropGone(s.parsed)
+	dropGone(s.parsed, &s.parsedSweep)
 	s.parsed[path] = parsedCfg{size: info.Size(), at: info.ModTime(), doc: doc}
 	s.parsedMu.Unlock()
 	return doc, nil
@@ -113,16 +115,26 @@ func (s *Service) parseCached(path string, info fs.FileInfo) (*cfgedit.BepInEx, 
 // cacheLimit is how many entries a path-keyed cache holds before it drops those whose file is gone.
 const cacheLimit = 256
 
-// dropGone removes the entries of m whose file no longer exists, once m has grown past cacheLimit.
-func dropGone[V any](m map[string]V) {
-	if len(m) < cacheLimit {
-		return
+// sweepGrowth is how many entries a cache must gain after a sweep before the next one, so a cache of live files is
+// not statted on every insert.
+const sweepGrowth = 64
+
+// sweepMark is the size a cache had after its last sweep.
+type sweepMark struct{ size int }
+
+// dropGone removes the entries of m whose file no longer exists, once m has grown past cacheLimit and by sweepGrowth
+// since the last sweep; it reports whether it swept.
+func dropGone[V any](m map[string]V, mark *sweepMark) bool {
+	if len(m) < cacheLimit || len(m) < mark.size+sweepGrowth {
+		return false
 	}
+	defer func() { mark.size = len(m) }()
 	for p := range m {
 		if _, err := os.Stat(p); errors.Is(err, fs.ErrNotExist) {
 			delete(m, p)
 		}
 	}
+	return true
 }
 
 func (s *Service) cfgDir(game, id string) (string, error) {

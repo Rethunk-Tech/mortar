@@ -40,6 +40,7 @@ type dllCache struct {
 	mu    sync.Mutex
 	reads map[string]dllRead
 	lists map[string]dllList
+	sweep sweepMark
 }
 
 type dllList struct {
@@ -115,7 +116,7 @@ func (s *Service) settingsOf(path string, info os.FileInfo) []dotnet.Setting {
 	if s.dlls.reads == nil {
 		s.dlls.reads = map[string]dllRead{}
 	}
-	dropGone(s.dlls.reads)
+	dropGone(s.dlls.reads, &s.dlls.sweep)
 	s.dlls.reads[path] = dllRead{size: info.Size(), at: info.ModTime(), settings: settings}
 	s.dlls.mu.Unlock()
 	return settings
