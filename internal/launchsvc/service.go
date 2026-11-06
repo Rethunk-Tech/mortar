@@ -1019,16 +1019,21 @@ func (s *Service) launchSpec(ctx context.Context, gameID, profileID, preset stri
 	return s.profiles.LaunchSpec(gameID, profileID, preset)
 }
 
+// profileSpec is the launch spec of the profile, or the zero spec for a vanilla launch.
+func (s *Service) profileSpec(ctx context.Context, gameID, profileID, preset string, vanilla bool) (profile.LaunchSpec, error) {
+	if vanilla || profileID == "" {
+		return profile.LaunchSpec{}, nil
+	}
+	return s.launchSpec(ctx, gameID, profileID, preset)
+}
+
 // begin starts the launch once the loader is in place.
 func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct, vanilla bool) error {
 	gameID := g.ID()
 	profileID, modsDir := t.profileID, t.modsDir
-	var spec profile.LaunchSpec
-	if !vanilla && profileID != "" {
-		var err error
-		if spec, err = s.launchSpec(ctx, gameID, profileID, t.preset); err != nil {
-			return err
-		}
+	spec, err := s.profileSpec(ctx, gameID, profileID, t.preset, vanilla)
+	if err != nil {
+		return err
 	}
 	if ps, err := s.gameProcs(g); err == nil && len(ps) > 0 {
 		return usererr.Wrap(usererr.Busy, fmt.Errorf("%s is already running", g.Name()))
