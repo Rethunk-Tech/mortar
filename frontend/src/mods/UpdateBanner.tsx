@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link, Typography } from '@mui/material'
+import { ArrowUp } from 'lucide-react'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
@@ -11,7 +12,6 @@ import { nexusIdOf, sameId, visibleUpdates } from './lookup.ts'
 import { openPage } from './menu.ts'
 import { useNexusEntry } from './nexusDetails.ts'
 import { offersNexusDownload } from './nexusMark.ts'
-import { accent } from './paper.ts'
 import { useMods } from './store.ts'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 import { installedCaution } from './updateReview/wants.ts'
@@ -40,22 +40,13 @@ export function UpdateBanner({ mod }: { mod: Mod }) {
     return null
   }
   return (
-    <Box
-      sx={{
-        px: space.pad,
-        py: 0.75,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 0.75,
-        borderRadius: '6px',
-        bgcolor: accent.fill,
-        border: '1px solid',
-        borderColor: accent.line,
-      }}
-    >
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
         {official ? (
-          <Typography sx={{ fontSize: 'base.fontSize' }}>
+          <Typography
+            sx={{ fontSize: 'base.fontSize', color: 'primary.main', display: 'flex', gap: 0.5 }}
+          >
+            <ArrowUp size={16} style={{ flexShrink: 0, marginTop: 2 }} aria-hidden={true} />
             {t`Update available: ${{ installed: official.installed }} to ${{ version: official.version }}`}
           </Typography>
         ) : null}
