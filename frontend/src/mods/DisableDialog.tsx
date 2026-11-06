@@ -88,28 +88,37 @@ function DisableDialogBody({ disabling }: { disabling: Mod[] }) {
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         {dependents.length > 0 ? (
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={withDependents}
-                onChange={(e) => setWithDependents(e.target.checked)}
-              />
-            }
+          <AlsoRow
+            checked={withDependents}
+            onChange={setWithDependents}
             label={t`${plural({ count: dependents.length }, { one: 'Also disable # mod that needs it', other: 'Also disable # mods that need it' })}: ${{ names: listNames(dependents.map((m) => m.name)) }}`}
           />
         ) : null}
         {unneeded.length > 0 ? (
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={withUnneeded}
-                onChange={(e) => setWithUnneeded(e.target.checked)}
-              />
-            }
+          <AlsoRow
+            checked={withUnneeded}
+            onChange={setWithUnneeded}
             label={t`${plural({ count: unneeded.length }, { one: 'Also disable # library nothing else needs', other: 'Also disable # libraries nothing else needs' })}: ${{ names: listNames(unneeded.map((m) => m.name)) }}`}
           />
         ) : null}
       </Box>
     </AppDialog>
+  )
+}
+
+function AlsoRow({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean
+  onChange: (on: boolean) => void
+  label: string
+}) {
+  return (
+    <FormControlLabel
+      control={<Checkbox checked={checked} onChange={(e) => onChange(e.target.checked)} />}
+      label={label}
+    />
   )
 }
