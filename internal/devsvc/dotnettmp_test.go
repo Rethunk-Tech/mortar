@@ -57,6 +57,16 @@ func TestDotnetRunsWithItsTempFolderInTheCache(t *testing.T) {
 	}
 }
 
+func TestNugetScratchStaysInTheSystemTempOnWindows(t *testing.T) {
+	got := nugetScratchEnv("windows", `C:\Users\u\AppData\Local\Temp`)
+	if want := filepath.Join(`C:\Users\u\AppData\Local\Temp`, "NuGetScratch"); len(got) != 1 || got[0] != "NUGET_SCRATCH="+want {
+		t.Fatalf("got %v, want NUGET_SCRATCH=%s", got, want)
+	}
+	if got := nugetScratchEnv("linux", "/tmp"); got != nil {
+		t.Fatalf("linux got %v", got)
+	}
+}
+
 func TestDotnetEnvDropsAppImageLibraries(t *testing.T) {
 	if runtime.GOOS != "linux" {
 		t.Skip("AppImages exist only on Linux")

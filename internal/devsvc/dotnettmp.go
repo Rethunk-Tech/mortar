@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -39,7 +40,18 @@ func (s *Service) dotnetEnv() []string {
 	}
 	now := time.Now()
 	sweepDotnetTemp(dir, now.Add(-dotnetLeftoverAge), now.Add(-msbuildTempAge))
-	return append(env, "TMPDIR="+dir, "TMP="+dir, "TEMP="+dir)
+	env = append(env, "TMPDIR="+dir, "TMP="+dir, "TEMP="+dir)
+	return append(env, nugetScratchEnv(runtime.GOOS, os.TempDir())...)
+}
+
+// nugetScratchEnv keeps NuGet's scratch folder, where it takes its cross-process restore locks, in the system temp
+// folder: an IDE restoring the same solution with the default temp would otherwise not share the lock with a restore
+// using the cache's, and the two collide on obj/project.assets.json.
+func nugetScratchEnv(goos, systemTemp string) []string {
+	if goos != "windows" {
+		return nil
+	}
+	return []string{"NUGET_SCRATCH=" + filepath.Join(systemTemp, "NuGetScratch")}
 }
 
 // sweepDotnetTemp removes per-command folders older than before and MSBuild's process folders older than
