@@ -10,6 +10,7 @@ import {
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { openWeb } from '../../shell/openWeb.ts'
 import { space } from '../../theme/density.ts'
+import { errorKind } from '../../toasts/errorKind.ts'
 import { reportUnexpected, toastError } from '../../toasts/report.ts'
 
 type Stage = 'idle' | 'connected' | 'waiting-browser'
@@ -40,7 +41,10 @@ export function NexusSSO() {
   )
   const start = () => {
     setStage('connected')
-    StartSSO().catch(() => setStage('idle'))
+    StartSSO().catch((e: unknown) => {
+      // A sign-in started before this view was left still runs: show it, with Cancel, until its own event ends it.
+      setStage(errorKind(e) === 'busy' ? 'waiting-browser' : 'idle')
+    })
   }
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
