@@ -32,27 +32,8 @@ type lane struct {
 // cursor if paging deep into a text search gets slow.
 func (c *Client) searchRanked(ctx context.Context, info components.GameInfo, sources []source.Source, text string, page int, f Filter) (Page, error) {
 	out := Page{Items: []Item{}}
-	var lanes []*lane
-	for _, s := range sources {
-		if !slices.Contains(source.SortsOf(s), f.Sort) {
-			out.Unsorted = append(out.Unsorted, s.ID())
-			continue
-		}
-		searcher, ok := s.(source.Searcher)
-		if !ok {
-			continue
-		}
-		gs, _ := info.Source(s.ID())
-		// One request of a source's largest page usually holds every hit of it that page 1 needs.
-		size := source.PageSize
-		if sz, ok := s.(source.Sizer); ok {
-			size = max(sz.MaxPageSize(), size)
-		}
-		lanes = append(lanes, &lane{id: s.ID(), s: searcher, q: source.Query{
-			Game: info.ID, Key: gs.Key, Text: text, Version: c.Version,
-			Categories: f.Include, ExcludeCategories: f.Exclude, Sort: f.Sort, Size: size,
-		}})
-	}
+	lanes, unsorted := c.buildLanes(info, sources, text, f)
+	out.Unsorted = unsorted
 	page = max(page, source.FirstPage)
 	want := page * source.PageSize
 	order := make([]string, len(lanes))
@@ -76,21 +57,7 @@ func (c *Client) searchRanked(ctx context.Context, info components.GameInfo, sou
 		}
 		// Merging shrinks the placed hits, so more are needed even when the window already holds a page's worth: read the
 		// sources that bound the placed prefix, the only ones whose next page can extend it.
-		var next []*lane
-		var bound *Item
-		for _, l := range lanes {
-			if l.done || len(l.hits) == 0 {
-				continue
-			}
-			if last := l.hits[len(l.hits)-1]; bound == nil || compare(last, *bound) < 0 {
-				bound = &last
-			}
-		}
-		for _, l := range lanes {
-			if !l.done && (len(l.hits) == 0 || compare(l.hits[len(l.hits)-1], *bound) <= 0) {
-				next = append(next, l)
-			}
-		}
+		next := lanesToRead(lanes, compare)
 		if len(next) == 0 {
 			break
 		}
@@ -100,6 +67,66 @@ func (c *Client) searchRanked(ctx context.Context, info components.GameInfo, sou
 		}
 		wg.Wait()
 	}
+	errs := tallyLanes(lanes, &out)
+	if len(errs) == len(lanes) {
+		return Page{}, errors.Join(errs...)
+	}
+	// Sources that share mods count them each, until every hit is read and the merged list is exact.
+	if !slices.ContainsFunc(lanes, func(l *lane) bool { return !l.done }) && len(errs) == 0 {
+		out.Total = len(cards)
+	}
+	out.Pages = (out.Total + source.PageSize - 1) / source.PageSize
+	out.Items = cards[min((page-1)*source.PageSize, len(cards)):min(want, len(cards))]
+	return out, nil
+}
+
+// buildLanes makes one lane per source that can search and order by f.Sort; the others are named in unsorted.
+func (c *Client) buildLanes(info components.GameInfo, sources []source.Source, text string, f Filter) (lanes []*lane, unsorted []string) {
+	for _, s := range sources {
+		if !slices.Contains(source.SortsOf(s), f.Sort) {
+			unsorted = append(unsorted, s.ID())
+			continue
+		}
+		searcher, ok := s.(source.Searcher)
+		if !ok {
+			continue
+		}
+		gs, _ := info.Source(s.ID())
+		// One request of a source's largest page usually holds every hit of it that page 1 needs.
+		size := source.PageSize
+		if sz, ok := s.(source.Sizer); ok {
+			size = max(sz.MaxPageSize(), size)
+		}
+		lanes = append(lanes, &lane{id: s.ID(), s: searcher, q: source.Query{
+			Game: info.ID, Key: gs.Key, Text: text, Version: c.Version,
+			Categories: f.Include, ExcludeCategories: f.Exclude, Sort: f.Sort, Size: size,
+		}})
+	}
+	return lanes, unsorted
+}
+
+// lanesToRead picks the unfinished lanes whose next page can extend the placed prefix.
+func lanesToRead(lanes []*lane, compare func(a, b Item) int) []*lane {
+	var next []*lane
+	var bound *Item
+	for _, l := range lanes {
+		if l.done || len(l.hits) == 0 {
+			continue
+		}
+		if last := l.hits[len(l.hits)-1]; bound == nil || compare(last, *bound) < 0 {
+			bound = &last
+		}
+	}
+	for _, l := range lanes {
+		if !l.done && (len(l.hits) == 0 || compare(l.hits[len(l.hits)-1], *bound) <= 0) {
+			next = append(next, l)
+		}
+	}
+	return next
+}
+
+// tallyLanes folds every lane's counts and failures into out and returns the lanes' errors.
+func tallyLanes(lanes []*lane, out *Page) []error {
 	var errs []error
 	for _, l := range lanes {
 		out.Total += l.total
@@ -114,16 +141,7 @@ func (c *Client) searchRanked(ctx context.Context, info components.GameInfo, sou
 			}
 		}
 	}
-	if len(errs) == len(lanes) {
-		return Page{}, errors.Join(errs...)
-	}
-	// Sources that share mods count them each, until every hit is read and the merged list is exact.
-	if !slices.ContainsFunc(lanes, func(l *lane) bool { return !l.done }) && len(errs) == 0 {
-		out.Total = len(cards)
-	}
-	out.Pages = (out.Total + source.PageSize - 1) / source.PageSize
-	out.Items = cards[min((page-1)*source.PageSize, len(cards)):min(want, len(cards))]
-	return out, nil
+	return errs
 }
 
 // placedPrefix is how much of the sorted window is final: the hits that rank at least as high as the last hit read
