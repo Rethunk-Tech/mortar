@@ -29,6 +29,7 @@ import { copyText } from '../share/copyText.ts'
 import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { useLastGood } from '../shell/useLastGood.ts'
@@ -357,6 +358,7 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
   const {
     data: loadedRows,
     error,
+    at,
     reload,
   } = useLastGood<Row[]>(
     `load-order:${game}:${profile.id}`,
@@ -440,5 +442,12 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
       </EmptyState>
     )
   }
-  return <OrderList rows={rows} names={names} scrollRef={scrollRef} move={locked ? null : move} />
+  return (
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ px: space.gutter, pb: error === null ? 0 : space.gap }}>
+        <RefreshFailed error={error} at={at} onRetry={reload} />
+      </Box>
+      <OrderList rows={rows} names={names} scrollRef={scrollRef} move={locked ? null : move} />
+    </Box>
+  )
 }

@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material'
 import { sameValue } from '@rethunk/react-load-hooks'
-import { useId, useState } from 'react'
+import { type ReactNode, useId, useState } from 'react'
 import type {
   ModpackForm,
   ModpackOptions,
@@ -18,6 +18,7 @@ import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { Field, FieldRow, FormDialog, FormSection, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { Fold } from '../shell/Fold.tsx'
+import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { useLastGood } from '../shell/useLastGood.ts'
 import { space } from '../theme/density.ts'
@@ -221,11 +222,13 @@ function Fields({
   game,
   profileId,
   form,
+  notice,
   onClose,
 }: {
   game: string
   profileId: string
   form: ModpackForm
+  notice: ReactNode
   onClose: () => void
 }) {
   const { t } = useLingui()
@@ -274,6 +277,7 @@ function Fields({
       busy={busy}
       onSubmit={save}
     >
+      {notice}
       <PackageSection o={o} set={set} lastVersion={form.lastVersion} />
       <TextsSection o={o} set={set} onRegenerate={regenerate} />
       <FormSection title={t`Contents`}>
@@ -335,7 +339,16 @@ export function ModpackDialog({
   )
   if (data) {
     // Fields copies the form into its own state, so a refresh that changed the form starts it over.
-    return <Fields key={at} game={game} profileId={profileId} form={data} onClose={onClose} />
+    return (
+      <Fields
+        key={at}
+        game={game}
+        profileId={profileId}
+        form={data}
+        notice={<RefreshFailed error={error} at={at} onRetry={reload} />}
+        onClose={onClose}
+      />
+    )
   }
   return (
     <AppDialog

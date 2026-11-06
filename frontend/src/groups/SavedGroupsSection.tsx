@@ -13,6 +13,7 @@ import { idKey } from '../mods/dependents.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { space } from '../theme/density.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -55,7 +56,7 @@ export const SavedGroupsSection = memo(function SavedGroupsSectionView({
   profiles: Profile[]
 }) {
   const { t } = useLingui()
-  const { savedGroups, setSavedGroups, loading } = useSavedGroups(game)
+  const { savedGroups, setSavedGroups, loading, stale, at, reload } = useSavedGroups(game)
   const [renaming, setRenaming] = useState<SavedGroup | null>(null)
   const [deleting, setDeleting] = useState<SavedGroup | null>(null)
   const [applying, setApplying] = useState<SavedGroup | null>(null)
@@ -79,6 +80,7 @@ export const SavedGroupsSection = memo(function SavedGroupsSectionView({
         <Typography component="h2" sx={{ fontSize: 'large.fontSize', fontWeight: 700 }}>
           {t`Saved groups`}
         </Typography>
+        <RefreshFailed error={stale} at={at} onRetry={reload} />
         {loading ? <LoadingRow>{t`Loading saved groups…`}</LoadingRow> : null}
         {!loading && savedGroups.length === 0 ? <NoSavedGroups /> : null}
         {savedGroups.map((group) => (

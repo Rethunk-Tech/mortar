@@ -6,6 +6,7 @@ import { useState } from 'react'
 import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { PageActions } from '../game/PageActions.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { space } from '../theme/density.ts'
 import { PerformanceCards, type PerformanceView } from './PerformanceCards.tsx'
 import { PerformancePanel } from './PerformancePanel.tsx'
@@ -50,7 +51,8 @@ export function PerformanceTab({ game }: { game: string }) {
   const perf = usePerfQuery()
   const running = usePerformanceRunning(game)
   const [saved] = useSavedReports(game, openId)
-  const { reports, pending, measureNext, cancelMeasure } = useStartupReports(game, openId)
+  const { reports, reportsError, reportsAt, pending, measureNext, cancelMeasure, reload } =
+    useStartupReports(game, openId)
   const [selected, setSelected] = useState('')
   const [choice, setChoice] = useState<PerformanceView | null>(null)
   const inGame = smapi || perf
@@ -98,12 +100,19 @@ export function PerformanceTab({ game }: { game: string }) {
       {view === 'inGame' ? (
         <PerformancePanel game={game} />
       ) : (
-        <StartupPanel
-          reports={reports}
-          pending={pending}
-          cancelMeasure={cancelMeasure}
-          selected={selected}
-        />
+        <>
+          {reports === null ? null : (
+            <Box sx={{ px: space.pad, pt: space.pad }}>
+              <RefreshFailed error={reportsError} at={reportsAt} onRetry={reload} />
+            </Box>
+          )}
+          <StartupPanel
+            reports={reports}
+            pending={pending}
+            cancelMeasure={cancelMeasure}
+            selected={selected}
+          />
+        </>
       )}
     </Box>
   )

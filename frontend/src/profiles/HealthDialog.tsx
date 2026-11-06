@@ -17,6 +17,7 @@ import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { useLastGood } from '../shell/useLastGood.ts'
 import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
@@ -173,6 +174,7 @@ export function HealthDialog({
   const {
     data: findings,
     error,
+    at,
     reload: load,
   } = useLastGood<HealthFinding[]>(
     game === '' ? null : `health:${game}:${profileId}`,
@@ -284,6 +286,7 @@ export function HealthDialog({
         </DialogFooter>
       }
     >
+      {findings === null ? null : <RefreshFailed error={error} at={at} onRetry={load} />}
       {body}
       <ConfirmationDialog
         open={confirm !== null}

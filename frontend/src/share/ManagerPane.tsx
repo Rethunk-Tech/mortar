@@ -22,6 +22,7 @@ import { VortexFolderPrompt } from '../profiles/VortexFolderPrompt.tsx'
 import { offerMO2Folder, offerVortexFolder } from '../profiles/vortexFolderOffer.ts'
 import { DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { useLastGood } from '../shell/useLastGood.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
@@ -127,7 +128,12 @@ export function useManagerPane({
   const { t } = useLingui()
   const { sources: external, reload } = useExternalImportSources(game, active)
   // null until this game's profiles were ever listed, so opening never flashes "No profiles found".
-  const { data: listed, reload: relist } = useLastGood<Listed>(
+  const {
+    data: listed,
+    error: listError,
+    at: listedAt,
+    reload: relist,
+  } = useLastGood<Listed>(
     `manager-pane:${game}`,
     active ? () => listFolders(game) : null,
     [active],
@@ -161,6 +167,9 @@ export function useManagerPane({
   }
   const body = (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, px: 3, py: 2.5 }}>
+      {folders === null ? null : (
+        <RefreshFailed error={listError} at={listedAt} onRetry={loadFolders} />
+      )}
       {folders === null ? (
         <SkeletonRows
           label={t`Looking for other mod managers' profiles…`}

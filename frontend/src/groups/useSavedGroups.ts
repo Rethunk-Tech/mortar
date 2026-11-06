@@ -14,7 +14,7 @@ const NONE: SavedGroup[] = []
 export function useSavedGroups(game: string, open = true) {
   const { t } = useLingui()
   const key = `saved-groups:${game}`
-  const { data, error, set, reload } = useLastGood<SavedGroup[]>(
+  const { data, error, at, set, reload } = useLastGood<SavedGroup[]>(
     key,
     open ? () => List(game).then((listed) => listed ?? NONE) : null,
     [game, open],
@@ -31,5 +31,9 @@ export function useSavedGroups(game: string, open = true) {
     savedGroups: data ?? NONE,
     setSavedGroups,
     loading: open && data === null && error === null,
+    // A failed refresh behind a list that is shown.
+    stale: data === null ? null : error,
+    at,
+    reload,
   }
 }

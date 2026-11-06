@@ -18,6 +18,7 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
+import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { useFolderEvent } from '../shell/useFolderEvent.ts'
@@ -29,7 +30,7 @@ import { listArchives, useDownloadsDialog } from './downloadsDialog.ts'
 import { useInstall } from './store.ts'
 
 function useArchives(open: boolean, game: string) {
-  const { data, error, reload } = useLastGood<DownloadArchive[]>(
+  const { data, error, at, reload } = useLastGood<DownloadArchive[]>(
     game === '' ? null : `downloads:${game}`,
     open ? () => DownloadsArchives(game).then((found) => found ?? []) : null,
     [open],
@@ -38,7 +39,13 @@ function useArchives(open: boolean, game: string) {
     reload().catch(reportUnexpected)
   }, [reload])
   useFolderEvent('library:downloads', game, () => open && load())
-  return { archives: data, error: data === null ? error : null, reload: load }
+  return {
+    archives: data,
+    error: data === null ? error : null,
+    stale: data === null ? null : error,
+    at,
+    reload: load,
+  }
 }
 
 function FolderLine({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -206,7 +213,7 @@ export function DownloadsDialog() {
   const close = () => useDownloadsDialog.getState().setOpen(false)
   const game = useProfiles((s) => s.game?.id ?? '')
   const hasProfile = useProfiles((s) => s.openId !== '')
-  const { archives, error, reload } = useArchives(open, game)
+  const { archives, error, stale, at, reload } = useArchives(open, game)
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState('')
   useEffect(() => {
@@ -249,6 +256,7 @@ export function DownloadsDialog() {
       }
     >
       <FolderLine open={open} onClose={close} />
+      <RefreshFailed error={stale} at={at} onRetry={reload} />
       <Box sx={{ height: 460, display: 'flex', gap: space.pad }}>
         <Body
           archives={archives}

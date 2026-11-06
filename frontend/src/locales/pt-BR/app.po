@@ -985,6 +985,7 @@ msgstr ""
 #: src/shell/ErrorRetry.tsx
 #: src/shell/LoadingRow.tsx
 #: src/shell/OfflineBanner.tsx
+#: src/shell/RefreshFailed.tsx
 #: src/toasts/report.ts
 msgid "Retry"
 msgstr ""
@@ -1212,6 +1213,10 @@ msgstr ""
 
 #: src/develop/NewModDialog.tsx
 msgid "MIT (recommended)"
+msgstr ""
+
+#: src/shell/RefreshFailed.tsx
+msgid "Could not refresh. Showing what was read {when}."
 msgstr ""
 
 #: src/firstrun/ProfileStep.tsx
@@ -1963,6 +1968,10 @@ msgstr ""
 
 #: src/share/Included.tsx
 msgid "Included"
+msgstr ""
+
+#: src/shell/RefreshFailed.tsx
+msgid "Could not refresh, showing the last copy"
 msgstr ""
 
 #: src/firstrun/LoaderStep.tsx
@@ -3393,6 +3402,7 @@ msgid "How it is modded"
 msgstr ""
 
 #: src/browse/BrowseDetails.tsx
+#: src/shell/RefreshFailed.tsx
 msgid "Saved from an earlier visit. Sign in to refresh it."
 msgstr ""
 
@@ -6345,6 +6355,7 @@ msgid "The {app} runtime crashed ({module}), not a mod's code."
 msgstr ""
 
 #: src/browse/BrowseDetails.tsx
+#: src/shell/RefreshFailed.tsx
 msgid "Saved {when}. Sign in to refresh it."
 msgstr ""
 
@@ -7758,6 +7769,7 @@ msgid "Private"
 msgstr ""
 
 #: src/browse/BrowseDetails.tsx
+#: src/shell/RefreshFailed.tsx
 #: src/shell/SignInPrompt.tsx
 msgid "Sign in…"
 msgstr ""

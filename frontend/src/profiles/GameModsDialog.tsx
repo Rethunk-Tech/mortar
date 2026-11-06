@@ -14,6 +14,7 @@ import { brokenKindLabel } from '../mods/brokenKind.ts'
 import type { GameId } from '../nav/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
+import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { useLastGood } from '../shell/useLastGood.ts'
 import { space } from '../theme/density.ts'
@@ -115,7 +116,8 @@ export function GameModsDialog({
   )
   const mods = preview.data?.mods ?? NO_MODS
   const canMove = preview.data?.canMove ?? false
-  const error = importError ?? preview.error
+  const stale = preview.data === null ? null : preview.error
+  const error = importError ?? (preview.data === null ? preview.error : null)
   const previewing = open && preview.data === null && preview.error === null
   // Nothing imports from a list the live folder has not confirmed.
   const rechecking = preview.refreshing
@@ -192,7 +194,14 @@ export function GameModsDialog({
           >
             <Button
               variant="contained"
-              disabled={busy || previewing || rechecking || importable === 0 || error !== null}
+              disabled={
+                busy ||
+                previewing ||
+                rechecking ||
+                importable === 0 ||
+                error !== null ||
+                stale !== null
+              }
               onClick={() => importMods().catch(reportUnexpected)}
             >
               {t`Import`}
@@ -222,6 +231,7 @@ export function GameModsDialog({
       {busy ? <GameModsProgressLine progress={progress} moving={canMove && move} /> : null}
       {error === null && !previewing ? (
         <>
+          <RefreshFailed error={stale} at={preview.at} onRetry={loadPreview} />
           <Plan count={importable} canMove={canMove} move={move} busy={busy} onMove={setMove} />
           <PreviewRows mods={mods} />
         </>

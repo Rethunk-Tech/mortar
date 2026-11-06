@@ -19,6 +19,7 @@ import { When } from '../i18n/When.tsx'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { BareDialog } from '../shell/dialog/BareDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { useLastGood } from '../shell/useLastGood.ts'
@@ -158,6 +159,7 @@ export function ScreenshotsTab({ game }: { game: string }) {
   const {
     data: gallery,
     error,
+    at,
     reload: load,
   } = useLastGood<Gallery>(`screenshots:${game}`, () => Screenshots(game), [game])
   const [open, setOpen] = useState<number | null>(null)
@@ -271,6 +273,7 @@ export function ScreenshotsTab({ game }: { game: string }) {
           pb: space.gutter,
         }}
       >
+        {gallery === null ? null : <RefreshFailed error={error} at={at} onRetry={load} />}
         {body}
       </Box>
       {open === null ? null : (

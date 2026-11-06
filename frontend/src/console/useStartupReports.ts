@@ -16,7 +16,12 @@ import { reportError, reportUnexpected } from '../toasts/report.ts'
 function useStartupReports(game: string, profileId: string) {
   const { t } = useLingui()
   const known = profileId !== ''
-  const { data: reports, reload: reloadReports } = useLastGood<StartupReport[]>(
+  const {
+    data: reports,
+    error: reportsError,
+    at: reportsAt,
+    reload: reloadReports,
+  } = useLastGood<StartupReport[]>(
     known ? `startup-reports:${game}:${profileId}` : null,
     () => StartupReports(game, profileId).then((r) => r ?? []),
     [],
@@ -56,7 +61,7 @@ function useStartupReports(game: string, profileId: string) {
       .then(() => setPending(false))
       .catch(reportError(t`Could not cancel the measured launch`, cancelMeasure))
   }
-  return { reports, pending, measureNext, cancelMeasure, reload: load }
+  return { reports, reportsError, reportsAt, pending, measureNext, cancelMeasure, reload: load }
 }
 
 export { useStartupReports }

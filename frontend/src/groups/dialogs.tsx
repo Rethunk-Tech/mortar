@@ -11,6 +11,7 @@ import { modsLabel } from '../i18n/counts.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
+import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { usePending } from '../toasts/usePending.ts'
 import { useSavedGroups } from './useSavedGroups.ts'
@@ -111,7 +112,7 @@ function ApplySavedGroupDialog({
   onApplied,
 }: ApplySavedGroupDialogProps) {
   const { t } = useLingui()
-  const { savedGroups, loading } = useSavedGroups(game, open)
+  const { savedGroups, loading, stale, at, reload } = useSavedGroups(game, open)
   const [busy, run] = usePending()
   return (
     <AppDialog
@@ -127,6 +128,7 @@ function ApplySavedGroupDialog({
         </DialogFooter>
       }
     >
+      <RefreshFailed error={stale} at={at} onRetry={reload} />
       <SavedGroupPickList
         loading={loading}
         savedGroups={savedGroups}

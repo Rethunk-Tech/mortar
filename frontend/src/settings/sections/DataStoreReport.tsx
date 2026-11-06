@@ -24,6 +24,7 @@ import { When } from '../../i18n/When.tsx'
 import { AfterDelay } from '../../shell/AfterDelay.tsx'
 import { AppDialog, DialogFooter } from '../../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { RefreshFailed } from '../../shell/RefreshFailed.tsx'
 import { useLastGood } from '../../shell/useLastGood.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
@@ -222,7 +223,7 @@ function Section({
 }
 
 function useCleanupData(open: boolean) {
-  const { data, error, refreshing, reload } = useLastGood<{
+  const { data, error, at, refreshing, reload } = useLastGood<{
     store: { unused: Sel[]; older: Sel[] }
     preview: Preview
   }>(
@@ -246,6 +247,8 @@ function useCleanupData(open: boolean) {
     // Deleting acts on the list shown, so it waits for the re-read.
     refreshing,
     error: data === null && error !== null,
+    stale: data === null ? null : error,
+    at,
   }
 }
 
@@ -343,7 +346,7 @@ function CleanupDialog({
   onChanged: () => void
 }) {
   const { t } = useLingui()
-  const { store, preview, load, refreshing, error } = useCleanupData(open)
+  const { store, preview, load, refreshing, error, stale, at } = useCleanupData(open)
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [confirm, setConfirm] = useState(false)
   const [busy, runCleanup] = usePending()
@@ -439,13 +442,16 @@ function CleanupDialog({
             </Button>
           </Box>
         ) : (
-          <CleanupBody
-            store={store}
-            leftovers={leftovers}
-            picked={picked}
-            setPicked={setPicked}
-            toggle={toggle}
-          />
+          <>
+            <RefreshFailed error={stale} at={at} onRetry={load} />
+            <CleanupBody
+              store={store}
+              leftovers={leftovers}
+              picked={picked}
+              setPicked={setPicked}
+              toggle={toggle}
+            />
+          </>
         )}
       </Box>
       <ConfirmationDialog
