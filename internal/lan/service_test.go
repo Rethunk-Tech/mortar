@@ -27,6 +27,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testmain"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/hashicorp/mdns"
 )
@@ -34,15 +35,7 @@ import (
 func TestMain(m *testing.M) {
 	pairIterations = 1_000
 	retryDelay = time.Millisecond
-	data, err := os.MkdirTemp("", "mortar-lan-test-")
-	if err != nil {
-		panic(err)
-	}
-	_ = os.Setenv("XDG_DATA_HOME", data)
-	_ = os.Setenv("LOCALAPPDATA", data)
-	code := m.Run()
-	_ = os.RemoveAll(data)
-	os.Exit(code)
+	testmain.RunInTempData(m, "lan")
 }
 
 func testPayload(t *testing.T) string {

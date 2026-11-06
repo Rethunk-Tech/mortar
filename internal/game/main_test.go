@@ -3,6 +3,8 @@ package game
 import (
 	"os"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testmain"
 )
 
 // Tests pass their own temporary home; a CI runner's XDG folders would otherwise win over it.
@@ -13,16 +15,5 @@ func TestMain(m *testing.M) {
 		}
 	}
 	// The player's custom games load from the data folder, which a test must not point at the real one.
-	data, err := os.MkdirTemp("", "mortar-game-test-")
-	if err != nil {
-		panic(err)
-	}
-	for _, k := range []string{"XDG_DATA_HOME", "LOCALAPPDATA"} {
-		if err := os.Setenv(k, data); err != nil {
-			panic(err)
-		}
-	}
-	code := m.Run()
-	_ = os.RemoveAll(data)
-	os.Exit(code)
+	testmain.RunInTempData(m, "game")
 }
