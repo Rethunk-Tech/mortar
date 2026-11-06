@@ -1,12 +1,17 @@
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
+import { codeSymbolCase } from './codeSymbolCase.ts'
+import { close, open } from './menuKit.ts'
+import { modMenuCases } from './modMenuCases.ts'
 import type { Case } from './render-budget.ts'
 import type { dialogKit } from './renderDialogs.ts'
 
 /** Menus no screen case opens, pictured open so their grouping and rules can be reviewed. */
-export function menuCases({ ready, tab, developTab }: ReturnType<typeof dialogKit>): Case[] {
-  const open = (p: Page) => p.getByRole('menu').getByRole('menuitem').first().waitFor()
+export function menuCases(
+  kit: ReturnType<typeof dialogKit>,
+  tabs: (page: Page) => Locator,
+): Case[] {
+  const { ready, tab, developTab, profileMenu } = kit
   let previous = 'None'
-  const close = (p: Page) => p.keyboard.press('Escape')
   return [
     {
       name: 'menu-play-options',
@@ -49,5 +54,41 @@ export function menuCases({ ready, tab, developTab }: ReturnType<typeof dialogKi
         await p.getByRole('menuitemradio', { name: previous, exact: true }).click()
       },
     },
+    {
+      name: 'menu-game-switcher',
+      setup: ready,
+      run: async (p) => {
+        await p.getByRole('button', { name: /^Switch game/ }).click()
+        await open(p)
+      },
+      teardown: close,
+    },
+    {
+      name: 'menu-develop-test-copies',
+      setup: developTab,
+      run: async (p) => {
+        await p.getByRole('button', { name: 'How many copies to test with' }).first().click()
+        await open(p)
+      },
+      teardown: close,
+    },
+    {
+      name: 'menu-compare-picker',
+      setup: async (p) => {
+        await ready(p)
+        await profileMenu(p, /^Compare…/)
+        await p.getByRole('dialog').last().waitFor()
+      },
+      run: async (p) => {
+        await p.getByRole('dialog').last().locator('button[aria-haspopup="menu"]').first().click()
+        await open(p)
+      },
+      teardown: async (p) => {
+        await close(p)
+        await close(p)
+      },
+    },
+    ...modMenuCases(kit, tabs),
+    codeSymbolCase(kit),
   ]
 }

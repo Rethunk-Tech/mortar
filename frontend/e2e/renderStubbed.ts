@@ -13,6 +13,9 @@ const UPLOAD_GITHUB = 3_405_360_245
 const UPLOAD_THUNDERSTORE = 1_056_045_837
 const UPDATE_CHECK = 3_749_236_397
 const UPDATE_INFO = 3_769_649_439
+export const HAS_DECOMPILER = 745_351_519
+export const DECOMPILE = 3_650_086_405
+export const DECOMPILE_MAPPED = 3_170_822_002
 
 export type Stub = (route: Route) => Promise<void>
 /** Answers the named binding calls with the given results; every other call goes on to the server. */

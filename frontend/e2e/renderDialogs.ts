@@ -377,7 +377,7 @@ export function dialogCases(h: Helpers): Case[] {
     ...toolAndWizardCases(kit),
     ...stubbedCases(kit),
     ...uploadDialogCases(kit),
-    ...menuCases(kit),
+    ...menuCases(kit, h.tabs),
     // Showing the list and picking a mod is setup: only opening the dialog is measured.
     dialog(
       'mod-also-add',
