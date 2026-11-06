@@ -319,7 +319,6 @@
         "**/*.config.mjs",
         "**/*.config.ts",
         "**/scripts/**",
-        "build/**",
         "tools/**"
       ],
       "linter": {
@@ -389,9 +388,15 @@
       "includes": ["web/**"],
       "linter": { "rules": { "style": { "noJsxLiterals": "off" } } }
     },
-    // The site's pages and data modules run at build time in Bun, reading the repo's files.
+    // The site's pages and data modules run at build time in Bun, reading the repo's files; the Flathub package
+    // resolver runs under node or bun before `yarn install`.
     {
-      "includes": ["web/src/lib/**", "web/src/pages/**", "web/src/content.config.ts"],
+      "includes": [
+        "web/src/lib/**",
+        "web/src/pages/**",
+        "web/src/content.config.ts",
+        "build/linux/flathub/app-packages.ts"
+      ],
       "linter": { "rules": { "correctness": { "noNodejsModules": "off" } } }
     }
   ]
