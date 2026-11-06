@@ -140,7 +140,8 @@ step knip bunx knip
 step tsc bun run --cwd frontend tsc --noEmit
 # A CI runner shares its few cores with the race build and both lints running beside this, so tests that finish in
 # milliseconds here can pass bun's 5s default there.
-step bun-test bun test ${CI:+--timeout 20000}
+# A random file order each run, so a test that leaks shared state fails here, not only under CI's file order.
+step bun-test bun test --randomize ${CI:+--timeout 20000}
 
 failed=0
 for name in "${!pids[@]}"; do
