@@ -34,10 +34,7 @@ func TestPlanReplaceKeepsLocalAndListsRemovals(t *testing.T) {
 
 func TestReplaceRemovesExtrasAndQueuesTheShare(t *testing.T) {
 	s, rec := newService(t, true)
-	prof, err := s.d.Profiles.Create("stardew", "Mine")
-	if err != nil {
-		t.Fatal(err)
-	}
+	prof := mineProfile(t, s)
 	if _, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, "A.Keep"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
 		t.Fatal(err)
 	}
@@ -77,10 +74,7 @@ func TestReplaceNeedsAProfile(t *testing.T) {
 
 func TestReplaceKeepsTheSharedOrderAsModsArrive(t *testing.T) {
 	s, _ := newService(t, true)
-	prof, err := s.d.Profiles.Create("stardew", "Mine")
-	if err != nil {
-		t.Fatal(err)
-	}
+	prof := mineProfile(t, s)
 	for _, m := range []struct {
 		name   string
 		id, fl int

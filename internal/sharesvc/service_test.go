@@ -201,10 +201,7 @@ func TestImportRollsBackANewProfileWhenQueueingFails(t *testing.T) {
 func TestAFailedReplaceLeavesNoHistoryBatchOpen(t *testing.T) {
 	s, _ := newService(t, false)
 	items, _ := testenv.Stores(t)
-	p, err := s.d.Profiles.Create("stardew", "Mine")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mineProfile(t, s)
 	if _, err := s.PreviewLink(t.Context(), "stardew", link(t, "Cozy", share.Ref{ModID: 100, FileID: 1}), p.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -362,10 +359,7 @@ func TestImportActsOnlyOnTheShownPreviewAndOnlyOnce(t *testing.T) {
 
 func TestImportLeavesTheConfigOfModsTheProfileHas(t *testing.T) {
 	s, _ := newService(t, true)
-	prof, err := s.d.Profiles.Create("stardew", "Mine")
-	if err != nil {
-		t.Fatal(err)
-	}
+	prof := mineProfile(t, s)
 	if _, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
 		t.Fatal(err)
 	}
@@ -429,10 +423,7 @@ func TestAnOvertakenPreviewDoesNotReplaceTheNewer(t *testing.T) {
 
 func TestANewProfileFromAPreviewOfTheOpenOneGetsItsMods(t *testing.T) {
 	s, rec := newService(t, true)
-	prof, err := s.d.Profiles.Create("stardew", "Mine")
-	if err != nil {
-		t.Fatal(err)
-	}
+	prof := mineProfile(t, s)
 	if _, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, "A.Mod"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
 		t.Fatal(err)
 	}
@@ -462,4 +453,10 @@ func TestRequestForCarriesOverlay(t *testing.T) {
 	if r.Overlay == nil || *r.Overlay != (queue.OverlayPlace{From: "a", To: "b", Off: true}) {
 		t.Fatalf("overlay = %+v", r.Overlay)
 	}
+}
+
+// mineProfile creates the Stardew Valley profile "Mine" in the service's store.
+func mineProfile(t *testing.T, s *Service) profile.Profile {
+	t.Helper()
+	return testenv.Profile(t, s.d.Profiles, "stardew", "Mine")
 }

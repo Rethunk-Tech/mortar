@@ -9,10 +9,7 @@ import (
 
 func TestReplaceSignedOutKeepsTheProfilesMods(t *testing.T) {
 	s, _ := newService(t, false)
-	prof, err := s.d.Profiles.Create("stardew", "Mine")
-	if err != nil {
-		t.Fatal(err)
-	}
+	prof := mineProfile(t, s)
 	if _, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, "A.Drop"), profile.Source{Kind: profile.KindNexus, ModID: 600, FileID: 6}); err != nil {
 		t.Fatal(err)
 	}

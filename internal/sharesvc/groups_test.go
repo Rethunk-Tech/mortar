@@ -11,10 +11,7 @@ import (
 func TestApplySharedGroups(t *testing.T) {
 	s, _ := newService(t, false)
 	items, _ := testenv.Stores(t)
-	p, err := s.d.Profiles.Create("stardew", "Mine")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := mineProfile(t, s)
 	keyA, keyB := storeMod(t, items, "Me.A"), storeMod(t, items, "Me.B")
 	for _, k := range []string{keyA, keyB} {
 		if _, err := s.d.Profiles.AddEntry("stardew", p.ID, k, profile.Source{Kind: profile.KindLocal, Name: k}); err != nil {

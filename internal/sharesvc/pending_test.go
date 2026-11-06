@@ -243,10 +243,7 @@ func TestWantedFileItemMatchesGitHubAsset(t *testing.T) {
 func TestSharedArrivalKeepsThePlayersReorder(t *testing.T) {
 	s, _ := newService(t, true)
 	ctx := t.Context()
-	prof, err := s.d.Profiles.Create("stardew", "Mine")
-	if err != nil {
-		t.Fatal(err)
-	}
+	prof := mineProfile(t, s)
 	install := func(name string, modID, fileID int) {
 		t.Helper()
 		if _, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, name), profile.Source{Kind: profile.KindNexus, ModID: modID, FileID: fileID}); err != nil {
