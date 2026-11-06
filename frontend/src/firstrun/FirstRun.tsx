@@ -122,7 +122,7 @@ export function FirstRun() {
           color="inherit"
           size="small"
           onClick={() => {
-            openPage(`${GO}help/`)
+            openPage(GO)
           }}
         >
           {t`Join our ${{ app: sourceLabel('discord') }}`}
