@@ -165,6 +165,10 @@ msgstr "Play this profile to measure."
 msgid "Share log…"
 msgstr "Share log…"
 
+#: src/console/StartupSections.tsx
+msgid "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as the Online or LAN choice in {game}."
+msgstr "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as the Online or LAN choice in {game}."
+
 #: src/console/UpdateNoteTag.tsx
 msgid "This mod is one of your Develop projects, so Mortar does not offer its updates."
 msgstr "This mod is one of your Develop projects, so Mortar does not offer its updates."
@@ -1111,10 +1115,6 @@ msgstr "Every mod in this profile is already disabled, so there is nothing to di
 #: src/console/ConsoleTab.tsx
 msgid "No game output yet"
 msgstr "No game output yet"
-
-#: src/console/StartupSections.tsx
-msgid "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as {game}'s Online or LAN choice."
-msgstr "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as {game}'s Online or LAN choice."
 
 #: src/console/LineMenu.tsx
 msgid "Hide every message from {method}"
