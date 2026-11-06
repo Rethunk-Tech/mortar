@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-nettrace"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestChargeUsesInnermostMappedAssembly(t *testing.T) {
@@ -55,5 +56,27 @@ func TestATraceWithNoEventsWritesNoSamples(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(dir, "run.samples.json")); !errors.Is(err, fs.ErrNotExist) {
 		t.Fatalf("a samples file was written: %v", err)
+	}
+}
+
+func TestPruneStartupReportsKeepsTheNewestWithTheirSamples(t *testing.T) {
+	dir := t.TempDir()
+	for _, id := range []string{"20260101", "20260102", "20260103", "20260104"} {
+		testfs.WriteFile(t, dir, id+".json", "{}")
+		testfs.WriteFile(t, dir, id+".samples.json", "{}")
+	}
+	pruneStartupReports(dir, 2)
+	left, err := startupReportIDs(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(left) != 2 || !left["20260104"] || !left["20260103"] {
+		t.Fatalf("kept %v, want the two newest", left)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "20260101.samples.json")); !os.IsNotExist(err) {
+		t.Fatalf("an old report's samples file was left behind: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "20260103.samples.json")); err != nil {
+		t.Fatalf("a kept report lost its samples file: %v", err)
 	}
 }

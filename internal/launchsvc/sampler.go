@@ -70,6 +70,7 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 	if !reportFound {
 		return
 	}
+	defer pruneStartupReports(filepath.Join(profileDir, startupDir), keepStartupReports)
 	samples, err := writeStartupSamples(file, filepath.Join(profileDir, startupDir), reportID, modsDir)
 	if err != nil {
 		log.Printf("startup sampler: %s: %v", g.ID(), err)
@@ -141,6 +142,25 @@ func (s *Service) waitForSampleReport(ctx context.Context, g game.Game, profileI
 		case <-ctx.Done():
 			return "", false
 		case <-ticker.C:
+		}
+	}
+}
+
+// keepStartupReports is how many startup reports a profile keeps; the console's report picker lists them and the
+// compare views read the newest two.
+const keepStartupReports = 20
+
+// pruneStartupReports deletes all but the newest keep reports in dir, each with its samples file.
+func pruneStartupReports(dir string, keep int) {
+	names, err := startupReportPaths(dir)
+	if err != nil || len(names) <= keep {
+		return
+	}
+	for _, name := range names[keep:] {
+		for _, f := range []string{name, strings.TrimSuffix(name, ".json") + ".samples.json"} {
+			if err := safefs.Remove(f); err != nil && !errors.Is(err, os.ErrNotExist) {
+				log.Printf("startup sampler: prune %s: %v", f, err)
+			}
 		}
 	}
 }
