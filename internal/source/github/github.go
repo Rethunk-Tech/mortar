@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"maps"
 	"net/http"
@@ -20,10 +19,7 @@ import (
 
 	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-httpkit"
-	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -380,8 +376,6 @@ func (d *Driver) searchREST(ctx context.Context, q source.Query, terms string, p
 	if err := d.held(&d.restRefused); err != nil {
 		return topicPage{}, err
 	}
-	base := cmp.Or(d.URL, apiURL)
-	client := cmp.Or(d.HTTP, http.DefaultClient)
 	params := url.Values{}
 	params.Set("q", terms)
 	if by := sortParam(q.Sort, q.Text); by != "" {
@@ -389,34 +383,17 @@ func (d *Driver) searchREST(ctx context.Context, q source.Query, terms string, p
 	}
 	params.Set("per_page", strconv.Itoa(q.Len()))
 	params.Set("page", strconv.Itoa(page))
-	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
-	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimRight(base, "/")+searchURL+"?"+params.Encode(), nil)
-	if err != nil {
-		return topicPage{}, err
-	}
-	req.Header.Set("User-Agent", appversion.UserAgent(q.Version))
-	req.Header.Set("Accept", "application/vnd.github+json")
-	ghauth.DefaultAuth.Apply(req)
-	resp, err := client.Do(req)
-	if err != nil {
-		return topicPage{}, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-		return topicPage{}, d.refuse(&d.restRefused, resp)
-	}
+	body, status, err := d.do(ctx, call{
+		Method: http.MethodGet, URL: strings.TrimRight(cmp.Or(d.URL, apiURL), "/") + searchURL + "?" + params.Encode(),
+		Version: q.Version, Accept: "application/vnd.github+json", Auth: true, Refused: &d.restRefused,
+	})
 	// GitHub refuses a user: qualifier naming no account; the word was then only search text.
-	if resp.StatusCode == http.StatusUnprocessableEntity && strings.HasPrefix(terms, "user:") {
+	if status.Status == http.StatusUnprocessableEntity && strings.HasPrefix(terms, "user:") {
 		d.remember(key, topicPage{})
 		return topicPage{}, nil
 	}
-	if resp.StatusCode != http.StatusOK {
-		return topicPage{}, fmt.Errorf("github answered %s", resp.Status)
-	}
-	body, err := safefs.ReadCapped(resp.Body, source.MaxBody)
 	if err != nil {
-		return topicPage{}, err
+		return topicPage{}, answered("github", err)
 	}
 	var parsed searchResp
 	if err := json.Unmarshal(body, &parsed); err != nil {

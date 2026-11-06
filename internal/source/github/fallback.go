@@ -1,7 +1,6 @@
 package github
 
 import (
-	"bytes"
 	"cmp"
 	"context"
 	"encoding/json"
@@ -16,8 +15,6 @@ import (
 	"time"
 
 	gh "github.com/Rethunk-Tech/go-github"
-	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -166,29 +163,12 @@ func (d *Driver) graphQL(ctx context.Context, q source.Query, terms []string) (m
 	if err != nil {
 		return nil, err
 	}
-	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
-	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(cmp.Or(d.URL, apiURL), "/")+"/graphql", bytes.NewReader(body))
+	raw, got, err := d.do(ctx, call{
+		Method: http.MethodPost, URL: strings.TrimRight(cmp.Or(d.URL, apiURL), "/") + "/graphql", Version: q.Version,
+		Body: body, Auth: true, Refused: &d.graphRefused,
+	})
 	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("User-Agent", appversion.UserAgent(q.Version))
-	req.Header.Set("Content-Type", "application/json")
-	ghauth.DefaultAuth.Apply(req)
-	resp, err := cmp.Or(d.HTTP, http.DefaultClient).Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-		return nil, d.refuse(&d.graphRefused, resp)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("github GraphQL answered %s", resp.Status)
-	}
-	raw, err := safefs.ReadCapped(resp.Body, source.MaxBody)
-	if err != nil {
-		return nil, err
+		return nil, answered("github GraphQL", err)
 	}
 	var parsed struct {
 		Data   map[string]*graphSearch `json:"data"`
@@ -202,7 +182,7 @@ func (d *Driver) graphQL(ctx context.Context, q source.Query, terms []string) (m
 	}
 	for _, e := range parsed.Errors {
 		if e.Type == "RATE_LIMITED" {
-			return nil, d.refuse(&d.graphRefused, resp)
+			return nil, d.refuse(&d.graphRefused, &http.Response{StatusCode: got.Status, Header: got.Header})
 		}
 	}
 	out := map[int]graphSearch{}
@@ -291,28 +271,12 @@ func (d *Driver) webPage(ctx context.Context, q source.Query, terms string, page
 		params.Set("s", by)
 		params.Set("o", "desc")
 	}
-	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
-	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimRight(cmp.Or(d.Web, webURL), "/")+"/search?"+params.Encode(), nil)
+	raw, _, err := d.do(ctx, call{
+		Method: http.MethodGet, URL: strings.TrimRight(cmp.Or(d.Web, webURL), "/") + "/search?" + params.Encode(),
+		Version: q.Version, Accept: "application/json", Refused: &d.webRefused,
+	})
 	if err != nil {
-		return topicPage{}, err
-	}
-	req.Header.Set("User-Agent", appversion.UserAgent(q.Version))
-	req.Header.Set("Accept", "application/json")
-	resp, err := cmp.Or(d.HTTP, http.DefaultClient).Do(req)
-	if err != nil {
-		return topicPage{}, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-		return topicPage{}, d.refuse(&d.webRefused, resp)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return topicPage{}, fmt.Errorf("github.com search answered %s", resp.Status)
-	}
-	raw, err := safefs.ReadCapped(resp.Body, source.MaxBody)
-	if err != nil {
-		return topicPage{}, err
+		return topicPage{}, answered("github.com search", err)
 	}
 	var parsed struct {
 		Payload struct {

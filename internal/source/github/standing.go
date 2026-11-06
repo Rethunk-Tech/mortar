@@ -4,14 +4,12 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
 	"net/url"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -40,36 +38,16 @@ func (d *Driver) archived(ctx context.Context, version, repo string) (bool, erro
 	if !ok || owner == "" || name == "" || strings.Contains(name, "/") {
 		return false, nil
 	}
-	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
-	defer cancel()
 	u := strings.TrimRight(cmp.Or(d.URL, apiURL), "/") + "/repos/" + url.PathEscape(owner) + "/" + url.PathEscape(name)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
-	if err != nil {
-		return false, err
-	}
-	req.Header.Set("User-Agent", appversion.UserAgent(version))
-	req.Header.Set("Accept", "application/vnd.github+json")
-	ghauth.DefaultAuth.Apply(req)
-	resp, err := cmp.Or(d.HTTP, http.DefaultClient).Do(req)
-	if err != nil {
-		return false, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	switch resp.StatusCode {
-	case http.StatusOK:
-	case http.StatusNotFound:
+	body, _, err := d.do(ctx, call{Method: http.MethodGet, URL: u, Version: version, Accept: "application/vnd.github+json", Auth: true})
+	if errors.Is(err, httpkit.ErrNotFound) {
 		return false, nil
-	case http.StatusForbidden, http.StatusTooManyRequests:
-		return false, source.Busy("GitHub", resp)
-	default:
-		return false, fmt.Errorf("github answered %s", resp.Status)
+	}
+	if err != nil {
+		return false, answered("github", err)
 	}
 	var repoInfo struct {
 		Archived bool `json:"archived"`
-	}
-	body, err := safefs.ReadCapped(resp.Body, source.MaxBody)
-	if err != nil {
-		return false, err
 	}
 	if err := json.Unmarshal(body, &repoInfo); err != nil {
 		return false, err

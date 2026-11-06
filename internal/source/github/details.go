@@ -3,14 +3,13 @@ package github
 import (
 	"cmp"
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -21,36 +20,14 @@ func (d *Driver) Details(ctx context.Context, _, id, mortarVersion string) (sour
 	if !ok || owner == "" || repo == "" || strings.Contains(repo, "/") {
 		return source.Details{}, fmt.Errorf("%q is not an owner/repo", id)
 	}
-	base := cmp.Or(d.URL, apiURL)
-	client := cmp.Or(d.HTTP, http.DefaultClient)
-	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
-	defer cancel()
-	u := strings.TrimRight(base, "/") + "/repos/" + url.PathEscape(owner) + "/" + url.PathEscape(repo) + "/readme"
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
-	if err != nil {
-		return source.Details{}, err
-	}
-	req.Header.Set("User-Agent", appversion.UserAgent(mortarVersion))
-	req.Header.Set("Accept", "application/vnd.github.raw")
-	ghauth.DefaultAuth.Apply(req)
-	resp, err := client.Do(req)
-	if err != nil {
-		return source.Details{}, err
-	}
-	defer func() { _ = resp.Body.Close() }()
+	u := strings.TrimRight(cmp.Or(d.URL, apiURL), "/") + "/repos/" + url.PathEscape(owner) + "/" + url.PathEscape(repo) + "/readme"
+	body, _, err := d.do(ctx, call{Method: http.MethodGet, URL: u, Version: mortarVersion, Accept: "application/vnd.github.raw", Auth: true})
 	out := source.Details{Versions: []string{}, Dependencies: []string{}, Categories: []string{}}
-	switch resp.StatusCode {
-	case http.StatusOK:
-	case http.StatusNotFound:
+	if errors.Is(err, httpkit.ErrNotFound) {
 		return out, nil
-	case http.StatusForbidden, http.StatusTooManyRequests:
-		return source.Details{}, source.Busy("GitHub", resp)
-	default:
-		return source.Details{}, fmt.Errorf("github answered %s", resp.Status)
 	}
-	body, err := safefs.ReadCapped(resp.Body, source.MaxBody)
 	if err != nil {
-		return source.Details{}, err
+		return source.Details{}, answered("github", err)
 	}
 	out.Description = string(body)
 	return out, nil
