@@ -28,20 +28,20 @@
   <launchable type="desktop-id">tech.rethunk.Mortar.desktop</launchable>
   <screenshots>
     <screenshot type="default">
-      <caption>A profile of 805 mods, showing cover art, updates and problems</caption>
-      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/mods.png</image>
+      <caption>A profile of 803 mods, showing cover art, updates and problems</caption>
+      <image type="source" width="1280" height="720">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/mods.png</image>
     </screenshot>
     <screenshot>
       <caption>Problems explains content conflicts, and offers a fix you can click</caption>
-      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/problems.png</image>
+      <image type="source" width="1280" height="720">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/problems.png</image>
     </screenshot>
     <screenshot>
       <caption>Startup timings for every mod, so you can see which one is slow</caption>
-      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/performance.png</image>
+      <image type="source" width="1280" height="720">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/performance.png</image>
     </screenshot>
     <screenshot>
       <caption>Your antivirus scans every mod before it's installed</caption>
-      <image type="source" width="1280" height="800">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/settings.png</image>
+      <image type="source" width="1280" height="720">https://raw.githubusercontent.com/Rethunk-Tech/mortar/main/build/linux/screenshots/settings.png</image>
     </screenshot>
   </screenshots>
   <branding>

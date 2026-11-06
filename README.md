@@ -12,7 +12,7 @@ Mortar is a desktop mod manager for several games. It finds your game, installs 
 
 The catalog covers Stardew Valley, Lethal Company, Valheim, Vintage Story, The Sims 4 and many Thunderstore games, with mods from Nexus Mods, GitHub, Thunderstore, CurseForge and the Vintage Story Mod DB. Mortar succeeds [Concrete](https://github.com/LethalModding/Concrete).
 
-<p align="center"><img src="build/linux/screenshots/mods.png" alt="Mortar showing a Stardew Valley profile of 805 mods with cover art" width="900"></p>
+<p align="center"><img src="build/linux/screenshots/mods.png" alt="Mortar showing a Stardew Valley profile of 803 mods with cover art" width="900"></p>
 
 ## Getting started
 
