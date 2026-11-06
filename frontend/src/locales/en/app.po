@@ -157,6 +157,10 @@ msgstr "Updated"
 msgid "{added}; {rest}"
 msgstr "{added}; {rest}"
 
+#: src/game/ProfileMenuItems.tsx
+msgid "Delete profile"
+msgstr "Delete profile"
+
 #: src/templates/TemplateDialogs.tsx
 msgid "Could not delete the template"
 msgstr "Could not delete the template"
@@ -2134,10 +2138,6 @@ msgstr "Shortcuts"
 msgid "{names} cannot be reached; showing what Mortar saved ({asOf})"
 msgstr "{names} cannot be reached; showing what Mortar saved ({asOf})"
 
-#: src/develop/ProjectCard.tsx
-msgid "Remove from list…"
-msgstr "Remove from list…"
-
 #: src/share/ModpackDialog.tsx
 msgid "Like 1.0.0."
 msgstr "Like 1.0.0."
@@ -2964,7 +2964,6 @@ msgid "Report a bug…"
 msgstr "Report a bug…"
 
 #: src/game/ProfileMenu.tsx
-#: src/game/ProfileMenuItems.tsx
 msgid "Delete profile…"
 msgstr "Delete profile…"
 

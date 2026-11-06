@@ -151,6 +151,10 @@ msgstr "已更新"
 msgid "{added}; {rest}"
 msgstr "{added}；{rest}"
 
+#: src/game/ProfileMenuItems.tsx
+msgid "Delete profile"
+msgstr ""
+
 #: src/templates/TemplateDialogs.tsx
 msgid "Could not delete the template"
 msgstr "无法删除模板"
@@ -2128,10 +2132,6 @@ msgstr ""
 msgid "{names} cannot be reached; showing what Mortar saved ({asOf})"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
-msgid "Remove from list…"
-msgstr ""
-
 #: src/share/ModpackDialog.tsx
 msgid "Like 1.0.0."
 msgstr ""
@@ -2958,7 +2958,6 @@ msgid "Report a bug…"
 msgstr ""
 
 #: src/game/ProfileMenu.tsx
-#: src/game/ProfileMenuItems.tsx
 msgid "Delete profile…"
 msgstr ""
 

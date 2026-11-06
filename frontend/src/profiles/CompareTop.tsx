@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, IconButton, Typography } from '@mui/material'
-import { Search, Users } from 'lucide-react'
+import { Search, Server, Users } from 'lucide-react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { hasModList } from '../game/modList.ts'
 import { modsLabel } from '../i18n/counts.ts'
@@ -66,7 +66,7 @@ function OtherPicker({
         />
         {hosted ? (
           <MenuAction
-            icon={<Users size={16} />}
+            icon={<Server size={16} />}
             label={t`A multiplayer host's list…`}
             onClick={choose(onHost)}
           />

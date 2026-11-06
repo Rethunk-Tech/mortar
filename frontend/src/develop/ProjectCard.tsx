@@ -1,19 +1,10 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  IconButton,
-  Menu,
-  Typography,
-} from '@mui/material'
+import { Alert, Box, Button, Chip, CircularProgress, Menu, Typography } from '@mui/material'
 import { relativeWhen, useNowValue } from '@rethunk/react-load-hooks'
 import {
   Bug,
-  EllipsisVertical,
+  Ellipsis,
   FolderOpen,
   FolderPlus,
   Hammer,
@@ -44,6 +35,7 @@ import { LetterTile } from '../mods/LetterTile.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { persist, saveSetting } from '../settings/persist.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
@@ -279,18 +271,13 @@ function MoreMenu({
   }
   return (
     <>
-      <IconButton aria-label={t`More actions`} onClick={show}>
-        <EllipsisVertical size={18} />
-      </IconButton>
+      <IconAction
+        label={t`More actions`}
+        icon={<Ellipsis size={18} />}
+        menu={true}
+        onClick={show}
+      />
       <Menu anchorEl={anchor} open={anchor !== null} onClose={() => hide()}>
-        {code ? (
-          <MenuCheck
-            checked={Boolean(project.watch)}
-            label={t`Build on save`}
-            onClick={() => saveSetting(() => SetWatch(game, project.dir, !project.watch))}
-          />
-        ) : null}
-        {code ? <MenuRule /> : null}
         <MenuAction
           icon={<Pencil size={16} aria-hidden={true} />}
           label={t`Edit details…`}
@@ -335,10 +322,18 @@ function MoreMenu({
           onRelease={onRelease}
           onUpload={onUpload}
         />
+        {code ? <MenuRule /> : null}
+        {code ? (
+          <MenuCheck
+            checked={Boolean(project.watch)}
+            label={t`Build on save`}
+            onClick={() => saveSetting(() => SetWatch(game, project.dir, !project.watch))}
+          />
+        ) : null}
         <MenuRule />
         <MenuAction
           icon={<Trash2 size={16} aria-hidden={true} />}
-          label={t`Remove from list…`}
+          label={t`Remove from list`}
           tone="error"
           onClick={act(() => setForgetting(true))}
         />

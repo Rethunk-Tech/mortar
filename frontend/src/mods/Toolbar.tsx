@@ -242,15 +242,20 @@ export const GroupByControl = memo(function GroupByMenu() {
             }}
           />
         ))}
-        <MenuRule />
-        <MenuAction
-          icon={<Settings2 size={16} aria-hidden={true} />}
-          label={t`Edit categories…`}
-          onClick={() => {
-            menu.hide()
-            setEditorOpen(true)
-          }}
-        />
+        {by === 'category'
+          ? [
+              <MenuRule key="categories-rule" />,
+              <MenuAction
+                key="categories"
+                icon={<Settings2 size={16} aria-hidden={true} />}
+                label={t`Edit categories…`}
+                onClick={() => {
+                  menu.hide()
+                  setEditorOpen(true)
+                }}
+              />,
+            ]
+          : null}
       </MenuButton>
       <CategoryEditorDialog open={editorOpen} onClose={() => setEditorOpen(false)} />
     </>
