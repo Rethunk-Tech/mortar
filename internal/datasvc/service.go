@@ -9,7 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -106,7 +108,33 @@ func (s *Service) Usage(fresh bool) (Usage, error) {
 	s.mu.Lock()
 	s.usage, s.usageAt = u, time.Now()
 	s.mu.Unlock()
+	_ = diskcache.Put(usageCache(dir), meta.UsageLastPrefix+".json", u)
 	return u, nil
+}
+
+// LastUsageResult is the last finished measurement, read back without walking the folder.
+type LastUsageResult struct {
+	Usage Usage `json:"usage"`
+	// At is when the walk finished, in Unix milliseconds.
+	At int64 `json:"at"`
+}
+
+func usageCache(dir string) *diskcache.Cache {
+	return &diskcache.Cache{Dir: filepath.Join(dir, "cache")}
+}
+
+// LastUsage returns the last finished measurement from the cache folder, however old and without walking anything:
+// nil when none is stored (or Clear cache removed it). Settings draws it while the live walk runs.
+func (s *Service) LastUsage() *LastUsageResult {
+	dir, err := datadir.Dir()
+	if err != nil {
+		return nil
+	}
+	e, ok := diskcache.Peek[Usage](usageCache(dir), meta.UsageLastPrefix+".json")
+	if !ok {
+		return nil
+	}
+	return &LastUsageResult{Usage: e.Value, At: e.Fetched.UnixMilli()}
 }
 
 // CacheInfo is the cache folder path and size.
