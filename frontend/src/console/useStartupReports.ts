@@ -9,17 +9,18 @@ import {
   StartupReports,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useLaunch } from '../launch/store.ts'
+import { useLastGood } from '../shell/useLastGood.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 
 /** The profile's startup reports, reloaded whenever a launch ends (the bridge writes one at the title screen). */
 function useStartupReports(game: string, profileId: string) {
   const { t } = useLingui()
   const known = profileId !== ''
-  const { data: reports, reload: reloadReports } = useLoaded<StartupReport[] | null>(
-    known ? () => StartupReports(game, profileId).then((r) => r ?? []) : null,
-    [game, profileId],
-    null,
-    reportUnexpected,
+  const { data: reports, reload: reloadReports } = useLastGood<StartupReport[]>(
+    known ? `startup-reports:${game}:${profileId}` : null,
+    () => StartupReports(game, profileId).then((r) => r ?? []),
+    [],
+    { onError: reportUnexpected },
   )
   const {
     data: pending,

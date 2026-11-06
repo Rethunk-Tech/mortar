@@ -32,6 +32,7 @@ import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
+import { useLastGood } from '../shell/useLastGood.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { idKey, localId } from './dependents.ts'
@@ -487,21 +488,21 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
     data: loadedRows,
     error,
     reload,
-  } = useLoaded<Row[] | null>(
+  } = useLastGood<Row[]>(
+    `load-order:${game}:${profile.id}`,
     () => LoadOrder(game, profile.id).then((next) => next ?? []),
-    [game, profile.id, enabledKey],
-    null,
-    reportUnexpected,
+    [enabledKey],
+    { onError: reportUnexpected },
   )
   const move: Move = (entry, delta) => {
     MovePackage(game, profile.id, entry, delta)
       .then((next) => {
         useProfiles.getState().replace(next)
-        reload()
+        return reload()
       })
       .catch(reportUnexpected)
   }
-  const failed = error !== null
+  const failed = loadedRows === null && error !== null
   const rows = failed ? [] : loadedRows
 
   useEffect(() => {
