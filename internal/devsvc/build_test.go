@@ -8,6 +8,9 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestWatchedSourcesCoverCompatAndAssets(t *testing.T) {
@@ -88,5 +91,39 @@ func TestBuildKeepsItsOutputForTheDiagnosticsBundle(t *testing.T) {
 		if !strings.Contains(string(body), want) {
 			t.Errorf("kept log lacks %q:\n%s", want, body)
 		}
+	}
+}
+
+func TestBuildQueuedBehindTrashDoesNotRunOnTheRemovedProject(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	var ran []string
+	svc.Run = func(_ context.Context, wd, name string, _ ...string) ([]byte, error) {
+		ran = append(ran, name+" in "+wd)
+		return nil, nil
+	}
+	release := holdBuild(dir)
+	done := make(chan error, 1)
+	go func() {
+		_, err := svc.Build(t.Context(), "lethal-company", dir)
+		done <- err
+	}()
+	// Let Build read the project and queue on the lock before the folder goes.
+	time.Sleep(100 * time.Millisecond)
+	// What Trash does under the lock: the folder goes and the project is forgotten.
+	if err := os.RemoveAll(dir); err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.Forget("lethal-company", dir); err != nil {
+		t.Fatal(err)
+	}
+	release()
+	err := <-done
+	if len(ran) != 0 {
+		t.Errorf("Build ran %v on a removed project", ran)
+	}
+	var ue *usererr.Error
+	if !errors.As(err, &ue) || ue.Kind() != usererr.NotFound {
+		t.Errorf("Build error = %v, want NotFound", err)
 	}
 }

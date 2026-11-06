@@ -115,7 +115,11 @@ func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, e
 		// An asset project's folder is what installs; there is nothing to compile.
 		return BuildResult{OK: true}, nil
 	}
-	defer s.lockedBuild(ctx, gameID, p)()
+	p, unlock, err := s.lockedBuild(ctx, gameID, p)
+	if err != nil {
+		return BuildResult{}, err
+	}
+	defer unlock()
 	args := buildArgs(p, "Debug")
 	started := time.Now()
 	out, err := s.run(ctx, p.Dir, "dotnet", args...)
@@ -144,18 +148,23 @@ func buildArgs(p settings.DevProject, config string) []string {
 }
 
 // lockedBuild takes the project's build lock and declares the dependencies installed since they were added on the
-// plugin, so it compiles with them; the returned func releases the lock.
-func (s *Service) lockedBuild(ctx context.Context, gameID string, p settings.DevProject) func() {
-	stored, _ := building.LoadOrStore(p.Dir, &sync.Mutex{})
-	unlock := func() {}
-	if mu, ok := stored.(*sync.Mutex); ok {
-		mu.Lock()
-		unlock = mu.Unlock
+// plugin, so it compiles with them; the returned func releases the lock. The project is read again under the lock,
+// since Trash may have removed it while this build waited.
+func (s *Service) lockedBuild(ctx context.Context, gameID string, p settings.DevProject) (settings.DevProject, func(), error) {
+	dir := p.Dir
+	unlock := holdBuild(dir)
+	p, err := s.project(gameID, dir)
+	if err == nil {
+		_, err = os.Stat(dir)
+	}
+	if err != nil {
+		unlock()
+		return p, nil, usererr.Wrap(usererr.NotFound, fmt.Errorf("the mod project in %s is gone", dir))
 	}
 	if err := s.wire(ctx, p, func() error { return s.syncDependencies(gameID, p) }); err != nil {
 		log.Printf("devsvc: declaring %s's dependencies: %v", p.Name, err)
 	}
-	return unlock
+	return p, unlock, nil
 }
 
 // removeStaleBundles deletes bundles from the output that assets/ no longer holds: the template's CopyAssetBundles only

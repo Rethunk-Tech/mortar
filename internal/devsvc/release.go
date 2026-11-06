@@ -55,7 +55,11 @@ func (s *Service) Pack(ctx context.Context, gameID, dir string) (PackResult, err
 	if assetKindOf(gameID, p.Dir) != "" {
 		return s.packAssetProject(ctx, gameID, p)
 	}
-	defer s.lockedBuild(ctx, gameID, p)()
+	p, unlock, err := s.lockedBuild(ctx, gameID, p)
+	if err != nil {
+		return PackResult{}, err
+	}
+	defer unlock()
 	started := time.Now()
 	args := buildArgs(p, "Release")
 	out, err := s.run(ctx, p.Dir, "dotnet", args...)
