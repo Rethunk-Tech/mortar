@@ -47,6 +47,7 @@ function PresetItems({
           />
         </LockedReason>
       ))}
+      {names.length > 0 ? <MenuRule /> : null}
       {names.map((name) => (
         <MenuAction
           key={`d-${name}`}

@@ -6,7 +6,7 @@ import {
   SplitExtra,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { MenuHeading } from '../shell/TitleMenu.tsx'
+import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { pushUndoToast } from '../toasts/undo.ts'
@@ -45,6 +45,7 @@ export function SplitCombineItems({
   }
   return (
     <>
+      <MenuRule />
       {extras.length > 0 ? <MenuHeading>{t`Install separately`}</MenuHeading> : null}
       {extras.map((extraKey) => (
         <MenuAction

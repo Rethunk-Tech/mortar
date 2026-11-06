@@ -1,33 +1,31 @@
 import { useLingui } from '@lingui/react/macro'
-import { useLoaded } from '@rethunk/react-load-hooks'
 import { RefreshCcw } from 'lucide-react'
-import type { EverywherePreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { PreviewEverywhere } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { ICON_SIZE } from './menu.ts'
+import { useEverywhere } from './useEverywhere.ts'
 
 export function EverywhereMenuItem({
   game,
   id,
+  update,
   onOpen,
 }: {
   game: string
   id: string
+  update: { source: string; nexusId: number }
   onOpen: () => void
 }) {
   const { t } = useLingui()
-  // A preview that cannot be read leaves the action without its count.
-  const { data: preview } = useLoaded<EverywherePreview | null>(
-    game === '' || id === '' ? null : () => PreviewEverywhere(game, id),
-    [game, id],
-    null,
-  )
-  const n = preview?.affected?.length ?? 0
+  const { count, why } = useEverywhere(game, id, update)
   return (
-    <MenuAction
-      icon={<RefreshCcw size={ICON_SIZE} />}
-      label={t`Update in all profiles (${{ count: n }})`}
-      onClick={onOpen}
-    />
+    <DisabledReason title={why} disabled={why !== ''}>
+      <MenuAction
+        icon={<RefreshCcw size={ICON_SIZE} />}
+        label={t`Update in all profiles (${{ count }})`}
+        disabled={why !== ''}
+        onClick={onOpen}
+      />
+    </DisabledReason>
   )
 }

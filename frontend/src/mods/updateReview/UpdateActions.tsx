@@ -1,23 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, IconButton, Menu } from '@mui/material'
-import { useLoaded } from '@rethunk/react-load-hooks'
-import {
-  BellOff,
-  ExternalLink,
-  MoreHorizontal,
-  Pin,
-  PinOff,
-  RefreshCcw,
-  SkipForward,
-} from 'lucide-react'
+import { Ban, BellOff, ExternalLink, MoreHorizontal, Pin, PinOff, RefreshCcw } from 'lucide-react'
 import { useState } from 'react'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type {
-  EverywherePreview,
   Mod,
   Profile,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { PreviewEverywhere } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { download } from '../../queue/actions.ts'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
@@ -33,6 +22,7 @@ import { ICON_SIZE, openPage } from '../menu.ts'
 import { detailsFor, useNexusDetails } from '../nexusDetails.ts'
 import { useOptionalSkips } from '../optionalFiles.ts'
 import { useMods } from '../store.ts'
+import { useEverywhere } from '../useEverywhere.ts'
 import { EverywhereDialog } from './EverywhereDialog.tsx'
 import { withOptional } from './wants.ts'
 
@@ -59,20 +49,9 @@ export function UpdateActions({
   const { anchor, show, hide } = usePopoverAnchor()
   const [everywhere, setEverywhere] = useState(false)
   const [confirmSwitch, setConfirmSwitch] = useState(false)
-  // A preview that cannot be read leaves the action without its count.
-  const { data: preview } = useLoaded<EverywherePreview | null>(
-    game === '' || update.id === '' ? null : () => PreviewEverywhere(game, update.id),
-    [game, update.id],
-    null,
-  )
-  const n = preview?.affected?.length ?? 0
-  const previewReady = preview !== null
   const offline = useOfflineReason(updateSources(update))
-  const everywhereBlocked = !previewReady || n === 0 || offline !== ''
-  let everywhereWhy = previewReady ? t`No eligible profiles.` : t`Checking profiles…`
-  if (offline !== '') {
-    everywhereWhy = offline
-  }
+  const { count: n, why: everywhereWhy } = useEverywhere(game, update.id, update)
+  const everywhereBlocked = everywhereWhy !== ''
   const blocked = queued || (caution !== '' && !acked)
   let everywhereReason = everywhereWhy
   if (!everywhereBlocked) {
@@ -126,6 +105,22 @@ export function UpdateActions({
             }}
           />
         ) : null}
+        <DisabledReason title={missingWhy} disabled={!mod}>
+          <MenuAction
+            icon={entry?.pinned ? <PinOff size={ICON_SIZE} /> : <Pin size={ICON_SIZE} />}
+            label={entry?.pinned ? t`Unpin version` : t`Pin this version`}
+            disabled={!mod}
+            onClick={act(async () => mod && setPinned(mod, !entry?.pinned))}
+          />
+        </DisabledReason>
+        <DisabledReason title={missingWhy} disabled={!mod}>
+          <MenuAction
+            icon={<Ban size={ICON_SIZE} />}
+            label={t`Skip this update`}
+            disabled={!mod}
+            onClick={act(async () => mod && setSkipVersion(mod, update.version))}
+          />
+        </DisabledReason>
         {installableUpdate(update) ? (
           <DisabledReason title={everywhereReason} disabled={everywhereBlocked || blocked}>
             <MenuAction
@@ -139,22 +134,6 @@ export function UpdateActions({
             />
           </DisabledReason>
         ) : null}
-        <DisabledReason title={missingWhy} disabled={!mod}>
-          <MenuAction
-            icon={<SkipForward size={ICON_SIZE} />}
-            label={t`Skip this update`}
-            disabled={!mod}
-            onClick={act(async () => mod && setSkipVersion(mod, update.version))}
-          />
-        </DisabledReason>
-        <DisabledReason title={missingWhy} disabled={!mod}>
-          <MenuAction
-            icon={entry?.pinned ? <PinOff size={ICON_SIZE} /> : <Pin size={ICON_SIZE} />}
-            label={entry?.pinned ? t`Unpin version` : t`Pin this version`}
-            disabled={!mod}
-            onClick={act(async () => mod && setPinned(mod, !entry?.pinned))}
-          />
-        </DisabledReason>
         {update.source && !entry?.skipSources?.includes(update.source) ? (
           <DisabledReason title={missingWhy} disabled={!mod}>
             <MenuAction

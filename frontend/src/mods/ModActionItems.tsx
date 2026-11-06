@@ -4,8 +4,8 @@ import {
   ChevronDown,
   ChevronRight,
   CopyPlus,
+  Folder,
   SlidersHorizontal,
-  Tag,
   Trash2,
   Users,
 } from 'lucide-react'
@@ -175,7 +175,7 @@ function ModActionItems({
     result.push(
       <MenuAction
         key="category"
-        icon={<Tag size={ICON_SIZE} />}
+        icon={<Folder size={ICON_SIZE} />}
         label={labels.category}
         onClick={onSetCategory}
       />,

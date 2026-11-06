@@ -8,6 +8,7 @@ import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AddToGroupMenuItem } from './AddToGroupDialog.tsx'
@@ -18,8 +19,7 @@ import { useLocked } from './useLocked.ts'
 const ICON_SIZE = 16
 const MAX_NAME = 60
 
-// The group header's ⋯ menu: rename, save to the library, delete (its mods stay in the profile) and switch every mod
-// of the group.
+// The group header's ⋯ menu: rename, save to the library and delete (its mods stay in the profile).
 export function GroupMenu({ name }: { name: string }) {
   const { t } = useLingui()
   const locked = useLocked()
@@ -60,6 +60,7 @@ export function GroupMenu({ name }: { name: string }) {
             setSaving(true)
           }}
         />
+        <MenuRule />
         <LockedReason locked={locked}>
           {item(
             t`Delete group (mods stay)`,

@@ -367,6 +367,7 @@ function ModActionMenu({
                     key="everywhere"
                     game={game}
                     id={mod.id}
+                    update={update}
                     onOpen={() => setEverywhereOpen(true)}
                   />,
                 ]

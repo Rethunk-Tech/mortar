@@ -1,9 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Menu, Typography } from '@mui/material'
 import {
+  Ban,
   BellOff,
   BellRing,
-  Copy,
+  CopyPlus,
   Ellipsis,
   Folder,
   FolderPlus,
@@ -23,6 +24,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -31,6 +33,13 @@ import { LockedReason } from './LockedReason.tsx'
 import { markImplicit } from './markImplicit.ts'
 import type { SourceGroups } from './skipSources.ts'
 import { useMods } from './store.ts'
+
+interface Row {
+  label: string
+  icon: ReactNode
+  run: () => void
+  edits: boolean
+}
 
 // Mortar's own loader and bridge entries and the parts another mod requires cannot be marked, as in the mod's menu.
 function useMarkable(selected: Mod[]) {
@@ -55,6 +64,48 @@ function useMarkable(selected: Mod[]) {
     (mod) => open?.entries?.find((entry) => entry.key === mod.key)?.implicit,
   )
   return { markable, implicit }
+}
+
+function BulkButtons({
+  selected,
+  locked,
+  setEnabledMany,
+  askRemove,
+}: {
+  selected: Mod[]
+  locked: boolean
+  setEnabledMany: (mods: Mod[], enabled: boolean) => Promise<unknown>
+  askRemove: (mods: Mod[]) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <LockedReason locked={locked}>
+      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: space.gap }}>
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={locked}
+          startIcon={<Power size={15} />}
+          onClick={() => setEnabledMany(selected, true).catch(reportUnexpected)}
+        >{t`Enable`}</Button>
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={locked}
+          startIcon={<PowerOff size={15} />}
+          onClick={() => setEnabledMany(selected, false).catch(reportUnexpected)}
+        >{t`Disable`}</Button>
+        <Button
+          size="small"
+          variant="outlined"
+          color="error"
+          disabled={locked}
+          startIcon={<Trash2 size={15} />}
+          onClick={() => askRemove(selected)}
+        >{t`Remove`}</Button>
+      </Box>
+    </LockedReason>
+  )
 }
 
 export function SelectionBarActions({
@@ -104,30 +155,18 @@ export function SelectionBarActions({
     hideMenu()
     run()
   }
-  const more: { label: string; icon: ReactNode; run: () => void; edits: boolean }[] = [
-    { label: t`Tag…`, icon: <Tag size={16} />, run: openTag, edits: true },
-    { label: t`Set category…`, icon: <Folder size={16} />, run: openCategory, edits: true },
+  const version: Row[] = [
     {
       label: pinned ? t`Unpin version` : t`Pin this version`,
       icon: pinned ? <PinOff size={16} /> : <Pin size={16} />,
       run: () => setPinnedMany(selected, !pinned).catch(reportUnexpected),
       edits: true,
     },
-    ...(markable.length > 0
-      ? [
-          {
-            label: implicit ? t`Mark explicit` : t`Mark implicit`,
-            icon: implicit ? <UserCheck size={16} /> : <Workflow size={16} />,
-            run: () => markImplicit(markable, !implicit).catch(reportUnexpected),
-            edits: true,
-          },
-        ]
-      : []),
     ...(selected.some((mod) => latest.has(mod.key))
       ? [
           {
             label: t`Skip this update`,
-            icon: <BellOff size={16} />,
+            icon: <Ban size={16} />,
             run: () =>
               setSkipVersionMany(selected.filter((mod) => latest.has(mod.key))).catch(
                 reportUnexpected,
@@ -156,10 +195,31 @@ export function SelectionBarActions({
           },
         ]
       : []),
-    { label: t`Also add to…`, icon: <Copy size={16} />, run: openAlso, edits: true },
-    { label: t`Make a group…`, icon: <FolderPlus size={16} />, run: openGroup, edits: true },
-    { label: t`Share selection`, icon: <Share2 size={16} />, run: share, edits: false },
   ]
+  const organise: Row[] = [
+    { label: t`Set category…`, icon: <Folder size={16} />, run: openCategory, edits: true },
+    { label: t`Tag…`, icon: <Tag size={16} />, run: openTag, edits: true },
+    { label: t`Add to group…`, icon: <FolderPlus size={16} />, run: openGroup, edits: true },
+    ...(markable.length > 0
+      ? [
+          {
+            label: implicit ? t`Mark explicit` : t`Mark implicit`,
+            icon: implicit ? <UserCheck size={16} /> : <Workflow size={16} />,
+            run: () => markImplicit(markable, !implicit).catch(reportUnexpected),
+            edits: true,
+          },
+        ]
+      : []),
+  ]
+  const row = (m: Row) => (
+    <MenuAction
+      key={m.label}
+      disabled={m.edits && locked}
+      icon={m.icon}
+      label={m.label}
+      onClick={pick(m.run)}
+    />
+  )
   return (
     <Box
       sx={{
@@ -178,32 +238,12 @@ export function SelectionBarActions({
       >
         {count}
       </Typography>
-      <LockedReason locked={locked}>
-        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: space.gap }}>
-          <Button
-            size="small"
-            variant="outlined"
-            disabled={locked}
-            startIcon={<Power size={15} />}
-            onClick={() => setEnabledMany(selected, true).catch(reportUnexpected)}
-          >{t`Enable`}</Button>
-          <Button
-            size="small"
-            variant="outlined"
-            disabled={locked}
-            startIcon={<PowerOff size={15} />}
-            onClick={() => setEnabledMany(selected, false).catch(reportUnexpected)}
-          >{t`Disable`}</Button>
-          <Button
-            size="small"
-            variant="outlined"
-            color="error"
-            disabled={locked}
-            startIcon={<Trash2 size={15} />}
-            onClick={() => askRemove(selected)}
-          >{t`Remove`}</Button>
-        </Box>
-      </LockedReason>
+      <BulkButtons
+        selected={selected}
+        locked={locked}
+        setEnabledMany={setEnabledMany}
+        askRemove={askRemove}
+      />
       <IconAction
         label={t`More actions`}
         icon={<Ellipsis size={18} />}
@@ -214,15 +254,15 @@ export function SelectionBarActions({
       />
       <IconAction label={t`Clear selection`} icon={<X size={18} />} onClick={clear} />
       <Menu anchorEl={menu} open={menu !== null} onClose={() => hideMenu()}>
-        {more.map((m) => (
-          <MenuAction
-            key={m.label}
-            disabled={m.edits && locked}
-            icon={m.icon}
-            label={m.label}
-            onClick={pick(m.run)}
-          />
-        ))}
+        <MenuHeading>{t`Version`}</MenuHeading>
+        {version.map(row)}
+        <MenuRule />
+        <MenuHeading>{t`Organise`}</MenuHeading>
+        {organise.map(row)}
+        <MenuRule />
+        {row({ label: t`Also add to…`, icon: <CopyPlus size={16} />, run: openAlso, edits: true })}
+        <MenuRule />
+        {row({ label: t`Share selection`, icon: <Share2 size={16} />, run: share, edits: false })}
       </Menu>
     </Box>
   )
