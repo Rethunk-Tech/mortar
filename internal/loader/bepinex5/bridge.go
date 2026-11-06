@@ -19,34 +19,16 @@ func (Loader) Query(ctx context.Context, _ loader.Target, p loader.ProfileView, 
 }
 
 // RunningState is the bridge's status: the game version BepInEx's log never names, the scene and the loaded plugins.
-// The version counts only when the bridge says it is the game's own: otherwise it is Unity's Application.version, which
-// a game may never set (Lethal Company's is 0.1), and an older bridge says nothing.
 func (l Loader) RunningState(ctx context.Context, p loader.ProfileView) (loader.Live, error) {
 	raw, err := l.Query(ctx, loader.Target{}, p, "status")
 	if err != nil {
 		return loader.Live{}, err
 	}
-	var st struct {
-		GameVersion       string `json:"gameVersion"`
-		GameVersionSource string `json:"gameVersionSource"`
-		Scene             string `json:"scene"`
-		Plugins           []struct {
-			GUID     string `json:"guid"`
-			Version  string `json:"version"`
-			Location string `json:"location"`
-		} `json:"plugins"`
-	}
+	var st bridge.Status
 	if err := json.Unmarshal(raw, &st); err != nil {
 		return loader.Live{}, err
 	}
-	live := loader.Live{Scene: st.Scene, Plugins: make([]loader.LivePlugin, 0, len(st.Plugins))}
-	if st.GameVersionSource == "game" {
-		live.GameVersion = st.GameVersion
-	}
-	for _, pl := range st.Plugins {
-		live.Plugins = append(live.Plugins, loader.LivePlugin{GUID: pl.GUID, Version: pl.Version, Location: pl.Location})
-	}
-	return live, nil
+	return loader.LiveOf(st), nil
 }
 
 // Send runs a line in the game's own console through the bridge (Valheim's; a game without one answers with an error

@@ -303,6 +303,20 @@ type Live struct {
 // companion does not say; it tells which of two copies of one GUID and version loaded.
 type LivePlugin struct{ GUID, Version, Location string }
 
+// LiveOf is a companion's status as a Live. The version counts only when the bridge says it is the game's own:
+// otherwise it is an engine default a game may never set (Unity's Application.version is 0.1 in Lethal Company), and
+// an older bridge says nothing.
+func LiveOf(st bridge.Status) Live {
+	live := Live{Scene: st.Scene, Plugins: make([]LivePlugin, 0, len(st.Plugins))}
+	if st.GameVersionSource == "game" {
+		live.GameVersion = st.GameVersion
+	}
+	for _, pl := range st.Plugins {
+		live.Plugins = append(live.Plugins, LivePlugin{GUID: pl.GUID, Version: pl.Version, Location: pl.Location})
+	}
+	return live
+}
+
 // RunningState is a loader whose companion tells what the running game has loaded, for a log that names no version.
 type RunningState interface {
 	RunningState(ctx context.Context, p ProfileView) (Live, error)

@@ -206,6 +206,23 @@ func (Loader) Perf(ctx context.Context, p loader.ProfileView, start bool) (json.
 	return bridge.Query(ctx, filepath.Join(p.Companion, bridge.SMAPI.StateFile), what)
 }
 
+// RunningState is the bridge's status: the game version and the loaded mods, whose UniqueIDs it reports as plugin
+// GUIDs. It names no scene.
+func (Loader) RunningState(ctx context.Context, p loader.ProfileView) (loader.Live, error) {
+	if p.Companion == "" {
+		return loader.Live{}, fmt.Errorf("this profile has no console bridge")
+	}
+	raw, err := bridge.Query(ctx, filepath.Join(p.Companion, bridge.SMAPI.StateFile), "status")
+	if err != nil {
+		return loader.Live{}, err
+	}
+	var st bridge.Status
+	if err := json.Unmarshal(raw, &st); err != nil {
+		return loader.Live{}, err
+	}
+	return loader.LiveOf(st), nil
+}
+
 // Send runs command in the game through the bridge mod in the profile.
 func (Loader) Send(ctx context.Context, _ loader.Target, p loader.ProfileView, command string) (string, error) {
 	if p.Companion == "" {

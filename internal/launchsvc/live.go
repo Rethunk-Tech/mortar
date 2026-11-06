@@ -75,13 +75,13 @@ func (s *Service) followRunning(ctx context.Context, g game.Game) {
 // askLive asks the companion once; the first version it reports is kept on the session and recorded as the version
 // last played.
 func (s *Service) askLive(ctx context.Context, g game.Game, st Status, live loader.RunningState, packages func() livePackages) (LiveRun, bool) {
-	dir, err := s.profiles.ProfileDir(g.ID(), st.Profile)
+	view, err := s.bridgeView(g.ID(), st.Profile)
 	if err != nil {
 		return LiveRun{}, false
 	}
 	ctx, cancel := context.WithTimeout(ctx, askLiveFor)
 	defer cancel()
-	got, err := live.RunningState(ctx, loader.ProfileView{Game: g.ID(), Dir: dir})
+	got, err := live.RunningState(ctx, view)
 	if err != nil {
 		return LiveRun{}, false
 	}
