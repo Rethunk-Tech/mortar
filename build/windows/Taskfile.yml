@@ -19,8 +19,7 @@ tasks:
     summary: Builds the application using native Go cross-compilation
     internal: true
     deps:
-      - task: common:go:mod:tidy
-      - task: common:build:frontend
+      - task: common:build:prepare
         vars:
           BUILD_FLAGS:
             ref: .BUILD_FLAGS
@@ -28,10 +27,6 @@ tasks:
             ref: .OBFUSCATED
           DEV:
             ref: .DEV
-      - task: common:generate:icons
-    preconditions:
-      - sh: '{{if eq .OBFUSCATED "true"}}command -v garble >/dev/null 2>&1{{else}}true{{end}}'
-        msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.18.0 (requires Go 1.27+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
     cmds:
       - task: generate:syso
         vars:

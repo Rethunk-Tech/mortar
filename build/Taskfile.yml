@@ -29,6 +29,24 @@ tasks:
     cmds:
       - bun install
 
+  build:prepare:
+    summary: Tidies modules, builds the frontend and generates icons ahead of a Go build
+    internal: true
+    deps:
+      - task: go:mod:tidy
+      - task: build:frontend
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+          OBFUSCATED:
+            ref: .OBFUSCATED
+          DEV:
+            ref: .DEV
+      - task: generate:icons
+    preconditions:
+      - sh: '{{if eq .OBFUSCATED "true"}}command -v garble >/dev/null 2>&1{{else}}true{{end}}'
+        msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.18.0 (requires Go 1.27+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
+
   build:frontend:
     label: build:frontend (DEV={{.DEV}})
     summary: Build the frontend project

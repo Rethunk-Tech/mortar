@@ -26,8 +26,7 @@ tasks:
     summary: Builds the application natively on Linux
     internal: true
     deps:
-      - task: common:go:mod:tidy
-      - task: common:build:frontend
+      - task: common:build:prepare
         vars:
           BUILD_FLAGS:
             ref: .BUILD_FLAGS
@@ -35,10 +34,6 @@ tasks:
             ref: .OBFUSCATED
           DEV:
             ref: .DEV
-      - task: common:generate:icons
-    preconditions:
-      - sh: '{{if eq .OBFUSCATED "true"}}command -v garble >/dev/null 2>&1{{else}}true{{end}}'
-        msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.18.0 (requires Go 1.27+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
     cmds:
       - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{if .PACKAGED}} -buildmode=pie{{end}}{{end}} {{.BUILD_FLAGS}} -o {{.OUTPUT}}'
       - scripts/check-embedded-key.sh {{.OUTPUT}}
