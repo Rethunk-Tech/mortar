@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/dotnetroot"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader/folder"
@@ -40,9 +39,6 @@ func (s *Service) serverPlan(plan *launchplan.Plan, gameID string, inst game.Ins
 		return err
 	}
 	plan.AddArgs(args...)
-	if root := dotnetroot.FlatpakRoot(); root != "" {
-		plan.SetEnv("DOTNET_ROOT", root)
-	}
 	plan.SetRootDir(folder.ModsRole, filepath.Join(dataDir, "Mods"))
 	return nil
 }

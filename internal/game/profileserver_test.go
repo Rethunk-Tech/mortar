@@ -1,6 +1,8 @@
 package game
 
 import (
+	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -37,11 +39,25 @@ func TestProfileServerStart(t *testing.T) {
 	}
 }
 
-func TestDotnetProgramPrefersExtension(t *testing.T) {
-	t.Setenv("PATH", t.TempDir())
-	t.Setenv("HOME", t.TempDir())
-	got, err := dotnetProgram("/app/extensions/dotnet10/lib")
-	if err != nil || got != filepath.Join("/app/extensions/dotnet10/lib", "dotnet") {
+func TestDotnetProgramUsesTheGivenPathThenHomeDotnet(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	onHost := func(string) (string, error) { return "/usr/bin/dotnet", nil }
+	if got, err := dotnetProgram(onHost); err != nil || got != "/usr/bin/dotnet" {
+		t.Fatalf("got %q, %v", got, err)
+	}
+	missing := func(string) (string, error) { return "", exec.ErrNotFound }
+	if _, err := dotnetProgram(missing); err == nil {
+		t.Fatal("no dotnet anywhere was accepted")
+	}
+	local := filepath.Join(home, ".dotnet", "dotnet")
+	if err := os.MkdirAll(filepath.Dir(local), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(local, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := dotnetProgram(missing); err != nil || got != local {
 		t.Fatalf("got %q, %v", got, err)
 	}
 }
