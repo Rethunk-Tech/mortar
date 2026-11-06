@@ -6,7 +6,7 @@ licence and NOTICE text from each.
 
 ================================================================================
 
-@babel/runtime@7.29.10
+@babel/runtime@7.29.13
 licence: MIT
 https://babel.dev/docs/en/next/babel-runtime
 
@@ -1409,7 +1409,7 @@ For more information, please refer to <https://unlicense.org/>
 
 --------------------------------------------------------------------------------
 
-github.com/andybalholm/brotli@v1.2.7
+github.com/andybalholm/brotli@v1.2.8
 licence: MIT
 https://github.com/andybalholm/brotli
 
@@ -1801,7 +1801,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/google/pprof@v0.0.0-20261103193413-97e8293de3c4
+github.com/google/pprof@v0.0.0-20261105003125-4bf881d7fb0b
 licence: Apache-2.0
 https://github.com/google/pprof
 
@@ -4713,7 +4713,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-lucide-react@1.67.0
+lucide-react@1.69.0
 licence: MIT
 https://lucide.dev
 
@@ -5919,7 +5919,7 @@ Bundled source icon (frontend/src/brand/vendor/modio.svg) from the mod.io SDK, s
 
 --------------------------------------------------------------------------------
 
-modernc.org/libc@v1.80.0
+modernc.org/libc@v1.80.1
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/libc
 
