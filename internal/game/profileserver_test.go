@@ -42,6 +42,7 @@ func TestProfileServerStart(t *testing.T) {
 func TestDotnetProgramUsesTheGivenPathThenHomeDotnet(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
 	onHost := func(string) (string, error) { return "/usr/bin/dotnet", nil }
 	if got, err := dotnetProgram(onHost); err != nil || got != "/usr/bin/dotnet" {
 		t.Fatalf("got %q, %v", got, err)
