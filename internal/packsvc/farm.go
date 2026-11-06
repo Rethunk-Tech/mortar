@@ -180,16 +180,25 @@ func listLine(line string) (name, version, page string, ok bool) {
 func parseModList(text string) FarmList {
 	l := FarmList{Game: farmGame, Mods: []FarmMod{}}
 	seen := map[mod.ID]bool{}
-	off := false
+	off, listed, gap := false, false, false
 	for line := range strings.Lines(text) {
 		line = strings.TrimSpace(line)
 		name, version, page, ok := listLine(line)
-		// ponytail: the headings are matched in English; if the Share mod exports them localized, a list from a host in
-		// another language reads as all enabled. Then treat any heading after the first as the switched-off group.
+		// Share writes the headings in the host's language, so they are told by position: the Disabled group is the
+		// heading that follows a blank line after listed mods. A list that is all disabled has one heading, which only
+		// the English word identifies.
 		if !ok {
-			off = off && !strings.EqualFold(line, "Enabled") || strings.EqualFold(line, "Disabled")
+			switch {
+			case line == "":
+				gap = listed
+			case strings.EqualFold(line, "Enabled"):
+				off = false
+			case strings.EqualFold(line, "Disabled"), gap:
+				off = true
+			}
 			continue
 		}
+		listed, gap = true, false
 		m := FarmMod{ID: mod.NewID(formatName, strings.ToLower(name)), Name: name, Version: version}
 		if n := nexusPage.FindStringSubmatch(page); n != nil {
 			if n[1] != farmNexusDomain {

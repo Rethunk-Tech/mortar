@@ -143,6 +143,18 @@ func TestFarmCheckReadsShareModListText(t *testing.T) {
 	}
 }
 
+func TestParseFarmReadsALocalizedShareExport(t *testing.T) {
+	for form, text := range map[string]string{
+		"markdown": "Activados\n- [On](https://example.com/on) 1\n\nDesactivados\n- [Off](https://example.com/off) 2",
+		"plain":    "启用\nOn v1\n\n已禁用\nOff v2 - https://example.com/off",
+	} {
+		l, err := ParseFarm(text)
+		if err != nil || len(l.Mods) != 1 || l.Mods[0].Name != "On" {
+			t.Errorf("%s: only the enabled mod belongs on the list: %+v, %v", form, l.Mods, err)
+		}
+	}
+}
+
 func TestFarmListMatchesThunderstoreAndVintageStoryMods(t *testing.T) {
 	pkg := func(key, id, version string) profile.Entry {
 		return profile.Entry{
