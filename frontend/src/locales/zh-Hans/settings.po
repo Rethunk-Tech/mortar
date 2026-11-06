@@ -1,5 +1,5 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-02 17:19+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/settings/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-06 19:25+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/settings/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/settings/sections/Notifications.tsx
 msgid "{name}: desktop notification"
@@ -142,7 +142,7 @@ msgstr ""
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Mod store"
-msgstr ""
+msgstr "模组商店"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Older copies of the same mod"
@@ -154,7 +154,7 @@ msgstr ""
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "{name} {latest} is available"
-msgstr ""
+msgstr "{name} {latest} 已可更新"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "In {app}: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
@@ -302,7 +302,7 @@ msgstr ""
 
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Problems"
-msgstr ""
+msgstr "切换到“问题”页"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Year"
@@ -371,7 +371,7 @@ msgstr ""
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Save diagnostics…"
-msgstr ""
+msgstr "保存诊断信息…"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Small"
@@ -435,7 +435,7 @@ msgstr ""
 
 #: src/settings/sections/Updates.tsx
 msgid "Review"
-msgstr ""
+msgstr "复查"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "Could not trim save backups"
