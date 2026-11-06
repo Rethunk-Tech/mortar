@@ -2232,6 +2232,10 @@ msgstr ""
 msgid "Sort: name (A to Z)"
 msgstr ""
 
+#: src/shell/SignInPrompt.tsx
+msgid "Sign in to see this"
+msgstr ""
+
 #: src/fomod/Dialog.tsx
 #: src/install/DownloadsDialog.tsx
 #: src/install/OverlayPlaceDialog.tsx
@@ -2307,6 +2311,10 @@ msgstr ""
 
 #: src/share/Included.tsx
 msgid "Mod notes"
+msgstr ""
+
+#: src/develop/NewModDialog.tsx
+msgid "The {app} copy builds mods with Flathub's .NET SDK. Install it with this command, then restart Mortar:"
 msgstr ""
 
 #: src/templates/ApplyTemplateDialog.tsx
@@ -2948,6 +2956,10 @@ msgstr ""
 msgid "Replace"
 msgstr ""
 
+#: src/develop/NewModDialog.tsx
+msgid "Copy the command"
+msgstr ""
+
 #: src/game/HomeNotes.tsx
 msgid "No notes yet"
 msgstr ""
@@ -3370,6 +3382,10 @@ msgstr ""
 msgid "How it is modded"
 msgstr ""
 
+#: src/browse/BrowseDetails.tsx
+msgid "Saved from an earlier visit. Sign in to refresh it."
+msgstr ""
+
 #: src/share/ImportProblems.tsx
 #: src/share/Included.tsx
 msgid "Config files"
@@ -3728,6 +3744,7 @@ msgid "{count, plural, one {Filter # project} other {Filter # projects}}"
 msgstr ""
 
 #: src/firstrun/NexusStep.tsx
+#: src/shell/SignInPrompt.tsx
 msgid "Sign in to {source}"
 msgstr ""
 
@@ -4601,10 +4618,6 @@ msgstr ""
 msgid "Mortar checks {launcher}'s settings for it: not found yet."
 msgstr ""
 
-#: src/develop/NewModDialog.tsx
-msgid "The {app} copy builds mods with Flathub's .NET SDK. Install it with {command}, then restart Mortar."
-msgstr ""
-
 #: src/firstrunTour/TourPopover.tsx
 msgid "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
 msgstr ""
@@ -4892,6 +4905,10 @@ msgstr ""
 
 #: src/share/MethodPanes.tsx
 msgid "{length} of {limit} characters"
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+msgid "The full page, its files and its versions come from your account on the site."
 msgstr ""
 
 #: src/develop/CodeView.tsx
@@ -5509,6 +5526,10 @@ msgstr ""
 
 #: src/share/ManagerPane.tsx
 msgid "{count, plural, one {Import # profile} other {Import # profiles}}"
+msgstr ""
+
+#: src/develop/NewModDialog.tsx
+msgid "Copied the command"
 msgstr ""
 
 #: src/launch/playStart.ts
@@ -6313,6 +6334,10 @@ msgstr ""
 msgid "The {app} runtime crashed ({module}), not a mod's code."
 msgstr ""
 
+#: src/browse/BrowseDetails.tsx
+msgid "Saved {when}. Sign in to refresh it."
+msgstr ""
+
 #: src/browse/BrowseMenu.tsx
 msgid "Hide from Browse"
 msgstr ""
@@ -6722,6 +6747,10 @@ msgstr ""
 
 #: src/launch/playStart.ts
 msgid "Roll back the completed updates from the profile history."
+msgstr ""
+
+#: src/shell/SignInPrompt.tsx
+msgid "The site shares this only with a signed-in account."
 msgstr ""
 
 #: src/install/OverlayPlaceDialog.tsx
@@ -7361,7 +7390,6 @@ msgid "Leave empty to use the game folder. Same placeholders as arguments."
 msgstr ""
 
 #: src/queue/actions.ts
-#: src/shell/ErrorRetry.tsx
 msgid "Open settings"
 msgstr ""
 
@@ -7717,6 +7745,11 @@ msgstr ""
 
 #: src/develop/RepositoryChoice.tsx
 msgid "Private"
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+#: src/shell/SignInPrompt.tsx
+msgid "Sign in…"
 msgstr ""
 
 #: src/browse/BrowseFilters.tsx

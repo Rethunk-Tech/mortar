@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, FormControlLabel, MenuItem, Switch, TextField } from '@mui/material'
 import { readStored, writeStored } from '@rethunk/react-load-hooks'
-import { Hammer } from 'lucide-react'
+import { Copy, Hammer } from 'lucide-react'
 import { memo, useCallback, useEffect, useId, useState } from 'react'
 import type {
   Form,
@@ -17,8 +17,10 @@ import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/intern
 import { FLATPAK } from '../brand/productNames.ts'
 import { useGameInfo } from '../games/info.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { copyText } from '../share/copyText.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { Field, FieldRow, FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { reportError, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -68,6 +70,43 @@ const ICON = (
   </ToneIcon>
 )
 
+// A command to run, on its own line so it reads as one and copies whole.
+function CommandLine({ command }: { command: string }) {
+  const { t } = useLingui()
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: space.gap,
+        mt: space.gap,
+        pl: space.gap,
+        borderRadius: 1,
+        bgcolor: 'rgba(0, 0, 0, 0.25)',
+      }}
+    >
+      <Box
+        component="code"
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          fontFamily: 'monospace',
+          fontSize: 'small.fontSize',
+          overflowWrap: 'anywhere',
+        }}
+      >
+        {command}
+      </Box>
+      <TipIconButton
+        label={t`Copy the command`}
+        onClick={() => copyText(command, t`Copied the command`)}
+      >
+        <Copy size={16} />
+      </TipIconButton>
+    </Box>
+  )
+}
+
 // Memoised: stepping through the wizard leaves it alone.
 const Prerequisites = memo(function PrerequisitesView({
   tools,
@@ -83,23 +122,28 @@ const Prerequisites = memo(function PrerequisitesView({
   const sdks = tools.dotnetSdks ?? []
   const need = form?.sdk
   let sdk = ''
-  if (sdks.length === 0 && tools.flatpakDotnetInstall) {
-    sdk = t`The ${{ app: FLATPAK }} copy builds mods with Flathub's .NET SDK. Install it with ${{ command: tools.flatpakDotnetInstall }}, then restart Mortar.`
+  const command = sdks.length === 0 ? tools.flatpakDotnetInstall : ''
+  if (command) {
+    sdk = t`The ${{ app: FLATPAK }} copy builds mods with Flathub's .NET SDK. Install it with this command, then restart Mortar:`
   } else if (sdks.length === 0) {
     sdk = t`Install the .NET SDK to build mods.`
   } else if (need?.version && !sdkSatisfies(need, sdks)) {
     sdk = t`This template builds with the .NET SDK ${{ version: need.version }}; install it to build mods.`
   }
-  const missing = [
-    sdk,
+  const others = [
     tools.git ? '' : t`Install git to keep your mod's history.`,
     tools.gameDir
       ? ''
       : t`Mortar cannot find the game, so the mod builds against its published libraries.`,
   ].filter((line) => line !== '')
-  return missing.length === 0 ? null : (
+  if (!sdk && others.length === 0) {
+    return null
+  }
+  return (
     <Alert variant="compact" severity="warning">
-      {missing.join(' ')}
+      {sdk}
+      {command ? <CommandLine command={command} /> : null}
+      {others.length > 0 ? <Box sx={sdk ? { mt: space.gap } : {}}>{others.join(' ')}</Box> : null}
     </Alert>
   )
 })

@@ -2238,6 +2238,10 @@ msgstr "Set up"
 msgid "Sort: name (A to Z)"
 msgstr "Sort: name (A to Z)"
 
+#: src/shell/SignInPrompt.tsx
+msgid "Sign in to see this"
+msgstr "Sign in to see this"
+
 #: src/fomod/Dialog.tsx
 #: src/install/DownloadsDialog.tsx
 #: src/install/OverlayPlaceDialog.tsx
@@ -2314,6 +2318,10 @@ msgstr "Checking {owner} on {source}"
 #: src/share/Included.tsx
 msgid "Mod notes"
 msgstr "Mod notes"
+
+#: src/develop/NewModDialog.tsx
+msgid "The {app} copy builds mods with Flathub's .NET SDK. Install it with this command, then restart Mortar:"
+msgstr "The {app} copy builds mods with Flathub's .NET SDK. Install it with this command, then restart Mortar:"
 
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "Could not preview the template"
@@ -2954,6 +2962,10 @@ msgstr "Sort: most followed"
 msgid "Replace"
 msgstr "Replace"
 
+#: src/develop/NewModDialog.tsx
+msgid "Copy the command"
+msgstr "Copy the command"
+
 #: src/game/HomeNotes.tsx
 msgid "No notes yet"
 msgstr "No notes yet"
@@ -3376,6 +3388,10 @@ msgstr "Skip for now"
 msgid "How it is modded"
 msgstr "How it is modded"
 
+#: src/browse/BrowseDetails.tsx
+msgid "Saved from an earlier visit. Sign in to refresh it."
+msgstr "Saved from an earlier visit. Sign in to refresh it."
+
 #: src/share/ImportProblems.tsx
 #: src/share/Included.tsx
 msgid "Config files"
@@ -3734,6 +3750,7 @@ msgid "{count, plural, one {Filter # project} other {Filter # projects}}"
 msgstr "{count, plural, one {Filter # project} other {Filter # projects}}"
 
 #: src/firstrun/NexusStep.tsx
+#: src/shell/SignInPrompt.tsx
 msgid "Sign in to {source}"
 msgstr "Sign in to {source}"
 
@@ -4607,10 +4624,6 @@ msgstr "Add a program to run alongside the game, such as a save editor or map vi
 msgid "Mortar checks {launcher}'s settings for it: not found yet."
 msgstr "Mortar checks {launcher}'s settings for it: not found yet."
 
-#: src/develop/NewModDialog.tsx
-msgid "The {app} copy builds mods with Flathub's .NET SDK. Install it with {command}, then restart Mortar."
-msgstr "The {app} copy builds mods with Flathub's .NET SDK. Install it with {command}, then restart Mortar."
-
 #: src/firstrunTour/TourPopover.tsx
 msgid "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
 msgstr "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
@@ -4899,6 +4912,10 @@ msgstr "Play anyway"
 #: src/share/MethodPanes.tsx
 msgid "{length} of {limit} characters"
 msgstr "{length} of {limit} characters"
+
+#: src/browse/BrowseDetails.tsx
+msgid "The full page, its files and its versions come from your account on the site."
+msgstr "The full page, its files and its versions come from your account on the site."
 
 #: src/develop/CodeView.tsx
 #: src/share/MethodPanes.tsx
@@ -5516,6 +5533,10 @@ msgstr "Drag {path} into the {source} issue to attach it."
 #: src/share/ManagerPane.tsx
 msgid "{count, plural, one {Import # profile} other {Import # profiles}}"
 msgstr "{count, plural, one {Import # profile} other {Import # profiles}}"
+
+#: src/develop/NewModDialog.tsx
+msgid "Copied the command"
+msgstr "Copied the command"
 
 #: src/launch/playStart.ts
 msgid "Could not check the graphics setting"
@@ -6319,6 +6340,10 @@ msgstr "Settings"
 msgid "The {app} runtime crashed ({module}), not a mod's code."
 msgstr "The {app} runtime crashed ({module}), not a mod's code."
 
+#: src/browse/BrowseDetails.tsx
+msgid "Saved {when}. Sign in to refresh it."
+msgstr "Saved {when}. Sign in to refresh it."
+
 #: src/browse/BrowseMenu.tsx
 msgid "Hide from Browse"
 msgstr "Hide from Browse"
@@ -6729,6 +6754,10 @@ msgstr "Nothing new"
 #: src/launch/playStart.ts
 msgid "Roll back the completed updates from the profile history."
 msgstr "Roll back the completed updates from the profile history."
+
+#: src/shell/SignInPrompt.tsx
+msgid "The site shares this only with a signed-in account."
+msgstr "The site shares this only with a signed-in account."
 
 #: src/install/OverlayPlaceDialog.tsx
 #: src/queue/Callout.tsx
@@ -7367,7 +7396,6 @@ msgid "Leave empty to use the game folder. Same placeholders as arguments."
 msgstr "Leave empty to use the game folder. Same placeholders as arguments."
 
 #: src/queue/actions.ts
-#: src/shell/ErrorRetry.tsx
 msgid "Open settings"
 msgstr "Open settings"
 
@@ -7724,6 +7752,11 @@ msgstr "Renaming moves the project's folder, files and namespace."
 #: src/develop/RepositoryChoice.tsx
 msgid "Private"
 msgstr "Private"
+
+#: src/browse/BrowseDetails.tsx
+#: src/shell/SignInPrompt.tsx
+msgid "Sign in…"
+msgstr "Sign in…"
 
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most stars"

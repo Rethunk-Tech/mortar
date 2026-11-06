@@ -92,7 +92,14 @@ export function ChangeVersionDialog({
       return <SkeletonRows label={t`Reading the versions…`} count={SKELETON_ROWS} height={ROW_PX} />
     }
     if (listed.state === 'error') {
-      return <ErrorRetry error={listed.error} onRetry={listed.retry} />
+      return (
+        <ErrorRetry
+          error={listed.error}
+          onRetry={listed.retry}
+          source={target.source}
+          signedOut={t`Its versions come from your account on the site.`}
+        />
+      )
     }
     if (choices.length === 0) {
       return <Typography sx={{ color: 'text.secondary' }}>{t`No versions are listed.`}</Typography>
@@ -141,7 +148,7 @@ export function ChangeVersionDialog({
       footer={
         <DialogFooter
           aside={
-            choice || asking !== null ? null : (
+            choice || asking !== null || listed.state === 'error' ? null : (
               <span className="app-dialog-issue">
                 <CircleAlert size={14} aria-hidden={true} />
                 {t`Pick the version.`}

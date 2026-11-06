@@ -129,10 +129,18 @@ const signedOutEntry = (): Entry => ({
 const loadCached = async (game: string, id: number) => {
   await mergeCachedDetails(game, [id])
   const key = nexusKey(game, id)
-  if (!isFull(useNexusDetails.getState().byKey[key])) {
-    put(key, { ...useNexusDetails.getState().byKey[key], ...signedOutEntry() })
+  const entry = useNexusDetails.getState().byKey[key]
+  if (!isFull(entry)) {
+    put(key, { ...entry, ...signedOutEntry() })
+  } else if (entry && !entry.signedOut) {
+    // A saved page shows as is, marked as one Nexus could not refresh.
+    put(key, { ...entry, signedOut: true })
   }
 }
+
+// The same details again leave the entry, and every screen reading it, as they were.
+const sameDetails = (a: Details | undefined, b: Details) =>
+  a !== undefined && JSON.stringify(a) === JSON.stringify(b)
 
 const loadDetails = (game: string, id: number) => {
   if (!useNexus.getState().signedIn) {
@@ -141,17 +149,25 @@ const loadDetails = (game: string, id: number) => {
   const key = nexusKey(game, id)
   let read = reads.get(key)
   if (!read) {
-    read = readDetails(game, id).then(
-      (details) => put(key, { details }),
-      (e: unknown) => {
-        reads.delete(key)
-        put(key, {
-          ...useNexusDetails.getState().byKey[key],
-          error: errorMessage(e),
-          ...(errorKind(e) === 'signed_out' ? { signedOut: true } : {}),
-        })
-      },
-    )
+    // What the cache holds shows first; the read replaces it only when Nexus says something new.
+    read = mergeCachedDetails(game, [id])
+      .then(() => readDetails(game, id))
+      .then(
+        (details) => {
+          const now = useNexusDetails.getState().byKey[key]
+          if (!(now && !now.error && !now.signedOut && sameDetails(now.details, details))) {
+            put(key, { details })
+          }
+        },
+        (e: unknown) => {
+          reads.delete(key)
+          put(key, {
+            ...useNexusDetails.getState().byKey[key],
+            error: errorMessage(e),
+            ...(errorKind(e) === 'signed_out' ? { signedOut: true } : {}),
+          })
+        },
+      )
     reads.set(key, read)
   }
   return read

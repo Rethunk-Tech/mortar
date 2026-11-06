@@ -1,26 +1,34 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Button } from '@mui/material'
-import { openSettings } from '../nav/store.ts'
 import type { InlineError } from '../toasts/report.ts'
+import { SignInPrompt } from './SignInPrompt.tsx'
 
-/** An inline read failure with a Retry button, announced as an alert. A missing sign-in offers Settings instead. */
-export function ErrorRetry({ error, onRetry }: { error: InlineError; onRetry: () => void }) {
+/** An inline read failure with a Retry button, announced as an alert. A missing sign-in shows the sign-in prompt for
+ * `source` instead, saying `signedOut` when given. */
+export function ErrorRetry({
+  error,
+  onRetry,
+  source,
+  signedOut,
+}: {
+  error: InlineError
+  onRetry: () => void
+  source?: string | undefined
+  signedOut?: string | undefined
+}) {
   const { t } = useLingui()
+  if (error.signedOut) {
+    return <SignInPrompt source={source}>{signedOut}</SignInPrompt>
+  }
   return (
     <Alert
       variant="compact"
       severity="error"
       title={error.details}
       action={
-        error.signedOut ? (
-          <Button color="inherit" size="small" onClick={() => openSettings('accounts')}>
-            {t`Open settings`}
-          </Button>
-        ) : (
-          <Button color="inherit" size="small" onClick={onRetry}>
-            {t`Retry`}
-          </Button>
-        )
+        <Button color="inherit" size="small" onClick={onRetry}>
+          {t`Retry`}
+        </Button>
       }
     >
       {error.message}

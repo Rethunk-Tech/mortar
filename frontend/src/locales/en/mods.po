@@ -3237,6 +3237,10 @@ msgid "Save"
 msgstr "Save"
 
 #: src/mods/ChangeVersionDialog.tsx
+msgid "Its versions come from your account on the site."
+msgstr "Its versions come from your account on the site."
+
+#: src/mods/ChangeVersionDialog.tsx
 msgid "Install"
 msgstr "Install"
 

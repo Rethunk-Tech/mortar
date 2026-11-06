@@ -1,10 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, Link, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, Link, Typography } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
 import { memo, type ReactNode, useEffect, useState } from 'react'
 import { Details as ReadDetails } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
 import { listNames } from '../i18n/list.ts'
 import { formatAuthors } from '../mods/authorNormalize.ts'
 import { parseBBCode } from '../mods/bbcode.ts'
@@ -21,8 +22,10 @@ import { Rich } from '../mods/NexusDetails.tsx'
 import { loadDetails, useNexusEntry } from '../mods/nexusDetails.ts'
 import { useReleases } from '../mods/releases.ts'
 import { listsVersions } from '../mods/versionChoices.ts'
+import { openSettings } from '../nav/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
+import { SignInPrompt } from '../shell/SignInPrompt.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
@@ -117,7 +120,11 @@ const changelogOf = (logs: Changelog[] | null | undefined) =>
   logs && logs.length > 0 ? <ChangelogEntries logs={logs} installed="" /> : null
 
 // A Nexus mod's page comes from the Nexus details the Mods tab reads too: one read per mod per session.
-function NexusPage({ game, modId }: { game: string; modId: number }) {
+// Dimmed: a page Nexus would not refresh because no account is signed in.
+const SAVED_OPACITY = 0.7
+
+function NexusPage({ game, modId, summary }: { game: string; modId: number; summary: string }) {
+  const { t } = useLingui()
   const entry = useNexusEntry(game, modId)
   const [attempt, setAttempt] = useState(0)
   useEffect(() => {
@@ -126,6 +133,23 @@ function NexusPage({ game, modId }: { game: string; modId: number }) {
     }
   }, [game, modId, attempt])
   const details = entry?.details
+  if (!details && entry?.signedOut) {
+    // The summary the search results gave stands in for the page until a signed-in account can read it.
+    return (
+      <>
+        {summary ? (
+          <Box sx={{ opacity: SAVED_OPACITY }}>
+            <Section title={t`Description`}>
+              <Typography sx={text}>{summary}</Typography>
+            </Section>
+          </Box>
+        ) : null}
+        <SignInPrompt source={NEXUS}>
+          {t`The full page, its files and its versions come from your account on the site.`}
+        </SignInPrompt>
+      </>
+    )
+  }
   if (!details && entry?.error) {
     return (
       <ErrorRetry
@@ -146,7 +170,7 @@ function NexusPage({ game, modId }: { game: string; modId: number }) {
     ...new Set([details.page.version, ...files.map((f) => f.version)].filter(Boolean)),
   ]
   const { description } = details.page
-  return (
+  const sections = (
     <PageSections
       page={{
         categories: details.category ? [details.category] : [],
@@ -156,6 +180,27 @@ function NexusPage({ game, modId }: { game: string; modId: number }) {
         changelog: changelogOf(details.changelogs),
       }}
     />
+  )
+  if (!entry?.signedOut) {
+    return sections
+  }
+  return (
+    <>
+      <Alert
+        variant="compact"
+        severity="info"
+        action={
+          <Button color="inherit" size="small" onClick={() => openSettings('accounts')}>
+            {t`Sign in…`}
+          </Button>
+        }
+      >
+        {details.stale
+          ? t`Saved ${{ when: formatWhen(details.stale) }}. Sign in to refresh it.`
+          : t`Saved from an earlier visit. Sign in to refresh it.`}
+      </Alert>
+      <Box sx={{ opacity: SAVED_OPACITY }}>{sections}</Box>
+    </>
   )
 }
 
@@ -279,7 +324,12 @@ function Panel({
       ) : null}
       <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}>{stats}</Typography>
       {source === NEXUS ? (
-        <NexusPage key={shownItem.id} game={game} modId={Number(shownItem.id)} />
+        <NexusPage
+          key={shownItem.id}
+          game={game}
+          modId={Number(shownItem.id)}
+          summary={shownItem.summary}
+        />
       ) : (
         <SitePage key={`${source}:${shownItem.id}`} game={game} item={shownItem} />
       )}
