@@ -41,3 +41,27 @@ func TestGitHubChangelogsRefuseANameThatMovesTheURL(t *testing.T) {
 		t.Fatalf("%d requests reached the server", hits.Load())
 	}
 }
+
+func TestCachedReleaseChangelogReadsOnlyWhatIsStored(t *testing.T) {
+	var hits atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		hits.Add(1)
+		_, _ = w.Write([]byte(`[{"tag_name":"v2.0.0","body":"big","published_at":"2026-01-02T03:04:05Z"}]`))
+	}))
+	t.Cleanup(srv.Close)
+	s := &Service{GitHub: &github.Client{APIBase: srv.URL, CacheDir: t.TempDir()}}
+	if got := s.CachedReleaseChangelog("o/r"); got != nil {
+		t.Fatalf("before any read: %+v", got)
+	}
+	if _, err := s.ReleaseChangelog(t.Context(), "o/r"); err != nil {
+		t.Fatal(err)
+	}
+	served := hits.Load()
+	got := s.CachedReleaseChangelog("o/r")
+	if len(got) != 1 || got[0].Version != "2.0.0" || got[0].Body != "big" {
+		t.Fatalf("after a read: %+v", got)
+	}
+	if s.CachedReleaseChangelog("o/..") != nil || hits.Load() != served {
+		t.Fatal("a name that moves the path must read nothing, and no read may reach the server")
+	}
+}

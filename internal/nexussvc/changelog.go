@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
@@ -54,6 +55,20 @@ func (s *Service) ReleaseChangelog(ctx context.Context, githubRepo string) ([]ne
 		return nil, err
 	}
 	return releaseChangelogs(rels), nil
+}
+
+// CachedReleaseChangelog is ReleaseChangelog from the stored releases list alone, however old, never asking GitHub:
+// nil when none is stored or githubRepo is not a GitHub name. The window shows it while the live read runs.
+func (s *Service) CachedReleaseChangelog(githubRepo string) []nexus.Changelog {
+	if !gh.ValidRepo(githubRepo) {
+		return nil
+	}
+	owner, repo, _ := strings.Cut(githubRepo, "/")
+	rels, _, ok := s.githubClient().CachedReleases(owner, repo)
+	if !ok {
+		return nil
+	}
+	return releaseChangelogs(rels)
 }
 
 func (s *Service) githubClient() *github.Client {
