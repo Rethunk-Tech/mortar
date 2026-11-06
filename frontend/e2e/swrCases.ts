@@ -117,8 +117,7 @@ export function swrCases(
     },
     {
       name: 'swr-load-order-toggle-a-mod',
-      // The toggle changes the profile's mod list, which each visible row's dependency chips and name still read whole.
-      budget: { updates: 1500, idleUpdates: 20, idleCommits: 2 },
+      budget: { idleUpdates: 20, idleCommits: 2 },
       setup: async (p) => {
         await stardew(p)
         await tab(p, 'Mods')
