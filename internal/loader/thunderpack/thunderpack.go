@@ -152,47 +152,12 @@ func (l Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, 
 			return "", err
 		}
 	}
-	for _, pat := range l.Replace {
-		matches, err := filepath.Glob(filepath.Join(src, filepath.FromSlash(pat)))
-		if err != nil {
-			return "", err
-		}
-		for _, m := range matches {
-			rel, err := filepath.Rel(src, m)
-			if err != nil {
-				return "", err
-			}
-			dst, err := l.localDest(filepath.ToSlash(rel))
-			if err != nil {
-				return "", err
-			}
-			if err := safefs.RemoveAll(filepath.Join(t.ProfileDir, filepath.FromSlash(dst))); err != nil {
-				return "", err
-			}
-		}
+	if err := l.removeReplaced(t.ProfileDir, src); err != nil {
+		return "", err
 	}
-	var placed []string
-	for _, rel := range files {
-		dst, err := l.localDest(rel)
-		if err != nil {
-			return "", err
-		}
-		if dst == "" {
-			continue
-		}
-		to := filepath.Join(t.ProfileDir, filepath.FromSlash(dst))
-		if l.seeded(rel) && safefs.IsFile(to) {
-			continue
-		}
-		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
-			return "", err
-		}
-		if err := datadir.CopyFile(filepath.Join(src, filepath.FromSlash(rel)), to); err != nil {
-			return "", err
-		}
-		if l.Placed != nil && l.Placed(rel) {
-			placed = append(placed, dst)
-		}
+	placed, err := l.place(t.ProfileDir, src, files)
+	if err != nil {
+		return "", err
 	}
 	for _, d := range l.Dirs {
 		if err := os.MkdirAll(filepath.Join(t.ProfileDir, filepath.FromSlash(d)), 0o750); err != nil {
@@ -206,6 +171,58 @@ func (l Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, 
 		return "", err
 	}
 	return pkg.Version, nil
+}
+
+// removeReplaced deletes the profile paths the release's Replace patterns match in src, so stale files do not survive.
+func (l Loader) removeReplaced(profileDir, src string) error {
+	for _, pat := range l.Replace {
+		matches, err := filepath.Glob(filepath.Join(src, filepath.FromSlash(pat)))
+		if err != nil {
+			return err
+		}
+		for _, m := range matches {
+			rel, err := filepath.Rel(src, m)
+			if err != nil {
+				return err
+			}
+			dst, err := l.localDest(filepath.ToSlash(rel))
+			if err != nil {
+				return err
+			}
+			if err := safefs.RemoveAll(filepath.Join(profileDir, filepath.FromSlash(dst))); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// place copies the pack files into the profile and returns the destinations to record as placed.
+func (l Loader) place(profileDir, src string, files []string) ([]string, error) {
+	var placed []string
+	for _, rel := range files {
+		dst, err := l.localDest(rel)
+		if err != nil {
+			return nil, err
+		}
+		if dst == "" {
+			continue
+		}
+		to := filepath.Join(profileDir, filepath.FromSlash(dst))
+		if l.seeded(rel) && safefs.IsFile(to) {
+			continue
+		}
+		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+			return nil, err
+		}
+		if err := datadir.CopyFile(filepath.Join(src, filepath.FromSlash(rel)), to); err != nil {
+			return nil, err
+		}
+		if l.Placed != nil && l.Placed(rel) {
+			placed = append(placed, dst)
+		}
+	}
+	return placed, nil
 }
 
 // packMeta are the files Thunderstore asks for at a package's top, which never reach a profile.
