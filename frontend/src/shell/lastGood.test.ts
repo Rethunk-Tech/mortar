@@ -58,6 +58,11 @@ describe('lastGood', () => {
     expect(calls).toBe(1)
   })
 
+  test('a saved answer keeps the time it was read', () => {
+    putLast('saved', 1, { seed: true, at: 1234 })
+    expect(peekLast('saved')?.at).toBe(1234)
+  })
+
   test('keep merges a list so unchanged rows keep identity', () => {
     interface Row {
       id: string

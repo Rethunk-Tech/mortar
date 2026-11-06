@@ -6,6 +6,7 @@ import type { Usage as DiskUse } from '../../../bindings/github.com/Rethunk-Tech
 import { DataLocation } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import { OpenDataFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
+import { When } from '../../i18n/When.tsx'
 import { cmpText } from '../../mods/cmpText.ts'
 import { Tooltip } from '../../shell/Tooltip.tsx'
 import { space } from '../../theme/density.ts'
@@ -127,10 +128,14 @@ function MeasuringBytes() {
 
 function StorageBar({
   usage,
+  measuredAt,
+  measuring,
   labels,
   actions,
 }: {
   usage: DiskUse | null
+  measuredAt: number | null
+  measuring: boolean
   labels: Record<SegmentId, string>
   actions: ReactNode
 }) {
@@ -150,6 +155,16 @@ function StorageBar({
         <Box sx={{ flex: 1, fontSize: 'large.fontSize' }}>
           {usage ? t`${{ size: formatBytes(usage.total) }} used` : <MeasuringBytes />}
         </Box>
+        {usage && measuring ? (
+          <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
+            <MeasuringBytes />
+          </Box>
+        ) : null}
+        {usage && !measuring && measuredAt !== null ? (
+          <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
+            {t`Measured`} <When value={measuredAt} withTime={true} />
+          </Box>
+        ) : null}
         {usage?.sharedSavedKnown && usage.sharedSaved > 0 ? (
           <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
             {t`${{ size: formatBytes(usage.sharedSaved) }} saved by sharing files`}
@@ -195,11 +210,15 @@ function StorageBar({
 
 export function UsageRows({
   usage,
+  measuredAt,
+  measuring,
   onCleanUp,
   onClearCache,
   onDeletedProfiles,
 }: {
   usage: DiskUse | null
+  measuredAt: number | null
+  measuring: boolean
   onCleanUp: () => void
   onClearCache: () => void
   onDeletedProfiles: () => void
@@ -253,7 +272,13 @@ export function UsageRows({
         <Searchable
           terms={`${t`Usage`} ${t`Storage`} ${t`Disk space`} ${Object.values(labels).join(' ')} ${t`Clean up…`} ${t`Clear cache…`} ${t`Open recently deleted`}`}
         >
-          <StorageBar usage={usage} labels={labels} actions={actions} />
+          <StorageBar
+            usage={usage}
+            measuredAt={measuredAt}
+            measuring={measuring}
+            labels={labels}
+            actions={actions}
+          />
         </Searchable>
       </SettingsSection>
       <SettingsSection title={t`By game`}>

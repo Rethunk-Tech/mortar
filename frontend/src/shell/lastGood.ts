@@ -35,12 +35,17 @@ export function getLast<T>(key: string): T | undefined {
 /**
  * Stores `next` as the key's last good answer and returns the stored value: the previous object when the answer is
  * equal to it, so a re-read that changed nothing re-renders nothing. `keep` merges an answer into the previous one
- * (for example keepUnchanged on a list). A `seed` answer never replaces a live one.
+ * (for example keepUnchanged on a list). `at` is when the answer was read, now unless the answer is a saved one. A `seed`
+ * answer never replaces a live one.
  */
 export function putLast<T>(
   key: string,
   next: T,
-  { seed = false, keep }: { seed?: boolean; keep?: (prev: T, next: T) => T } = {},
+  {
+    seed = false,
+    keep,
+    at = Date.now(),
+  }: { seed?: boolean; keep?: (prev: T, next: T) => T; at?: number } = {},
 ): T {
   const prev = peekLast<T>(key)
   if (prev && seed) {
@@ -51,7 +56,7 @@ export function putLast<T>(
   if (prev && prev.value === value && prev.seed === seed) {
     return value
   }
-  entries.set(key, { value, at: Date.now(), seed })
+  entries.set(key, { value, at, seed })
   notify()
   return value
 }
