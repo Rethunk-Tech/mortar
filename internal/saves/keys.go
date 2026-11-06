@@ -77,44 +77,53 @@ func distinctKeys(r io.Reader) (map[string]struct{}, saveFarm, error) {
 		if err != nil && !eof {
 			return nil, saveFarm{}, err
 		}
-		pos := 0
-		for {
-			i := bytes.Index(buf[pos:n], opener)
-			if i < 0 {
-				pos = max(pos, n-len(opener)+1)
-				break
-			}
-			start := pos + i + len(opener)
-			j := bytes.Index(buf[start:n], closer)
-			if j < 0 {
-				if n-start <= maxKey && !eof {
-					pos += i
-					break
-				}
-				pos = start
-				continue
-			}
-			if j <= maxKey {
-				if _, seen := out[string(buf[start:start+j])]; !seen {
-					out[string(buf[start:start+j])] = struct{}{}
-				}
-			}
-			pos = start + j + len(closer)
-		}
+		pos := collectKeys(out, buf[:n], eof)
 		pos = which.scan(buf, n, pos, eof)
 		n = copy(buf, buf[pos:n])
 		if eof {
-			farm := saveFarm{has: which.found}
-			if number, err := strconv.Atoi(which.value); err == nil {
-				farm.which = number
-			} else if which.found && which.value != "" {
-				farm.which, farm.mod = customFarm, which.value
-			} else {
-				farm.has = false
-			}
+			farm := farmOf(which)
 			return out, farm, nil
 		}
 	}
+}
+
+// collectKeys adds every complete key in buf to out and returns how far buf is consumed. An unfinished key near the
+// end is kept for the next read unless the stream has ended.
+func collectKeys(out map[string]struct{}, buf []byte, eof bool) int {
+	n := len(buf)
+	pos := 0
+	for {
+		i := bytes.Index(buf[pos:n], opener)
+		if i < 0 {
+			return max(pos, n-len(opener)+1)
+		}
+		start := pos + i + len(opener)
+		j := bytes.Index(buf[start:n], closer)
+		if j < 0 {
+			if n-start <= maxKey && !eof {
+				return pos + i
+			}
+			pos = start
+			continue
+		}
+		if j <= maxKey {
+			out[string(buf[start:start+j])] = struct{}{}
+		}
+		pos = start + j + len(closer)
+	}
+}
+
+// farmOf reads the farm out of the first <whichFarm> found.
+func farmOf(which *firstTag) saveFarm {
+	farm := saveFarm{has: which.found}
+	if number, err := strconv.Atoi(which.value); err == nil {
+		farm.which = number
+	} else if which.found && which.value != "" {
+		farm.which, farm.mod = customFarm, which.value
+	} else {
+		farm.has = false
+	}
+	return farm
 }
 
 // uniqueID maps a save key to the mod id it belongs to: the longest prefix ending at a '/', '_' or '.' that
