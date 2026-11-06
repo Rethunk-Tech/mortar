@@ -104,6 +104,15 @@ export function dialogKit(h: Helpers) {
     await openGame(p, h.tabs(p), 'Lethal Company')
     await closeAll(p)
     await tab(p, 'Develop')
+    // A case that reloads can leave another of the game's profiles open; the projects are in the development one.
+    const main = p.getByRole('main')
+    const project = main.getByRole('button', { name: 'More actions' }).first()
+    const elsewhere = main.getByRole('button', { name: 'Open profile' }).first()
+    await project.or(elsewhere).first().waitFor()
+    if (!(await project.isVisible())) {
+      await elsewhere.click()
+      await project.waitFor()
+    }
   }
 
   // Everything before the `steps`th Next past New mod's mod step (a code mod): a valid name and description fill it,
