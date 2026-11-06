@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, IconButton, Link, Skeleton, Typography, useTheme } from '@mui/material'
-import { useLoaded } from '@rethunk/react-load-hooks'
+import { keepUnchanged, useLoaded } from '@rethunk/react-load-hooks'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ChevronDown, ChevronUp, Copy, ListOrdered, TriangleAlert } from 'lucide-react'
 import {
@@ -492,7 +492,11 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
     `load-order:${game}:${profile.id}`,
     () => LoadOrder(game, profile.id).then((next) => next ?? []),
     [enabledKey],
-    { onError: reportUnexpected },
+    // A toggle moves a few rows; the rest keep their objects, so their rows do not redraw.
+    {
+      onError: reportUnexpected,
+      keep: (prev, next) => keepUnchanged(prev, next, (r) => String(r.id)),
+    },
   )
   const move: Move = (entry, delta) => {
     MovePackage(game, profile.id, entry, delta)
