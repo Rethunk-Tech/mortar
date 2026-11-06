@@ -119,7 +119,8 @@ interface Scene {
 
 // The product pictures show the window as a new install opens it.
 const windowGo = readFileSync(fileURLToPath(new URL('../../window.go', import.meta.url)), 'utf8')
-const windowSize = (name: string) => Number(new RegExp(`default${name}\\s*=\\s*(\\d+)`, 'u').exec(windowGo)?.[1])
+const windowSize = (name: string) =>
+  Number(new RegExp(`default${name}\\s*=\\s*(\\d+)`, 'u').exec(windowGo)?.[1])
 const DESK = { width: windowSize('WindowWidth'), height: windowSize('WindowHeight') }
 const WIDE = { width: 1400, height: 840 }
 
