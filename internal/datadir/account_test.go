@@ -40,4 +40,12 @@ func TestSharesAccountData(t *testing.T) {
 	if !SharesAccountData() {
 		t.Fatal("a sandbox HOME whose data variable points at the account's data folder must count")
 	}
+
+	if runtime.GOOS != "windows" {
+		t.Setenv(homeVar, sandbox)
+		t.Setenv("XDG_DATA_HOME", filepath.Join(sandbox, "x"))
+		if SharesAccountData() {
+			t.Fatal("a sandbox whose own data variable is set must not count as the account's data")
+		}
+	}
 }

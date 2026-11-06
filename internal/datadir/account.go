@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -33,9 +32,9 @@ func SharesAccountData() bool {
 	if err != nil {
 		return true
 	}
-	own := filepath.Join(userdirs.DataHome(acct), "mortar")
+	own := filepath.Join(acct, ".local", "share", "mortar")
 	if runtime.GOOS == "windows" {
-		own = filepath.Join(userdirs.LocalAppData(acct), "Mortar")
+		own = filepath.Join(acct, "AppData", "Local", "Mortar")
 	}
 	return safefs.SamePath(def, own)
 }
