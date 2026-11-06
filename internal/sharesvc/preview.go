@@ -442,35 +442,18 @@ func (r *resolver) github(ref share.Ref) Mod {
 
 // itch resolves a file the sender saved from an itch.io page, as patreon does for a post.
 func (r *resolver) itch(ref share.Ref) Mod {
-	m := Mod{
-		Key: "itch:" + ref.Itch, Site: SiteItch, Name: "itch.io page " + ref.Itch, State: StateInstalled,
-		PageURL: itch.PageURL(ref.Itch), IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
-	}
-	has := slices.ContainsFunc(r.target, func(e profile.Entry) bool {
-		return e.Source.Kind == profile.KindItch && e.Source.Name == ref.Itch
-	})
-	if !has {
-		m.State, m.Reason = StateUnavailable, ReasonItch
-	}
-	return m
+	return r.pageRow(ref, SiteItch, "itch:"+ref.Itch, "itch.io page "+ref.Itch, itch.PageURL(ref.Itch), profile.KindItch, ref.Itch, ReasonItch)
 }
 
 // curseforge resolves a shared CurseForge file: installed when the profile or the store holds it, downloaded when the
 // receiver has a CurseForge key, and otherwise listed as a file to fetch by hand from its page.
 func (r *resolver) curseforge(ctx context.Context, ref share.Ref) Mod {
 	project := strconv.Itoa(ref.CurseForge)
-	m := Mod{
-		Key: "curseforge:" + project + ":" + strconv.Itoa(ref.FileID), Site: SiteCurseForge, Name: "CurseForge project " + project,
-		Package: project, FileID: ref.FileID, PageURL: curseforge.Driver{}.ModPageURL("", project),
-		State: StateDownload, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
-	}
+	m := r.fileRow(ref, SiteCurseForge, project, "CurseForge project "+project, curseforge.Driver{}.ModPageURL("", project), strconv.Itoa(ref.FileID))
 	switch {
 	case r.game != "" && !r.catalogHas("curseforge"):
 		m.State, m.Reason = StateUnavailable, ReasonNoSource
-	case slices.ContainsFunc(r.target, ref.MatchesEntry):
-		m.State = StateInstalled
-	case r.storedKey(store.PackageKey(profile.KindCurseForge+":"+project, strconv.Itoa(ref.FileID))):
-		m.State, r.storedKeys[m.Key] = StateInstalled, true
+	case m.State == StateInstalled:
 	case r.curseforgeUnavailable != nil && r.curseforgeUnavailable() != "":
 		m.State, m.Reason = StateUnavailable, ReasonCurseForgeKey
 	}
@@ -486,17 +469,8 @@ func (r *resolver) curseforge(ctx context.Context, ref share.Ref) Mod {
 // is signed in to mod.io, and otherwise waiting on that sign-in. A link names no page: mod.io names pages by slugs.
 func (r *resolver) modio(ref share.Ref) Mod {
 	id := strconv.Itoa(ref.Modio)
-	m := Mod{
-		Key: "modio:" + id + ":" + strconv.Itoa(ref.FileID), Site: SiteModio, Name: "mod.io mod " + id,
-		Package: id, FileID: ref.FileID,
-		State: StateDownload, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
-	}
-	switch {
-	case slices.ContainsFunc(r.target, ref.MatchesEntry):
-		m.State = StateInstalled
-	case r.storedKey(store.PackageKey(profile.KindModio+":"+id, strconv.Itoa(ref.FileID))):
-		m.State, r.storedKeys[m.Key] = StateInstalled, true
-	case r.modioUnavailable != nil && r.modioUnavailable() != "":
+	m := r.fileRow(ref, SiteModio, id, "mod.io mod "+id, "", strconv.Itoa(ref.FileID))
+	if m.State != StateInstalled && r.modioUnavailable != nil && r.modioUnavailable() != "" {
 		m.State, m.Reason = StateUnavailable, ReasonModioToken
 	}
 	return m
@@ -504,7 +478,7 @@ func (r *resolver) modio(ref share.Ref) Mod {
 
 // vsmoddb resolves a shared Mod DB release: installed when the profile or the store holds it, else downloaded.
 func (r *resolver) vsmoddb(ctx context.Context, ref share.Ref) Mod {
-	m := r.fileRow(ref, SiteVSModDB, ref.VSModDB, "Mod DB mod "+ref.VSModDB, vsmoddb.Driver{}.ModPageURL("", ref.VSModDB))
+	m := r.fileRow(ref, SiteVSModDB, ref.VSModDB, "Mod DB mod "+ref.VSModDB, vsmoddb.Driver{}.ModPageURL("", ref.VSModDB), ref.Version)
 	if r.vsmoddbRelease != nil {
 		if found, err := r.vsmoddbRelease(ctx, ref.VSModDB, strconv.Itoa(ref.FileID)); err == nil && found.Name != "" {
 			m.Name, m.Icon = found.Name, found.Picture
@@ -515,7 +489,7 @@ func (r *resolver) vsmoddb(ctx context.Context, ref share.Ref) Mod {
 
 // paradox resolves a shared Paradox Mods version: installed when the profile or the store holds it, else downloaded.
 func (r *resolver) paradox(ctx context.Context, ref share.Ref) Mod {
-	m := r.fileRow(ref, SiteParadox, ref.Paradox, "Paradox mod "+ref.Paradox, paradox.Driver{}.ModPageURL("", ref.Paradox))
+	m := r.fileRow(ref, SiteParadox, ref.Paradox, "Paradox mod "+ref.Paradox, paradox.Driver{}.ModPageURL("", ref.Paradox), ref.Version)
 	if r.paradoxVersion != nil {
 		if found, err := r.paradoxVersion(ctx, ref.Paradox, strconv.Itoa(ref.FileID)); err == nil && found.Name != "" {
 			m.Name = found.Name
@@ -525,8 +499,8 @@ func (r *resolver) paradox(ctx context.Context, ref share.Ref) Mod {
 }
 
 // fileRow is the row for a shared release of site's mod pkg, named by its file id: installed when the profile or the
-// store holds it, else to download. The site id is also the entry's source kind.
-func (r *resolver) fileRow(ref share.Ref, site, pkg, name, page string) Mod {
+// store holds it, else to download. The site id is also the entry's source kind; rev is the release the store keys it by.
+func (r *resolver) fileRow(ref share.Ref, site, pkg, name, page, rev string) Mod {
 	m := Mod{
 		Key: site + ":" + pkg + ":" + strconv.Itoa(ref.FileID), Site: site, Name: name,
 		Package: pkg, FileID: ref.FileID, Version: ref.Version, PageURL: page,
@@ -535,7 +509,7 @@ func (r *resolver) fileRow(ref share.Ref, site, pkg, name, page string) Mod {
 	switch {
 	case slices.ContainsFunc(r.target, ref.MatchesEntry):
 		m.State = StateInstalled
-	case r.storedKey(store.PackageKey(site+":"+pkg, ref.Version)):
+	case r.storedKey(store.PackageKey(site+":"+pkg, rev)):
 		m.State, r.storedKeys[m.Key] = StateInstalled, true
 	}
 	return m
@@ -579,15 +553,21 @@ func (r *resolver) thunderstore(ref share.Ref) Mod {
 // patreon resolves a file the sender saved from a Patreon post. Only the post travels, so it is installed when the
 // profile already holds an entry from that post and otherwise unavailable until the receiver saves the file there.
 func (r *resolver) patreon(ref share.Ref) Mod {
+	return r.pageRow(ref, SitePatreon, "patreon:"+ref.Patreon, "Patreon post "+ref.Patreon, patreon.PostURL(ref.Patreon), profile.KindPatreon, ref.Patreon, ReasonPatreon)
+}
+
+// pageRow is the row for a page the sender saved a file from: installed when the profile holds an entry of kind named
+// source, otherwise unavailable for reason, since the page cannot be fetched from a link.
+func (r *resolver) pageRow(ref share.Ref, site, key, name, page, kind, source, reason string) Mod {
 	m := Mod{
-		Key: "patreon:" + ref.Patreon, Site: SitePatreon, Name: "Patreon post " + ref.Patreon, State: StateInstalled,
-		PageURL: patreon.PostURL(ref.Patreon), IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
+		Key: key, Site: site, Name: name, State: StateInstalled,
+		PageURL: page, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
 	}
 	has := slices.ContainsFunc(r.target, func(e profile.Entry) bool {
-		return e.Source.Kind == profile.KindPatreon && e.Source.Name == ref.Patreon
+		return e.Source.Kind == kind && e.Source.Name == source
 	})
 	if !has {
-		m.State, m.Reason = StateUnavailable, ReasonPatreon
+		m.State, m.Reason = StateUnavailable, reason
 	}
 	return m
 }
