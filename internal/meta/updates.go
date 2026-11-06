@@ -42,20 +42,7 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []smapiweb
 	c.updatesMu.Lock()
 	defer c.updatesMu.Unlock()
 	cache := c.Cache()
-	var store map[string]diskcache.Entry[smapiweb.UpdateResult]
-	if e, ok := diskcache.Peek[map[string]diskcache.Entry[smapiweb.UpdateResult]](cache, updatesFile); ok {
-		store = e.Value
-		// An answer carries the build that fetched it; one written before answers carried it takes the file's.
-		for k, v := range store {
-			if v.Stamp == "" {
-				v.Stamp = e.Stamp
-				store[k] = v
-			}
-		}
-	}
-	if store == nil {
-		store = map[string]diskcache.Entry[smapiweb.UpdateResult]{}
-	}
+	store := loadUpdateStore(cache)
 	now := c.now()
 	build := appversion.Build()
 	out := make([]smapiweb.UpdateResult, len(req.Mods))
@@ -76,27 +63,7 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []smapiweb
 	}
 	defer c.refreshLater(ctx, req, later)
 	// A failed ask pauses asking: the stale answer, else unknown, is served until the pause ends.
-	var got []smapiweb.UpdateResult
-	if len(stale) > 0 && !now.Before(c.updatesPause) {
-		asked := make([]smapiweb.InstalledMod, len(stale))
-		for j, i := range stale {
-			asked[j] = req.Mods[i]
-		}
-		var err error
-		got, err = c.web().Updates(ctx, smapiweb.UpdateRequest{APIVersion: req.APIVersion, GameVersion: req.GameVersion, Platform: req.Platform, Mods: asked})
-		// The window's offline banner then names smapi.io, as it does any source that stops answering.
-		netstate.Record("smapi", smapiOutcome(got, err))
-		if err != nil {
-			unknown := 0
-			for _, r := range got {
-				if !r.Known {
-					unknown++
-				}
-			}
-			log.Printf("updates: smapi.io did not answer for %d of %d mods, pausing update checks for %s: %v", unknown, len(asked), updatesBackoff, err)
-			c.updatesPause = now.Add(updatesBackoff)
-		}
-	}
+	got := c.askStale(ctx, req, stale, now)
 	dirty := false
 	for j, i := range stale {
 		k := req.key(req.Mods[i])
@@ -120,6 +87,51 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []smapiweb
 		_ = diskcache.PutEntry(cache, updatesFile, diskcache.Entry[map[string]diskcache.Entry[smapiweb.UpdateResult]]{Fetched: now, Value: store, Stamp: build})
 	}
 	return out
+}
+
+// loadUpdateStore reads the cached answers, never nil.
+func loadUpdateStore(cache *diskcache.Cache) map[string]diskcache.Entry[smapiweb.UpdateResult] {
+	var store map[string]diskcache.Entry[smapiweb.UpdateResult]
+	if e, ok := diskcache.Peek[map[string]diskcache.Entry[smapiweb.UpdateResult]](cache, updatesFile); ok {
+		store = e.Value
+		// An answer carries the build that fetched it; one written before answers carried it takes the file's.
+		for k, v := range store {
+			if v.Stamp == "" {
+				v.Stamp = e.Stamp
+				store[k] = v
+			}
+		}
+	}
+	if store == nil {
+		store = map[string]diskcache.Entry[smapiweb.UpdateResult]{}
+	}
+	return store
+}
+
+// askStale asks smapi.io about the stale mods unless a failed ask paused asking. A failed ask pauses asking: the stale
+// answer, else unknown, is served until the pause ends.
+func (c *Client) askStale(ctx context.Context, req UpdateRequest, stale []int, now time.Time) []smapiweb.UpdateResult {
+	if len(stale) == 0 || now.Before(c.updatesPause) {
+		return nil
+	}
+	asked := make([]smapiweb.InstalledMod, len(stale))
+	for j, i := range stale {
+		asked[j] = req.Mods[i]
+	}
+	got, err := c.web().Updates(ctx, smapiweb.UpdateRequest{APIVersion: req.APIVersion, GameVersion: req.GameVersion, Platform: req.Platform, Mods: asked})
+	// The window's offline banner then names smapi.io, as it does any source that stops answering.
+	netstate.Record("smapi", smapiOutcome(got, err))
+	if err != nil {
+		unknown := 0
+		for _, r := range got {
+			if !r.Known {
+				unknown++
+			}
+		}
+		log.Printf("updates: smapi.io did not answer for %d of %d mods, pausing update checks for %s: %v", unknown, len(asked), updatesBackoff, err)
+		c.updatesPause = now.Add(updatesBackoff)
+	}
+	return got
 }
 
 // refreshLater asks smapi.io about mods again in the background, one refresh at a time; the next check reads what it
