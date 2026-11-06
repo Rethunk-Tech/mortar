@@ -608,9 +608,8 @@ msgstr "Leave the caches alone."
 msgid "Scales text, controls and spacing together"
 msgstr "Scales text, controls and spacing together"
 
-#: src/settings/sections/ItchAccount.tsx
-#: src/settings/sections/ModioAccount.tsx
 #: src/settings/sections/NexusMods.tsx
+#: src/settings/sections/TokenAccount.tsx
 msgid "Not signed in"
 msgstr "Not signed in"
 
@@ -2425,8 +2424,7 @@ msgstr "Untrack the {game} mods none of your profiles use, out of {trackedCount}
 msgid "Show the author line on grid cards"
 msgstr "Show the author line on grid cards"
 
-#: src/settings/sections/ItchAccount.tsx
-#: src/settings/sections/ModioAccount.tsx
+#: src/settings/sections/TokenAccount.tsx
 msgid "Test"
 msgstr "Test"
 

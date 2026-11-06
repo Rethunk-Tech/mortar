@@ -602,9 +602,8 @@ msgstr ""
 msgid "Scales text, controls and spacing together"
 msgstr ""
 
-#: src/settings/sections/ItchAccount.tsx
-#: src/settings/sections/ModioAccount.tsx
 #: src/settings/sections/NexusMods.tsx
+#: src/settings/sections/TokenAccount.tsx
 msgid "Not signed in"
 msgstr ""
 
@@ -2419,8 +2418,7 @@ msgstr ""
 msgid "Show the author line on grid cards"
 msgstr ""
 
-#: src/settings/sections/ItchAccount.tsx
-#: src/settings/sections/ModioAccount.tsx
+#: src/settings/sections/TokenAccount.tsx
 msgid "Test"
 msgstr ""
 
