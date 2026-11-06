@@ -348,12 +348,6 @@ html.js .dl .panel[hidden] {
 .dl pre {
   margin: 0;
   padding: 16px 92px 16px 18px;
-  overflow-x: auto;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgb(14, 14, 17);
-  font-size: 14px;
-  line-height: 1.65;
 }
 
 .code {

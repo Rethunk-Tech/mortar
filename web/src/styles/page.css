@@ -97,15 +97,20 @@
 }
 
 .prose pre,
-.code pre {
-  margin: 14px 0;
-  padding: 16px 18px;
+.code pre,
+.dl pre {
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: rgb(14, 14, 17);
   font-size: 14px;
   line-height: 1.65;
+}
+
+.prose pre,
+.code pre {
+  margin: 14px 0;
+  padding: 16px 18px;
 }
 
 .prose pre code,
