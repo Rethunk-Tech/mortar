@@ -4,6 +4,7 @@ package launchsvc
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -18,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 
 func TestABepInExGameReportsItsSceneOwnVersionAndWhichPackagesLoaded(t *testing.T) {
@@ -131,4 +133,110 @@ func TestABepInExRunRecordsTheVersionItsBridgeReported(t *testing.T) {
 	if err != nil || len(runs) != 1 || runs[0].GameVersion != "v73" {
 		t.Fatalf("runs = %+v, %v", runs, err)
 	}
+}
+
+type liveHost struct {
+	winhost.Host
+	events chan LiveRun
+}
+
+func (h liveHost) Emit(name string, data any) {
+	if run, ok := data.(LiveRun); ok && name == LiveEvent {
+		h.events <- run
+	}
+}
+
+// followFixture runs followRunning on a Running BepInEx profile whose companion answers every question with reply
+// (nothing listens when reply is empty) and returns the emitted runs and a channel closed when the loop returns.
+func followFixture(t *testing.T, reply string) (svc *Service, g game.Game, cancel context.CancelFunc, events chan LiveRun, done chan struct{}) {
+	t.Helper()
+	set, ps := testenv.Env(t)
+	const lc = "lethal-company"
+	p := testenv.Profile(t, ps, lc, "A")
+	if reply != "" {
+		dir, err := ps.ProfileDir(lc, p.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ln, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0")
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = ln.Close() })
+		go func() {
+			for {
+				c, err := ln.Accept()
+				if err != nil {
+					return
+				}
+				r := bufio.NewReader(c)
+				_, _ = r.ReadString('\n')
+				_, _ = r.ReadString('\n')
+				_, _ = fmt.Fprintln(c, reply)
+				_ = c.Close()
+			}
+		}()
+		stateFile := filepath.Join(dir, filepath.FromSlash(bridge.BepInEx.StateFile))
+		if err := os.MkdirAll(filepath.Dir(stateFile), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		addr, ok := ln.Addr().(*net.TCPAddr)
+		if !ok {
+			t.Fatalf("listener address %v", ln.Addr())
+		}
+		if err := os.WriteFile(stateFile, fmt.Appendf(nil, `{"port":%d,"token":"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}`, addr.Port), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	svc = NewService(t.TempDir(), set, ps)
+	events = make(chan LiveRun, 16)
+	svc.App = liveHost{events: events}
+	g = game.Find(lc)
+	svc.logs[keyOf(g)] = session{buf: &launch.Buffer{}, profile: p.ID}
+	svc.status[keyOf(g)] = Status{Game: lc, Install: installOf(g), State: Running, Profile: p.ID}
+	ctx, cancel := context.WithCancel(t.Context())
+	t.Cleanup(cancel)
+	done = make(chan struct{})
+	go func() {
+		svc.followRunning(ctx, g)
+		close(done)
+	}()
+	return svc, g, cancel, events, done
+}
+
+func waitClosed(t *testing.T, done chan struct{}, what string) {
+	t.Helper()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatalf("followRunning did not stop: %s", what)
+	}
+}
+
+func TestFollowRunningAnnouncesTheSceneAndStopsWhenTheRunEnds(t *testing.T) {
+	svc, g, _, events, done := followFixture(t, `ok {"gameVersion":"v73","scene":"MainMenu","plugins":[]}`)
+	select {
+	case run := <-events:
+		if run.Scene != "MainMenu" || run.Game != g.ID() {
+			t.Fatalf("emitted %+v", run)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("no live event while the game ran")
+	}
+	svc.mu.Lock()
+	svc.status[keyOf(g)] = Status{Game: g.ID(), Install: installOf(g), State: Idle}
+	svc.mu.Unlock()
+	waitClosed(t, done, "the run went idle")
+}
+
+func TestFollowRunningEmitsNothingWhileTheCompanionDoesNotAnswer(t *testing.T) {
+	_, _, cancel, events, done := followFixture(t, "")
+	time.Sleep(10 * pollEvery)
+	select {
+	case run := <-events:
+		t.Fatalf("emitted %+v with no companion to ask", run)
+	default:
+	}
+	cancel()
+	waitClosed(t, done, "the context was cancelled")
 }
