@@ -97,12 +97,8 @@ func TestPairedSendPlacesEverySourceWithoutDownloading(t *testing.T) {
 		Stored: func(g, k string) bool { _, err := items.Path(g, k); return err == nil },
 	})
 
-	arrivals := make(chan Arrival, 1)
-	receiver, receiverAddr := pairedService(t, items, func(_ string, data any) {
-		if a, ok := data.(Arrival); ok {
-			arrivals <- a
-		}
-	})
+	arrivals, emitArrival := arrivalSink()
+	receiver, receiverAddr := pairedService(t, items, emitArrival)
 	sender, _ := pairedService(t, senderStore, nil)
 	build := fixed(payload.Bytes())
 	next := func() Arrival {

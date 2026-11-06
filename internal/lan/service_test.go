@@ -97,6 +97,16 @@ func pairedService(t *testing.T, items *store.Store, emit func(string, any)) (*S
 	return service, strings.TrimPrefix(server.URL, "http://")
 }
 
+// arrivalSink is an Emit that queues each Arrival event on the returned channel and ignores other events.
+func arrivalSink() (chan Arrival, func(string, any)) {
+	arrivals := make(chan Arrival, 1)
+	return arrivals, func(_ string, data any) {
+		if arrival, ok := data.(Arrival); ok {
+			arrivals <- arrival
+		}
+	}
+}
+
 // pair has joiner enter the code that host shows.
 func pair(t *testing.T, host, joiner *Service, hostAddr string) {
 	t.Helper()
@@ -376,12 +386,8 @@ func TestLethalCompanyProfileOverLAN(t *testing.T) {
 	}
 
 	receiverStore := store.OpenAt(t.TempDir())
-	arrivals := make(chan Arrival, 1)
-	receiver, receiverAddr := pairedService(t, receiverStore, func(_ string, data any) {
-		if arrival, ok := data.(Arrival); ok {
-			arrivals <- arrival
-		}
-	})
+	arrivals, emitArrival := arrivalSink()
+	receiver, receiverAddr := pairedService(t, receiverStore, emitArrival)
 	sender, _ := pairedService(t, senderStore, nil)
 	pair(t, receiver, sender, receiverAddr)
 	if err := sender.sendPayload(t.Context(), receiverAddr, "lethal-company", "", fixed(payload.Bytes())); err != nil {

@@ -51,14 +51,10 @@ func sentRig(t *testing.T) outgoingRig {
 	if _, err := share.Write(&payload, "stardew", profile.Profile{Name: "Farm friends", Entries: entries}, t.TempDir(), share.Include{}); err != nil {
 		t.Fatal(err)
 	}
-	arrivals := make(chan Arrival, 1)
+	arrivals, emitArrival := arrivalSink()
 	var mu sync.Mutex
 	var seen []OutgoingTransfer
-	receiver, receiverAddr := pairedService(t, receiverStore, func(_ string, data any) {
-		if a, ok := data.(Arrival); ok {
-			arrivals <- a
-		}
-	})
+	receiver, receiverAddr := pairedService(t, receiverStore, emitArrival)
 	sender, _ := pairedService(t, senderStore, func(name string, data any) {
 		if o, ok := data.(OutgoingTransfer); ok && name == OutgoingEvent {
 			mu.Lock()
