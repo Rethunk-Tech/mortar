@@ -22,7 +22,18 @@ import (
 
 // launcherID is the desktop file id of a profile's shortcut; it starts with the app id, as the launcher portal requires.
 func launcherID(arg string) string {
-	return appversion.AppID + ".play-" + strings.ReplaceAll(strings.TrimPrefix(arg, playFlag), "/", "-") + ".desktop"
+	return playPrefix + strings.ReplaceAll(strings.TrimPrefix(arg, playFlag), "/", "-") + ".desktop"
+}
+
+const playPrefix = appversion.AppID + ".play-"
+
+// playEntries lists every profile desktop entry Mortar wrote under the user's applications folder.
+func playEntries() ([]string, error) {
+	base, err := dataHome()
+	if err != nil {
+		return nil, err
+	}
+	return filepath.Glob(filepath.Join(base, "applications", playPrefix+"*.desktop"))
 }
 
 // create writes a desktop entry under the user's applications folder, where launchers and app menus find it. Inside
@@ -195,11 +206,7 @@ func dataHome() (string, error) {
 
 // RemoveStartMenu deletes every profile's desktop entry, for an uninstall.
 func RemoveStartMenu() error {
-	base, err := dataHome()
-	if err != nil {
-		return err
-	}
-	paths, err := filepath.Glob(filepath.Join(base, "applications", appversion.AppID+".play-*.desktop"))
+	paths, err := playEntries()
 	if err != nil {
 		return err
 	}
@@ -217,11 +224,7 @@ func Repoint(exe string) error {
 	if flatpak.Inside() {
 		return nil // The launcher portal writes Flatpak launchers with a flatpak run line, not a path.
 	}
-	base, err := dataHome()
-	if err != nil {
-		return err
-	}
-	paths, err := filepath.Glob(filepath.Join(base, "applications", appversion.AppID+".play-*.desktop"))
+	paths, err := playEntries()
 	if err != nil {
 		return err
 	}
