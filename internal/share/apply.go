@@ -20,37 +20,52 @@ func Apply(modsDir string, entries []profile.Entry, configs []Config) (written [
 	done := map[string]bool{}
 	for _, e := range entries {
 		for _, m := range e.Mods {
-			plain, dotted, pathErr := profile.ModPaths(modsDir, e.Key, m.Folder)
-			if pathErr != nil {
+			folder, ok := existingModFolder(modsDir, e.Key, m.Folder)
+			if !ok {
 				continue
 			}
-			folder := plain
-			if !safefs.IsDir(folder) {
-				folder = dotted
+			wrote, err := applyToFolder(folder, m.ID, configs)
+			if wrote && !done[m.ID.Fold()] {
+				done[m.ID.Fold()] = true
+				written = append(written, m.ID)
 			}
-			if !safefs.IsDir(folder) {
-				continue
-			}
-			for _, c := range configs {
-				if !mod.Equal(c.ID, m.ID) || !ValidConfigPath(c.Path) || strings.EqualFold(c.Path, manifestFile) {
-					continue
-				}
-				dest := filepath.Join(folder, filepath.FromSlash(c.Path))
-				if !filepath.IsLocal(filepath.FromSlash(c.Path)) {
-					continue
-				}
-				if err := os.MkdirAll(filepath.Dir(dest), 0o750); err != nil {
-					return written, err
-				}
-				if err := safefs.WriteFile(dest, c.Data, configPerm); err != nil {
-					return written, err
-				}
-				if !done[m.ID.Fold()] {
-					done[m.ID.Fold()] = true
-					written = append(written, m.ID)
-				}
+			if err != nil {
+				return written, err
 			}
 		}
 	}
 	return written, nil
+}
+
+// existingModFolder returns the mod's folder on disk, switched on or off, and whether it exists.
+func existingModFolder(modsDir, key, folder string) (string, bool) {
+	plain, dotted, err := profile.ModPaths(modsDir, key, folder)
+	if err != nil {
+		return "", false
+	}
+	if safefs.IsDir(plain) {
+		return plain, true
+	}
+	return dotted, safefs.IsDir(dotted)
+}
+
+// applyToFolder writes the configs of one mod id into folder and reports whether it wrote any.
+func applyToFolder(folder string, id mod.ID, configs []Config) (wrote bool, err error) {
+	for _, c := range configs {
+		if !mod.Equal(c.ID, id) || !ValidConfigPath(c.Path) || strings.EqualFold(c.Path, manifestFile) {
+			continue
+		}
+		dest := filepath.Join(folder, filepath.FromSlash(c.Path))
+		if !filepath.IsLocal(filepath.FromSlash(c.Path)) {
+			continue
+		}
+		if err := os.MkdirAll(filepath.Dir(dest), 0o750); err != nil {
+			return wrote, err
+		}
+		if err := safefs.WriteFile(dest, c.Data, configPerm); err != nil {
+			return wrote, err
+		}
+		wrote = true
+	}
+	return wrote, nil
 }

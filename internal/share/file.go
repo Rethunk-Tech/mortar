@@ -165,28 +165,12 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 	if utf8.RuneCountInString(notes) > profile.MaxNotes {
 		return nil, fmt.Errorf("%w: notes are too long", ErrBadFile)
 	}
-	var configs []Config
-	for _, e := range p.Entries {
-		if !inc.ConfigFiles {
-			break
-		}
-		if e.Source.Bundled() || (!Enabled(e) && !inc.DisabledMods) {
-			continue
-		}
-		for _, m := range e.Mods {
-			if !e.Enabled(m.ID) || !validID(m.ID) {
-				continue
-			}
-			doc.IDs = append(doc.IDs, m.ID)
-			found, skip, err := ReadConfigs(modsDir, e.Key, m)
-			if err != nil {
-				return nil, err
-			}
-			configs = append(configs, found...)
-			skipped = append(skipped, skip...)
-		}
+	configs, skipped, err := collectModConfigs(p, inc, modsDir, &doc)
+	if err != nil {
+		return nil, err
 	}
 	var loaderConfigs []LoaderConfig
+	var changed []ChangedFile
 	if inc.ConfigFiles && modsDir != "" {
 		found, skip, err := readLoaderConfigs(filepath.Dir(modsDir), gameID, p.Loader)
 		if err != nil {
@@ -194,44 +178,18 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 		}
 		loaderConfigs = found
 		skipped = append(skipped, skip...)
-	}
-	var changed []ChangedFile
-	if inc.ConfigFiles && modsDir != "" {
-		found, skip, err := readChangedFiles(filepath.Dir(modsDir), gameID)
+		foundChanged, skip, err := readChangedFiles(filepath.Dir(modsDir), gameID)
 		if err != nil {
 			return nil, err
 		}
-		changed = found
+		changed = foundChanged
 		skipped = append(skipped, skip...)
 	}
-	var total int64
-	kept := configs[:0]
-	for _, c := range configs {
-		total += int64(len(c.Data))
-		if total > MaxConfigTotal || len(kept) >= MaxConfigFiles {
-			skipped = append(skipped, c.ID.Local()+"/"+c.Path)
-			continue
-		}
-		kept = append(kept, c)
-	}
-	keptLoader := loaderConfigs[:0]
-	for _, c := range loaderConfigs {
-		total += int64(len(c.Data))
-		if total > MaxConfigTotal || len(kept)+len(keptLoader) >= MaxConfigFiles {
-			skipped = append(skipped, c.Path)
-			continue
-		}
-		keptLoader = append(keptLoader, c)
-	}
-	keptChanged := changed[:0]
-	for _, c := range changed {
-		total += int64(len(c.Data))
-		if total > MaxConfigTotal || len(kept)+len(keptLoader)+len(keptChanged) >= MaxConfigFiles {
-			skipped = append(skipped, c.Path)
-			continue
-		}
-		keptChanged = append(keptChanged, c)
-	}
+	caps := configCaps{skipped: skipped}
+	kept := keepWithinCaps(&caps, configs, func(c Config) (int, string) { return len(c.Data), c.ID.Local() + "/" + c.Path })
+	keptLoader := keepWithinCaps(&caps, loaderConfigs, func(c LoaderConfig) (int, string) { return len(c.Data), c.Path })
+	keptChanged := keepWithinCaps(&caps, changed, func(c ChangedFile) (int, string) { return len(c.Data), c.Path })
+	skipped = caps.skipped
 	head, err := json.Marshal(doc)
 	if err != nil {
 		return nil, err
@@ -255,6 +213,55 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 		}
 	}
 	return skipped, zw.Close()
+}
+
+// collectModConfigs reads the config files of every enabled mod and lists those mods' ids in doc.
+func collectModConfigs(p profile.Profile, inc Include, modsDir string, doc *fileDoc) (configs []Config, skipped []string, err error) {
+	if !inc.ConfigFiles {
+		return nil, nil, nil
+	}
+	for _, e := range p.Entries {
+		if e.Source.Bundled() || (!Enabled(e) && !inc.DisabledMods) {
+			continue
+		}
+		for _, m := range e.Mods {
+			if !e.Enabled(m.ID) || !validID(m.ID) {
+				continue
+			}
+			doc.IDs = append(doc.IDs, m.ID)
+			found, skip, err := ReadConfigs(modsDir, e.Key, m)
+			if err != nil {
+				return nil, nil, err
+			}
+			configs = append(configs, found...)
+			skipped = append(skipped, skip...)
+		}
+	}
+	return configs, skipped, nil
+}
+
+// configCaps tracks the size and count caps shared by every kind of config file in one share file.
+type configCaps struct {
+	total   int64
+	count   int
+	skipped []string
+}
+
+// keepWithinCaps returns the files that fit under the shared caps, in order, and records the others as skipped by
+// the name measure returns. A skipped file still counts toward the total.
+func keepWithinCaps[T any](caps *configCaps, files []T, measure func(T) (size int, name string)) []T {
+	kept := files[:0]
+	for _, f := range files {
+		size, name := measure(f)
+		caps.total += int64(size)
+		if caps.total > MaxConfigTotal || caps.count >= MaxConfigFiles {
+			caps.skipped = append(caps.skipped, name)
+			continue
+		}
+		caps.count++
+		kept = append(kept, f)
+	}
+	return kept
 }
 
 func putFile(zw *zip.Writer, name string, data []byte) error {
@@ -416,84 +423,112 @@ func readZip(entries []entry) (Preview, error) {
 	if err != nil {
 		return Preview{}, err
 	}
-	known := map[string]mod.ID{}
+	zr := &zipReader{pv: &pv, known: map[string]mod.ID{}, seen: map[string]bool{profileFile: true}}
 	for _, id := range pv.IDs {
-		known[id.Fold()] = id
-	}
-	seen := map[string]bool{profileFile: true}
-	var total int64
-	// read returns one entry's bytes, refusing a second entry under the same key and a file whose entries together
-	// pass the size cap.
-	read := func(f entry, key string) ([]byte, error) {
-		if seen[key] {
-			return nil, fmt.Errorf("%w: duplicate %q", ErrBadFile, f.name)
-		}
-		seen[key] = true
-		if total += int64(len(f.data)); total > MaxConfigTotal {
-			return nil, fmt.Errorf("%w: configs exceed the size cap", ErrBadFile)
-		}
-		return f.data, nil
+		zr.known[id.Fold()] = id
 	}
 	for _, f := range entries {
 		if f.name == profileFile {
 			continue
 		}
-		if rel, ok := strings.CutPrefix(f.name, loaderPrefix); ok {
-			if !validLoaderConfigShape(rel) {
-				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.name)
-			}
-			if !winSafe(rel) {
-				slog.Warn("share: skipped a loader config whose name Windows cannot store", "path", f.name)
-				continue
-			}
-			data, err := read(f, strings.ToLower(f.name))
-			if err != nil {
-				return Preview{}, err
-			}
-			pv.LoaderConfigs = append(pv.LoaderConfigs, LoaderConfig{Path: rel, Data: data})
-			continue
+		var err error
+		switch {
+		case strings.HasPrefix(f.name, loaderPrefix):
+			err = zr.loaderConfig(f)
+		case strings.HasPrefix(f.name, changedPrefix):
+			err = zr.changedFile(f)
+		default:
+			err = zr.modConfig(f)
 		}
-		if rel, ok := strings.CutPrefix(f.name, changedPrefix); ok {
-			// On Windows IsLocal refuses a device name, which would fail the whole file; as on Linux the copy is skipped.
-			if !validChangedLocation(pv.Game, rel) && (!hasDeviceSegment(rel) || !validChangedLocation(pv.Game, devicesRenamed(rel))) {
-				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.name)
-			}
-			// An older release let a copy of any non-program type travel; the file is still good without it.
-			if skippedEntry(f.name) {
-				slog.Warn("share: skipped a changed copy of a type no longer carried or a name Windows cannot store", "path", rel)
-				continue
-			}
-			data, err := read(f, strings.ToLower(f.name))
-			if err != nil {
-				return Preview{}, err
-			}
-			pv.ChangedFiles = append(pv.ChangedFiles, ChangedFile{Path: rel, Data: data})
-			continue
-		}
-		rest, ok := strings.CutPrefix(f.name, "configs/")
-		fmtSeg, rest, ok2 := strings.Cut(rest, "/")
-		local, rel, ok3 := strings.Cut(rest, "/")
-		if !ok || !ok2 || !ok3 {
-			return Preview{}, fmt.Errorf("%w: unexpected entry %q", ErrBadFile, f.name)
-		}
-		canon, ok := known[mod.NewID(fmtSeg, local).Fold()]
-		if !ok {
-			return Preview{}, fmt.Errorf("%w: %q is for a mod the profile does not list", ErrBadFile, f.name)
-		}
-		if path.Clean(rel) != rel || !validConfigShape(rel) {
-			return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.name)
-		}
-		if !winSafe(rel) {
-			slog.Warn("share: skipped a config whose name Windows cannot store", "path", f.name)
-			continue
-		}
-		data, err := read(f, strings.ToLower(string(canon)+"/"+rel))
 		if err != nil {
 			return Preview{}, err
 		}
-		pv.Configs = append(pv.Configs, Config{ID: canon, Path: rel, Data: data})
 	}
 	return pv, nil
+}
+
+// zipReader accumulates a share file's entries into a Preview.
+type zipReader struct {
+	pv    *Preview
+	known map[string]mod.ID
+	seen  map[string]bool
+	total int64
+}
+
+// read returns one entry's bytes, refusing a second entry under the same key and a file whose entries together
+// pass the size cap.
+func (z *zipReader) read(f entry, key string) ([]byte, error) {
+	if z.seen[key] {
+		return nil, fmt.Errorf("%w: duplicate %q", ErrBadFile, f.name)
+	}
+	z.seen[key] = true
+	if z.total += int64(len(f.data)); z.total > MaxConfigTotal {
+		return nil, fmt.Errorf("%w: configs exceed the size cap", ErrBadFile)
+	}
+	return f.data, nil
+}
+
+func (z *zipReader) loaderConfig(f entry) error {
+	rel := strings.TrimPrefix(f.name, loaderPrefix)
+	if !validLoaderConfigShape(rel) {
+		return fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.name)
+	}
+	if !winSafe(rel) {
+		slog.Warn("share: skipped a loader config whose name Windows cannot store", "path", f.name)
+		return nil
+	}
+	data, err := z.read(f, strings.ToLower(f.name))
+	if err != nil {
+		return err
+	}
+	z.pv.LoaderConfigs = append(z.pv.LoaderConfigs, LoaderConfig{Path: rel, Data: data})
+	return nil
+}
+
+func (z *zipReader) changedFile(f entry) error {
+	rel := strings.TrimPrefix(f.name, changedPrefix)
+	game := z.pv.Game
+	// On Windows IsLocal refuses a device name, which would fail the whole file; as on Linux the copy is skipped.
+	if !validChangedLocation(game, rel) && (!hasDeviceSegment(rel) || !validChangedLocation(game, devicesRenamed(rel))) {
+		return fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.name)
+	}
+	// An older release let a copy of any non-program type travel; the file is still good without it.
+	if skippedEntry(f.name) {
+		slog.Warn("share: skipped a changed copy of a type no longer carried or a name Windows cannot store", "path", rel)
+		return nil
+	}
+	data, err := z.read(f, strings.ToLower(f.name))
+	if err != nil {
+		return err
+	}
+	z.pv.ChangedFiles = append(z.pv.ChangedFiles, ChangedFile{Path: rel, Data: data})
+	return nil
+}
+
+func (z *zipReader) modConfig(f entry) error {
+	rest, ok := strings.CutPrefix(f.name, "configs/")
+	fmtSeg, rest, ok2 := strings.Cut(rest, "/")
+	local, rel, ok3 := strings.Cut(rest, "/")
+	if !ok || !ok2 || !ok3 {
+		return fmt.Errorf("%w: unexpected entry %q", ErrBadFile, f.name)
+	}
+	canon, ok := z.known[mod.NewID(fmtSeg, local).Fold()]
+	if !ok {
+		return fmt.Errorf("%w: %q is for a mod the profile does not list", ErrBadFile, f.name)
+	}
+	if path.Clean(rel) != rel || !validConfigShape(rel) {
+		return fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.name)
+	}
+	if !winSafe(rel) {
+		slog.Warn("share: skipped a config whose name Windows cannot store", "path", f.name)
+		return nil
+	}
+	data, err := z.read(f, strings.ToLower(string(canon)+"/"+rel))
+	if err != nil {
+		return err
+	}
+	z.pv.Configs = append(z.pv.Configs, Config{ID: canon, Path: rel, Data: data})
+	return nil
 }
 
 func parseFileDoc(raw []byte) (Preview, error) {

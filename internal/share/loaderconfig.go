@@ -77,48 +77,57 @@ func CompanionState(gameID, loaderID string) string {
 // readLoaderConfigs collects the text config files under the loader's config roots in profileDir; files over the
 // size cap, not UTF-8, or with unusual names are skipped and returned as paths.
 func readLoaderConfigs(profileDir, gameID, loaderID string) (found []LoaderConfig, skipped []string, err error) {
-	state := CompanionState(gameID, loaderID)
-	// Read refuses two entries differing only by case, so a case variant of an earlier name is left out.
-	folded := map[string]bool{}
+	w := &loaderWalk{profileDir: profileDir, state: CompanionState(gameID, loaderID), folded: map[string]bool{}}
 	for _, root := range LoaderConfigRoots(gameID, loaderID) {
-		err := filepath.WalkDir(filepath.Join(profileDir, filepath.FromSlash(root)), func(p string, d fs.DirEntry, walkErr error) error {
-			if walkErr != nil {
-				if errors.Is(walkErr, fs.ErrNotExist) {
-					return nil
-				}
-				return walkErr
-			}
-			if !d.Type().IsRegular() {
-				return nil
-			}
-			rel, err := filepath.Rel(profileDir, p)
-			if err != nil {
-				return err
-			}
-			rel = filepath.ToSlash(rel)
-			if strings.EqualFold(rel, state) || !slices.Contains(loaderConfigExts, strings.ToLower(path.Ext(rel))) {
-				return nil
-			}
-			data, err := readCapped(p)
-			if errors.Is(err, safefs.ErrTooLarge) || (err == nil && (!utf8.Valid(data) || !validLoaderConfigPath(rel))) {
-				skipped = append(skipped, rel)
-				return nil
-			}
-			if err != nil {
-				return err
-			}
-			if folded[strings.ToLower(rel)] {
-				slog.Warn("share: skipped a loader config whose name differs from an earlier one only by case", "path", rel)
-				skipped = append(skipped, rel)
-				return nil
-			}
-			folded[strings.ToLower(rel)] = true
-			found = append(found, LoaderConfig{Path: rel, Data: data})
-			return nil
-		})
-		if err != nil {
+		if err := filepath.WalkDir(filepath.Join(profileDir, filepath.FromSlash(root)), w.visit); err != nil {
 			return nil, nil, err
 		}
 	}
-	return found, skipped, nil
+	return w.found, w.skipped, nil
+}
+
+// loaderWalk is the state of one readLoaderConfigs walk.
+type loaderWalk struct {
+	profileDir string
+	state      string
+	// Read refuses two entries differing only by case, so a case variant of an earlier name is left out.
+	folded  map[string]bool
+	found   []LoaderConfig
+	skipped []string
+}
+
+func (w *loaderWalk) visit(p string, d fs.DirEntry, walkErr error) error {
+	if walkErr != nil {
+		if errors.Is(walkErr, fs.ErrNotExist) {
+			return nil
+		}
+		return walkErr
+	}
+	if !d.Type().IsRegular() {
+		return nil
+	}
+	rel, err := filepath.Rel(w.profileDir, p)
+	if err != nil {
+		return err
+	}
+	rel = filepath.ToSlash(rel)
+	if strings.EqualFold(rel, w.state) || !slices.Contains(loaderConfigExts, strings.ToLower(path.Ext(rel))) {
+		return nil
+	}
+	data, err := readCapped(p)
+	if errors.Is(err, safefs.ErrTooLarge) || (err == nil && (!utf8.Valid(data) || !validLoaderConfigPath(rel))) {
+		w.skipped = append(w.skipped, rel)
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if w.folded[strings.ToLower(rel)] {
+		slog.Warn("share: skipped a loader config whose name differs from an earlier one only by case", "path", rel)
+		w.skipped = append(w.skipped, rel)
+		return nil
+	}
+	w.folded[strings.ToLower(rel)] = true
+	w.found = append(w.found, LoaderConfig{Path: rel, Data: data})
+	return nil
 }

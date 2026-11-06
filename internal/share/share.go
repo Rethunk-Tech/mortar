@@ -420,18 +420,31 @@ func validDetails(r Ref) bool {
 	if r.Overlay != nil && (r.GitHub != "" || r.Package != "" || r.Patreon != "" || r.Itch != "" || r.CurseForge != 0 || r.VSModDB != "" || r.Paradox != "" || r.Modio != 0 || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
 		return false
 	}
-	for _, disabled := range r.Disabled {
-		id := string(disabled)
-		if id == "" || len(id) > 100 || strings.TrimSpace(id) != id || strings.ContainsFunc(id, unicode.IsControl) {
+	return validDisabled(r.Disabled) && validFomod(r.Fomod)
+}
+
+// plainText reports a non-empty string of at most limit bytes without control characters.
+func plainText(s string, limit int) bool {
+	return s != "" && len(s) <= limit && !strings.ContainsFunc(s, unicode.IsControl)
+}
+
+func validDisabled(disabled []mod.ID) bool {
+	for _, d := range disabled {
+		id := string(d)
+		if !plainText(id, 100) || strings.TrimSpace(id) != id {
 			return false
 		}
 	}
-	for step, groups := range r.Fomod {
-		if step == "" || len(step) > 100 || strings.ContainsFunc(step, unicode.IsControl) || len(groups) > MaxEntries {
+	return true
+}
+
+func validFomod(fomod map[string]map[string][]string) bool {
+	for step, groups := range fomod {
+		if !plainText(step, 100) || len(groups) > MaxEntries {
 			return false
 		}
 		for group, choices := range groups {
-			if group == "" || len(group) > 100 || strings.ContainsFunc(group, unicode.IsControl) || len(choices) > MaxEntries {
+			if !plainText(group, 100) || len(choices) > MaxEntries {
 				return false
 			}
 			for _, choice := range choices {
@@ -811,12 +824,7 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 			continue
 		}
 		done[key] = true
-		var group []profile.Entry
-		for _, o := range p.Entries {
-			if !o.Source.Bundled() && o.StoreKey() == key {
-				group = append(group, o)
-			}
-		}
+		group := storeGroup(p.Entries, key)
 		if !inc.Libraries && !slices.ContainsFunc(group, func(o profile.Entry) bool { return !o.Implicit }) {
 			continue
 		}
@@ -829,31 +837,47 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 			left = append(left, LeftOut{Key: key, Reason: why})
 			continue
 		}
-		r.Disabled = nil
-		for _, o := range group {
-			r.Disabled = append(r.Disabled, o.Disabled...)
-			if !inc.Notes || (o.Note == "" && len(o.Tags) == 0) {
-				continue
-			}
-			if o.File == "" {
-				if r.Note == "" && r.Tags == nil {
-					r.Note, r.Tags = o.Note, slices.Clone(o.Tags)
-				}
-				continue
-			}
-			if r.Files == nil {
-				r.Files = map[string]FileNote{}
-			}
-			r.Files[o.File] = FileNote{Note: o.Note, Tags: slices.Clone(o.Tags)}
-		}
-		r.Implicit = !slices.ContainsFunc(group, func(o profile.Entry) bool { return !o.Implicit })
-		if i := slices.IndexFunc(group, func(o profile.Entry) bool { return o.Pinned }); i >= 0 {
-			r.Pinned, r.PinReason = true, group[i].PinReason
-		}
+		mergeGroup(&r, group, inc)
 		r.key = key
 		s.Entries = append(s.Entries, r)
 	}
 	return s, left, off
+}
+
+// storeGroup is the non-bundled entries cut from one store item.
+func storeGroup(entries []profile.Entry, key string) []profile.Entry {
+	var group []profile.Entry
+	for _, o := range entries {
+		if !o.Source.Bundled() && o.StoreKey() == key {
+			group = append(group, o)
+		}
+	}
+	return group
+}
+
+// mergeGroup folds the disabled mods, notes and pin of every entry of one store item into its ref.
+func mergeGroup(r *Ref, group []profile.Entry, inc Include) {
+	r.Disabled = nil
+	for _, o := range group {
+		r.Disabled = append(r.Disabled, o.Disabled...)
+		if !inc.Notes || (o.Note == "" && len(o.Tags) == 0) {
+			continue
+		}
+		if o.File == "" {
+			if r.Note == "" && r.Tags == nil {
+				r.Note, r.Tags = o.Note, slices.Clone(o.Tags)
+			}
+			continue
+		}
+		if r.Files == nil {
+			r.Files = map[string]FileNote{}
+		}
+		r.Files[o.File] = FileNote{Note: o.Note, Tags: slices.Clone(o.Tags)}
+	}
+	r.Implicit = !slices.ContainsFunc(group, func(o profile.Entry) bool { return !o.Implicit })
+	if i := slices.IndexFunc(group, func(o profile.Entry) bool { return o.Pinned }); i >= 0 {
+		r.Pinned, r.PinReason = true, group[i].PinReason
+	}
 }
 
 // SourceKeys is each of the game's catalog sources that names the game, keyed by source id.

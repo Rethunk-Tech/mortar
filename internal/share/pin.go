@@ -21,21 +21,7 @@ func Pin(dst, src []byte, mods []mod.ID, files []string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	entries := make([]Ref, len(dv.Entries))
-	for i, r := range dv.Entries {
-		r.Disabled = slices.DeleteFunc(slices.Clone(r.Disabled), func(id mod.ID) bool { return slices.Contains(mods, id) })
-		entries[i] = r
-	}
-	for _, id := range mods {
-		for _, sr := range sv.Entries {
-			if !slices.Contains(sr.Disabled, id) {
-				continue
-			}
-			if i := slices.IndexFunc(entries, func(r Ref) bool { return r.Identity() == sr.Identity() }); i >= 0 {
-				entries[i].Disabled = append(entries[i].Disabled, id)
-			}
-		}
-	}
+	entries := pinDisabled(dv.Entries, sv.Entries, mods)
 	pinned := func(name string) bool {
 		return slices.ContainsFunc(files, func(f string) bool { return name == f || strings.HasSuffix(name, "/"+f) })
 	}
@@ -80,4 +66,24 @@ func Pin(dst, src []byte, mods []mod.ID, files []string) ([]byte, error) {
 		return nil, err
 	}
 	return out.Bytes(), nil
+}
+
+// pinDisabled returns dst's refs with the named mods' disabled state replaced by src's.
+func pinDisabled(dst, src []Ref, mods []mod.ID) []Ref {
+	entries := make([]Ref, len(dst))
+	for i, r := range dst {
+		r.Disabled = slices.DeleteFunc(slices.Clone(r.Disabled), func(id mod.ID) bool { return slices.Contains(mods, id) })
+		entries[i] = r
+	}
+	for _, id := range mods {
+		for _, sr := range src {
+			if !slices.Contains(sr.Disabled, id) {
+				continue
+			}
+			if i := slices.IndexFunc(entries, func(r Ref) bool { return r.Identity() == sr.Identity() }); i >= 0 {
+				entries[i].Disabled = append(entries[i].Disabled, id)
+			}
+		}
+	}
+	return entries
 }
