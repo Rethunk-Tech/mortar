@@ -194,42 +194,45 @@ func (Loader) Load(line string) (string, int) {
 // Analyzers is none: SMAPI's log problems are found by internal/launch.
 func (Loader) Analyzers() []loader.Analyzer { return nil }
 
+// stateFileOf is the bridge's state file in the profile's companion folder.
+func stateFileOf(p loader.ProfileView) (string, error) {
+	if p.Companion == "" {
+		return "", fmt.Errorf("this profile has no console bridge")
+	}
+	return bridge.SMAPI.StatePath(p.Companion), nil
+}
+
 // Perf asks the bridge mod for its per-frame measurement of each mod's handlers; start restarts the window, which is
 // also what begins the timing.
 func (Loader) Perf(ctx context.Context, p loader.ProfileView, start bool) (json.RawMessage, error) {
-	if p.Companion == "" {
-		return nil, fmt.Errorf("this profile has no console bridge")
+	stateFile, err := stateFileOf(p)
+	if err != nil {
+		return nil, err
 	}
 	what := "perf"
 	if start {
 		what = "perf start"
 	}
-	return bridge.Query(ctx, filepath.Join(p.Companion, bridge.SMAPI.StateFile), what)
+	return bridge.Query(ctx, stateFile, what)
 }
 
 // RunningState is the bridge's status: the game version and the loaded mods, whose UniqueIDs it reports as plugin
 // GUIDs. It names no scene.
 func (Loader) RunningState(ctx context.Context, p loader.ProfileView) (loader.Live, error) {
-	if p.Companion == "" {
-		return loader.Live{}, fmt.Errorf("this profile has no console bridge")
-	}
-	raw, err := bridge.Query(ctx, filepath.Join(p.Companion, bridge.SMAPI.StateFile), "status")
+	stateFile, err := stateFileOf(p)
 	if err != nil {
 		return loader.Live{}, err
 	}
-	var st bridge.Status
-	if err := json.Unmarshal(raw, &st); err != nil {
-		return loader.Live{}, err
-	}
-	return loader.LiveOf(st), nil
+	return loader.QueryLive(ctx, stateFile)
 }
 
 // Send runs command in the game through the bridge mod in the profile.
 func (Loader) Send(ctx context.Context, _ loader.Target, p loader.ProfileView, command string) (string, error) {
-	if p.Companion == "" {
-		return "", fmt.Errorf("this profile has no console bridge")
+	stateFile, err := stateFileOf(p)
+	if err != nil {
+		return "", err
 	}
-	return "", bridge.Send(ctx, filepath.Join(p.Companion, bridge.SMAPI.StateFile), command)
+	return "", bridge.Send(ctx, stateFile, command)
 }
 
 // ReportsStartup is true: the Mortar SMAPI Bridge times each mod's startup.

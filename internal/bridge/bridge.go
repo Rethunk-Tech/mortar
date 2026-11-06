@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -24,6 +25,11 @@ import (
 // rules differ and the catalog installs it from a GitHub release, where no index names it.
 type Companion struct {
 	ModFolder, ID, StateFile, Package string
+}
+
+// StatePath is the state file of c's bridge, for a root that is the mod's folder (SMAPI) or the profile (BepInEx).
+func (c Companion) StatePath(root string) string {
+	return filepath.Join(root, filepath.FromSlash(c.StateFile))
 }
 
 // SMAPI is the Mortar SMAPI Bridge.

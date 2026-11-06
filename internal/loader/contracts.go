@@ -2,6 +2,7 @@ package loader
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -321,6 +322,19 @@ func LiveOf(st bridge.Status) Live {
 		live.Plugins = append(live.Plugins, LivePlugin{GUID: pl.GUID, Version: pl.Version, Location: pl.Location})
 	}
 	return live
+}
+
+// QueryLive asks the bridge whose state file is stateFile for its status and reduces it to a Live.
+func QueryLive(ctx context.Context, stateFile string) (Live, error) {
+	raw, err := bridge.Query(ctx, stateFile, "status")
+	if err != nil {
+		return Live{}, err
+	}
+	var st bridge.Status
+	if err := json.Unmarshal(raw, &st); err != nil {
+		return Live{}, err
+	}
+	return LiveOf(st), nil
 }
 
 // RunningState is a loader whose companion tells what the running game has loaded, for a log that names no version.

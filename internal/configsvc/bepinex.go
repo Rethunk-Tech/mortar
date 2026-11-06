@@ -138,7 +138,7 @@ func (s *Service) HostValues(game, profileID, file string) ([]HostValue, error) 
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), askHostFor)
 	defer cancel()
-	raw, err := bridge.Query(ctx, filepath.Join(dir, filepath.FromSlash(bridge.BepInEx.StateFile)), "configsync")
+	raw, err := bridge.Query(ctx, bridge.BepInEx.StatePath(dir), "configsync")
 	var rejected *bridge.RejectedError
 	if errors.Is(err, bridge.ErrNotRunning) || errors.Is(err, bridge.ErrNotReady) || errors.As(err, &rejected) {
 		return none, nil
