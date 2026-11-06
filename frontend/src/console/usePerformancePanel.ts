@@ -114,6 +114,7 @@ function useParsedReport(
     },
     [reportLines, game, openId, setSavedReports],
     NO_ROWS,
+    { keepAcrossKeys: true },
   )
   return [data, setData] as const
 }
