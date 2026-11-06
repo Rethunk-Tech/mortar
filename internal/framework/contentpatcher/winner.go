@@ -49,16 +49,34 @@ func allAfter(w packHit, winners, byID map[string]packHit) bool {
 	return true
 }
 
-// overwritten reports a pack that clashes with both a and b and loads after both.
-// ponytail: compares whole packs, not the keys each pair fights over; a winner that clashes with a and b on other
-// keys than theirs still counts. Track rivals per key if that shows up.
+// overwritten reports a pack that clashes with both a and b on the very keys a and b contest and loads after both.
 func overwritten(a, b packHit, hits []packHit, byID map[string]packHit) bool {
+	contested := contestedShapes(a, b)
 	for _, w := range hits {
-		if settledAfter(w, a, byID) && settledAfter(w, b, byID) && rivals(w, a) && rivals(w, b) {
+		if settledAfter(w, a, byID) && settledAfter(w, b, byID) && rivals(w, a) && rivals(w, b) && touches(w, contested) {
 			return true
 		}
 	}
 	return false
+}
+
+// contestedShapes is the part of a's edits that b's edits also reach.
+func contestedShapes(a, b packHit) []cpShape {
+	var out []cpShape
+	for _, x := range a.edits {
+		for _, y := range b.edits {
+			for _, s := range x.shapes {
+				if slices.ContainsFunc(y.shapes, s.overlaps) {
+					out = append(out, s)
+				}
+			}
+		}
+	}
+	return out
+}
+
+func touches(w packHit, shapes []cpShape) bool {
+	return slices.ContainsFunc(w.edits, func(e cpPatch) bool { return shapesOverlap(e.shapes, shapes) })
 }
 
 func rivals(a, b packHit) bool {

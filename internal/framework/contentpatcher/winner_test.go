@@ -3,6 +3,7 @@ package contentpatcher
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
@@ -80,6 +81,31 @@ func TestOneWinnerOverPacksThatClashAmongThemselves(t *testing.T) {
 	}
 }
 
+func TestAPackClashingOnOtherKeysDoesNotOverwriteTheContest(t *testing.T) {
+	testfs.DataHome(t)
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+	pack := func(id string, keys ...string) framework.Mod {
+		entries := make([]string, len(keys))
+		for n, k := range keys {
+			entries[n] = `"` + k + `":"` + id + `"`
+		}
+		return tilesheetPack(t, "Win.P"+strings.ToUpper(id),
+			`{"Changes":[{"Action":"EditData","Target":"Data/CookingRecipes","Entries":{`+strings.Join(entries, ",")+`}}]}`)
+	}
+	// a and b fight over k1; w clashes with each, but on k2 and k3.
+	m := []framework.Mod{pack("a", "k1", "k2"), pack("b", "k1", "k3"), pack("c", "k2", "k3")}
+	m[2].LoadAfter = []mod.ID{m[0].ModID(), m[1].ModID()}
+	if c := editConflict(t, m); c.Cosmetic {
+		t.Fatalf("w never touches k1, so a and b stay unsettled: %+v", c)
+	}
+	m = []framework.Mod{pack("a", "k1", "k2"), pack("b", "k1", "k3"), pack("c", "k1", "k2", "k3")}
+	m[2].LoadAfter = []mod.ID{m[0].ModID(), m[1].ModID()}
+	if c := editConflict(t, m); !c.Cosmetic {
+		t.Fatalf("w overwrites k1: %+v", c)
+	}
+}
+
 func TestADependentPackWinsOverWhatItsDependencyBeat(t *testing.T) {
 	testfs.DataHome(t)
 	resetContentPackCaches()
@@ -115,7 +141,7 @@ func BenchmarkMarkLoadAfterWinner(b *testing.B) {
 	const h = 64
 	hits := make([]packHit, h)
 	for i := range hits {
-		hits[i] = packHit{id: mod.ID(fmt.Sprintf("a.p%d", i)), loadAfter: map[string]bool{}, dependencies: map[string]bool{}}
+		hits[i] = packHit{id: mod.ID(fmt.Sprintf("a.p%d", i)), edits: []cpPatch{{shapes: whole}}, loadAfter: map[string]bool{}, dependencies: map[string]bool{}}
 	}
 	for i := range hits {
 		for j := range hits {
