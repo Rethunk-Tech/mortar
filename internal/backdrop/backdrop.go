@@ -113,34 +113,42 @@ func Middleware(current func() settings.Settings, system string, desktop func() 
 			// the browser checks first.
 			w.Header().Set("Cache-Control", "no-cache")
 			w.Header().Set("Vary", "Accept")
-			jxl := !negotiates || strings.Contains(r.Header.Get("Accept"), "image/jxl")
-			for _, path := range candidates(cur, system, desktop) {
-				if path == "" {
-					continue
-				}
-				f, typ, err := open(path)
-				if err != nil {
-					continue
-				}
-				// JPEG XL cannot be shrunk here, so a page asking for its width gets the bundled JPEG of the same default
-				// image, shrunk, rather than decoding the system copy's 4096 pixels square.
-				if typ == "image/jxl" && (!jxl || (path == system && r.URL.Query().Get("w") != "")) {
-					_ = f.Close()
-					continue
-				}
-				defer func() { _ = f.Close() }()
-				var mod time.Time
-				id := path
-				if info, err := f.Stat(); err == nil {
-					mod = info.ModTime()
-					id += "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" + strconv.FormatInt(mod.UnixNano(), 10)
-				}
-				serve(w, r, f, typ, id, mod, cacheDir)
+			if serveCandidate(w, r, candidates(cur, system, desktop), system, cacheDir) {
 				return
 			}
 			serve(w, r, bytes.NewReader(bundled), "image/jpeg", "bundled", time.Time{}, cacheDir)
 		})
 	}
+}
+
+// serveCandidate serves the first candidate that opens and that this client can take, and reports whether it did.
+func serveCandidate(w http.ResponseWriter, r *http.Request, paths []string, system, cacheDir string) bool {
+	jxl := !negotiates || strings.Contains(r.Header.Get("Accept"), "image/jxl")
+	for _, path := range paths {
+		if path == "" {
+			continue
+		}
+		f, typ, err := open(path)
+		if err != nil {
+			continue
+		}
+		// JPEG XL cannot be shrunk here, so a page asking for its width gets the bundled JPEG of the same default
+		// image, shrunk, rather than decoding the system copy's 4096 pixels square.
+		if typ == "image/jxl" && (!jxl || (path == system && r.URL.Query().Get("w") != "")) {
+			_ = f.Close()
+			continue
+		}
+		var mod time.Time
+		id := path
+		if info, err := f.Stat(); err == nil {
+			mod = info.ModTime()
+			id += "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" + strconv.FormatInt(mod.UnixNano(), 10)
+		}
+		serve(w, r, f, typ, id, mod, cacheDir)
+		_ = f.Close()
+		return true
+	}
+	return false
 }
 
 // Widths the page may ask for: below the first the window is too small to matter, above the last no screen needs more.
