@@ -409,41 +409,7 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 				continue
 			}
 		}
-		var placed string
-		if s.historyQuietIDs == nil {
-			s.historyQuietIDs = map[string]int{}
-		}
-		s.historyQuietIDs[prof.ID]++
-		var dropped []string
-		_, err := s.updateLocked(game, prof.ID, func(p *Profile, dir string) (err error) {
-			var disabled []mod.ID
-			for _, e := range slices.Backward(slices.Clone(p.Entries)) {
-				if e.Source.Kind != b.Source.Kind || e.Key == b.Key {
-					continue
-				}
-				disabled = append(disabled, e.Disabled...)
-				configs, err := s.removeFrom(game, p, dir, e.Key)
-				if err != nil {
-					return err
-				}
-				dropped = append(dropped, configs...)
-			}
-			if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == b.Key }) {
-				return nil
-			}
-			placed, err = s.addTo(game, p, dir, b.Key, b.Source, disabled)
-			return err
-		})
-		s.historyQuietIDs[prof.ID]--
-		if s.historyQuietIDs[prof.ID] <= 0 {
-			delete(s.historyQuietIDs, prof.ID)
-		}
-		if err != nil && placed != "" {
-			err = errors.Join(err, safefs.RemoveAll(placed))
-		}
-		if err == nil {
-			setConfigsAside(dropped)
-		}
+		err := s.applyBundledTo(game, prof.ID, b)
 		errs = append(errs, err)
 	}
 	if err := s.items.Touch(game, b.Key); err != nil {
@@ -594,23 +560,8 @@ func (s *Store) RestoreEntries(game, id string, entries []Entry) (Profile, error
 				}
 				continue
 			}
-			src := want.Source
-			if len(want.Fomod) > 0 {
-				src = src.WithFomod(want.Fomod)
-			}
-			if _, err := s.addTo(game, p, dir, want.Key, src, want.Disabled); err != nil {
+			if err := s.restorePlain(game, p, dir, want); err != nil {
 				return err
-			}
-			for _, m := range p.Entries {
-				if m.Key != want.Key {
-					continue
-				}
-				for _, im := range m.Mods {
-					if err := applyEnabled(p, dir, want.Key, im.ID, !hasID(want.Disabled, im.ID)); err != nil {
-						return err
-					}
-				}
-				break
 			}
 			applyRestoredMeta(p, want)
 		}
@@ -1081,4 +1032,68 @@ func (s *Store) PackageIcon(game, key string) (string, error) {
 		return "", fs.ErrNotExist
 	}
 	return icon, nil
+}
+
+// applyBundledTo swaps bundle b into one profile, replacing other bundles of the same kind and keeping their
+// switched-off mods off. The history is quiet meanwhile so the swap records no entry of its own.
+func (s *Store) applyBundledTo(game, id string, b Bundle) error {
+	var placed string
+	if s.historyQuietIDs == nil {
+		s.historyQuietIDs = map[string]int{}
+	}
+	s.historyQuietIDs[id]++
+	var dropped []string
+	_, err := s.updateLocked(game, id, func(p *Profile, dir string) (err error) {
+		var disabled []mod.ID
+		for _, e := range slices.Backward(slices.Clone(p.Entries)) {
+			if e.Source.Kind != b.Source.Kind || e.Key == b.Key {
+				continue
+			}
+			disabled = append(disabled, e.Disabled...)
+			configs, err := s.removeFrom(game, p, dir, e.Key)
+			if err != nil {
+				return err
+			}
+			dropped = append(dropped, configs...)
+		}
+		if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == b.Key }) {
+			return nil
+		}
+		placed, err = s.addTo(game, p, dir, b.Key, b.Source, disabled)
+		return err
+	})
+	s.historyQuietIDs[id]--
+	if s.historyQuietIDs[id] <= 0 {
+		delete(s.historyQuietIDs, id)
+	}
+	if err != nil && placed != "" {
+		err = errors.Join(err, safefs.RemoveAll(placed))
+	}
+	if err == nil {
+		setConfigsAside(dropped)
+	}
+	return err
+}
+
+// restorePlain re-adds a non-overlay entry and reapplies which of its mods were off.
+func (s *Store) restorePlain(game string, p *Profile, dir string, want Entry) error {
+	src := want.Source
+	if len(want.Fomod) > 0 {
+		src = src.WithFomod(want.Fomod)
+	}
+	if _, err := s.addTo(game, p, dir, want.Key, src, want.Disabled); err != nil {
+		return err
+	}
+	for _, m := range p.Entries {
+		if m.Key != want.Key {
+			continue
+		}
+		for _, im := range m.Mods {
+			if err := applyEnabled(p, dir, want.Key, im.ID, !hasID(want.Disabled, im.ID)); err != nil {
+				return err
+			}
+		}
+		break
+	}
+	return nil
 }

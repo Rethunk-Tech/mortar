@@ -124,24 +124,28 @@ func (s *Store) parkModConfigs(game string, p Profile, dir string) error {
 			if err := os.MkdirAll(to, 0o750); err != nil {
 				return err
 			}
-			for _, f := range files {
-				dst := filepath.Join(to, f)
-				// Back to live, a file already there is newer than the copy set aside (the mod wrote it since);
-				// going aside, the file already there is the older copy and is replaced.
-				if _, err := safefs.Stat(dst); err == nil {
-					if to == aside {
-						if err := safefs.Rename(filepath.Join(from, f), dst); err != nil {
-							return err
-						}
-					}
-					continue
-				} else if !errors.Is(err, fs.ErrNotExist) {
-					return err
-				}
-				if err := safefs.Rename(filepath.Join(from, f), dst); err != nil {
-					return err
-				}
+			if err := moveConfigs(files, from, to, aside); err != nil {
+				return err
 			}
+		}
+	}
+	return nil
+}
+
+// moveConfigs moves files from one config folder to the other. Back to live, a file already there is newer than the
+// copy set aside (the mod wrote it since); going aside, the file already there is the older copy and is replaced.
+func moveConfigs(files []string, from, to, aside string) error {
+	for _, f := range files {
+		dst := filepath.Join(to, f)
+		if _, err := safefs.Stat(dst); err == nil {
+			if to != aside {
+				continue
+			}
+		} else if !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+		if err := safefs.Rename(filepath.Join(from, f), dst); err != nil {
+			return err
 		}
 	}
 	return nil

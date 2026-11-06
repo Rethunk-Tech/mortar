@@ -52,17 +52,9 @@ func (s *Store) UpdateEntries(game, id string, moves []EntryMove) (Profile, erro
 		return Profile{}, err
 	}
 	defer s.mu.Unlock()
-	target := map[string]string{}
-	var uniq []EntryMove
-	for _, m := range moves {
-		if prev, ok := target[m.OldKey]; ok {
-			if prev != m.NewKey {
-				return Profile{}, fmt.Errorf("%q cannot move to both %q and %q", m.OldKey, prev, m.NewKey)
-			}
-			continue
-		}
-		target[m.OldKey] = m.NewKey
-		uniq = append(uniq, m)
+	uniq, err := uniqueMoves(moves)
+	if err != nil {
+		return Profile{}, err
 	}
 	var swaps []swapped
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) error {
@@ -92,23 +84,45 @@ func (s *Store) UpdateEntries(game, id string, moves []EntryMove) (Profile, erro
 		}
 		return Profile{}, err
 	}
-	var keys []string
 	for _, w := range swaps {
 		w.commit()
 	}
 	if err := s.RecordModsSnapshot(game, id); err != nil {
 		return Profile{}, err
 	}
-	for _, m := range uniq {
+	return p, s.items.Touch(game, movedKeys(uniq, p.Entries)...)
+}
+
+// uniqueMoves drops repeated moves of one entry and refuses two different targets for it.
+func uniqueMoves(moves []EntryMove) ([]EntryMove, error) {
+	target := map[string]string{}
+	var uniq []EntryMove
+	for _, m := range moves {
+		if prev, ok := target[m.OldKey]; ok {
+			if prev != m.NewKey {
+				return nil, fmt.Errorf("%q cannot move to both %q and %q", m.OldKey, prev, m.NewKey)
+			}
+			continue
+		}
+		target[m.OldKey] = m.NewKey
+		uniq = append(uniq, m)
+	}
+	return uniq, nil
+}
+
+// movedKeys are the store keys a set of moves touches: both ends and the extras of each new entry.
+func movedKeys(moves []EntryMove, entries []Entry) []string {
+	var keys []string
+	for _, m := range moves {
 		keys = append(keys, m.OldKey, m.NewKey)
-		for _, e := range p.Entries {
+		for _, e := range entries {
 			if e.Key == m.NewKey {
 				keys = append(keys, e.ExtraStoreKeys...)
 				keys = append(keys, e.PreviousExtraStoreKeys...)
 			}
 		}
 	}
-	return p, s.items.Touch(game, keys...)
+	return keys
 }
 
 // RollBack swaps the entry key back to its previous version, carrying over what the user and the mod wrote.
@@ -316,28 +330,8 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 		}
 		return nil
 	}
-	for _, nm := range ne.Mods {
-		i := slices.IndexFunc(e.Mods, func(m Component) bool { return mod.Equal(m.ID, nm.ID) })
-		if i < 0 {
-			continue
-		}
-		plain, dotted, err := ModPaths(modsDir, e.Key, e.Mods[i].Folder)
-		if err != nil {
-			return swapped{}, err
-		}
-		cur := plain
-		if !exists(cur) {
-			cur = dotted
-		}
-		if !exists(cur) {
-			continue
-		}
-		configOnly := deleteOldVersion(newManifests, nm.ID)
-		target := filepath.Join(tmp, filepath.FromSlash(nm.Folder))
-		err = carryOverWalk(cur, filepath.Join(oldSrc, filepath.FromSlash(e.Mods[i].Folder)), target, configOnly, goneFor(nm.ID, target))
-		if err != nil {
-			return swapped{}, err
-		}
+	if err := carryOverMods(modsDir, oldSrc, tmp, e, *ne, newManifests, goneFor); err != nil {
+		return swapped{}, err
 	}
 	if len(ne.ExtraStoreKeys) > 0 {
 		if err := s.fillExtrasUpdate(game, id, modsDir, e.Key, tmp, e, *ne, goneFor); err != nil {
@@ -364,12 +358,8 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 	if err != nil || w.aside == "" {
 		return w, err
 	}
-	for _, h := range held {
-		rel, err := filepath.Rel(w.old, h.abs)
-		if err != nil {
-			return w, err
-		}
-		w.held = append(w.held, heldFile{uniqueID: h.uniqueID, rel: h.rel, abs: filepath.Join(w.aside, rel)})
+	if err := rebaseHeld(&w, held); err != nil {
+		return w, err
 	}
 	w.heldDir = filepath.Join(filepath.Dir(modsDir), oldFilesDir, ne.Key)
 	return w, nil
@@ -606,4 +596,45 @@ func (s *Store) Current(game string, p Profile) Profile {
 		p.Entries[i].Source = s.followKey(game, e.Source, e.Key)
 	}
 	return p
+}
+
+// carryOverMods copies what the player and each mod wrote in e's current mod folders into the matching folders of
+// the update being built in tmp.
+func carryOverMods(modsDir, oldSrc, tmp string, e, ne Entry, newManifests []smapimanifest.Mod, goneFor func(mod.ID, string) func(rel, p string) error) error {
+	for _, nm := range ne.Mods {
+		i := slices.IndexFunc(e.Mods, func(m Component) bool { return mod.Equal(m.ID, nm.ID) })
+		if i < 0 {
+			continue
+		}
+		plain, dotted, err := ModPaths(modsDir, e.Key, e.Mods[i].Folder)
+		if err != nil {
+			return err
+		}
+		cur := plain
+		if !exists(cur) {
+			cur = dotted
+		}
+		if !exists(cur) {
+			continue
+		}
+		configOnly := deleteOldVersion(newManifests, nm.ID)
+		target := filepath.Join(tmp, filepath.FromSlash(nm.Folder))
+		err = carryOverWalk(cur, filepath.Join(oldSrc, filepath.FromSlash(e.Mods[i].Folder)), target, configOnly, goneFor(nm.ID, target))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// rebaseHeld points the files to set aside at their place in the moved-aside old folder.
+func rebaseHeld(w *swapped, held []heldFile) error {
+	for _, h := range held {
+		rel, err := filepath.Rel(w.old, h.abs)
+		if err != nil {
+			return err
+		}
+		w.held = append(w.held, heldFile{uniqueID: h.uniqueID, rel: h.rel, abs: filepath.Join(w.aside, rel)})
+	}
+	return nil
 }

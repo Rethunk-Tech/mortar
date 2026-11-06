@@ -205,11 +205,22 @@ func mapOverlay(files, base []string, mods []Component) (from, to string, ok boo
 			}
 		}
 	}
+	bestFrom, bestTo, best, total := bestLayout(files, wrapper, tos, have)
+	if best*2 > total {
+		return bestFrom, bestTo, true
+	}
+	if wrapper == "" {
+		return "", "", false
+	}
+	return wrapperByTopName(files, base, wrapper, tos)
+}
+
+// bestLayout scores each from/to pair by how many of the optional files land on a base file.
+func bestLayout(files []string, wrapper string, tos []string, have map[string]bool) (bestFrom, bestTo string, best, total int) {
 	froms := []string{""}
 	if wrapper != "" {
 		froms = append(froms, wrapper)
 	}
-	best, bestFrom, bestTo, total := 0, "", "", 0
 	for _, f := range froms {
 		under := stripTop(files, f)
 		for _, t := range tos {
@@ -224,12 +235,12 @@ func mapOverlay(files, base []string, mods []Component) (from, to string, ok boo
 			}
 		}
 	}
-	if best*2 > total {
-		return bestFrom, bestTo, true
-	}
-	if wrapper == "" {
-		return "", "", false
-	}
+	return bestFrom, bestTo, best, total
+}
+
+// wrapperByTopName falls back to a target folder of the base that already holds a folder named like one of the
+// wrapper's top-level entries.
+func wrapperByTopName(files, base []string, wrapper string, tos []string) (from, to string, ok bool) {
 	tops := map[string]bool{}
 	for _, rel := range base {
 		for _, t := range tos {

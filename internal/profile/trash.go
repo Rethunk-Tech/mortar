@@ -277,63 +277,78 @@ func (s *Store) StoreKeys(history bool) (map[string][]string, error) {
 		}
 	}
 	for g := range games {
-		profiles, err := s.List(g)
+		keys, err := s.gameStoreKeys(g, history)
 		if err != nil {
 			return nil, err
 		}
-		// A damaged profile's keys are unknown, so a collection run from this list would delete what it still names.
-		if bad := len(profiles) - len(skipDamaged(profiles)); bad > 0 {
-			return nil, fmt.Errorf("%d %s profile(s) are damaged: repair or delete them before collecting the store", bad, g)
-		}
-		dirs, _, err := safefs.ReadDirIfExists(filepath.Join(s.trash, g))
-		if err != nil {
-			return nil, err
-		}
-		for _, d := range dirs {
-			if !d.IsDir() || !idPattern.MatchString(d.Name()) {
-				continue
-			}
-			p, err := readAt(filepath.Join(s.trash, g, d.Name()), d.Name())
-			if err != nil {
-				return nil, err
-			}
-			profiles = append(profiles, p)
-		}
-		for _, p := range profiles {
-			out[g] = append(out[g], entriesStoreKeys(p.Entries)...)
-			dir := filepath.Join(s.root, g, p.ID)
-			if _, err := os.Stat(filepath.Join(dir, fileName)); err != nil {
-				dir = filepath.Join(s.trash, g, p.ID)
-			}
-			key, err := loaderStoreKey(g, p, dir)
-			if err != nil {
-				return nil, err
-			}
-			out[g] = append(out[g], key)
-			if !history {
-				continue
-			}
-			keys, err := historyStoreKeys(dir)
-			if err != nil {
-				return nil, err
-			}
-			out[g] = append(out[g], keys...)
-		}
+		out[g] = keys
 	}
 	for g, keys := range out {
-		seen := map[string]struct{}{}
-		var uniq []string
-		for _, k := range keys {
-			if k == "" {
-				continue
-			}
-			if _, ok := seen[k]; ok {
-				continue
-			}
-			seen[k] = struct{}{}
-			uniq = append(uniq, k)
+		out[g] = uniqueKeys(keys)
+	}
+	return out, nil
+}
+
+func uniqueKeys(keys []string) []string {
+	seen := map[string]struct{}{}
+	var uniq []string
+	for _, k := range keys {
+		if k == "" {
+			continue
 		}
-		out[g] = uniq
+		if _, ok := seen[k]; ok {
+			continue
+		}
+		seen[k] = struct{}{}
+		uniq = append(uniq, k)
+	}
+	return uniq
+}
+
+// gameStoreKeys is StoreKeys for one game: live and trashed profiles alike.
+func (s *Store) gameStoreKeys(g string, history bool) ([]string, error) {
+	profiles, err := s.List(g)
+	if err != nil {
+		return nil, err
+	}
+	// A damaged profile's keys are unknown, so a collection run from this list would delete what it still names.
+	if bad := len(profiles) - len(skipDamaged(profiles)); bad > 0 {
+		return nil, fmt.Errorf("%d %s profile(s) are damaged: repair or delete them before collecting the store", bad, g)
+	}
+	dirs, _, err := safefs.ReadDirIfExists(filepath.Join(s.trash, g))
+	if err != nil {
+		return nil, err
+	}
+	for _, d := range dirs {
+		if !d.IsDir() || !idPattern.MatchString(d.Name()) {
+			continue
+		}
+		p, err := readAt(filepath.Join(s.trash, g, d.Name()), d.Name())
+		if err != nil {
+			return nil, err
+		}
+		profiles = append(profiles, p)
+	}
+	var out []string
+	for _, p := range profiles {
+		out = append(out, entriesStoreKeys(p.Entries)...)
+		dir := filepath.Join(s.root, g, p.ID)
+		if _, err := os.Stat(filepath.Join(dir, fileName)); err != nil {
+			dir = filepath.Join(s.trash, g, p.ID)
+		}
+		key, err := loaderStoreKey(g, p, dir)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, key)
+		if !history {
+			continue
+		}
+		keys, err := historyStoreKeys(dir)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, keys...)
 	}
 	return out, nil
 }

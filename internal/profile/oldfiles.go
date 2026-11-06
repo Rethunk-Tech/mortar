@@ -124,36 +124,7 @@ func (s *Store) ResolveOldFiles(game, id, key string, keep bool) error {
 	}
 	set := filepath.Join(dir, oldFilesDir, key)
 	if keep {
-		mods, _, err := safefs.ReadDirIfExists(set)
-		if err != nil {
-			return err
-		}
-		for _, m := range mods {
-			dest := dir
-			if m.Name() != droppedFilesDir {
-				if dest, err = s.modFolderLocked(game, id, key, mod.SMAPI(m.Name())); err != nil {
-					return err
-				}
-			}
-			src := filepath.Join(set, m.Name())
-			files, err := relFiles(src)
-			if err != nil {
-				return err
-			}
-			for rel := range files {
-				to := filepath.Join(dest, rel)
-				if exists(to) {
-					continue
-				}
-				if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
-					return err
-				}
-				if err := safefs.Rename(filepath.Join(src, rel), to); err != nil {
-					return err
-				}
-			}
-		}
-		if err := s.RecordModsSnapshot(game, id); err != nil {
+		if err := s.restoreOldFilesLocked(game, id, key, dir, set); err != nil {
 			return err
 		}
 	}
@@ -256,4 +227,38 @@ func (s *Service) TrashOldFiles(game, id, key string) (string, error) {
 // RestoreOldFiles undoes TrashOldFiles: the set is pending again.
 func (s *Service) RestoreOldFiles(game, id, token string) error {
 	return s.store.RestoreOldFiles(game, id, token)
+}
+
+// restoreOldFilesLocked puts the set-aside files in set back in their mod folders.
+func (s *Store) restoreOldFilesLocked(game, id, key, dir, set string) error {
+	mods, _, err := safefs.ReadDirIfExists(set)
+	if err != nil {
+		return err
+	}
+	for _, m := range mods {
+		dest := dir
+		if m.Name() != droppedFilesDir {
+			if dest, err = s.modFolderLocked(game, id, key, mod.SMAPI(m.Name())); err != nil {
+				return err
+			}
+		}
+		src := filepath.Join(set, m.Name())
+		files, err := relFiles(src)
+		if err != nil {
+			return err
+		}
+		for rel := range files {
+			to := filepath.Join(dest, rel)
+			if exists(to) {
+				continue
+			}
+			if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
+				return err
+			}
+			if err := safefs.Rename(filepath.Join(src, rel), to); err != nil {
+				return err
+			}
+		}
+	}
+	return s.RecordModsSnapshot(game, id)
 }

@@ -137,13 +137,9 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 	}
 	for _, f := range files {
 		role := trayFileRole(g.RoleOf(f.Target))
-		dir, err := s.trayFolder(game, role)
+		dst, err := s.trayDest(game, role, f.Rel)
 		if err != nil {
 			return fail(err)
-		}
-		dst := filepath.Join(dir, filepath.FromSlash(f.Rel))
-		if !filepath.IsLocal(filepath.FromSlash(f.Rel)) {
-			return fail(fmt.Errorf("%s leaves the shared folder", f.Rel))
 		}
 		held := TrayFile{Rel: f.Rel, Role: role}
 		key := held.folded()
@@ -160,26 +156,18 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 			pl.held = append(pl.held, held)
 			continue
 		}
-		if _, err := os.Lstat(dst); err == nil {
-			dh, herr := safefs.HashFile(dst, sha256.New())
-			rec, mine := replace[key]
-			switch {
-			case herr == nil && mine && dh == rec && dh == h:
-				pl.held = append(pl.held, held)
-				continue
-			case herr == nil && mine && dh == rec:
-				setAside := dst + ".mortar-replaced"
-				if err := safefs.Rename(dst, setAside); err != nil {
-					return fail(err)
-				}
-				asides = append(asides, aside{dst, setAside})
-			case herr == nil && dh == h:
-				continue
-			default:
-				return fail(refuseTray(f.Rel, "it is a file of your own"))
-			}
-		} else if !errors.Is(err, fs.ErrNotExist) {
+		skip, held2, setAside, err := trayExisting(dst, f.Rel, key, h, replace)
+		if err != nil {
 			return fail(err)
+		}
+		if setAside != "" {
+			asides = append(asides, aside{dst, setAside})
+		}
+		if skip {
+			if held2 {
+				pl.held = append(pl.held, held)
+			}
+			continue
 		}
 		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
 			return fail(err)
@@ -257,4 +245,43 @@ func (s *Store) replaceTrayLocked(game, id string) (Profile, error) {
 		err = &TrayRestoreError{Files: failed}
 	}
 	return p, err
+}
+
+// trayExisting decides what an occupied Tray path means for a file about to be placed (hash h): skip reports that
+// nothing is copied, held that the entry still holds the file, and setAside names the moved-away old copy.
+func trayExisting(dst, rel, key, h string, replace map[string]string) (skip, held bool, setAside string, err error) {
+	if _, err := os.Lstat(dst); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return false, false, "", nil
+		}
+		return false, false, "", err
+	}
+	dh, herr := safefs.HashFile(dst, sha256.New())
+	rec, mine := replace[key]
+	switch {
+	case herr == nil && mine && dh == rec && dh == h:
+		return true, true, "", nil
+	case herr == nil && mine && dh == rec:
+		setAside = dst + ".mortar-replaced"
+		if err := safefs.Rename(dst, setAside); err != nil {
+			return false, false, "", err
+		}
+		return false, false, setAside, nil
+	case herr == nil && dh == h:
+		return true, false, "", nil
+	default:
+		return false, false, "", refuseTray(rel, "it is a file of your own")
+	}
+}
+
+// trayDest is where rel goes in the Tray folder of role, refusing a path that leaves it.
+func (s *Store) trayDest(game, role, rel string) (string, error) {
+	dir, err := s.trayFolder(game, role)
+	if err != nil {
+		return "", err
+	}
+	if !filepath.IsLocal(filepath.FromSlash(rel)) {
+		return "", fmt.Errorf("%s leaves the shared folder", rel)
+	}
+	return filepath.Join(dir, filepath.FromSlash(rel)), nil
 }
