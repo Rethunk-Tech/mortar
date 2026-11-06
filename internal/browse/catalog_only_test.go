@@ -1,11 +1,6 @@
 package browse
 
 import (
-	"bytes"
-	"compress/gzip"
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
 	"path/filepath"
 	"testing"
 
@@ -17,20 +12,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testcatalog"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testthunderstore"
 )
-
-func gzJSON(t *testing.T, v any) []byte {
-	t.Helper()
-	raw, err := json.Marshal(v)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var buf bytes.Buffer
-	w := gzip.NewWriter(&buf)
-	_, _ = w.Write(raw)
-	_ = w.Close()
-	return buf.Bytes()
-}
 
 // A game only a manifest lists (no bundled entry, no Go of its own) browses its Thunderstore community and installs a
 // package into a profile, the path Browse's Add takes.
@@ -44,18 +27,10 @@ func TestACatalogOnlyGameBrowsesAndAdds(t *testing.T) {
 		Sources: []components.GameSource{{ID: "thunderstore", Key: "content-warning"}},
 	})
 
-	mux := http.NewServeMux()
-	srv := httptest.NewServer(mux)
-	t.Cleanup(srv.Close)
-	mux.HandleFunc("/c/content-warning/api/v1/package-listing-index/", func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = w.Write(gzJSON(t, []string{srv.URL + "/chunk"}))
-	})
-	mux.HandleFunc("/chunk", func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = w.Write(gzJSON(t, []map[string]any{{
-			"name": "MoreEmotes", "owner": "Ns", "package_url": srv.URL + "/c/content-warning/p/Ns/MoreEmotes/",
-			"versions": []map[string]any{{"version_number": "1.0.0", "description": "emotes", "downloads": 5}},
-		}}))
-	})
+	srv := testthunderstore.Serve(t, "content-warning", `[{
+		"name": "MoreEmotes", "owner": "Ns", "package_url": "{base}/c/content-warning/p/Ns/MoreEmotes/",
+		"versions": [{"version_number": "1.0.0", "description": "emotes", "downloads": 5}]
+	}]`, nil, false)
 	source.Register(thunderstore.Driver{URL: srv.URL, CacheDir: t.TempDir()})
 	t.Cleanup(func() { source.Register(thunderstore.Driver{}) })
 

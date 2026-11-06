@@ -3,12 +3,10 @@ package loadersvc
 import (
 	"archive/zip"
 	"bytes"
-	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"path/filepath"
-	"sync/atomic"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testthunderstore"
 
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
@@ -38,22 +36,8 @@ func TestEnsureInstallsAProfileLoaderIntoEveryProfile(t *testing.T) {
 	if err := zw.Close(); err != nil {
 		t.Fatal(err)
 	}
-	var downloads atomic.Int32
-	var srv *httptest.Server
-	srv = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/c/lethal-company/api/v1/package-listing-index/":
-			_, _ = fmt.Fprintf(w, `[%q]`, srv.URL+"/chunk")
-		case "/chunk":
-			_, _ = w.Write([]byte(`[{"name":"BepInExPack","owner":"BepInEx","versions":[{"version_number":"5.4.2304"}]}]`))
-		case "/package/download/BepInEx/BepInExPack/5.4.2304/":
-			downloads.Add(1)
-			_, _ = w.Write(buf.Bytes())
-		default:
-			http.NotFound(w, r)
-		}
-	}))
-	defer srv.Close()
+	srv := testthunderstore.Serve(t, "lethal-company", `[{"name":"BepInExPack","owner":"BepInEx","versions":[{"version_number":"5.4.2304"}]}]`,
+		map[string][]byte{"/package/download/BepInEx/BepInExPack/5.4.2304/": buf.Bytes()}, true)
 	loader.Register(bepinex5.Loader{Index: &thunderstore.Driver{HTTP: srv.Client(), URL: srv.URL, CacheDir: t.TempDir()}, HTTP: srv.Client()})
 	t.Cleanup(func() { loader.Register(bepinex5.Loader{}) })
 
@@ -87,7 +71,7 @@ func TestEnsureInstallsAProfileLoaderIntoEveryProfile(t *testing.T) {
 			t.Fatalf("profile %s status %+v", p, st)
 		}
 	}
-	if got := downloads.Load(); got != 1 {
+	if got := srv.Downloads.Load(); got != 1 {
 		t.Fatalf("downloads = %d, want 1", got)
 	}
 }

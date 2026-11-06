@@ -1,9 +1,6 @@
 package bepinex5
 
 import (
-	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -12,6 +9,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testthunderstore"
 )
 
 func TestReleasesComeFromTheGamesThunderstoreCommunity(t *testing.T) {
@@ -19,21 +17,9 @@ func TestReleasesComeFromTheGamesThunderstoreCommunity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var srv *httptest.Server
-	srv = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/c/some-game/api/v1/package-listing-index/":
-			_, _ = fmt.Fprintf(w, `[%q]`, srv.URL+"/chunk")
-		case "/chunk":
-			_, _ = w.Write([]byte(`[{"name":"BepInExPack","owner":"BepInEx","versions":[
-				{"version_number":"5.4.2100"},{"version_number":"5.4.2304"},{"version_number":"6.0.0"}]}]`))
-		case "/package/download/BepInEx/BepInExPack/5.4.2304/":
-			_, _ = w.Write(pack)
-		default:
-			http.NotFound(w, r)
-		}
-	}))
-	defer srv.Close()
+	srv := testthunderstore.Serve(t, "some-game", `[{"name":"BepInExPack","owner":"BepInEx","versions":[
+		{"version_number":"5.4.2100"},{"version_number":"5.4.2304"},{"version_number":"6.0.0"}]}]`,
+		map[string][]byte{"/package/download/BepInEx/BepInExPack/5.4.2304/": pack}, true)
 	l := Loader{Index: &thunderstore.Driver{HTTP: srv.Client(), URL: srv.URL, CacheDir: t.TempDir()}, HTTP: srv.Client()}
 	var _ loader.Releases = l
 	g := components.GameInfo{Name: "Some Game", Sources: []components.GameSource{{ID: "thunderstore", Key: "some-game"}}}
