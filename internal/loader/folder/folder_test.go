@@ -116,10 +116,10 @@ func TestEnabledModsAreSwappedIntoTheModsFolderAndTakenBack(t *testing.T) {
 	if during["Resource.cfg"] != "players own" {
 		t.Fatal("a file the profile does not own must be left alone")
 	}
-	if during[filepath.Join("one", "x.package")] != "one" || during[filepath.Join("two", "y.ts4script")] != "two" {
+	if during["one/x.package"] != "one" || during["two/y.ts4script"] != "two" {
 		t.Fatalf("enabled mods are in the folder: %v", during)
 	}
-	if _, has := during[filepath.Join("three", "x.package")]; has {
+	if _, has := during["three/x.package"]; has {
 		t.Fatal("a disabled mod must not be placed")
 	}
 	if err := d.Purge(t.Context(), m); err != nil {
@@ -208,8 +208,8 @@ func TestAModsFolderInsideTheInstallIsFilledAndPurgedWithTheInstallUnchanged(t *
 		t.Fatal(err)
 	}
 	during := testfs.Tree(t, install)
-	if during[filepath.Join("mods", "modA", "content", "blob0.bundle")] != "mod" || during[filepath.Join("bin", "config", "matrix.xml")] != "mods version" ||
-		during[filepath.Join("dlc", "dlcB", "readme.txt")] != "dlc" || during[filepath.Join("mods", "modX", "own.bundle")] != "player's mod" {
+	if during["mods/modA/content/blob0.bundle"] != "mod" || during["bin/config/matrix.xml"] != "mods version" ||
+		during["dlc/dlcB/readme.txt"] != "dlc" || during["mods/modX/own.bundle"] != "player's mod" {
 		t.Fatalf("the install during the launch: %v", during)
 	}
 	if err := d.Purge(t.Context(), m); err != nil {
