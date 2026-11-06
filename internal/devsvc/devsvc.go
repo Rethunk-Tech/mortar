@@ -115,7 +115,7 @@ type Tools struct {
 	DotnetSDKs []string `json:"dotnetSdks"`
 	// FlatpakDotnetInstall is the command that adds the SDK in a Flatpak that lacks it; empty everywhere else.
 	FlatpakDotnetInstall string `json:"flatpakDotnetInstall"`
-	Git        bool     `json:"git"`
+	Git                  bool   `json:"git"`
 	// GitHubUser is the gh login, empty when gh is missing or signed out.
 	GitHubUser string `json:"githubUser"`
 	// GitHubOwners are the accounts a repository can be created under: the gh login, then its organisations.

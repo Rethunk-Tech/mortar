@@ -14,6 +14,7 @@ import {
   TemplateForm,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
+import { FLATPAK } from '../brand/productNames.ts'
 import { useGameInfo } from '../games/info.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
@@ -83,7 +84,7 @@ const Prerequisites = memo(function PrerequisitesView({
   const need = form?.sdk
   let sdk = ''
   if (sdks.length === 0 && tools.flatpakDotnetInstall) {
-    sdk = t`The Flatpak builds mods with Flathub's .NET SDK. Install it with ${{ command: tools.flatpakDotnetInstall }}, then restart Mortar.`
+    sdk = t`The ${{ app: FLATPAK }} copy builds mods with Flathub's .NET SDK. Install it with ${{ command: tools.flatpakDotnetInstall }}, then restart Mortar.`
   } else if (sdks.length === 0) {
     sdk = t`Install the .NET SDK to build mods.`
   } else if (need?.version && !sdkSatisfies(need, sdks)) {

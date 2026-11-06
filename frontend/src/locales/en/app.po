@@ -4601,6 +4601,10 @@ msgstr "Add a program to run alongside the game, such as a save editor or map vi
 msgid "Mortar checks {launcher}'s settings for it: not found yet."
 msgstr "Mortar checks {launcher}'s settings for it: not found yet."
 
+#: src/develop/NewModDialog.tsx
+msgid "The {app} copy builds mods with Flathub's .NET SDK. Install it with {command}, then restart Mortar."
+msgstr "The {app} copy builds mods with Flathub's .NET SDK. Install it with {command}, then restart Mortar."
+
 #: src/firstrunTour/TourPopover.tsx
 msgid "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
 msgstr "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
@@ -6368,10 +6372,6 @@ msgstr "Restore {name}"
 #: src/fomod/Dialog.tsx
 msgid "Step {step} of {count}: {name}"
 msgstr "Step {step} of {count}: {name}"
-
-#: src/develop/NewModDialog.tsx
-msgid "The Flatpak builds mods with Flathub's .NET SDK. Install it with {command}, then restart Mortar."
-msgstr "The Flatpak builds mods with Flathub's .NET SDK. Install it with {command}, then restart Mortar."
 
 #: src/share/useImportFlow.ts
 msgid "{count, plural, one {Applied the curator's choices for # mod and {configs, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {configs, plural, one {# config file} other {# config files}}}}"

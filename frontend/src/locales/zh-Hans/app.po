@@ -4595,6 +4595,10 @@ msgstr ""
 msgid "Mortar checks {launcher}'s settings for it: not found yet."
 msgstr ""
 
+#: src/develop/NewModDialog.tsx
+msgid "The {app} copy builds mods with Flathub's .NET SDK. Install it with {command}, then restart Mortar."
+msgstr ""
+
 #: src/firstrunTour/TourPopover.tsx
 msgid "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
 msgstr ""
@@ -6361,10 +6365,6 @@ msgstr ""
 
 #: src/fomod/Dialog.tsx
 msgid "Step {step} of {count}: {name}"
-msgstr ""
-
-#: src/develop/NewModDialog.tsx
-msgid "The Flatpak builds mods with Flathub's .NET SDK. Install it with {command}, then restart Mortar."
 msgstr ""
 
 #: src/share/useImportFlow.ts
