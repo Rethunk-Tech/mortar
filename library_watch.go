@@ -37,8 +37,8 @@ func archiveDir(store *settings.Store, dataDir string) string {
 }
 
 // watchLibraryFolders emits the library:* events for the open game's Mods folder, its extra mods folder and the
-// download folder until ctx ends.
-func watchLibraryFolders(ctx context.Context, home, dataDir string, store *settings.Store, emit func(string, any)) {
+// download folder until ctx ends; holds takes folders out of the watch while they are moved.
+func watchLibraryFolders(ctx context.Context, home, dataDir string, store *settings.Store, holds *folderwatch.Holds, emit func(string, any)) {
 	changed := make(chan struct{}, 1)
 	store.OnChange(func() {
 		select {
@@ -49,6 +49,7 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 	go func() {
 		err := folderwatch.Run(ctx, folderwatch.Deps{
 			Changed: changed,
+			Holds:   holds,
 			Emit: func(name string, data any) {
 				log.Printf("folder watch: %s for %v", name, data)
 				emit(name, data)

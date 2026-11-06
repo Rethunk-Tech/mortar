@@ -64,6 +64,8 @@ type Deps struct {
 	// Changed re-reads Targets at once, so a folder is watched from the moment it becomes a target and a file that
 	// lands right after is not missed.
 	Changed <-chan struct{}
+	// Holds takes folders out of the watch while a caller moves them; nil holds none.
+	Holds *Holds
 }
 
 type watch struct {
@@ -84,6 +86,8 @@ func Run(ctx context.Context, d Deps) error {
 		return err
 	}
 	defer func() { _ = w.Close() }()
+	holdRequests, detach := d.Holds.attach()
+	defer detach()
 	quiet, every, stable := d.Quiet, d.Retarget, d.Stable
 	if quiet <= 0 {
 		quiet = 500 * time.Millisecond
@@ -126,7 +130,7 @@ func Run(ctx context.Context, d Deps) error {
 		defer mu.Unlock()
 		want := map[string]Target{}
 		for _, t := range d.Targets() {
-			if t.Dir != "" {
+			if t.Dir != "" && !d.Holds.held(t.Dir) {
 				want[t.Dir] = t
 			}
 		}
@@ -200,6 +204,9 @@ func Run(ctx context.Context, d Deps) error {
 			retarget()
 		case <-d.Changed:
 			retarget()
+		case done := <-holdRequests:
+			retarget()
+			close(done)
 		case ev, ok := <-w.Events:
 			if !ok {
 				return nil

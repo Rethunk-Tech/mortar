@@ -77,6 +77,9 @@ type Service struct {
 	ArchiveURL func(t components.DevTemplate) string
 	// LatestLoader, when set, replaces looking up the newest loader release (tests).
 	LatestLoader func(ctx context.Context, gameID string) string
+	// Unwatch takes dir and the folders below it out of the folder watch until the returned func is called; nil when
+	// nothing watches.
+	Unwatch func(ctx context.Context, dir string) (release func())
 
 	codeMu sync.Mutex
 	code   map[string]gameCode
@@ -354,14 +357,23 @@ func (s *Service) Move(gameID, dir, profileID string) error {
 }
 
 // Trash moves the project's folder to the system trash, where the file manager can restore it, takes its build out of
-// its profile, and drops the project from the Develop tab. Only a folder the Develop tab lists is moved.
+// its profile, and drops the project from the Develop tab. Only a folder the Develop tab lists is moved, and the
+// project stays listed when it cannot be.
 func (s *Service) Trash(gameID, dir string) error {
 	p, err := s.project(gameID, dir)
 	if err != nil {
 		return err
 	}
+	// Windows refuses to move a folder while a handle is open in it, and Mortar holds some itself: a build writing its
+	// output, and the folder watch on its source and build output.
+	defer holdBuild(p.Dir)()
+	if s.Unwatch != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), toolTimeout)
+		defer cancel()
+		defer s.Unwatch(ctx, p.Dir)()
+	}
 	if err := safefs.Trash(p.Dir); err != nil {
-		return err
+		return trashFailed(p.Dir, err)
 	}
 	if err := s.dropBuild(gameID, p); err != nil {
 		return err

@@ -779,7 +779,8 @@ func run() error {
 	savesSvc.Enqueue = queueSvc.Add
 	profileSvc.Version = version
 	savedGroupsSvc := savedgroups.NewService(profiles, dataDir)
-	devSvc := &devsvc.Service{Version: version, Home: home, Settings: svc, Profiles: profileSvc, CacheDir: filepath.Join(dataDir, "cache"), BuildLogDir: filepath.Join(dataDir, datadir.BuildLogs)}
+	watchHolds := folderwatch.NewHolds()
+	devSvc := &devsvc.Service{Version: version, Home: home, Settings: svc, Profiles: profileSvc, CacheDir: filepath.Join(dataDir, "cache"), BuildLogDir: filepath.Join(dataDir, datadir.BuildLogs), Unwatch: watchHolds.Hold}
 	devSvc.MigrateRecords()
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 	problemsSvc.Runs = launches
@@ -1117,7 +1118,7 @@ func run() error {
 	go storecheck.Run(queueCtx, checkSvc)
 	go syncSvc.Run(queueCtx, syncScan)
 	go trimWhenQuiet(queueCtx)
-	watchLibraryFolders(queueCtx, home, dataDir, store, func(name string, data any) {
+	watchLibraryFolders(queueCtx, home, dataDir, store, watchHolds, func(name string, data any) {
 		if name == syncsvc.FolderEvent {
 			syncSvc.Kick()
 			return
