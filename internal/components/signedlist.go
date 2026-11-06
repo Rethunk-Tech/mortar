@@ -112,12 +112,12 @@ func UseSignedLists(c *Client, cache *meta.Client, publicKey []byte) {
 }
 
 // listMemo holds each game's list for an hour, so callers on every screen do not each read the cache file.
-// ponytail: one lock over every game's first fetch, so a slow fetch for one game holds the others; per-game locks if
-// that is ever seen.
+// A game's fetch holds only that game's lock, so callers of one game share a fetch without holding up the others.
 type listMemo[T any] struct {
 	mu    sync.Mutex
 	lists map[string]T
 	at    map[string]time.Time
+	games map[string]*sync.Mutex
 }
 
 func (m *listMemo[T]) reset() {
@@ -130,13 +130,27 @@ func (m *listMemo[T]) get(ctx context.Context, l signedList[T], game string) T {
 	listSource.mu.Lock()
 	c, cache, key := listSource.client, listSource.cache, listSource.key
 	listSource.mu.Unlock()
-	m.mu.Lock()
-	defer m.mu.Unlock()
 	var zero T
 	if c == nil {
 		return zero
 	}
-	if v, ok := m.lists[game]; ok && time.Since(m.at[game]) < time.Hour {
+	m.mu.Lock()
+	if m.games == nil {
+		m.games = map[string]*sync.Mutex{}
+	}
+	gm := m.games[game]
+	if gm == nil {
+		gm = &sync.Mutex{}
+		m.games[game] = gm
+	}
+	m.mu.Unlock()
+	gm.Lock()
+	defer gm.Unlock()
+	m.mu.Lock()
+	v, ok := m.lists[game]
+	fresh := ok && time.Since(m.at[game]) < time.Hour
+	m.mu.Unlock()
+	if fresh {
 		return v
 	}
 	v, err := l.load(ctx, c, cache, key, "", game)
@@ -144,6 +158,8 @@ func (m *listMemo[T]) get(ctx context.Context, l signedList[T], game string) T {
 		// A cancelled caller says nothing about the list: the next one fetches again.
 		return v
 	}
+	m.mu.Lock()
 	m.lists[game], m.at[game] = v, time.Now()
+	m.mu.Unlock()
 	return v
 }
