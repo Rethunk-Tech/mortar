@@ -2,7 +2,7 @@
 kind: release
 version: 0.6.0
 title: "Sign in to Nexus Mods in your browser"
-summary: "Nexus Mods sign-in moves to the browser, the Flatpak can build mods, and a list of fixes covers load order, Proton, Develop and nxm links."
+summary: "Nexus Mods sign-in moves to the browser, the Flatpak can build mods, and a list of fixes covers load order, Proton, Develop and share imports."
 highlights:
   - area: Accounts
     title: Sign in through your browser
