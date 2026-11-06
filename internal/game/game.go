@@ -346,39 +346,44 @@ func ArtMiddleware(home string, current func() settings.Settings) func(http.Hand
 				next.ServeHTTP(w, r)
 				return
 			}
-			listed, ok := listedApp(id)
-			if r.Method != http.MethodGet || !ok {
-				http.NotFound(w, r)
-				return
-			}
-			path := ""
-			for _, one := range steam.LocateAll(home, steamRoots(current())...) {
-				path = one.HeroArt(id)
-				if path != "" {
-					break
-				}
-			}
-			if path == "" {
-				if !serveRemoteArt(w, r, fmt.Sprintf(heroCDN, listed)) {
-					if hero := storeHero(r.Context(), listed); hero == "" || !serveRemoteArt(w, r, hero) {
-						http.NotFound(w, r)
-					}
-				}
-				return
-			}
-			info, err := safefs.Stat(path)
-			if err != nil {
-				http.NotFound(w, r)
-				return
-			}
-			b, err := safefs.ReadFile(path)
-			if err != nil {
-				http.NotFound(w, r)
-				return
-			}
-			writeArt(w, r, b, info.ModTime())
+			serveHeroArt(w, r, home, id, steamRoots(current()))
 		})
 	}
+}
+
+// serveHeroArt writes the hero image of the listed app id from the first Steam that keeps one, else from a public copy.
+func serveHeroArt(w http.ResponseWriter, r *http.Request, home, id string, roots []string) {
+	listed, ok := listedApp(id)
+	if r.Method != http.MethodGet || !ok {
+		http.NotFound(w, r)
+		return
+	}
+	path := ""
+	for _, one := range steam.LocateAll(home, roots...) {
+		path = one.HeroArt(id)
+		if path != "" {
+			break
+		}
+	}
+	if path == "" {
+		if !serveRemoteArt(w, r, fmt.Sprintf(heroCDN, listed)) {
+			if hero := storeHero(r.Context(), listed); hero == "" || !serveRemoteArt(w, r, hero) {
+				http.NotFound(w, r)
+			}
+		}
+		return
+	}
+	info, err := safefs.Stat(path)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	b, err := safefs.ReadFile(path)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	writeArt(w, r, b, info.ModTime())
 }
 
 // serveIcon writes the square icon of the listed app id from the first Steam that keeps one.

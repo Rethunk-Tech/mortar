@@ -100,11 +100,7 @@ func (st Starter) Start(ctx context.Context, inst Install, plan *launchplan.Plan
 	var loaded chan struct{}
 	for i := 0; i < n; i++ {
 		if i > 0 {
-			if loaded != nil {
-				if err := waitLoaded(ctx, loaded, cmp.Or(st.Timing.Timeout, 5*time.Minute)); err != nil {
-					return err
-				}
-			} else if err := sleep(ctx, time.Duration(max(env.DelaySeconds, 0))*time.Second); err != nil {
+			if err := st.waitForPrevious(ctx, loaded, sleep, env); err != nil {
 				return err
 			}
 		}
@@ -115,25 +111,43 @@ func (st Starter) Start(ctx context.Context, inst Install, plan *launchplan.Plan
 		}
 		one := plan
 		if env.TestCopies {
-			role := []string{"--lan", joinArg, "127.0.0.1"}
-			if i == 0 {
-				role = []string{"--lan", "--host"}
+			copied, err := testCopyPlan(plan, i, n)
+			if err != nil {
+				return err
 			}
-			copied := *plan
-			copied.Args = append(slices.Clone(plan.Args), append(role, "--tile", fmt.Sprintf("%d/%d", i+1, n))...)
-			if i > 0 && plan.ForCopy != nil {
-				copied.Env = maps.Clone(plan.Env)
-				if err := plan.ForCopy(i+1, &copied); err != nil {
-					return err
-				}
-			}
-			one = &copied
+			one = copied
 		}
 		if err := st.startOne(ctx, inst, one, env, lines); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// waitForPrevious holds the next copy until the one before has loaded its mods, or for the configured delay when no
+// load signal is watched.
+func (st Starter) waitForPrevious(ctx context.Context, loaded chan struct{}, sleep func(context.Context, time.Duration) error, env StartEnv) error {
+	if loaded != nil {
+		return waitLoaded(ctx, loaded, cmp.Or(st.Timing.Timeout, 5*time.Minute))
+	}
+	return sleep(ctx, time.Duration(max(env.DelaySeconds, 0))*time.Second)
+}
+
+// testCopyPlan is plan for copy i of n: the first hosts a LAN game and the others join it.
+func testCopyPlan(plan *launchplan.Plan, i, n int) (*launchplan.Plan, error) {
+	role := []string{"--lan", joinArg, "127.0.0.1"}
+	if i == 0 {
+		role = []string{"--lan", "--host"}
+	}
+	copied := *plan
+	copied.Args = append(slices.Clone(plan.Args), append(role, "--tile", fmt.Sprintf("%d/%d", i+1, n))...)
+	if i > 0 && plan.ForCopy != nil {
+		copied.Env = maps.Clone(plan.Env)
+		if err := plan.ForCopy(i+1, &copied); err != nil {
+			return nil, err
+		}
+	}
+	return &copied, nil
 }
 
 // signalLoaded passes lines on to onLines and closes loaded at the first line ready matches.
@@ -278,67 +292,86 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 	}
 	// A loader that replaces the executable cannot be reproduced by a store's relay.
 	if env.Direct || plan.Exe != "" || steamSkipsLoader(goos, inst, plan, env) {
-		if inst.Store == StoreFlatpak {
-			return flatpakAppCommand(inst, plan, flatpakPath)
-		}
-		exe := cmp.Or(plan.Exe, plan.Entry)
-		// A loader that injects into the game (BepInEx) names no executable of its own: the game's is the start.
-		if info, ok := catalogGame(inst.Game); ok && exe == "" {
-			switch {
-			case inst.Platform == "linux" && info.LinuxMarker != "":
-				exe = filepath.Join(inst.Dir, filepath.FromSlash(cmp.Or(info.LinuxStart, info.LinuxMarker)))
-			case inst.Platform == "darwin" && info.DarwinMarker != "":
-				exe = filepath.Join(inst.Dir, filepath.FromSlash(info.DarwinMarker))
-			case strings.HasSuffix(strings.ToLower(info.Marker), ".exe"):
-				exe = filepath.Join(inst.Dir, info.MarkerPath())
-			}
-		}
-		if exe == "" {
-			return launch.Command{}, errors.New("the game has no executable to start")
-		}
-		args := slices.Clone(plan.Args)
-		if inst.RunsInBottle() {
-			argv, err := inst.BottleCommand(exe, args...)
-			if err != nil {
-				return launch.Command{}, err
-			}
-			return launch.Command{Dir: inst.Dir, Name: argv[0], Args: argv[1:], Env: environ(plan.Env)}, nil
-		}
-		var protonEnv []string
-		if goos != "windows" && (inst.Runtime == gameruntime.MortarProton || inst.Runtime == gameruntime.LauncherPrefix ||
-			(inst.Runtime == gameruntime.Proton && inst.Store == StoreSteam)) {
-			info, _ := catalogGame(inst.Game)
-			rt := inst.runtime(info, "")
-			rt.Proton = env.Proton
-			if env.Steam != nil {
-				rt.SteamRoots = []string{env.Steam.Root}
-			}
-			argv, penv, err := gameruntime.ProtonCommand(rt, exe, args...)
-			if err != nil {
-				return launch.Command{}, err
-			}
-			// waitforexitandrun waits for everything else in the prefix to end, so a second copy would wait for the first.
-			if env.Instances > 1 && len(argv) > 1 && argv[1] == "waitforexitandrun" {
-				argv[1] = "run"
-			}
-			exe, args, protonEnv = argv[0], argv[1:], penv
-		}
-		name := exe
-		if goos != "windows" && len(plan.Prefix) > 0 {
-			name, args = plan.Prefix[0], append(slices.Clone(plan.Prefix[1:]), append([]string{exe}, args...)...)
-		}
-		env := append(environ(plan.Env), protonEnv...)
-		if goos == "linux" && inst.Platform == "linux" {
-			env = append(env, dotnetRoot(plan.Env)...)
-		}
-		// Wine prints its errors only when asked; without them a launch that stalls on one says nothing.
-		if (inst.Runtime == gameruntime.Proton || inst.Runtime == gameruntime.MortarProton || inst.Runtime == gameruntime.LauncherPrefix) && plan.Env["WINEDEBUG"] == "" {
-			env = append(env, "WINEDEBUG=err+all")
-		}
-		return launch.Command{Dir: inst.Dir, Name: name, Args: args, Env: env}, nil
+		return directCommand(goos, inst, plan, env, flatpakPath)
 	}
 	info, _ := catalogGame(inst.Game)
 	return st.steamRelay(goos, env, steamPath, flatpakPath, append([]string{"-applaunch", info.SteamAppID()}, plan.Args...))
+}
+
+// directCommand starts the game's own executable, bypassing any store relay.
+func directCommand(goos string, inst Install, plan *launchplan.Plan, env StartEnv, flatpakPath string) (launch.Command, error) {
+	if inst.Store == StoreFlatpak {
+		return flatpakAppCommand(inst, plan, flatpakPath)
+	}
+	exe := directExe(inst, cmp.Or(plan.Exe, plan.Entry))
+	if exe == "" {
+		return launch.Command{}, errors.New("the game has no executable to start")
+	}
+	args := slices.Clone(plan.Args)
+	if inst.RunsInBottle() {
+		argv, err := inst.BottleCommand(exe, args...)
+		if err != nil {
+			return launch.Command{}, err
+		}
+		return launch.Command{Dir: inst.Dir, Name: argv[0], Args: argv[1:], Env: environ(plan.Env)}, nil
+	}
+	exe, args, protonEnv, err := withProton(goos, inst, env, exe, args)
+	if err != nil {
+		return launch.Command{}, err
+	}
+	name := exe
+	if goos != "windows" && len(plan.Prefix) > 0 {
+		name, args = plan.Prefix[0], append(slices.Clone(plan.Prefix[1:]), append([]string{exe}, args...)...)
+	}
+	cmdEnv := append(environ(plan.Env), protonEnv...)
+	if goos == "linux" && inst.Platform == "linux" {
+		cmdEnv = append(cmdEnv, dotnetRoot(plan.Env)...)
+	}
+	// Wine prints its errors only when asked; without them a launch that stalls on one says nothing.
+	if (inst.Runtime == gameruntime.Proton || inst.Runtime == gameruntime.MortarProton || inst.Runtime == gameruntime.LauncherPrefix) && plan.Env["WINEDEBUG"] == "" {
+		cmdEnv = append(cmdEnv, "WINEDEBUG=err+all")
+	}
+	return launch.Command{Dir: inst.Dir, Name: name, Args: args, Env: cmdEnv}, nil
+}
+
+// directExe is the executable to start: exe when the plan names one, else the game's own from the catalog.
+func directExe(inst Install, exe string) string {
+	// A loader that injects into the game (BepInEx) names no executable of its own: the game's is the start.
+	if info, ok := catalogGame(inst.Game); ok && exe == "" {
+		switch {
+		case inst.Platform == "linux" && info.LinuxMarker != "":
+			exe = filepath.Join(inst.Dir, filepath.FromSlash(cmp.Or(info.LinuxStart, info.LinuxMarker)))
+		case inst.Platform == "darwin" && info.DarwinMarker != "":
+			exe = filepath.Join(inst.Dir, filepath.FromSlash(info.DarwinMarker))
+		case strings.HasSuffix(strings.ToLower(info.Marker), ".exe"):
+			exe = filepath.Join(inst.Dir, info.MarkerPath())
+		}
+	}
+	return exe
+}
+
+// withProton wraps exe and args in the Proton command when the install runs under Proton, returning its environment.
+func withProton(goos string, inst Install, env StartEnv, exe string, args []string) (string, []string, []string, error) {
+	var protonEnv []string
+	if goos != "windows" && (inst.Runtime == gameruntime.MortarProton || inst.Runtime == gameruntime.LauncherPrefix ||
+		(inst.Runtime == gameruntime.Proton && inst.Store == StoreSteam)) {
+		info, _ := catalogGame(inst.Game)
+		rt := inst.runtime(info, "")
+		rt.Proton = env.Proton
+		if env.Steam != nil {
+			rt.SteamRoots = []string{env.Steam.Root}
+		}
+		argv, penv, err := gameruntime.ProtonCommand(rt, exe, args...)
+		if err != nil {
+			return "", nil, nil, err
+		}
+		// waitforexitandrun waits for everything else in the prefix to end, so a second copy would wait for the first.
+		if env.Instances > 1 && len(argv) > 1 && argv[1] == "waitforexitandrun" {
+			argv[1] = "run"
+		}
+		exe, args, protonEnv = argv[0], argv[1:], penv
+	}
+	return exe, args, protonEnv, nil
 }
 
 // steamRelay hands args to Steam (`steam -applaunch <app>`), which starts the app and exits.
