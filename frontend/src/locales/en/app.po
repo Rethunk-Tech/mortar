@@ -1823,10 +1823,6 @@ msgstr "Save as template"
 msgid "Add a game…"
 msgstr "Add a game…"
 
-#: src/browse/BrowseMenu.tsx
-msgid "Show details"
-msgstr "Show details"
-
 #: src/commandPalette/CommandPalette.tsx
 msgid "Accounts"
 msgstr "Accounts"
@@ -4132,10 +4128,6 @@ msgstr "Find the mod that crashes the game…"
 msgid "Place…"
 msgstr "Place…"
 
-#: src/games/GameMenu.tsx
-msgid "All games…"
-msgstr "All games…"
-
 #: src/launch/store.ts
 msgid "Could not roll back updates"
 msgstr "Could not roll back updates"
@@ -4348,6 +4340,10 @@ msgstr "{count} {source}"
 #: src/launch/PrePlayDialog.tsx
 msgid "Broken or obsolete ({count})"
 msgstr "Broken or obsolete ({count})"
+
+#: src/browse/BrowseMenu.tsx
+msgid "More details"
+msgstr "More details"
 
 #: src/game/Home.tsx
 msgid "Share…"
@@ -6260,6 +6256,7 @@ msgstr "Toggle {name}"
 
 #: src/firstrun/GameSetup.tsx
 #: src/games/gameList.ts
+#: src/games/GameMenu.tsx
 msgid "All games"
 msgstr "All games"
 
@@ -7180,6 +7177,10 @@ msgstr "{count, plural, one {# settings file was left out (too large):} other {#
 msgid "This mod's installer has options to pick before it installs."
 msgstr "This mod's installer has options to pick before it installs."
 
+#: src/develop/SymbolMenu.tsx
+msgid "Find usages"
+msgstr "Find usages"
+
 #: src/tools/ToolEditorDialog.tsx
 msgid "Choose program…"
 msgstr "Choose program…"
@@ -7359,10 +7360,6 @@ msgstr "Open settings"
 msgid "Sign in to {source} to download these mods."
 msgstr "Sign in to {source} to download these mods."
 
-#: src/develop/SymbolMenu.tsx
-msgid "Find usages…"
-msgstr "Find usages…"
-
 #: src/queue/QueueBody.tsx
 #: src/queue/store.ts
 msgid "Could not reach {source}"
@@ -7411,10 +7408,6 @@ msgstr "Missing required dependencies ({count})"
 #: src/share/MethodPanes.tsx
 msgid "too long for one {app} message"
 msgstr "too long for one {app} message"
-
-#: src/browse/BrowseMenu.tsx
-msgid "Open page on {source}"
-msgstr "Open page on {source}"
 
 #: src/i18n/counts.ts
 msgid "{count, plural, one {# update} other {# updates}}"

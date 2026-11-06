@@ -305,7 +305,7 @@ function BrowsePage({
         </Box>
         <BrowseDetails game={game} card={card} sourceNames={sourceNames} />
       </Box>
-      <BrowseMenu card={card} sourceNames={sourceNames} />
+      <BrowseMenu card={card} />
       <DependencyKindDialog />
     </Box>
   )

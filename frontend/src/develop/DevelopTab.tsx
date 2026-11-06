@@ -3,7 +3,6 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonGroup, Menu, Typography } from '@mui/material'
 import { useStoredState } from '@rethunk/react-load-hooks'
 import {
-  Check,
   ChevronDown,
   Code,
   FolderPlus,
@@ -32,7 +31,7 @@ import { useSettings } from '../settings/store.ts'
 import { CardsView } from '../shell/CardsView.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { useOnWindowFocus } from '../shell/useOnWindowFocus.ts'
 import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
@@ -154,15 +153,10 @@ function TestCopies({ game, profile, dirs }: { game: string; profile: string; di
       </ButtonGroup>
       <Menu open={menu !== null} anchorEl={menu} onClose={() => hideMenu()}>
         {Array.from({ length: MAX_TEST_COPIES }, (_, i) => i + 1).map((n) => (
-          <MenuAction
+          <MenuCheck
             key={n}
-            icon={
-              n === count ? (
-                <Check size={16} aria-hidden={true} />
-              ) : (
-                <Users size={16} aria-hidden={true} />
-              )
-            }
+            checked={n === count}
+            icon={<Users size={16} aria-hidden={true} />}
             label={plural(n, { one: 'Test with # copy', other: 'Test with # copies' })}
             onClick={() => {
               hideMenu()

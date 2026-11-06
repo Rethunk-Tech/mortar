@@ -234,7 +234,7 @@ export const GameMenu = memo(function GameMenuView() {
         <MenuRule />
         <TitleMenuItem
           icon={<LayoutGrid size={ICON_PX} />}
-          label={t`All games…`}
+          label={t`All games`}
           onClick={() => {
             close()
             useNav.getState().openGameSelect()

@@ -328,7 +328,7 @@ const scenarios: Scenario[] = [
       // A launch before this leaves its run dialog open over the title bar.
       await page.keyboard.press('Escape')
       await page.getByRole('button', { name: /^(Switch game|Choose a game)/ }).click()
-      await page.getByRole('menuitem', { name: 'All games…' }).click()
+      await page.getByRole('menuitem', { name: 'All games' }).click()
       await Bun.sleep(SETTLE_MS)
       for (let n = 0; n < GAME_SCROLLS; n++) {
         await page.mouse.move(700, 500)

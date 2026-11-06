@@ -27,10 +27,6 @@ msgstr ""
 msgid "Enable what {name} needs?"
 msgstr ""
 
-#: src/mods/SelectionBarActions.tsx
-msgid "Make a group…"
-msgstr ""
-
 #: src/mods/updateReview/SourceGroups.tsx
 msgid "Other"
 msgstr ""
@@ -254,6 +250,7 @@ msgid "Errors while running"
 msgstr ""
 
 #: src/mods/ModActionItems.tsx
+#: src/mods/SelectionBarActions.tsx
 msgid "Organise"
 msgstr ""
 
@@ -1424,6 +1421,7 @@ msgstr ""
 #: src/mods/ModActionItems.tsx
 #: src/mods/ModDisplayEdit.tsx
 #: src/mods/ModSections.tsx
+#: src/mods/SelectionBarActions.tsx
 msgid "Version"
 msgstr ""
 
@@ -1580,7 +1578,7 @@ msgid "Rename…"
 msgstr ""
 
 #: src/mods/updateReview/EverywhereDialog.tsx
-#: src/mods/updateReview/UpdateActions.tsx
+#: src/mods/useEverywhere.ts
 msgid "Checking profiles…"
 msgstr ""
 
@@ -2074,6 +2072,7 @@ msgid "Add from"
 msgstr ""
 
 #: src/mods/AddToGroupDialog.tsx
+#: src/mods/SelectionBarActions.tsx
 msgid "Add to group…"
 msgstr ""
 
@@ -3768,7 +3767,7 @@ msgid "Share log and continue"
 msgstr ""
 
 #: src/mods/updateReview/EverywhereDialog.tsx
-#: src/mods/updateReview/UpdateActions.tsx
+#: src/mods/useEverywhere.ts
 msgid "No eligible profiles."
 msgstr ""
 

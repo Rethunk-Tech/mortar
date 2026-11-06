@@ -176,7 +176,7 @@ export function SymbolMenu({
           <MenuAction
             key={`u${key}`}
             icon={<Search size={14} />}
-            label={t`Find usages…`}
+            label={t`Find usages`}
             onClick={() => onUsages(`${m.type}::${m.method}`)}
           />,
           onItsDefinition && m.kind !== 'field' ? (

@@ -9,6 +9,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { addDependency, type DependencyAsk, useDependencyAsk } from '../develop/dependencyAsk.ts'
 import { useDevKinds } from '../develop/kinds.ts'
+import { hostOf, openPageLabel } from '../mods/modActions.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -50,18 +51,16 @@ function Items({
   item,
   source,
   card,
-  sourceNames,
   close,
   cardAction,
 }: {
   item: BrowseItem
   source: string
   card: ActionProps
-  sourceNames: Map<string, string>
   close: () => void
   cardAction: Pick<ReturnType<typeof useCardAction>, 'shownItem' | 'url' | 'installed' | 'add'>
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const game = useCurrentGame()
   const { shownItem, url, installed, add } = cardAction
   const openId = useProfiles((s) => s.openId)
@@ -92,7 +91,7 @@ function Items({
     <MenuAction
       key="details"
       icon={<Info size={16} />}
-      label={t`Show details`}
+      label={t`More details`}
       onClick={run(() => useBrowseSelection.getState().select({ item, source }))}
     />,
     shownItem.external === true ? (
@@ -129,7 +128,7 @@ function Items({
         <MenuAction
           key={`open-${c.source}`}
           icon={<ExternalLink size={16} />}
-          label={t`Open page on ${{ source: sourceNames.get(c.source) ?? c.source }}`}
+          label={openPageLabel(i18n, hostOf(c.url))}
           onClick={run(() => card.openUrl(c.url))}
         />
       )),
@@ -175,13 +174,11 @@ function MenuHost({
   menu,
   open,
   card,
-  sourceNames,
   close,
 }: {
   menu: MenuState
   open: boolean
   card: ActionProps
-  sourceNames: Map<string, string>
   close: () => void
 }) {
   const cardAction = useCardAction(card, menu.item, menu.source)
@@ -200,7 +197,6 @@ function MenuHost({
           item={menu.item}
           source={menu.source}
           card={card}
-          sourceNames={sourceNames}
           close={close}
           cardAction={cardAction}
         />
@@ -211,13 +207,7 @@ function MenuHost({
 }
 
 /** The right-click menu of a Browse hit, in the Mods tab's menu style. */
-export const BrowseMenu = memo(function BrowseMenuView({
-  card,
-  sourceNames,
-}: {
-  card: ActionProps
-  sourceNames: Map<string, string>
-}) {
+export const BrowseMenu = memo(function BrowseMenuView({ card }: { card: ActionProps }) {
   const menu = useBrowseSelection((s) => s.menu)
   const close = useBrowseSelection((s) => s.closeMenu)
   const [last, setLast] = useState(menu)
@@ -234,7 +224,6 @@ export const BrowseMenu = memo(function BrowseMenuView({
       menu={shown}
       open={menu !== null}
       card={card}
-      sourceNames={sourceNames}
       close={close}
     />
   )
