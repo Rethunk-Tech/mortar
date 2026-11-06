@@ -54,46 +54,49 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 				log.Printf("folder watch: %s for %v", name, data)
 				emit(name, data)
 			},
-			Targets: func() []folderwatch.Target {
-				cur := store.Get()
-				id := cur.LastGame
-				if id == "" {
-					ids := game.Implemented()
-					if len(ids) != 1 {
-						return nil
-					}
-					id = ids[0]
-				}
-				var out []folderwatch.Target
-				for _, dir := range downloadDirs(store, dataDir) {
-					out = append(out, folderwatch.Target{Event: folderwatch.DownloadsEvent, Game: id, Dir: dir})
-				}
-				for _, g := range game.Implemented() {
-					for _, dir := range cur.GamePrefs(g).ExtraModsFolderList() {
-						out = append(out, folderwatch.Target{Event: folderwatch.ExtraFolderEvent, Game: g, Dir: dir})
-					}
-					if dir := cur.SyncFolderFor(g); dir != "" {
-						out = append(out, folderwatch.Target{Event: syncsvc.FolderEvent, Game: g, Dir: filepath.Join(dir, g)})
-					}
-				}
-				for _, f := range devsvc.AssetSubfolders(cur, game.Implemented()) {
-					out = append(out, folderwatch.Target{Event: folderwatch.ExtraFolderEvent, Game: f.Game, Dir: f.Dir, Report: f.Root})
-				}
-				for g, dirs := range devsvc.WatchedSources(cur, game.Implemented()) {
-					for _, dir := range dirs {
-						out = append(out, folderwatch.Target{Event: devsvc.SourceEvent, Game: g, Dir: dir, WithDir: true})
-					}
-				}
-				if rel, ok := game.ManifestModsFolder(id); ok {
-					if dir, err := game.InstallDir(home, cur, id); err == nil && dir != "" {
-						out = append(out, folderwatch.Target{Event: folderwatch.ModsFolderEvent, Game: id, Dir: filepath.Join(dir, rel)})
-					}
-				}
-				return out
-			},
+			Targets: func() []folderwatch.Target { return libraryWatchTargets(home, dataDir, store) },
 		})
 		if err != nil {
 			log.Printf("folder watch: %v", err)
 		}
 	}()
+}
+
+// libraryWatchTargets lists the folders to watch for the settings as they are now.
+func libraryWatchTargets(home, dataDir string, store *settings.Store) []folderwatch.Target {
+	cur := store.Get()
+	id := cur.LastGame
+	if id == "" {
+		ids := game.Implemented()
+		if len(ids) != 1 {
+			return nil
+		}
+		id = ids[0]
+	}
+	var out []folderwatch.Target
+	for _, dir := range downloadDirs(store, dataDir) {
+		out = append(out, folderwatch.Target{Event: folderwatch.DownloadsEvent, Game: id, Dir: dir})
+	}
+	for _, g := range game.Implemented() {
+		for _, dir := range cur.GamePrefs(g).ExtraModsFolderList() {
+			out = append(out, folderwatch.Target{Event: folderwatch.ExtraFolderEvent, Game: g, Dir: dir})
+		}
+		if dir := cur.SyncFolderFor(g); dir != "" {
+			out = append(out, folderwatch.Target{Event: syncsvc.FolderEvent, Game: g, Dir: filepath.Join(dir, g)})
+		}
+	}
+	for _, f := range devsvc.AssetSubfolders(cur, game.Implemented()) {
+		out = append(out, folderwatch.Target{Event: folderwatch.ExtraFolderEvent, Game: f.Game, Dir: f.Dir, Report: f.Root})
+	}
+	for g, dirs := range devsvc.WatchedSources(cur, game.Implemented()) {
+		for _, dir := range dirs {
+			out = append(out, folderwatch.Target{Event: devsvc.SourceEvent, Game: g, Dir: dir, WithDir: true})
+		}
+	}
+	if rel, ok := game.ManifestModsFolder(id); ok {
+		if dir, err := game.InstallDir(home, cur, id); err == nil && dir != "" {
+			out = append(out, folderwatch.Target{Event: folderwatch.ModsFolderEvent, Game: id, Dir: filepath.Join(dir, rel)})
+		}
+	}
+	return out
 }
