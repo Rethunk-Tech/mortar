@@ -13,6 +13,16 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
+// savesAt is a Saves folder holding A_1 written an hour before start, an empty backups folder, and the start time.
+func savesAt(t *testing.T) (saves, out string, start time.Time) {
+	t.Helper()
+	saves = filepath.Join(t.TempDir(), "Saves")
+	out = t.TempDir()
+	start = time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	writeSave(t, saves, "A_1", start.Add(-time.Hour))
+	return saves, out, start
+}
+
 func writeSave(t *testing.T, saves, folder string, at time.Time) {
 	t.Helper()
 	dir := filepath.Join(saves, folder)
@@ -31,10 +41,7 @@ func writeSave(t *testing.T, saves, folder string, at time.Time) {
 }
 
 func TestScheduledBacksUpChangedSavesAndRotatesEachSaveApart(t *testing.T) {
-	saves := filepath.Join(t.TempDir(), "Saves")
-	out := t.TempDir()
-	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	writeSave(t, saves, "A_1", start.Add(-time.Hour))
+	saves, out, start := savesAt(t)
 	writeSave(t, saves, "B_2", start.Add(-time.Hour))
 	if _, err := Saves(t.Context(), layout(saves), out, 5, start.Add(-30*time.Minute), Cause{Kind: KindLaunch}); err != nil {
 		t.Fatal(err)
@@ -77,10 +84,7 @@ func TestScheduledBacksUpChangedSavesAndRotatesEachSaveApart(t *testing.T) {
 }
 
 func TestSavesStandInIgnoresSingleSaveBackups(t *testing.T) {
-	saves := filepath.Join(t.TempDir(), "Saves")
-	out := t.TempDir()
-	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	writeSave(t, saves, "A_1", start.Add(-time.Hour))
+	saves, out, start := savesAt(t)
 	if _, err := Scheduled(t.Context(), layout(saves), out, "", 5, start); err != nil {
 		t.Fatal(err)
 	}

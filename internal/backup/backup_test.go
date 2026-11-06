@@ -81,10 +81,7 @@ func TestSavesSkipsMissingFolder(t *testing.T) {
 }
 
 func TestSavesSkipsWhileTheNewestIsRecent(t *testing.T) {
-	saves := filepath.Join(t.TempDir(), "Saves")
-	out := t.TempDir()
-	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	writeSave(t, saves, "A_1", start.Add(-time.Hour))
+	saves, out, start := savesAt(t)
 	if err := os.Chtimes(saves, start.Add(-time.Hour), start.Add(-time.Hour)); err != nil {
 		t.Fatal(err)
 	}
@@ -107,10 +104,7 @@ func TestSavesSkipsWhileTheNewestIsRecent(t *testing.T) {
 }
 
 func TestSavesBacksUpAgainWhenASaveChangedAndSweepsCrashedTemps(t *testing.T) {
-	saves := filepath.Join(t.TempDir(), "Saves")
-	out := t.TempDir()
-	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	writeSave(t, saves, "A_1", start.Add(-time.Hour))
+	saves, out, start := savesAt(t)
 	if err := os.Chtimes(saves, start.Add(-time.Hour), start.Add(-time.Hour)); err != nil {
 		t.Fatal(err)
 	}
@@ -200,10 +194,7 @@ func TestFolderZipsOnlyThatSaveAndStaysPinned(t *testing.T) {
 }
 
 func TestABackwardsClockKeepsTheNewZip(t *testing.T) {
-	saves := filepath.Join(t.TempDir(), "Saves")
-	out := t.TempDir()
-	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	writeSave(t, saves, "A_1", start.Add(-time.Hour))
+	saves, out, start := savesAt(t)
 	if _, err := Saves(t.Context(), layout(saves), out, 1, start.Add(time.Hour), Cause{}); err != nil {
 		t.Fatal(err)
 	}

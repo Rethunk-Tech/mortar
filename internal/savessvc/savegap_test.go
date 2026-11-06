@@ -11,7 +11,6 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -64,14 +63,7 @@ func TestFitForDismissedModIsNotMissing(t *testing.T) {
 
 func TestLastSaveGap(t *testing.T) {
 	e := newSaveEnv(t)
-	p, err := e.profiles.Create("stardew", "Main")
-	if err != nil {
-		t.Fatal(err)
-	}
-	e.alphaItem(t)
-	if _, err := e.profiles.AddEntry("stardew", p.ID, "local-a", profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := e.mainWithAlpha(t)
 	index := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte(`{"A.Mod": ["Nexus:5"]}`)) }))
 	t.Cleanup(index.Close)
 	st, err := settings.Open()

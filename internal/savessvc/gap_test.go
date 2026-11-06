@@ -3,22 +3,13 @@ package savessvc
 import (
 	"testing"
 	"time"
-
-	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func TestSaveGapSplitsMissingDisabledAndOlder(t *testing.T) {
 	e := newSaveEnv(t)
-	p, err := e.profiles.Create("stardew", "Main")
-	if err != nil {
-		t.Fatal(err)
-	}
-	e.alphaItem(t)
-	if _, err := e.profiles.AddEntry("stardew", p.ID, "local-a", profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := e.mainWithAlpha(t)
 	last := NewStore(t.TempDir())
-	err = last.RecordRun("stardew", "Farm_1", "other", time.Now(), []PlayedMod{
+	err := last.RecordRun("stardew", "Farm_1", "other", time.Now(), []PlayedMod{
 		{ID: "smapi:A.Mod", Name: "Alpha", Version: "2.0.0"},
 		{ID: "smapi:B.Mod", Name: "Beta", Version: "1.5.0"},
 	})
@@ -44,14 +35,7 @@ func TestSaveGapSplitsMissingDisabledAndOlder(t *testing.T) {
 
 func TestSaveGapReportsSwitchedOffModAsDisabled(t *testing.T) {
 	e := newSaveEnv(t)
-	p, err := e.profiles.Create("stardew", "Main")
-	if err != nil {
-		t.Fatal(err)
-	}
-	e.alphaItem(t)
-	if _, err := e.profiles.AddEntry("stardew", p.ID, "local-a", profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := e.mainWithAlpha(t)
 	if _, err := e.profiles.SetModEnabled("stardew", p.ID, "local-a", "smapi:A.Mod", false); err != nil {
 		t.Fatal(err)
 	}
@@ -70,14 +54,7 @@ func TestSaveGapReportsSwitchedOffModAsDisabled(t *testing.T) {
 
 func TestFillLastSplitsAbsentFromSwitchedOffMods(t *testing.T) {
 	e := newSaveEnv(t)
-	p, err := e.profiles.Create("stardew", "Main")
-	if err != nil {
-		t.Fatal(err)
-	}
-	e.alphaItem(t)
-	if _, err := e.profiles.AddEntry("stardew", p.ID, "local-a", profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := e.mainWithAlpha(t)
 	if _, err := e.profiles.SetModEnabled("stardew", p.ID, "local-a", "smapi:A.Mod", false); err != nil {
 		t.Fatal(err)
 	}

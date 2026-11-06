@@ -29,14 +29,7 @@ func TestRecordRunStoresEnabledMods(t *testing.T) {
 
 func TestNotePlayedRecordsProfileMods(t *testing.T) {
 	e := newSaveEnv(t)
-	p, err := e.profiles.Create("stardew", "Main")
-	if err != nil {
-		t.Fatal(err)
-	}
-	e.alphaItem(t)
-	if _, err := e.profiles.AddEntry("stardew", p.ID, "local-a", profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
-		t.Fatal(err)
-	}
+	p := e.mainWithAlpha(t)
 	svc := &Service{last: NewStore(t.TempDir()), profiles: e.profiles}
 	svc.NotePlayed("stardew", p.ID, "Farm_1")
 	rec, ok, err := svc.last.Get("stardew", "Farm_1")
@@ -90,6 +83,20 @@ func newSaveEnv(t *testing.T) saveEnv {
 	t.Setenv("LOCALAPPDATA", base)
 	items, ps := testenv.Stores(t)
 	return saveEnv{ps, items}
+}
+
+// mainWithAlpha creates the stardew profile "Main" holding the stored Alpha mod.
+func (e saveEnv) mainWithAlpha(t *testing.T) profile.Profile {
+	t.Helper()
+	p, err := e.profiles.Create("stardew", "Main")
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.alphaItem(t)
+	if _, err := e.profiles.AddEntry("stardew", p.ID, "local-a", profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	return p
 }
 
 // alphaItem stores the one mod these tests install, under local-a.
