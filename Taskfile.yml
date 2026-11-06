@@ -16,7 +16,7 @@ vars:
     sh: |-
       git rev-list --count "v$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)..HEAD" 2>/dev/null || true
   # The -ldflags every platform build shares; each platform appends its own tail.
-  LDFLAGS_STAMP: '-w -s{{if .COMMIT}} -X github.com/Rethunk-Tech/mortar/internal/appversion.stamped={{.COMMIT}}{{end}}{{if .SINCE_RELEASE}} -X github.com/Rethunk-Tech/mortar/internal/appversion.pastRelease={{.SINCE_RELEASE}}{{end}}{{if .CURSEFORGE_API_KEY}} -X github.com/Rethunk-Tech/mortar/internal/source/curseforge.apiKey=$CURSEFORGE_API_KEY{{end}}'
+  LDFLAGS_STAMP: "-w -s{{if .COMMIT}} -X github.com/Rethunk-Tech/mortar/internal/appversion.stamped={{.COMMIT}}{{end}}{{if .SINCE_RELEASE}} -X github.com/Rethunk-Tech/mortar/internal/appversion.pastRelease={{.SINCE_RELEASE}}{{end}}{{if .CURSEFORGE_API_KEY}} -X github.com/Rethunk-Tech/mortar/internal/source/curseforge.apiKey=$CURSEFORGE_API_KEY{{end}}"
 
 includes:
   common: ./build/Taskfile.yml
