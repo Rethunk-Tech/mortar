@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/portal"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/godbus/dbus/v5"
@@ -125,15 +126,22 @@ func opensLogFolder(tool string, exit int, stdout string) bool {
 	return strings.TrimSpace(stdout) == labelOpenLog()
 }
 
+// notifyStartupError prefers the Notification portal, the only route a Flatpak build has without a talk-name on the
+// notification service, and falls back to the service itself on a desktop without the portal.
 func notifyStartupError(msg string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err := portal.AddNotification(ctx, portal.Notification{ID: "startup-error", Title: "Mortar", Body: msg, Priority: portal.PriorityUrgent})
+	if err == nil {
+		return
+	}
+	log.Printf("startup error notification through the portal: %v", err)
 	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
 		log.Printf("startup error notification: %v", err)
 		return
 	}
 	defer func() { _ = conn.Close() }()
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
 	urgent := map[string]dbus.Variant{"urgency": dbus.MakeVariant(byte(2))}
 	call := conn.Object("org.freedesktop.Notifications", "/org/freedesktop/Notifications").CallWithContext(ctx,
 		"org.freedesktop.Notifications.Notify", 0, "Mortar", uint32(0), "dialog-error", "Mortar", msg, []string{}, urgent, int32(0))

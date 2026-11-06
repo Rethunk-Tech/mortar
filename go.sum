@@ -16,8 +16,8 @@ github.com/Rethunk-Tech/go-cfgedit v0.2.0 h1:AaoQuLBmiGvHd6irBqcDcChifMTai4idpTr
 github.com/Rethunk-Tech/go-cfgedit v0.2.0/go.mod h1:QufP3Eqz9dz83brRfZ7K4d6iN8T61IhCJee+5Wow/Ic=
 github.com/Rethunk-Tech/go-curseforge v0.3.0 h1:4xajElrzwxfjzhZ5tTq7Pqpv+WhAe7njK8GsDuK9hYI=
 github.com/Rethunk-Tech/go-curseforge v0.3.0/go.mod h1:BAYwNTAFov3FIKkTVFH8sXXYgPA69+gQC6pREVHgHfQ=
-github.com/Rethunk-Tech/go-desktopenv v0.4.0 h1:XPYnAKxjOml0Z4Nv4l4A/NxFDqFMv4DBH8t6w0mqHAI=
-github.com/Rethunk-Tech/go-desktopenv v0.4.0/go.mod h1:r/4DNFhqgHjn3T7bOitXEkqQEvbZw0RaEfyAI/0BHoM=
+github.com/Rethunk-Tech/go-desktopenv v0.5.0 h1:vO+tz1tomLVUSGRBN4hFzgvMXdNV89dW4tru/egX9Zo=
+github.com/Rethunk-Tech/go-desktopenv v0.5.0/go.mod h1:UGKb4EVwDGgkHjMQv0Doe7MsTvmPpdMxXuKKQDHvrDA=
 github.com/Rethunk-Tech/go-dotnet v0.2.0 h1:5V6tEBfTXSnwbsUMNAKovLjLkLWUxyHF0f0f6hlUHNg=
 github.com/Rethunk-Tech/go-dotnet v0.2.0/go.mod h1:Nd59gwMl484+cwGQy+vVIOWPduhkj2PRg/UWzfJy/fY=
 github.com/Rethunk-Tech/go-fomod v0.1.0 h1:NAmHf2WPHAsD+fcuc1UYWyjYpG56ioDwxjf/Qyq0ahA=
@@ -44,8 +44,6 @@ github.com/Rethunk-Tech/go-nettrace v0.1.0 h1:nwx2R/p7HGauax19KB1es9rSwr3ROubPEM
 github.com/Rethunk-Tech/go-nettrace v0.1.0/go.mod h1:fy5SH8B/dIoykYgt2alKsyc745KnlMPnArGf+Egqm3s=
 github.com/Rethunk-Tech/go-nexusmods v0.5.0 h1:NiP2QyS3kjUOfXcHCenHMR4ue3G4p2evyZ/GpAfMjSA=
 github.com/Rethunk-Tech/go-nexusmods v0.5.0/go.mod h1:sKZs2TFIEi2Z8XHsepUfQk4GdQ1n4+s4UupKF6ooWD8=
-github.com/Rethunk-Tech/go-safefs v0.6.0 h1:Z8s36Qrbl/tCMAKKCGyS+YmWF4MXoskscepMfWYjY1o=
-github.com/Rethunk-Tech/go-safefs v0.6.0/go.mod h1:OlJOS+MRiL1we4bZjwI59SfZ1P2w7htlhxdP0ZuVBgU=
 github.com/Rethunk-Tech/go-safefs v0.7.0 h1:gKjNvkc057yn8eKmCp6anKNUG5cppbDWngnMaXUytyM=
 github.com/Rethunk-Tech/go-safefs v0.7.0/go.mod h1:m378QSCfnZ+Da68uphEBVzw8G5Y0Zhka5PtUMUBYX1A=
 github.com/Rethunk-Tech/go-semverish v0.2.0 h1:UrJw6+D1uOclXnkLmpSQAIvzoCqF9XPmXBqRRdA+1lw=

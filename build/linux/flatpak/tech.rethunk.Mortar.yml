@@ -42,8 +42,7 @@ finish-args:
   # We read r2modman's and Gale's data folders so Import can bring their profiles over.
   - --filesystem=xdg-config/r2modmanPlus-local:ro
   - --filesystem=xdg-data/com.kesomannen.gale:ro
-  # Desktop notifications and the tray icon talk to these names directly (no portal.)
-  - --talk-name=org.freedesktop.Notifications
+  # The tray icon talks to this name directly (no portal); notifications go through the Notification portal.
   - --talk-name=org.kde.StatusNotifierWatcher
   # The tray item's name has the process id in it, which is 2 inside the sandbox.
   - --own-name=org.kde.StatusNotifierItem-2-1

@@ -1,6 +1,9 @@
 package desktopnotify
 
 import (
+	"bytes"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -26,5 +29,19 @@ func TestSendIfPrefOffSkips(t *testing.T) {
 	SendIf(true, KindDownload, "Download finished", "mod", nil)
 	if f.n != 1 || f.title != "Download finished" {
 		t.Fatalf("pref on sent %d %q", f.n, f.title)
+	}
+}
+
+func TestNoticePortalCarriesIconBytesAndDropsAMissingIcon(t *testing.T) {
+	icon := filepath.Join(t.TempDir(), "icon.png")
+	if err := os.WriteFile(icon, []byte{1, 2}, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got := Notice{ID: "a", Title: "T", Body: "B", Icon: icon}.Portal()
+	if got.ID != "a" || got.Title != "T" || got.Body != "B" || !bytes.Equal(got.IconPNG, []byte{1, 2}) {
+		t.Fatalf("portal notice %+v", got)
+	}
+	if got := (Notice{ID: "a", Title: "T", Icon: filepath.Join(t.TempDir(), "none.png")}).Portal(); got.IconPNG != nil {
+		t.Fatalf("missing icon kept: %v", got.IconPNG)
 	}
 }

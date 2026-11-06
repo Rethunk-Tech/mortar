@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/Rethunk-Tech/go-desktopenv/portal"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Kind says what a notification is about; it decides the id the OS hands back when the user activates it.
@@ -79,4 +82,15 @@ func noticeID(kind Kind, data map[string]any) string {
 	}
 	profile, _ := data["profile"].(string)
 	return fmt.Sprintf("%s-%s-%d", kind, profile, n)
+}
+
+// Portal converts n for the Notification portal. An unreadable icon is dropped: the text is what matters.
+func (n Notice) Portal() portal.Notification {
+	out := portal.Notification{ID: n.ID, Title: n.Title, Body: n.Body}
+	if n.Icon != "" {
+		if png, err := safefs.ReadFile(n.Icon); err == nil {
+			out.IconPNG = png
+		}
+	}
+	return out
 }
