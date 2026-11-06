@@ -192,6 +192,7 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
       playDisabled={openId === '' || launching || busy}
       vanillaDisabled={launching || busy}
       label={label}
+      busy={busy || updating > 0}
       rail={rail}
       play={() => start(game, openId, direct, '')}
       presets={presets}

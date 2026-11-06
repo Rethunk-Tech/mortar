@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, ButtonGroup, FormControlLabel, Menu, Radio, RadioGroup } from '@mui/material'
+import { Box, Button, ButtonGroup, FormControlLabel, Menu, Radio, RadioGroup } from '@mui/material'
 import { ChevronDown, Gamepad2, Play, SlidersHorizontal, Star } from 'lucide-react'
 import { type MouseEvent, useState } from 'react'
 import { STEAM } from '../brand/productNames.ts'
@@ -20,6 +20,7 @@ import { useLaunch } from './store.ts'
 function PlayButtons({
   rail,
   label,
+  busy,
   playDisabled,
   vanillaDisabled,
   menuOpen,
@@ -29,6 +30,7 @@ function PlayButtons({
 }: {
   rail: boolean
   label: string
+  busy: boolean
   playDisabled: boolean
   vanillaDisabled: boolean
   menuOpen: boolean
@@ -70,19 +72,27 @@ function PlayButtons({
     >
       <Button
         disabled={playDisabled}
-        startIcon={<Play size={20} fill="currentColor" />}
+        // A busy label (installing, updating) is longer than Play and is no invitation to play, so it drops the icon.
+        startIcon={busy ? undefined : <Play size={20} fill="currentColor" />}
+        title={busy ? label : undefined}
         onClick={onPlay}
         onContextMenu={onContext}
         sx={{
           flex: 1,
+          minWidth: 0,
           height: PLAY_HEIGHT_PX,
           borderRadius: 0,
-          fontSize: 20,
+          fontSize: busy ? 'medium.fontSize' : 20,
           fontWeight: 700,
           '& .MuiButton-startIcon': { mr: '10px' },
         }}
       >
-        {label}
+        <Box
+          component="span"
+          sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {label}
+        </Box>
       </Button>
       <Button
         disabled={vanillaDisabled}
@@ -139,6 +149,7 @@ export function VanillaPlay({
   playDisabled,
   vanillaDisabled,
   label,
+  busy,
   rail,
   play,
   presets,
@@ -150,6 +161,7 @@ export function VanillaPlay({
   playDisabled: boolean
   vanillaDisabled: boolean
   label: string
+  busy: boolean
   rail: boolean
   play: () => void
   presets: PlayPreset[]
@@ -176,6 +188,7 @@ export function VanillaPlay({
       <PlayButtons
         rail={rail}
         label={label}
+        busy={busy}
         playDisabled={playDisabled}
         vanillaDisabled={vanillaDisabled}
         menuOpen={menu !== null}

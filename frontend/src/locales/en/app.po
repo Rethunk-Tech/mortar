@@ -7039,6 +7039,7 @@ msgid "Sign in to download"
 msgstr "Sign in to download"
 
 #: src/launch/PlayControl.tsx
+#: src/loader/Banner.tsx
 msgid "Installing {installing}…"
 msgstr "Installing {installing}…"
 

@@ -38,6 +38,9 @@ export function LoaderBanner({ game }: { game: string }) {
     message = t`${{ name: loader.name }} ${{ latest: status.latest }} is available`
     action = t`Update`
   }
+  if (installing) {
+    message = t`Installing ${{ installing: loader.name }}…`
+  }
   return (
     <Box
       role="status"
