@@ -13,6 +13,9 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
 func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
@@ -199,4 +202,66 @@ func gameWithModDLL(t *testing.T, dir string) string {
 		t.Fatal(err)
 	}
 	return managed
+}
+
+func TestAssembliesWithoutAProjectUseTheInstallAndTheOpenProfile(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	items, profiles := testenv.Stores(t)
+	st, err := settings.OpenIn(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc.Settings = settings.NewService(st)
+	svc.Profiles = profile.NewService(profiles, t.TempDir(), st)
+
+	game := t.TempDir()
+	managed := filepath.Join(game, "Game_Data", "Managed")
+	pkg := filepath.Join(t.TempDir(), "pkg")
+	for _, dir := range []string{managed, pkg} {
+		if err := os.MkdirAll(dir, 0o750); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, name := range []string{"Another.dll", "Assembly-CSharp.dll", "System.Core.dll"} {
+		if err := safefs.WriteFile(filepath.Join(managed, name), nil, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := safefs.WriteFile(filepath.Join(game, "Lethal Company.exe"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := safefs.WriteFile(filepath.Join(pkg, "Dep.dll"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := items.AddDir(t.Context(), "lethal-company", "dep-1", pkg); err != nil {
+		t.Fatal(err)
+	}
+	open := testenv.Profile(t, profiles, "lethal-company", "Open")
+	if _, err := profiles.AddEntry("lethal-company", open.ID, "dep-1", profile.Source{Kind: profile.KindThunderstore, Name: "Auth-Dep"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.Settings.SetGameFolder("lethal-company", game); err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.Settings.SetLastProfile("lethal-company", open.ID); err != nil {
+		t.Fatal(err)
+	}
+
+	all, err := svc.Assemblies("lethal-company", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, a := range all {
+		got = append(got, a.Group+":"+a.Label)
+	}
+	if want := []string{"game:Assembly-CSharp.dll", "game:Another.dll", "dependency:Auth-Dep/Dep.dll"}; !slices.Equal(got, want) {
+		t.Fatalf("assemblies = %v, want %v", got, want)
+	}
+	if path, err := svc.assembly("lethal-company", "", ""); err != nil || path != filepath.Join(managed, "Assembly-CSharp.dll") {
+		t.Fatalf("default assembly = %q, %v", path, err)
+	}
+	if _, err := svc.GameCode("lethal-company", "", "/etc/passwd", "x"); err == nil {
+		t.Fatal("read an assembly Game code does not list")
+	}
 }

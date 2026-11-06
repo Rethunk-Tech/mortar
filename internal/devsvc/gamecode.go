@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/go-cfgedit/msbuild"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -47,30 +48,39 @@ type Assembly struct {
 var noise = regexp.MustCompile(`^(System(\..*)?|mscorlib|netstandard|Microsoft\..*|Mono\.Security)\.dll$`)
 
 // Assemblies lists what Game code can open, the game's main assembly first: a Unity game's Managed folder, else the
-// DLLs beside the game's executable; the development profile's packages; the project's own build.
+// DLLs beside the game's executable; the development profile's packages; the project's own build. With no project
+// (dir ""), the game is the install Mortar knows, the packages are the open profile's, and there is no project group.
 func (s *Service) Assemblies(gameID, dir string) ([]Assembly, error) {
-	p, err := s.project(gameID, dir)
-	if err != nil {
-		return nil, err
+	var root, profileID, output string
+	if dir == "" {
+		if inst, err := game.ResolveInstall(s.Home, s.Settings.Get(), gameID, ""); err == nil {
+			root = inst.Dir
+		}
+		profileID = s.Settings.Get().LastProfile[gameID]
+	} else {
+		p, err := s.project(gameID, dir)
+		if err != nil {
+			return nil, err
+		}
+		props, _ := safefs.ReadFile(filepath.Join(p.Dir, "Config.Build.user.props"))
+		root, profileID, output = msbuild.Property(string(props), "GameRootDir"), p.Profile, p.Output
 	}
-	props, _ := safefs.ReadFile(filepath.Join(p.Dir, "Config.Build.user.props"))
-	root := msbuild.Property(string(props), "GameRootDir")
 	out := []Assembly{}
 	if root != "" {
-		game, _ := filepath.Glob(filepath.Join(root, "*_Data", "Managed", "*.dll"))
-		if len(game) == 0 {
-			game, _ = filepath.Glob(filepath.Join(root, "*.dll"))
+		dlls, _ := filepath.Glob(filepath.Join(root, "*_Data", "Managed", "*.dll"))
+		if len(dlls) == 0 {
+			dlls, _ = filepath.Glob(filepath.Join(root, "*.dll"))
 		}
-		slices.SortStableFunc(game, func(a, b string) int {
+		slices.SortStableFunc(dlls, func(a, b string) int {
 			return cmpBool(filepath.Base(b) == "Assembly-CSharp.dll", filepath.Base(a) == "Assembly-CSharp.dll")
 		})
-		for _, path := range game {
+		for _, path := range dlls {
 			if !noise.MatchString(filepath.Base(path)) {
 				out = append(out, Assembly{Label: filepath.Base(path), Path: path, Group: "game"})
 			}
 		}
 	}
-	if installed, err := s.Profiles.Installed(gameID, p.Profile); err == nil {
+	if installed, err := s.Profiles.Installed(gameID, profileID); err == nil {
 		for _, im := range installed {
 			if im.Source.Kind != profile.KindThunderstore || im.Folder == "" {
 				continue
@@ -80,9 +90,11 @@ func (s *Service) Assemblies(gameID, dir string) ([]Assembly, error) {
 			}
 		}
 	}
-	built, _ := filepath.Glob(filepath.Join(p.Output, "*.dll"))
-	for _, path := range built {
-		out = append(out, Assembly{Label: filepath.Base(path), Path: path, Group: "project"})
+	if output != "" {
+		built, _ := filepath.Glob(filepath.Join(output, "*.dll"))
+		for _, path := range built {
+			out = append(out, Assembly{Label: filepath.Base(path), Path: path, Group: "project"})
+		}
 	}
 	return out, nil
 }
