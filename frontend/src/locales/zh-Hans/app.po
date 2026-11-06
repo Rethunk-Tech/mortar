@@ -6363,6 +6363,10 @@ msgstr ""
 msgid "Step {step} of {count}: {name}"
 msgstr ""
 
+#: src/develop/NewModDialog.tsx
+msgid "The Flatpak builds mods with Flathub's .NET SDK. Install it with {command}, then restart Mortar."
+msgstr ""
+
 #: src/share/useImportFlow.ts
 msgid "{count, plural, one {Applied the curator's choices for # mod and {configs, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {configs, plural, one {# config file} other {# config files}}}}"
 msgstr ""

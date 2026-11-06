@@ -82,7 +82,9 @@ const Prerequisites = memo(function PrerequisitesView({
   const sdks = tools.dotnetSdks ?? []
   const need = form?.sdk
   let sdk = ''
-  if (sdks.length === 0) {
+  if (sdks.length === 0 && tools.flatpakDotnetInstall) {
+    sdk = t`The Flatpak builds mods with Flathub's .NET SDK. Install it with ${{ command: tools.flatpakDotnetInstall }}, then restart Mortar.`
+  } else if (sdks.length === 0) {
     sdk = t`Install the .NET SDK to build mods.`
   } else if (need?.version && !sdkSatisfies(need, sdks)) {
     sdk = t`This template builds with the .NET SDK ${{ version: need.version }}; install it to build mods.`

@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-cfgedit/msbuild"
+	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -112,6 +113,8 @@ type NewMod struct {
 type Tools struct {
 	// DotnetSDKs are the installed .NET SDK versions; empty means none.
 	DotnetSDKs []string `json:"dotnetSdks"`
+	// FlatpakDotnetInstall is the command that adds the SDK in a Flatpak that lacks it; empty everywhere else.
+	FlatpakDotnetInstall string `json:"flatpakDotnetInstall"`
 	Git        bool     `json:"git"`
 	// GitHubUser is the gh login, empty when gh is missing or signed out.
 	GitHubUser string `json:"githubUser"`
@@ -155,7 +158,11 @@ func (s *Service) run(ctx context.Context, dir, name string, args ...string) ([]
 		return s.Run(ctx, dir, name, args...)
 	}
 	args = guardGit(name, args)
-	cmd, err := toolCommand(ctx, name, args...)
+	program := name
+	if name == "dotnet" {
+		program = dotnetProgram(flatpakDotnetRoot())
+	}
+	cmd, err := toolCommand(ctx, program, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -191,6 +198,9 @@ func (s *Service) Tools(ctx context.Context, gameID string) Tools {
 	ctx, cancel := context.WithTimeout(ctx, toolTimeout)
 	defer cancel()
 	t := Tools{DotnetSDKs: []string{}}
+	if flatpak.Inside() && flatpakDotnetRoot() == "" {
+		t.FlatpakDotnetInstall = FlatpakDotnetInstall
+	}
 	if out, err := s.run(ctx, "", "dotnet", "--list-sdks"); err == nil {
 		for line := range strings.Lines(string(out)) {
 			if v, _, ok := strings.Cut(strings.TrimSpace(line), " "); ok {

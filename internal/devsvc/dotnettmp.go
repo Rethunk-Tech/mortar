@@ -28,7 +28,7 @@ const (
 )
 
 func (s *Service) dotnetEnv() []string {
-	env := hostenv.Environ()
+	env := withDotnetRoot(hostenv.Environ(), flatpakDotnetRoot())
 	if s.CacheDir == "" {
 		return env
 	}

@@ -22,6 +22,7 @@ The window needs Microsoft's WebView2 Runtime (the installer adds it when missin
   - Folders outside the Flatpak's allowed set (Steam, Heroic, Lutris and the usual game folders) are invisible. Grant one with `flatpak override --user --filesystem=<folder> tech.rethunk.Mortar`.
   - **Add this profile to Steam** is refused; the error shows the `flatpak run tech.rethunk.Mortar --play=<game>/<profile> --steam-session` command to use.
   - Flatpak Steam cannot read profiles until you choose **Grant access** in the game's settings.
+  - Develop needs the .NET SDK extension (about 700 MB installed): `flatpak install flathub org.freedesktop.Sdk.Extension.dotnet10//26.08`, then restart Mortar. New mod shows this command while it is missing.
 - **Homebrew:** `brew install rethunk-tech/tap/mortar` installs the AppImage; `brew upgrade` updates it.
 - **`.deb`, `.rpm`, Arch package:** `sudo apt install ./mortar_*_amd64.deb`, `sudo dnf install ./mortar-*.rpm` or `sudo pacman -U mortar-*.pkg.tar.zst`. They do not update themselves; add the repository below for that.
 

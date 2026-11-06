@@ -49,6 +49,13 @@ finish-args:
   - --own-name=org.kde.StatusNotifierItem-2-1
   # flatpak-spawn --host: without it we can't start a game through the host's Steam or launcher.
   - --talk-name=org.freedesktop.Flatpak
+# Develop builds mods with Flathub's .NET SDK. no-autodownload leaves the 700 MB extension to the player, and Develop's
+# Prerequisites prints the install command; its branch is the freedesktop release the GNOME runtime sits on.
+add-extensions:
+  org.freedesktop.Sdk.Extension.dotnet10:
+    directory: extensions/dotnet10
+    version: "26.08"
+    no-autodownload: true
 modules:
   - name: mortar
     buildsystem: simple
