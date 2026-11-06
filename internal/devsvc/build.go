@@ -225,7 +225,7 @@ func subfolders(root, skip string) []string {
 		if !d.IsDir() {
 			return nil
 		}
-		if dir != root && slices.Contains([]string{"bin", "obj"}, d.Name()) {
+		if dir != root && slices.Contains([]string{"bin", "obj", "node_modules", ".git"}, d.Name()) {
 			return fs.SkipDir
 		}
 		if dir != root && dir != skip {

@@ -30,13 +30,13 @@ func TestWatchedSourcesIncludeSubfoldersButNotBuildOutput(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
 	src := filepath.Join(dir, "src", "ShopDrop")
-	for _, d := range []string{"Patches", "obj/x"} {
+	for _, d := range []string{"Patches", "obj/x", "node_modules/pkg", ".git/refs"} {
 		if err := os.MkdirAll(filepath.Join(src, d), 0o750); err != nil {
 			t.Fatal(err)
 		}
 	}
 	got := WatchedSources(svc.Settings.Get(), []string{"lethal-company"})["lethal-company"]
-	if !slices.Contains(got, filepath.Join(src, "Patches")) || slices.Contains(got, filepath.Join(src, "obj")) || slices.Contains(got, filepath.Join(src, "obj", "x")) {
+	if !slices.Contains(got, filepath.Join(src, "Patches")) || slices.Contains(got, filepath.Join(src, "obj")) || slices.Contains(got, filepath.Join(src, "obj", "x")) || slices.ContainsFunc(got, func(g string) bool { return strings.Contains(g, "node_modules") || strings.Contains(g, ".git") }) {
 		t.Errorf("watched %v", got)
 	}
 }
