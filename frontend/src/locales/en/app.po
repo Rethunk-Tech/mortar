@@ -794,6 +794,10 @@ msgstr "From a shared link"
 msgid "Also move its folder to the trash"
 msgstr "Also move its folder to the trash"
 
+#: src/firstrun/LoaderStep.tsx
+msgid "Install {loader} {latest}"
+msgstr "Install {loader} {latest}"
+
 #: src/develop/GameCodeDialog.tsx
 msgid "Search the game's types and methods, then pick one to read its type's code."
 msgstr "Search the game's types and methods, then pick one to read its type's code."
@@ -6381,6 +6385,7 @@ msgstr "{count, plural, one {Applied the curator's choices for # mod and {config
 
 #: src/develop/GameCodeDialog.tsx
 #: src/firstrun/GameSetup.tsx
+#: src/firstrun/LoaderStep.tsx
 msgid "Install {loader}"
 msgstr "Install {loader}"
 

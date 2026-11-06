@@ -407,10 +407,17 @@ export function LoaderStep({
       ? t`${loader} is the loader every ${{ game: gameName }} mod needs. It goes into the game folder.`
       : t`${loader} is the loader every ${{ game: gameName }} mod needs. It goes into the game folder, and ${{ launcher: STEAM }} keeps launching the game as usual.`
   }
+  // After a failed install nothing is running, so the heading names the step, not progress.
+  const headingText = () => {
+    if (installing || pending) {
+      return latest ? t`Installing ${loader} ${latest}` : t`Installing ${loader}`
+    }
+    return latest ? t`Install ${loader} ${latest}` : t`Install ${loader}`
+  }
   return (
     <Panel width={680}>
       <Typography component="h2" sx={{ fontSize: 22, fontWeight: 700 }}>
-        {latest ? t`Installing ${loader} ${latest}` : t`Installing ${loader}`}
+        {headingText()}
       </Typography>
       <Typography sx={{ fontSize: 'lead.fontSize', lineHeight: 1.5 }}>{introText()}</Typography>
       {installing ? (

@@ -794,6 +794,10 @@ msgstr ""
 msgid "Also move its folder to the trash"
 msgstr ""
 
+#: src/firstrun/LoaderStep.tsx
+msgid "Install {loader} {latest}"
+msgstr ""
+
 #: src/develop/GameCodeDialog.tsx
 msgid "Search the game's types and methods, then pick one to read its type's code."
 msgstr ""
@@ -6381,6 +6385,7 @@ msgstr ""
 
 #: src/develop/GameCodeDialog.tsx
 #: src/firstrun/GameSetup.tsx
+#: src/firstrun/LoaderStep.tsx
 msgid "Install {loader}"
 msgstr ""
 

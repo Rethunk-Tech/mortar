@@ -143,7 +143,7 @@ function firstRunCases({ reload, under }: Kit): Case[] {
         await p.getByRole('heading', { name: /^Set up Stardew Valley/ }).waitFor()
       },
       run: async (p) => {
-        const step = p.getByRole('heading', { name: /^Installing / })
+        const step = p.getByRole('heading', { name: /^Install(ing)? / })
         // The game folder step, then Nexus's, lead to the loader step.
         for (let n = 0; n < 3 && !(await step.isVisible()); n++) {
           await p
