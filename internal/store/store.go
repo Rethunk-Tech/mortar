@@ -259,14 +259,12 @@ func (s *Store) locate(idx index, game, key string) (string, error) {
 func (s *Store) Path(game, key string) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	dir, err := s.folder(game, key)
+	dir, _, sub, ok, err := s.resolvedRoot(game, key)
 	if err != nil {
 		return "", err
 	}
-	if rel := contentRoot(dir); rel != "" {
-		if sub, ok := resolveRoot(dir, rel); ok {
-			return sub, nil
-		}
+	if ok {
+		return sub, nil
 	}
 	return dir, nil
 }

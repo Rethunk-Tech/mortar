@@ -77,17 +77,26 @@ func (s *Store) SetRoot(game, key, rel string) error {
 	return nil
 }
 
+// resolvedRoot is the item's folder with its stored content root and that root's path; ok is false when none is set or
+// it no longer exists. The caller holds s.mu.
+func (s *Store) resolvedRoot(game, key string) (dir, rel, sub string, ok bool, err error) {
+	dir, err = s.folder(game, key)
+	if err != nil {
+		return "", "", "", false, err
+	}
+	if rel = contentRoot(dir); rel != "" {
+		sub, ok = resolveRoot(dir, rel)
+	}
+	return dir, rel, sub, ok, nil
+}
+
 // Root is the stored relative content folder, or empty when none is set or it no longer exists.
 func (s *Store) Root(game, key string) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	dir, err := s.folder(game, key)
-	if err != nil {
+	_, rel, _, ok, err := s.resolvedRoot(game, key)
+	if err != nil || !ok {
 		return "", err
-	}
-	rel := contentRoot(dir)
-	if _, ok := resolveRoot(dir, rel); !ok {
-		return "", nil
 	}
 	return rel, nil
 }
