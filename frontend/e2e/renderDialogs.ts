@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import type { Page } from '@playwright/test'
 import { openGameSelect, openSettings } from './app.ts'
+import { detailsCases } from './detailsCases.ts'
 import { flatpakSdkCases } from './flatpakSdkCase.ts'
 import { flowCases } from './flowCases.ts'
 import { menuCases } from './menuCases.ts'
@@ -399,6 +400,7 @@ export function dialogCases(h: Helpers): Case[] {
     ...flowCases(kit, h.tabs, h.tab),
     ...swrCases(kit.ready, h.tabs, h.tab),
     ...refreshFailedCases(kit.ready, h.tabs, h.tab),
+    ...detailsCases(kit.ready, h.tabs, h.tab),
     ...menuCases(kit, h.tabs),
     // Showing the list and picking a mod is setup: only opening the dialog is measured.
     dialog(

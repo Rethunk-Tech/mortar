@@ -7,7 +7,7 @@ import type { dialogKit } from './renderDialogs.ts'
 import { biggestProfileIds, openGame } from './renderProfile.ts'
 import { stubCalls } from './renderStubbed.ts'
 
-const NEXUS_ACCOUNT = 1_189_232_250
+export const NEXUS_ACCOUNT = 1_189_232_250
 const START_SSO = 305_010_372
 const TRASH_PROJECT = 400_259_103
 const GAME_LIST = 2_813_804_068
@@ -60,7 +60,7 @@ const dataDir = () =>
   process.env.MORTAR_RENDER_DATA ?? `${process.env.HOME ?? ''}/.local/share/mortar`
 
 /** Reloads the app under the stubs, which the game list read at startup then goes through. */
-async function reloadUnder(p: Page, tabs: (p: Page) => ReturnType<Page['locator']>) {
+export async function reloadUnder(p: Page, tabs: (p: Page) => ReturnType<Page['locator']>) {
   await p.reload()
   await tabs(p).waitFor({ timeout: 30_000 })
 }
