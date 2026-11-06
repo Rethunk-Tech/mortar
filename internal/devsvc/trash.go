@@ -1,9 +1,11 @@
 package devsvc
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 
@@ -22,15 +24,21 @@ func holdBuild(dir string) (release func()) {
 	return mu.Unlock
 }
 
-// trashFailed names the programs that hold dir when it could not be moved, so the player knows what to close. The
+// trashFailed names the programs that hold dir when Windows would not move it, so the player knows what to close. The
 // error is untagged on purpose: a permission kind would show a sentence about Mortar's own permissions instead.
 func trashFailed(dir string, err error) error {
-	if !safefs.IsDir(dir) {
+	if !errors.Is(err, safefs.ErrInUse) || !safefs.IsDir(dir) {
 		return err
 	}
-	names, ok := holderNames(dir)
-	if !ok {
-		return err
+	holders, herr := safefs.Holders(projectPaths(dir))
+	if herr != nil {
+		log.Printf("devsvc: finding what holds %s: %v", dir, herr)
+	}
+	names := []string{}
+	for _, h := range holders {
+		if h.Name != "" && !slices.Contains(names, h.Name) {
+			names = append(names, h.Name)
+		}
 	}
 	log.Printf("devsvc: moving %s to the trash: %v; held by %v", dir, err, names)
 	return inUse(dir, names)
