@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
-	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -16,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testcatalog"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -35,11 +35,7 @@ func gzJSON(t *testing.T, v any) []byte {
 // A game only a manifest lists (no bundled entry, no Go of its own) browses its Thunderstore community and installs a
 // package into a profile, the path Browse's Add takes.
 func TestACatalogOnlyGameBrowsesAndAdds(t *testing.T) {
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
-	m.Games = append(slices.Clone(m.Games), components.GameInfo{
+	testcatalog.AddGames(t, components.GameInfo{
 		ID: "catalog-only-game", Name: "Content Warning", Enabled: true, Marker: "Content Warning.exe",
 		R2modmanFolder: "ContentWarning", Deploy: "profile",
 		Targets: []components.TargetDef{{ID: "profile", Root: "{profile}"}},
@@ -47,10 +43,6 @@ func TestACatalogOnlyGameBrowsesAndAdds(t *testing.T) {
 		Loaders: []components.GameLoader{{ID: "bepinex5", Name: "BepInEx 5"}},
 		Sources: []components.GameSource{{ID: "thunderstore", Key: "content-warning"}},
 	})
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
 
 	mux := http.NewServeMux()
 	srv := httptest.NewServer(mux)

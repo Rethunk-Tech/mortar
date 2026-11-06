@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/modfixture"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testcatalog"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -125,25 +126,14 @@ func TestAModsFolderFileIsHeldByTheNearestModFolderOrByNone(t *testing.T) {
 // A folder game's files are read where the folder loader places them, so a deep game folder makes a row that the
 // profile's own shorter path would not.
 func TestAPlacedFileIsJudgedAtItsPathInTheGameFolder(t *testing.T) {
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
 	const id = "long-game"
-	m.Games = append(slices.Clone(m.Games), components.GameInfo{
+	testcatalog.AddGames(t, components.GameInfo{
 		ID: id, Name: "Long Game", Enabled: true, Marker: "G.exe", Deploy: "profile",
 		Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods"}},
 		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "1"}},
 		Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
 		Paths:   map[string]components.PathTemplate{"mods": {Windows: "{documents}/G/Mods", Linux: "{documents}/G/Mods", Darwin: "{documents}/G/Mods"}},
 	})
-	if err := m.Validate(); err != nil {
-		t.Fatal(err)
-	}
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
 
 	datadirtest.Use(t, t.TempDir())
 	folder := t.TempDir()

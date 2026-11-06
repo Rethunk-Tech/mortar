@@ -5,7 +5,6 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
-	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/go-smapiweb"
@@ -13,6 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testcatalog"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -127,24 +127,13 @@ func TestSweepVersionIsPerGame(t *testing.T) {
 // A loader that reads no game version is swept when the Steam build of the install changes: the first look is only
 // the baseline, and the next build triggers.
 func TestSweepNoticesASteamBuildForALoaderWithoutAGameVersion(t *testing.T) {
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
 	const id = "build-game"
-	m.Games = append(slices.Clone(m.Games), components.GameInfo{
+	testcatalog.AddGames(t, components.GameInfo{
 		ID: id, Name: "Build Game", Enabled: true, Marker: "G.dll", Deploy: "profile",
 		Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods", MaxDepth: map[string]int{"pkg": 1}}},
 		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "7"}},
 		Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
 	})
-	if err := m.Validate(); err != nil {
-		t.Fatal(err)
-	}
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
 
 	svc, _ := sweepEnv(t)
 	svc.SweepVersions = nil

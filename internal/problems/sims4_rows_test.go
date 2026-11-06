@@ -14,23 +14,17 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testcatalog"
 )
 
 // sims4Rows is the Problems service over the real sims4 catalog entry (enabled in the test's copy only), a fake Steam
 // library and Proton prefix, and the player's Options.ini holding body; it returns the setting rows for a new profile.
 func sims4Rows(t *testing.T, mode, body string) []LoadFailure {
 	t.Helper()
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
-	m.Games = slices.Clone(m.Games)
-	i := slices.IndexFunc(m.Games, func(g components.GameInfo) bool { return g.ID == "sims4" })
-	m.Games[i].Enabled = true
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
+	testcatalog.Use(t, func(m *components.Manifest) {
+		i := slices.IndexFunc(m.Games, func(g components.GameInfo) bool { return g.ID == "sims4" })
+		m.Games[i].Enabled = true
+	})
 	datadirtest.Use(t, t.TempDir())
 	home := t.TempDir()
 	root := filepath.Join(home, ".local", "share", "Steam")

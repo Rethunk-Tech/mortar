@@ -16,32 +16,27 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testcatalog"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestTestCopiesAddTheDevHelperAndOnlyTheyLaunchWithIt(t *testing.T) {
 	datadirtest.Use(t, t.TempDir())
 	const lc, helper = "lethal-company", "Ns-Helper"
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for i := range m.Games {
-		if m.Games[i].ID != lc {
-			continue
-		}
-		for j := range m.Games[i].Loaders {
-			if tpl := m.Games[i].Loaders[j].DevTemplate; tpl != nil {
-				cp := *tpl
-				cp.DevHelper = &components.DevRecommend{Package: helper}
-				m.Games[i].Loaders[j].DevTemplate = &cp
+	testcatalog.Use(t, func(m *components.Manifest) {
+		for i := range m.Games {
+			if m.Games[i].ID != lc {
+				continue
+			}
+			for j := range m.Games[i].Loaders {
+				if tpl := m.Games[i].Loaders[j].DevTemplate; tpl != nil {
+					cp := *tpl
+					cp.DevHelper = &components.DevRecommend{Package: helper}
+					m.Games[i].Loaders[j].DevTemplate = &cp
+				}
 			}
 		}
-	}
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
+	})
 
 	_, ps := testenv.Stores(t)
 	p := testenv.Profile(t, ps, lc, "Friends")

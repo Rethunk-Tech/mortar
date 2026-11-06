@@ -3,7 +3,6 @@ package problems
 import (
 	"os"
 	"path/filepath"
-	"slices"
 	"testing"
 	"time"
 
@@ -11,28 +10,18 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testcatalog"
 )
 
 // A game whose loader cannot read its version is compared by the Steam build of its install.
 func TestUpdateWarningComparesTheSteamBuildWhenTheLoaderReadsNoVersion(t *testing.T) {
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
 	const id = "build-game"
-	m.Games = append(slices.Clone(m.Games), components.GameInfo{
+	testcatalog.AddGames(t, components.GameInfo{
 		ID: id, Name: "Build Game", Enabled: true, Marker: "G.dll", Deploy: "profile",
 		Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods", MaxDepth: map[string]int{"pkg": 1}}},
 		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "7"}},
 		Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
 	})
-	if err := m.Validate(); err != nil {
-		t.Fatal(err)
-	}
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
 
 	datadirtest.Use(t, t.TempDir())
 	lib := t.TempDir()

@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	goruntime "runtime"
-	"slices"
 	"strings"
 	"testing"
 
@@ -17,6 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testcatalog"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -24,24 +24,13 @@ const gameID = "folder-game"
 
 func useFolderGame(t *testing.T, modsPath string) {
 	t.Helper()
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
-	m.Games = append(slices.Clone(m.Games), components.GameInfo{
+	testcatalog.AddGames(t, components.GameInfo{
 		ID: gameID, Name: "Folder Game", Enabled: true, Marker: "G.exe", Deploy: "profile",
 		Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods", MaxDepth: map[string]int{"ts4script": 1}, KeepWhole: []string{"ts4script"}}},
 		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "1"}},
 		Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
 		Paths:   map[string]components.PathTemplate{"mods": {Windows: modsPath, Linux: modsPath, Darwin: modsPath}},
 	})
-	if err := m.Validate(); err != nil {
-		t.Fatal(err)
-	}
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
 }
 
 func TestEnabledModsAreSwappedIntoTheModsFolderAndTakenBack(t *testing.T) {
@@ -254,23 +243,12 @@ func TestProfileModsDirErrors(t *testing.T) {
 }
 
 func TestAGameWithAModsArgGetsTheProfileModsFolderOnItsCommandLine(t *testing.T) {
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
-	m.Games = append(slices.Clone(m.Games), components.GameInfo{
+	testcatalog.AddGames(t, components.GameInfo{
 		ID: "arg-game", Name: "Arg Game", Enabled: true, Marker: "G.exe", Deploy: "profile", ModsArg: "--mods-path",
 		Targets: []components.TargetDef{{ID: "mods", Root: "{profileMods}", ModRoot: "mod.modinfo"}},
 		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "1"}},
 		Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
 	})
-	if err := m.Validate(); err != nil {
-		t.Fatal(err)
-	}
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
 
 	_, ps := testenv.StoresIn(t, t.TempDir())
 	prof, err := ps.Create("arg-game", "A")
@@ -333,10 +311,6 @@ func (orderExtension) Order(loader.ProfileView) ([]loadorder.Row, error) {
 var _ = folder.Extend(orderExtension{})
 
 func TestOnlyAGameWithAnOrderingExtensionHasALoadOrder(t *testing.T) {
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
 	plain := components.PathTemplate{Linux: "{install}/Mods", Windows: "{install}/Mods", Darwin: "{install}/Mods"}
 	game := func(id string, paths map[string]components.PathTemplate) components.GameInfo {
 		return components.GameInfo{
@@ -347,16 +321,9 @@ func TestOnlyAGameWithAnOrderingExtensionHasALoadOrder(t *testing.T) {
 			Paths:   paths,
 		}
 	}
-	m.Games = append(slices.Clone(m.Games),
+	testcatalog.AddGames(t,
 		game("plain-folder", map[string]components.PathTemplate{"mods": plain}),
 		game("ordered-folder", map[string]components.PathTemplate{"mods": plain, "test-order": plain}))
-	if err := m.Validate(); err != nil {
-		t.Fatal(err)
-	}
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
 	var l loader.OrderFor = folder.Loader{}
 	if l.HasOrder("plain-folder") || !l.HasOrder("ordered-folder") {
 		t.Fatalf("plain %v, ordered %v", l.HasOrder("plain-folder"), l.HasOrder("ordered-folder"))

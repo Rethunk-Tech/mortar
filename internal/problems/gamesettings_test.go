@@ -3,7 +3,6 @@ package problems
 import (
 	"os"
 	"path/filepath"
-	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -15,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testcatalog"
 )
 
 var modSettings = []components.RequiredSetting{
@@ -53,12 +53,8 @@ func TestCheckingTheSettingsFileNeverChangesIt(t *testing.T) {
 }
 
 func TestSettingRowsFollowTheProfilesGameSettingsMode(t *testing.T) {
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
 	const id = "options-game"
-	m.Games = append(slices.Clone(m.Games), components.GameInfo{
+	testcatalog.AddGames(t, components.GameInfo{
 		ID: id, Name: "Options Game", Enabled: true, Marker: "G.dll", Deploy: "profile",
 		Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods", MaxDepth: map[string]int{"pkg": 1}}},
 		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "1"}},
@@ -69,13 +65,6 @@ func TestSettingRowsFollowTheProfilesGameSettingsMode(t *testing.T) {
 		},
 		RequiredSettings: []components.RequiredSetting{{Path: "options", Key: "ModsDisabled", Value: "0", Message: "mods off"}},
 	})
-	if err := m.Validate(); err != nil {
-		t.Fatal(err)
-	}
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
 
 	datadirtest.Use(t, t.TempDir())
 	folder := t.TempDir()
