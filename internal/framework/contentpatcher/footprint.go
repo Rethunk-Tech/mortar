@@ -68,30 +68,35 @@ func (s cpShape) overlaps(o cpShape) bool {
 		if cells == "" {
 			cells, area = o.cells, s
 		}
-		ax, ay, aw, ah := area.area()
-		for encoded := range strings.SplitSeq(cells, ";") {
-			if encoded == "" {
-				continue
-			}
-			parts := strings.SplitN(encoded, ",", 2)
-			if len(parts) != 2 {
-				continue
-			}
-			cxCell, errX := strconv.Atoi(parts[0])
-			cyCell, errY := strconv.Atoi(parts[1])
-			if errX != nil || errY != nil {
-				continue
-			}
-			cx, cy := cxCell*16, cyCell*16
-			if cx < ax+aw && ax < cx+16 && cy < ay+ah && ay < cy+16 {
-				return true
-			}
-		}
-		return false
+		return cellsHitArea(cells, area)
 	}
 	ax, ay, aw, ah := s.area()
 	bx, by, bw, bh := o.area()
 	return ax < bx+bw && bx < ax+aw && ay < by+bh && by < ay+ah
+}
+
+// cellsHitArea reports whether any encoded "x,y" 16-pixel cell intersects the shape's rectangle.
+func cellsHitArea(cells string, area cpShape) bool {
+	ax, ay, aw, ah := area.area()
+	for encoded := range strings.SplitSeq(cells, ";") {
+		if encoded == "" {
+			continue
+		}
+		parts := strings.SplitN(encoded, ",", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		cxCell, errX := strconv.Atoi(parts[0])
+		cyCell, errY := strconv.Atoi(parts[1])
+		if errX != nil || errY != nil {
+			continue
+		}
+		cx, cy := cxCell*16, cyCell*16
+		if cx < ax+aw && ax < cx+16 && cy < ay+ah && ay < cy+16 {
+			return true
+		}
+	}
+	return false
 }
 
 func cellSetsOverlap(a, b string) bool {
@@ -346,78 +351,21 @@ func scalarLiteral(v string) string {
 // another pack's work.
 func editShapes(root string, ch cpChange, image, skip bool) []cpShape {
 	if image {
-		if to, ok := areaOf(ch.ToArea); ok {
-			if strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
-				return imagePatchShapes(root, ch, to.x, to.y, skip)
-			}
-			return []cpShape{to}
-		} else if len(ch.ToArea) > 0 {
-			return unplaced(ch.ToArea)
-		}
-		// Without ToArea the source lands at the top-left, sized like FromArea or the whole file.
-		if from, ok := areaOf(ch.FromArea); ok {
-			if strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
-				return imagePatchShapes(root, ch, 0, 0, skip)
-			}
-			return []cpShape{{kind: 'r', w: from.w, h: from.h}}
-		}
-		if strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
-			return imagePatchShapes(root, ch, 0, 0, skip)
-		}
-		if hasToken(ch.FromFile) {
-			return imagePatchShapes(root, ch, 0, 0, skip)
-		}
-		if w, h, ok := pngSize(root, ch.FromFile); ok {
-			return []cpShape{{kind: 'r', w: w, h: h}}
-		}
-		return whole
+		return editImageShapes(root, ch, skip)
 	}
 	var out []cpShape
 	if strings.TrimSpace(ch.FromFile) != "" {
-		ext := strings.ToLower(filepath.Ext(strings.TrimSpace(ch.FromFile)))
-		if ext == ".tmx" || ext == ".tmj" {
-			if decoded, ok := decodeMap(root, ch.FromFile); ok {
-				return mapFileShapes(decoded, ch)
-			}
+		shapes, done := mapSourceShapes(root, ch)
+		if done {
+			return shapes
 		}
-		to, ok := areaOf(ch.ToArea)
-		switch {
-		case ok:
-			out = append(out, to)
-		case len(ch.ToArea) > 0:
-			return unplaced(ch.ToArea)
-		default:
-			// Without ToArea the source map lands at the top-left at its own size (or FromArea's).
-			if from, ok := areaOf(ch.FromArea); ok {
-				out = append(out, cpShape{kind: 'r', w: from.w, h: from.h})
-			} else if w, h, ok := mapSize(root, ch.FromFile); ok {
-				out = append(out, cpShape{kind: 'r', w: w, h: h})
-			} else {
-				return whole
-			}
-		}
+		out = shapes
 	}
-	for _, raw := range ch.MapTiles {
-		var tile struct {
-			Position      json.RawMessage `json:"Position"`
-			Layer         string          `json:"Layer"`
-			SetIndex      json.RawMessage `json:"SetIndex"`
-			SetTilesheet  json.RawMessage `json:"SetTilesheet"`
-			Remove        json.RawMessage `json:"Remove"`
-			SetProperties json.RawMessage `json:"SetProperties"`
-		}
-		if json.Unmarshal(raw, &tile) != nil {
-			return whole
-		}
-		if len(tile.SetIndex) == 0 && len(tile.SetTilesheet) == 0 && len(tile.Remove) == 0 {
-			continue
-		}
-		pos, ok := areaOf(tile.Position)
-		if !ok || hasToken(tile.Layer) {
-			return whole
-		}
-		out = append(out, cpShape{kind: 't', x: pos.x, y: pos.y, layer: intern(strings.ToLower(strings.TrimSpace(tile.Layer)))})
+	tiles, ok := mapTileShapes(ch.MapTiles)
+	if !ok {
+		return whole
 	}
+	out = append(out, tiles...)
 	for key, raw := range ch.MapProperties {
 		if hasToken(key) {
 			return whole
@@ -429,6 +377,84 @@ func editShapes(root string, ch cpChange, image, skip bool) []cpShape {
 		out = append(out, cpShape{kind: 'p', key: intern(strings.ToLower(key)), value: intern(compactLiteral(value))})
 	}
 	return out
+}
+
+func editImageShapes(root string, ch cpChange, skip bool) []cpShape {
+	overlay := strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay")
+	if to, ok := areaOf(ch.ToArea); ok {
+		if overlay {
+			return imagePatchShapes(root, ch, to.x, to.y, skip)
+		}
+		return []cpShape{to}
+	} else if len(ch.ToArea) > 0 {
+		return unplaced(ch.ToArea)
+	}
+	// Without ToArea the source lands at the top-left, sized like FromArea or the whole file.
+	if from, ok := areaOf(ch.FromArea); ok {
+		if overlay {
+			return imagePatchShapes(root, ch, 0, 0, skip)
+		}
+		return []cpShape{{kind: 'r', w: from.w, h: from.h}}
+	}
+	if overlay || hasToken(ch.FromFile) {
+		return imagePatchShapes(root, ch, 0, 0, skip)
+	}
+	if w, h, ok := pngSize(root, ch.FromFile); ok {
+		return []cpShape{{kind: 'r', w: w, h: h}}
+	}
+	return whole
+}
+
+// mapSourceShapes is the area a map FromFile lands on. done means shapes is the whole answer for the edit.
+func mapSourceShapes(root string, ch cpChange) (shapes []cpShape, done bool) {
+	ext := strings.ToLower(filepath.Ext(strings.TrimSpace(ch.FromFile)))
+	if ext == ".tmx" || ext == ".tmj" {
+		if decoded, ok := decodeMap(root, ch.FromFile); ok {
+			return mapFileShapes(decoded, ch), true
+		}
+	}
+	to, ok := areaOf(ch.ToArea)
+	switch {
+	case ok:
+		return []cpShape{to}, false
+	case len(ch.ToArea) > 0:
+		return unplaced(ch.ToArea), true
+	}
+	// Without ToArea the source map lands at the top-left at its own size (or FromArea's).
+	if from, ok := areaOf(ch.FromArea); ok {
+		return []cpShape{{kind: 'r', w: from.w, h: from.h}}, false
+	}
+	if w, h, ok := mapSize(root, ch.FromFile); ok {
+		return []cpShape{{kind: 'r', w: w, h: h}}, false
+	}
+	return whole, true
+}
+
+// mapTileShapes is one shape per tile the edit replaces; ok is false when a tile cannot be placed.
+func mapTileShapes(raws []json.RawMessage) ([]cpShape, bool) {
+	var out []cpShape
+	for _, raw := range raws {
+		var tile struct {
+			Position      json.RawMessage `json:"Position"`
+			Layer         string          `json:"Layer"`
+			SetIndex      json.RawMessage `json:"SetIndex"`
+			SetTilesheet  json.RawMessage `json:"SetTilesheet"`
+			Remove        json.RawMessage `json:"Remove"`
+			SetProperties json.RawMessage `json:"SetProperties"`
+		}
+		if json.Unmarshal(raw, &tile) != nil {
+			return nil, false
+		}
+		if len(tile.SetIndex) == 0 && len(tile.SetTilesheet) == 0 && len(tile.Remove) == 0 {
+			continue
+		}
+		pos, ok := areaOf(tile.Position)
+		if !ok || hasToken(tile.Layer) {
+			return nil, false
+		}
+		out = append(out, cpShape{kind: 't', x: pos.x, y: pos.y, layer: intern(strings.ToLower(strings.TrimSpace(tile.Layer)))})
+	}
+	return out, true
 }
 
 var (
@@ -622,51 +648,48 @@ func sourceFiles(root, rel string) []string {
 		}
 		return nil
 	}
-	parts := strings.Split(filepath.ToSlash(rel), "/")
 	var out []string
-	var walk func(string, int, string)
-	walk = func(dir string, index int, prefix string) {
-		if index == len(parts) {
-			out = append(out, strings.TrimPrefix(filepath.ToSlash(prefix), "./"))
-			return
-		}
-		part := parts[index]
-		if hasToken(part) {
-			for {
-				start := strings.Index(part, "{{")
-				if start < 0 {
-					break
-				}
-				end := strings.Index(part[start+2:], "}}")
-				if end < 0 {
-					break
-				}
-				end += start + 2
-				part = part[:start] + "*" + part[end+2:]
-			}
-		}
-		entries, err := os.ReadDir(dir)
-		if err != nil {
-			return
-		}
-		for _, entry := range entries {
-			if !matchFold(part, entry.Name()) {
-				continue
-			}
-			next := filepath.Join(dir, entry.Name())
-			if index == len(parts)-1 {
-				if !entry.IsDir() {
-					walk(next, index+1, filepath.Join(prefix, entry.Name()))
-				}
-				continue
-			}
-			if entry.IsDir() {
-				walk(next, index+1, filepath.Join(prefix, entry.Name()))
-			}
-		}
-	}
-	walk(root, 0, "")
+	walkSourceParts(strings.Split(filepath.ToSlash(rel), "/"), root, 0, "", &out)
 	return out
+}
+
+// globToken replaces each {{token}} in a path part with a wildcard.
+func globToken(part string) string {
+	for {
+		start := strings.Index(part, "{{")
+		if start < 0 {
+			return part
+		}
+		end := strings.Index(part[start+2:], "}}")
+		if end < 0 {
+			return part
+		}
+		end += start + 2
+		part = part[:start] + "*" + part[end+2:]
+	}
+}
+
+func walkSourceParts(parts []string, dir string, index int, prefix string, out *[]string) {
+	if index == len(parts) {
+		*out = append(*out, strings.TrimPrefix(filepath.ToSlash(prefix), "./"))
+		return
+	}
+	part := parts[index]
+	if hasToken(part) {
+		part = globToken(part)
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return
+	}
+	last := index == len(parts)-1
+	for _, entry := range entries {
+		// Only the final part names a file; the parts before it are folders.
+		if !matchFold(part, entry.Name()) || entry.IsDir() == last {
+			continue
+		}
+		walkSourceParts(parts, filepath.Join(dir, entry.Name()), index+1, filepath.Join(prefix, entry.Name()), out)
+	}
 }
 
 func matchFold(pattern, value string) bool {
@@ -986,46 +1009,50 @@ var (
 // different partners never apply together.
 func spouseOf(raw map[string]json.RawMessage, tokens []cpTokenDefinition) string {
 	for k, v := range raw {
-		key := strings.TrimSpace(k)
-		if inner, ok := strings.CutPrefix(key, "{{"); ok {
-			if key, ok = strings.CutSuffix(inner, "}}"); !ok {
-				continue
-			}
-			key = strings.TrimSpace(key)
+		if npc := spouseOfCondition(k, v, tokens); npc != "" {
+			return npc
 		}
-		if strings.EqualFold(key, "spouse") {
-			var npc string
-			if json.Unmarshal(v, &npc) == nil && !hasToken(npc) && strings.TrimSpace(npc) != "" {
-				return strings.ToLower(strings.TrimSpace(npc))
-			}
-			continue
+	}
+	return ""
+}
+
+func spouseOfCondition(k string, v json.RawMessage, tokens []cpTokenDefinition) string {
+	key := strings.TrimSpace(k)
+	if inner, ok := strings.CutPrefix(key, "{{"); ok {
+		if key, ok = strings.CutSuffix(inner, "}}"); !ok {
+			return ""
 		}
-		if name, expr, ok := strings.Cut(key, ":"); ok && strings.EqualFold(strings.TrimSpace(name), "query") {
-			var on bool
-			if json.Unmarshal(v, &on) != nil || !on {
-				continue
-			}
-			if npc := querySpouse(expr, tokens); npc != "" {
-				return npc
-			}
-			continue
-		}
-		var flags []string
-		if len(tokens) > 0 && !strings.ContainsAny(key, ":|") && condValues(v, &flags) && len(flags) == 1 && strings.EqualFold(flags[0], "true") {
-			if npc := tokenSpouse(tokenName(key), tokens); npc != "" {
-				return npc
-			}
-		}
-		name, npc, ok := strings.Cut(key, ":")
-		if !ok || !strings.EqualFold(strings.TrimSpace(name), "relationship") || hasToken(npc) {
-			continue
-		}
-		var states []string
-		if condValues(v, &states) && !slices.ContainsFunc(states, func(s string) bool {
-			return !strings.EqualFold(s, "married") && !strings.EqualFold(s, "engaged")
-		}) {
+		key = strings.TrimSpace(key)
+	}
+	if strings.EqualFold(key, "spouse") {
+		var npc string
+		if json.Unmarshal(v, &npc) == nil && !hasToken(npc) && strings.TrimSpace(npc) != "" {
 			return strings.ToLower(strings.TrimSpace(npc))
 		}
+		return ""
+	}
+	if name, expr, ok := strings.Cut(key, ":"); ok && strings.EqualFold(strings.TrimSpace(name), "query") {
+		var on bool
+		if json.Unmarshal(v, &on) != nil || !on {
+			return ""
+		}
+		return querySpouse(expr, tokens)
+	}
+	var flags []string
+	if len(tokens) > 0 && !strings.ContainsAny(key, ":|") && condValues(v, &flags) && len(flags) == 1 && strings.EqualFold(flags[0], "true") {
+		if npc := tokenSpouse(tokenName(key), tokens); npc != "" {
+			return npc
+		}
+	}
+	name, npc, ok := strings.Cut(key, ":")
+	if !ok || !strings.EqualFold(strings.TrimSpace(name), "relationship") || hasToken(npc) {
+		return ""
+	}
+	var states []string
+	if condValues(v, &states) && !slices.ContainsFunc(states, func(s string) bool {
+		return !strings.EqualFold(s, "married") && !strings.EqualFold(s, "engaged")
+	}) {
+		return strings.ToLower(strings.TrimSpace(npc))
 	}
 	return ""
 }
@@ -1407,6 +1434,25 @@ func markClashes(a, b *packHit) {
 // from the conflict, such as Better Things' DesertMinecart for an expansion that redraws the desert. Of the
 // fields that would, it offers the narrowest: one named for what the target is about, then the one gating
 // the fewest of the pack's patches. When only the pack's master switch would, it offers nothing.
+// fieldGateStats counts the pack's patches, those gated on field, and those still applying once field is value.
+func fieldGateStats(h packHit, field cpSchema, value string) (gated, total, left int) {
+	config := maps.Clone(h.config)
+	config[strings.ToLower(field.key)] = value
+	for _, p := range h.tokens {
+		if p.kind == "other" {
+			continue
+		}
+		total++
+		if slices.ContainsFunc(p.when.config, func(o cpConfig) bool { return strings.EqualFold(o.field, field.key) }) {
+			gated++
+		}
+		if configHolds(p.when.config, h.schema, config) {
+			left++
+		}
+	}
+	return gated, total, left
+}
+
 func switchOff(h packHit, peerSets ...[]packHit) (framework.ConflictFix, bool) {
 	if len(h.clashes) == 0 {
 		return framework.ConflictFix{}, false
@@ -1426,21 +1472,7 @@ func switchOff(h packHit, peerSets ...[]packHit) (framework.ConflictFix, bool) {
 			continue
 		}
 		named := strings.Contains(strings.ToLower(field.key), subject)
-		gated, total, left := 0, 0, 0
-		config := maps.Clone(h.config)
-		config[strings.ToLower(field.key)] = value
-		for _, p := range h.tokens {
-			if p.kind == "other" {
-				continue
-			}
-			total++
-			if slices.ContainsFunc(p.when.config, func(o cpConfig) bool { return strings.EqualFold(o.field, field.key) }) {
-				gated++
-			}
-			if configHolds(p.when.config, h.schema, config) {
-				left++
-			}
-		}
+		gated, total, left := fieldGateStats(h, field, value)
 		// A field that switches off the whole pack, or a fifth of it without being named for this target, is
 		// the pack's master switch (Better Water's Color, a schedule pack's PlotSchedules): offering it
 		// would trade the conflict for most of the mod.
