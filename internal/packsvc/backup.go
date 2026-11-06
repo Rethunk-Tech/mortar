@@ -110,37 +110,12 @@ func (s *Service) Backup(gameID, profileID, dest string, mods bool) (err error) 
 		zw := zip.NewWriter(out)
 		doc := backupJSON{Version: backupVersion, Game: gameID, Profile: p, Store: map[string]string{}}
 		for prefix, dir := range dirs {
-			h := sha256.New()
-			err := walkFiles(dir, strings.HasPrefix(prefix, "store/"), func(rel, path string, _ int64) error {
-				w, err := zw.Create(prefix + rel)
-				if err != nil {
-					return err
-				}
-				src, err := safefs.Open(path)
-				if err != nil {
-					return err
-				}
-				defer func() { _ = src.Close() }()
-				sum := sha256.New()
-				if _, err := io.Copy(io.MultiWriter(w, sum), src); err != nil {
-					return err
-				}
-				fmt.Fprintf(h, "%s\x00%x\n", rel, sum.Sum(nil))
-				return nil
-			})
-			if err != nil {
+			if err := zipDir(zw, prefix, dir, &doc); err != nil {
 				return err
-			}
-			if key, ok := storeKey(prefix); ok {
-				doc.Store[key] = hex.EncodeToString(h.Sum(nil))
 			}
 		}
 		for rel, data := range files {
-			w, err := zw.Create(backupPrefix + rel)
-			if err != nil {
-				return err
-			}
-			if _, err := w.Write(data); err != nil {
+			if err := zipBytes(zw, backupPrefix+rel, data); err != nil {
 				return err
 			}
 		}
@@ -148,15 +123,57 @@ func (s *Service) Backup(gameID, profileID, dest string, mods bool) (err error) 
 		if err != nil {
 			return err
 		}
-		w, err := zw.Create(backupDoc)
-		if err != nil {
-			return err
-		}
-		if _, err := w.Write(raw); err != nil {
+		if err := zipBytes(zw, backupDoc, raw); err != nil {
 			return err
 		}
 		return zw.Close()
 	})
+}
+
+func zipBytes(zw *zip.Writer, name string, data []byte) error {
+	w, err := zw.Create(name)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(data)
+	return err
+}
+
+// zipDir adds every file of dir under prefix and, for a store item, records its tree hash in doc.
+func zipDir(zw *zip.Writer, prefix, dir string, doc *backupJSON) error {
+	h := sha256.New()
+	err := walkFiles(dir, strings.HasPrefix(prefix, "store/"), func(rel, path string, _ int64) error {
+		sum, err := zipFile(zw, prefix+rel, path)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(h, "%s\x00%x\n", rel, sum)
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	if key, ok := storeKey(prefix); ok {
+		doc.Store[key] = hex.EncodeToString(h.Sum(nil))
+	}
+	return nil
+}
+
+func zipFile(zw *zip.Writer, name, path string) ([]byte, error) {
+	w, err := zw.Create(name)
+	if err != nil {
+		return nil, err
+	}
+	src, err := safefs.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = src.Close() }()
+	sum := sha256.New()
+	if _, err := io.Copy(io.MultiWriter(w, sum), src); err != nil {
+		return nil, err
+	}
+	return sum.Sum(nil), nil
 }
 
 const savesPrefix = "saves/"
