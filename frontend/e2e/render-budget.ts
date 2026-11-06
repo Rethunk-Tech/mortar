@@ -16,7 +16,7 @@ import { clickIfPresent, gameSettingsCases, newCases } from './renderCases.ts'
 import { dialogCases } from './renderDialogs.ts'
 import { writeGallery } from './renderGallery.ts'
 import { printExtras, report, startupLine, watchLog } from './renderLog.ts'
-import { HOOK, mortarBoxes, mortarGaps, mortarMeter, quietToasts } from './renderMeter.ts'
+import { HOOK, mortarBoxes, mortarGaps, mortarMeter, quietToasts, saveShot } from './renderMeter.ts'
 import { biggestProfile, rememberMainGame } from './renderProfile.ts'
 import { STAND_IN_GAMES, screenCases } from './renderScreens.ts'
 import { modsView } from './renderView.ts'
@@ -397,7 +397,7 @@ async function run(
             (b) => `LAYOUT ${c.name} | ${b.kind} | ${b.where} | ${b.text}`,
           ),
         )
-        await page.screenshot({ path: `${shots}/${c.name}.png` })
+        await saveShot(page, `${shots}/${c.name}`)
       } catch (e) {
         breaks.push(`LAYOUT ${c.name} | unchecked | ${String(e).split('\n')[0]}`)
       }

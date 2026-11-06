@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs'
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { CDPSession, Page } from '@playwright/test'
@@ -66,4 +66,66 @@ export async function quietToasts(page: Page, name: string) {
   for (let left = await dismiss.count(); left > 0; left--) {
     await dismiss.first().click()
   }
+}
+
+/** A piece of text on a render's picture, in CSS pixels of the screenshot. A label is an aria-label, title, placeholder or
+ * alt that the picture does not show, such as an icon button's tooltip; its box is the element that carries it. */
+export interface ShotText {
+  text: string
+  kind: 'text' | 'label'
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+const LABELS = ['aria-label', 'title', 'placeholder', 'alt']
+
+/** Every visible element's own text and labels on the page as the screenshot shows it, so a string can be traced to the
+ * render and the spot that shows it without reading the picture. */
+export const shotText = (page: Page): Promise<ShotText[]> =>
+  page.evaluate((labels) => {
+    const out: ShotText[] = []
+    const flat = (s: string) => s.replace(/\s+/gu, ' ').trim()
+    for (const el of document.body.querySelectorAll<HTMLElement>('*')) {
+      if (!el.checkVisibility({ opacityProperty: true, visibilityProperty: true })) {
+        continue
+      }
+      const r = el.getBoundingClientRect()
+      if (
+        r.width === 0 ||
+        r.height === 0 ||
+        r.bottom <= 0 ||
+        r.right <= 0 ||
+        r.top >= innerHeight ||
+        r.left >= innerWidth
+      ) {
+        continue
+      }
+      const box = {
+        x: Math.round(r.x),
+        y: Math.round(r.y),
+        w: Math.round(r.width),
+        h: Math.round(r.height),
+      }
+      const own = [...el.childNodes].some(
+        (n) => n.nodeType === Node.TEXT_NODE && flat(n.textContent ?? '') !== '',
+      )
+      if (own) {
+        out.push({ text: flat(el.textContent ?? ''), kind: 'text', ...box })
+      }
+      for (const name of labels) {
+        const value = flat(el.getAttribute(name) ?? '')
+        if (value !== '') {
+          out.push({ text: value, kind: 'label', ...box })
+        }
+      }
+    }
+    return out
+  }, LABELS)
+
+/** The page's picture at `<base>.png` and the text it shows at `<base>.text.json`. */
+export async function saveShot(page: Page, base: string): Promise<void> {
+  await page.screenshot({ path: `${base}.png` })
+  writeFileSync(`${base}.text.json`, `${JSON.stringify(await shotText(page))}\n`)
 }
