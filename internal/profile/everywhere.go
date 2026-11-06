@@ -219,40 +219,51 @@ func (s *Store) UpdateEverywhere(game, modKeyOrID, newStoreKey string) (Everywhe
 			out.Skipped = append(out.Skipped, EverywhereSkip{ProfileID: hit.ProfileID, Name: hit.Name, Reason: skipLocked})
 			continue
 		}
-		p, err := s.read(game, hit.ProfileID)
-		if err != nil {
+		if err := s.updateHit(game, modKeyOrID, target, source, hit, &out); err != nil {
 			return out, err
 		}
-		all, err := s.listOK(game)
-		if err != nil {
-			return out, err
-		}
-		ei := identityOf(all, modKeyOrID).match(p)
-		if ei < 0 {
-			continue
-		}
-		oldKey := p.Entries[ei].Key
-		if oldKey == target {
-			out.Skipped = append(out.Skipped, EverywhereSkip{ProfileID: hit.ProfileID, Name: hit.Name, Reason: skipSameKey})
-			continue
-		}
-		var updated Profile
-		var applyErr error
-		if len(p.Entries[ei].ExtraStoreKeys) > 0 {
-			updated, applyErr = s.UpdateMultiFile(game, hit.ProfileID, oldKey, target, source)
-		} else {
-			updated, applyErr = s.UpdateEntry(game, hit.ProfileID, oldKey, target)
-		}
-		if applyErr != nil {
-			if _, ok := errors.AsType[*NeedChoicesError](applyErr); ok {
-				out.Skipped = append(out.Skipped, EverywhereSkip{ProfileID: hit.ProfileID, Name: hit.Name, Reason: skipChoices})
-				continue
-			}
-			return out, applyErr
-		}
-		out.Updated = append(out.Updated, EverywhereHit{ProfileID: hit.ProfileID, Name: hit.Name, OldKey: oldKey, Change: updated.LastChange})
 	}
 	return out, nil
+}
+
+// updateHit updates one affected profile, recording the outcome in out.
+func (s *Store) updateHit(game, modKeyOrID, target string, source *Source, hit EverywhereHit, out *EverywhereResult) error {
+	skip := func(reason string) {
+		out.Skipped = append(out.Skipped, EverywhereSkip{ProfileID: hit.ProfileID, Name: hit.Name, Reason: reason})
+	}
+	p, err := s.read(game, hit.ProfileID)
+	if err != nil {
+		return err
+	}
+	all, err := s.listOK(game)
+	if err != nil {
+		return err
+	}
+	ei := identityOf(all, modKeyOrID).match(p)
+	if ei < 0 {
+		return nil
+	}
+	oldKey := p.Entries[ei].Key
+	if oldKey == target {
+		skip(skipSameKey)
+		return nil
+	}
+	var updated Profile
+	var applyErr error
+	if len(p.Entries[ei].ExtraStoreKeys) > 0 {
+		updated, applyErr = s.UpdateMultiFile(game, hit.ProfileID, oldKey, target, source)
+	} else {
+		updated, applyErr = s.UpdateEntry(game, hit.ProfileID, oldKey, target)
+	}
+	if applyErr != nil {
+		if _, ok := errors.AsType[*NeedChoicesError](applyErr); ok {
+			skip(skipChoices)
+			return nil
+		}
+		return applyErr
+	}
+	out.Updated = append(out.Updated, EverywhereHit{ProfileID: hit.ProfileID, Name: hit.Name, OldKey: oldKey, Change: updated.LastChange})
+	return nil
 }
 
 // latestStoreKey is the store item holding the newest later version of what oldKey holds. A site package

@@ -86,10 +86,8 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 	placement := noTray()
 	var released []TrayFile
 	p, err := s.updateLocked(game, id, func(p *Profile, _ string) error {
-		for _, e := range p.Entries {
-			if e.StoreKey() == key && e.Package && !e.IsOverlay() {
-				return &DuplicateError{Key: e.Key, Label: entryLabel(e)}
-			}
+		if err := duplicatePackage(p.Entries, key); err != nil {
+			return err
 		}
 		off := map[string]bool{}
 		var old []Entry
@@ -118,23 +116,9 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 			return err
 		}
 		if held := placement.held; len(held) > 0 {
-			k := trayEntryKey(key)
-			name := "Tray files"
-			if held[0].Role != "" {
-				name = cmp.Or(source.ModName, key)
-			}
-			fresh = append(fresh, Entry{
-				Key: k, Item: key, Source: source, Disabled: []mod.ID{}, Added: time.Now().UTC(), Package: true, Tray: true, TrayFiles: held, Implicit: source.startsImplicit(),
-				Mods: []Component{{ID: mod.NewID(mod.FormatFolder, k), Name: name, Folder: "."}},
-			})
+			fresh = append(fresh, trayHoldEntry(key, source, held))
 		}
-		for i := range fresh {
-			for _, m := range fresh[i].Mods {
-				if off[fresh[i].File] || (source.disabled != nil && hasID(source.disabled.ids, m.ID)) {
-					fresh[i].Disabled = append(fresh[i].Disabled, m.ID)
-				}
-			}
-		}
+		disableFresh(fresh, off, source)
 		if len(old) > 0 && len(fresh) > 0 {
 			fresh[0].Replaced = packReplaced(old)
 		}
@@ -148,6 +132,40 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 	placement.commit()
 	s.releaseTray(game, &p, released)
 	return p, updated, updated, s.items.Touch(game, key)
+}
+
+// duplicatePackage is the error for a package entry of store item key already in entries.
+func duplicatePackage(entries []Entry, key string) error {
+	for _, e := range entries {
+		if e.StoreKey() == key && e.Package && !e.IsOverlay() {
+			return &DuplicateError{Key: e.Key, Label: entryLabel(e)}
+		}
+	}
+	return nil
+}
+
+// trayHoldEntry is the entry that holds the Tray files an install placed.
+func trayHoldEntry(key string, source Source, held []TrayFile) Entry {
+	k := trayEntryKey(key)
+	name := "Tray files"
+	if held[0].Role != "" {
+		name = cmp.Or(source.ModName, key)
+	}
+	return Entry{
+		Key: k, Item: key, Source: source, Disabled: []mod.ID{}, Added: time.Now().UTC(), Package: true, Tray: true, TrayFiles: held, Implicit: source.startsImplicit(),
+		Mods: []Component{{ID: mod.NewID(mod.FormatFolder, k), Name: name, Folder: "."}},
+	}
+}
+
+// disableFresh switches off the new components of a file that was off before the update, or that the source says is off.
+func disableFresh(fresh []Entry, off map[string]bool, source Source) {
+	for i := range fresh {
+		for _, m := range fresh[i].Mods {
+			if off[fresh[i].File] || (source.disabled != nil && hasID(source.disabled.ids, m.ID)) {
+				fresh[i].Disabled = append(fresh[i].Disabled, m.ID)
+			}
+		}
+	}
 }
 
 // forgetReplaced is entries with their own rollback record dropped, so records never nest.

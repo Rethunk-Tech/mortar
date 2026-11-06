@@ -37,6 +37,31 @@ func (s *Store) FollowOrder(game, id string, rank func(Entry) (int, bool)) error
 	return err
 }
 
+// placeArrival moves the entry key, ranked r, next to the placed entries (those in placed) that rank around it.
+func placeArrival(p *Profile, key string, r int, rank func(Entry) (int, bool), placed []string) {
+	at := EntryIndex(p.Entries, key)
+	moving := p.Entries[at]
+	p.Entries = slices.Delete(p.Entries, at, at+1)
+	to, after, before := at, -1, -1
+	for i, e := range p.Entries {
+		er, ok := rank(e)
+		if !ok || e.IsOverlay() || !slices.Contains(placed, e.Key) {
+			continue
+		}
+		if er < r {
+			after = i
+		} else if er > r && before < 0 {
+			before = i
+		}
+	}
+	if after >= 0 {
+		to = after + 1
+	} else if before >= 0 {
+		to = before
+	}
+	p.Entries = slices.Insert(p.Entries, to, moving)
+}
+
 // PlaceArrivals moves each entry rank knows whose key is not in placed, and only those, to just after the last placed
 // entry rank puts before it, or when none is present, to just before the first placed entry rank puts after it. A
 // shared profile's mods arrive one download at a time; placing only the newcomer keeps the moves the player made in
@@ -61,27 +86,7 @@ func (s *Store) PlaceArrivals(game, id string, rank func(Entry) (int, bool), pla
 		slices.SortStableFunc(arrivals, func(a, b arrival) int { return a.rank - b.rank })
 		was := slices.Clone(p.Entries)
 		for _, a := range arrivals {
-			at := EntryIndex(p.Entries, a.key)
-			moving := p.Entries[at]
-			p.Entries = slices.Delete(p.Entries, at, at+1)
-			to, after, before := at, -1, -1
-			for i, e := range p.Entries {
-				r, ok := rank(e)
-				if !ok || e.IsOverlay() || !slices.Contains(out, e.Key) {
-					continue
-				}
-				if r < a.rank {
-					after = i
-				} else if r > a.rank && before < 0 {
-					before = i
-				}
-			}
-			if after >= 0 {
-				to = after + 1
-			} else if before >= 0 {
-				to = before
-			}
-			p.Entries = slices.Insert(p.Entries, to, moving)
+			placeArrival(p, a.key, a.rank, rank, out)
 			out = append(out, a.key)
 		}
 		if slices.EqualFunc(was, p.Entries, func(a, b Entry) bool { return a.Key == b.Key }) {

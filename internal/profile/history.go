@@ -338,13 +338,9 @@ func (s *Store) Revert(game, id, eventID string) (Profile, error) {
 	})
 }
 
-func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries []Entry) error {
-	modsDir := datadir.ModsDirOf(dir)
-	staging := modsDir + ".new"
-	_ = safefs.RemoveAll(staging)
-	if err := os.MkdirAll(staging, 0o700); err != nil {
-		return err
-	}
+// stageEntries lays entries out in staging, carrying over the live files of those already there, and sets p.Entries to
+// them. It returns the store keys to touch and removes staging on failure.
+func (s *Store) stageEntries(game string, p *Profile, modsDir, staging string, entries []Entry) ([]string, error) {
 	prev := p.Entries
 	p.Entries = []Entry{}
 	keys := make([]string, 0, len(entries)*2)
@@ -356,7 +352,7 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 		}
 		if err := s.place(game, staging, e); err != nil {
 			_ = safefs.RemoveAll(staging)
-			return err
+			return nil, err
 		}
 		live := liveEntryDir(modsDir, e.Key)
 		if exists(live) {
@@ -366,11 +362,11 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 			}
 			if err != nil {
 				_ = safefs.RemoveAll(staging)
-				return err
+				return nil, err
 			}
 			if err := carryOverWalk(live, old, liveEntryDir(staging, e.Key), false, nil); err != nil {
 				_ = safefs.RemoveAll(staging)
-				return err
+				return nil, err
 			}
 		}
 		p.Entries = append(p.Entries, e)
@@ -386,8 +382,22 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 		}
 		if err := s.layOverlays(game, p.ID, e, liveEntryDir(staging, e.Key), was, overlaysOn(p.Entries, e.Key)); err != nil {
 			_ = safefs.RemoveAll(staging)
-			return err
+			return nil, err
 		}
+	}
+	return keys, nil
+}
+
+func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries []Entry) error {
+	modsDir := datadir.ModsDirOf(dir)
+	staging := modsDir + ".new"
+	_ = safefs.RemoveAll(staging)
+	if err := os.MkdirAll(staging, 0o700); err != nil {
+		return err
+	}
+	keys, err := s.stageEntries(game, p, modsDir, staging, entries)
+	if err != nil {
+		return err
 	}
 	old := modsDir + ".old"
 	_ = safefs.RemoveAll(old)
@@ -486,6 +496,17 @@ func namesForStoreKeys(entries []Entry, keys []string) []string {
 	return names
 }
 
+// entryStoreKeys are the store items an entry, its previous version and its rollback record hold.
+func entryStoreKeys(e Entry) []string {
+	keys := []string{e.StoreKey(), e.PreviousKey}
+	keys = append(keys, e.ExtraStoreKeys...)
+	keys = append(keys, e.PreviousExtraStoreKeys...)
+	for _, r := range e.replacedEntries() {
+		keys = append(keys, r.StoreKey())
+	}
+	return keys
+}
+
 func (s *Store) missingStoreKeys(game string, entries []Entry) ([]string, error) {
 	seen := map[string]struct{}{}
 	var missing []string
@@ -511,24 +532,8 @@ func (s *Store) missingStoreKeys(game string, entries []Entry) ([]string, error)
 		return nil
 	}
 	for _, e := range entries {
-		if err := add(e.StoreKey()); err != nil {
-			return nil, err
-		}
-		if err := add(e.PreviousKey); err != nil {
-			return nil, err
-		}
-		for _, k := range e.ExtraStoreKeys {
+		for _, k := range entryStoreKeys(e) {
 			if err := add(k); err != nil {
-				return nil, err
-			}
-		}
-		for _, k := range e.PreviousExtraStoreKeys {
-			if err := add(k); err != nil {
-				return nil, err
-			}
-		}
-		for _, r := range e.replacedEntries() {
-			if err := add(r.StoreKey()); err != nil {
 				return nil, err
 			}
 		}

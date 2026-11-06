@@ -455,6 +455,27 @@ func (s *Store) importFolder(ctx context.Context, game, id string, f gameModFold
 	return key, change, nil
 }
 
+// importSlot imports one folder into the new profile and counts the result in res.
+func (s *Store) importSlot(ctx context.Context, game, id string, folder gameModFolder, move bool, res *GameModsResult) GameModOutcome {
+	outcome := GameModOutcome{Name: folder.label, Status: outcomeImported}
+	if _, _, err := s.importFolder(ctx, game, id, folder); err != nil {
+		outcome.Status, outcome.Reason = outcomeFailed, err.Error()
+		if ie, ok := errors.AsType[*InstallError](err); ok {
+			outcome.Reason = ie.Msg
+		}
+		res.Failed++
+		return outcome
+	}
+	res.Imported++
+	if move {
+		if err := s.removeFromGameMods(game, id, folder.dir); err != nil {
+			outcome.Reason = "added, but it could not be removed from the game's Mods folder: " + err.Error()
+			outcome.Code, outcome.Params = "notRemoved", map[string]string{"error": err.Error()}
+		}
+	}
+	return outcome
+}
+
 // ImportGameMods copies each importable folder under modsDir into the store and a new "Imported mods" profile.
 // It never writes to modsDir, unless move is set for a game that reads loose files there (GameModsPreview.CanMove):
 // each mod that came in is then removed from modsDir, as MoveGameMods removes a folder.
@@ -505,23 +526,7 @@ func (s *Store) ImportGameMods(ctx context.Context, game, modsDir string, move b
 		}
 		s.reportGameModsProgress(game, created.ID, done, total, slot.folder.label)
 		done++
-		outcome := GameModOutcome{Name: slot.folder.label, Status: outcomeImported}
-		if _, _, err := s.importFolder(ctx, game, created.ID, slot.folder); err != nil {
-			outcome.Status, outcome.Reason = outcomeFailed, err.Error()
-			if ie, ok := errors.AsType[*InstallError](err); ok {
-				outcome.Reason = ie.Msg
-			}
-			res.Failed++
-		} else {
-			res.Imported++
-			if move {
-				if err := s.removeFromGameMods(game, created.ID, slot.folder.dir); err != nil {
-					outcome.Reason = "added, but it could not be removed from the game's Mods folder: " + err.Error()
-					outcome.Code, outcome.Params = "notRemoved", map[string]string{"error": err.Error()}
-				}
-			}
-		}
-		res.Outcomes = append(res.Outcomes, outcome)
+		res.Outcomes = append(res.Outcomes, s.importSlot(ctx, game, created.ID, slot.folder, move, &res))
 	}
 	p, err := s.read(game, created.ID)
 	if err != nil {

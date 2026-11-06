@@ -68,50 +68,58 @@ func decodeJSON(dec *json.Decoder) (jsonNode, error) {
 	case json.Delim:
 		switch v {
 		case '[':
-			var arr []jsonNode
-			for dec.More() {
-				n, err := decodeJSON(dec)
-				if err != nil {
-					return jsonNode{}, err
-				}
-				arr = append(arr, n)
-			}
-			end, err := dec.Token()
-			if err != nil {
-				return jsonNode{}, err
-			}
-			if end != json.Delim(']') {
-				return jsonNode{}, fmt.Errorf("expected ]")
-			}
-			return jsonNode{kind: jsonArr, arr: arr}, nil
+			return decodeArray(dec)
 		case '{':
-			var obj []jsonPair
-			for dec.More() {
-				keyTok, err := dec.Token()
-				if err != nil {
-					return jsonNode{}, err
-				}
-				key, ok := keyTok.(string)
-				if !ok {
-					return jsonNode{}, fmt.Errorf("expected object key")
-				}
-				val, err := decodeJSON(dec)
-				if err != nil {
-					return jsonNode{}, err
-				}
-				obj = append(obj, jsonPair{Key: key, Value: val})
-			}
-			end, err := dec.Token()
-			if err != nil {
-				return jsonNode{}, err
-			}
-			if end != json.Delim('}') {
-				return jsonNode{}, fmt.Errorf("expected }")
-			}
-			return jsonNode{kind: jsonObj, obj: obj}, nil
+			return decodeObject(dec)
 		}
 	}
 	return jsonNode{}, fmt.Errorf("unexpected JSON token")
+}
+
+func decodeArray(dec *json.Decoder) (jsonNode, error) {
+	var arr []jsonNode
+	for dec.More() {
+		n, err := decodeJSON(dec)
+		if err != nil {
+			return jsonNode{}, err
+		}
+		arr = append(arr, n)
+	}
+	end, err := dec.Token()
+	if err != nil {
+		return jsonNode{}, err
+	}
+	if end != json.Delim(']') {
+		return jsonNode{}, fmt.Errorf("expected ]")
+	}
+	return jsonNode{kind: jsonArr, arr: arr}, nil
+}
+
+func decodeObject(dec *json.Decoder) (jsonNode, error) {
+	var obj []jsonPair
+	for dec.More() {
+		keyTok, err := dec.Token()
+		if err != nil {
+			return jsonNode{}, err
+		}
+		key, ok := keyTok.(string)
+		if !ok {
+			return jsonNode{}, fmt.Errorf("expected object key")
+		}
+		val, err := decodeJSON(dec)
+		if err != nil {
+			return jsonNode{}, err
+		}
+		obj = append(obj, jsonPair{Key: key, Value: val})
+	}
+	end, err := dec.Token()
+	if err != nil {
+		return jsonNode{}, err
+	}
+	if end != json.Delim('}') {
+		return jsonNode{}, fmt.Errorf("expected }")
+	}
+	return jsonNode{kind: jsonObj, obj: obj}, nil
 }
 
 func encodeJSON(buf *bytes.Buffer, n jsonNode, depth int) error {

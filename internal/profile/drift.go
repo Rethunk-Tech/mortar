@@ -126,6 +126,14 @@ func undotDirs(rel string) string {
 	return filepath.FromSlash(strings.Join(parts, "/"))
 }
 
+func inPeerSet(inPeer map[string]struct{}, rel string) bool {
+	if _, ok := inPeer[rel]; ok {
+		return true
+	}
+	_, ok := inPeer[undotDirs(rel)]
+	return ok
+}
+
 func walkFolderStat(root, peer string) (FolderStat, error) {
 	var inPeer map[string]struct{}
 	if peer != "" && peer != root {
@@ -148,12 +156,8 @@ func walkFolderStat(root, peer string) (FolderStat, error) {
 			if isUserWritten(rel) {
 				continue
 			}
-			if inPeer != nil {
-				if _, ok := inPeer[rel]; !ok {
-					if _, ok := inPeer[undotDirs(rel)]; !ok {
-						continue
-					}
-				}
+			if inPeer != nil && !inPeerSet(inPeer, rel) {
+				continue
 			}
 			info, err := os.Lstat(path)
 			if err != nil {

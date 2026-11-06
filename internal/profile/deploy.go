@@ -267,19 +267,69 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 	if err := s.parkModConfigs(gameID, p, dir); err != nil {
 		return err
 	}
-	prev := readPlaced(dir)
-	next := maps.Clone(prev)
-	lays := map[string]bool{}
-	for _, f := range files {
-		lays[f.key] = true
+	run := &syncRun{dir: dir, files: files, prev: readPlaced(dir), srcHash: map[string]string{}}
+	run.next = maps.Clone(run.prev)
+	gone, err := run.dropStale(p, s.oldFilesMode(gameID))
+	if err != nil {
+		return err
 	}
-	succ, mode := successors(p), s.oldFilesMode(gameID)
-	var gone []string
-	for rel, rec := range prev {
-		if _, keep := files[rel]; keep {
+	if err := holdAdopted(dir, gone, files); err != nil {
+		return err
+	}
+	s.expireHeldCopies(dir)
+	if err := run.nameAhead(); err != nil {
+		return err
+	}
+	stampOwners(run.next, files)
+	if err := writePlaced(dir, run.next); err != nil {
+		return err
+	}
+	for _, rel := range slices.Sorted(maps.Keys(files)) {
+		if isConfig(rel) {
 			continue
 		}
-		dst := filepath.Join(dir, filepath.FromSlash(rel))
+		if err := run.place(rel); err != nil {
+			return err
+		}
+	}
+	if err := seedConfigs(dir, files); err != nil {
+		return err
+	}
+	stampOwners(run.next, files)
+	return writePlaced(dir, run.next)
+}
+
+// syncRun is the state of one syncPackages pass: prev is the placed record at the start, next what is written back.
+type syncRun struct {
+	dir     string
+	files   map[string]packageFile
+	prev    map[string]placedRec
+	next    map[string]placedRec
+	srcHash map[string]string
+}
+
+func (r *syncRun) hashOf(rel string) (string, error) {
+	if h, ok := r.srcHash[rel]; ok {
+		return h, nil
+	}
+	h, err := safefs.HashFile(r.files[rel].src, sha256.New())
+	r.srcHash[rel] = h
+	return h, err
+}
+
+// dropStale takes away the placed files no enabled package ships any more and returns their paths.
+func (r *syncRun) dropStale(p Profile, mode string) ([]string, error) {
+	lays := map[string]bool{}
+	for _, f := range r.files {
+		lays[f.key] = true
+	}
+	succ := successors(p)
+	var gone []string
+	for rel, rec := range r.prev {
+		if _, keep := r.files[rel]; keep {
+			continue
+		}
+		dst := filepath.Join(r.dir, filepath.FromSlash(rel))
 		if changedSince(rec, dst) {
 			// A changed file whose entry was updated to a version that no longer ships it follows oldFilesOnUpdate;
 			// one whose entry was switched off or removed is held, to come back with it.
@@ -287,128 +337,109 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 			dropped := rec.Key != "" && owner != "" && lays[owner]
 			switch {
 			case dropped && mode == settings.OldFilesKeep:
-				delete(next, rel)
+				delete(r.next, rel)
 				continue
 			case dropped && mode == settings.OldFilesDelete:
 			case dropped && asideKey(owner) != "":
-				if err := setAsideDropped(dir, asideKey(owner), rel); err != nil {
-					return err
+				if err := setAsideDropped(r.dir, asideKey(owner), rel); err != nil {
+					return nil, err
 				}
 			default:
-				if err := holdChanged(dir, rel); err != nil {
-					return err
+				if err := holdChanged(r.dir, rel); err != nil {
+					return nil, err
 				}
 			}
 		}
-		removeUp(dir, dst)
-		delete(next, rel)
+		removeUp(r.dir, dst)
+		delete(r.next, rel)
 		gone = append(gone, rel)
 	}
-	if err := holdAdopted(dir, gone, files); err != nil {
-		return err
-	}
-	s.expireHeldCopies(dir)
-	// Every file this sync may place is named first, with the hash it will have, so one that stops part way is still
-	// taken away by the next. A profile copy with no record that differs from the store is not named here: it is
-	// replaced below, after it is moved aside.
-	srcHash := map[string]string{}
-	hashOf := func(rel string) (string, error) {
-		if h, ok := srcHash[rel]; ok {
-			return h, nil
-		}
-		h, err := safefs.HashFile(files[rel].src, sha256.New())
-		srcHash[rel] = h
-		return h, err
-	}
-	for rel := range files {
+	return gone, nil
+}
+
+// nameAhead names every file this sync may place first, with the hash it will have, so one that stops part way is
+// still taken away by the next. A profile copy with no record that differs from the store is not named here: it is
+// replaced later, after it is moved aside.
+func (r *syncRun) nameAhead() error {
+	for rel := range r.files {
 		if isConfig(rel) {
 			continue
 		}
-		if _, known := next[rel]; known {
+		if _, known := r.next[rel]; known {
 			continue
 		}
-		if info, err := os.Lstat(filepath.Join(dir, filepath.FromSlash(rel))); err == nil && !info.IsDir() {
+		if info, err := os.Lstat(filepath.Join(r.dir, filepath.FromSlash(rel))); err == nil && !info.IsDir() {
 			continue
 		}
-		h, err := hashOf(rel)
+		h, err := r.hashOf(rel)
 		if err != nil {
 			return err
 		}
-		next[rel] = pending(h)
+		r.next[rel] = pending(h)
 	}
-	stampOwners(next, files)
-	if err := writePlaced(dir, next); err != nil {
-		return err
+	return nil
+}
+
+// place lays one package file out in the profile unless what is there already stands.
+func (r *syncRun) place(rel string) error {
+	dst := filepath.Join(r.dir, filepath.FromSlash(rel))
+	rec, recorded := r.prev[rel]
+	info, statErr := os.Lstat(dst)
+	if statErr == nil && info.IsDir() {
+		statErr = errors.New("a folder is in the way")
 	}
-	for _, rel := range slices.Sorted(maps.Keys(files)) {
-		if isConfig(rel) {
-			continue
-		}
-		dst := filepath.Join(dir, filepath.FromSlash(rel))
-		rec, recorded := prev[rel]
-		info, statErr := os.Lstat(dst)
-		if statErr == nil && info.IsDir() {
-			statErr = errors.New("a folder is in the way")
-		}
-		switch {
-		case statErr == nil && !recorded:
-			// The store's own bytes, which a lost record may have left, are adopted. Any other bytes are an older
-			// install's leftover, which would otherwise hold the package at a version it is not: the package's file
-			// replaces it and the old bytes are kept.
-			h, err := hashOf(rel)
-			if err != nil {
-				return err
-			}
-			if mine, err := safefs.HashFile(dst, sha256.New()); err == nil && mine == h {
-				if next[rel], err = recordOf(h, dst); err != nil {
-					return err
-				}
-				continue
-			}
-			if err := holdReplaced(dir, rel); err != nil {
-				return err
-			}
-		case statErr == nil && changedSince(rec, dst):
-			// Still the package's file, with changes that stay; the record keeps it ownable when the package goes.
-			continue
-		case statErr == nil && placedCurrent(files[rel].src, dst):
-			if rec.Size < 0 {
-				if next[rel], err = recordOf(rec.Hash, dst); err != nil {
-					return err
-				}
-			}
-			continue
-		}
-		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
-			return err
-		}
-		if statErr != nil && info == nil {
-			if restored, err := restoreChanged(dir, rel); err != nil {
-				return err
-			} else if restored {
-				delete(next, rel)
-				continue
-			}
-		}
-		if err := safefs.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
-			return err
-		}
-		if err := datadir.CopyFile(files[rel].src, dst); err != nil {
-			return err
-		}
-		h, err := hashOf(rel)
+	switch {
+	case statErr == nil && !recorded:
+		// The store's own bytes, which a lost record may have left, are adopted. Any other bytes are an older
+		// install's leftover, which would otherwise hold the package at a version it is not: the package's file
+		// replaces it and the old bytes are kept.
+		h, err := r.hashOf(rel)
 		if err != nil {
 			return err
 		}
-		if next[rel], err = recordOf(h, dst); err != nil {
+		if mine, err := safefs.HashFile(dst, sha256.New()); err == nil && mine == h {
+			r.next[rel], err = recordOf(h, dst)
 			return err
 		}
+		if err := holdReplaced(r.dir, rel); err != nil {
+			return err
+		}
+	case statErr == nil && changedSince(rec, dst):
+		// Still the package's file, with changes that stay; the record keeps it ownable when the package goes.
+		return nil
+	case statErr == nil && placedCurrent(r.files[rel].src, dst):
+		if rec.Size < 0 {
+			var err error
+			r.next[rel], err = recordOf(rec.Hash, dst)
+			return err
+		}
+		return nil
 	}
-	if err := seedConfigs(dir, files); err != nil {
+	if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
 		return err
 	}
-	stampOwners(next, files)
-	return writePlaced(dir, next)
+	if statErr != nil && info == nil {
+		restored, err := restoreChanged(r.dir, rel)
+		if err != nil {
+			return err
+		}
+		if restored {
+			delete(r.next, rel)
+			return nil
+		}
+	}
+	if err := safefs.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	if err := datadir.CopyFile(r.files[rel].src, dst); err != nil {
+		return err
+	}
+	h, err := r.hashOf(rel)
+	if err != nil {
+		return err
+	}
+	r.next[rel], err = recordOf(h, dst)
+	return err
 }
 
 // ownedFolder is the entry's own folder below the content root of a file path (Mods/mc for Mods/mc/x.cfg), "" for a
