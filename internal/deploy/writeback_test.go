@@ -10,6 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // rootRig places a profile's Mods folder into a shared folder outside the install, as a folder game does.
@@ -54,7 +55,7 @@ func TestARewrittenProfileFileIsWrittenBackAndLeavesTheSharedFolder(t *testing.T
 	if got := read(filepath.Join(rr.profile, "top.package")); got != "rewritten top" {
 		t.Fatalf("a rewritten file at the root of the folder = %q", got)
 	}
-	if got := snapshot(t, rr.shared); !maps.Equal(got, map[string]string{"./": "", "Resource.cfg": "player's resource"}) {
+	if got := testfs.Tree(t, rr.shared); !maps.Equal(got, map[string]string{"./": "", "Resource.cfg": "player's resource"}) {
 		t.Fatalf("the shared folder after purge: %v", got)
 	}
 }
@@ -94,7 +95,7 @@ func TestFilesCreatedDuringPlayAreAdoptedOnlyInFoldersAnEntryOwns(t *testing.T) 
 			t.Errorf("profile %s = %q", rel, got)
 		}
 	}
-	got := snapshot(t, rr.shared)
+	got := testfs.Tree(t, rr.shared)
 	want := map[string]string{
 		"./": "", "Resource.cfg": "player's resource", "root_created.dat": "root file",
 		"unowned/": "", "unowned/u.dat": "unowned", "mc/": "", "mc/players_own.cfg": "was here before",
@@ -149,7 +150,7 @@ func TestACrashAtAnyWriteBackStepRecoversWithTheBytesInTheProfile(t *testing.T) 
 	setup := func() (*rootRig, Manifest, map[string]string) {
 		rr := newRootRig(t)
 		write(t, filepath.Join(rr.shared, "top.package"), "the player's own")
-		start := snapshot(t, rr.shared)
+		start := testfs.Tree(t, rr.shared)
 		m := rr.apply()
 		write(t, filepath.Join(rr.shared, "mc", "mc_settings.cfg"), "player=2")
 		write(t, filepath.Join(rr.shared, "top.package"), "rewritten top")
@@ -178,7 +179,7 @@ func TestACrashAtAnyWriteBackStepRecoversWithTheBytesInTheProfile(t *testing.T) 
 			read(filepath.Join(rr.profile, "mc", "mc_state.dat")) != "created" {
 			t.Fatalf("crash at %s: the profile lost bytes", got[i])
 		}
-		if now := snapshot(t, rr.shared); !maps.Equal(now, start) {
+		if now := testfs.Tree(t, rr.shared); !maps.Equal(now, start) {
 			t.Fatalf("crash at %s: shared folder\n got %v\nwant %v", got[i], now, start)
 		}
 		if HasJournal(rr.view.JournalDir) {

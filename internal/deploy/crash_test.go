@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 type crashed struct{ step string }
@@ -56,7 +57,7 @@ func (r *rig) leftover(t *testing.T, start map[string]string, step string) {
 	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err != nil {
 		t.Fatalf("after a crash at %s: recover: %v", step, err)
 	}
-	if got := snapshot(t, r.install); !maps.Equal(got, start) {
+	if got := testfs.Tree(t, r.install); !maps.Equal(got, start) {
 		t.Fatalf("after a crash at %s the tree differs:\n got %v\nwant %v", step, got, start)
 	}
 	if HasJournal(r.view.JournalDir) {
@@ -71,7 +72,7 @@ func TestACrashAfterAnyApplyStepIsRecoveredToTheStartingTree(t *testing.T) {
 	}
 	for i := range steps {
 		r := crashRig(t)
-		start := snapshot(t, r.install)
+		start := testfs.Tree(t, r.install)
 		p := r.plan()
 		d := Place{}
 		got, fired := crashAt(i, func() { _, _ = d.Apply(t.Context(), p) })
@@ -101,7 +102,7 @@ func TestACrashAfterAnyPurgeStepIsRecoveredToTheStartingTree(t *testing.T) {
 	applySteps := len(steps) - len(purge)
 	for i := range purge {
 		r := crashRig(t)
-		start := snapshot(t, r.install)
+		start := testfs.Tree(t, r.install)
 		m := r.apply()
 		d := Place{}
 		got, fired := crashAt(i, func() { _ = d.Purge(t.Context(), m) })
@@ -117,7 +118,7 @@ func TestACrashAfterAnyPurgeStepIsRecoveredToTheStartingTree(t *testing.T) {
 func TestRecoveryOfARewrittenPlacedFileFollowsWhetherSomethingWasDisplaced(t *testing.T) {
 	t.Parallel()
 	r := crashRig(t)
-	start := snapshot(t, r.install)
+	start := testfs.Tree(t, r.install)
 	r.apply()
 	write(t, filepath.Join(r.install, "winhttp.dll"), "rewritten by the game")
 	ini := filepath.Join(r.install, "doorstop_config.ini")
@@ -133,7 +134,7 @@ func TestRecoveryOfARewrittenPlacedFileFollowsWhetherSomethingWasDisplaced(t *te
 		t.Fatalf("a rewritten file with nothing displaced was removed or changed: %q", got)
 	}
 	delete(start, "doorstop_config.ini")
-	want := snapshot(t, r.install)
+	want := testfs.Tree(t, r.install)
 	delete(want, "doorstop_config.ini")
 	if !maps.Equal(want, start) {
 		t.Fatalf("tree differs apart from the kept file:\n got %v\nwant %v", want, start)

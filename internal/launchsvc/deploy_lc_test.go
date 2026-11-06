@@ -3,7 +3,6 @@
 package launchsvc
 
 import (
-	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,22 +15,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
-
-func snapshotTree(t *testing.T, dir string) map[string]string {
-	t.Helper()
-	out := map[string]string{}
-	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, _ error) error {
-		rel, _ := filepath.Rel(dir, p)
-		if d.IsDir() {
-			out[rel+"/"] = ""
-		} else {
-			b, _ := safefs.ReadFile(p)
-			out[rel] = string(b)
-		}
-		return nil
-	})
-	return out
-}
 
 func tsPackage(t *testing.T, name string, files map[string]string) string {
 	t.Helper()
@@ -68,7 +51,7 @@ func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
 	install := t.TempDir()
 	testfs.WriteFile(t, install, "Lethal Company.exe", "exe")
 	testfs.WriteFile(t, install, "winhttp.dll", "the player's own")
-	before := snapshotTree(t, install)
+	before := testfs.Tree(t, install)
 	inst := game.Install{ID: "lc1", Dir: install}
 	svc := &Service{profiles: ps}
 
@@ -119,7 +102,7 @@ func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
 			t.Errorf("install %s = %q, want %q", rel, b, want)
 		}
 	}
-	if got := snapshotTree(t, install); len(got) != len(before)+1 {
+	if got := testfs.Tree(t, install); len(got) != len(before)+1 {
 		t.Errorf("the game folder holds more than the two doorstop files: %v", got)
 	}
 
@@ -127,7 +110,7 @@ func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
 	testfs.WriteFile(t, install, "Lethal Company.exe", "patched")
 	testfs.WriteFile(t, install, "Lethal Company_Data/new.assets", "added")
 	dep.unwind(t.Context())
-	got := snapshotTree(t, install)
+	got := testfs.Tree(t, install)
 	if got["Lethal Company.exe"] != "patched" || got["Lethal Company_Data/new.assets"] != "added" || got["winhttp.dll"] != "the player's own" {
 		t.Errorf("install after the launch: %v", got)
 	}

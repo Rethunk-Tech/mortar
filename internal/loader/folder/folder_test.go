@@ -1,7 +1,6 @@
 package folder_test
 
 import (
-	"io/fs"
 	"os"
 	"path/filepath"
 	goruntime "runtime"
@@ -9,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deploy"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -44,22 +42,6 @@ func useFolderGame(t *testing.T, modsPath string) {
 	c.SetManifest(m)
 	components.Use(c)
 	t.Cleanup(func() { components.Use(nil) })
-}
-
-func tree(t *testing.T, dir string) map[string]string {
-	t.Helper()
-	out := map[string]string{}
-	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, _ error) error {
-		rel, _ := filepath.Rel(dir, p)
-		if d.IsDir() {
-			out[rel+"/"] = ""
-		} else {
-			b, _ := safefs.ReadFile(p)
-			out[rel] = string(b)
-		}
-		return nil
-	})
-	return out
 }
 
 func TestEnabledModsAreSwappedIntoTheModsFolderAndTakenBack(t *testing.T) {
@@ -130,7 +112,7 @@ func TestEnabledModsAreSwappedIntoTheModsFolderAndTakenBack(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	before := tree(t, mods)
+	before := testfs.Tree(t, mods)
 
 	d := deploy.Place{}
 	dp, err := d.Plan(deploy.View{JournalDir: filepath.Join(dir, "journal"), Roots: map[string]string{"mods": mods}}, filepath.Join(dir, "install"), plan.Files)
@@ -141,7 +123,7 @@ func TestEnabledModsAreSwappedIntoTheModsFolderAndTakenBack(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	during := tree(t, mods)
+	during := testfs.Tree(t, mods)
 	if during["Resource.cfg"] != "players own" {
 		t.Fatal("a file the profile does not own must be left alone")
 	}
@@ -154,7 +136,7 @@ func TestEnabledModsAreSwappedIntoTheModsFolderAndTakenBack(t *testing.T) {
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
-	after := tree(t, mods)
+	after := testfs.Tree(t, mods)
 	if len(after) != len(before) {
 		t.Fatalf("folder differs\nbefore %v\n after %v", before, after)
 	}
@@ -225,7 +207,7 @@ func TestAModsFolderInsideTheInstallIsFilledAndPurgedWithTheInstallUnchanged(t *
 	if modsDir != install {
 		t.Fatalf("mods folder resolves to %s, want the install %s", modsDir, install)
 	}
-	before := tree(t, install)
+	before := testfs.Tree(t, install)
 
 	d := deploy.Place{}
 	dp, err := d.Plan(deploy.View{JournalDir: filepath.Join(dir, "journal"), Roots: map[string]string{"mods": modsDir}}, install, plan.Files)
@@ -236,7 +218,7 @@ func TestAModsFolderInsideTheInstallIsFilledAndPurgedWithTheInstallUnchanged(t *
 	if err != nil {
 		t.Fatal(err)
 	}
-	during := tree(t, install)
+	during := testfs.Tree(t, install)
 	if during[filepath.Join("mods", "modA", "content", "blob0.bundle")] != "mod" || during[filepath.Join("bin", "config", "matrix.xml")] != "mods version" ||
 		during[filepath.Join("dlc", "dlcB", "readme.txt")] != "dlc" || during[filepath.Join("mods", "modX", "own.bundle")] != "player's mod" {
 		t.Fatalf("the install during the launch: %v", during)
@@ -244,7 +226,7 @@ func TestAModsFolderInsideTheInstallIsFilledAndPurgedWithTheInstallUnchanged(t *
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
-	after := tree(t, install)
+	after := testfs.Tree(t, install)
 	if len(after) != len(before) {
 		t.Fatalf("install differs\nbefore %v\n after %v", before, after)
 	}
@@ -312,7 +294,7 @@ func TestAGameWithAModsArgGetsTheProfileModsFolderOnItsCommandLine(t *testing.T)
 		t.Fatal(err)
 	}
 	if got, _ := filepath.Glob(filepath.Join(dir, "mods", "*", "Lua", "main.lua")); len(got) != 1 {
-		t.Fatalf("the mod folder is laid out whole in its own folder under the profile's mods folder: %v", tree(t, dir))
+		t.Fatalf("the mod folder is laid out whole in its own folder under the profile's mods folder: %v", testfs.Tree(t, dir))
 	}
 	plan := launchplan.New(launchplan.ModeProfile)
 	if err := l.Contribute(t.Context(), plan, loader.ProfileView{Game: "arg-game", Dir: dir}); err != nil {

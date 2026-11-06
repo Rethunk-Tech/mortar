@@ -4,6 +4,7 @@ package testfs
 import (
 	"archive/zip"
 	"bytes"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -112,4 +113,32 @@ func DataHome(t testing.TB) string {
 	t.Setenv("XDG_DATA_HOME", dir)
 	t.Setenv("LOCALAPPDATA", dir)
 	return dir
+}
+
+// Tree is every file and folder under dir keyed by its slash path relative to dir, a folder with a trailing slash and an
+// empty body, a file with its content.
+func Tree(t testing.TB, dir string) map[string]string {
+	t.Helper()
+	out := map[string]string{}
+	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(dir, p)
+		if err != nil {
+			return err
+		}
+		rel = filepath.ToSlash(rel)
+		if d.IsDir() {
+			out[rel+"/"] = ""
+			return nil
+		}
+		b, err := safefs.ReadFile(p)
+		out[rel] = string(b)
+		return err
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
 }

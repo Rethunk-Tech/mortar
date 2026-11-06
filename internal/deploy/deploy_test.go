@@ -51,23 +51,6 @@ func newRig(t *testing.T) *rig {
 	return r
 }
 
-// snapshot is every file and folder of the install with its content.
-func snapshot(t *testing.T, dir string) map[string]string {
-	t.Helper()
-	out := map[string]string{}
-	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, _ error) error {
-		rel, _ := filepath.Rel(dir, p)
-		rel = filepath.ToSlash(rel)
-		if d.IsDir() {
-			out[rel+"/"] = ""
-		} else {
-			out[rel] = read(p)
-		}
-		return nil
-	})
-	return out
-}
-
 func (r *rig) plan() Plan {
 	r.t.Helper()
 	d := Place{}
@@ -91,7 +74,7 @@ func (r *rig) apply() Manifest {
 func TestApplyPurgeRestoresTheInstall(t *testing.T) {
 	t.Parallel()
 	r := newRig(t)
-	before := snapshot(t, r.install)
+	before := testfs.Tree(t, r.install)
 	m := r.apply()
 	if read(filepath.Join(r.install, "winhttp.dll")) != "proxy" || read(filepath.Join(r.install, "doorstop_config.ini")) != "ini" {
 		t.Fatal("the loader files are not in the install")
@@ -103,7 +86,7 @@ func TestApplyPurgeRestoresTheInstall(t *testing.T) {
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
-	after := snapshot(t, r.install)
+	after := testfs.Tree(t, r.install)
 	if len(after) != len(before) {
 		t.Fatalf("tree differs\nbefore %v\n after %v", before, after)
 	}
@@ -144,7 +127,7 @@ func TestPurgeLeavesTheGamesOwnFilesAlone(t *testing.T) {
 func TestRecoverAfterACrash(t *testing.T) {
 	t.Parallel()
 	r := newRig(t)
-	before := snapshot(t, r.install)
+	before := testfs.Tree(t, r.install)
 	r.apply()
 	d := Place{}
 	// The game is still running: leave everything.
@@ -157,7 +140,7 @@ func TestRecoverAfterACrash(t *testing.T) {
 	if err := d.Recover(t.Context(), r.view.JournalDir, func() bool { return false }); err != nil {
 		t.Fatal(err)
 	}
-	after := snapshot(t, r.install)
+	after := testfs.Tree(t, r.install)
 	for k, v := range before {
 		if after[k] != v {
 			t.Fatalf("%s: %q, want %q", k, after[k], v)
@@ -303,7 +286,7 @@ func TestRecoverKeepsAJournalItCannotRead(t *testing.T) {
 func TestACanceledPurgeLeavesTheJournalToFinishLater(t *testing.T) {
 	t.Parallel()
 	r := newRig(t)
-	before := snapshot(t, r.install)
+	before := testfs.Tree(t, r.install)
 	m := r.apply()
 	d := Place{}
 	ctx, cancel := context.WithCancel(t.Context())
@@ -321,7 +304,7 @@ func TestACanceledPurgeLeavesTheJournalToFinishLater(t *testing.T) {
 	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err != nil {
 		t.Fatal(err)
 	}
-	after := snapshot(t, r.install)
+	after := testfs.Tree(t, r.install)
 	if len(after) != len(before) || after["winhttp.dll"] != "the player's own" {
 		t.Fatalf("tree differs\nbefore %v\n after %v", before, after)
 	}
@@ -348,7 +331,7 @@ func TestPurgeRemovesTheFoldersApplyMade(t *testing.T) {
 	r.files = append(r.files,
 		launchplan.PlanFile{Src: filepath.Join(r.store, "deep.ini"), Dst: "sub/a.ini"},
 		launchplan.PlanFile{Src: filepath.Join(r.store, "deep.ini"), Dst: "sub/deep/deep.ini"})
-	before := snapshot(t, r.install)
+	before := testfs.Tree(t, r.install)
 	m := r.apply()
 	if want := []string{filepath.Join(r.install, "sub"), filepath.Join(r.install, "sub", "deep")}; !slices.Equal(m.Created, want) {
 		t.Fatalf("created = %v, want only the folders apply made: %v", m.Created, want)
@@ -360,7 +343,7 @@ func TestPurgeRemovesTheFoldersApplyMade(t *testing.T) {
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
-	if after := snapshot(t, r.install); len(after) != len(before) {
+	if after := testfs.Tree(t, r.install); len(after) != len(before) {
 		t.Fatalf("folders left behind\nbefore %v\n after %v", before, after)
 	}
 }
@@ -441,7 +424,7 @@ func TestAFileForARootIsPlacedOutsideTheInstallAndTakenBack(t *testing.T) {
 	r := newRig(t)
 	dir, files := r.outside()
 	r.files = files
-	before, installBefore := snapshot(t, dir), snapshot(t, r.install)
+	before, installBefore := testfs.Tree(t, dir), testfs.Tree(t, r.install)
 	m := r.apply()
 	if read(filepath.Join(dir, "a", "x.package")) != "mod" || read(filepath.Join(dir, "b", "deep", "x.package")) != "mod" {
 		t.Fatal("the files are in the root")
@@ -453,7 +436,7 @@ func TestAFileForARootIsPlacedOutsideTheInstallAndTakenBack(t *testing.T) {
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
-	after := snapshot(t, dir)
+	after := testfs.Tree(t, dir)
 	if len(after) != len(before) {
 		t.Fatalf("root differs\nbefore %v\n after %v", before, after)
 	}
@@ -462,7 +445,7 @@ func TestAFileForARootIsPlacedOutsideTheInstallAndTakenBack(t *testing.T) {
 			t.Fatalf("%s: %q, want %q", k, after[k], v)
 		}
 	}
-	if got := snapshot(t, r.install); len(got) != len(installBefore) {
+	if got := testfs.Tree(t, r.install); len(got) != len(installBefore) {
 		t.Fatal("the install was touched")
 	}
 }
@@ -472,13 +455,13 @@ func TestACrashWithFilesOutsideTheInstallIsRecovered(t *testing.T) {
 	r := newRig(t)
 	dir, files := r.outside()
 	r.files = files
-	before := snapshot(t, dir)
+	before := testfs.Tree(t, dir)
 	r.apply()
 	d := Place{}
 	if err := d.Recover(t.Context(), r.view.JournalDir, func() bool { return false }); err != nil {
 		t.Fatal(err)
 	}
-	after := snapshot(t, dir)
+	after := testfs.Tree(t, dir)
 	if len(after) != len(before) || after["a/x.package"] != "the player's copy" {
 		t.Fatalf("recover did not restore the root: %v", after)
 	}
@@ -506,7 +489,7 @@ func TestAPlanRefusesAnUnknownRootAndAPathThatLeavesTheRoot(t *testing.T) {
 func TestRecoverFollowsAJournalThatMoved(t *testing.T) {
 	t.Parallel()
 	r := newRig(t)
-	before := snapshot(t, r.install)
+	before := testfs.Tree(t, r.install)
 	r.apply()
 	moved := r.view.JournalDir + "-moved"
 	if err := os.Rename(r.view.JournalDir, moved); err != nil {
@@ -515,7 +498,7 @@ func TestRecoverFollowsAJournalThatMoved(t *testing.T) {
 	if err := (Place{}).Recover(t.Context(), moved, func() bool { return false }); err != nil {
 		t.Fatal(err)
 	}
-	after := snapshot(t, r.install)
+	after := testfs.Tree(t, r.install)
 	if len(after) != len(before) {
 		t.Fatalf("tree differs\nbefore %v\n after %v", before, after)
 	}
