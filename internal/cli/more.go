@@ -34,6 +34,11 @@ func rest(a []string, from int) []string {
 
 func readBody(path string) ([]byte, error) { return safefs.ReadFile(path) }
 
+// renameParams reads "<game> <name> <new name...>"; a new name may span words.
+func renameParams(a []string, _ *cmd) (control.Params, error) {
+	return control.Params{Game: a[0], Name: a[1], Value: strings.Join(a[2:], " ")}, nil
+}
+
 var moreVerbs = map[string]moreVerb{
 	"groups create": {
 		method: "groups.create", args: []string{"a game", "a saved group name", "a profile"}, msg: "Saved the group.",
@@ -47,9 +52,7 @@ var moreVerbs = map[string]moreVerb{
 	},
 	"groups rename": {
 		method: "groups.rename", args: []string{"a game", "a saved group", "a new name"}, msg: "Renamed the saved group.",
-		params: func(a []string, _ *cmd) (control.Params, error) {
-			return control.Params{Game: a[0], Name: a[1], Value: strings.Join(a[2:], " ")}, nil
-		},
+		params: renameParams,
 	},
 	"groups add": {
 		method: "groups.add", args: []string{"a game", "a saved group", "a profile", "a mod id"}, msg: "Added the mods to the saved group.",
@@ -78,9 +81,7 @@ var moreVerbs = map[string]moreVerb{
 	},
 	"templates rename": {
 		method: "templates.rename", args: []string{"a game", "a template", "a new name"}, msg: "Renamed the template.",
-		params: func(a []string, _ *cmd) (control.Params, error) {
-			return control.Params{Game: a[0], Name: a[1], Value: strings.Join(a[2:], " ")}, nil
-		},
+		params: renameParams,
 	},
 	"templates restore": {
 		method: "templates.restore", args: []string{"a game", "a template file (one entry of templates list --json)"}, msg: "Restored the template.",
