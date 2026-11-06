@@ -2,9 +2,11 @@ package devsvc
 
 import (
 	"bufio"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -36,7 +38,8 @@ func TestTrashNamesTheProgramHoldingTheProject(t *testing.T) {
 		_ = cmd.Process.Kill()
 		_ = cmd.Wait()
 		t.Logf("%s\n  -> %v", script, err)
-		if err == nil || err.Error() != "CadaversRedone is in use by Windows PowerShell. Close it, then try again" || len(svc.Projects("lethal-company")) != 1 {
+		held, ok := errors.AsType[*inUseError](err)
+		if !ok || !slices.Contains(held.Holders, "Windows PowerShell") || len(svc.Projects("lethal-company")) != 1 {
 			t.Fatalf("trash of a held project: %v, projects %d", err, len(svc.Projects("lethal-company")))
 		}
 	}
