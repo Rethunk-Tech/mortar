@@ -12,8 +12,7 @@ import (
 
 func TestHistoryKeysCacheReadsTheOldShapeAndRewritesItCompact(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	dir, err := e.profileDir("stardew", p.ID)
 	if err != nil {

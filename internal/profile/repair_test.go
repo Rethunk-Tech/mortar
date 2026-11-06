@@ -11,8 +11,7 @@ import (
 
 func TestRepairRebuildsFromSnapshotAndKeepsMods(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	dir := filepath.Join(e.root, "stardew", p.ID)
 	marker := filepath.Join(dir, "mods", "keep-me")
@@ -64,8 +63,7 @@ func TestRepairNoSnapshot(t *testing.T) {
 
 func TestRepairKeepsDamagedFileAsideAndUndoRestoresIt(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	dir := filepath.Join(e.root, "stardew", p.ID)
 	if err := os.WriteFile(filepath.Join(dir, fileName), []byte("{"), 0o600); err != nil {

@@ -8,8 +8,7 @@ import (
 
 func TestTrimHistoryDropsOldEventsAndRecordsIt(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	for range 3 {
 		e.mustSetMeA(t, p.ID, false)

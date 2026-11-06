@@ -763,8 +763,7 @@ func TestSwitchingOffAModWhoseRecordedFolderIsGoneNamesTheFolder(t *testing.T) {
 
 func TestSwitchingAModOffRecordsWhenAndSwitchingItOnClearsIt(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p, _ := e.Create("stardew", "P")
 	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{}); err != nil {
 		t.Fatal(err)

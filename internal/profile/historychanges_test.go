@@ -6,8 +6,7 @@ import (
 )
 
 func TestChangesSinceDecodesHistoryOnce(t *testing.T) {
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	n := 0
 	onHistoryDecode = func() { n++ }

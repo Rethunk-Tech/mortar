@@ -160,8 +160,7 @@ func TestHistoryRevertCarriesModifiedConfig(t *testing.T) {
 
 func TestHistoryRevertMissingStoreKeys(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	events := e.mustHistory(t, p.ID)
 	if err := e.items.Remove([]store.Ref{{Game: "stardew", Key: "local-a"}}); err != nil {
@@ -284,8 +283,7 @@ func TestCorruptHistoryIsQuarantined(t *testing.T) {
 
 func TestProfileUpdateKeepsFilesWhenHistoryFails(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := mustCreate(t, e, "Farm")
 	dir, err := e.profileDir("stardew", p.ID)
 	if err != nil {
@@ -350,8 +348,7 @@ func TestHistoryBatchRecordsOneUpdatedSnapshot(t *testing.T) {
 
 func TestHistoryRevertRefusedWhileRunning(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	events := e.mustHistory(t, p.ID)
 	e.Running = func(game, id string) bool { return game == "stardew" && id == p.ID }
@@ -431,8 +428,7 @@ func TestApplyBundledDoesNotRecordHistory(t *testing.T) {
 
 func TestHistoryQuietIsPerProfile(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	a := mustCreate(t, e, "A")
 	b := mustCreate(t, e, "B")
 	e.setHistoryQuiet(a.ID, true)
@@ -454,8 +450,7 @@ func TestHistoryQuietIsPerProfile(t *testing.T) {
 
 func TestStoreKeysIncludesHistorySnapshots(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	if _, err := e.RemoveEntry("stardew", p.ID, "local-a"); err != nil {
 		t.Fatal(err)
@@ -486,8 +481,7 @@ func TestStoreKeysIncludesHistorySnapshots(t *testing.T) {
 
 func TestApplyEntrySnapshotKeepsModsWhenPlaceFails(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	dir, err := e.profileDir("stardew", p.ID)
 	if err != nil {
@@ -511,8 +505,7 @@ func TestApplyEntrySnapshotKeepsModsWhenPlaceFails(t *testing.T) {
 
 func TestRevertRestoresLiveModsWhenProfileJSONFails(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	mods, err := e.ModsDir("stardew", p.ID)
 	if err != nil {
@@ -729,8 +722,7 @@ func TestBeginUpdateBatchIsTheBaselineWithAFreshBatch(t *testing.T) {
 
 func TestAChangeReturnsTheIDOfItsHistoryEventWithoutWritingIt(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := addFarmMod(t, e)
 	changed, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", false)
 	if err != nil {

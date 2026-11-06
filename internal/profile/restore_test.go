@@ -8,8 +8,7 @@ import (
 
 func TestRestoreEntriesReappliesEntryFields(t *testing.T) {
 	t.Parallel()
-	e := newEnv(t)
-	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e := envWithAB(t)
 	p := mustCreate(t, e, "Farm")
 	var err error
 	p, err = e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"})
