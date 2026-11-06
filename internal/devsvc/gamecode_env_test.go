@@ -1,11 +1,15 @@
 package devsvc
 
 import (
+	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/dotnetroot"
 )
 
 func TestIlspyRunsWithDotnetRoot(t *testing.T) {
@@ -30,5 +34,35 @@ func TestIlspyRunsWithDotnetRoot(t *testing.T) {
 	}
 	if isDotnetTool("git") {
 		t.Fatal("git is not a dotnet tool")
+	}
+}
+
+func TestFlatpakDotnet(t *testing.T) {
+	prevInside, prevRoot := flatpakInside, flatpakDotnetRoot
+	flatpakInside = func() bool { return true }
+	t.Cleanup(func() { flatpakInside, flatpakDotnetRoot = prevInside, prevRoot })
+
+	flatpakDotnetRoot = func() string { return "" }
+	svc, _ := testService(t, testTemplate)
+	svc.Run = func(context.Context, string, string, ...string) ([]byte, error) { return nil, errors.New("absent") }
+	if got := svc.Tools(t.Context(), "lethal-company").FlatpakDotnetInstall; got != dotnetroot.InstallCommand {
+		t.Fatalf("hint without the extension = %q", got)
+	}
+
+	if runtime.GOOS == "windows" {
+		return
+	}
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "dotnet"), []byte("#!/bin/sh\necho \"ext $1\"\n"), 0o700); err != nil { // #nosec G306 -- a fake dotnet the test must execute
+		t.Fatal(err)
+	}
+	flatpakDotnetRoot = func() string { return root }
+	if got := svc.Tools(t.Context(), "lethal-company").FlatpakDotnetInstall; got != "" {
+		t.Fatalf("hint with the extension = %q", got)
+	}
+	svc.Run = nil
+	out, err := svc.run(t.Context(), root, "dotnet", "--list-sdks")
+	if err != nil || strings.TrimSpace(string(out)) != "ext --list-sdks" {
+		t.Fatalf("dotnet ran as %q, %v", out, err)
 	}
 }

@@ -2,6 +2,7 @@ package dotnetroot
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -43,5 +44,31 @@ func TestWithRoot(t *testing.T) {
 	}
 	if Program("") != "dotnet" || Program("/ext/lib") != filepath.Join("/ext/lib", "dotnet") {
 		t.Error("Program")
+	}
+}
+
+func TestHome(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	want := filepath.Join(home, ".dotnet", "dotnet")
+	var asked []string
+	look := func(found bool) func(string) (string, error) {
+		return func(p string) (string, error) {
+			asked = append(asked, p)
+			if found {
+				return p, nil
+			}
+			return "", exec.ErrNotFound
+		}
+	}
+	if got := Home(look(false)); got != "" {
+		t.Fatalf("missing dotnet resolved to %q", got)
+	}
+	if got := Home(look(true)); got != filepath.Join(home, ".dotnet") {
+		t.Fatalf("got %q", got)
+	}
+	if len(asked) != 2 || asked[0] != want {
+		t.Fatalf("lookPath asked %q, want %q", asked, want)
 	}
 }

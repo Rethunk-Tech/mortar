@@ -39,6 +39,21 @@ func FlatpakRoot() string {
 	return Root(flatpak.Inside(), Mount)
 }
 
+// Home is the folder Microsoft's install script puts dotnet in (~/.dotnet), or "" when its dotnet is not there. A desktop
+// session does not have it on its PATH. lookPath decides whether the file is executable, so inside the Flatpak it is
+// the host's lookup: the sandbox cannot see the host's home.
+func Home(lookPath func(string) (string, error)) string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	dir := filepath.Join(home, ".dotnet")
+	if _, err := lookPath(filepath.Join(dir, "dotnet")); err != nil {
+		return ""
+	}
+	return dir
+}
+
 // Program is the dotnet to run: the extension's when there is one, else whatever the PATH holds.
 func Program(root string) string {
 	if root == "" {

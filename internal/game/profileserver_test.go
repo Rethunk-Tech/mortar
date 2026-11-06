@@ -1,7 +1,6 @@
 package game
 
 import (
-	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -51,14 +50,15 @@ func TestDotnetProgramUsesTheGivenPathThenHomeDotnet(t *testing.T) {
 	if _, err := dotnetProgram(missing); err == nil {
 		t.Fatal("no dotnet anywhere was accepted")
 	}
+	// The lookup is the one the host search uses inside the Flatpak, so a path it finds is on the host, not in the sandbox.
 	local := filepath.Join(home, ".dotnet", "dotnet")
-	if err := os.MkdirAll(filepath.Dir(local), 0o700); err != nil {
-		t.Fatal(err)
+	hostHome := func(name string) (string, error) {
+		if name == local {
+			return name, nil
+		}
+		return "", exec.ErrNotFound
 	}
-	if err := os.WriteFile(local, nil, 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if got, err := dotnetProgram(missing); err != nil || got != local {
+	if got, err := dotnetProgram(hostHome); err != nil || got != local {
 		t.Fatalf("got %q, %v", got, err)
 	}
 }

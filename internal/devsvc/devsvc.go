@@ -150,8 +150,10 @@ func (s *Service) untrustedDir(dir string) bool {
 	return false
 }
 
-// flatpakDotnetRoot and withDotnetRoot are the shared lookup; tests point the root at a temp folder.
+// flatpakDotnetRoot, flatpakInside and withDotnetRoot are the shared lookup; tests point the root at a temp folder and
+// pretend to be inside a Flatpak.
 var (
+	flatpakInside     = flatpak.Inside
 	flatpakDotnetRoot = dotnetroot.FlatpakRoot
 	withDotnetRoot    = dotnetroot.WithRoot
 )
@@ -210,7 +212,7 @@ func (s *Service) Tools(ctx context.Context, gameID string) Tools {
 	ctx, cancel := context.WithTimeout(ctx, toolTimeout)
 	defer cancel()
 	t := Tools{DotnetSDKs: []string{}}
-	if flatpak.Inside() && flatpakDotnetRoot() == "" {
+	if flatpakInside() && flatpakDotnetRoot() == "" {
 		t.FlatpakDotnetInstall = dotnetroot.InstallCommand
 	}
 	if out, err := s.run(ctx, "", "dotnet", "--list-sdks"); err == nil {

@@ -1,15 +1,11 @@
 package game
 
 import (
-	"context"
 	"errors"
-	"os"
-	"os/exec"
 	"path/filepath"
 
-	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/dotnetroot"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -20,10 +16,7 @@ func ProfileServerStart(spec components.ProfileServerSpec, platform, installDir,
 		return filepath.Join(installDir, spec.Exe), []string{spec.DataFlag, dataDir}, nil
 	}
 	// Inside the Flatpak the server starts on the host (flatpak-spawn), which cannot see the sandbox's SDK extension.
-	lookPath := exec.LookPath
-	if flatpak.Inside() {
-		lookPath = func(name string) (string, error) { return flatpak.HostLookPath(context.Background(), name) }
-	}
+	lookPath := defaultLookPath()
 	dotnet, err := dotnetProgram(lookPath)
 	if err != nil {
 		return "", nil, err
@@ -37,10 +30,8 @@ func dotnetProgram(lookPath func(string) (string, error)) (string, error) {
 	if p, err := lookPath("dotnet"); err == nil {
 		return p, nil
 	}
-	if home, err := os.UserHomeDir(); err == nil {
-		if p := filepath.Join(home, ".dotnet", "dotnet"); safefs.IsFile(p) {
-			return p, nil
-		}
+	if dir := dotnetroot.Home(lookPath); dir != "" {
+		return filepath.Join(dir, "dotnet"), nil
 	}
 	return "", usererr.Wrap(usererr.Invalid, errors.New("the dedicated server needs the .NET runtime, and dotnet was not found"))
 }

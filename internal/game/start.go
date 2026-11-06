@@ -18,8 +18,8 @@ import (
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/go-gameproc"
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/dotnetroot"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	gameruntime "github.com/Rethunk-Tech/mortar/internal/runtime"
@@ -196,10 +196,15 @@ func waitDelay(ctx context.Context, d time.Duration) error {
 }
 
 func (st Starter) lookPathOrDefault() func(string) (string, error) {
-	switch {
-	case st.LookPath != nil:
+	if st.LookPath != nil {
 		return st.LookPath
-	case flatpak.Inside():
+	}
+	return defaultLookPath()
+}
+
+// defaultLookPath searches the PATH of the machine the game and its servers start on: the host's, inside the Flatpak.
+func defaultLookPath() func(string) (string, error) {
+	if flatpak.Inside() {
 		return func(name string) (string, error) { return flatpak.HostLookPath(context.Background(), name) }
 	}
 	return exec.LookPath
@@ -325,7 +330,7 @@ func directCommand(goos string, inst Install, plan *launchplan.Plan, env StartEn
 	}
 	cmdEnv := append(environ(plan.Env), protonEnv...)
 	if goos == "linux" && inst.Platform == "linux" {
-		cmdEnv = append(cmdEnv, dotnetRoot(plan.Env)...)
+		cmdEnv = append(cmdEnv, dotnetRoot(plan.Env, defaultLookPath())...)
 	}
 	// Wine prints its errors only when asked; without them a launch that stalls on one says nothing.
 	if (inst.Runtime == gameruntime.Proton || inst.Runtime == gameruntime.MortarProton || inst.Runtime == gameruntime.LauncherPrefix) && plan.Env["WINEDEBUG"] == "" {
@@ -415,15 +420,15 @@ func flatpakAppCommand(inst Install, plan *launchplan.Plan, flatpakPath string) 
 
 // dotnetRoot points a .NET build at the runtime the .NET install script puts in ~/.dotnet, which a game started from
 // the desktop does not otherwise find: the script sets DOTNET_ROOT only in the shell's profile.
-func dotnetRoot(planEnv map[string]string) []string {
+func dotnetRoot(planEnv map[string]string, lookPath func(string) (string, error)) []string {
 	if os.Getenv("DOTNET_ROOT") != "" || planEnv["DOTNET_ROOT"] != "" {
 		return nil
 	}
-	home, err := os.UserHomeDir()
-	if err != nil || !safefs.IsFile(filepath.Join(home, ".dotnet", "dotnet")) {
+	dir := dotnetroot.Home(lookPath)
+	if dir == "" {
 		return nil
 	}
-	return []string{"DOTNET_ROOT=" + filepath.Join(home, ".dotnet")}
+	return []string{"DOTNET_ROOT=" + dir}
 }
 
 func (st Starter) flatpakCanReadMods() bool {
