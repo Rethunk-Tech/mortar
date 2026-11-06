@@ -181,3 +181,16 @@ test('a repeat right after the toast was dismissed shows it again and times out'
   jest.advanceTimersByTime(10_000)
   expect(useToasts.getState().toasts).toHaveLength(0)
 })
+
+test('a notice on a standing topic replaces the older one in the history', () => {
+  const { push } = useToasts.getState()
+  push({ kind: 'info', title: '4 mod updates available', topic: 'mod-updates' })
+  jest.advanceTimersByTime(60_000)
+  push({ kind: 'error', title: 'Could not check the mods for problems' })
+  jest.advanceTimersByTime(60_000)
+  push({ kind: 'info', title: '5 mod updates available', topic: 'mod-updates' })
+  expect(useToasts.getState().history.map((h) => h.title)).toEqual([
+    '5 mod updates available',
+    'Could not check the mods for problems',
+  ])
+})

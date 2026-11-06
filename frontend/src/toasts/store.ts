@@ -76,6 +76,9 @@ export interface ToastInput {
   sticky?: boolean
   // History events a change reports that the profiles store cannot answer for: those a batch wrote.
   changes?: string[]
+  // A standing state rather than an event (how many updates wait): a newer notice on the same topic replaces the older
+  // one in the history instead of stacking beside it.
+  topic?: string
 }
 
 export interface Toast extends ToastInput {
@@ -94,7 +97,31 @@ export interface ToastHistoryItem {
   picture?: string
   count?: number
   action?: ToastAction
+  topic?: string
 }
+
+function historyItem(
+  id: number,
+  at: number,
+  input: ToastInput,
+  changes: string[],
+): ToastHistoryItem {
+  return {
+    id,
+    at,
+    ...(changes.length > 0 ? { changes } : {}),
+    kind: input.kind,
+    title: input.title,
+    ...(input.body === undefined ? {} : { body: input.body }),
+    ...(input.detail === undefined ? {} : { detail: input.detail }),
+    ...(input.picture === undefined ? {} : { picture: input.picture }),
+    ...(input.action === undefined ? {} : { action: input.action }),
+    ...(input.topic === undefined ? {} : { topic: input.topic }),
+  }
+}
+
+const withoutTopic = (history: ToastHistoryItem[], topic: string | undefined) =>
+  topic === undefined ? history : history.filter((h) => h.topic !== topic)
 
 export const useToasts = create<{
   toasts: Toast[]
@@ -149,21 +176,12 @@ export const useToasts = create<{
         clearTimeout(timers.get(gone.id))
         timers.delete(gone.id)
       }
-      const changes = changesOf(input)
-      const item: ToastHistoryItem = {
-        id,
-        at: now,
-        ...(changes.length > 0 ? { changes } : {}),
-        kind: input.kind,
-        title: input.title,
-        ...(input.body === undefined ? {} : { body: input.body }),
-        ...(input.detail === undefined ? {} : { detail: input.detail }),
-        ...(input.picture === undefined ? {} : { picture: input.picture }),
-        ...(input.action === undefined ? {} : { action: input.action }),
-      }
       set({
         toasts: kept.slice(-MAX_SHOWN),
-        history: prependHistory(get().history, item),
+        history: prependHistory(
+          withoutTopic(get().history, input.topic),
+          historyItem(id, now, input, changesOf(input)),
+        ),
         unread: Math.min(HISTORY_CAP, get().unread + 1),
       })
       saveHistory(get().history)

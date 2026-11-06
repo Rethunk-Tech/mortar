@@ -92,6 +92,7 @@ export function announceUpdates(count: number) {
   updatesToast = toasts.push({
     kind: 'info',
     title,
+    topic: 'mod-updates',
     action: {
       label: i18n._(msg`Review`),
       run: () => {
