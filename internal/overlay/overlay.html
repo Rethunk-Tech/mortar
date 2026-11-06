@@ -89,10 +89,15 @@
         year: "Year",
         time: "Time",
         date: "Date",
+        weekday: "Weekday",
+        daysLeft: "Days left",
         money: "Money",
         weather: "Weather",
         health: "Health",
         stamina: "Stamina",
+        friend: "Friend",
+        pet: "Pet",
+        petWatered: "Pet watered",
         "skill.farming": "Farming",
         "skill.fishing": "Fishing",
         "skill.foraging": "Foraging",
@@ -131,6 +136,32 @@
         return season ? season.charAt(0).toUpperCase() + season.slice(1) : "";
       }
 
+      // The bridge omits a key it cannot read, so each of these is empty text rather than a zero.
+      function friendText(data) {
+        if (!has(data.friendName)) {
+          return "";
+        }
+        return has(data.friendHearts)
+          ? `${data.friendName} ${data.friendHearts}`
+          : String(data.friendName);
+      }
+
+      function petText(data) {
+        if (!has(data.petName)) {
+          return "";
+        }
+        return has(data.petType)
+          ? `${data.petName} (${data.petType})`
+          : String(data.petName);
+      }
+
+      function yesNo(v) {
+        if (!has(v)) {
+          return "";
+        }
+        return v ? "Yes" : "No";
+      }
+
       function valueFor(name, data) {
         switch (name) {
           case "location":
@@ -147,6 +178,16 @@
             return formatTime(data.timeOfDay);
           case "date":
             return `${seasonLabel(data.season)} ${data.day}, Year ${data.year}`;
+          case "weekday":
+            return has(data.dayOfWeek) ? String(data.dayOfWeek) : "";
+          case "daysLeft":
+            return has(data.daysLeftInSeason) ? String(data.daysLeftInSeason) : "";
+          case "friend":
+            return friendText(data);
+          case "pet":
+            return petText(data);
+          case "petWatered":
+            return yesNo(data.petWatered);
           case "money":
             return `${data.money}g`;
           case "weather":

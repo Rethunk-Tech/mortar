@@ -8,10 +8,15 @@ const STARDEW_FIELDS = [
   'year',
   'time',
   'date',
+  'weekday',
+  'daysLeft',
   'money',
   'weather',
   'health',
   'stamina',
+  'friend',
+  'pet',
+  'petWatered',
   'skill.farming',
   'skill.fishing',
   'skill.foraging',
@@ -114,6 +119,32 @@ function gameField(body: Record<string, unknown>, field: string): string {
   }
 }
 
+// The calendar, friend and pet fields: each reads keys the bridge omits when it cannot read them.
+function stardewExtra(body: Record<string, unknown>, field: string): string {
+  switch (field) {
+    case 'weekday':
+      return missing(body.dayOfWeek) ? '' : String(body.dayOfWeek)
+    case 'daysLeft':
+      return missing(body.daysLeftInSeason) ? '' : String(body.daysLeftInSeason)
+    case 'friend':
+      return missing(body.friendName)
+        ? ''
+        : [body.friendName, body.friendHearts].filter((v) => !missing(v)).join(' ')
+    case 'pet':
+      if (missing(body.petName)) {
+        return ''
+      }
+      return missing(body.petType) ? String(body.petName) : `${body.petName} (${body.petType})`
+    case 'petWatered':
+      if (missing(body.petWatered)) {
+        return ''
+      }
+      return body.petWatered ? 'Yes' : 'No'
+    default:
+      return ''
+  }
+}
+
 function formatField(body: Record<string, unknown>, field: string): string {
   if (typeof body.game === 'string' && body.game in GAME_FIELDS) {
     return gameField(body, field)
@@ -145,7 +176,7 @@ function formatField(body: Record<string, unknown>, field: string): string {
       if (field.startsWith('skill.')) {
         return skillLevel(body, field.slice('skill.'.length))
       }
-      return ''
+      return stardewExtra(body, field)
   }
 }
 

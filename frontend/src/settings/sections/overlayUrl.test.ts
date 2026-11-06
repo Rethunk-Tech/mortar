@@ -44,6 +44,34 @@ describe('overlayPreview', () => {
   })
 })
 
+describe('Stardew layout fields', () => {
+  const read = (body: Record<string, unknown>, field: string) =>
+    overlayPreview({ ok: true, body: { inGame: true, ...body } }, field)
+
+  test('values from the extra snapshot keys', () => {
+    const body = {
+      dayOfWeek: 'Tuesday',
+      daysLeftInSeason: 9,
+      friendName: 'Abigail',
+      friendHearts: 8,
+      petName: 'Rex',
+      petType: 'Dog',
+      petWatered: false,
+    }
+    expect(read(body, 'weekday')).toEqual({ kind: 'value', text: 'Tuesday' })
+    expect(read(body, 'daysLeft')).toEqual({ kind: 'value', text: '9' })
+    expect(read(body, 'friend')).toEqual({ kind: 'value', text: 'Abigail 8' })
+    expect(read(body, 'pet')).toEqual({ kind: 'value', text: 'Rex (Dog)' })
+    expect(read(body, 'petWatered')).toEqual({ kind: 'value', text: 'No' })
+  })
+
+  test('keys the bridge omits read as empty text', () => {
+    for (const field of ['weekday', 'daysLeft', 'friend', 'pet', 'petWatered']) {
+      expect(read({}, field)).toEqual({ kind: 'value', text: '' })
+    }
+  })
+})
+
 describe('per-game overlay fields', () => {
   test("a game without a layout of its own gets Stardew Valley's", () => {
     expect(overlayFields('stardew')).toBe(STARDEW_FIELDS)

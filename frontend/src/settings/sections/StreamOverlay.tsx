@@ -54,6 +54,8 @@ const WORLD_FIELDS: ReadonlySet<string> = new Set([
   'year',
   'time',
   'date',
+  'weekday',
+  'daysLeft',
   'weather',
 ])
 
@@ -74,6 +76,14 @@ function OverlayFieldLabel({ field }: { field: string }) {
       return t`Time`
     case 'date':
       return t`Date`
+    case 'weekday':
+      return t`Weekday`
+    case 'friend':
+      return t`Friend`
+    case 'pet':
+      return t`Pet`
+    case 'petWatered':
+      return t`Pet watered`
     case 'money':
       return t`Money`
     case 'weather':

@@ -112,6 +112,14 @@ func TestWritePageLaysOutIndex(t *testing.T) {
 	}
 }
 
+func TestPageReadsTheStardewLayoutKeys(t *testing.T) {
+	for _, key := range []string{"dayOfWeek", "daysLeftInSeason", "friendName", "friendHearts", "petName", "petType", "petWatered"} {
+		if !strings.Contains(string(page), "data."+key) {
+			t.Fatalf("page does not read %s", key)
+		}
+	}
+}
+
 func TestPageHasALayoutForEachBridgeGame(t *testing.T) {
 	for _, game := range []string{`"lethal-company"`, `valheim:`, `layouts[data.game]`} {
 		if !strings.Contains(string(page), game) {

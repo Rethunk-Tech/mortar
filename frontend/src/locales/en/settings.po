@@ -985,6 +985,10 @@ msgstr "Console"
 msgid "Device name"
 msgstr "Device name"
 
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Pet"
+msgstr "Pet"
+
 #: src/settings/sections/DataMoveRun.ts
 msgid "Data folder moved"
 msgstr "Data folder moved"
@@ -2368,6 +2372,10 @@ msgstr "control.json is current"
 msgid "Take back"
 msgstr "Take back"
 
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Friend"
+msgstr "Friend"
+
 #: src/settings/prefCopy.ts
 msgid "How often background checks report new mod updates. The In Mortar and desktop switches choose where."
 msgstr "How often background checks report new mod updates. The In Mortar and desktop switches choose where."
@@ -3103,6 +3111,10 @@ msgstr "Switch to Saves"
 msgid "Remove"
 msgstr "Remove"
 
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Pet watered"
+msgstr "Pet watered"
+
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Config"
 msgstr "Switch to Config"
@@ -3415,6 +3427,10 @@ msgstr "How profiles are ordered in the sidebar"
 #: src/settings/sections/General.tsx
 msgid "Help translate Mortar"
 msgstr "Help translate Mortar"
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Weekday"
+msgstr "Weekday"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Framework"
