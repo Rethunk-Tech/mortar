@@ -61,7 +61,7 @@ func TestATraceWithNoEventsWritesNoSamples(t *testing.T) {
 
 func TestPruneStartupReportsKeepsTheNewestWithTheirSamples(t *testing.T) {
 	dir := t.TempDir()
-	for _, id := range []string{"20260101", "20260102", "20260103", "20260104"} {
+	for _, id := range []string{"20260101T000000Z", "20260102T000000Z", "20260103T000000Z", "20260104T000000Z"} {
 		testfs.WriteFile(t, dir, id+".json", "{}")
 		testfs.WriteFile(t, dir, id+".samples.json", "{}")
 	}
@@ -70,13 +70,34 @@ func TestPruneStartupReportsKeepsTheNewestWithTheirSamples(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(left) != 2 || !left["20260104"] || !left["20260103"] {
+	if len(left) != 2 || !left["20260104T000000Z"] || !left["20260103T000000Z"] {
 		t.Fatalf("kept %v, want the two newest", left)
 	}
-	if _, err := os.Stat(filepath.Join(dir, "20260101.samples.json")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(dir, "20260101T000000Z.samples.json")); !os.IsNotExist(err) {
 		t.Fatalf("an old report's samples file was left behind: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(dir, "20260103.samples.json")); err != nil {
+	if _, err := os.Stat(filepath.Join(dir, "20260103T000000Z.samples.json")); err != nil {
 		t.Fatalf("a kept report lost its samples file: %v", err)
+	}
+}
+
+func TestOnlyTimestampNamedFilesAreStartupReports(t *testing.T) {
+	dir := t.TempDir()
+	for _, f := range []string{"20260101T000000Z.json", "20260101T000000Z.samples.json", "graphics-crash.json", "notes.json"} {
+		testfs.WriteFile(t, dir, f, "{}")
+	}
+	paths, err := startupReportPaths(dir)
+	if err != nil || len(paths) != 1 || filepath.Base(paths[0]) != "20260101T000000Z.json" {
+		t.Fatalf("reports %v, %v", paths, err)
+	}
+	pruneStartupReports(dir, 1)
+	for _, f := range []string{"graphics-crash.json", "notes.json"} {
+		if _, err := os.Stat(filepath.Join(dir, f)); err != nil {
+			t.Errorf("pruning touched %s: %v", f, err)
+		}
+	}
+	ids, _ := startupReportIDs(dir)
+	if len(ids) != 1 || !ids["20260101T000000Z"] {
+		t.Errorf("ids %v", ids)
 	}
 }

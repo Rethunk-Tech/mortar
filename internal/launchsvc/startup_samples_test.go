@@ -9,14 +9,14 @@ import (
 
 func TestReadStartupReportsMergesSamples(t *testing.T) {
 	dir := t.TempDir()
-	reportPath := filepath.Join(dir, "2026-10-04T010203Z.json")
+	reportPath := filepath.Join(dir, "20261004T010203Z.json")
 	if err := datadir.WriteJSON(reportPath, StartupReport{
 		ID:   "ignored-by-filename",
 		Mods: []StartupMod{{ID: "FixtureMod"}},
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if err := datadir.WriteJSON(filepath.Join(dir, "2026-10-04T010203Z.samples.json"), startupSamples{
+	if err := datadir.WriteJSON(filepath.Join(dir, "20261004T010203Z.samples.json"), startupSamples{
 		Schema:  1,
 		Mods:    map[string]int64{"FixtureMod": 312},
 		OtherMs: 88,

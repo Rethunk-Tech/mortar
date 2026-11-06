@@ -166,29 +166,23 @@ func pruneStartupReports(dir string, keep int) {
 }
 
 func startupReportIDs(path string) (map[string]bool, error) {
-	names, err := filepath.Glob(filepath.Join(path, "*.json"))
+	names, err := startupReportPaths(path)
 	if err != nil {
 		return nil, err
 	}
 	ids := make(map[string]bool)
 	for _, name := range names {
-		if strings.HasSuffix(name, ".samples.json") {
-			continue
-		}
 		ids[strings.TrimSuffix(filepath.Base(name), ".json")] = true
 	}
 	return ids, nil
 }
 
 func newStartupReport(path string, before map[string]bool) string {
-	names, err := filepath.Glob(filepath.Join(path, "*.json"))
+	names, err := startupReportPaths(path)
 	if err != nil {
 		return ""
 	}
 	for _, name := range names {
-		if strings.HasSuffix(name, ".samples.json") {
-			continue
-		}
 		id := strings.TrimSuffix(filepath.Base(name), ".json")
 		if !before[id] {
 			return id

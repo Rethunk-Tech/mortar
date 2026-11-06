@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"sync"
@@ -243,13 +244,17 @@ func pluginsToPackages(r *StartupReport, owners func() map[string]startupOwner) 
 	r.Mods = out
 }
 
+// reportFileName is a bridge report's file: the UTC time of the launch. Other files in the folder (the samples next to
+// a report, the graphics-crash note) are not reports.
+var reportFileName = regexp.MustCompile(`^\d{8}T\d{6}Z\.json$`)
+
 // startupReportPaths lists the bridge's reports in dir, newest first.
 func startupReportPaths(dir string) ([]string, error) {
 	names, err := filepath.Glob(filepath.Join(dir, "*.json"))
 	if err != nil {
 		return nil, err
 	}
-	names = slices.DeleteFunc(names, func(name string) bool { return strings.HasSuffix(name, ".samples.json") })
+	names = slices.DeleteFunc(names, func(name string) bool { return !reportFileName.MatchString(filepath.Base(name)) })
 	slices.SortFunc(names, func(a, b string) int { return strings.Compare(b, a) })
 	return names, nil
 }
