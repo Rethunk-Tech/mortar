@@ -8,6 +8,7 @@ import {
   StartSSO,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
+import { openWeb } from '../../shell/openWeb.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected, toastError } from '../../toasts/report.ts'
 
@@ -21,7 +22,9 @@ export function NexusSSO() {
       Events.On('nexus:sso', (event) => {
         const { state, error, cancelled, url } = event.data
         if (state === 'open-in-page') {
-          window.open(url, '_blank', 'noopener,noreferrer')
+          if (url) {
+            openWeb(url).catch(reportUnexpected)
+          }
           return
         }
         if (state === 'connected' || state === 'waiting-browser') {
