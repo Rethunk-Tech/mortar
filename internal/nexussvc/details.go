@@ -42,9 +42,8 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 	if err != nil {
 		return Details{}, err
 	}
-	name := DetailsName(t.Domain, modID)
 	var refused error
-	d, err := diskcache.Cached(s.meta.Cache(), name, detailsTTL, func() (Details, error) {
+	d, err := diskcache.Cached(s.meta.Cache(), DetailsName(t.Domain, modID), detailsTTL, func() (Details, error) {
 		c, err := Authed(s.store, s.client)
 		if err != nil {
 			refused = err
@@ -74,7 +73,7 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 		return Details{Page: page, Category: cats[page.CategoryID], Files: files, Changelogs: nexusChangelogs(logs)}, nil
 	})
 	if err == nil && errors.Is(refused, ErrSignedOut) {
-		if e, ok := diskcache.Peek[Details](s.meta.Cache(), name); ok {
+		if e, ok := diskcache.Peek[Details](s.meta.Cache(), DetailsName(t.Domain, modID)); ok {
 			d.Stale = e.Fetched.UTC().Format(time.RFC3339)
 		}
 	}
