@@ -58,7 +58,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
     (text: string) => SearchRuns(shown.game, shown.profile, text),
     [shown.game, shown.profile],
   )
-  const { result, loading } = useRunSearch(open, query, search)
+  const { result, loading } = useRunSearch(open, `${shown.game}:${shown.profile}`, query, search)
 
   const groups = useMemo(() => {
     const grouped = new Map<string, RunHit[]>()
