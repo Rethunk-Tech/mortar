@@ -1,7 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
-import { useShallow } from 'zustand/react/shallow'
 import type { Status } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loader/models.ts'
 import {
   Install,
@@ -93,16 +92,13 @@ export const useLoader = create<{
 
 /** What the screens that check, install and show the loader's progress all read. */
 export function useLoaderInstall() {
-  return useLoader(
-    useShallow((s) => ({
-      status: s.status,
-      installing: s.installing,
-      steps: s.steps,
-      check: s.check,
-      install: s.install,
-      pending: s.pending,
-    })),
-  )
+  const status = useLoader((s) => s.status)
+  const installing = useLoader((s) => s.installing)
+  const steps = useLoader((s) => s.steps)
+  const check = useLoader((s) => s.check)
+  const install = useLoader((s) => s.install)
+  const pending = useLoader((s) => s.pending)
+  return { status, installing, steps, check, install, pending }
 }
 
 export function initLoader() {
