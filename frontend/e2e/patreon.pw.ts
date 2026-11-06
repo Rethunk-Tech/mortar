@@ -32,6 +32,21 @@ function writeArchive(into: string, id = 'Seed.Patreon') {
   return `${into}/${id}.zip`
 }
 
+/** Answers the browser open for url with null so the sandbox opens nothing, and returns every runtime call made. */
+async function answerBrowserOpen(page: Page, url: string) {
+  const calls: string[] = []
+  await page.route('**/wails/runtime', async (route) => {
+    const body = route.request().postData() ?? ''
+    calls.push(body)
+    if (calledWith(body, url)) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: 'null' })
+      return
+    }
+    await route.continue()
+  })
+  return calls
+}
+
 /** The id of the NewDownloads binding, so the test can wait for the page's own call to it. */
 const NEW_DOWNLOADS_ID = /NewDownloads\(game: string\)[\s\S]*?\$Call\.ByID\((\d+)/.exec(
   readFileSync(
@@ -46,16 +61,7 @@ const NEW_DOWNLOADS_ID = /NewDownloads\(game: string\)[\s\S]*?\$Call\.ByID\((\d+
 test('a pasted Patreon post opens, then the saved file installs under that post', async ({
   page,
 }) => {
-  const calls: string[] = []
-  await page.route('**/wails/runtime', async (route) => {
-    const body = route.request().postData() ?? ''
-    calls.push(body)
-    if (calledWith(body, POST_URL)) {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: 'null' })
-      return
-    }
-    await route.continue()
-  })
+  const calls = await answerBrowserOpen(page, POST_URL)
   await openSeedFarm(page)
   await page.getByRole('button', { name: /^Switch profile/ }).click()
   await page.getByRole('menuitem', { name: 'Import…' }).click()
@@ -87,16 +93,7 @@ test('a file saved from a Patreon post is offered in a toast and installs under 
   const post = 'https://www.patreon.com/posts/toast-mod-7777'
   const postUrl = 'https://www.patreon.com/posts/7777'
   const downloads = `${dir}/home/.local/share/mortar/downloads`
-  const calls: string[] = []
-  await page.route('**/wails/runtime', async (route) => {
-    const body = route.request().postData() ?? ''
-    calls.push(body)
-    if (calledWith(body, postUrl)) {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: 'null' })
-      return
-    }
-    await route.continue()
-  })
+  const calls = await answerBrowserOpen(page, postUrl)
   await openSeedFarm(page)
   await page.getByRole('button', { name: /^Switch profile/ }).click()
   await page.getByRole('menuitem', { name: 'Import…' }).click()
