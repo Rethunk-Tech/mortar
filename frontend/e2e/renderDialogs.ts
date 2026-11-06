@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import type { Page } from '@playwright/test'
 import { openGameSelect, openSettings } from './app.ts'
 import { menuCases } from './menuCases.ts'
+import { noProjectCodeCases } from './noProjectCodeCases.ts'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
 import { openGame, thunderstoreVisit } from './renderProfile.ts'
@@ -377,6 +378,7 @@ export function dialogCases(h: Helpers): Case[] {
     ...toolAndWizardCases(kit),
     ...stubbedCases(kit),
     ...uploadDialogCases(kit),
+    ...noProjectCodeCases(kit),
     ...menuCases(kit, h.tabs),
     // Showing the list and picking a mod is setup: only opening the dialog is measured.
     dialog(
