@@ -1,7 +1,6 @@
 package problems
 
 import (
-	"context"
 	"testing"
 
 	"github.com/Rethunk-Tech/go-smapiweb"
@@ -17,14 +16,14 @@ func TestReplacementFromSummaryNexusLink(t *testing.T) {
 			}},
 		},
 	}
-	got := replacementFromSummary(context.Background(), m, "stardewvalley", nil, "obsolete; use https://www.nexusmods.com/stardewvalley/mods/5098")
+	got := replacementFromSummary(t.Context(), m, "stardewvalley", nil, "obsolete; use https://www.nexusmods.com/stardewvalley/mods/5098")
 	if got == nil || got.PageID != 5098 || got.FileID != 1 {
 		t.Fatalf("got %+v", got)
 	}
 }
 
 func TestReplacementFromSummaryGitHubLink(t *testing.T) {
-	got := replacementFromSummary(context.Background(), fakeMeta{}, "stardewvalley", nil, "see https://github.com/pathoschild/stardewmods")
+	got := replacementFromSummary(t.Context(), fakeMeta{}, "stardewvalley", nil, "see https://github.com/pathoschild/stardewmods")
 	if got == nil || got.GitHub != "pathoschild/stardewmods" {
 		t.Fatalf("got %+v", got)
 	}
@@ -34,7 +33,7 @@ func TestBrokenIncludesAbandoned(t *testing.T) {
 	m := fakeMeta{compat: map[string]smapiweb.UpdateResult{
 		"A": {Compatibility: "Abandoned", CompatibilitySummary: "unmaintained"},
 	}}
-	got := Check(context.Background(), m, testEnv, []framework.Mod{inst("a", "A", "1", true)}, nil)
+	got := Check(t.Context(), m, testEnv, []framework.Mod{inst("a", "A", "1", true)}, nil)
 	if len(got.Broken) != 1 || got.Broken[0].Status != "abandoned" || got.Broken[0].Summary != "unmaintained" {
 		t.Fatalf("broken = %+v", got.Broken)
 	}

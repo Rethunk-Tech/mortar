@@ -195,7 +195,7 @@ func TestListedRequirementsAreOneBatchedLookup(t *testing.T) {
 	other := listedDependent()
 	other.Key, other.UniqueID = "nexus-521-1", "Example.Other"
 	calls := 0
-	Check(context.Background(), fake, testEnv, []framework.Mod{listedDependent(), other}, fake.reqs(&calls))
+	Check(t.Context(), fake, testEnv, []framework.Mod{listedDependent(), other}, fake.reqs(&calls))
 	if calls != 1 {
 		t.Fatalf("lookups = %d, want one for every page", calls)
 	}
@@ -358,5 +358,5 @@ func TestCheckRunsTheAnalyzersWhileTheRequirementsAreFetched(t *testing.T) {
 		}
 		return map[int][]nexusmods.Requirement{}, nil
 	}
-	Check(context.Background(), fake, testEnv, []framework.Mod{probe}, reqs)
+	Check(t.Context(), fake, testEnv, []framework.Mod{probe}, reqs)
 }

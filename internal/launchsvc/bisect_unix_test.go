@@ -53,7 +53,7 @@ func TestRunForBisectStopsWhenStartupReportAppears(t *testing.T) {
 	var healthy bool
 	var runErr error
 	go func() {
-		healthy, _, runErr = svc.RunForBisect(context.Background(), "stardew", p.ID)
+		healthy, _, runErr = svc.RunForBisect(t.Context(), "stardew", p.ID)
 		close(done)
 	}()
 

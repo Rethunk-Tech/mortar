@@ -39,7 +39,7 @@ func TestCheckUpdatesUsesTheNewestFileInTheInstalledGroup(t *testing.T) {
 	installed := inst("nexus-2364-9545", id, "1.0.0", true)
 	installed.UpdateKeys = []string{"Nexus:2364"}
 
-	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false)
+	got := CheckUpdates(t.Context(), rm, testEnv, []framework.Mod{installed}, false)
 	if len(got.Updates) != 0 {
 		t.Fatalf("updates = %+v, want none", got.Updates)
 	}
@@ -79,7 +79,7 @@ func TestCheckUpdatesChoosesANewerFileFromTheSameStem(t *testing.T) {
 	installed := inst("nexus-2364-9544", id, "1.0.0", true)
 	installed.UpdateKeys = []string{"Nexus:2364"}
 
-	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false)
+	got := CheckUpdates(t.Context(), rm, testEnv, []framework.Mod{installed}, false)
 	if len(got.Updates) != 1 || got.Updates[0].Version != "1.2" {
 		t.Fatalf("updates = %+v, want one same-stem update", got.Updates)
 	}
@@ -104,7 +104,7 @@ func TestCheckUpdatesTrustsSMAPIOverAStaleDatasetPage(t *testing.T) {
 	installed := inst("nexus-28261-179112", id, "2.4.1", true)
 	installed.UpdateKeys = []string{"Nexus:28261"}
 
-	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false)
+	got := CheckUpdates(t.Context(), rm, testEnv, []framework.Mod{installed}, false)
 	if len(got.Updates) != 1 || got.Updates[0].Version != "2.5.0" {
 		t.Fatalf("updates = %+v, want 2.5.0", got.Updates)
 	}
@@ -146,7 +146,7 @@ func TestCheckUpdatesUsesOneLiveCallWhenAvailable(t *testing.T) {
 			{FileID: 185367, Name: "Machine Control Panel", Version: "2.5.0", Category: "MAIN"},
 		}}, nil
 	}
-	got := checkUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf)
+	got := checkUpdates(t.Context(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf)
 	if calls != 1 || len(got.Updates) != 1 {
 		t.Fatalf("calls %d updates %+v", calls, got.Updates)
 	}
@@ -184,7 +184,7 @@ func TestCheckUpdatesPicksTheBundlePacksOwnFile(t *testing.T) {
 		filesOf := func(context.Context, nexusmods.Title, []int) (map[int][]nexusmods.BatchFile, error) {
 			return map[int][]nexusmods.BatchFile{22743: files}, nil
 		}
-		return checkUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf).Updates
+		return checkUpdates(t.Context(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf).Updates
 	}
 	check := func(files []nexusmods.BatchFile) Update {
 		t.Helper()
@@ -228,7 +228,7 @@ func TestCheckUpdatesIgnoresAPageVersionWithoutANewFile(t *testing.T) {
 	filesOf := func(context.Context, nexusmods.Title, []int) (map[int][]nexusmods.BatchFile, error) {
 		return map[int][]nexusmods.BatchFile{33076: {{FileID: 129465, Name: "Earthy Cursor", Version: "1.0.0", Category: "MAIN"}}}, nil
 	}
-	if got := checkUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf).Updates; len(got) != 0 {
+	if got := checkUpdates(t.Context(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf).Updates; len(got) != 0 {
 		t.Fatalf("updates = %+v, want none", got)
 	}
 }
@@ -248,7 +248,7 @@ func TestCheckUpdatesFollowsTheReplacedByChain(t *testing.T) {
 			{FileID: 30, Name: "Chain", Version: "3.0", Category: "MAIN"},
 		}}, nil
 	}
-	got := checkUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf).Updates
+	got := checkUpdates(t.Context(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf).Updates
 	if len(got) != 1 || got[0].FileID != 30 || got[0].Version != "3.0" {
 		t.Fatalf("updates = %+v, want file 30", got)
 	}

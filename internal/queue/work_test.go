@@ -39,7 +39,7 @@ func TestNextScansRunningProfilesWithoutTheQueueLock(t *testing.T) {
 	}
 	done := make(chan struct{})
 	go func() {
-		s.step(context.Background())
+		s.step(t.Context())
 		close(done)
 	}()
 	<-entered

@@ -126,6 +126,10 @@ linters:
     # canon go-golangci-lint-00005
     staticcheck:
       checks: ["all"]
+    # canon go-golangci-lint-00016
+    usetesting:
+      context-background: true
+      context-todo: true
     # canon go-golangci-lint-00006
     nolintlint:
       require-explanation: true

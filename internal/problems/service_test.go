@@ -1,7 +1,6 @@
 package problems
 
 import (
-	"context"
 	"sync"
 	"testing"
 	"time"
@@ -26,7 +25,7 @@ func TestShareCheckRunsOnce(t *testing.T) {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		result, err := s.shareCheck(context.Background(), "stardew/profile", check)
+		result, err := s.shareCheck(t.Context(), "stardew/profile", check)
 		if err != nil {
 			t.Errorf("shareCheck: %v", err)
 		}
@@ -37,7 +36,7 @@ func TestShareCheckRunsOnce(t *testing.T) {
 	<-start
 	go func() {
 		defer wg.Done()
-		result, err := s.shareCheck(context.Background(), "stardew/profile", check)
+		result, err := s.shareCheck(t.Context(), "stardew/profile", check)
 		if err != nil {
 			t.Errorf("shareCheck: %v", err)
 		}
@@ -71,7 +70,7 @@ func TestShareCheckFreesTheKeyWhenTheCheckPanics(t *testing.T) {
 	s := &Service{checks: map[string]*problemCall{}}
 	func() {
 		defer func() { _ = recover() }()
-		_, _ = s.shareCheck(context.Background(), "k", func() Result { panic("boom") })
+		_, _ = s.shareCheck(t.Context(), "k", func() Result { panic("boom") })
 	}()
 	if len(s.checks) != 0 {
 		t.Fatalf("checks = %v", s.checks)

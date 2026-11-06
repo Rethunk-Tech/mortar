@@ -403,7 +403,7 @@ func TestAnOvertakenPreviewDoesNotReplaceTheNewer(t *testing.T) {
 		entered, release := slowFirst(s)
 		done := make(chan error)
 		go func() {
-			_, err := s.PreviewLink(context.Background(), "stardew", link(t, "Old", share.Ref{ModID: 100, FileID: 1}), "")
+			_, err := s.PreviewLink(t.Context(), "stardew", link(t, "Old", share.Ref{ModID: 100, FileID: 1}), "")
 			done <- err
 		}()
 		<-entered

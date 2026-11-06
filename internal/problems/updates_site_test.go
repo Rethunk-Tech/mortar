@@ -1,7 +1,6 @@
 package problems
 
 import (
-	"context"
 	"testing"
 
 	"github.com/Rethunk-Tech/go-smapiweb"
@@ -40,7 +39,7 @@ func TestUnbumpedManifestInsideNewerDownloadIsNotAnUpdate(t *testing.T) {
 		"Haru.DesertExpansion": {Known: true, Suggested: &smapiweb.Update{Version: "2.0.9", URL: "https://www.nexusmods.com/stardewvalley/mods/31595"}},
 		"Other.Mod":            {Known: true, Suggested: &smapiweb.Update{Version: "1.1.0", URL: "https://www.nexusmods.com/stardewvalley/mods/9"}},
 	}}
-	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{part, older}, false).Updates
+	got := CheckUpdates(t.Context(), rm, testEnv, []framework.Mod{part, older}, false).Updates
 	if len(got) != 1 || got[0].ID != "smapi:Other.Mod" {
 		t.Fatalf("got %+v", got)
 	}

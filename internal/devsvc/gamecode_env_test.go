@@ -1,7 +1,6 @@
 package devsvc
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -22,7 +21,7 @@ func TestIlspyRunsWithDotnetRoot(t *testing.T) {
 	flatpakDotnetRoot = func() string { return "/app/extensions/dotnet10/lib" }
 	t.Cleanup(func() { flatpakDotnetRoot = prev })
 
-	out, err := (&Service{}).run(context.Background(), dir, tool)
+	out, err := (&Service{}).run(t.Context(), dir, tool)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -53,7 +53,7 @@ func TestAThunderstorePackageIsFoundByIDHoweverManyShareItsName(t *testing.T) {
 	})
 	installed := framework.Mod{Key: "a", SourceKind: profile.KindThunderstore, SourceName: "Alice-Cool", SourceVersion: "1.0.0"}
 	installed.Name, installed.Version = "Cool", "1.0.0"
-	got := (&Service{}).sourceUpdates(context.Background(), "lethal-company", []framework.Mod{installed}, nil)
+	got := (&Service{}).sourceUpdates(t.Context(), "lethal-company", []framework.Mod{installed}, nil)
 	if len(got) != 1 || got[0].Package != "Alice-Cool" || got[0].Version != "2.0.0" {
 		t.Fatalf("updates = %+v", got)
 	}

@@ -117,10 +117,10 @@ func TestRestartWaitsUntilInstallHasStaged(t *testing.T) {
 		t.Fatal(err)
 	}
 	done := make(chan error, 1)
-	go func() { done <- s.Install(context.Background()) }()
+	go func() { done <- s.Install(t.Context()) }()
 	<-started
 	restarted := make(chan error, 1)
-	go func() { restarted <- s.Restart(context.Background()) }()
+	go func() { restarted <- s.Restart(t.Context()) }()
 	select {
 	case err := <-restarted:
 		t.Fatalf("Restart returned before Install finished: %v", err)
@@ -149,7 +149,7 @@ func TestRestartDoesNotHoldTheMutex(t *testing.T) {
 		t.Fatal(err)
 	}
 	done := make(chan error, 1)
-	go func() { done <- s.Restart(context.Background()) }()
+	go func() { done <- s.Restart(t.Context()) }()
 	select {
 	case err := <-done:
 		if err != nil {
@@ -181,12 +181,12 @@ func TestCheckDoesNotHoldTheLockForTheNetwork(t *testing.T) {
 	s := signedService(t, f)
 	errc := make(chan error, 1)
 	go func() {
-		_, err := s.Check(context.Background())
+		_, err := s.Check(t.Context())
 		errc <- err
 	}()
 	<-started
 	installed := make(chan error, 1)
-	go func() { installed <- s.Install(context.Background()) }()
+	go func() { installed <- s.Install(t.Context()) }()
 	select {
 	case err := <-installed:
 		t.Fatalf("Install returned during Check: %v", err)
@@ -211,7 +211,7 @@ func TestInstallReleasesTheMutexDuringDownload(t *testing.T) {
 		t.Fatal(err)
 	}
 	done := make(chan error, 1)
-	go func() { done <- s.Install(context.Background()) }()
+	go func() { done <- s.Install(t.Context()) }()
 	<-started
 	locked := make(chan struct{})
 	go func() {
@@ -357,10 +357,10 @@ func TestASecondInstallWaitsForTheFirst(t *testing.T) {
 		t.Fatal(err)
 	}
 	first := make(chan error, 1)
-	go func() { first <- s.Install(context.Background()) }()
+	go func() { first <- s.Install(t.Context()) }()
 	<-started
 	second := make(chan error, 1)
-	go func() { second <- s.Install(context.Background()) }()
+	go func() { second <- s.Install(t.Context()) }()
 	select {
 	case err := <-second:
 		t.Fatalf("the second Install returned %v before the first download finished", err)

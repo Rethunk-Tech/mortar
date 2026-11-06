@@ -63,7 +63,7 @@ func TestThunderstoreUpdatesOfferNewerVersionsAndMarkSourceSwitches(t *testing.T
 	// The package's own version, not a manifest that lags it, says whether a same-source mod is current.
 	staleManifest := framework.Mod{Key: "e", SourceKind: profile.KindThunderstore, SourceName: "Alice-Cool", SourceVersion: "2.0.0"}
 	staleManifest.Name, staleManifest.Version = "Cool", "1.9.0"
-	got := s.sourceUpdates(context.Background(), "lethal-company", []framework.Mod{same, viaRepo, current, fromNexus, staleManifest}, nil)
+	got := s.sourceUpdates(t.Context(), "lethal-company", []framework.Mod{same, viaRepo, current, fromNexus, staleManifest}, nil)
 	if len(got) != 2 {
 		t.Fatalf("updates = %+v", got)
 	}
@@ -79,7 +79,7 @@ func TestThunderstoreUpdatesOfferNewerVersionsAndMarkSourceSwitches(t *testing.T
 	if nexusTurns != 0 {
 		t.Errorf("Nexus was searched %d times; its updates come from update keys", nexusTurns)
 	}
-	covered := s.sourceUpdates(context.Background(), "lethal-company", []framework.Mod{viaRepo}, []Update{{Key: "b", Version: "2.0.0"}})
+	covered := s.sourceUpdates(t.Context(), "lethal-company", []framework.Mod{viaRepo}, []Update{{Key: "b", Version: "2.0.0"}})
 	if len(covered) != 0 {
 		t.Errorf("an update already offered was offered again: %+v", covered)
 	}
@@ -105,7 +105,7 @@ func TestNexusModsWithoutUpdateKeysAreAskedInOneBatch(t *testing.T) {
 	}
 	keyed := mk("keyed", 12, "1.0.0")
 	keyed.UpdateKeys = []string{"Nexus:12"}
-	got := s.nexusPageUpdates(context.Background(), "lethal-company", []framework.Mod{
+	got := s.nexusPageUpdates(t.Context(), "lethal-company", []framework.Mod{
 		mk("old", 10, "1.0.0"), mk("gone", 11, "1.0.0"), mk("same", 10, "1.2.0"), mk("unordered", 13, "1.0.0"), keyed,
 	}, nil)
 	if asks != 1 || len(got) != 1 || got[0].Key != "old" || got[0].Version != "1.2.0" || got[0].NexusID != 10 || got[0].Source != "Nexus" {
@@ -139,7 +139,7 @@ func TestUpdatesNameTheDependenciesTheNewVersionChanges(t *testing.T) {
 	})
 	m := framework.Mod{Key: "a", SourceKind: profile.KindThunderstore, SourceName: "Alice-Cool", SourceVersion: "1.0.0"}
 	m.Name, m.Version = "Cool", "1.0.0"
-	got := (&Service{}).sourceUpdates(context.Background(), "lethal-company", []framework.Mod{m}, nil)
+	got := (&Service{}).sourceUpdates(t.Context(), "lethal-company", []framework.Mod{m}, nil)
 	if len(got) != 1 {
 		t.Fatalf("updates = %+v", got)
 	}
@@ -194,7 +194,7 @@ func TestModrinthUpdatesAreCheckedInOneBatch(t *testing.T) {
 	s := &Service{Throttle: func(context.Context, string) (func(), error) { turns++; return func() {}, nil }}
 	// No shipped game lists Modrinth yet, so the catalog entry is the test's own.
 	src := components.GameSource{ID: profile.KindModrinth, Loaders: []string{"fabric"}, GameVersions: []string{"1.21"}}
-	got, err := s.searchUpdates(context.Background(), "test-game", src, []framework.Mod{
+	got, err := s.searchUpdates(t.Context(), "test-game", src, []framework.Mod{
 		mk("sodium", "sha512:aa", "0.5.0"), mk("lithium", "sha512:bb", "1.0"), mk("nodigest", "", "1.0"),
 	}, nil, nil)
 	if err != nil || len(asked) != 1 || len(asked[0]) != 2 || turns != 1 {

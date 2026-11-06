@@ -1,7 +1,6 @@
 package nexussvc
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -204,7 +203,7 @@ func TestBrowserSignInKeepsTheGrantOutOfSettings(t *testing.T) {
 	s.oauth = sso.OAuth{ClientID: "cid", Store: oauthStore{}, AuthBase: idp.URL, Addr: "127.0.0.1:0", OpenBrowser: func(raw string) error {
 		u, _ := url.Parse(raw)
 		go func() {
-			req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, u.Query().Get("redirect_uri")+"?code=C&state="+u.Query().Get("state"), nil)
+			req, _ := http.NewRequestWithContext(t.Context(), http.MethodGet, u.Query().Get("redirect_uri")+"?code=C&state="+u.Query().Get("state"), nil)
 			if resp, err := http.DefaultClient.Do(req); err == nil {
 				_ = resp.Body.Close()
 			}

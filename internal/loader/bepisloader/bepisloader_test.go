@@ -2,7 +2,6 @@ package bepisloader
 
 import (
 	"archive/zip"
-	"context"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -71,7 +70,7 @@ func installed(t *testing.T, names ...string) (Loader, string) {
 	t.Helper()
 	dir := filepath.Join(t.TempDir(), "profile")
 	l := New()
-	if _, err := l.Install(context.Background(), loader.Target{ProfileDir: dir}, loader.Package{ID: ID, Version: "1.7.0", Archive: writeZip(t, names...)}, nil); err != nil {
+	if _, err := l.Install(t.Context(), loader.Target{ProfileDir: dir}, loader.Package{ID: ID, Version: "1.7.0", Archive: writeZip(t, names...)}, nil); err != nil {
 		t.Fatal(err)
 	}
 	return l, dir
@@ -110,7 +109,7 @@ func TestInstallLaysOutThePackAndAnUpdateReplacesIt(t *testing.T) {
 		t.Fatal(err)
 	}
 	update := append(slices.Clone(realPack), "BepInExPack/BepInEx/config/BepInEx.cfg")
-	if _, err := l.Install(context.Background(), loader.Target{ProfileDir: dir}, loader.Package{ID: ID, Version: "1.8.0", Archive: writeZip(t, update...)}, nil); err != nil {
+	if _, err := l.Install(t.Context(), loader.Target{ProfileDir: dir}, loader.Package{ID: ID, Version: "1.8.0", Archive: writeZip(t, update...)}, nil); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "BepInEx", "core", "Stale.dll")); err == nil {
@@ -136,7 +135,7 @@ func TestPackFilesOffTheListStayOutOfTheGameFolder(t *testing.T) {
 	l, dir := installed(t, pack...)
 	touch(t, filepath.Join(dir, "BepInEx", "plugins", shim, "BepInExResoniteShim", "BepInExResoniteShim.dll"))
 	plan := launchplan.New(launchplan.ModeProfile)
-	if err := l.Contribute(context.Background(), plan, view(dir, "native")); err != nil {
+	if err := l.Contribute(t.Context(), plan, view(dir, "native")); err != nil {
 		t.Fatal(err)
 	}
 	var placed []string
@@ -161,7 +160,7 @@ func TestPackFilesOffTheListStayOutOfTheGameFolder(t *testing.T) {
 func TestInstallRefusesAClimbingName(t *testing.T) {
 	dir := filepath.Join(t.TempDir(), "profile")
 	archive := writeZip(t, "manifest.json", "BepInExPack/../../hostfxr.dll")
-	if _, err := New().Install(context.Background(), loader.Target{ProfileDir: dir}, loader.Package{ID: ID, Version: "1", Archive: archive}, nil); err == nil {
+	if _, err := New().Install(t.Context(), loader.Target{ProfileDir: dir}, loader.Package{ID: ID, Version: "1", Archive: archive}, nil); err == nil {
 		t.Fatal("a name climbing out of the pack installed")
 	}
 	if _, err := os.Stat(filepath.Join(filepath.Dir(dir), "hostfxr.dll")); err == nil {
@@ -194,7 +193,7 @@ func TestContributeArguments(t *testing.T) {
 				want = append(want, "--doorstop-enabled", "true", "--doorstop-target-assembly", preloader)
 			}
 			plan := launchplan.New(launchplan.ModeProfile)
-			if err := l.Contribute(context.Background(), plan, view(dir, c.runtime)); err != nil {
+			if err := l.Contribute(t.Context(), plan, view(dir, c.runtime)); err != nil {
 				t.Fatal(err)
 			}
 			if !slices.Equal(plan.Args, want) {
@@ -213,7 +212,7 @@ func TestContributeArguments(t *testing.T) {
 func TestAProfileWithoutTheShim(t *testing.T) {
 	l, dir := installed(t, realPack...)
 	plan := launchplan.New(launchplan.ModeProfile)
-	if err := l.Contribute(context.Background(), plan, view(dir, "proton")); err != nil {
+	if err := l.Contribute(t.Context(), plan, view(dir, "proton")); err != nil {
 		t.Fatal(err)
 	}
 	if want := []string{"--hookfxr-disable", "--doorstop-enabled", "false", "--bepinex-target", filepath.Join(dir, "BepInEx")}; !slices.Equal(plan.Args, want) {
@@ -227,14 +226,14 @@ func TestAProfileWithoutTheShim(t *testing.T) {
 	}
 
 	touch(t, filepath.Join(dir, "BepInEx", "plugins", "Ns-Mod", "Mod.dll"))
-	if err := l.Contribute(context.Background(), launchplan.New(launchplan.ModeProfile), view(dir, "proton")); err == nil || !strings.Contains(err.Error(), "BepInExResoniteShim") {
+	if err := l.Contribute(t.Context(), launchplan.New(launchplan.ModeProfile), view(dir, "proton")); err == nil || !strings.Contains(err.Error(), "BepInExResoniteShim") {
 		t.Errorf("mods without the shim: err = %v", err)
 	}
 }
 
 func TestVanilla(t *testing.T) {
 	plan := launchplan.New(launchplan.ModeVanilla)
-	if err := New().Vanilla(context.Background(), plan, loader.Target{}); err != nil {
+	if err := New().Vanilla(t.Context(), plan, loader.Target{}); err != nil {
 		t.Fatal(err)
 	}
 	if want := []string{"--hookfxr-disable", "--doorstop-enabled", "false"}; !slices.Equal(plan.Args, want) {

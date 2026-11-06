@@ -36,7 +36,7 @@ func TestCheckUpdates(t *testing.T) {
 		"me.b":   {Known: true},
 	}
 	env := Environment{GameVersion: "1.6.15", APIVersion: "4.3.2", Platform: "Linux"}
-	got := CheckUpdates(context.Background(), rm, env, []framework.Mod{bundled, inst("k1", "me.a", "1.0.0", true), inst("k3", "me.b", "1.0.0", true), off}, false)
+	got := CheckUpdates(t.Context(), rm, env, []framework.Mod{bundled, inst("k1", "me.a", "1.0.0", true), inst("k3", "me.b", "1.0.0", true), off}, false)
 	want := []Update{
 		{Key: "k1", ID: "smapi:me.a", Name: "me.a", Installed: "1.0.0", Version: "2.0.0", URL: "https://example.test/a", Source: "example.test"},
 		{Key: "k2", ID: "smapi:me.off", Name: "me.off", Installed: "1.0.0", Version: "1.1.0", URL: "https://example.test/off", Source: "example.test"},
@@ -58,7 +58,7 @@ func TestCheckUpdatesNamesTheGitHubRepo(t *testing.T) {
 		"me.a": {Known: true, Suggested: &smapiweb.Update{Version: "2.0.0", URL: "https://github.com/me/a/releases/tag/2.0.0"}},
 		"me.b": {Known: true, Suggested: &smapiweb.Update{Version: "2.0.0", URL: "https://www.nexusmods.com/stardewvalley/mods/9"}},
 	}}
-	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{gh, elsewhere}, false).Updates
+	got := CheckUpdates(t.Context(), rm, testEnv, []framework.Mod{gh, elsewhere}, false).Updates
 	if len(got) != 2 || got[0].GitHubRepo != "me/a" || got[0].NexusID != 5 || got[1].GitHubRepo != "" {
 		t.Fatalf("got %+v", got)
 	}
@@ -71,7 +71,7 @@ func TestCheckUpdatesIncludesUnofficialWithoutReplacingSuggested(t *testing.T) {
 			Unofficial: &smapiweb.Update{Version: "2.1.0-unofficial.1-x", URL: "https://smapi.io/u"},
 		},
 	}}
-	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{inst("k1", "me.a", "1.0.0", true)}, false).Updates
+	got := CheckUpdates(t.Context(), rm, testEnv, []framework.Mod{inst("k1", "me.a", "1.0.0", true)}, false).Updates
 	if len(got) != 2 || got[0].Unofficial || got[0].Version != "2.0.0" || !got[1].Unofficial || got[1].Version != "2.1.0-unofficial.1-x" {
 		t.Fatalf("got %+v", got)
 	}
@@ -82,7 +82,7 @@ func TestCheckUpdatesOffersASuggestedUnofficialBuildOnce(t *testing.T) {
 	rm := fakeMeta{compat: map[string]smapiweb.UpdateResult{
 		"me.a": {Known: true, Suggested: &build, Unofficial: &build},
 	}}
-	got := CheckUpdates(context.Background(), rm, testEnv, []framework.Mod{inst("k1", "me.a", "1.3.3", true)}, false).Updates
+	got := CheckUpdates(t.Context(), rm, testEnv, []framework.Mod{inst("k1", "me.a", "1.3.3", true)}, false).Updates
 	if len(got) != 1 || !got[0].Unofficial || got[0].Version != build.Version {
 		t.Fatalf("got %+v", got)
 	}
@@ -140,11 +140,11 @@ func TestUpdateSource(t *testing.T) {
 }
 
 func TestCheckUpdatesUnknownNeverBlocks(t *testing.T) {
-	got := CheckUpdates(context.Background(), fakeMeta{updatesOff: true}, testEnv, []framework.Mod{inst("k1", "me.a", "1.0.0", true)}, false)
+	got := CheckUpdates(t.Context(), fakeMeta{updatesOff: true}, testEnv, []framework.Mod{inst("k1", "me.a", "1.0.0", true)}, false)
 	if !got.Unknown || len(got.Updates) != 0 {
 		t.Fatalf("got %+v", got)
 	}
-	none := CheckUpdates(context.Background(), fakeMeta{}, testEnv, nil, false)
+	none := CheckUpdates(t.Context(), fakeMeta{}, testEnv, nil, false)
 	if none.Unknown || none.Updates == nil {
 		t.Fatalf("empty = %+v", none)
 	}
@@ -160,7 +160,7 @@ func TestCheckUpdatesEnabledOnlySkipsDisabled(t *testing.T) {
 		inst("k1", "me.on", "1.0.0", true),
 		inst("k2", "me.off", "1.0.0", false),
 	}
-	got := CheckUpdates(context.Background(), rm, testEnv, mods, true)
+	got := CheckUpdates(t.Context(), rm, testEnv, mods, true)
 	if len(rm.got.Mods) != 1 || rm.got.Mods[0].ID != "me.on" {
 		t.Fatalf("asked %+v", rm.got)
 	}

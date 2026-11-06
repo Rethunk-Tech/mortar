@@ -15,7 +15,7 @@ func TestDependencyNamesUseTheNexusPage(t *testing.T) {
 		refs:  map[string][]smapiweb.Ref{"Pathoschild.ContentPatcher": {{Site: "GitHub", ID: 1}, {Site: "Nexus", ID: 1915}}},
 		pages: map[int]smapiweb.Page{1915: {Name: "Content Patcher"}},
 	}
-	got := DependencyNames(context.Background(), m, []string{"smapi:Pathoschild.ContentPatcher", "No.Such"})
+	got := DependencyNames(t.Context(), m, []string{"smapi:Pathoschild.ContentPatcher", "No.Such"})
 	if len(got) != 1 || got["smapi:Pathoschild.ContentPatcher"] != "Content Patcher" {
 		t.Fatalf("names = %v", got)
 	}
@@ -46,7 +46,7 @@ func TestDependencyNamesLookUpInParallelWithinTheBound(t *testing.T) {
 		m.pages[i] = smapiweb.Page{Name: fmt.Sprintf("Name %d", i)}
 	}
 	start := time.Now()
-	got := DependencyNames(context.Background(), m, ids)
+	got := DependencyNames(t.Context(), m, ids)
 	if len(got) != 24 || got[ids[3]] != "Name 4" {
 		t.Fatalf("names = %v", got)
 	}
