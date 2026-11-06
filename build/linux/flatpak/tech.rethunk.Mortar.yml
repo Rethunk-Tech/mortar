@@ -60,6 +60,8 @@ modules:
   - name: mortar
     buildsystem: simple
     build-commands:
+      # Flatpak mounts the extension here but cannot create the folder in the read-only /app.
+      - install -d /app/extensions/dotnet10
       - install -Dm755 mortar-packaged /app/bin/mortar
       - install -Dm644 tech.rethunk.Mortar.desktop /app/share/applications/tech.rethunk.Mortar.desktop
       - install -Dm644 mortar.xml /app/share/mime/packages/tech.rethunk.Mortar.xml

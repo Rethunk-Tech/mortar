@@ -18,6 +18,7 @@ modules:
         # package.json pins bun in packageManager, and yarn 1's Corepack guard won't run under that without this.
         SKIP_YARN_COREPACK_CHECK: "1"
     build-commands:
+      - install -d /app/extensions/dotnet10
       # We build the Wails CLI from the fork go.mod pins; it generates the frontend's TypeScript bindings.
       - go mod download github.com/wailsapp/wails/v3
       - go build -C "$(go list -m -f '{{.Dir}}' github.com/wailsapp/wails/v3)" -o /run/build/mortar/tools/wails3 ./cmd/wails3
