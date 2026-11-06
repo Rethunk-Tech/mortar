@@ -47,6 +47,7 @@ const SKELETON = '[role="status"][aria-label^="Reading"], [role="status"][aria-l
 async function switchAway(p: Page): Promise<string | null> {
   await p.getByRole('button', { name: /^Switch profile/ }).click()
   const rows = p.getByRole('menuitemradio')
+  await rows.first().waitFor()
   const names = await rows.evaluateAll((els) =>
     els.map((el) => ({
       name: el.textContent ?? '',
@@ -57,6 +58,7 @@ async function switchAway(p: Page): Promise<string | null> {
   const other = names.findIndex((n) => !n.on)
   if (!here || other < 0) {
     await p.keyboard.press('Escape')
+    await rows.first().waitFor({ state: 'detached' })
     return null
   }
   await rows.nth(other).click()
@@ -73,17 +75,29 @@ async function switchTo(p: Page, name: string) {
  * and comes back while a watcher records any loading placeholder.
  */
 export function swrCases(
+  ready: (p: Page) => Promise<void>,
   tabs: (p: Page) => ReturnType<Page['locator']>,
   tab: (p: Page, name: string) => Promise<void>,
 ): Case[] {
-  const stardew = (p: Page) => openGame(p, tabs(p), 'Stardew Valley')
+  // Each case starts from the workspace with nothing open, whatever the case before it left.
+  const open = async (p: Page, game: string) => {
+    await ready(p)
+    await openGame(p, tabs(p), game)
+  }
+  const stardew = (p: Page) => open(p, 'Stardew Valley')
+  // The list view has a switch on every row; the grid has none.
+  const toggleNinth = async (p: Page) => {
+    await tab(p, 'Mods')
+    await p.getByRole('switch').nth(8).click()
+  }
   return [
     {
       name: 'swr-problems-switch-profile-and-back',
       // The profile switch re-renders both profiles' sidebars and lists.
       budget: { updates: 4000, idleUpdates: 20, idleCommits: 5 },
       setup: async (p) => {
-        await stardew(p)
+        // The copied data's Lethal Company has two profiles to switch between; its Stardew Valley has one.
+        await open(p, 'Lethal Company')
         await tab(p, 'Problems')
         await p
           .getByRole('status', { name: 'Checking the mods for problems…' })
@@ -103,26 +117,26 @@ export function swrCases(
     },
     {
       name: 'swr-load-order-toggle-a-mod',
-      budget: { idleUpdates: 20, idleCommits: 2 },
+      // The toggle changes the profile's mod list, which each visible row's dependency chips and name still read whole.
+      budget: { updates: 1500, idleUpdates: 20, idleCommits: 2 },
       setup: async (p) => {
         await stardew(p)
+        await tab(p, 'Mods')
+        await p.getByRole('button', { name: 'List view' }).click()
         await tab(p, 'Load order')
         await p
           .getByRole('status', { name: 'Reading load order…' })
           .waitFor({ state: 'detached', timeout: READ_MS })
       },
       run: async (p) => {
-        await tab(p, 'Mods')
-        const box = p.locator('[data-mod-id]').nth(8).locator('input[type=checkbox]').first()
-        await box.click()
+        await toggleNinth(p)
         await watchFor(p, SKELETON)
         await tab(p, 'Load order')
         await p.waitForTimeout(SETTLE_MS)
         await expectNoneSeen(p, 'Load order after a mod was toggled')
       },
       teardown: async (p) => {
-        await tab(p, 'Mods')
-        await p.locator('[data-mod-id]').nth(8).locator('input[type=checkbox]').first().click()
+        await toggleNinth(p)
       },
     },
     {
@@ -137,7 +151,7 @@ export function swrCases(
           state: 'detached',
           timeout: READ_MS,
         })
-        await dialog.getByRole('button', { name: 'Close' }).click()
+        await dialog.getByRole('button', { name: 'Cancel' }).click()
         await dialog.waitFor({ state: 'detached' })
       },
       run: async (p) => {
@@ -156,6 +170,7 @@ export function swrCases(
     {
       name: 'swr-data-usage-leave-and-return',
       setup: async (p) => {
+        await ready(p)
         await openSettings(p)
         const nav = p.getByRole('navigation', { name: 'Settings sections' })
         await nav.getByRole('button', { name: 'Storage', exact: true }).click()

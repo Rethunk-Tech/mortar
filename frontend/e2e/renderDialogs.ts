@@ -397,7 +397,7 @@ export function dialogCases(h: Helpers): Case[] {
     ...flatpakSdkCases(kit),
     ...stateCases(kit, h.tabs, h.tab),
     ...flowCases(kit, h.tabs, h.tab),
-    ...swrCases(h.tabs, h.tab),
+    ...swrCases(kit.ready, h.tabs, h.tab),
     ...menuCases(kit, h.tabs),
     // Showing the list and picking a mod is setup: only opening the dialog is measured.
     dialog(
