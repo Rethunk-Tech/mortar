@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -155,8 +156,12 @@ func TestLockedBuildPassesOnAFolderErrorThatIsNotAMissingOne(t *testing.T) {
 	if err := os.WriteFile(file, nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	// A folder below a regular file cannot be read, and is not simply missing.
+	// A folder below a regular file cannot be read, and is not simply missing. Windows reports that one as a missing
+	// path, so there the folder is one whose name it refuses.
 	dir := filepath.Join(file, "proj")
+	if runtime.GOOS == "windows" {
+		dir = filepath.Join(t.TempDir(), "pro<j>")
+	}
 	if err := svc.Settings.AddDevProject("lethal-company", settings.DevProject{Dir: dir, Name: "P"}); err != nil {
 		t.Fatal(err)
 	}
