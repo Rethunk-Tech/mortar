@@ -9,13 +9,23 @@ import { reportUnexpected } from '../toasts/report.ts'
 export const useDevKinds = create<{ byDir: Record<string, string> }>(() => ({ byDir: {} }))
 
 /** The folder of the open profile's first code project, '' when it has none: Game code reads its assemblies. */
-export function useCodeProject(game: string): string {
+function useCodeProject(game: string): string {
   const openId = useProfiles((s) => s.openId)
   const kinds = useDevKinds((s) => s.byDir)
   return useSettings(
     (s) =>
       s.games?.[game]?.devProjects?.find((p) => p.profile === openId && !kinds[p.dir])?.dir ?? '',
   )
+}
+
+/**
+ * What Game code reads: the open profile's first code project (its folder is '' when it has none, and the game's own
+ * install and the profile's packages stand in), and whether the game has an install to read at all.
+ */
+export function useGameCode(game: string): { dir: string; available: boolean } {
+  const dir = useCodeProject(game)
+  const installed = useProfiles((s) => (s.game?.id === game ? Boolean(s.game.installDir) : false))
+  return { dir, available: dir !== '' || installed }
 }
 
 /** Whether the project in dir is made only of files. */

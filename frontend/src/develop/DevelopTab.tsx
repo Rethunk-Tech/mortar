@@ -47,7 +47,7 @@ import { CloneDialog } from './CloneDialog.tsx'
 import { ElsewhereHost } from './ElsewhereDialog.tsx'
 import { useElsewhere } from './elsewhere.ts'
 import { GameCodeDialog } from './GameCodeDialog.tsx'
-import { useCodeProject } from './kinds.ts'
+import { useGameCode } from './kinds.ts'
 import { NewModDialog } from './NewModDialog.tsx'
 import { ProjectCard } from './ProjectCard.tsx'
 import { TrustDialog } from './TrustDialog.tsx'
@@ -252,7 +252,7 @@ export function DevelopTab({ game }: { game: string }) {
   const [query, setQuery] = useState('')
   const [view, setView] = useStoredState<ViewMode>(`mortar.developView.${game}`, 'list', isViewMode)
   const here = useMemo(() => projects.filter((p) => p.profile === openId), [projects, openId])
-  const codeDir = useCodeProject(game)
+  const code = useGameCode(game)
   const needle = query.trim().toLowerCase()
   const shown = useMemo(
     () => here.filter((p) => p.name.toLowerCase().includes(needle)),
@@ -279,7 +279,7 @@ export function DevelopTab({ game }: { game: string }) {
       }}
     >
       <PageActions>
-        {codeDir ? (
+        {code.available ? (
           <Button
             variant="outlined"
             startIcon={<Code size={14} />}
@@ -377,8 +377,8 @@ export function DevelopTab({ game }: { game: string }) {
       <TrustDialog />
       <AdoptHost />
       <ElsewhereHost />
-      {reading && codeDir ? (
-        <GameCodeDialog game={game} dir={codeDir} onClose={() => setReading(false)} />
+      {reading && code.available ? (
+        <GameCodeDialog game={game} dir={code.dir} onClose={() => setReading(false)} />
       ) : null}
     </Box>
   )

@@ -8,7 +8,7 @@ import {
   OpenConsolePath,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { GameCodeDialog } from '../develop/GameCodeDialog.tsx'
-import { useCodeProject } from '../develop/kinds.ts'
+import { useGameCode } from '../develop/kinds.ts'
 import { openMod } from '../mods/openMod.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
@@ -60,12 +60,12 @@ export function LinkedLog({
     '',
   )
   // Kept between renders, so the memoised rows in view skip a render when lines arrive.
-  const codeDir = useCodeProject(game)
+  const code = useGameCode(game)
   const [trace, setTrace] = useState<{ frames: StackFrame[]; at: number } | null>(null)
   const onTrace = useCallback((frames: StackFrame[], at: number) => setTrace({ frames, at }), [])
   const roots = useMemo(
-    () => ({ modsDir, gameDir, code: codeDir !== '' }),
-    [modsDir, gameDir, codeDir],
+    () => ({ modsDir, gameDir, code: code.available }),
+    [modsDir, gameDir, code.available],
   )
   const onMod = useCallback((id: string) => {
     openMod({ id }).catch(reportUnexpected)
@@ -113,8 +113,8 @@ export function LinkedLog({
           onTrace={onTrace}
         />
       )}
-      {trace && codeDir ? (
-        <GameCodeDialog game={game} dir={codeDir} trace={trace} onClose={() => setTrace(null)} />
+      {trace && code.available ? (
+        <GameCodeDialog game={game} dir={code.dir} trace={trace} onClose={() => setTrace(null)} />
       ) : null}
     </Box>
   )
