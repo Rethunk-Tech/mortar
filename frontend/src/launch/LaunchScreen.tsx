@@ -343,7 +343,8 @@ function Log() {
         boxSizing: 'border-box',
         overflow: 'hidden',
         p: `${LOG_PAD}px`,
-        bgcolor: 'var(--mortar-overlay-55)',
+        // Its space is kept so the buttons never move, but an empty log draws nothing over the art.
+        bgcolor: shown.length > 0 ? 'var(--mortar-overlay-55)' : 'transparent',
         fontFamily: MONO,
         fontSize: 'base.fontSize',
         lineHeight: `${LINE_HEIGHT}px`,
