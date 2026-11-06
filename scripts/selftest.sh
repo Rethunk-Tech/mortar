@@ -165,8 +165,8 @@ owned() {
 # sleep that holds it up; display.hold records that sleep, whose exit ends mutter and its bus. The bus gets a keyring of
 # its own in the sandbox's home before anything asks for one: otherwise D-Bus starts one on the real home's login
 # keyring, locked without its password, and every secret read waits on an unlock prompt nobody can see.
-# The same hold script runs a PipeWire, its Pulse server and WirePlumber on the runtime dir, with one null sink and no
-# real device (WirePlumber's ALSA, Bluetooth and camera monitors are off), so Unity runs its audio callbacks and a game
+# The same hold script runs a PipeWire, its Pulse server and WirePlumber on the runtime dir, with one null sink, one silent null
+# microphone source (the default source) and no real device (WirePlumber's ALSA, Bluetooth and camera monitors are off), so Unity runs its audio callbacks and a game
 # never reaches the desktop's audio. PULSE_SERVER (hidden) points games at it; the hold script ends them with mutter.
 display_up() {
   local run=$ROOT/run
@@ -203,9 +203,11 @@ if command -v pipewire >/dev/null && command -v wireplumber >/dev/null && comman
   pipewire >"$2/audio.log" 2>&1 &
   for _ in $(seq 1 50); do [ -S "$XDG_RUNTIME_DIR/pipewire-0" ] && break; sleep 0.1; done
   pw-cli create-node adapter '{ factory.name=support.null-audio-sink node.name=mortar-null media.class=Audio/Sink object.linger=true audio.position=[FL FR] }' >>"$2/audio.log" 2>&1
+  pw-cli create-node adapter '{ factory.name=support.null-audio-sink node.name=mortar-mic media.class=Audio/Source/Virtual object.linger=true audio.position=[FL FR] }' >>"$2/audio.log" 2>&1
   wireplumber >>"$2/audio.log" 2>&1 &
   pipewire-pulse >>"$2/audio.log" 2>&1 &
   for _ in $(seq 1 50); do [ -S "$XDG_RUNTIME_DIR/pulse/native" ] && break; sleep 0.1; done
+  command -v pactl >/dev/null && pactl set-default-source mortar-mic >>"$2/audio.log" 2>&1
 fi
 # An empty login keyring with no password: unlocked, so a read of a secret the sandbox lacks is simply not found.
 mkdir -p "$1/.local/share/keyrings"
