@@ -998,6 +998,18 @@ share_import() {
   mx_wails sharesvc.Service.Import '"lethal-company"' "$(mx_q "$session")" '""' null
 }
 
+# thunderstore_packages_compare PREVIEW prints "ID SOURCE IMPORTED same|differs: ..." for an import preview's profile against
+# the Thunderstore packages of the base profile ($ROOT/pack-mods.json).
+thunderstore_packages_compare() {
+  python3 - "$1" "$ROOT/pack-mods.json" <<'PY'
+import json, sys
+res = json.loads(sys.argv[1])
+src = sorted(m["id"] for m in json.load(open(sys.argv[2])) if m["source"] == "thunderstore")
+got = sorted(m["id"] for e in res["profile"]["entries"] for m in e["mods"] if e["source"]["kind"] == "thunderstore")
+print(res["profile"]["id"], len(src), len(got), "same" if src == got else f"differs: missing {sorted(set(src)-set(got))[:5]} extra {sorted(set(got)-set(src))[:5]}")
+PY
+}
+
 # regress_bepinex_sharing PROFILE NAME shares the base profile: a link and a .mortar file carry its Thunderstore
 # packages, a LAN send its local probe packages and edited config too.
 regress_bepinex_sharing() {
@@ -1006,29 +1018,14 @@ regress_bepinex_sharing() {
   local link res
   link=$(cli share lethal-company "$pack")
   res=$(share_import PreviewLink "$link")
-  out=$(
-    python3 - "$res" "$ROOT/pack-mods.json" <<'PY'
-import json, sys
-res = json.loads(sys.argv[1])
-src = sorted(m["id"] for m in json.load(open(sys.argv[2])) if m["source"] == "thunderstore")
-got = sorted(m["id"] for e in res["profile"]["entries"] for m in e["mods"] if e["source"]["kind"] == "thunderstore")
-print(res["profile"]["id"], len(src), len(got), "same" if src == got else f"differs: missing {sorted(set(src)-set(got))[:5]} extra {sorted(set(got)-set(src))[:5]}")
-PY
-  )
+  out=$(thunderstore_packages_compare "$res")
   mx_check share.link "link of ${#link} characters imported as profile ${out%% *}: ${out#* } (source, imported, verdict)" test "${out##* }" = same
 
   # A .mortar file of the same profile.
   cli export lethal-company "$pack" "$ROOT/pack.mortar" >/dev/null
   res=$(share_import PreviewFile "$ROOT/pack.mortar")
-  out=$(
-    python3 - "$res" "$ROOT/pack-mods.json" <<'PY'
-import json, sys
-res = json.loads(sys.argv[1])
-src = sorted(m["id"] for m in json.load(open(sys.argv[2])) if m["source"] == "thunderstore")
-got = sorted(m["id"] for e in res["profile"]["entries"] for m in e["mods"] if e["source"]["kind"] == "thunderstore")
-print(len(src), len(got), "same" if src == got else "differs")
-PY
-  )
+  out=$(thunderstore_packages_compare "$res")
+  out=${out#* }
   mx_check share.mortar "pack.mortar ($(stat -c %s "$ROOT/pack.mortar") bytes) imported: $out" test "${out##* }" = same
 
   # An r2modman code is published on thunderstore.io, so it is made only when asked for.
