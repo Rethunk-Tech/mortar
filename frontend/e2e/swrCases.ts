@@ -2,9 +2,11 @@ import type { Page } from '@playwright/test'
 import { openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import { openGame } from './renderProfile.ts'
+import { failCalls } from './stateCases.ts'
 
 const READ_MS = 60_000
 const SETTLE_MS = 1500
+const DOWNLOADS_ARCHIVES = 3_675_410_420
 
 /**
  * Records every element matching `selector` that appears from now on, so a placeholder that shows for a moment is
@@ -191,6 +193,54 @@ export function swrCases(
           .waitFor()
         await p.waitForTimeout(SETTLE_MS)
         await expectNoneSeen(p, 'Storage after returning to it')
+      },
+    },
+  ]
+}
+
+/** A refresh that fails over a list already shown keeps the list and says so above it. */
+export function refreshFailedCases(
+  ready: (p: Page) => Promise<void>,
+  tabs: (p: Page) => ReturnType<Page['locator']>,
+  tab: (p: Page, name: string) => Promise<void>,
+): Case[] {
+  const stardew = async (p: Page) => {
+    await ready(p)
+    await openGame(p, tabs(p), 'Stardew Valley')
+  }
+  const offline = failCalls({ [DOWNLOADS_ARCHIVES]: { kind: 'network' } })
+  // Opens the downloads dialog and waits until its list has been read.
+  const openDownloads = async (p: Page) => {
+    await stardew(p)
+    await tab(p, 'Mods')
+    await p.getByRole('button', { name: 'More ways to add mods' }).click()
+    await p.getByRole('menuitem', { name: 'The downloads folder…' }).click()
+    await p
+      .getByRole('dialog', { name: 'From the downloads folder' })
+      .getByRole('status', { name: /^Looking in the downloads folder/ })
+      .waitFor({ state: 'detached', timeout: READ_MS })
+  }
+  return [
+    {
+      name: 'swr-downloads-refresh-failed',
+      setup: async (p) => {
+        await openDownloads(p)
+        await p
+          .getByRole('dialog', { name: 'From the downloads folder' })
+          .getByRole('button', { name: 'Cancel' })
+          .click()
+        await p.route('**/wails/runtime', offline)
+      },
+      run: async (p) => {
+        await openDownloads(p)
+        await p
+          .getByRole('dialog', { name: 'From the downloads folder' })
+          .getByText(/^Could not refresh/)
+          .waitFor()
+      },
+      teardown: async (p) => {
+        await p.unroute('**/wails/runtime', offline)
+        await p.keyboard.press('Escape')
       },
     },
   ]

@@ -18,7 +18,7 @@ const PEEK_IN_GAME = 512_110_599
 type Stub = (route: Route) => Promise<void>
 
 /** Answers the named binding calls with the error Go sends for a refused call: its kind in the cause, and its detail. */
-function failCalls(failures: Record<number, { kind: string; detail?: unknown }>): Stub {
+export function failCalls(failures: Record<number, { kind: string; detail?: unknown }>): Stub {
   return async (route) => {
     const body = route.request().postData() ?? ''
     for (const [id, cause] of Object.entries(failures)) {
