@@ -28,7 +28,7 @@ func rel0(root, path string) string {
 func TestOnlyTheGuardedCallersStartTheSystemHandler(t *testing.T) {
 	root := filepath.Join("..", "..")
 	allowed := map[string]bool{
-		"main.go":                          true, // the opener service's Open
+		"run_boot.go":                      true, // the opener service's Open
 		"internal/nexussvc/sso.go":         true, // opener.Web before Browser.OpenURL
 		"wailshost.go":                     true, // the host adapter; its only caller, nexussvc, runs opener.Web first
 		"internal/datadir/open.go":         true, // checkOpenable before xdg-open or explorer
