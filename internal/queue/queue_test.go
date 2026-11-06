@@ -61,6 +61,11 @@ func (f *fixture) now() time.Time { return time.Unix(f.clock.Load(), 0).UTC() }
 func newFixture(t *testing.T) *fixture {
 	t.Helper()
 	f := &fixture{t: t, dir: t.TempDir()}
+	t.Cleanup(func() {
+		if f.s != nil {
+			f.s.FlushHistory()
+		}
+	})
 	f.clock.Store(1_000_000)
 	f.premium.Store(true)
 	var srv *httptest.Server

@@ -12,8 +12,9 @@ var installPoll = 100 * time.Millisecond
 // can be stuck where none reaches (a keyring prompt), so after limit Mortar exits without it, naming the items
 // still under way. An install is never cut off: it keeps writing into the store, so StopWait waits for every
 // install to finish however long that takes. A download left partial keeps its resume sidecar, and a restart queues
-// every item that was downloading or installing again (the loader in New).
+// every item that was downloading or installing again (the loader in New). It also writes the download history.
 func (s *Service) StopWait(wait func(), limit time.Duration) {
+	defer s.FlushHistory()
 	done := make(chan struct{})
 	go func() {
 		wait()

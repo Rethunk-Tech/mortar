@@ -434,12 +434,16 @@ type Service struct {
 	kick   chan struct{}
 	// pub orders publishes, so queue.json and the window always end on the latest state.
 	pub sync.Mutex
-	// hist guards history, the download history kept in memory and written through on every change.
+	// hist guards history, the download history kept in memory and written after a short delay (FlushHistory) or at once on clear.
 	hist       sync.Mutex
 	history    []HistoryEntry
 	histLoaded bool
-	mu         sync.Mutex
-	items      []*Item
+	// histDirty is a recorded entry not yet on disk; histTimer flushes it after histDelay (zero: historyFlushDelay).
+	histDirty bool
+	histTimer *time.Timer
+	histDelay time.Duration
+	mu        sync.Mutex
+	items     []*Item
 	// paused stops new downloads from starting; one under way finishes.
 	paused bool
 	// playHold holds every fetch while a game that asks for it runs (HoldForPlay).

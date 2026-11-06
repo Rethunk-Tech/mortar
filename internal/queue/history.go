@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -14,6 +15,9 @@ import (
 const (
 	historyFile  = "download-history.json"
 	historyLimit = 1000
+	// historyFlushDelay is how long a finished download waits for the next before the history is written, so a bulk
+	// install rewrites the file a few times instead of once per mod.
+	historyFlushDelay = 2 * time.Second
 )
 
 // HistoryEntry is one finished download, kept in a bounded file under the data dir.
@@ -59,14 +63,34 @@ func (s *Service) loadHistory() []HistoryEntry {
 	return s.history
 }
 
-// writeHistory replaces the history and persists it; callers hold s.hist.
+// writeHistory replaces the history and persists it at once; callers hold s.hist.
 func (s *Service) writeHistory(entries []HistoryEntry) {
 	s.histLoaded, s.history = true, entries
+	s.persistHistory()
+}
+
+// persistHistory writes the in-memory history to its file; callers hold s.hist.
+func (s *Service) persistHistory() {
+	s.histDirty = false
+	entries := s.history
 	if entries == nil {
 		entries = []HistoryEntry{}
 	}
 	// Compact: at the cap each write is rewritten whole, and an indented file is 4x the bytes. Readers accept both.
 	_ = datadir.WriteJSONCompact(s.historyPath(), entries)
+}
+
+// FlushHistory writes any history change still waiting for its delay; Mortar calls it through StopWait at quit.
+func (s *Service) FlushHistory() {
+	s.hist.Lock()
+	defer s.hist.Unlock()
+	if s.histTimer != nil {
+		s.histTimer.Stop()
+		s.histTimer = nil
+	}
+	if s.histDirty {
+		s.persistHistory()
+	}
 }
 
 func (s *Service) recordHistory(it *Item, outcome string) {
@@ -98,7 +122,15 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 	if len(entries) > historyLimit {
 		entries = entries[len(entries)-historyLimit:]
 	}
-	s.writeHistory(entries)
+	s.history = entries
+	s.histDirty = true
+	if s.histTimer == nil {
+		delay := historyFlushDelay
+		if s.histDelay > 0 {
+			delay = s.histDelay
+		}
+		s.histTimer = time.AfterFunc(delay, s.FlushHistory)
+	}
 }
 
 // History returns finished downloads, newest last, at most historyLimit.

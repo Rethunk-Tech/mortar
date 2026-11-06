@@ -71,6 +71,7 @@ func TestHistoryFileIsJSON(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	f.s.recordHistory(&Item{Name: "n", Version: "2", Profile: "p", SizeKB: 4, started: time.Unix(10, 0)}, StateFailed)
+	f.s.FlushHistory()
 	b, err := os.ReadFile(filepath.Join(f.dir, historyFile))
 	if err != nil {
 		t.Fatal(err)
@@ -118,14 +119,16 @@ func TestRetryAllFailed(t *testing.T) {
 	}
 }
 
-func TestHistoryReadsFileOnceAndWritesThrough(t *testing.T) {
+func TestHistoryReadsFileOnce(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)
 	f.s.recordHistory(&Item{Name: "a", started: f.now()}, StateDone)
+	f.s.FlushHistory()
 	if err := os.Remove(f.s.historyPath()); err != nil {
 		t.Fatal(err)
 	}
 	f.s.recordHistory(&Item{Name: "b", started: f.now()}, StateDone)
+	f.s.FlushHistory()
 	var onDisk []HistoryEntry
 	if _, err := datadir.ReadJSON(f.s.historyPath(), &onDisk); err != nil {
 		t.Fatal(err)
@@ -148,6 +151,7 @@ func TestHistoryReadsAnIndentedFileAndWritesItCompact(t *testing.T) {
 		t.Fatal(err)
 	}
 	f.s.recordHistory(&Item{Name: "new", started: f.now()}, StateDone)
+	f.s.FlushHistory()
 	if got := f.s.History(); len(got) != 2 || got[0].Name != "old" {
 		t.Fatalf("history %+v", got)
 	}
@@ -164,5 +168,41 @@ func TestHistoryRetryKeepsThePackageFile(t *testing.T) {
 	e := f.s.History()[0]
 	if got := e.request().PackageFile; got != 77 {
 		t.Fatalf("retry PackageFile = %d, want 77", got)
+	}
+}
+
+func TestHistoryBurstIsWrittenOnceAfterTheDelayAndAtFlush(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	f.s.histDelay = time.Hour
+	const n = 50
+	for range n {
+		f.s.recordHistory(&Item{Name: "m", started: f.now()}, StateDone)
+	}
+	if _, err := os.Stat(f.s.historyPath()); err == nil {
+		t.Fatal("a burst of finishes wrote the file before the delay or a flush")
+	}
+	f.s.FlushHistory()
+	var onDisk []HistoryEntry
+	if _, err := datadir.ReadJSON(f.s.historyPath(), &onDisk); err != nil || len(onDisk) != n {
+		t.Fatalf("after flush the file holds %d entries, %v; want %d", len(onDisk), err, n)
+	}
+}
+
+func TestHistoryIsWrittenOnItsOwnAfterTheDelay(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	f.s.histDelay = 10 * time.Millisecond
+	f.s.recordHistory(&Item{Name: "m", started: f.now()}, StateDone)
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		var onDisk []HistoryEntry
+		if _, err := datadir.ReadJSON(f.s.historyPath(), &onDisk); err == nil && len(onDisk) == 1 {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("the history was never written")
+		}
+		time.Sleep(10 * time.Millisecond)
 	}
 }
