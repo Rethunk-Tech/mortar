@@ -5,6 +5,7 @@ import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
 import { openGame, thunderstoreVisit } from './renderProfile.ts'
 import { stubbedCases } from './renderStubbed.ts'
+import { uploadDialogCases } from './uploadDialogCase.ts'
 
 const CLOSE_TRIES = 4
 const CLOSE_WAIT_MS = 1000
@@ -374,6 +375,7 @@ export function dialogCases(h: Helpers): Case[] {
     ...shareCases(kit),
     ...toolAndWizardCases(kit),
     ...stubbedCases(kit),
+    ...uploadDialogCases(kit),
     // Showing the list and picking a mod is setup: only opening the dialog is measured.
     dialog(
       'mod-also-add',

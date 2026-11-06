@@ -6,7 +6,7 @@ import type { dialogKit } from './renderDialogs.ts'
 const CAN_GET_OLDER_VERSION = 3_208_769_223
 const OLDER_VERSION_DEPOTS = 1_490_403_490
 const DEPENDENCY_SYNC = 458_110_213
-const UPLOAD_SITES = 858_225_634
+export const UPLOAD_SITES = 858_225_634
 const LOAD_ORDER = 3_963_816_757
 const PACK = 1_330_956_574
 const UPLOAD_GITHUB = 3_405_360_245
@@ -14,9 +14,9 @@ const UPLOAD_THUNDERSTORE = 1_056_045_837
 const UPDATE_CHECK = 3_749_236_397
 const UPDATE_INFO = 3_769_649_439
 
-type Stub = (route: Route) => Promise<void>
+export type Stub = (route: Route) => Promise<void>
 /** Answers the named binding calls with the given results; every other call goes on to the server. */
-function stubCalls(answers: Record<number, unknown>): Stub {
+export function stubCalls(answers: Record<number, unknown>): Stub {
   return async (route) => {
     const body = route.request().postData() ?? ''
     for (const [id, result] of Object.entries(answers)) {
