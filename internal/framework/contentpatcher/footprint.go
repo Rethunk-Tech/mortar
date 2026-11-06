@@ -1476,7 +1476,8 @@ func switchOff(h packHit, peerSets ...[]packHit) (framework.ConflictFix, bool) {
 		// A field that switches off the whole pack, or a fifth of it without being named for this target, is
 		// the pack's master switch (Better Water's Color, a schedule pack's PlotSchedules): offering it
 		// would trade the conflict for most of the mod.
-		// ponytail: fixed one-fifth share; weigh by what the gated patches touch if it misjudges a pack.
+		// ponytail: fixed one-fifth share of patches; one offered fix in fourteen sits within 10% of it on the
+		// maintainer's profile, so weigh by what the gated patches touch only if a pack is misjudged.
 		if left == 0 || !named && gated*5 >= total {
 			continue
 		}
