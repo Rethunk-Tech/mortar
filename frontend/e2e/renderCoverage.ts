@@ -278,7 +278,6 @@ function otherGameCases({ tab, tabs }: Helpers): Case[] {
   })
 }
 
-/** Cases for the menus, the source row and the games a run does not open on its own. */
 /** The account cards below the fold, which the Accounts section's own picture cuts off. */
 const modioAccountCase: Case = {
   name: 'settings-accounts-modio',
@@ -310,6 +309,7 @@ const codeEditorCase: Case = {
   },
 }
 
+/** Cases for the menus, the source row and the games a run does not open on its own. */
 export function coverageCases(h: Helpers): Case[] {
   return [
     modioAccountCase,
