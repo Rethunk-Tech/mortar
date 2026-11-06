@@ -74,36 +74,9 @@ func (s *Service) ArchivePreview(path string) (archive.Preview, error) {
 // archive counts as installed when its content key is in the store, or a profile holds a local entry of the same
 // file name.
 func (s *Service) DownloadsArchives(game string) ([]DownloadArchive, error) {
-	var out []DownloadArchive
-	seen := map[string]bool{}
-	var nexus map[int]bool
-	if s.d.NexusMods != nil {
-		nexus = s.d.NexusMods()
-	}
-	for _, dir := range s.dirs() {
-		ents, found, err := safefs.ReadDirIfExists(dir)
-		if err != nil {
-			return nil, err
-		}
-		if !found {
-			continue
-		}
-		for _, e := range ents {
-			path := filepath.Join(dir, e.Name())
-			if e.IsDir() || !isArchive(e.Name()) || seen[path] {
-				continue
-			}
-			info, err := e.Info()
-			if err != nil || !info.Mode().IsRegular() {
-				continue
-			}
-			seen[path] = true
-			a := DownloadArchive{Path: path, Name: e.Name(), Size: info.Size(), Mtime: info.ModTime().UnixMilli()}
-			if inf, ok := dlwatch.ParseNexusFilename(a.Name); ok {
-				a.ModID, a.KnownNexus = inf.ModID, nexus[inf.ModID]
-			}
-			out = append(out, a)
-		}
+	out, err := s.scanDownloads()
+	if err != nil {
+		return nil, err
 	}
 	keys, err := s.storeKeys(game)
 	if err != nil {
@@ -143,6 +116,42 @@ func (s *Service) DownloadsArchives(game string) ([]DownloadArchive, error) {
 		s.saveHashes(kept)
 	}
 	return pending, nil
+}
+
+// scanDownloads lists every regular archive file in the download folders, unsorted and unfiltered.
+func (s *Service) scanDownloads() ([]DownloadArchive, error) {
+	var out []DownloadArchive
+	seen := map[string]bool{}
+	var nexus map[int]bool
+	if s.d.NexusMods != nil {
+		nexus = s.d.NexusMods()
+	}
+	for _, dir := range s.dirs() {
+		ents, found, err := safefs.ReadDirIfExists(dir)
+		if err != nil {
+			return nil, err
+		}
+		if !found {
+			continue
+		}
+		for _, e := range ents {
+			path := filepath.Join(dir, e.Name())
+			if e.IsDir() || !isArchive(e.Name()) || seen[path] {
+				continue
+			}
+			info, err := e.Info()
+			if err != nil || !info.Mode().IsRegular() {
+				continue
+			}
+			seen[path] = true
+			a := DownloadArchive{Path: path, Name: e.Name(), Size: info.Size(), Mtime: info.ModTime().UnixMilli()}
+			if inf, ok := dlwatch.ParseNexusFilename(a.Name); ok {
+				a.ModID, a.KnownNexus = inf.ModID, nexus[inf.ModID]
+			}
+			out = append(out, a)
+		}
+	}
+	return out, nil
 }
 
 type hashEntry struct {
