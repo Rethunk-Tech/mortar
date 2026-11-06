@@ -553,32 +553,7 @@ func (s *Service) schemaOf(game, profileID, modID string, f ConfigFile) (Schema,
 		return jsonSchema(f, string(raw), "", nil, nil)
 	}
 	if f.Format == FormatBepInEx {
-		path, err := s.cfgPath(game, profileID, f.Name)
-		if err != nil {
-			return Schema{}, err
-		}
-		info, err := os.Stat(path)
-		if errors.Is(err, fs.ErrNotExist) {
-			// A plugin the game has not run yet: its settings as its DLL binds them, at their defaults.
-			if b, ok := s.boundFor(game, profileID, strings.TrimSuffix(f.Name, filepath.Ext(f.Name))); ok {
-				return boundSync(cfgSchema(cfgedit.ParseBepInEx(b.render()), f), b), nil
-			}
-		}
-		if err != nil {
-			return Schema{}, err
-		}
-		if kept, err := s.writeKept(game, profileID, modID, f); err != nil {
-			return Schema{}, err
-		} else if kept {
-			if info, err = os.Stat(path); err != nil {
-				return Schema{}, err
-			}
-		}
-		doc, err := s.parseCached(path, info)
-		if err != nil {
-			return Schema{}, err
-		}
-		return s.withBound(game, profileID, withSync(cfgSchema(doc, f), path), guidOf(doc, f.Name)), nil
+		return s.bepinexSchema(game, profileID, modID, f)
 	}
 	cur, err := s.Profiles.ReadConfig(game, profileID, "", mod.ID(modID))
 	if err != nil {
@@ -596,6 +571,36 @@ func (s *Service) schemaOf(game, profileID, modID string, f ConfigFile) (Schema,
 		return Schema{}, err
 	}
 	return jsonSchema(f, cur, shipped, capture, cp)
+}
+
+// bepinexSchema reads a BepInEx config file, or the defaults its plugin binds when the game has not written it yet.
+func (s *Service) bepinexSchema(game, profileID, modID string, f ConfigFile) (Schema, error) {
+	path, err := s.cfgPath(game, profileID, f.Name)
+	if err != nil {
+		return Schema{}, err
+	}
+	info, err := os.Stat(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		// A plugin the game has not run yet: its settings as its DLL binds them, at their defaults.
+		if b, ok := s.boundFor(game, profileID, strings.TrimSuffix(f.Name, filepath.Ext(f.Name))); ok {
+			return boundSync(cfgSchema(cfgedit.ParseBepInEx(b.render()), f), b), nil
+		}
+	}
+	if err != nil {
+		return Schema{}, err
+	}
+	if kept, err := s.writeKept(game, profileID, modID, f); err != nil {
+		return Schema{}, err
+	} else if kept {
+		if info, err = os.Stat(path); err != nil {
+			return Schema{}, err
+		}
+	}
+	doc, err := s.parseCached(path, info)
+	if err != nil {
+		return Schema{}, err
+	}
+	return s.withBound(game, profileID, withSync(cfgSchema(doc, f), path), guidOf(doc, f.Name)), nil
 }
 
 func (s *Service) refuseRunning(game, profileID string) error {
