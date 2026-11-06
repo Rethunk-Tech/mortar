@@ -115,3 +115,17 @@ test('an update backup names its profile, or says it was deleted', () => {
   expect(causeLabel(firstBackup, [{ id: 'p1', name: 'Main' }])).toBe('Before updating Main')
   expect(causeLabel(firstBackup, [])).toBe('Before updating a deleted profile')
 })
+
+test('reopening a game and profile draws the rows read before while the list is read again', async () => {
+  listImpl = async () => listed
+  useSaveBackups.setState(useSaveBackups.getInitialState(), true)
+  await useSaveBackups.getState().load('stardew', 'p1')
+  const rows = Promise.withResolvers<typeof listed>()
+  listImpl = () => rows.promise
+  const again = useSaveBackups.getState().load('stardew', 'p1')
+  expect(useSaveBackups.getState().items).toEqual(listed)
+  expect(useSaveBackups.getState().status).toBe('ready')
+  rows.resolve([{ ...firstBackup, name: 'newer.zip' }])
+  await again
+  expect(useSaveBackups.getState().items.map((b) => b.name)).toEqual(['newer.zip'])
+})
