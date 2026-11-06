@@ -338,14 +338,21 @@ func jsonIndent(v any) []byte {
 	return b
 }
 
-func redactSettings(raw []byte, home string) []byte {
+// decodeObject reads raw as a JSON object, leniently: unreadable input gives an empty object, and a JSON null gives
+// fallback.
+func decodeObject(raw []byte, fallback map[string]any) map[string]any {
 	m := map[string]any{}
 	if len(raw) > 0 {
 		_ = json.Unmarshal(raw, &m)
 	}
 	if m == nil {
-		m = map[string]any{}
+		return fallback
 	}
+	return m
+}
+
+func redactSettings(raw []byte, home string) []byte {
+	m := decodeObject(raw, map[string]any{})
 	// A download site's entry under sources names the signed-in account; its other fields are preferences.
 	if sources, ok := m["sources"].(map[string]any); ok {
 		for _, site := range sources {
@@ -424,13 +431,7 @@ func homeHiddenJSON(v any, home string) []byte {
 }
 
 func redactQueue(raw []byte, home string) []byte {
-	m := map[string]any{}
-	if len(raw) > 0 {
-		_ = json.Unmarshal(raw, &m)
-	}
-	if m == nil {
-		m = map[string]any{"items": []any{}}
-	}
+	m := decodeObject(raw, map[string]any{"items": []any{}})
 	redactHomePaths(m, home)
 	items, _ := m["items"].([]any)
 	for _, it := range items {
