@@ -918,8 +918,8 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	run := &importRun{s: s, cur: cur, game: game, profileID: profileID, batchID: batchID, replace: replace, asIs: asIs, batchOpen: batchID != ""}
 	defer func() {
 		if err != nil {
-			s.restorePreview(cur)
 			err = run.undo(err)
+			s.restorePreview(cur)
 		}
 	}()
 	applied := s.applyArchive(ctx, cur)
