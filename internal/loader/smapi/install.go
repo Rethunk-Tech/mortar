@@ -84,13 +84,13 @@ func launcherHasSMAPI(dir string) bool {
 	return bytes.Contains(b, []byte(smapiMarker))
 }
 
-// buildOS is the OS of the game build in dir: a Windows build on a Linux host (one in a Bottles bottle) is
+// buildOS is the OS of the game build in dir on host: a Windows build on a Linux host (one in a Bottles bottle) is
 // recognised by its executable and is run and installed into the Windows way.
-func buildOS(dir string) string {
-	if runtime.GOOS == "linux" && safefs.IsFile(filepath.Join(dir, "Stardew Valley.exe")) {
+func buildOS(host, dir string) string {
+	if host == "linux" && safefs.IsFile(filepath.Join(dir, "Stardew Valley.exe")) {
 		return "windows"
 	}
-	return runtime.GOOS
+	return host
 }
 
 // macBundle is the folder inside the game's macOS bundle that holds the executable, which SMAPI's installer treats
@@ -126,7 +126,7 @@ func loaderState(dir, goos string) (installed, broken bool) {
 // Status reports SMAPI's state in the install. The version is the log's, else the bundled mods'; a version Mortar
 // recorded when it installed SMAPI takes precedence over both and is the caller's to apply.
 func (l Loader) Status(t loader.Target) (loader.Status, error) {
-	goos := buildOS(t.InstallDir)
+	goos := buildOS(runtime.GOOS, t.InstallDir)
 	installed, broken := loaderState(gameFolder(t.InstallDir, goos), goos)
 	st := loader.Status{Installed: installed, Broken: broken}
 	st.Shared, st.LinkedFrom = sharedSMAPI(gameFolder(t.InstallDir, goos))
@@ -273,7 +273,7 @@ func installer(version, goos string) (dir, exe string, err error) {
 // SMAPI's own mods before anything is cleaned up. It returns the installed version.
 func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, progress func(loader.Step)) (string, error) {
 	version := pkg.Version
-	goos := buildOS(t.InstallDir)
+	goos := buildOS(runtime.GOOS, t.InstallDir)
 	dir := gameFolder(t.InstallDir, goos)
 	instDir, exe, err := installer(version, goos)
 	if err != nil {

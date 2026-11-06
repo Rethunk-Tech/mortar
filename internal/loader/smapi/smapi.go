@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -85,7 +86,7 @@ func modsDir(p loader.ProfileView) string { return datadir.ModsDirOf(p.Dir) }
 
 // Contribute points SMAPI at the profile's mods folder.
 func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.ProfileView) error {
-	goos := buildOS(p.InstallDir)
+	goos := buildOS(runtime.GOOS, p.InstallDir)
 	p.InstallDir = gameFolder(p.InstallDir, goos)
 	return contribute(goos, plan, p)
 }
@@ -117,7 +118,7 @@ func (Loader) Prelaunch(p loader.ProfileView) error {
 	if p.InstallDir == "" {
 		return nil
 	}
-	dir := gameFolder(p.InstallDir, buildOS(p.InstallDir))
+	dir := gameFolder(p.InstallDir, buildOS(runtime.GOOS, p.InstallDir))
 	for _, name := range startupMarkers {
 		if err := safefs.RemoveAll(filepath.Join(dir, "smapi-internal", name)); err != nil {
 			return err
@@ -129,7 +130,7 @@ func (Loader) Prelaunch(p loader.ProfileView) error {
 // Vanilla starts the unmodded game. SMAPI's unix-launcher.sh always execs StardewModdingAPI, so on Linux the game
 // the installer kept as StardewValley-original is run directly; Windows has a plain executable.
 func (Loader) Vanilla(_ context.Context, plan *launchplan.Plan, t loader.Target) error {
-	goos := buildOS(t.InstallDir)
+	goos := buildOS(runtime.GOOS, t.InstallDir)
 	return vanilla(goos, plan, gameFolder(t.InstallDir, goos))
 }
 
