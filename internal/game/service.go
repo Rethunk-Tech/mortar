@@ -103,7 +103,7 @@ func loaderRef(gameID, installDir string, l components.GameLoader) LoaderRef {
 	ref := LoaderRef{ID: l.ID, Name: l.Name, DevTemplate: l.DevTemplate}
 	if d, ok := LoaderOf(gameID, l.ID); ok {
 		_, ref.Order = d.(loader.WithOrder)
-		if g, ok := d.(interface{ HasOrder(gameID string) bool }); ok {
+		if g, ok := d.(loader.OrderFor); ok {
 			ref.Order = g.HasOrder(gameID)
 		}
 		_, ref.Console = d.(loader.WithLogs)

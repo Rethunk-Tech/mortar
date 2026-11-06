@@ -30,6 +30,8 @@ const TargetID = "mods"
 
 var _ = loader.Register(Loader{})
 
+var _ loader.OrderFor = Loader{}
+
 // Extension is per-launch work a game's catalog asks of the folder loader by naming a path role: the game's files
 // outside its mods folder that the loader also fills or writes.
 type Extension interface {
@@ -89,7 +91,7 @@ func Findings(p loader.ProfileView) []loader.Finding {
 }
 
 // HasOrder reports whether the game has an extension that computes a load order.
-func HasOrder(gameID string) bool {
+func (Loader) HasOrder(gameID string) bool {
 	return slices.ContainsFunc(extensionsOf(gameID), func(e Extension) bool { _, ok := e.(Orderer); return ok })
 }
 

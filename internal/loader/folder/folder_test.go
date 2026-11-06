@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/folder"
+	"github.com/Rethunk-Tech/mortar/internal/loadorder"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
@@ -335,5 +336,47 @@ func TestAGameWithAModsArgGetsTheProfileModsFolderOnItsCommandLine(t *testing.T)
 	}
 	if got := proton.Args[1]; !strings.HasPrefix(got, "Z:") && goruntime.GOOS != "windows" {
 		t.Fatalf("under Proton the folder is a Z: path, got %q", got)
+	}
+}
+
+type orderExtension struct{}
+
+func (orderExtension) Role() string                                    { return "test-order" }
+func (orderExtension) Contribute(*launchplan.Plan, loader.ProfileView) {}
+func (orderExtension) Prelaunch(loader.ProfileView) error              { return nil }
+func (orderExtension) Order(loader.ProfileView) ([]loadorder.Row, error) {
+	return nil, nil
+}
+
+var _ = folder.Extend(orderExtension{})
+
+func TestOnlyAGameWithAnOrderingExtensionHasALoadOrder(t *testing.T) {
+	m, err := components.BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	plain := components.PathTemplate{Linux: "{install}/Mods", Windows: "{install}/Mods", Darwin: "{install}/Mods"}
+	game := func(id string, paths map[string]components.PathTemplate) components.GameInfo {
+		return components.GameInfo{
+			ID: id, Name: id, Enabled: true, Marker: "G.exe", Deploy: "profile",
+			Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods"}},
+			Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "1"}},
+			Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
+			Paths:   paths,
+		}
+	}
+	m.Games = append(slices.Clone(m.Games),
+		game("plain-folder", map[string]components.PathTemplate{"mods": plain}),
+		game("ordered-folder", map[string]components.PathTemplate{"mods": plain, "test-order": plain}))
+	if err := m.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	c := components.NewClient(nil)
+	c.SetManifest(m)
+	components.Use(c)
+	t.Cleanup(func() { components.Use(nil) })
+	var l loader.OrderFor = folder.Loader{}
+	if l.HasOrder("plain-folder") || !l.HasOrder("ordered-folder") {
+		t.Fatalf("plain %v, ordered %v", l.HasOrder("plain-folder"), l.HasOrder("ordered-folder"))
 	}
 }

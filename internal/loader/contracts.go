@@ -204,6 +204,12 @@ type WithOrder interface {
 	Order(p ProfileView) ([]loadorder.Row, error)
 }
 
+// OrderFor is a WithOrder loader that computes a load order for only some of its games; the others get no Load order
+// tab.
+type OrderFor interface {
+	HasOrder(gameID string) bool
+}
+
 // StartupTimings is a loader whose companion records how long each mod adds to the game's startup.
 type StartupTimings interface{ ReportsStartup() }
 
