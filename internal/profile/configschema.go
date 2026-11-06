@@ -71,10 +71,15 @@ func (s *Service) ListConfigFields(game, id, key string, uniqueID mod.ID) ([]Con
 
 // SetConfigValue changes one setting while retaining the config's other raw JSON values.
 func (s *Service) SetConfigValue(game, id, key string, uniqueID mod.ID, field, value string) error {
-	field = strings.TrimSpace(field)
-	if field == "" {
-		return errors.New("missing config field")
-	}
+	return s.SetConfigValues(game, id, key, uniqueID, []ConfigSet{{Field: field, Value: value}})
+}
+
+// ConfigSet is one field of a config.json and the value to give it.
+type ConfigSet struct{ Field, Value string }
+
+// SetConfigValues changes several settings of one config.json in a single write and a single history event; nothing
+// is written when any value is refused.
+func (s *Service) SetConfigValues(game, id, key string, uniqueID mod.ID, sets []ConfigSet) error {
 	folder, err := s.store.ModFolder(game, id, key, uniqueID)
 	if err != nil {
 		return err
@@ -91,16 +96,21 @@ func (s *Service) SetConfigValue(game, id, key string, uniqueID mod.ID, field, v
 	if err != nil {
 		return err
 	}
-	if err := schema.Validate(field, value); err != nil {
-		return err
-	}
 	types := schemaFromDir(folder)
 	shipped, _ := s.store.ShippedConfig(game, id, key, uniqueID)
-	next, err := applyConfigSet(raw, field, value, types, shipped)
-	if err != nil {
-		return err
+	for _, c := range sets {
+		field := strings.TrimSpace(c.Field)
+		if field == "" {
+			return errors.New("missing config field")
+		}
+		if err := schema.Validate(field, c.Value); err != nil {
+			return err
+		}
+		if raw, err = applyConfigSet(raw, field, c.Value, types, shipped); err != nil {
+			return err
+		}
 	}
-	return s.store.WriteConfig(game, id, key, uniqueID, string(next))
+	return s.store.WriteConfig(game, id, key, uniqueID, string(raw))
 }
 
 func (s *Service) contentSchema(game, id, key string, uniqueID mod.ID) (modconfig.Schema, error) {

@@ -115,7 +115,7 @@ func (s *Service) settingsOf(path string, info os.FileInfo) []dotnet.Setting {
 	if s.dlls.reads == nil {
 		s.dlls.reads = map[string]dllRead{}
 	}
-	// ponytail: one small entry per plugin DLL ever read, kept until Mortar restarts.
+	dropGone(s.dlls.reads)
 	s.dlls.reads[path] = dllRead{size: info.Size(), at: info.ModTime(), settings: settings}
 	s.dlls.mu.Unlock()
 	return settings

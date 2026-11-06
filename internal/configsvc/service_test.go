@@ -135,7 +135,10 @@ func TestFilesSetResetOnABepInExFile(t *testing.T) {
 func TestJSONFileGoesThroughTheProfileSetter(t *testing.T) {
 	s, _ := newService(t)
 	var field, value string
-	s.SetJSON = func(_, _ string, _ mod.ID, f, v string) error { field, value = f, v; return nil }
+	s.SetJSON = func(_, _ string, _ mod.ID, sets []profile.ConfigSet) error {
+		field, value = sets[0].Field, sets[0].Value
+		return nil
+	}
 	files, _ := s.Files("stardew", "p", "Author.Mod")
 	if len(files) != 1 || files[0].Format != FormatSMAPI {
 		t.Fatalf("files %+v", files)
@@ -154,7 +157,12 @@ func TestResetAllLeavesEntriesWithoutADefaultAndCountsThem(t *testing.T) {
 	base := s.Profiles
 	s.Profiles = noExtra{base, `{"Speed": 2, "Extra": "x"}`}
 	var wrote []string
-	s.SetJSON = func(_, _ string, _ mod.ID, f, v string) error { wrote = append(wrote, f+"="+v); return nil }
+	s.SetJSON = func(_, _ string, _ mod.ID, sets []profile.ConfigSet) error {
+		for _, c := range sets {
+			wrote = append(wrote, c.Field+"="+c.Value)
+		}
+		return nil
+	}
 	n, err := s.ResetAll("stardew", "p", "Author.Mod", "config.json")
 	if err != nil || n != 1 || len(wrote) != 1 || wrote[0] != "Speed=1" {
 		t.Fatalf("skipped %d wrote %v err %v", n, wrote, err)
@@ -395,5 +403,18 @@ func TestKeptHostValuesSurviveARestartAndFlushWhenTheGameCloses(t *testing.T) {
 	}
 	if again := (&Service{Profiles: s.Profiles}); len(func() map[hostKey][]edit { again.loadKept(); return again.hostKept }()) != 0 {
 		t.Fatal("a written value stayed kept")
+	}
+}
+
+func TestApplyBepInExParsesOnceAndKeepsEveryEdit(t *testing.T) {
+	t.Parallel()
+	text := "[A]\r\n\r\n## x\r\n# Setting type: Int32\r\n# Default value: 1\r\nOne = 1\r\n\r\n# Setting type: Int32\r\n# Default value: 2\r\nTwo = 2\r\n"
+	got, err := applyBepInEx(text, []edit{{"A", "One", "7"}, {"A", "Two", "8"}, {"A", "One", "9"}}, bound{}, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := strings.NewReplacer("One = 1", "One = 9", "Two = 2", "Two = 8").Replace(text)
+	if got != want {
+		t.Fatalf("got %q want %q", got, want)
 	}
 }

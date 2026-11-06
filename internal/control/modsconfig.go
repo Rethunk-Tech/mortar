@@ -10,8 +10,8 @@ import (
 func (s *Services) configs() *configsvc.Service {
 	return &configsvc.Service{
 		Profiles: s.Store,
-		SetJSON: func(game, profileID string, uniqueID mod.ID, field, value string) error {
-			return s.Profiles.SetConfigValue(game, profileID, "", uniqueID, field, value)
+		SetJSON: func(game, profileID string, uniqueID mod.ID, sets []profile.ConfigSet) error {
+			return s.Profiles.SetConfigValues(game, profileID, "", uniqueID, sets)
 		},
 		Running: s.Store.Running,
 	}

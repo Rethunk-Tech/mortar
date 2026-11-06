@@ -58,7 +58,7 @@ type Service struct {
 	Profiles Profiles
 	// SetJSON writes one config.json value through the profile, which keeps its key order and checks the game is
 	// not running.
-	SetJSON func(game, profile string, uniqueID mod.ID, field, value string) error
+	SetJSON func(game, profile string, uniqueID mod.ID, sets []profile.ConfigSet) error
 	// SetGmcm sets one option of a mod's in-game menu for the game's next start.
 	SetGmcm func(game, profile string, uniqueID mod.ID, page string, index int, value string) error
 	// Running reports whether the profile's game is running; writes to its files are refused then.
@@ -104,10 +104,25 @@ func (s *Service) parseCached(path string, info fs.FileInfo) (*cfgedit.BepInEx, 
 	if s.parsed == nil {
 		s.parsed = map[string]parsedCfg{}
 	}
-	// ponytail: entries for deleted files stay until Mortar restarts; one small parse per config file ever seen.
+	dropGone(s.parsed)
 	s.parsed[path] = parsedCfg{size: info.Size(), at: info.ModTime(), doc: doc}
 	s.parsedMu.Unlock()
 	return doc, nil
+}
+
+// cacheLimit is how many entries a path-keyed cache holds before it drops those whose file is gone.
+const cacheLimit = 256
+
+// dropGone removes the entries of m whose file no longer exists, once m has grown past cacheLimit.
+func dropGone[V any](m map[string]V) {
+	if len(m) < cacheLimit {
+		return
+	}
+	for p := range m {
+		if _, err := os.Stat(p); errors.Is(err, fs.ErrNotExist) {
+			delete(m, p)
+		}
+	}
 }
 
 func (s *Service) cfgDir(game, id string) (string, error) {
@@ -677,13 +692,11 @@ func (s *Service) write(game, profileID, modID string, f ConfigFile, edits []edi
 		if s.SetJSON == nil {
 			return errors.New("config.json edits are not wired")
 		}
-		// ponytail: one SetJSON read/write per edit (k writes per save); upgrade is a batch setter on the profile's writer.
-		for _, e := range edits {
-			if err := s.SetJSON(game, profileID, mod.ID(modID), path(e.section, e.key), e.value); err != nil {
-				return err
-			}
+		sets := make([]profile.ConfigSet, len(edits))
+		for i, e := range edits {
+			sets[i] = profile.ConfigSet{Field: path(e.section, e.key), Value: e.value}
 		}
-		return nil
+		return s.SetJSON(game, profileID, mod.ID(modID), sets)
 	}
 	if f.Format == FormatJSON {
 		return s.writeJSON(game, profileID, f.Name, edits)
@@ -704,21 +717,41 @@ func (s *Service) write(game, profileID, modID string, f ConfigFile, edits []edi
 	if err != nil {
 		return err
 	}
-	text := string(raw)
-	// ponytail: re-parses the whole file per edit; upgrade is one parse applying all edits.
-	for _, e := range edits {
-		next, err := cfgedit.ParseBepInEx(text).Set(e.section, e.key, e.value)
-		if st, ok := b.setting(e.section, e.key); errors.Is(err, cfgedit.ErrNoSetting) && hasBound && ok {
-			// A setting the plugin added since the game last wrote its file.
-			text += fmt.Sprintf("\n[%s]\n", e.section) + entryText(st)
-			next, err = cfgedit.ParseBepInEx(text).Set(e.section, e.key, e.value)
-		}
-		if err != nil {
-			return valueErr(err)
-		}
-		text = next
+	text, err := applyBepInEx(string(raw), edits, b, hasBound)
+	if err != nil {
+		return err
 	}
 	return safefs.WriteFileAtomic(p, []byte(text), 0o600)
+}
+
+// applyBepInEx applies edits to a .cfg's text with one parse. A Set changes exactly one line of the parsed document, so
+// each edit's line is copied from that result into the running lines; only a setting the file lacks (appended from the
+// plugin's binding) shifts the lines and parses again.
+func applyBepInEx(text string, edits []edit, b bound, hasBound bool) (string, error) {
+	doc := cfgedit.ParseBepInEx(text)
+	parsed := strings.Split(text, "\n")
+	lines := slices.Clone(parsed)
+	for _, e := range edits {
+		next, err := doc.Set(e.section, e.key, e.value)
+		if st, ok := b.setting(e.section, e.key); errors.Is(err, cfgedit.ErrNoSetting) && hasBound && ok {
+			// A setting the plugin added since the game last wrote its file.
+			text = strings.Join(lines, "\n") + fmt.Sprintf("\n[%s]\n", e.section) + entryText(st)
+			doc = cfgedit.ParseBepInEx(text)
+			parsed = strings.Split(text, "\n")
+			lines = slices.Clone(parsed)
+			next, err = doc.Set(e.section, e.key, e.value)
+		}
+		if err != nil {
+			return "", valueErr(err)
+		}
+		for i, l := range strings.Split(next, "\n") {
+			if l != parsed[i] {
+				lines[i] = l
+				break
+			}
+		}
+	}
+	return strings.Join(lines, "\n"), nil
 }
 
 // writeJSON applies edits to one JSON file of the profile's mod config folder, keeping its key order.

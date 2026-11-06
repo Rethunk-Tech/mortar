@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
@@ -101,6 +102,46 @@ func TestSetConfigValueKeepsEachFileKind(t *testing.T) {
 	for _, want := range []string{`"On": false`, `"Count": 4`, `"Flag": true`, `"Name": "y"`} {
 		if !strings.Contains(sm, want) {
 			t.Errorf("SMAPI config lacks %s: %s", want, sm)
+		}
+	}
+}
+
+func TestSetConfigValuesWritesOnceAndRecordsOneEvent(t *testing.T) {
+	t.Parallel()
+	manifest := `{"Name":"P","UniqueID":"me.cp","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`
+	e, p := updEnv(t,
+		map[string]string{
+			"A/manifest.json": manifest,
+			"A/config.json":   `{"a": 1, "b": 2, "c": 3}`,
+		},
+		map[string]string{"A/manifest.json": manifest + " "},
+	)
+	svc := NewService(e.Store, t.TempDir(), nil)
+	before, err := e.History("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sets := []ConfigSet{{"a", "10"}, {"b", "20"}, {"c", "30"}}
+	if err := svc.SetConfigValues("stardew", p.ID, "a-1", "smapi:me.cp", sets); err != nil {
+		t.Fatal(err)
+	}
+	after, err := e.History("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	count := func(events []HistoryEvent) int {
+		return len(slices.DeleteFunc(slices.Clone(events), func(ev HistoryEvent) bool { return ev.Change != ChangeConfigEdited }))
+	}
+	if edits := count(after) - count(before); edits != 1 {
+		t.Fatalf("%d config-edit events for one save", edits)
+	}
+	raw, err := svc.ReadConfig("stardew", p.ID, "a-1", "smapi:me.cp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{`"a": 10`, `"b": 20`, `"c": 30`} {
+		if !strings.Contains(raw, want) {
+			t.Errorf("missing %s in %s", want, raw)
 		}
 	}
 }

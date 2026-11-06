@@ -955,8 +955,8 @@ func (c *boot) browseConfig() error {
 	}
 	c.configSvc = &configsvc.Service{
 		Profiles: c.profiles,
-		SetJSON: func(game, profileID string, uniqueID mod.ID, field, value string) error {
-			return c.profileSvc.SetConfigValue(game, profileID, "", uniqueID, field, value)
+		SetJSON: func(game, profileID string, uniqueID mod.ID, sets []profile.ConfigSet) error {
+			return c.profileSvc.SetConfigValues(game, profileID, "", uniqueID, sets)
 		},
 		SetGmcm: func(game, profileID string, uniqueID mod.ID, page string, index int, value string) error {
 			_, err := c.profileSvc.SetGmcmOption(game, profileID, uniqueID, page, index, value)

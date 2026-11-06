@@ -3,6 +3,7 @@ package configsvc
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -131,5 +132,22 @@ func TestRenderableRejectsSettingsThatWouldBreakTheFile(t *testing.T) {
 		if renderable(bad) {
 			t.Errorf("%s: accepted", name)
 		}
+	}
+}
+
+func TestDropGoneKeepsOnlyFilesThatExist(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	live := filepath.Join(dir, "live")
+	if err := os.WriteFile(live, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	m := map[string]int{live: 1}
+	for i := range cacheLimit {
+		m[filepath.Join(dir, "gone", strconv.Itoa(i))] = i
+	}
+	dropGone(m)
+	if len(m) != 1 || m[live] != 1 {
+		t.Fatalf("kept %d entries", len(m))
 	}
 }
