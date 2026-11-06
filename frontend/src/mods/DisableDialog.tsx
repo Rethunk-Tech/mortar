@@ -106,7 +106,7 @@ function DisableDialogBody({ disabling }: { disabling: Mod[] }) {
   )
 }
 
-function AlsoRow({
+export function AlsoRow({
   checked,
   onChange,
   label,

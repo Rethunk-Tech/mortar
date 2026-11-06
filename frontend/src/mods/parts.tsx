@@ -1,14 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  IconButton,
-  Switch,
-  Typography,
-} from '@mui/material'
+import { Box, Button, IconButton, Switch, Typography } from '@mui/material'
 import { ArrowUp, Ban, CircleCheck, CircleX, Pin, Trash2, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import type {
@@ -25,6 +17,7 @@ import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { AlsoRow } from './DisableDialog.tsx'
 import { dependentsOf, idKey } from './dependents.ts'
 import { useDescribe } from './describe.ts'
 import { unneededImplicit } from './disableUnneeded.ts'
@@ -181,13 +174,9 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
           ) : null}
           {needLine ? <Typography sx={{ color: 'text.secondary' }}>{needLine}</Typography> : null}
           {unneeded.length > 0 ? (
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={withUnneeded}
-                  onChange={(e) => setWithUnneeded(e.target.checked)}
-                />
-              }
+            <AlsoRow
+              checked={withUnneeded}
+              onChange={setWithUnneeded}
               label={t`${plural({ count: unneeded.length }, { one: 'Also remove # library only this needed', other: 'Also remove # libraries only these needed' })}: ${{ names: listNames(unneeded.map((m) => m.name)) }}`}
             />
           ) : null}
