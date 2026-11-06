@@ -24,10 +24,10 @@ func Serve(t testing.TB, community, chunk string, files map[string][]byte, tls b
 	t.Helper()
 	f := &Fake{}
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.URL.Path == "/c/"+community+"/api/v1/package-listing-index/":
+		switch r.URL.Path {
+		case "/c/" + community + "/api/v1/package-listing-index/":
 			_, _ = fmt.Fprintf(w, `[%q]`, f.URL+"/chunk")
-		case r.URL.Path == "/chunk":
+		case "/chunk":
 			_, _ = w.Write([]byte(strings.ReplaceAll(chunk, "{base}", f.URL)))
 		default:
 			body, ok := files[r.URL.Path]
