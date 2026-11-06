@@ -200,6 +200,15 @@ async function selectVersioned(
 /** The game settings page opened from a profile's Home, and its switch to every profile's values. */
 export function gameSettingsCases(h: Helpers): Case[] {
   const { toWorkspace, tab, tabs } = h
+  const openGameSettings = async (p: Page) => {
+    await toWorkspace(p)
+    await tab(p, 'Home')
+    await p
+      .getByRole('button', { name: / settings$/ })
+      .last()
+      .click()
+    await p.getByRole('button', { name: /^This profile: / }).waitFor()
+  }
   return [
     {
       // Only a loader with a devTemplate has the Develop tab.
@@ -233,15 +242,7 @@ export function gameSettingsCases(h: Helpers): Case[] {
     {
       // A changed row shows the dot after its label and a reset beside its control.
       name: 'game-settings-profile-changed',
-      setup: async (p) => {
-        await toWorkspace(p)
-        await tab(p, 'Home')
-        await p
-          .getByRole('button', { name: / settings$/ })
-          .last()
-          .click()
-        await p.getByRole('button', { name: /^This profile: / }).waitFor()
-      },
+      setup: openGameSettings,
       run: async (p) => {
         await p.getByRole('button', { name: 'Play', exact: true }).click()
         await p.getByRole('switch', { name: 'Update mods before Play on new profiles' }).click()
@@ -251,29 +252,13 @@ export function gameSettingsCases(h: Helpers): Case[] {
     {
       // The switch to every profile's values redraws each row from the profile's to the game's.
       name: 'game-settings-all-profiles',
-      setup: async (p) => {
-        await toWorkspace(p)
-        await tab(p, 'Home')
-        await p
-          .getByRole('button', { name: / settings$/ })
-          .last()
-          .click()
-        await p.getByRole('button', { name: /^This profile: / }).waitFor()
-      },
+      setup: openGameSettings,
       run: (p) => p.getByRole('button', { name: /^All .* profiles$/ }).click(),
     },
     {
       // Mods holds the settings every profile shares, greyed under one line on the profile's scope.
       name: 'game-settings-mods',
-      setup: async (p) => {
-        await toWorkspace(p)
-        await tab(p, 'Home')
-        await p
-          .getByRole('button', { name: / settings$/ })
-          .last()
-          .click()
-        await p.getByRole('button', { name: /^This profile: / }).waitFor()
-      },
+      setup: openGameSettings,
       run: async (p) => {
         await p.getByRole('button', { name: 'Mods', exact: true }).click()
         await p.getByText('Preferred source').scrollIntoViewIfNeeded()
