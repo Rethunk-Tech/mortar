@@ -603,11 +603,7 @@ func (s *Store) RecordHistoryBatch(game, id, batchID string) (string, error) {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, dir, err := s.readDir(game, id)
-	if err != nil {
-		return "", err
-	}
-	data, err := readHistory(dir)
+	p, dir, data, err := s.historyAt(game, id)
 	if err != nil {
 		return "", err
 	}
@@ -721,11 +717,7 @@ func (s *Store) recordHistoryBatchData(dir string, data *historyFileData, batch 
 func (s *Store) Baseline(game, id string) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, dir, err := s.readDir(game, id)
-	if err != nil {
-		return "", err
-	}
-	data, err := readHistory(dir)
+	p, dir, data, err := s.historyAt(game, id)
 	if err != nil {
 		return "", err
 	}
@@ -751,6 +743,16 @@ func (s *Store) recordSnapshot(game, id, kind string, note HistoryEvent, count i
 	ev.Kind, ev.Count = kind, count
 	ev, err = appendHistory(dir, ev, p.Entries, s.historyKeep())
 	return ev.ID, err
+}
+
+// historyAt reads a profile with its history file; the caller holds s.mu.
+func (s *Store) historyAt(game, id string) (Profile, string, historyFileData, error) {
+	p, dir, err := s.readDir(game, id)
+	if err != nil {
+		return Profile{}, "", historyFileData{}, err
+	}
+	data, err := readHistory(dir)
+	return p, dir, data, err
 }
 
 var onHistoryDecode func()

@@ -158,16 +158,25 @@ func askFrom(cfg fomod.Config, key string, source Source, oldKey string, choices
 	return ask
 }
 
-func (s *Store) fomodAsk(game, id, key string, source Source, oldKey string, choices map[string]map[string][]string) (FomodAsk, bool, error) {
+// fomodSetup loads key's wizard config with the evaluation context of the profile's mods folder; ok is false when key
+// has no wizard.
+func (s *Store) fomodSetup(game, id, key string) (fomod.Config, fomod.EvalContext, bool, error) {
 	cfg, ok, err := s.fomodOf(game, key)
 	if err != nil || !ok {
-		return FomodAsk{}, false, err
+		return fomod.Config{}, fomod.EvalContext{}, false, err
 	}
 	modsDir, err := s.ModsDir(game, id)
 	if err != nil {
+		return fomod.Config{}, fomod.EvalContext{}, false, err
+	}
+	return cfg, s.fomodEval(game, s.fileIndex(modsDir)), true, nil
+}
+
+func (s *Store) fomodAsk(game, id, key string, source Source, oldKey string, choices map[string]map[string][]string) (FomodAsk, bool, error) {
+	cfg, eval, ok, err := s.fomodSetup(game, id, key)
+	if err != nil || !ok {
 		return FomodAsk{}, false, err
 	}
-	eval := s.fomodEval(game, s.fileIndex(modsDir))
 	if fomod.Match(cfg, choices, eval) && s.reuseFomod() {
 		return FomodAsk{}, false, nil
 	}
@@ -177,7 +186,7 @@ func (s *Store) fomodAsk(game, id, key string, source Source, oldKey string, cho
 // replayAsk is fomodAsk for choices saved against oldKey's config. It also asks when key shows a group to pick from
 // that oldKey did not have, and then prefills the wizard with the saved choices that still exist.
 func (s *Store) replayAsk(game, id, key string, source Source, oldKey string, choices map[string]map[string][]string) (FomodAsk, bool, error) {
-	cfg, ok, err := s.fomodOf(game, key)
+	cfg, eval, ok, err := s.fomodSetup(game, id, key)
 	if err != nil || !ok {
 		return FomodAsk{}, false, err
 	}
@@ -185,11 +194,6 @@ func (s *Store) replayAsk(game, id, key string, source Source, oldKey string, ch
 	if err != nil {
 		old = cfg
 	}
-	modsDir, err := s.ModsDir(game, id)
-	if err != nil {
-		return FomodAsk{}, false, err
-	}
-	eval := s.fomodEval(game, s.fileIndex(modsDir))
 	if fomod.Match(cfg, choices, eval) && !fomod.Unanswered(old, cfg, choices, eval) && s.reuseFomod() {
 		return FomodAsk{}, false, nil
 	}
