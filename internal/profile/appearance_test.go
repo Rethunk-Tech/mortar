@@ -89,3 +89,18 @@ func TestLoadFoldsDescriptionIntoNotes(t *testing.T) {
 		}
 	}
 }
+
+// A profile.json written while FOMOD entries carried a fomodSpec flag still loads; the key is ignored.
+func TestLoadIgnoresALegacyFomodSpecKey(t *testing.T) {
+	t.Parallel()
+	s := newStore(t)
+	p := mustCreate(t, s, "Farm")
+	path := filepath.Join(s.root, "stardew", p.ID, fileName)
+	editProfileJSON(t, path, func(doc map[string]any) {
+		doc["entries"] = []any{map[string]any{"key": "nexus-1-1", "fomodSpec": true}}
+	})
+	got, err := s.List("stardew")
+	if err != nil || len(got) != 1 || len(got[0].Entries) != 1 || got[0].Entries[0].Key != "nexus-1-1" {
+		t.Fatalf("list = %+v, %v", got, err)
+	}
+}
