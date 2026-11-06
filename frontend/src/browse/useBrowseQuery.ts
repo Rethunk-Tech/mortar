@@ -1,4 +1,4 @@
-import { useLoaded } from '@rethunk/react-load-hooks'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import {
   type Dispatch,
@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react'
 import { useSettings } from '../settings/store.ts'
+import { useLastGood } from '../shell/useLastGood.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { ALL, FIRST_PAGE } from './browseConstants.ts'
 import { parseModes } from './browseModes.ts'
@@ -20,6 +21,8 @@ import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts
 import { onBrowseRefresh } from './refresh.ts'
 import { hitKey, useBrowseSelection } from './selection.ts'
 import { useBrowseView } from './view.ts'
+
+const NO_EXCLUDE: string[] = []
 
 type Status = 'idle' | 'loading' | 'done' | 'error'
 
@@ -79,6 +82,19 @@ interface Fetched {
   pages: Map<number, Promise<BrowseResult>>
   // The source pages that have answered, so a screen made only of those shows without a loading pass.
   done: Map<number, BrowseResult>
+}
+
+// The source pages each recent query read, newest last, so coming back to a query draws its last screen at once.
+const REMEMBERED_QUERIES = 12
+const remembered = new Map<string, Map<number, BrowseResult>>()
+
+function remember(query: string, done: Map<number, BrowseResult>) {
+  remembered.delete(query)
+  remembered.set(query, done)
+  const [oldest] = remembered.keys()
+  if (remembered.size > REMEMBERED_QUERIES && oldest !== undefined) {
+    remembered.delete(oldest)
+  }
 }
 
 interface Screen {
@@ -178,6 +194,28 @@ function useSearchAgainOnRefresh(setRetry: Dispatch<SetStateAction<number>>) {
   }, [setRetry])
 }
 
+// The filter the player picked, or until they do the source's default excludes (the last ones read for it draw at
+// once); the first search waits for the very first read of them.
+function useStoredFilter(
+  game: string,
+  source: string,
+  chosenFilter: BrowseFilter | undefined,
+  defaultExcludes: BrowsePageProps['defaultExcludes'],
+) {
+  const defaults = useLastGood<string[]>(
+    chosenFilter || source === '' ? null : `browse-excludes:${game}:${source}`,
+    () => defaultExcludes(game, source),
+    [defaultExcludes, chosenFilter !== undefined],
+  )
+  const stored = useMemo(
+    () => chosenFilter ?? { ...NO_FILTER, exclude: defaults.data ?? NO_EXCLUDE },
+    [chosenFilter, defaults.data],
+  )
+  const waiting =
+    chosenFilter === undefined && source !== '' && defaults.data === null && defaults.error === null
+  return { stored, waiting }
+}
+
 function useBrowseQuery({
   game,
   profileID,
@@ -201,22 +239,7 @@ function useBrowseQuery({
   const known = sources.some((s) => s.id === chosen) || (chosen === ALL && merged)
   const fallback = merged ? ALL : (sources[0]?.id ?? '')
   const source = known ? chosen : fallback
-  // The loaded excludes carry their source: right after a source switch they still belong to the previous one.
-  const defaults = useLoaded<{ source: string; exclude: string[] }>(
-    chosenFilter || source === ''
-      ? null
-      : () => defaultExcludes(game, source).then((exclude) => ({ source, exclude })),
-    [defaultExcludes, game, source, chosenFilter !== undefined],
-    { source: '', exclude: [] },
-  )
-  // Until the player edits the filter, it starts with the default excludes; the first search waits for them.
-  const stored = useMemo(
-    () => chosenFilter ?? { ...NO_FILTER, exclude: defaults.data.exclude },
-    [chosenFilter, defaults.data.exclude],
-  )
-  const waiting =
-    chosenFilter === undefined &&
-    (defaults.loading || (defaults.data.source !== source && defaults.error === null))
+  const { stored, waiting } = useStoredFilter(game, source, chosenFilter, defaultExcludes)
   const sorts = sortsFor(source, sources)
   const filter = useMemo(
     () => ({ ...stored, ...modes, sort: effectiveSort(stored.sort, sorts) }),
@@ -258,13 +281,18 @@ function useBrowseQuery({
       return
     }
     let cancelled = false
-    const key = JSON.stringify([game, source, text, profileID, filter, retry, hides])
+    const query = JSON.stringify([game, source, text, profileID, filter, hides])
+    const key = JSON.stringify([query, retry])
+    // The screens an earlier visit to this query read: drawn at once, replaced when the new read answers.
+    let earlier: Screen | null = null
     if (fetched.current.key !== key) {
+      earlier = retry === 0 ? cachedScreen(remembered.get(query) ?? new Map(), page, size) : null
       fetched.current = { key, pages: new Map(), done: new Map() }
+      remember(query, fetched.current.done)
     }
     const show = ({ next, whole: all }: Screen) => {
       setWhole(all)
-      setResult(next)
+      setResult((prev) => (sameValue(prev, next) ? prev : next))
       setStatus('done')
       setPage((current) => clampPage({ page: current, total: pagedTotal(next), size }))
     }
@@ -273,7 +301,11 @@ function useBrowseQuery({
       show(ready)
       return
     }
-    setStatus('loading')
+    if (earlier) {
+      show(earlier)
+    } else {
+      setStatus('loading')
+    }
     loadScreen(
       fetched.current,
       (p) => search({ game, source, text, page: p, profileID, filter }),
