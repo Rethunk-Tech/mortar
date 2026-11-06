@@ -142,94 +142,120 @@ func sameJob(fp map[string]map[string]bool, mods []framework.Mod) []framework.Re
 			code = append(code, m)
 		}
 	}
-	df := map[string]int{}
-	for _, m := range code {
-		for member := range fp[m.ModID().Fold()] {
-			df[member]++
+	js := newJobScan(fp, code)
+	for i, a := range code {
+		for _, b := range code[i+1:] {
+			if mayShareJob(a, b, builtOn) {
+				js.pair(a, b)
+			}
 		}
 	}
-	n := len(code)
-	weight := func(member string) float64 { return math.Log(float64(n) / float64(df[member])) }
-	total := map[string]float64{}
+	return js.redundant()
+}
+
+// jobScan weighs each mod's code members by how few mods write them and collects the pairs that do the same job.
+type jobScan struct {
+	fp            map[string]map[string]bool
+	code          []framework.Mod
+	n             int
+	df            map[string]int
+	total         map[string]float64
+	by            map[string][]framework.ModRef
+	shared        map[string]map[string]bool
+	coveredBy     map[string][]framework.ModRef
+	coveredShared map[string]map[string]bool
+}
+
+func newJobScan(fp map[string]map[string]bool, code []framework.Mod) *jobScan {
+	js := &jobScan{
+		fp: fp, code: code, n: len(code), df: map[string]int{}, total: map[string]float64{},
+		by: map[string][]framework.ModRef{}, shared: map[string]map[string]bool{},
+		coveredBy: map[string][]framework.ModRef{}, coveredShared: map[string]map[string]bool{},
+	}
+	for _, m := range code {
+		for member := range fp[m.ModID().Fold()] {
+			js.df[member]++
+		}
+	}
 	for _, m := range code {
 		id := m.ModID().Fold()
 		for member := range fp[id] {
-			total[id] += weight(member)
+			js.total[id] += js.weight(member)
 		}
 	}
-	by := map[string][]framework.ModRef{}
-	shared := map[string]map[string]bool{}
-	coveredBy := map[string][]framework.ModRef{}
-	coveredShared := map[string]map[string]bool{}
-	note := func(into map[string]map[string]bool, id string, members []string) {
-		if into[id] == nil {
-			into[id] = map[string]bool{}
-		}
-		for _, member := range members {
-			into[id][member] = true
+	return js
+}
+
+func (js *jobScan) weight(member string) float64 {
+	return math.Log(float64(js.n) / float64(js.df[member]))
+}
+
+func noteMembers(into map[string]map[string]bool, id string, members []string) {
+	if into[id] == nil {
+		into[id] = map[string]bool{}
+	}
+	for _, member := range members {
+		into[id][member] = true
+	}
+}
+
+func (js *jobScan) pair(a, b framework.Mod) {
+	ida, idb := a.ModID().Fold(), b.ModID().Fold()
+	var both []string
+	sum := 0.0
+	common, rarest := 0, js.n
+	for member := range js.fp[ida] {
+		if js.fp[idb][member] {
+			both = append(both, member)
+			sum += js.weight(member)
+			common = max(common, js.df[member])
+			rarest = min(rarest, js.df[member])
 		}
 	}
-	for i, a := range code {
-		ida := a.ModID().Fold()
-		for _, b := range code[i+1:] {
-			idb := b.ModID().Fold()
-			if !mayShareJob(a, b, builtOn) {
-				continue
-			}
-			var both []string
-			sum := 0.0
-			common, rarest := 0, n
-			for member := range fp[ida] {
-				if fp[idb][member] {
-					both = append(both, member)
-					sum += weight(member)
-					common = max(common, df[member])
-					rarest = min(rarest, df[member])
-				}
-			}
-			if len(both) == 0 {
-				continue
-			}
-			var similar bool
-			if n < sameJobSmall {
-				similar = common <= sameJobRare && len(both) == min(len(fp[ida]), len(fp[idb]))
-			} else {
-				similar = sum > 0 && rarest <= sameJobDistinctDF && sum >= sameJobScore*max(total[ida], total[idb])
-			}
-			if similar {
-				by[ida] = append(by[ida], framework.ModRef{Key: b.Key, Name: b.Name})
-				by[idb] = append(by[idb], framework.ModRef{Key: a.Key, Name: a.Name})
-				note(shared, ida, both)
-				note(shared, idb, both)
-				continue
-			}
-			small, large := a, b
-			if total[idb] < total[ida] {
-				small, large = b, a
-			}
-			ids := small.ModID().Fold()
-			if n >= sameJobSmall && total[ids] >= sameJobCoveredWeight && common <= sameJobCoveredDF && sum >= sameJobCovered*total[ids] {
-				coveredBy[ids] = append(coveredBy[ids], framework.ModRef{Key: large.Key, Name: large.Name})
-				note(coveredShared, ids, both)
-			}
-		}
+	if len(both) == 0 {
+		return
 	}
+	var similar bool
+	if js.n < sameJobSmall {
+		similar = common <= sameJobRare && len(both) == min(len(js.fp[ida]), len(js.fp[idb]))
+	} else {
+		similar = sum > 0 && rarest <= sameJobDistinctDF && sum >= sameJobScore*max(js.total[ida], js.total[idb])
+	}
+	if similar {
+		js.by[ida] = append(js.by[ida], framework.ModRef{Key: b.Key, Name: b.Name})
+		js.by[idb] = append(js.by[idb], framework.ModRef{Key: a.Key, Name: a.Name})
+		noteMembers(js.shared, ida, both)
+		noteMembers(js.shared, idb, both)
+		return
+	}
+	small, large := a, b
+	if js.total[idb] < js.total[ida] {
+		small, large = b, a
+	}
+	ids := small.ModID().Fold()
+	if js.n >= sameJobSmall && js.total[ids] >= sameJobCoveredWeight && common <= sameJobCoveredDF && sum >= sameJobCovered*js.total[ids] {
+		js.coveredBy[ids] = append(js.coveredBy[ids], framework.ModRef{Key: large.Key, Name: large.Name})
+		noteMembers(js.coveredShared, ids, both)
+	}
+}
+
+func (js *jobScan) redundant() []framework.Redundant {
 	// A similar pair is listed once, on the earlier mod; the later one still appears in By, which is what groups them.
 	position := map[string]int{}
-	for i, m := range code {
+	for i, m := range js.code {
 		position[m.Key] = i
 	}
 	var out []framework.Redundant
-	for i, m := range code {
+	for i, m := range js.code {
 		id := m.ModID().Fold()
 		switch {
-		case len(by[id]) > 0:
-			later := slices.DeleteFunc(slices.Clone(by[id]), func(r framework.ModRef) bool { return position[r.Key] < i })
+		case len(js.by[id]) > 0:
+			later := slices.DeleteFunc(slices.Clone(js.by[id]), func(r framework.ModRef) bool { return position[r.Key] < i })
 			if len(later) > 0 {
-				out = append(out, framework.Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: later, Detail: shortMembers(shared[id], weight)})
+				out = append(out, framework.Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: later, Detail: shortMembers(js.shared[id], js.weight)})
 			}
-		case len(coveredBy[id]) > 0:
-			out = append(out, framework.Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: coveredBy[id], Detail: shortMembers(coveredShared[id], weight), Covered: true})
+		case len(js.coveredBy[id]) > 0:
+			out = append(out, framework.Redundant{Kind: "sameJob", Key: m.Key, ID: m.ModID(), Name: m.Name, By: js.coveredBy[id], Detail: shortMembers(js.coveredShared[id], js.weight), Covered: true})
 		}
 	}
 	return out

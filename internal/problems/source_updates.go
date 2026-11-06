@@ -110,28 +110,19 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 	if src.Key == "" || !ok || !canSearch || src.ID == profile.KindGitHub || src.ID == profile.KindNexus {
 		return nil, nil
 	}
+	ss := &sourceSearch{s: s, gameID: gameID, src: src, named: entry.Source, searcher: searcher, twins: twins}
 	// A source that holds its whole listing answers for every package known by id in one pass. A search per mod would
 	// read that listing once each, and its first page misses a package whose name many others share.
-	listedID := func(x framework.Mod) string {
-		if x.SourceKind == src.ID {
-			return x.SourceName
-		}
-		if src.ID == profile.KindThunderstore {
-			return twins[x.Key]
-		}
-		return ""
-	}
-	var listed map[string]source.Item
 	if lister, lists := entry.Source.(source.ItemLister); lists {
 		var ids []string
 		for _, x := range mods {
-			if id := listedID(x); id != "" {
+			if id := ss.listedID(x); id != "" {
 				ids = append(ids, id)
 			}
 		}
 		if len(ids) > 0 {
 			var err error
-			if listed, err = s.throttledItems(ctx, lister, src, ids); err != nil {
+			if ss.listed, err = s.throttledItems(ctx, lister, src, ids); err != nil {
 				return nil, err
 			}
 		}
@@ -142,75 +133,112 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 		if (profile.Source{Kind: x.SourceKind}).Bundled() || x.IgnoreUpdates || !asksSource(src.ID, x) {
 			continue
 		}
-		text, installed := x.Name, x.Version
-		if x.SourceKind == src.ID {
-			installed = cmp.Or(x.SourceVersion, x.Version)
-		}
-		if x.SourceKind == profile.KindThunderstore && src.ID == profile.KindThunderstore {
-			_, text, _ = strings.Cut(x.SourceName, "-")
-		}
-		twin := ""
-		if src.ID == profile.KindThunderstore && x.SourceKind != profile.KindThunderstore {
-			twin = twins[x.Key]
-		}
-		if twin != "" {
-			_, text, _ = strings.Cut(twin, "-")
-		}
+		installed, text, twin := ss.query(x)
 		if text == "" {
 			continue
 		}
-		var items []source.Item
-		if id := listedID(x); listed != nil && id != "" {
-			if it, ok := listed[strings.ToLower(id)]; ok {
-				items = []source.Item{it}
-			}
-		} else {
-			page, err := s.throttledSearch(ctx, searcher, gameID, src, text)
-			if err != nil {
-				return out, err
-			}
-			items = page.Items
+		items, err := ss.items(ctx, x, text)
+		if err != nil {
+			return out, err
 		}
-		for _, it := range items {
-			if !sameMod(x, it) && (twin == "" || !strings.EqualFold(it.ID, twin)) {
-				continue
-			}
-			version := it.Version
-			if d, ok := entry.Source.(thunderstore.Driver); ok && !source.CutoffOf(ctx).IsZero() {
-				ns, name, _ := strings.Cut(it.ID, "-")
-				if r, err := d.Resolve(ctx, src.Key, ns, name, "", ""); err == nil {
-					version = r.Version
-				}
-			}
-			if c, ok := semverish.Compare(version, installed); !ok || c <= 0 {
-				break
-			}
-			if coveredBy(append(slices.Clone(have), out...), x.Key, version) {
-				break
-			}
-			ref := source.VersionRef{}
-			if x.SourceKind == src.ID {
-				ref = source.VersionRef{ID: x.SourceName, Version: installed}
-			}
+		if u, ref, ok := ss.newer(ctx, x, items, twin, installed, append(slices.Clone(have), out...)); ok {
 			installedRefs = append(installedRefs, ref)
-			u := Update{
-				Key: x.Key, ID: x.ModID(), Name: x.Name, Installed: installed, Version: version, URL: it.URL,
-				Source: entry.Source.Name(), Switch: x.SourceKind != src.ID,
-			}
-			switch src.ID {
-			case profile.KindThunderstore:
-				u.Package = it.ID
-			case profile.KindNexus:
-				u.NexusID, _ = strconv.Atoi(it.ID)
-			case profile.KindVSModDB, profile.KindParadox:
-				u.Package, u.PackageSource = it.ID, src.ID
-			}
 			out = append(out, u)
-			break
 		}
 	}
 	s.markDependencyChanges(ctx, src, entry.Source, out, installedRefs)
 	return out, nil
+}
+
+// sourceSearch is one source's lookups for searchUpdates.
+type sourceSearch struct {
+	s        *Service
+	gameID   string
+	src      components.GameSource
+	named    source.Source
+	searcher source.Searcher
+	twins    map[string]string
+	listed   map[string]source.Item
+}
+
+func (ss *sourceSearch) listedID(x framework.Mod) string {
+	if x.SourceKind == ss.src.ID {
+		return x.SourceName
+	}
+	if ss.src.ID == profile.KindThunderstore {
+		return ss.twins[x.Key]
+	}
+	return ""
+}
+
+// query is the installed version, the text to search for and the Thunderstore twin of a mod.
+func (ss *sourceSearch) query(x framework.Mod) (installed, text, twin string) {
+	text, installed = x.Name, x.Version
+	if x.SourceKind == ss.src.ID {
+		installed = cmp.Or(x.SourceVersion, x.Version)
+	}
+	if x.SourceKind == profile.KindThunderstore && ss.src.ID == profile.KindThunderstore {
+		_, text, _ = strings.Cut(x.SourceName, "-")
+	}
+	if ss.src.ID == profile.KindThunderstore && x.SourceKind != profile.KindThunderstore {
+		twin = ss.twins[x.Key]
+	}
+	if twin != "" {
+		_, text, _ = strings.Cut(twin, "-")
+	}
+	return installed, text, twin
+}
+
+func (ss *sourceSearch) items(ctx context.Context, x framework.Mod, text string) ([]source.Item, error) {
+	if id := ss.listedID(x); ss.listed != nil && id != "" {
+		if it, ok := ss.listed[strings.ToLower(id)]; ok {
+			return []source.Item{it}, nil
+		}
+		return nil, nil
+	}
+	page, err := ss.s.throttledSearch(ctx, ss.searcher, ss.gameID, ss.src, text)
+	if err != nil {
+		return nil, err
+	}
+	return page.Items, nil
+}
+
+// newer is the update from the first item that is the mod, when that item is newer than the installed version and no
+// update already found covers it.
+func (ss *sourceSearch) newer(ctx context.Context, x framework.Mod, items []source.Item, twin, installed string, known []Update) (Update, source.VersionRef, bool) {
+	for _, it := range items {
+		if !sameMod(x, it) && (twin == "" || !strings.EqualFold(it.ID, twin)) {
+			continue
+		}
+		version := it.Version
+		if d, ok := ss.named.(thunderstore.Driver); ok && !source.CutoffOf(ctx).IsZero() {
+			ns, name, _ := strings.Cut(it.ID, "-")
+			if r, err := d.Resolve(ctx, ss.src.Key, ns, name, "", ""); err == nil {
+				version = r.Version
+			}
+		}
+		if c, ok := semverish.Compare(version, installed); !ok || c <= 0 || coveredBy(known, x.Key, version) {
+			break
+		}
+		ref := source.VersionRef{}
+		if x.SourceKind == ss.src.ID {
+			ref = source.VersionRef{ID: x.SourceName, Version: installed}
+		}
+		u := Update{
+			Key: x.Key, ID: x.ModID(), Name: x.Name, Installed: installed, Version: version, URL: it.URL,
+			Source: ss.named.Name(), Switch: x.SourceKind != ss.src.ID,
+		}
+		switch ss.src.ID {
+		case profile.KindThunderstore:
+			u.Package = it.ID
+		case profile.KindNexus:
+			u.NexusID, _ = strconv.Atoi(it.ID)
+		case profile.KindVSModDB, profile.KindParadox:
+			u.Package, u.PackageSource = it.ID, ss.src.ID
+		}
+		return u, ref, true
+	}
+	return Update{}, source.VersionRef{}, false
 }
 
 // checkedUpdates is searchUpdates for a source that checks every installed file in one request: the mods installed from

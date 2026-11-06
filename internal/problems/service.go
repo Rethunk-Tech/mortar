@@ -430,111 +430,10 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 	s.mu.Unlock()
 
 	r, err := s.shareCheck(ctx, checkKey, func() Result {
-		env.SkipImageOverlap = depth == settings.ConflictScanSkipImages
-		env.DropIns = components.KnownBrokenFor(ctx, gameID).DropIns()
-		r := Check(ctx, s.metaFor(gameID), env, mods, s.NexusPages.Requirements(gameID))
-		owners := sync.OnceValue(func() map[string]framework.Mod { return pluginOwners(mods) })
-		enabledMods := slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool { return !x.Enabled })
-		r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, enabledMods)...)
-		flagged, flagsFailed := s.sourceFlagged(ctx, gameID, env.Nexus.Domain, enabledMods)
-		r.Broken = append(r.Broken, flagged...)
-		r.Unknown = r.Unknown || flagsFailed
-		if l, ok := game.LoaderOf(gameID, s.profiles.LoaderID(gameID, id)); ok {
-			if dir, err := s.profiles.ProfileDir(gameID, id); err == nil {
-				r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, s.playerLog(gameID, id, l), owners, packagePatchers(pkgs, mods))
-			}
-			if f, bad := gameVersionFailure(gameID, l, env); bad {
-				r.LoadFailures = append(r.LoadFailures, f)
-			}
-			r.LoadFailures = append(r.LoadFailures, s.extensionFailures(gameID, id, l)...)
-		}
-		if l, _ := game.LoaderOf(gameID, s.profiles.LoaderID(gameID, id)); game.HasPath(gameID, game.PathLog) {
-			if _, own := l.(loader.WithLogs); !own {
-				r.LoadFailures = append(r.LoadFailures, gameLogFailures(s.gameLog(gameID, id), mods)...)
-			}
-		}
-		r.LoadFailures = append(r.LoadFailures, settingRows...)
-		if src, ok := thunderstore.Registered(); ok {
-			var failed bool
-			r.Deprecated, failed = deprecatedPackages(ctx, src, thunderstoreKey(gameID), "", pkgs)
-			r.Unknown = r.Unknown || failed
-		}
-		deprecated := map[string]bool{}
-		for _, d := range r.Deprecated {
-			deprecated[d.Key] = true
-		}
-		developed := map[string]bool{}
-		var devNames []string
-		if s.DevPackages != nil {
-			devNames = s.DevPackages(gameID)
-		}
-		for _, p := range pkgs {
-			developed[p.Key] = slices.ContainsFunc(devNames, func(n string) bool { return strings.EqualFold(n, p.Name) }) ||
-				slices.ContainsFunc(mods, func(m framework.Mod) bool { return m.Key == p.Key && m.SourceFolder != "" })
-		}
-		r.PluginClashes = pluginClashes(pkgs, deprecated, developed)
-		r.Broken = append(r.Broken, knownBrokenMods(ctx, gameID, env.GameVersion, pkgs, enabledMods)...)
-		if all, err := s.profiles.Packages(gameID, id); err == nil {
-			missing, incompatible := pluginDeps(all, mods)
-			declared := map[string]dotnet.Declared{}
-			for _, p := range all {
-				if p.Enabled {
-					declared[p.Key] = declaredIn(p.Dir)
-				}
-			}
-			r.Broken = append(r.Broken, pluginCycles(all, declared)...)
-			r.Missing = append(r.Missing, dropCovered(missing, r.Missing)...)
-			for _, f := range incompatible {
-				if !slices.ContainsFunc(r.LoadFailures, func(x LoadFailure) bool { return x.Key == f.Key && x.Kind == f.Kind }) {
-					r.LoadFailures = append(r.LoadFailures, f)
-				}
-			}
-		}
-		if s.Runs != nil && runID != "" {
-			_, summary, err := s.Runs.LastRunSummary(gameID, id)
-			if err == nil {
-				r.RunErrors = RunErrorsFromSummary(runID, summary, mods, owners)
-				r.LoadFailures = append(r.LoadFailures, startFailure(runID, summary)...)
-				// A mod listed under errors after load needs no second row for the same errors, unless the run crashed.
-				r.RunErrors = slices.DeleteFunc(r.RunErrors, func(e RunError) bool {
-					return !e.Severe && slices.ContainsFunc(r.LoadFailures, func(f LoadFailure) bool { return f.Ran && f.Key == e.Key })
-				})
-			}
-		} else if r.RunErrors == nil {
-			r.RunErrors = []RunError{}
-		}
-		if s.meta != nil {
-			enabledOnly := false
-			if s.settings != nil {
-				enabledOnly = s.settings.Get().CheckOnlyEnabledMods
-			}
-			updateStart := time.Now()
-			ur := checkUpdates(ctx, s.metaFor(gameID), env, mods, enabledOnly, false, s.NexusFiles)
-			asked := 0
-			for _, x := range mods {
-				if (profile.Source{Kind: x.SourceKind}).Bundled() {
-					continue
-				}
-				if enabledOnly && !x.Enabled {
-					continue
-				}
-				asked++
-			}
-			r.Timings = append(r.Timings, CheckTiming{Name: "updates", Ms: time.Since(updateStart).Milliseconds(), Count: asked})
-			if s.updates != nil && !ur.Unknown {
-				ufp := fingerprint(env, mods, "")
-				s.mu.Lock()
-				if c, ok := s.updates[key]; !ok || c.smapiOnly || c.fingerprint != ufp {
-					s.updates[key] = cachedUpdates{fingerprint: ufp, at: time.Now(), result: ur, smapiOnly: true}
-				}
-				s.mu.Unlock()
-			}
-		}
-		logCheckTimings(id, r.Timings)
-		r.Cleanup = s.settleOrphans(key, r.Cleanup, installing)
-		// The walk starts once the rest of the check is done, so it never slows an answer that does not wait for it.
-		s.recordHealthAfter(walk(), gameID, id, env, mods, r)
-		return r
+		return s.runCheck(ctx, checkJob{
+			gameID: gameID, id: id, key: key, runID: runID, mods: mods, env: env, depth: depth, pkgs: pkgs,
+			settingRows: settingRows, installing: installing, walk: walk,
+		})
 	})
 	if err != nil {
 		return Result{}, err
@@ -547,6 +446,150 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 	s.cache[key] = entry
 	s.mu.Unlock()
 	return s.withDrift(gameID, id, fp, s.withLongPaths(ctx, walk(), wait, s.withDismissed(gameID, id, s.withCompat(ctx, s.withSaveFarms(ctx, gameID, id, r), gameID, mods, entry.sameJob))))
+}
+
+// checkJob is what one full problems check reads, gathered before the check runs.
+type checkJob struct {
+	gameID, id, key, runID string
+	mods                   []framework.Mod
+	env                    Environment
+	depth                  string
+	pkgs                   []profile.PackageRef
+	settingRows            []LoadFailure
+	installing             bool
+	walk                   func() *longPathWalk
+}
+
+func (s *Service) runCheck(ctx context.Context, j checkJob) Result {
+	gameID, id, mods, env := j.gameID, j.id, j.mods, j.env
+	env.SkipImageOverlap = j.depth == settings.ConflictScanSkipImages
+	env.DropIns = components.KnownBrokenFor(ctx, gameID).DropIns()
+	r := Check(ctx, s.metaFor(gameID), env, mods, s.NexusPages.Requirements(gameID))
+	owners := sync.OnceValue(func() map[string]framework.Mod { return pluginOwners(mods) })
+	enabledMods := slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool { return !x.Enabled })
+	r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, enabledMods)...)
+	flagged, flagsFailed := s.sourceFlagged(ctx, gameID, env.Nexus.Domain, enabledMods)
+	r.Broken = append(r.Broken, flagged...)
+	r.Unknown = r.Unknown || flagsFailed
+	s.addLoaderFailures(&r, j, owners)
+	r.LoadFailures = append(r.LoadFailures, j.settingRows...)
+	s.addPackageChecks(ctx, &r, j, enabledMods)
+	if all, err := s.profiles.Packages(gameID, id); err == nil {
+		addPluginDeps(&r, all, mods)
+	}
+	s.addRunErrors(&r, j, owners)
+	if s.meta != nil {
+		s.addUpdateTiming(ctx, &r, j)
+	}
+	logCheckTimings(id, r.Timings)
+	r.Cleanup = s.settleOrphans(j.key, r.Cleanup, j.installing)
+	// The walk starts once the rest of the check is done, so it never slows an answer that does not wait for it.
+	s.recordHealthAfter(j.walk(), gameID, id, env, mods, r)
+	return r
+}
+
+func (s *Service) addLoaderFailures(r *Result, j checkJob, owners func() map[string]framework.Mod) {
+	gameID, id := j.gameID, j.id
+	l, ok := game.LoaderOf(gameID, s.profiles.LoaderID(gameID, id))
+	if ok {
+		if dir, err := s.profiles.ProfileDir(gameID, id); err == nil {
+			r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, s.playerLog(gameID, id, l), owners, packagePatchers(j.pkgs, j.mods))
+		}
+		if f, bad := gameVersionFailure(gameID, l, j.env); bad {
+			r.LoadFailures = append(r.LoadFailures, f)
+		}
+		r.LoadFailures = append(r.LoadFailures, s.extensionFailures(gameID, id, l)...)
+	}
+	if game.HasPath(gameID, game.PathLog) {
+		if _, own := l.(loader.WithLogs); !own {
+			r.LoadFailures = append(r.LoadFailures, gameLogFailures(s.gameLog(gameID, id), j.mods)...)
+		}
+	}
+}
+
+func (s *Service) addPackageChecks(ctx context.Context, r *Result, j checkJob, enabledMods []framework.Mod) {
+	if src, ok := thunderstore.Registered(); ok {
+		var failed bool
+		r.Deprecated, failed = deprecatedPackages(ctx, src, thunderstoreKey(j.gameID), "", j.pkgs)
+		r.Unknown = r.Unknown || failed
+	}
+	deprecated := map[string]bool{}
+	for _, d := range r.Deprecated {
+		deprecated[d.Key] = true
+	}
+	var devNames []string
+	if s.DevPackages != nil {
+		devNames = s.DevPackages(j.gameID)
+	}
+	developed := map[string]bool{}
+	for _, p := range j.pkgs {
+		developed[p.Key] = slices.ContainsFunc(devNames, func(n string) bool { return strings.EqualFold(n, p.Name) }) ||
+			slices.ContainsFunc(j.mods, func(m framework.Mod) bool { return m.Key == p.Key && m.SourceFolder != "" })
+	}
+	r.PluginClashes = pluginClashes(j.pkgs, deprecated, developed)
+	r.Broken = append(r.Broken, knownBrokenMods(ctx, j.gameID, j.env.GameVersion, j.pkgs, enabledMods)...)
+}
+
+func addPluginDeps(r *Result, all []profile.PackageRef, mods []framework.Mod) {
+	missing, incompatible := pluginDeps(all, mods)
+	declared := map[string]dotnet.Declared{}
+	for _, p := range all {
+		if p.Enabled {
+			declared[p.Key] = declaredIn(p.Dir)
+		}
+	}
+	r.Broken = append(r.Broken, pluginCycles(all, declared)...)
+	r.Missing = append(r.Missing, dropCovered(missing, r.Missing)...)
+	for _, f := range incompatible {
+		if !slices.ContainsFunc(r.LoadFailures, func(x LoadFailure) bool { return x.Key == f.Key && x.Kind == f.Kind }) {
+			r.LoadFailures = append(r.LoadFailures, f)
+		}
+	}
+}
+
+func (s *Service) addRunErrors(r *Result, j checkJob, owners func() map[string]framework.Mod) {
+	if s.Runs == nil || j.runID == "" {
+		if r.RunErrors == nil {
+			r.RunErrors = []RunError{}
+		}
+		return
+	}
+	_, summary, err := s.Runs.LastRunSummary(j.gameID, j.id)
+	if err != nil {
+		return
+	}
+	r.RunErrors = RunErrorsFromSummary(j.runID, summary, j.mods, owners)
+	r.LoadFailures = append(r.LoadFailures, startFailure(j.runID, summary)...)
+	// A mod listed under errors after load needs no second row for the same errors, unless the run crashed.
+	r.RunErrors = slices.DeleteFunc(r.RunErrors, func(e RunError) bool {
+		return !e.Severe && slices.ContainsFunc(r.LoadFailures, func(f LoadFailure) bool { return f.Ran && f.Key == e.Key })
+	})
+}
+
+func (s *Service) addUpdateTiming(ctx context.Context, r *Result, j checkJob) {
+	enabledOnly := false
+	if s.settings != nil {
+		enabledOnly = s.settings.Get().CheckOnlyEnabledMods
+	}
+	updateStart := time.Now()
+	ur := checkUpdates(ctx, s.metaFor(j.gameID), j.env, j.mods, enabledOnly, false, s.NexusFiles)
+	asked := 0
+	for _, x := range j.mods {
+		if (profile.Source{Kind: x.SourceKind}).Bundled() || (enabledOnly && !x.Enabled) {
+			continue
+		}
+		asked++
+	}
+	r.Timings = append(r.Timings, CheckTiming{Name: "updates", Ms: time.Since(updateStart).Milliseconds(), Count: asked})
+	if s.updates == nil || ur.Unknown {
+		return
+	}
+	ufp := fingerprint(j.env, j.mods, "")
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if c, ok := s.updates[j.key]; !ok || c.smapiOnly || c.fingerprint != ufp {
+		s.updates[j.key] = cachedUpdates{fingerprint: ufp, at: time.Now(), result: ur, smapiOnly: true}
+	}
 }
 
 // settleOrphans keeps the count steady while the queue installs: a dependency lands before the mod that needs it, so

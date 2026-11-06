@@ -33,13 +33,7 @@ func pluginDeps(pkgs []profile.PackageRef, mods []framework.Mod) ([]Missing, []L
 	for _, p := range pkgs {
 		d := declaredIn(p.Dir)
 		declared[p.Key] = d
-		for _, pl := range d.Plugins {
-			if !plugins.Loadable(pl) {
-				continue
-			}
-			g := strings.ToLower(pl.GUID)
-			byGUID[g] = append(byGUID[g], installedPlugin{p, pl.Version})
-		}
+		indexLoadable(byGUID, p, d)
 	}
 	var missing []Missing
 	var clashes []LoadFailure
@@ -59,21 +53,15 @@ func pluginDeps(pkgs []profile.PackageRef, mods []framework.Mod) ([]Missing, []L
 				continue
 			}
 			seen[p.Key+"\x00"+g+"\x00"+r.Kind] = true
-			if r.Kind == dotnet.Incompatible {
+			switch r.Kind {
+			case dotnet.Incompatible:
 				if other, ok := enabledProvider(byGUID[g], p.Key); ok {
-					clashes = append(clashes, LoadFailure{
-						Key: p.Key, ID: p.ID, Name: p.Name, Plugin: name, Kind: bepinex5.KindIncompatiblePlugin,
-						Dependency: other.pkg.Name, Message: "incompatible with " + r.GUID,
-						Code: "incompatibleWith", Params: map[string]string{"list": r.GUID},
-					})
+					clashes = append(clashes, incompatibleClash(p, name, r, other))
 				}
-				continue
-			}
-			if r.Kind != dotnet.HardDependency {
-				continue
-			}
-			if m, ok := unmetDependency(r, byGUID[g], mods, p, name); ok {
-				missing = append(missing, m)
+			case dotnet.HardDependency:
+				if m, ok := unmetDependency(r, byGUID[g], mods, p, name); ok {
+					missing = append(missing, m)
+				}
 			}
 		}
 	}
@@ -200,5 +188,23 @@ func withPluginDependencies(mods []framework.Mod, pkgs []profile.PackageRef) {
 					mod.Dependency{UniqueID: dep.ID.Local(), Format: dep.ID.Format(), Required: r.Kind == dotnet.HardDependency})
 			}
 		}
+	}
+}
+
+func indexLoadable(byGUID map[string][]installedPlugin, p profile.PackageRef, d dotnet.Declared) {
+	for _, pl := range d.Plugins {
+		if !plugins.Loadable(pl) {
+			continue
+		}
+		g := strings.ToLower(pl.GUID)
+		byGUID[g] = append(byGUID[g], installedPlugin{p, pl.Version})
+	}
+}
+
+func incompatibleClash(p profile.PackageRef, name string, r dotnet.Relation, other installedPlugin) LoadFailure {
+	return LoadFailure{
+		Key: p.Key, ID: p.ID, Name: p.Name, Plugin: name, Kind: bepinex5.KindIncompatiblePlugin,
+		Dependency: other.pkg.Name, Message: "incompatible with " + r.GUID,
+		Code: "incompatibleWith", Params: map[string]string{"list": r.GUID},
 	}
 }

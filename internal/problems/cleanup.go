@@ -41,14 +41,7 @@ func cleanupHints(mods []framework.Mod, found []framework.Cleanup, mentioned, de
 
 	// A drop-in replacement stands in for the package a switched-on mod needs, so it is needed too. Thunderstore ids
 	// keep their case, and the drop-in list is lower-cased.
-	standIns := map[string]bool{}
-	for id := range enabledNeeds {
-		if pkg, ok := strings.CutPrefix(id, mod.FormatThunderstore+":"); ok {
-			if r, ok := dropIns[strings.ToLower(pkg)]; ok {
-				standIns[mod.FormatThunderstore+":"+r] = true
-			}
-		}
-	}
+	standIns := dropInStandIns(enabledNeeds, dropIns)
 	needed := func(id string) bool { return enabledNeeds[id] || standIns[strings.ToLower(id)] }
 
 	out := make([]framework.Cleanup, 0)
@@ -96,4 +89,19 @@ func recordCleanupDependency(im framework.Mod, uniqueID mod.ID, enabledNeeds, di
 func isDeveloped(im framework.Mod, developed []string) bool {
 	return im.SourceFolder != "" ||
 		(im.SourceName != "" && slices.ContainsFunc(developed, func(p string) bool { return strings.EqualFold(p, im.SourceName) }))
+}
+
+// dropInStandIns maps each needed Thunderstore id to the drop-in replacement that stands in for it.
+func dropInStandIns(enabledNeeds map[string]bool, dropIns map[string]string) map[string]bool {
+	standIns := map[string]bool{}
+	for id := range enabledNeeds {
+		pkg, ok := strings.CutPrefix(id, mod.FormatThunderstore+":")
+		if !ok {
+			continue
+		}
+		if r, ok := dropIns[strings.ToLower(pkg)]; ok {
+			standIns[mod.FormatThunderstore+":"+r] = true
+		}
+	}
+	return standIns
 }

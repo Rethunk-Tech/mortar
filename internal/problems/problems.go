@@ -391,19 +391,7 @@ func duplicatesWithNexus(ctx context.Context, m Meta, scheme string, enabled []f
 		if err != nil {
 			continue
 		}
-		for j := range files {
-			_, fileID, _ := nexusFile(files[j].Key)
-			for _, file := range page.Downloads {
-				if file.ID != int64(fileID) {
-					continue
-				}
-				files[j].FileName = cmp.Or(file.FileName, out[i].Name+" file "+strconv.Itoa(fileID))
-				files[j].Version = file.Version
-				kind := strings.ToLower(file.Type)
-				optional = optional || kind == "optional" || kind == "miscellaneous"
-				break
-			}
-		}
+		optional = fillNexusFiles(files, page.Downloads, out[i].Name) || optional
 		files = slices.DeleteFunc(files, func(file NexusFile) bool { return file.FileName == "" })
 		if len(files) < 2 {
 			continue
@@ -420,6 +408,25 @@ func duplicatesWithNexus(ctx context.Context, m Meta, scheme string, enabled []f
 		out[i].NexusFiles, out[i].NexusOptional = files, optional
 	}
 	return out
+}
+
+// fillNexusFiles names each file from the page's downloads and reports whether any is an optional or miscellaneous one.
+func fillNexusFiles(files []NexusFile, downloads []smapiweb.File, modName string) bool {
+	optional := false
+	for j := range files {
+		_, fileID, _ := nexusFile(files[j].Key)
+		for _, file := range downloads {
+			if file.ID != int64(fileID) {
+				continue
+			}
+			files[j].FileName = cmp.Or(file.FileName, modName+" file "+strconv.Itoa(fileID))
+			files[j].Version = file.Version
+			kind := strings.ToLower(file.Type)
+			optional = optional || kind == "optional" || kind == "miscellaneous"
+			break
+		}
+	}
+	return optional
 }
 
 func newerNexusFile(a, b NexusFile) bool {
@@ -517,19 +524,15 @@ func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain
 	}
 	pages, pagesUnknown := fetchAll(ctx, reqIDs, m.Page)
 	unknown = unknown || pagesUnknown
-	seenEntries := map[string]bool{}
-	// What the installed mods say about a required page does not depend on which mod lists it.
-	type pageState struct {
-		reason    string
-		satisfied bool
+	run := &listedRun{
+		m: m, domain: domain, enabled: enabled, all: all, pages: pages, byPage: requirementsByPage,
+		states: map[int]listedPageState{}, switchedOnByEntry: map[string][]framework.Mod{}, out: out, unknown: unknown,
 	}
-	states := map[int]pageState{}
-	switchedOnByEntry := map[string][]framework.Mod{}
 	for _, x := range enabled {
 		key := strings.ToLower(x.Key)
-		switchedOnByEntry[key] = append(switchedOnByEntry[key], x)
+		run.switchedOnByEntry[key] = append(run.switchedOnByEntry[key], x)
 	}
-
+	seenEntries := map[string]bool{}
 	for _, d := range enabled {
 		pageID, _, ok := nexusFile(d.Key)
 		if !ok {
@@ -544,73 +547,97 @@ func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain
 		seenOutside := map[string]bool{}
 		for _, req := range requirementsByPage[pageID] {
 			if req.External {
-				if name := strings.TrimSpace(req.Name); name != "" && !seenOutside[name] && !installedByName(all, name) {
-					seenOutside[name] = true
-					out = append(out, Missing{
-						DependentID: d.ModID(), DependentName: d.Name, ID: mod.NewID(OutsideFormat, name), Reason: "absent",
-						Listed: true, External: true, Note: req.Notes, Optional: optionalRequirement(req.Notes) || manifestOmits(all, d.Key, name),
-					})
-				}
-				continue
+				run.outside(d, req, seenOutside)
+			} else if !seenRequirements[req.ModID] {
+				seenRequirements[req.ModID] = true
+				run.inside(ctx, d, req, entryKey)
 			}
-			if seenRequirements[req.ModID] {
-				continue
-			}
-			seenRequirements[req.ModID] = true
-			page, hasPage := pages[req.ModID]
-			state, known := states[req.ModID]
-			if !known {
-				for _, x := range all {
-					if listedMatch(x, req.ModID, page, hasPage) {
-						needed = append(needed, x.ModID().Fold())
-					}
-				}
-				state.reason, state.satisfied = listedDepState(all, req.ModID, page, hasPage)
-				states[req.ModID] = state
-			}
-			if hasPage && manifestHasRequirement(switchedOnByEntry[entryKey], page) {
-				continue
-			}
-			reason, satisfied := state.reason, state.satisfied
-			if satisfied && reason == "" {
-				continue
-			}
-			uniqueID := mod.NewID("nexus", strconv.Itoa(req.ModID))
-			if hasPage {
-				if id := mainID(page); id != "" {
-					uniqueID = id
-				}
-			}
-			miss := Missing{
-				DependentID:   d.ModID(),
-				DependentName: d.Name,
-				ID:            uniqueID,
-				Reason:        reason,
-				Listed:        true,
-				Note:          req.Notes,
-				Optional:      optionalRequirement(req.Notes),
-			}
-			miss.Reason = cmp.Or(miss.Reason, "absent")
-			pageName := cmp.Or(page.Name, req.Name)
-			pageRef := &Ref{
-				Site:     "Nexus",
-				PageID:   req.ModID,
-				PageName: pageName,
-				URL:      nexusmods.ModURL(domain, req.ModID),
-			}
-			if uniqueID == mod.NewID("nexus", strconv.Itoa(req.ModID)) {
-				miss.Where = pageRef
-			} else if located, ok := Locate(ctx, m, domain, uniqueID, "", d.UpdateKeys); located != nil {
-				miss.Where = located
-				unknown = unknown || !ok
-			} else {
-				miss.Where = pageRef
-				unknown = unknown || !ok
-			}
-			out = append(out, miss)
 		}
 	}
-	return out, needed, unknown
+	return run.out, run.needed, run.unknown
+}
+
+// listedPageState is what the installed mods say about a required page; it does not depend on which mod lists it.
+type listedPageState struct {
+	reason    string
+	satisfied bool
+}
+
+// listedRun carries listedRequirements' accumulating results across its per-requirement steps.
+type listedRun struct {
+	m                 Meta
+	domain            string
+	enabled, all      []framework.Mod
+	pages             map[int]smapiweb.Page
+	byPage            map[int][]nexusmods.Requirement
+	states            map[int]listedPageState
+	switchedOnByEntry map[string][]framework.Mod
+	out               []Missing
+	needed            []string
+	unknown           bool
+}
+
+func (r *listedRun) outside(d framework.Mod, req nexusmods.Requirement, seen map[string]bool) {
+	name := strings.TrimSpace(req.Name)
+	if name == "" || seen[name] || installedByName(r.all, name) {
+		return
+	}
+	seen[name] = true
+	r.out = append(r.out, Missing{
+		DependentID: d.ModID(), DependentName: d.Name, ID: mod.NewID(OutsideFormat, name), Reason: "absent",
+		Listed: true, External: true, Note: req.Notes, Optional: optionalRequirement(req.Notes) || manifestOmits(r.all, d.Key, name),
+	})
+}
+
+func (r *listedRun) inside(ctx context.Context, d framework.Mod, req nexusmods.Requirement, entryKey string) {
+	page, hasPage := r.pages[req.ModID]
+	state, known := r.states[req.ModID]
+	if !known {
+		for _, x := range r.all {
+			if listedMatch(x, req.ModID, page, hasPage) {
+				r.needed = append(r.needed, x.ModID().Fold())
+			}
+		}
+		state.reason, state.satisfied = listedDepState(r.all, req.ModID, page, hasPage)
+		r.states[req.ModID] = state
+	}
+	if hasPage && manifestHasRequirement(r.switchedOnByEntry[entryKey], page) {
+		return
+	}
+	if state.satisfied && state.reason == "" {
+		return
+	}
+	uniqueID := mod.NewID("nexus", strconv.Itoa(req.ModID))
+	if hasPage {
+		if id := mainID(page); id != "" {
+			uniqueID = id
+		}
+	}
+	miss := Missing{
+		DependentID:   d.ModID(),
+		DependentName: d.Name,
+		ID:            uniqueID,
+		Reason:        cmp.Or(state.reason, "absent"),
+		Listed:        true,
+		Note:          req.Notes,
+		Optional:      optionalRequirement(req.Notes),
+	}
+	pageRef := &Ref{
+		Site:     "Nexus",
+		PageID:   req.ModID,
+		PageName: cmp.Or(page.Name, req.Name),
+		URL:      nexusmods.ModURL(r.domain, req.ModID),
+	}
+	miss.Where = pageRef
+	if uniqueID != mod.NewID("nexus", strconv.Itoa(req.ModID)) {
+		if located, ok := Locate(ctx, r.m, r.domain, uniqueID, "", d.UpdateKeys); located != nil {
+			miss.Where = located
+			r.unknown = r.unknown || !ok
+		} else {
+			r.unknown = r.unknown || !ok
+		}
+	}
+	r.out = append(r.out, miss)
 }
 
 // installedByName reports an enabled mod that answers an outside requirement's name. Pages name these loosely

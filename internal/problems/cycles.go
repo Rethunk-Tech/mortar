@@ -84,12 +84,7 @@ func pluginCycles(pkgs []profile.PackageRef, declared map[string]dotnet.Declared
 			if g == "" {
 				continue
 			}
-			var own []dotnet.Relation
-			for _, r := range d.Relations {
-				if strings.EqualFold(r.Plugin, pl.GUID) {
-					own = append(own, r)
-				}
-			}
+			own := relationsOf(d.Relations, pl.GUID)
 			node := plugin{p, cmp.Or(pl.Name, p.Name), pl.Version}
 			if i, dup := index[g]; dup {
 				if c, ok := semverish.Compare(pl.Version, nodes[i].version); ok && c > 0 {
@@ -102,20 +97,7 @@ func pluginCycles(pkgs []profile.PackageRef, declared map[string]dotnet.Declared
 			relations = append(relations, own)
 		}
 	}
-	g := make(graph, len(nodes))
-	for i, rs := range relations {
-		if slices.ContainsFunc(rs, func(r dotnet.Relation) bool {
-			_, present := index[strings.ToLower(r.GUID)]
-			return r.Kind == dotnet.Incompatible && present
-		}) {
-			continue
-		}
-		for _, r := range rs {
-			if j, ok := index[strings.ToLower(r.GUID)]; ok && r.Kind != dotnet.Incompatible {
-				g.link(i, j, true)
-			}
-		}
-	}
+	g := pluginGraph(len(nodes), relations, index)
 	var out []Broken
 	for _, l := range g.loops(func(i int) string { return nodes[i].name }) {
 		loop := make([]Dependent, len(l.path))
@@ -296,4 +278,33 @@ func stronglyConnected(n int, successors func(int) []int) [][]int {
 		}
 	}
 	return out
+}
+
+func relationsOf(all []dotnet.Relation, guid string) []dotnet.Relation {
+	var own []dotnet.Relation
+	for _, r := range all {
+		if strings.EqualFold(r.Plugin, guid) {
+			own = append(own, r)
+		}
+	}
+	return own
+}
+
+// pluginGraph links each plugin to the ones it hard-depends on; a plugin declaring an installed incompatible one never loads, so it has no links.
+func pluginGraph(n int, relations [][]dotnet.Relation, index map[string]int) graph {
+	g := make(graph, n)
+	for i, rs := range relations {
+		if slices.ContainsFunc(rs, func(r dotnet.Relation) bool {
+			_, present := index[strings.ToLower(r.GUID)]
+			return r.Kind == dotnet.Incompatible && present
+		}) {
+			continue
+		}
+		for _, r := range rs {
+			if j, ok := index[strings.ToLower(r.GUID)]; ok && r.Kind != dotnet.Incompatible {
+				g.link(i, j, true)
+			}
+		}
+	}
+	return g
 }

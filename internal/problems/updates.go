@@ -144,17 +144,7 @@ type NexusFilesOf func(ctx context.Context, t nexusmods.Title, modIDs []int) (ma
 func checkUpdates(ctx context.Context, m Meta, env Environment, mods []framework.Mod, enabledOnly, fresh bool, filesOf NexusFilesOf) UpdatesResult {
 	r := UpdatesResult{Updates: []Update{}, Held: []Held{}}
 	req := meta.UpdateRequest{APIVersion: env.APIVersion, GameVersion: env.GameVersion, Platform: env.Platform, Fresh: fresh}
-	var asked []framework.Mod
-	for _, x := range mods {
-		if (profile.Source{Kind: x.SourceKind}).Bundled() {
-			continue
-		}
-		if enabledOnly && !x.Enabled {
-			continue
-		}
-		asked = append(asked, x)
-		req.Mods = append(req.Mods, smapiweb.InstalledMod{ID: x.ModID().Local(), UpdateKeys: x.UpdateKeys, Version: x.Version})
-	}
+	asked := askedMods(mods, enabledOnly, &req)
 	if len(asked) == 0 {
 		return r
 	}
@@ -169,17 +159,11 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []framework
 		return nexusFileIsCurrent(ctx, m, x, url, version)
 	}
 	for i, res := range results {
-		if res.Suggested != nil && (downloaded(asked[i], res.Suggested.Version) ||
-			current(asked[i], res.Suggested.URL, res.Suggested.Version)) {
-			x := asked[i]
-			r.Held = append(r.Held, Held{
-				Key: x.Key, ID: x.ModID(), Name: x.Name, Version: res.Suggested.Version,
-				Have: cmp.Or(x.SourceVersion, x.Version), Reason: HeldCurrent,
-			})
+		if res.Suggested != nil && (downloaded(asked[i], res.Suggested.Version) || current(asked[i], res.Suggested.URL, res.Suggested.Version)) {
+			r.Held = append(r.Held, heldCurrent(asked[i], res.Suggested.Version))
 			res.Suggested = nil
 		}
-		if res.Unofficial != nil && (downloaded(asked[i], res.Unofficial.Version) ||
-			current(asked[i], res.Unofficial.URL, res.Unofficial.Version)) {
+		if res.Unofficial != nil && (downloaded(asked[i], res.Unofficial.Version) || current(asked[i], res.Unofficial.URL, res.Unofficial.Version)) {
 			res.Unofficial = nil
 		}
 		if !res.Known {
@@ -193,38 +177,62 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []framework
 		}
 		x := asked[i]
 		if res.Suggested != nil {
-			u := Update{
-				Key: x.Key, ID: x.ModID(), Name: x.Name,
-				Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
-				NexusID: nexusUpdate(x.UpdateKeys, res.Suggested.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Suggested.URL),
-				GitHubFallback: cmp.Or(githubFallback(x.UpdateKeys, res.Suggested.URL), metadataFallback(res.GitHubRepo, res.Suggested.URL)),
-				Source:         updateSource(*res.Suggested, nexusUpdate(x.UpdateKeys, res.Suggested.URL), githubUpdate(x.UpdateKeys, res.Suggested.URL)),
-			}
-			lineDone := false
-			if files, ok := live[u.NexusID]; ok && u.GitHubRepo == "" {
-				var f nexusmods.File
-				f, u.PickFile, lineDone = supersedingFile(files, x, u.NexusID, u.Version)
-				u.FileID = f.FileID
-				if f.Version != "" {
-					u.Version = f.Version
-				}
-			}
-			if !lineDone {
+			if u, lineDone := suggestedUpdate(x, res, live); !lineDone {
 				r.Updates = append(r.Updates, u)
 			}
 		}
 		if res.Unofficial != nil {
-			r.Updates = append(r.Updates, Update{
-				Key: x.Key, ID: x.ModID(), Name: x.Name,
-				Installed: x.Version, Version: res.Unofficial.Version, URL: res.Unofficial.URL,
-				NexusID: nexusUpdate(x.UpdateKeys, res.Unofficial.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Unofficial.URL),
-				Source:     updateSource(*res.Unofficial, nexusUpdate(x.UpdateKeys, res.Unofficial.URL), githubUpdate(x.UpdateKeys, res.Unofficial.URL)),
-				Unofficial: true,
-			})
+			r.Updates = append(r.Updates, unofficialUpdate(x, *res.Unofficial))
 		}
 	}
 	applyChannelFileOffers(ctx, m, env.Nexus.Domain, asked, &r)
 	return r
+}
+
+// askedMods are the mods whose updates are asked for, added to req in the same order.
+func askedMods(mods []framework.Mod, enabledOnly bool, req *meta.UpdateRequest) []framework.Mod {
+	var asked []framework.Mod
+	for _, x := range mods {
+		if (profile.Source{Kind: x.SourceKind}).Bundled() || (enabledOnly && !x.Enabled) {
+			continue
+		}
+		asked = append(asked, x)
+		req.Mods = append(req.Mods, smapiweb.InstalledMod{ID: x.ModID().Local(), UpdateKeys: x.UpdateKeys, Version: x.Version})
+	}
+	return asked
+}
+
+func heldCurrent(x framework.Mod, version string) Held {
+	return Held{Key: x.Key, ID: x.ModID(), Name: x.Name, Version: version, Have: cmp.Or(x.SourceVersion, x.Version), Reason: HeldCurrent}
+}
+
+func suggestedUpdate(x framework.Mod, res smapiweb.UpdateResult, live map[int][]nexusmods.BatchFile) (u Update, lineDone bool) {
+	u = Update{
+		Key: x.Key, ID: x.ModID(), Name: x.Name,
+		Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
+		NexusID: nexusUpdate(x.UpdateKeys, res.Suggested.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Suggested.URL),
+		GitHubFallback: cmp.Or(githubFallback(x.UpdateKeys, res.Suggested.URL), metadataFallback(res.GitHubRepo, res.Suggested.URL)),
+		Source:         updateSource(*res.Suggested, nexusUpdate(x.UpdateKeys, res.Suggested.URL), githubUpdate(x.UpdateKeys, res.Suggested.URL)),
+	}
+	if files, ok := live[u.NexusID]; ok && u.GitHubRepo == "" {
+		var f nexusmods.File
+		f, u.PickFile, lineDone = supersedingFile(files, x, u.NexusID, u.Version)
+		u.FileID = f.FileID
+		if f.Version != "" {
+			u.Version = f.Version
+		}
+	}
+	return u, lineDone
+}
+
+func unofficialUpdate(x framework.Mod, un smapiweb.Update) Update {
+	return Update{
+		Key: x.Key, ID: x.ModID(), Name: x.Name,
+		Installed: x.Version, Version: un.Version, URL: un.URL,
+		NexusID: nexusUpdate(x.UpdateKeys, un.URL), GitHubRepo: githubUpdate(x.UpdateKeys, un.URL),
+		Source:     updateSource(un, nexusUpdate(x.UpdateKeys, un.URL), githubUpdate(x.UpdateKeys, un.URL)),
+		Unofficial: true,
+	}
 }
 
 // HideHeld drops updates the profile has pinned or skipped for that exact newer version, and prerelease

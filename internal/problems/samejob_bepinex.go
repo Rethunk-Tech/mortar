@@ -76,26 +76,7 @@ func packageFootprints(pkgs []profile.PackageRef, mods []framework.Mod) (map[str
 	}
 	mods = slices.Clone(mods)
 	for key, d := range declared {
-		m := &mods[byKey[key]]
-		m.Dependencies = slices.Clone(m.Dependencies)
-		related := map[string]bool{}
-		for _, r := range d.Relations {
-			if r.Kind != dotnet.Incompatible {
-				related[strings.ToLower(r.GUID)] = true
-			}
-		}
-		for _, pl := range d.Plugins {
-			related[strings.ToLower(pl.GUID)] = true
-		}
-		for g := range related {
-			for _, other := range owners[g] {
-				if other == key {
-					continue
-				}
-				oid := mods[byKey[other]].ModID()
-				m.Dependencies = append(m.Dependencies, mod.Dependency{UniqueID: oid.Local(), Format: oid.Format(), Required: true})
-			}
-		}
+		addOwnerDependencies(&mods[byKey[key]], key, d, owners, func(other string) mod.ID { return mods[byKey[other]].ModID() })
 	}
 	return out, mods
 }
@@ -160,4 +141,27 @@ func (x *patchIndex) patchedBy(methods []string) []string {
 	}
 	slices.Sort(out)
 	return slices.Compact(out)
+}
+
+// addOwnerDependencies makes a package depend on every other package that owns a plugin it relates to.
+func addOwnerDependencies(m *framework.Mod, key string, d dotnet.Declared, owners map[string][]string, idOf func(key string) mod.ID) {
+	m.Dependencies = slices.Clone(m.Dependencies)
+	related := map[string]bool{}
+	for _, r := range d.Relations {
+		if r.Kind != dotnet.Incompatible {
+			related[strings.ToLower(r.GUID)] = true
+		}
+	}
+	for _, pl := range d.Plugins {
+		related[strings.ToLower(pl.GUID)] = true
+	}
+	for g := range related {
+		for _, other := range owners[g] {
+			if other == key {
+				continue
+			}
+			oid := idOf(other)
+			m.Dependencies = append(m.Dependencies, mod.Dependency{UniqueID: oid.Local(), Format: oid.Format(), Required: true})
+		}
+	}
 }
