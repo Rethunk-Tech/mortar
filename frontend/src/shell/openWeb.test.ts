@@ -1,17 +1,20 @@
-import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, spyOn, test } from 'bun:test'
 import * as opener from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import { stubBinding } from '../testing/stubBinding.ts'
 import { openWeb } from './openWeb.ts'
 
 let opened: unknown[][] = []
 
+// Only window.open is stubbed: the DOM the preload installs stays for the tests that run after these.
 beforeEach(() => {
   opened = []
-  Object.assign(globalThis, { window: { open: (...a: unknown[]) => opened.push(a) } })
+  spyOn(window, 'open').mockImplementation((...a: unknown[]) => {
+    opened.push(a)
+    return null
+  })
 })
 afterEach(() => {
   mock.restore()
-  Reflect.deleteProperty(globalThis, 'window')
 })
 
 test('a server build opens the address in this tab, without an opener', () => {
