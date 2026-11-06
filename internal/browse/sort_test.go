@@ -38,12 +38,18 @@ func TestSortMergedUpdatedPlacesUnparsableDatesLast(t *testing.T) {
 	}
 }
 
-func TestSortMergedLeavesOtherSortsInSourceOrder(t *testing.T) {
-	items := []Item{{ID: "a", Downloads: 1}, {ID: "b", Downloads: 9}}
-	slices.SortStableFunc(items, byMergedSort(""))
-	slices.SortStableFunc(items, byMergedSort(source.SortName))
-	if items[0].ID != "a" {
-		t.Fatalf("order = %v", ids(items))
+// A sort outside MergedSorts is not ranked across sources: their pages interleave, each in its own order, instead of
+// being ordered by download count.
+func TestASortOutsideMergedSortsKeepsEachSourcesOwnOrder(t *testing.T) {
+	a := &rankSource{id: "oa", downloads: []int{1, 2, 3}, sorts: []string{source.SortDownloads, source.SortName}}
+	b := &rankSource{id: "ob", downloads: []int{900, 800}, sorts: []string{source.SortDownloads, source.SortName}}
+	game := rankGame(t, a, b)
+	page, err := (&Client{}).searchAll(t.Context(), game, "", 1, Filter{Sort: source.SortName})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := downloadsOf(page.Items); !slices.Equal(got, []int{1, 900, 2, 800, 3}) {
+		t.Fatalf("name sort order = %v, want the sources interleaved, not ranked by downloads", got)
 	}
 }
 
