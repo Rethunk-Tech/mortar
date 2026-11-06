@@ -25,6 +25,7 @@ import (
 	"github.com/Rethunk-Tech/go-nexusmods"
 
 	gh "github.com/Rethunk-Tech/go-github"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -712,7 +713,7 @@ func (s *Service) writeLoaderConfigs(game, profileID string, configs []share.Loa
 		if !share.UnderRoots(c.Path, roots) || (state != "" && strings.EqualFold(c.Path, state)) {
 			continue
 		}
-		if !overwrite && exists(filepath.Join(dir, filepath.FromSlash(c.Path))) {
+		if !overwrite && datadir.Present(filepath.Join(dir, filepath.FromSlash(c.Path))) {
 			continue
 		}
 		files[c.Path] = c.Data
@@ -1617,7 +1618,7 @@ func classify(arg string) (Arrival, bool) {
 	if !strings.EqualFold(filepath.Ext(arg), ".mortar") {
 		return Arrival{}, false
 	}
-	if info, err := os.Stat(arg); err != nil || !info.Mode().IsRegular() {
+	if !safefs.IsFile(arg) {
 		return Arrival{}, false
 	}
 	return Arrival{Kind: ArrivalFile, Value: arg}, true
@@ -1673,9 +1674,4 @@ func (s *Service) Inbox() []Arrival {
 	out := append([]Arrival{}, s.inbox...)
 	s.inbox = nil
 	return out
-}
-
-func exists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
 }

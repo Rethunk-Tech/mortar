@@ -382,7 +382,7 @@ func restoreBaseFile(entryDir, baseSrc, rel string) error {
 // pruneEmptyDirs drops the folders only an overlay brought once they are empty, from d up to entryDir; os.Remove
 // leaves a folder that still holds anything.
 func pruneEmptyDirs(entryDir, d string) {
-	for ; d != entryDir && strings.HasPrefix(d, entryDir+string(filepath.Separator)); d = filepath.Dir(d) {
+	for ; d != entryDir && safefs.UnderRoot(entryDir, d); d = filepath.Dir(d) {
 		if safefs.Remove(d) != nil {
 			return
 		}

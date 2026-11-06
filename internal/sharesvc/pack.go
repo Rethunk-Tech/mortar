@@ -11,6 +11,7 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
@@ -202,7 +203,7 @@ func (s *Service) writePackFiles(game, profileID string, files map[string][]byte
 	}
 	out := map[string][]byte{}
 	for rel, data := range files {
-		if !overwrite && exists(filepath.Join(dir, filepath.FromSlash(rel))) {
+		if !overwrite && datadir.Present(filepath.Join(dir, filepath.FromSlash(rel))) {
 			continue
 		}
 		out[rel] = data

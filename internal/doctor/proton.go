@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -95,7 +94,7 @@ func flatpakCheck(g game.GameInfo, compat string) Check {
 		Code: "flatpakReach", Params: params("game", g.Name),
 	}
 	home, err := os.UserHomeDir()
-	if err != nil || strings.HasPrefix(compat, steam.FlatpakRoot(home)+string(filepath.Separator)) {
+	if err != nil || safefs.UnderRoot(steam.FlatpakRoot(home), compat) {
 		return c
 	}
 	library := filepath.Dir(filepath.Dir(filepath.Dir(compat)))
