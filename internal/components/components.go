@@ -854,7 +854,7 @@ func (sp ServerSpec) validate() error {
 	if sp.Clients == "" {
 		return errors.New("a server names the game whose mods it runs")
 	}
-	if sp.ConfigFile != "" && (strings.Contains(sp.ConfigFile, "\\") || !fs.ValidPath(sp.ConfigFile) || sp.ConfigFile == ".") {
+	if sp.ConfigFile != "" && unsafeRel(sp.ConfigFile) {
 		return fmt.Errorf("server config file %q is not a local slash path", sp.ConfigFile)
 	}
 	seen := map[string]bool{}
@@ -1031,6 +1031,22 @@ func (g GameInfo) Validate() error {
 	if g.Enabled && g.Stores == (GameStores{}) && !g.ManualFolder {
 		return fmt.Errorf("enabled game %q needs a store, or manualFolder", g.ID)
 	}
+	for _, check := range []func() error{g.validateNames, g.validateLoaders, g.validateSettingsAndSaves, g.validateStores} {
+		if err := check(); err != nil {
+			return err
+		}
+	}
+	if err := g.validateTargets(); err != nil {
+		return err
+	}
+	sources, err := g.validateSources()
+	if err != nil {
+		return err
+	}
+	return g.validateTemplates(sources)
+}
+
+func (g GameInfo) validateNames() error {
 	names := []string{g.Marker}
 	if g.LinuxMarker != "" {
 		names = append(names, g.LinuxMarker)
@@ -1047,15 +1063,15 @@ func (g GameInfo) Validate() error {
 			return fmt.Errorf("game %q has an unsafe file or folder name %q", g.ID, name)
 		}
 	}
-	if g.MarkerDir != "" && (strings.Contains(g.MarkerDir, "\\") || !fs.ValidPath(g.MarkerDir) || g.MarkerDir == ".") {
+	if g.MarkerDir != "" && unsafeRel(g.MarkerDir) {
 		return fmt.Errorf("game %q has an unsafe marker folder %q", g.ID, g.MarkerDir)
 	}
 	for _, p := range []string{g.LinuxStart, g.DarwinMarker, g.Art} {
-		if p != "" && (strings.Contains(p, "\\") || !fs.ValidPath(p) || p == ".") {
+		if p != "" && unsafeRel(p) {
 			return fmt.Errorf("game %q has an unsafe install file %q", g.ID, p)
 		}
 	}
-	if f := g.Stores.Flatpak; f != nil && (!PlainFlatpakApp(f.App) || strings.Contains(f.Folder, "\\") || !fs.ValidPath(f.Folder) || f.Folder == ".") {
+	if f := g.Stores.Flatpak; f != nil && (!PlainFlatpakApp(f.App) || unsafeRel(f.Folder)) {
 		return fmt.Errorf("game %q has an unusable Flatpak app %q or folder %q", g.ID, f.App, f.Folder)
 	}
 	if st := g.Stores.Standalone; st != nil {
@@ -1070,45 +1086,61 @@ func (g GameInfo) Validate() error {
 			}
 		}
 	}
+	return nil
+}
+
+func (g GameInfo) validateLoaders() error {
 	for _, l := range g.Loaders {
-		if l.Proxy != "" && !slices.Contains(bepinex.Proxies(), l.Proxy) {
-			return fmt.Errorf("game %q names an unknown Doorstop proxy %q", g.ID, l.Proxy)
+		if err := g.validateLoader(l); err != nil {
+			return err
 		}
-		if t := l.DevTemplate; t != nil && (!devTemplateRepo.MatchString(t.Repo) || !devTemplateRef.MatchString(t.Ref) || strings.Contains(t.Ref, "..")) {
-			return fmt.Errorf("game %q has a mod template %q at %q that is not a GitHub repo and tag", g.ID, t.Repo, t.Ref)
+	}
+	return nil
+}
+
+func (g GameInfo) validateLoader(l GameLoader) error {
+	if l.Proxy != "" && !slices.Contains(bepinex.Proxies(), l.Proxy) {
+		return fmt.Errorf("game %q names an unknown Doorstop proxy %q", g.ID, l.Proxy)
+	}
+	if t := l.DevTemplate; t != nil && (!devTemplateRepo.MatchString(t.Repo) || !devTemplateRef.MatchString(t.Ref) || strings.Contains(t.Ref, "..")) {
+		return fmt.Errorf("game %q has a mod template %q at %q that is not a GitHub repo and tag", g.ID, t.Repo, t.Ref)
+	}
+	if t := l.DevTemplate; t != nil && t.Commit != "" && !devTemplateSHA.MatchString(t.Commit) {
+		return fmt.Errorf("game %q pins mod template %q to %q, which is not a full lowercase commit SHA", g.ID, t.Repo, t.Commit)
+	}
+	if t := l.DevTemplate; t != nil && t.DevHelper != nil && !devPackage.MatchString(t.DevHelper.Package) {
+		return fmt.Errorf("game %q names dev helper %q, which is not a Thunderstore package", g.ID, t.DevHelper.Package)
+	}
+	for _, r := range devRecommends(l.DevTemplate) {
+		if !devPackage.MatchString(r.Package) {
+			return fmt.Errorf("game %q recommends %q, which is not a Thunderstore package", g.ID, r.Package)
 		}
-		if t := l.DevTemplate; t != nil && t.Commit != "" && !devTemplateSHA.MatchString(t.Commit) {
-			return fmt.Errorf("game %q pins mod template %q to %q, which is not a full lowercase commit SHA", g.ID, t.Repo, t.Commit)
-		}
-		if t := l.DevTemplate; t != nil && t.DevHelper != nil && !devPackage.MatchString(t.DevHelper.Package) {
-			return fmt.Errorf("game %q names dev helper %q, which is not a Thunderstore package", g.ID, t.DevHelper.Package)
-		}
-		for _, r := range devRecommends(l.DevTemplate) {
-			if !devPackage.MatchString(r.Package) {
-				return fmt.Errorf("game %q recommends %q, which is not a Thunderstore package", g.ID, r.Package)
+	}
+	if t := l.DevTemplate; t != nil {
+		for _, k := range t.AssetKinds {
+			if err := k.validate(); err != nil {
+				return fmt.Errorf("game %q: %w", g.ID, err)
 			}
 		}
-		if t := l.DevTemplate; t != nil {
-			for _, k := range t.AssetKinds {
-				if err := k.validate(); err != nil {
-					return fmt.Errorf("game %q: %w", g.ID, err)
-				}
-			}
-			if t.Content != nil {
-				if err := t.Content.validate(); err != nil {
-					return fmt.Errorf("game %q: %w", g.ID, err)
-				}
-			}
-		}
-		if l.PlaceDir != "" && (strings.Contains(l.PlaceDir, "\\") || !fs.ValidPath(l.PlaceDir) || l.PlaceDir == ".") {
-			return fmt.Errorf("game %q has an unsafe loader folder %q", g.ID, l.PlaceDir)
-		}
-		for _, r := range l.Routes {
-			if err := r.Validate(); err != nil {
+		if t.Content != nil {
+			if err := t.Content.validate(); err != nil {
 				return fmt.Errorf("game %q: %w", g.ID, err)
 			}
 		}
 	}
+	if l.PlaceDir != "" && unsafeRel(l.PlaceDir) {
+		return fmt.Errorf("game %q has an unsafe loader folder %q", g.ID, l.PlaceDir)
+	}
+	for _, r := range l.Routes {
+		if err := r.Validate(); err != nil {
+			return fmt.Errorf("game %q: %w", g.ID, err)
+		}
+	}
+
+	return nil
+}
+
+func (g GameInfo) validateSettingsAndSaves() error {
 	for _, r := range g.RequiredSettings {
 		if _, ok := g.Paths[r.Path]; !ok || r.Key == "" || r.Value == "" || r.Message == "" {
 			return fmt.Errorf("game %q has a required setting without a path role of the game, a key, a value or a message", g.ID)
@@ -1119,6 +1151,10 @@ func (g GameInfo) Validate() error {
 			return fmt.Errorf("game %q: %w", g.ID, err)
 		}
 	}
+	return g.validateSaves()
+}
+
+func (g GameInfo) validateSaves() error {
 	for _, p := range g.SaveFiles {
 		if !saveFilePattern(p) {
 			return fmt.Errorf("game %q has an unusable save file pattern %q", g.ID, p)
@@ -1152,6 +1188,10 @@ func (g GameInfo) Validate() error {
 			return fmt.Errorf("game %q has an unusable save copy folder %q", g.ID, f)
 		}
 	}
+	return nil
+}
+
+func (g GameInfo) validateStores() error {
 	if g.Stores.Epic != nil {
 		if len(g.Stores.Epic.AppNames) == 0 {
 			return fmt.Errorf("game %q names Epic Games without an AppName", g.ID)
@@ -1165,6 +1205,10 @@ func (g GameInfo) Validate() error {
 	if g.Stores.Xbox != nil && !PlainPackage(g.Stores.Xbox.Package) {
 		return fmt.Errorf("game %q has an unusable Xbox package %q", g.ID, g.Stores.Xbox.Package)
 	}
+	return g.validatePaths()
+}
+
+func (g GameInfo) validatePaths() error {
 	for name, alts := range g.FolderNames {
 		for _, n := range append([]string{name}, alts...) {
 			if n == "" || n == "." || n == ".." || strings.ContainsAny(n, "/\\") {
@@ -1176,7 +1220,7 @@ func (g GameInfo) Validate() error {
 		if _, ok := g.Paths[cp.Role]; !ok {
 			return fmt.Errorf("game %q cache %q names path role %q with no such path", g.ID, cp.Path, cp.Role)
 		}
-		if cp.Path == "" || strings.Contains(cp.Path, "\\") || !fs.ValidPath(cp.Path) || cp.Path == "." {
+		if cp.Path == "" || unsafeRel(cp.Path) {
 			return fmt.Errorf("game %q cache %q on role %q is not a local slash path", g.ID, cp.Path, cp.Role)
 		}
 	}
@@ -1190,60 +1234,75 @@ func (g GameInfo) Validate() error {
 	if g.Deploy != DeployRedirect && g.Deploy != DeployProfile {
 		return fmt.Errorf("game %q has unknown deploy method %q", g.ID, g.Deploy)
 	}
+	return nil
+}
+
+func (g GameInfo) validateTargets() error {
 	targets := make(map[string]struct{}, len(g.Targets))
 	for _, t := range g.Targets {
-		if t.Role != "" {
-			if _, ok := g.Paths[t.Role]; !ok || t.Root != "" {
-				return fmt.Errorf("game %q target %q names path role %q with no such path, or also a root", g.ID, t.ID, t.Role)
-			}
-		} else if t.ID == "" || !underToken(t.Root, "{profileMods}", "{profile}") {
-			return fmt.Errorf("game %q has a target without an id or with an unknown root %q", g.ID, t.Root)
-		}
-		if len(t.Sources) > 0 && t.Role == "" {
-			return fmt.Errorf("game %q target %q lists sources but names no path role", g.ID, t.ID)
-		}
-		for _, src := range t.Sources {
-			if src == "" || src != strings.ToLower(src) || strings.ContainsAny(src, " /\\") {
-				return fmt.Errorf("game %q target %q has an unusable source %q", g.ID, t.ID, src)
-			}
-		}
-		for _, ext := range t.Extensions {
-			if ext == "" || ext != strings.ToLower(ext) || strings.ContainsAny(ext, ".\\/") {
-				return fmt.Errorf("game %q target %q has an unusable extension %q", g.ID, t.ID, ext)
-			}
-		}
-		if _, ok := targets[t.ID]; ok {
-			return fmt.Errorf("game %q lists target %q more than once", g.ID, t.ID)
-		}
-		for _, ext := range t.KeepWhole {
-			if ext == "" || ext != strings.ToLower(ext) || strings.ContainsAny(ext, ".\\/") {
-				return fmt.Errorf("game %q target %q has an unusable keepWhole extension %q", g.ID, t.ID, ext)
-			}
+		if err := g.validateTarget(t, targets); err != nil {
+			return err
 		}
 		targets[t.ID] = struct{}{}
 	}
+	return nil
+}
+
+func (g GameInfo) validateTarget(t TargetDef, targets map[string]struct{}) error {
+	if t.Role != "" {
+		if _, ok := g.Paths[t.Role]; !ok || t.Root != "" {
+			return fmt.Errorf("game %q target %q names path role %q with no such path, or also a root", g.ID, t.ID, t.Role)
+		}
+	} else if t.ID == "" || !underToken(t.Root, "{profileMods}", "{profile}") {
+		return fmt.Errorf("game %q has a target without an id or with an unknown root %q", g.ID, t.Root)
+	}
+	if len(t.Sources) > 0 && t.Role == "" {
+		return fmt.Errorf("game %q target %q lists sources but names no path role", g.ID, t.ID)
+	}
+	for _, src := range t.Sources {
+		if src == "" || src != strings.ToLower(src) || strings.ContainsAny(src, " /\\") {
+			return fmt.Errorf("game %q target %q has an unusable source %q", g.ID, t.ID, src)
+		}
+	}
+	for _, ext := range t.Extensions {
+		if ext == "" || ext != strings.ToLower(ext) || strings.ContainsAny(ext, ".\\/") {
+			return fmt.Errorf("game %q target %q has an unusable extension %q", g.ID, t.ID, ext)
+		}
+	}
+	if _, ok := targets[t.ID]; ok {
+		return fmt.Errorf("game %q lists target %q more than once", g.ID, t.ID)
+	}
+	for _, ext := range t.KeepWhole {
+		if ext == "" || ext != strings.ToLower(ext) || strings.ContainsAny(ext, ".\\/") {
+			return fmt.Errorf("game %q target %q has an unusable keepWhole extension %q", g.ID, t.ID, ext)
+		}
+	}
+	return nil
+}
+
+func (g GameInfo) validateSources() (map[string]struct{}, error) {
 	sources := make(map[string]struct{}, len(g.Sources))
 	for _, s := range g.Sources {
 		if s.ID == "" {
-			return fmt.Errorf("game %q has a source without an id", g.ID)
+			return nil, fmt.Errorf("game %q has a source without an id", g.ID)
 		}
 		if _, ok := sources[s.ID]; ok {
-			return fmt.Errorf("game %q lists source %q more than once", g.ID, s.ID)
+			return nil, fmt.Errorf("game %q lists source %q more than once", g.ID, s.ID)
 		}
 		sources[s.ID] = struct{}{}
 		if len(s.Classes) > 0 && !slices.Contains(s.Classes, s.Key) {
-			return fmt.Errorf("game %q source %q lists classes without its key %q", g.ID, s.ID, s.Key)
+			return nil, fmt.Errorf("game %q source %q lists classes without its key %q", g.ID, s.ID, s.Key)
 		}
 		if s.UploadSubdomain != "" && !uploadSubdomain.MatchString(s.UploadSubdomain) {
-			return fmt.Errorf("game %q source %q has an upload subdomain %q that is not a host label", g.ID, s.ID, s.UploadSubdomain)
+			return nil, fmt.Errorf("game %q source %q has an upload subdomain %q that is not a host label", g.ID, s.ID, s.UploadSubdomain)
 		}
 		for _, c := range s.Classes {
 			if _, err := strconv.ParseUint(c, 10, 31); err != nil {
-				return fmt.Errorf("game %q source %q has a non-numeric class %q", g.ID, s.ID, c)
+				return nil, fmt.Errorf("game %q source %q has a non-numeric class %q", g.ID, s.ID, c)
 			}
 		}
 	}
-	return g.validateTemplates(sources)
+	return sources, nil
 }
 
 func (g GameInfo) validateTemplates(sources map[string]struct{}) error {
@@ -1850,3 +1909,8 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 
 // HasMetadata reports whether the game uses the named metadata feature.
 func (g GameInfo) HasMetadata(name string) bool { return slices.Contains(g.Metadata, name) }
+
+// unsafeRel reports a path that is not a local slash path.
+func unsafeRel(p string) bool {
+	return strings.Contains(p, "\\") || !fs.ValidPath(p) || p == "."
+}
