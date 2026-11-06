@@ -2,8 +2,8 @@ package nexussvc
 
 import (
 	"errors"
-	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -40,10 +40,43 @@ type promptProgress struct {
 	LastRun string `json:"lastRun,omitempty"`
 }
 
+// promptStore keys progress "game:modId". A bare "modId" key is what releases before game scoping wrote; it names no
+// game, so the first time a game touches that id the bare entry is copied to the game's key, and it is read only then.
 type promptStore struct {
 	mu   sync.Mutex
 	path string
 	mods map[string]promptProgress
+}
+
+func promptKey(gameID string, modID int) string {
+	return gameID + ":" + strconv.Itoa(modID)
+}
+
+// progressLocked returns the game's progress for modID, seeded from the legacy bare entry when the game has none.
+func (p *promptStore) progressLocked(gameID string, modID int) (string, promptProgress, bool) {
+	key := promptKey(gameID, modID)
+	if progress, ok := p.mods[key]; ok {
+		return key, progress, true
+	}
+	progress, ok := p.mods[strconv.Itoa(modID)]
+	return key, progress, ok
+}
+
+// pruneLocked drops the game's entries for mods not in installed and reports whether any went.
+func (p *promptStore) pruneLocked(gameID string, installed map[int]bool) bool {
+	pruned := false
+	prefix := gameID + ":"
+	for key := range p.mods {
+		id, ok := strings.CutPrefix(key, prefix)
+		if !ok {
+			continue
+		}
+		if n, err := strconv.Atoi(id); err == nil && !installed[n] {
+			delete(p.mods, key)
+			pruned = true
+		}
+	}
+	return pruned
 }
 
 func openPromptStore(dir string) (*promptStore, error) {
@@ -71,7 +104,9 @@ func endorsementUndecided(status string) bool {
 	return !strings.EqualFold(status, string(nexusmods.EndorseEndorsed)) && !strings.EqualFold(status, string(nexusmods.EndorseAbstained))
 }
 
-func (p *promptStore) record(runID string, mods []CleanMod, ask bool) ([]EndorsePrompt, error) {
+// record counts one clean run for each mod in gameID. installed, when non-nil, is every Nexus mod id the game's
+// profiles hold, and entries for other ids are dropped.
+func (p *promptStore) record(gameID, runID string, mods []CleanMod, ask bool, installed map[int]bool) ([]EndorsePrompt, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -89,9 +124,11 @@ func (p *promptStore) record(runID string, mods []CleanMod, ask bool) ([]Endorse
 	}
 
 	changed := false
+	if installed != nil {
+		changed = p.pruneLocked(gameID, installed)
+	}
 	for _, modID := range order {
-		key := fmt.Sprint(modID)
-		progress := p.mods[key]
+		key, progress, _ := p.progressLocked(gameID, modID)
 		if progress.LastRun != runID {
 			progress.Clean++
 			progress.LastRun = runID
@@ -109,7 +146,7 @@ func (p *promptStore) record(runID string, mods []CleanMod, ask bool) ([]Endorse
 	if ask {
 		for _, modID := range order {
 			mod := unique[modID]
-			key := fmt.Sprint(modID)
+			key := promptKey(gameID, modID)
 			progress := p.mods[key]
 			if progress.Clean < cleanSessionsToAsk || progress.Asked || progress.Never || !endorsementUndecided(mod.Endorsement) {
 				continue
@@ -132,12 +169,11 @@ func (p *promptStore) record(runID string, mods []CleanMod, ask bool) ([]Endorse
 	return prompts, nil
 }
 
-func (p *promptStore) answer(modID int, never bool) error {
+func (p *promptStore) answer(gameID string, modID int, never bool) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	key := fmt.Sprint(modID)
-	progress, ok := p.mods[key]
+	key, progress, ok := p.progressLocked(gameID, modID)
 	if !ok || modID <= 0 {
 		return errors.New("nexus: unknown endorsement prompt")
 	}
@@ -152,7 +188,7 @@ func (p *promptStore) answer(modID int, never bool) error {
 }
 
 // RecordCleanRun adds one clean session for each mod and returns at most three prompts.
-func (s *Service) RecordCleanRun(runID string, mods []CleanMod) ([]EndorsePrompt, error) {
+func (s *Service) RecordCleanRun(gameID, runID string, mods []CleanMod) ([]EndorsePrompt, error) {
 	if s.prompts == nil {
 		return nil, errors.New("nexus: endorse prompt store not open")
 	}
@@ -160,23 +196,32 @@ func (s *Service) RecordCleanRun(runID string, mods []CleanMod) ([]EndorsePrompt
 	if runID == "" {
 		return nil, errors.New("nexus: run id is required")
 	}
+	gameID = strings.TrimSpace(gameID)
+	if gameID == "" {
+		return nil, errors.New("nexus: game is required")
+	}
+	// Without the installed set nothing is pruned: a failed read must not erase a game's progress.
+	installed, err := s.profileModIDs(gameID)
+	if err != nil {
+		installed = nil
+	}
 	current := s.store.Get()
 	ask := current.AskEndorseMods != nil && *current.AskEndorseMods
-	return s.prompts.record(runID, mods, ask && s.Account().SignedIn)
+	return s.prompts.record(gameID, runID, mods, ask && s.Account().SignedIn, installed)
 }
 
 // EndorsePromptNotNow postpones a prompt for five more clean sessions.
-func (s *Service) EndorsePromptNotNow(modID int) error {
+func (s *Service) EndorsePromptNotNow(gameID string, modID int) error {
 	if s.prompts == nil {
 		return errors.New("nexus: endorse prompt store not open")
 	}
-	return s.prompts.answer(modID, false)
+	return s.prompts.answer(gameID, modID, false)
 }
 
 // EndorsePromptNever stops prompts for a mod.
-func (s *Service) EndorsePromptNever(modID int) error {
+func (s *Service) EndorsePromptNever(gameID string, modID int) error {
 	if s.prompts == nil {
 		return errors.New("nexus: endorse prompt store not open")
 	}
-	return s.prompts.answer(modID, true)
+	return s.prompts.answer(gameID, modID, true)
 }

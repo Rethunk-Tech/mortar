@@ -97,7 +97,7 @@ export function EndorsePrompt({ profile }: { profile: Profile }) {
     if (clean.length === 0) {
       return
     }
-    RecordCleanRun(runId, clean)
+    RecordCleanRun(currentGame(), runId, clean)
       .then((got) => setPrompts(got ?? []))
       .catch(reportUnexpected)
   }, [byId, completedFrom, details, loaded, mods, profile, runId])
@@ -137,7 +137,7 @@ export function EndorsePrompt({ profile }: { profile: Profile }) {
                 onClick={() =>
                   run(prompt.modId, async () => {
                     await Endorse(currentGame(), prompt.modId, prompt.version)
-                    await EndorsePromptNever(prompt.modId)
+                    await EndorsePromptNever(currentGame(), prompt.modId)
                   })
                 }
               >
@@ -146,14 +146,18 @@ export function EndorsePrompt({ profile }: { profile: Profile }) {
               <Button
                 size="small"
                 disabled={busy.includes(prompt.modId)}
-                onClick={() => run(prompt.modId, () => EndorsePromptNotNow(prompt.modId))}
+                onClick={() =>
+                  run(prompt.modId, () => EndorsePromptNotNow(currentGame(), prompt.modId))
+                }
               >
                 {t`Not now`}
               </Button>
               <Button
                 size="small"
                 disabled={busy.includes(prompt.modId)}
-                onClick={() => run(prompt.modId, () => EndorsePromptNever(prompt.modId))}
+                onClick={() =>
+                  run(prompt.modId, () => EndorsePromptNever(currentGame(), prompt.modId))
+                }
               >
                 {t`Never for this mod`}
               </Button>
