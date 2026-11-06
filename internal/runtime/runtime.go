@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
 
@@ -197,7 +198,26 @@ func CompatDataDir(inst Install) (string, bool) {
 	if !ok {
 		return "", false
 	}
-	return filepath.Join(steamapps, "compatdata", inst.AppID), true
+	return compatDataIn(inst, steamapps), true
+}
+
+// compatDataIn finds inst's compatdata folder: Steam keeps it in the library of its default install, which need not be
+// the one holding the game files. The game's own library is searched first, then every library of every Steam root;
+// when none has the folder yet, the game's own library is where Steam will create it.
+func compatDataIn(inst Install, steamapps string) string {
+	own := filepath.Join(steamapps, "compatdata", inst.AppID)
+	if safefs.IsDir(own) {
+		return own
+	}
+	for _, st := range steam.LocateAll(inst.Home, inst.SteamRoots...) {
+		libs, _ := st.Libraries()
+		for _, lib := range append([]string{st.Root}, libs...) {
+			if c := filepath.Join(lib, "steamapps", "compatdata", inst.AppID); safefs.IsDir(c) {
+				return c
+			}
+		}
+	}
+	return own
 }
 
 // Version names the compatibility tool Steam runs inst with, or "" when it is not a Proton install or Steam has not
@@ -211,7 +231,7 @@ func Version(inst Install) string {
 	if !ok {
 		return ""
 	}
-	if v := steam.PrefixVersion(filepath.Join(steamapps, "compatdata", inst.AppID)); v != "" {
+	if v := steam.PrefixVersion(compatDataIn(inst, steamapps)); v != "" {
 		return v
 	}
 	// Steam keeps config/ only in its own root, so a game in a second library finds it there.
@@ -227,7 +247,6 @@ func Version(inst Install) string {
 	return ""
 }
 
-// ponytail: the Steam library is found by walking up to its steamapps folder; a Proton prefix that Steam keeps elsewhere needs a setting.
 func (p proton) Resolve(inst Install, t components.PathTemplate) (string, error) {
 	if !p.Detect(inst) {
 		return "", errors.New("install does not run under Proton")
@@ -240,6 +259,6 @@ func (p proton) Resolve(inst Install, t components.PathTemplate) (string, error)
 	if !ok {
 		return "", fmt.Errorf("%q is not inside a Steam library", inst.Dir)
 	}
-	user := filepath.Join(steamapps, "compatdata", inst.AppID, "pfx", "drive_c", "users", "steamuser")
+	user := filepath.Join(compatDataIn(inst, steamapps), "pfx", "drive_c", "users", "steamuser")
 	return expand(tmpl, userTokens(user, inst.Dir))
 }

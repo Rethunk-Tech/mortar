@@ -222,3 +222,25 @@ func TestVersionReadsTheSteamRootConfigForAGameInASecondLibrary(t *testing.T) {
 		t.Fatalf("second library: %q", got)
 	}
 }
+
+func TestProtonFindsCompatdataInAnotherLibrary(t *testing.T) {
+	root, lib := t.TempDir(), t.TempDir()
+	vdf := "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \"" + root + "\"\n}\n\"1\"\n{\n\"path\" \"" + lib + "\"\n}\n}\n"
+	testfs.WriteAt(t, filepath.Join(root, "steamapps", "libraryfolders.vdf"), []byte(vdf))
+	compat := filepath.Join(root, "steamapps", "compatdata", "1966720")
+	testfs.WriteAt(t, filepath.Join(compat, "config_info"), []byte("9.0-4\n"))
+	inst := Install{
+		Store: "steam", Dir: filepath.Join(lib, "steamapps", "common", "Lethal Company"), AppID: "1966720",
+		Platform: "windows", GOOS: "linux", Home: t.TempDir(), SteamRoots: []string{root},
+	}
+	if got, ok := CompatDataDir(inst); !ok || got != compat {
+		t.Fatalf("CompatDataDir = %q, %v; want %q", got, ok, compat)
+	}
+	got, err := Resolve(inst, components.PathTemplate{Windows: "{localLow}/x"})
+	if want := filepath.Join(compat, "pfx", "drive_c", "users", "steamuser", "AppData", "LocalLow", "x"); err != nil || got != want {
+		t.Fatalf("Resolve = %q, %v; want %q", got, err, want)
+	}
+	if v := Version(inst); v != "9.0-4" {
+		t.Fatalf("Version = %q", v)
+	}
+}
