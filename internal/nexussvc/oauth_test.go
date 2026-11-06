@@ -186,3 +186,17 @@ func TestSettleSignIn(t *testing.T) {
 		t.Fatalf("a kept grant did not name its account: %+v", a)
 	}
 }
+
+func TestAnAccountWhoseGrantIsGoneReadsSignedOut(t *testing.T) {
+	s := NewService(testStore(t), nexusmods.New("Mortar", "1"), &meta.Client{})
+	signIn(t, s)
+	if !s.Account().SignedIn {
+		t.Fatal("a signed-in account with its grant read signed out")
+	}
+	if err := forgetOAuth(); err != nil {
+		t.Fatal(err)
+	}
+	if a := s.Account(); a.SignedIn {
+		t.Fatalf("an account whose grant is gone still reads signed in: %+v", a)
+	}
+}

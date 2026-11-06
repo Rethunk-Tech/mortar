@@ -84,7 +84,11 @@ func (s *Service) Limits() nexusmods.Limits {
 // Account describes the current sign-in.
 func (s *Service) Account() Account {
 	cur := s.store.Get()
-	return Account{SignedIn: cur.NexusUserID != 0, Name: cur.NexusName, Premium: cur.NexusPremium, Limits: s.client.Limits()}
+	// An account whose grant is gone from the keyring gets only "sign in" refusals, so it reads as signed out. A keyring
+	// that cannot be read is no proof the grant is gone, and keeps the account.
+	_, err := tokenStore.Load()
+	signedIn := cur.NexusUserID != 0 && !errors.Is(err, sso.ErrNoTokens)
+	return Account{SignedIn: signedIn, Name: cur.NexusName, Premium: cur.NexusPremium, Limits: s.client.Limits()}
 }
 
 // GitHubLoggedIn reports whether the user's `gh` login is in use for GitHub requests. It is read-only: Mortar has no
