@@ -1040,3 +1040,19 @@ func TestAContentFolderCategoryIsASlug(t *testing.T) {
 		}
 	}
 }
+
+func TestValidateRefusesATemplateCommitThatIsNotAFullSHA(t *testing.T) {
+	m := func(commit string) Manifest {
+		return Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "m", Deploy: DeployProfile, Loaders: []GameLoader{{ID: "l", DevTemplate: &DevTemplate{Repo: "o/n", Ref: "v1", Commit: commit}}}}}}
+	}
+	for _, bad := range []string{"v1", "A98C256A31DFF44471B905B0A4451CF836485555", "a98c256", "a98c256a31dff44471b905b0a4451cf836485555 "} {
+		if err := m(bad).Validate(); err == nil {
+			t.Errorf("commit %q must be refused", bad)
+		}
+	}
+	for _, ok := range []string{"", "a98c256a31dff44471b905b0a4451cf836485555"} {
+		if err := m(ok).Validate(); err != nil {
+			t.Errorf("commit %q refused: %v", ok, err)
+		}
+	}
+}

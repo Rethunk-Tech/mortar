@@ -723,3 +723,18 @@ func TestLoaderPackVersionIsEmptyWithoutALookup(t *testing.T) {
 		t.Errorf("no release = %q", got)
 	}
 }
+
+// A catalog commit pins the download to that commit and its own cache folder; without one the tag is fetched.
+func TestTemplateFetchesThePinnedCommitWhenTheCatalogHasOne(t *testing.T) {
+	tag := components.DevTemplate{Repo: "o/n", Ref: "v1"}
+	pin := components.DevTemplate{Repo: "o/n", Ref: "v1", Commit: "a98c256a31dff44471b905b0a4451cf836485555"}
+	if got, want := templateURL(tag), "https://codeload.github.com/o/n/zip/refs/tags/v1"; got != want {
+		t.Errorf("tag url = %s, want %s", got, want)
+	}
+	if got, want := templateURL(pin), "https://codeload.github.com/o/n/zip/"+pin.Commit; got != want {
+		t.Errorf("commit url = %s, want %s", got, want)
+	}
+	if templateCacheKey(tag) != "o_n_v1" || templateCacheKey(pin) != "o_n_"+pin.Commit {
+		t.Errorf("cache keys = %q, %q", templateCacheKey(tag), templateCacheKey(pin))
+	}
+}

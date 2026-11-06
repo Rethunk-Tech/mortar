@@ -649,10 +649,27 @@ func (s *Service) fromGitHub(ctx context.Context, tpl components.DevTemplate, m 
 // template folder, a local .zip of one, or an archive URL. A local one is read again on every use, so edits show.
 const TemplateEnv = "MORTAR_DEV_TEMPLATE"
 
+// templateURL is the archive of tpl's pinned commit, or of its tag while the catalog pins none.
+func templateURL(tpl components.DevTemplate) string {
+	if tpl.Commit != "" {
+		return "https://codeload.github.com/" + tpl.Repo + "/zip/" + tpl.Commit
+	}
+	return "https://codeload.github.com/" + tpl.Repo + "/zip/refs/tags/" + tpl.Ref
+}
+
+// templateCacheKey keeps a pinned commit's files apart from the tag's, so a pin never reuses an unpinned download.
+func templateCacheKey(tpl components.DevTemplate) string {
+	ref := tpl.Ref
+	if tpl.Commit != "" {
+		ref = tpl.Commit
+	}
+	return refPath.ReplaceAllString(tpl.Repo+"@"+ref, "_")
+}
+
 // templateDir is the template at tpl's tag, downloaded once into the cache: the same files for the wizard's
 // questions and for `dotnet new`.
 func (s *Service) templateDir(ctx context.Context, tpl components.DevTemplate) (string, error) {
-	url := "https://codeload.github.com/" + tpl.Repo + "/zip/refs/tags/" + tpl.Ref
+	url := templateURL(tpl)
 	override := os.Getenv(TemplateEnv)
 	switch {
 	case s.ArchiveURL != nil:
@@ -662,7 +679,7 @@ func (s *Service) templateDir(ctx context.Context, tpl components.DevTemplate) (
 	case override != "":
 		return s.localTemplate(override)
 	}
-	dir := filepath.Join(s.CacheDir, "dev-templates", refPath.ReplaceAllString(tpl.Repo+"@"+tpl.Ref, "_"))
+	dir := filepath.Join(s.CacheDir, "dev-templates", templateCacheKey(tpl))
 	if _, err := os.Stat(filepath.Join(dir, filepath.FromSlash(templateFile))); err == nil {
 		return dir, nil
 	}

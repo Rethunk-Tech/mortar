@@ -298,6 +298,7 @@
           "devTemplate": {
             "repo": "Rethunk-Tech/mortar-bepinex5-template",
             "ref": "v0.2.2",
+            "commit": "a98c256a31dff44471b905b0a4451cf836485555",
             "recommends": [
               {
                 "package": "Evaisa-LethalLib",
