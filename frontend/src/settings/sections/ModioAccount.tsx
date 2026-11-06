@@ -6,6 +6,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/source/modio/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { SettingsSection } from '../SettingsSection.tsx'
+import { Connection } from './SourceConnection.tsx'
 import { TokenAccount } from './TokenAccount.tsx'
 
 export function ModioAccount() {
@@ -22,7 +23,9 @@ export function ModioAccount() {
         removeLabel={t`Remove token`}
         keptStatus={t`Access token in your system keyring`}
         rejected={t`${{ source: sourceLabel('modio') }} rejected your access token`}
-      />
+      >
+        <Connection source="modio" />
+      </TokenAccount>
     </SettingsSection>
   )
 }

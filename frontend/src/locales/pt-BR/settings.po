@@ -3166,10 +3166,6 @@ msgstr ""
 msgid "Import settings?"
 msgstr ""
 
-#: src/settings/sections/SourceConnection.tsx
-msgid "Not contacted yet"
-msgstr ""
-
 #: src/settings/vrPrefCopy.ts
 msgid "Starts a VR runtime before the game; the {alvr} dashboard opens {runtime} itself. Leave it off in a profile that plays the game on a flat screen."
 msgstr ""

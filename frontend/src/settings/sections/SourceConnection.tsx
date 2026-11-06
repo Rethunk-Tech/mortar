@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip } from '@mui/material'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactElement, type ReactNode, useEffect, useState } from 'react'
 import { Retry } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/service.ts'
 import { GitHubRate } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
@@ -24,7 +24,8 @@ function useConnection(id: string) {
   const { t } = useLingui()
   const state = useOffline((s) => s.states.find((x) => x.id === id))
   const [pending, run] = usePending()
-  let chip = <Chip size="small" label={t`Not contacted yet`} />
+  // Before the first request the sentence says it all, so no chip repeats it.
+  let chip: ReactElement | null = null
   let tone: AccountTone = 'none'
   let text: string = t`Mortar has not asked ${{ source: sourceLabel(id) }} this session.`
   let detail: ReactNode = text
