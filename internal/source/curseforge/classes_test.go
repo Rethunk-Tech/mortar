@@ -14,31 +14,48 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
-// classFake serves, per classId, mods whose download counts are given in descending order.
-func classFake(t *testing.T, downloads map[string][]int) Driver {
+// pagedDriver serves /mods/search pages of total(q) rows for the class q names, each row's JSON from row(q, i). before
+// sees every request first and returns true when it has answered it.
+func pagedDriver(t *testing.T, classes []string, before func(http.ResponseWriter, *http.Request) bool, total func(q url.Values) int, row func(q url.Values, i int) string) Driver {
 	t.Helper()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		q := r.URL.Query()
-		counts, ok := downloads[q.Get("classId")]
-		if r.URL.Path != "/mods/search" || !ok {
-			http.NotFound(w, r)
+		if before != nil && before(w, r) {
 			return
 		}
+		q := r.URL.Query()
 		index, _ := strconv.Atoi(q.Get("index"))
 		size, _ := strconv.Atoi(q.Get("pageSize"))
+		n := total(q)
 		var rows []string
-		for i := index; i < min(index+size, len(counts)); i++ {
-			rows = append(rows, fmt.Sprintf(`{"id":%s%d,"name":"m","downloadCount":%d}`, classNumber(q), i, counts[i]))
+		for i := index; i < min(index+size, n); i++ {
+			rows = append(rows, row(q, i))
 		}
-		_, _ = fmt.Fprintf(w, `{"data":[%s],"pagination":{"totalCount":%d}}`, strings.Join(rows, ","), len(counts))
+		_, _ = fmt.Fprintf(w, `{"data":[%s],"pagination":{"totalCount":%d}}`, strings.Join(rows, ","), n)
 	}))
 	t.Cleanup(srv.Close)
 	return Driver{
 		URL: srv.URL, Key: func() string { return "k" },
 		GameSource: func(string) (components.GameSource, bool) {
-			return components.GameSource{ID: "curseforge", Key: "1", GameID: 7, Classes: []string{"1", "2"}}, true
+			return components.GameSource{ID: "curseforge", Key: classes[0], GameID: 7, Classes: classes}, true
 		},
 	}
+}
+
+// classFake serves, per classId, mods whose download counts are given in descending order.
+func classFake(t *testing.T, downloads map[string][]int) Driver {
+	t.Helper()
+	return pagedDriver(t, []string{"1", "2"},
+		func(w http.ResponseWriter, r *http.Request) bool {
+			if _, ok := downloads[r.URL.Query().Get("classId")]; r.URL.Path != "/mods/search" || !ok {
+				http.NotFound(w, r)
+				return true
+			}
+			return false
+		},
+		func(q url.Values) int { return len(downloads[q.Get("classId")]) },
+		func(q url.Values, i int) string {
+			return fmt.Sprintf(`{"id":%s%d,"name":"m","downloadCount":%d}`, classNumber(q), i, downloads[q.Get("classId")][i])
+		})
 }
 
 func ids(p source.Page) string {
@@ -136,16 +153,10 @@ func classNumber(q url.Values) string {
 // must not shift the merged pages under a player paging through them.
 func TestMergedPagesByThumbsNeitherRepeatNorSkip(t *testing.T) {
 	t.Parallel()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		q := r.URL.Query()
-		index, _ := strconv.Atoi(q.Get("index"))
-		size, _ := strconv.Atoi(q.Get("pageSize"))
-		class := classNumber(q)
-		out := `{"data":[`
-		for i := index; i < min(index+size, 200); i++ {
-			if i > index {
-				out += ","
-			}
+	d := pagedDriver(t, []string{"1", "2"}, nil,
+		func(url.Values) int { return 200 },
+		func(q url.Values, i int) string {
+			class := classNumber(q)
 			thumbs := 5
 			if class == "1" {
 				thumbs = 10
@@ -153,14 +164,8 @@ func TestMergedPagesByThumbsNeitherRepeatNorSkip(t *testing.T) {
 					thumbs = 10000
 				}
 			}
-			out += `{"id":` + class + strconv.Itoa(1000+i) + `,"name":"m","thumbsUpCount":` + strconv.Itoa(thumbs) + `}`
-		}
-		_, _ = w.Write([]byte(out + `],"pagination":{"totalCount":200}}`))
-	}))
-	t.Cleanup(srv.Close)
-	d := Driver{URL: srv.URL, Key: func() string { return "k" }, GameSource: func(string) (components.GameSource, bool) {
-		return components.GameSource{ID: "curseforge", Key: "1", GameID: 7, Classes: []string{"1", "2"}}, true
-	}}
+			return `{"id":` + class + strconv.Itoa(1000+i) + `,"name":"m","thumbsUpCount":` + strconv.Itoa(thumbs) + `}`
+		})
 	seen := map[string]bool{}
 	for p := source.FirstPage; p < source.FirstPage+3; p++ {
 		page, err := d.Search(t.Context(), source.Query{Game: "g", Key: "1", Sort: source.SortEndorsements, Page: p})

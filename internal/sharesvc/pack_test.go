@@ -6,8 +6,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"slices"
@@ -23,6 +21,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testhttp"
 )
 
 const codeKey = "019c9378-d2e6-4fec-5a2f-e4b22f8cf1d1"
@@ -55,19 +54,12 @@ func packService(t *testing.T) (*Service, *recorder) {
 	t.Setenv("MORTAR_ENABLE_GAMES", "lethal-company")
 	testfs.DataHome(t)
 	body := "#r2modman\n" + base64.StdEncoding.EncodeToString(r2z(t))
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/api/experimental/legacyprofile/get/"+codeKey+"/" {
-			http.NotFound(w, r)
-			return
-		}
-		_, _ = w.Write([]byte(body))
-	}))
-	t.Cleanup(srv.Close)
+	srvURL := testhttp.LegacyProfile(t, codeKey, body)
 	_, profiles := testenv.Stores(t)
 	rec := &recorder{}
 	r := testResolver(nil, nil)
 	return NewService(Deps{
-		Profiles: profiles, Queue: rec, Meta: r.meta, Files: r.files, PackCode: pack.Code{URL: srv.URL},
+		Profiles: profiles, Queue: rec, Meta: r.meta, Files: r.files, PackCode: pack.Code{URL: srvURL},
 		SignedIn: func() bool { return true }, Premium: func() bool { return false },
 		Env: func(string) problems.Environment { return problems.Environment{} },
 		Unresolvable: func(_ context.Context, _, _ string, reqs []queue.Request) (map[string]string, map[string][]string) {

@@ -2,14 +2,12 @@ package curseforge
 
 import (
 	"net/http"
-	"net/http/httptest"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
-
-	"github.com/Rethunk-Tech/mortar/internal/components"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -103,30 +101,18 @@ func TestRowsPastTheirAgeAreFetchedAgain(t *testing.T) {
 // A class that keeps failing contributes nothing, is named on every page, and the later pages of the classes that
 // answered neither repeat nor skip a row.
 func TestPagingWhileAClassKeepsFailingNeitherRepeatsNorSkips(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		q := r.URL.Query()
-		if q.Get("classId") == "2" {
-			http.Error(w, "down", http.StatusBadRequest)
-			return
-		}
-		index, _ := strconv.Atoi(q.Get("index"))
-		size, _ := strconv.Atoi(q.Get("pageSize"))
-		out := `{"data":[`
-		for i := index; i < min(index+size, 200); i++ {
-			if i > index {
-				out += ","
+	d := pagedDriver(t, []string{"1", "2"},
+		func(w http.ResponseWriter, r *http.Request) bool {
+			if r.URL.Query().Get("classId") == "2" {
+				http.Error(w, "down", http.StatusBadRequest)
+				return true
 			}
-			out += `{"id":` + strconv.Itoa(1000+i) + `,"name":"m","downloadCount":` + strconv.Itoa(100000-i) + `}`
-		}
-		_, _ = w.Write([]byte(out + `],"pagination":{"totalCount":200}}`))
-	}))
-	t.Cleanup(srv.Close)
-	d := Driver{
-		URL: srv.URL, Key: func() string { return "k" },
-		GameSource: func(string) (components.GameSource, bool) {
-			return components.GameSource{ID: "curseforge", Key: "1", GameID: 7, Classes: []string{"1", "2"}}, true
+			return false
 		},
-	}
+		func(url.Values) int { return 200 },
+		func(_ url.Values, i int) string {
+			return `{"id":` + strconv.Itoa(1000+i) + `,"name":"m","downloadCount":` + strconv.Itoa(100000-i) + `}`
+		})
 	seen := map[string]bool{}
 	next := 0
 	for page := range 3 {

@@ -5,8 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"slices"
@@ -16,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testhttp"
 )
 
 type recordQueue struct{ got []queue.Request }
@@ -42,19 +41,12 @@ func TestPackImportFetchesACodeAndQueuesItIntoANamedProfile(t *testing.T) {
 	if err := zw.Close(); err != nil {
 		t.Fatal(err)
 	}
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/api/experimental/legacyprofile/get/"+key+"/" {
-			http.NotFound(w, r)
-			return
-		}
-		_, _ = w.Write([]byte("#r2modman\n" + base64.StdEncoding.EncodeToString(buf.Bytes())))
-	}))
-	defer srv.Close()
+	srvURL := testhttp.LegacyProfile(t, key, "#r2modman\n"+base64.StdEncoding.EncodeToString(buf.Bytes()))
 
 	s := services(t)
 	q := &recordQueue{}
 	s.Shares = sharesvc.NewService(sharesvc.Deps{
-		Profiles: s.Store, Queue: q, PackCode: pack.Code{URL: srv.URL},
+		Profiles: s.Store, Queue: q, PackCode: pack.Code{URL: srvURL},
 		SignedIn: func() bool { return true }, Premium: func() bool { return false },
 		Env: func(string) problems.Environment { return problems.Environment{} },
 	})

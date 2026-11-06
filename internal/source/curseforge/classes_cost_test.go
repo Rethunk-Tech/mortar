@@ -3,6 +3,7 @@ package curseforge
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strconv"
 	"sync/atomic"
 	"testing"
@@ -13,27 +14,12 @@ import (
 
 func countingDriver(t *testing.T, classes []string, rows int, requests *atomic.Int64) Driver {
 	t.Helper()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requests.Add(1)
-		q := r.URL.Query()
-		index, _ := strconv.Atoi(q.Get("index"))
-		size, _ := strconv.Atoi(q.Get("pageSize"))
-		out := `{"data":[`
-		for i := index; i < min(index+size, rows); i++ {
-			if i > index {
-				out += ","
-			}
-			out += `{"id":` + classNumber(q) + strconv.Itoa(i) + `,"name":"m","downloadCount":` + strconv.Itoa(100000-i) + `}`
-		}
-		_, _ = w.Write([]byte(out + `],"pagination":{"totalCount":` + strconv.Itoa(rows) + `}}`))
-	}))
-	t.Cleanup(srv.Close)
-	return Driver{
-		URL: srv.URL, Key: func() string { return "k" },
-		GameSource: func(string) (components.GameSource, bool) {
-			return components.GameSource{ID: "curseforge", Key: classes[0], GameID: 7, Classes: classes}, true
-		},
-	}
+	return pagedDriver(t, classes,
+		func(http.ResponseWriter, *http.Request) bool { requests.Add(1); return false },
+		func(url.Values) int { return rows },
+		func(q url.Values, i int) string {
+			return `{"id":` + classNumber(q) + strconv.Itoa(i) + `,"name":"m","downloadCount":` + strconv.Itoa(100000-i) + `}`
+		})
 }
 
 func TestNextMergedPageCostsAtMostOneRequestPerClass(t *testing.T) {

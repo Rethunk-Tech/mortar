@@ -14,6 +14,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testhttp"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -49,14 +50,7 @@ func TestFormats(t *testing.T) {
 	r2z := makeZip(t, map[string]string{exportFile: export, "config/a.cfg": "x=1", "BepInEx/plugins/note.txt": "hi"})
 	code := codePrefix + "\n" + base64.StdEncoding.EncodeToString(r2z)
 	key := "0123abcd-0123-0123-0123-0123456789ab"
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/api/experimental/legacyprofile/get/"+key+"/" {
-			http.NotFound(w, r)
-			return
-		}
-		_, _ = w.Write([]byte(code))
-	}))
-	t.Cleanup(srv.Close)
+	srvURL := testhttp.LegacyProfile(t, key, code)
 
 	dir := t.TempDir()
 	prof := filepath.Join(dir, "LethalCompany", "profiles", "Mine")
@@ -93,7 +87,7 @@ func TestFormats(t *testing.T) {
 		wantErr bool
 	}{
 		{"code text", Code{}, Input{Text: code}, Draft{Name: "Friends", Game: "lethal-company"}, false},
-		{"code by key", Code{URL: srv.URL}, Input{Text: key}, Draft{Name: "Friends", Game: "lethal-company"}, false},
+		{"code by key", Code{URL: srvURL}, Input{Text: key}, Draft{Name: "Friends", Game: "lethal-company"}, false},
 		{"r2z file", Code{}, Input{Path: filepath.Join(dir, "x.r2z")}, Draft{}, true},
 		{"zip path escape", Code{}, Input{Path: evil}, Draft{}, true},
 		{"profile folder", Profile{GameByFolder: func(f string) (string, bool) { return "lethal-company", f == "LethalCompany" }}, Input{Path: prof}, Draft{Name: "Mine", Game: "lethal-company", Packages: []Ref{{Source: thunderstore, Native: "Alice-MoreCompany", Version: "1.2.3", Disabled: true}}}, false},
