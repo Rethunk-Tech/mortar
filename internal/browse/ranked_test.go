@@ -187,3 +187,19 @@ func TestRankedPagesStayFullWhenSourcesShareMods(t *testing.T) {
 		}
 	}
 }
+
+func TestRankedPagingFetchesEachUpstreamPageOnce(t *testing.T) {
+	a := &rankSource{id: "ma", downloads: descending(1000, 200, 1)}
+	b := &rankSource{id: "mb", downloads: descending(995, 200, 1)}
+	game := rankGame(t, a, b)
+	for p := 1; p <= 3; p++ {
+		if _, err := (&Client{}).searchAll(t.Context(), game, "", p, Filter{Sort: source.SortDownloads}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, s := range []*rankSource{a, b} {
+		if seen := map[int]bool{}; slices.ContainsFunc(s.pages, func(p int) bool { dup := seen[p]; seen[p] = true; return dup }) {
+			t.Fatalf("%s fetched a page twice while paging to page 3: %v", s.id, s.pages)
+		}
+	}
+}

@@ -28,8 +28,8 @@ type lane struct {
 // pages in that order, so a hit is placed once no source that is still being read could have a better one after its
 // last hit read, and reading stops when page `page` is full of placed cards. A source is read in its largest pages (Sizer),
 // at most (N+maxScan)×PageSize hits deep for page N. Sources that cannot order by f.Sort are named in Unsorted and left out, since their hits have no place in it.
-// ponytail: each request reads pages 1..k of every source again (cached ones come from topCache); a per-query
-// cursor if paging deep into a text search gets slow.
+// ponytail: each request replays pages 1..k of every source from topCache and merges them again, so a request pays CPU
+// for the replay, and upstream only for pages evicted by topTTL or topCap; keep a per-query lane if that merge shows in a profile.
 func (c *Client) searchRanked(ctx context.Context, info components.GameInfo, sources []source.Source, text string, page int, f Filter) (Page, error) {
 	out := Page{Items: []Item{}}
 	lanes, unsorted := c.buildLanes(info, sources, text, f)

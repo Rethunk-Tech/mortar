@@ -497,11 +497,15 @@ const categoryTTL = 24 * time.Hour
 
 var (
 	catMu    sync.Mutex
-	catCache = map[string]struct {
-		names []string
-		until time.Time
-	}{}
+	catCache = map[string]catEntry{}
+	// catFlight holds the lookups in progress, by game and source.
+	catFlight = map[string]*catCall{}
 )
+
+type catEntry struct {
+	names []string
+	until time.Time
+}
 
 // Categories lists the category names of one source, or of every source that has categories when sourceID is
 // AllSources. Answers are cached for a day; a source that fails is skipped, and the error comes back only when no

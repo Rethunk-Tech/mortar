@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -605,5 +608,33 @@ func TestRefreshDropsTheGamesPagesAndRebuildsStoredListings(t *testing.T) {
 	}
 	if fmt.Sprint(r.keys) != "[rkey]" {
 		t.Fatalf("stored listings rebuilt for %v, want [rkey]", r.keys)
+	}
+}
+
+type slowCats struct {
+	catSource
+	calls atomic.Int32
+}
+
+func (*slowCats) ID() string { return "slowcats" }
+func (s *slowCats) Categories(context.Context, string) ([]string, error) {
+	s.calls.Add(1)
+	time.Sleep(50 * time.Millisecond)
+	return []string{"Maps"}, nil
+}
+
+func TestConcurrentCategoryLookupsShareOneSourceCall(t *testing.T) {
+	src := &slowCats{}
+	var wg sync.WaitGroup
+	for range 8 {
+		wg.Go(func() {
+			if names, err := categoriesCached(t.Context(), "single", src, ""); err != nil || len(names) != 1 {
+				t.Errorf("names = %v, err = %v", names, err)
+			}
+		})
+	}
+	wg.Wait()
+	if n := src.calls.Load(); n != 1 {
+		t.Fatalf("8 concurrent lookups made %d source calls, want 1", n)
 	}
 }

@@ -40,23 +40,51 @@ func categoriesCached(ctx context.Context, game string, s source.Source, key str
 	}
 	id := game + "|" + s.ID()
 	catMu.Lock()
-	e, hit := catCache[id]
-	catMu.Unlock()
-	if !hit || !time.Now().Before(e.until) {
-		// ponytail: concurrent misses each ask the source; add single-flight if a source rate-limits categories.
-		names, err := cat.Categories(ctx, key)
-		// Signed out, the source simply has no categories to offer; nothing is kept, so signing in shows them.
-		if errors.Is(err, source.ErrSignedOut) {
-			return nil, nil
-		}
-		if err != nil {
-			slog.Warn("could not list categories", "game", game, "source", s.ID(), "err", err)
-			return nil, err
-		}
-		e.names, e.until = names, time.Now().Add(categoryTTL)
-		catMu.Lock()
-		catCache[id] = e
+	if e, hit := catCache[id]; hit && time.Now().Before(e.until) {
 		catMu.Unlock()
+		return e.names, nil
 	}
-	return e.names, nil
+	// Concurrent misses for one source share a single lookup.
+	if call, busy := catFlight[id]; busy {
+		catMu.Unlock()
+		select {
+		case <-call.done:
+			return call.names, call.err
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
+	}
+	call := &catCall{done: make(chan struct{})}
+	catFlight[id] = call
+	catMu.Unlock()
+
+	var keep bool
+	call.names, keep, call.err = lookupCategories(ctx, game, s, cat, key)
+	catMu.Lock()
+	delete(catFlight, id)
+	if keep {
+		catCache[id] = catEntry{names: call.names, until: time.Now().Add(categoryTTL)}
+	}
+	catMu.Unlock()
+	close(call.done)
+	return call.names, call.err
+}
+
+type catCall struct {
+	done  chan struct{}
+	names []string
+	err   error
+}
+
+func lookupCategories(ctx context.Context, game string, s source.Source, cat source.Categorizer, key string) (names []string, keep bool, err error) {
+	names, err = cat.Categories(ctx, key)
+	// Signed out, the source simply has no categories to offer; nothing is kept, so signing in shows them.
+	if errors.Is(err, source.ErrSignedOut) {
+		return nil, false, nil
+	}
+	if err != nil {
+		slog.Warn("could not list categories", "game", game, "source", s.ID(), "err", err)
+		return nil, false, err
+	}
+	return names, true, nil
 }
