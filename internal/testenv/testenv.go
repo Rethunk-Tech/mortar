@@ -53,3 +53,10 @@ func Profile(t testing.TB, profiles *profile.Store, gameID, name string) profile
 	}
 	return p
 }
+
+// LethalFriends opens private stores and creates the Lethal Company profile "Friends" in them.
+func LethalFriends(t testing.TB) (*profile.Store, profile.Profile) {
+	t.Helper()
+	_, ps := StoresIn(t, t.TempDir())
+	return ps, Profile(t, ps, "lethal-company", "Friends")
+}

@@ -14,13 +14,8 @@ import (
 
 func TestAPackagesShippedConfigIsEditableBeforeTheFirstLaunch(t *testing.T) {
 	t.Parallel()
-	dir := t.TempDir()
-	_, ps := testenv.StoresIn(t, dir)
 	const lc = "lethal-company"
-	p, err := ps.Create(lc, "Friends")
-	if err != nil {
-		t.Fatal(err)
-	}
+	ps, p := testenv.LethalFriends(t)
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "a.zip"), map[string]string{
 		"manifest.json":          `{"name":"A","version_number":"1.0.0"}`,
 		"config/ns.a.plugin.cfg": "[General]\nValue = shipped\n",
@@ -47,13 +42,8 @@ func TestAPackagesShippedConfigIsEditableBeforeTheFirstLaunch(t *testing.T) {
 
 func TestASwitchedOffModsConfigStaysListedAndEditable(t *testing.T) {
 	t.Parallel()
-	dir := t.TempDir()
-	_, ps := testenv.StoresIn(t, dir)
 	const lc = "lethal-company"
-	p, err := ps.Create(lc, "Friends")
-	if err != nil {
-		t.Fatal(err)
-	}
+	ps, p := testenv.LethalFriends(t)
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "a.zip"), map[string]string{
 		"manifest.json": `{"name":"A","version_number":"1.0.0"}`,
 		"config/A.cfg":  "[General]\nValue = shipped\n",

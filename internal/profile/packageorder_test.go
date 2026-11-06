@@ -16,14 +16,12 @@ import (
 
 func TestMovePackageChangesWhoWins(t *testing.T) {
 	t.Parallel()
-	dir := t.TempDir()
-	_, ps := testenv.StoresIn(t, dir)
 	const lc = "lethal-company"
-	p, err := ps.Create(lc, "Friends")
-	if err != nil {
-		t.Fatal(err)
-	}
-	var loaded profile.InstallResult
+	ps, p := testenv.LethalFriends(t)
+	var (
+		loaded profile.InstallResult
+		err    error
+	)
 	for _, name := range []string{"A", "B"} {
 		zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), name+".zip"), map[string]string{
 			"manifest.json":     `{"name":"` + name + `","version_number":"1.0.0"}`,
@@ -52,13 +50,8 @@ func TestMovePackageChangesWhoWins(t *testing.T) {
 
 func TestSyncStoppedPartWayStillTakesItsFilesBack(t *testing.T) {
 	t.Parallel()
-	dir := t.TempDir()
-	_, ps := testenv.StoresIn(t, dir)
 	const lc = "lethal-company"
-	p, err := ps.Create(lc, "Friends")
-	if err != nil {
-		t.Fatal(err)
-	}
+	ps, p := testenv.LethalFriends(t)
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "a.zip"), map[string]string{
 		"manifest.json": `{"name":"A","version_number":"1.0.0"}`,
 		"plugins/a.dll": "a",
@@ -102,14 +95,12 @@ func TestSyncStoppedPartWayStillTakesItsFilesBack(t *testing.T) {
 
 func TestFileConflictsNameTheWinnerAndWhoItBeats(t *testing.T) {
 	t.Parallel()
-	dir := t.TempDir()
-	_, ps := testenv.StoresIn(t, dir)
 	const lc = "lethal-company"
-	p, err := ps.Create(lc, "Friends")
-	if err != nil {
-		t.Fatal(err)
-	}
-	var loaded profile.InstallResult
+	ps, p := testenv.LethalFriends(t)
+	var (
+		loaded profile.InstallResult
+		err    error
+	)
 	for _, name := range []string{"A", "B", "C"} {
 		files := map[string]string{
 			"manifest.json":           `{"name":"` + name + `","version_number":"1.0.0"}`,
