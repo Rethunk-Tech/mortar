@@ -21,6 +21,7 @@ function saveFit(folder: string, id: string): Fit {
     lastMods: null,
     lastMissing: null,
     unrecorded: false,
+    used: null,
   }
 }
 

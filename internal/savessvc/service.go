@@ -47,32 +47,16 @@ type Lack struct {
 	Where    *problems.Ref `json:"where"`
 }
 
-// Fit is one save and what it has used that the profile lacks. Season is 0 (spring) to 3 (winter); Day is 0
-// when unknown. Played is when the save was last written, in Unix milliseconds. WhichFarm is Game1.whichFarm
-// (−1 when missing). MillisecondsPlayed and Money come from SaveGameInfo.
+// Fit is one save and what it has used that the profile lacks. Used is left empty: Missing carries what the profile
+// lacks of it.
 type Fit struct {
-	Folder             string      `json:"folder"`
-	Farm               string      `json:"farm"`
-	Farmer             string      `json:"farmer"`
-	Season             int         `json:"season"`
-	Day                int         `json:"day"`
-	Year               int         `json:"year"`
-	Played             int64       `json:"played"`
-	WhichFarm          int         `json:"whichFarm"`
-	MillisecondsPlayed int64       `json:"millisecondsPlayed"`
-	Money              int         `json:"money"`
-	Missing            []Lack      `json:"missing"`
-	LastProfileID      string      `json:"lastProfileId"`
-	LastProfileAt      int64       `json:"lastProfileAt"`
-	LastProfileExists  bool        `json:"lastProfileExists"`
-	LastMods           []PlayedMod `json:"lastMods"`
-	LastMissing        []Lack      `json:"lastMissing"`
-	// Unrecorded means the save names no mods (a Lethal Company save), so an empty Missing is no promise it fits.
-	Unrecorded bool `json:"unrecorded"`
-	// Name, PlayStyle and GameVersion are what a Vintage Story world records of itself.
-	Name        string `json:"name,omitempty"`
-	PlayStyle   string `json:"playStyle,omitempty"`
-	GameVersion string `json:"gameVersion,omitempty"`
+	saves.Info
+	Missing           []Lack      `json:"missing"`
+	LastProfileID     string      `json:"lastProfileId"`
+	LastProfileAt     int64       `json:"lastProfileAt"`
+	LastProfileExists bool        `json:"lastProfileExists"`
+	LastMods          []PlayedMod `json:"lastMods"`
+	LastMissing       []Lack      `json:"lastMissing"`
 }
 
 // Service exposes the save scan to the frontend.
@@ -293,12 +277,8 @@ func fitFor(in saves.Info, have map[string]bool, dismissed []mod.ID) (Fit, bool)
 
 // fitOf is the save in with the mods it lacks, named by id until describe names them.
 func fitOf(in saves.Info, lacks []saves.Lack) Fit {
-	fit := Fit{
-		Folder: in.Folder, Farm: in.Farm, Farmer: in.Farmer, Season: in.Season, Day: in.Day, Year: in.Year,
-		Played: in.Played, WhichFarm: in.WhichFarm, MillisecondsPlayed: in.MillisecondsPlayed, Money: in.Money,
-		Name: in.Name, PlayStyle: in.PlayStyle, GameVersion: in.GameVersion,
-		Missing: make([]Lack, len(lacks)), Unrecorded: in.Unrecorded,
-	}
+	in.Used = nil
+	fit := Fit{Info: in, Missing: make([]Lack, len(lacks))}
 	for i, l := range lacks {
 		fit.Missing[i] = Lack{ID: l.ID, Name: l.ID.Local(), Disabled: l.Disabled}
 	}
