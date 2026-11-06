@@ -4,7 +4,7 @@ import { openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import { patchCalls } from './renderCoverage.ts'
 import type { dialogKit } from './renderDialogs.ts'
-import { biggestProfileIds } from './renderProfile.ts'
+import { biggestProfileIds, openGame } from './renderProfile.ts'
 import { stubCalls } from './renderStubbed.ts'
 
 const NEXUS_ACCOUNT = 1_189_232_250
@@ -66,11 +66,16 @@ async function reloadUnder(p: Page, tabs: (p: Page) => ReturnType<Page['locator'
 }
 
 /** Stream overlay settings of a game whose loader has one. */
-function overlayFieldsCase(tab: (p: Page, name: string) => Promise<void>): Case {
+function overlayFieldsCase(
+  tabs: (p: Page) => ReturnType<Page['locator']>,
+  tab: (p: Page, name: string) => Promise<void>,
+): Case {
   return {
     // The Stardew overlay fields that came with the day-of-week, friend and pet readings.
     name: 'game-settings-overlay',
     setup: async (p) => {
+      // An earlier case may have left Lethal Company open.
+      await openGame(p, tabs(p), 'Stardew Valley')
       await tab(p, 'Home')
       await p
         .getByRole('button', { name: / settings$/ })
@@ -190,9 +195,12 @@ export function stateCases(
     },
     {
       name: 'console-performance-stop-measuring',
+      // The sidebar's running time and the card's measuring time each tick once a second.
+      budget: { idleUpdates: 40, idleCommits: 20 },
       setup: async (p) => {
         await perfStubs(p, true)
         await reloadUnder(p, tabs)
+        await openGame(p, tabs(p), 'Stardew Valley')
         await tab(p, 'Performance')
       },
       run: async (p) => {
@@ -204,7 +212,7 @@ export function stateCases(
         await reloadUnder(p, tabs)
       },
     },
-    overlayFieldsCase(tab),
+    overlayFieldsCase(tabs, tab),
     {
       name: 'game-page-no-load-order',
       setup: async (p) => {
