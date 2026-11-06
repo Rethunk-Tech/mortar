@@ -392,59 +392,75 @@ func (h handlers) answer(req request) reply {
 	var rep reply
 	switch req.Type {
 	case "installed":
-		ids := []int{}
-		if st != stateOff {
-			if h.installed != nil {
-				if found := h.installed(req.gameKey()); found != nil {
-					ids = found
-				}
-			}
-			if h.broken != nil {
-				rep.BrokenIDs = h.broken(req.gameKey())
-			}
-			if h.updates != nil && st == stateReady {
-				_, rows := h.updates(req.gameKey())
-				for _, row := range rows {
-					rep.UpdateIDs = append(rep.UpdateIDs, row.ModID)
-				}
-			}
-		}
-		rep.ModIDs = &ids
+		h.fillInstalled(&rep, req, st)
 	case "mod":
-		if st == stateOff {
-			break
-		}
-		openProfile, others := h.im(req.gameKey(), req.ModID)
-		rep.Open, rep.Others = &openProfile, others
-		if st == stateReady {
-			if h.problems != nil {
-				rep.Problems = h.problems(req.gameKey(), req.ModID)
-			}
-			if h.requirements != nil {
-				rep.Requirements = h.requirements(req.gameKey(), req.ModID)
-			}
-		}
+		h.fillMod(&rep, req, st)
 	case "updates":
-		rows := []modUpdate{}
-		switch {
-		case req.version() >= 4 && h.profileUpdates != nil:
-			st, name, rows = h.profileUpdates(req.Source, req.SourceGameKey)
-		case st != stateOff && h.updates != nil:
-			name, rows = h.updates(req.gameKey())
-		}
-		if rows == nil {
-			rows = []modUpdate{}
-		}
-		slices.SortFunc(rows, func(a, b modUpdate) int {
-			return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
-		})
-		rep.Updates = &rows
+		st, name = h.fillUpdates(&rep, req, st, name)
 	default:
 		return reply{Error: fmt.Sprintf("unknown request type %q", req.Type)}
 	}
 	rep.State, rep.Connected, rep.Profile = st, st == stateReady, name
 	rep.Games = hostGames()
 	return rep
+}
+
+func (h handlers) fillInstalled(rep *reply, req request, st string) {
+	ids := []int{}
+	rep.ModIDs = &ids
+	if st == stateOff {
+		return
+	}
+	if h.installed != nil {
+		if found := h.installed(req.gameKey()); found != nil {
+			ids = found
+		}
+	}
+	if h.broken != nil {
+		rep.BrokenIDs = h.broken(req.gameKey())
+	}
+	if h.updates != nil && st == stateReady {
+		_, rows := h.updates(req.gameKey())
+		for _, row := range rows {
+			rep.UpdateIDs = append(rep.UpdateIDs, row.ModID)
+		}
+	}
+}
+
+func (h handlers) fillMod(rep *reply, req request, st string) {
+	if st == stateOff {
+		return
+	}
+	openProfile, others := h.im(req.gameKey(), req.ModID)
+	rep.Open, rep.Others = &openProfile, others
+	if st != stateReady {
+		return
+	}
+	if h.problems != nil {
+		rep.Problems = h.problems(req.gameKey(), req.ModID)
+	}
+	if h.requirements != nil {
+		rep.Requirements = h.requirements(req.gameKey(), req.ModID)
+	}
+}
+
+// fillUpdates sets the sorted pending updates and returns the connection state and profile name they came with.
+func (h handlers) fillUpdates(rep *reply, req request, st, name string) (string, string) {
+	rows := []modUpdate{}
+	switch {
+	case req.version() >= 4 && h.profileUpdates != nil:
+		st, name, rows = h.profileUpdates(req.Source, req.SourceGameKey)
+	case st != stateOff && h.updates != nil:
+		name, rows = h.updates(req.gameKey())
+	}
+	if rows == nil {
+		rows = []modUpdate{}
+	}
+	slices.SortFunc(rows, func(a, b modUpdate) int {
+		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
+	})
+	rep.Updates = &rows
+	return st, name
 }
 
 func serveHandlers(r io.Reader, w io.Writer, h handlers) error {
@@ -724,43 +740,18 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		if err != nil || json.Unmarshal(data, &profile) != nil {
 			continue
 		}
-		var version *string
-		var fileID int
-		var targets []mod.ID
-		var pinned bool
-		var pinReason string
-		var skipVersion string
-		var skipSources []string
-		for _, entry := range profile.Entries {
-			if entry.Source.Kind != "nexus" || entry.Source.ModID != modID {
-				continue
-			}
-			if len(entry.Mods) > 0 && entry.Mods[0].Version != "" {
-				v := entry.Mods[0].Version
-				version = &v
-			}
-			fileID = entry.Source.FileID
-			pinned = entry.Pinned
-			pinReason = entry.PinReason
-			skipVersion = entry.SkipVersion
-			skipSources = append([]string{}, entry.SkipSources...)
-			for _, m := range entry.Mods {
-				if m.ID != "" {
-					targets = append(targets, m.ID)
-				}
-			}
-			break
-		}
+		m := matchNexusEntry(profile.Entries, modID)
+		version, fileID := m.version, m.fileID
 		found := modInProfile{Profile: profile.Name, Version: version, FileID: fileID}
 		if version != nil || fileID > 0 {
 			found.UpdateAvailable = nexusUpdateAvailable(version, fileID, pageVer, files)
 		}
 		if dir.Name() == openID {
-			found.Pinned = pinned
-			found.PinReason = pinReason
-			found.SkipVersion = skipVersion
-			found.SkipSources = skipSources
-			found.RequiredBy, found.RequiredByNames = requiredByMods(profile.Entries, targets)
+			found.Pinned = m.pinned
+			found.PinReason = m.pinReason
+			found.SkipVersion = m.skipVersion
+			found.SkipSources = m.skipSources
+			found.RequiredBy, found.RequiredByNames = requiredByMods(profile.Entries, m.targets)
 			found.PageVersion = pageVer
 			openProfile = found
 		} else {
@@ -768,6 +759,43 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		}
 	}
 	return openProfile, others
+}
+
+// nexusEntryMatch is what a profile records about one Nexus mod page.
+type nexusEntryMatch struct {
+	version     *string
+	fileID      int
+	targets     []mod.ID
+	pinned      bool
+	pinReason   string
+	skipVersion string
+	skipSources []string
+}
+
+// matchNexusEntry reads the first profile entry installed from the Nexus page modID; the zero value means none.
+func matchNexusEntry(entries []diskEntry, modID int) nexusEntryMatch {
+	var m nexusEntryMatch
+	for _, entry := range entries {
+		if entry.Source.Kind != "nexus" || entry.Source.ModID != modID {
+			continue
+		}
+		if len(entry.Mods) > 0 && entry.Mods[0].Version != "" {
+			v := entry.Mods[0].Version
+			m.version = &v
+		}
+		m.fileID = entry.Source.FileID
+		m.pinned = entry.Pinned
+		m.pinReason = entry.PinReason
+		m.skipVersion = entry.SkipVersion
+		m.skipSources = append([]string{}, entry.SkipSources...)
+		for _, mm := range entry.Mods {
+			if mm.ID != "" {
+				m.targets = append(m.targets, mm.ID)
+			}
+		}
+		break
+	}
+	return m
 }
 
 type cachedNexusFile struct {
