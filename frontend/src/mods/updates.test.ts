@@ -1,7 +1,12 @@
-import { expect, test } from 'bun:test'
+import { afterEach, expect, test } from 'bun:test'
 import { useProfiles } from '../profiles/store.ts'
 import { useToasts } from '../toasts/store.ts'
 import { announceUpdates, useUpdates } from './updates.ts'
+
+// The toasts store is shared by every test file in the run, so a toast left here would show up in the next file's.
+afterEach(() => {
+  useToasts.setState(useToasts.getInitialState(), true)
+})
 
 test('the update review stays open across a tab switch and closes when another profile opens', () => {
   useProfiles.setState({ openId: 'a' })
