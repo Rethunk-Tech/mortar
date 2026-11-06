@@ -795,18 +795,22 @@ func intPref(key, scope string, lo, hi int, get func(Settings, string) int, set 
 	}
 }
 
+func boolSetter(set func(*Settings, string, bool)) func(*Settings, string, string) error {
+	return func(s *Settings, game, raw string) error {
+		on, err := parseBool(raw)
+		if err != nil {
+			return err
+		}
+		set(s, game, on)
+		return nil
+	}
+}
+
 func boolPref(key, scope string, get func(Settings, string) bool, set func(*Settings, string, bool)) pref {
 	return pref{
 		spec: PrefSpec{Key: key, Scope: scope, Type: TypeBool},
 		get:  func(s Settings, g string) string { return strconv.FormatBool(get(s, g)) },
-		set: func(s *Settings, game, raw string) error {
-			on, err := parseBool(raw)
-			if err != nil {
-				return err
-			}
-			set(s, game, on)
-			return nil
-		},
+		set:  boolSetter(set),
 	}
 }
 
@@ -820,14 +824,7 @@ func ptrPref(key, scope string, get func(Settings, string) *bool, set func(*Sett
 			}
 			return strconv.FormatBool(*v)
 		},
-		set: func(s *Settings, game, raw string) error {
-			on, err := parseBool(raw)
-			if err != nil {
-				return err
-			}
-			set(s, game, on)
-			return nil
-		},
+		set: boolSetter(set),
 	}
 }
 

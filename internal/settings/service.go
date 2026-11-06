@@ -261,26 +261,26 @@ func (s *Service) ClearDevProjectTemplateIcon(game, dir string) error {
 func (s *Service) editDevProject(game, dir string, edit func(p *DevProject)) error {
 	return s.set(func(v *Settings) {
 		gp := v.GamePrefs(game)
-		gp.DevProjects = slices.Clone(gp.DevProjects)
-		for i := range gp.DevProjects {
-			if gp.DevProjects[i].Dir == dir {
-				edit(&gp.DevProjects[i])
-			}
-		}
+		editDevProjectIn(&gp, dir, edit)
 		putGame(v, game, gp)
 	})
+}
+
+// editDevProjectIn applies edit to the record of the project in dir, on a copy of the list.
+func editDevProjectIn(gp *GameSettings, dir string, edit func(p *DevProject)) {
+	gp.DevProjects = slices.Clone(gp.DevProjects)
+	for i := range gp.DevProjects {
+		if gp.DevProjects[i].Dir == dir {
+			edit(&gp.DevProjects[i])
+		}
+	}
 }
 
 // ReplaceDevProject swaps the record old for next, moving its extra mods folder to next's build output.
 func (s *Service) ReplaceDevProject(game string, old, next DevProject) error {
 	return s.set(func(v *Settings) {
 		gp := v.GamePrefs(game)
-		gp.DevProjects = slices.Clone(gp.DevProjects)
-		for i := range gp.DevProjects {
-			if gp.DevProjects[i].Dir == old.Dir {
-				gp.DevProjects[i] = next
-			}
-		}
+		editDevProjectIn(&gp, old.Dir, func(p *DevProject) { *p = next })
 		extra := slices.DeleteFunc(gp.ExtraModsFolderList(), func(d string) bool { return d == old.Output })
 		if !slices.Contains(extra, next.Output) {
 			extra = append(extra, next.Output)
