@@ -54,7 +54,7 @@ function menuCases({ tab, view, row }: Helpers): Case[] {
 }
 
 /** Answers the named binding calls with the server's own answer after `edit` has changed it; others go on untouched. */
-function patchCalls<T>(ids: number[], edit: (answer: T) => T) {
+export function patchCalls<T>(ids: number[], edit: (answer: T) => T) {
   return async (route: Route) => {
     const body = route.request().postData() ?? ''
     if (!ids.some((id) => body.includes(`"methodID":${id}`))) {
