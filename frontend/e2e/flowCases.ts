@@ -228,12 +228,8 @@ function loaderCases({ reload, under, stardew, tab }: Kit): Case[] {
         await p.getByRole('status').getByRole('button', { name: 'Install' }).waitFor()
       },
       run: async (p) => {
-        // The loader store holds the game the startup checks read last, whichever one is open, so both are told.
         await emit(p, [
-          ...[STARDEW, 'lethal-company'].map((game) => ({
-            name: 'loader:state',
-            data: { game, installing: true, error: '' },
-          })),
+          { name: 'loader:state', data: { game: STARDEW, installing: true, error: '' } },
           { name: 'loader:progress', data: { step: 'downloaded' } },
         ])
         await p.getByRole('status').getByText('Downloaded').waitFor()
