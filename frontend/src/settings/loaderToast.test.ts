@@ -62,6 +62,9 @@ describe('loaderUpdateText', () => {
 describe('checkLoaderUpdate', () => {
   afterEach(() => {
     mock.restore()
+    // The toast store is shared by every test file in the run.
+    useToasts.setState(useToasts.getInitialState(), true)
+    useLoader.setState(useLoader.getInitialState(), true)
   })
 
   test("offers another game's loader update without changing the status the open screen shows", async () => {

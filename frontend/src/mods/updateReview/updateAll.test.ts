@@ -1,4 +1,4 @@
-import { afterEach, expect, mock, spyOn, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, spyOn, test } from 'bun:test'
 import { CancellablePromise } from '@wailsio/runtime'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { HistoryEvent } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -11,6 +11,10 @@ import { changesAfterBatch } from './undoAll.ts'
 import { listedBySource, needChoiceUpdates, sameSourceUpdates, updateAll } from './updateAll.ts'
 import { updateWant } from './wants.ts'
 
+// The toast store is shared by every test file in the run, and these tests count its toasts.
+beforeEach(() => {
+  useToasts.setState(useToasts.getInitialState(), true)
+})
 afterEach(() => {
   mock.restore()
   useToasts.setState(useToasts.getInitialState(), true)
