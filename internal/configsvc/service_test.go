@@ -418,3 +418,12 @@ func TestApplyBepInExParsesOnceAndKeepsEveryEdit(t *testing.T) {
 		t.Fatalf("got %q want %q", got, want)
 	}
 }
+
+func TestApplyBepInExRestoresAValueSetBackToItsOriginal(t *testing.T) {
+	t.Parallel()
+	text := "[A]\n\n# Setting type: Int32\n# Default value: 1\nOne = 1\n"
+	got, err := applyBepInEx(text, []edit{{"A", "One", "9"}, {"A", "One", "1"}}, bound{}, false)
+	if err != nil || got != text {
+		t.Fatalf("got %q, %v; want the file unchanged", got, err)
+	}
+}

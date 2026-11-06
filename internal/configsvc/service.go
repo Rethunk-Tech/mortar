@@ -731,6 +731,8 @@ func applyBepInEx(text string, edits []edit, b bound, hasBound bool) (string, er
 	doc := cfgedit.ParseBepInEx(text)
 	parsed := strings.Split(text, "\n")
 	lines := slices.Clone(parsed)
+	// touched is the line each setting's edit changed, so setting it back to its original value restores that line.
+	touched := map[[2]string]int{}
 	for _, e := range edits {
 		next, err := doc.Set(e.section, e.key, e.value)
 		if st, ok := b.setting(e.section, e.key); errors.Is(err, cfgedit.ErrNoSetting) && hasBound && ok {
@@ -739,16 +741,22 @@ func applyBepInEx(text string, edits []edit, b bound, hasBound bool) (string, er
 			doc = cfgedit.ParseBepInEx(text)
 			parsed = strings.Split(text, "\n")
 			lines = slices.Clone(parsed)
+			touched = map[[2]string]int{}
 			next, err = doc.Set(e.section, e.key, e.value)
 		}
 		if err != nil {
 			return "", valueErr(err)
 		}
+		id := [2]string{e.section, e.key}
+		changed := false
 		for i, l := range strings.Split(next, "\n") {
 			if l != parsed[i] {
-				lines[i] = l
+				lines[i], touched[id], changed = l, i, true
 				break
 			}
+		}
+		if i, ok := touched[id]; ok && !changed {
+			lines[i] = parsed[i]
 		}
 	}
 	return strings.Join(lines, "\n"), nil
