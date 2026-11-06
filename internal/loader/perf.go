@@ -10,3 +10,11 @@ import (
 type InGamePerf interface {
 	Perf(ctx context.Context, p ProfileView, start bool) (json.RawMessage, error)
 }
+
+// InGamePerfStop is an InGamePerf whose companion can end the measurement, keeping the last summary readable; the
+// SMAPI bridge's profiler has no stop.
+type InGamePerfStop interface {
+	InGamePerf
+	// PerfStop answers {"measured":bool}: false only when measuring never started.
+	PerfStop(ctx context.Context, p ProfileView) (json.RawMessage, error)
+}

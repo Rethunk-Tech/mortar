@@ -103,9 +103,9 @@ func Send(ctx context.Context, stateFile, command string) error {
 }
 
 // Query asks the game a question and returns the JSON the companion answers with. what is status, plugins, perf,
-// perf start or configsync (the BepInEx bridge's only).
+// perf start, perf stop or configsync; only the BepInEx bridge answers perf stop and configsync.
 func Query(ctx context.Context, stateFile, what string) (json.RawMessage, error) {
-	if what != "status" && what != "plugins" && what != "perf" && what != "perf start" && what != "configsync" {
+	if what != "status" && what != "plugins" && what != "perf" && what != "perf start" && what != "perf stop" && what != "configsync" {
 		return nil, fmt.Errorf("unknown query %q", what)
 	}
 	st, err := ReadState(stateFile)
@@ -120,6 +120,19 @@ func Query(ctx context.Context, stateFile, what string) (json.RawMessage, error)
 		return nil, fmt.Errorf("unexpected reply from the bridge: %q", payload)
 	}
 	return json.RawMessage(payload), nil
+}
+
+// Status is a companion's `status` answer. Keys a bridge does not know are absent, not empty: the SMAPI bridge sends
+// no scene and no plugin location.
+type Status struct {
+	GameVersion       string `json:"gameVersion"`
+	GameVersionSource string `json:"gameVersionSource"`
+	Scene             string `json:"scene"`
+	Plugins           []struct {
+		GUID     string `json:"guid"`
+		Version  string `json:"version"`
+		Location string `json:"location"`
+	} `json:"plugins"`
 }
 
 // send returns the JSON after `ok`, "" for a bare `ok`.

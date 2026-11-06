@@ -8,6 +8,7 @@ import type {
 import {
   MeasureInGame,
   PeekInGame,
+  StopInGame,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { reportError } from '../toasts/report.ts'
 import { formatTiming } from './formatTiming.ts'
@@ -76,9 +77,11 @@ export function useBridgePerf(opts: {
   game: string
   openId: string
   running: boolean
+  /** The loader's companion can end a measurement (BepInEx's; SMAPI's profiler cannot). */
+  canStop: boolean
   setSavedReports: (update: (current: SavedReport[]) => SavedReport[]) => void
 }) {
-  const { game, openId, running, setSavedReports } = opts
+  const { game, openId, running, canStop, setSavedReports } = opts
   const { t, i18n } = useLingui()
   const [busy, setBusy] = useState<PanelBusy>('')
   const measuring = usePerfLive((s) => s.measuring)
@@ -111,6 +114,22 @@ export function useBridgePerf(opts: {
         })
       })
       .catch(reportError(t`Could not start measuring`, startMeasuring))
+      .finally(() => setBusy(''))
+  }
+  // The game keeps the last summary after a stop, so one more read freezes the table at its final numbers.
+  const stopMeasuring = () => {
+    if (!running || busy !== '' || !measuring) {
+      return
+    }
+    setBusy('stop')
+    StopInGame(game, openId)
+      .then(() => PeekInGame(game, openId))
+      .then((live) => {
+        setRows(live.rows ?? [])
+        setFrame(live.frame ?? null)
+        usePerfLive.setState({ measuring: false, top: '' })
+      })
+      .catch(reportError(t`Could not stop measuring`, stopMeasuring))
       .finally(() => setBusy(''))
   }
   const showReport = () => {
@@ -161,6 +180,7 @@ export function useBridgePerf(opts: {
     frame,
     reportLines,
     startMeasuring,
+    stopMeasuring: canStop ? stopMeasuring : undefined,
     showReport,
   }
 }

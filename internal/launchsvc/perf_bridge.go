@@ -99,6 +99,33 @@ func (s *Service) PeekInGame(gameID, profileID string) (InGameLive, error) {
 	return InGameLive{Measured: true, Rows: perfRows(got, s.perfOwners(l, gameID, profileID)), Frame: frameOf(got)}, nil
 }
 
+// StopInGame ends the running game's in-game measurement and reports whether one had started; the last summary stays
+// readable. Only a loader whose companion can stop measuring offers it.
+func (s *Service) StopInGame(gameID, profileID string) (bool, error) {
+	l, ok := s.loaderOf(gameID, profileID)
+	stopper, can := l.(loader.InGamePerfStop)
+	if !ok || !can {
+		return false, usererr.New(usererr.Invalid, "this profile's loader cannot stop measuring")
+	}
+	view, err := s.bridgeView(gameID, profileID)
+	if err != nil {
+		return false, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), askPerfFor)
+	defer cancel()
+	raw, err := stopper.PerfStop(ctx, view)
+	if err != nil {
+		return false, err
+	}
+	var got struct {
+		Measured bool `json:"measured"`
+	}
+	if err := json.Unmarshal(raw, &got); err != nil {
+		return false, err
+	}
+	return got.Measured, nil
+}
+
 // askPerf asks the running game's companion for its measurement; start begins one instead.
 func (s *Service) askPerf(gameID, profileID string, start bool) (bridgePerf, loader.Loader, error) {
 	l, ok := s.loaderOf(gameID, profileID)
@@ -106,13 +133,13 @@ func (s *Service) askPerf(gameID, profileID string, start bool) (bridgePerf, loa
 	if !ok || !can {
 		return bridgePerf{}, nil, usererr.New(usererr.Invalid, "this profile's loader does not measure in game")
 	}
-	dir, err := s.profiles.ProfileDir(gameID, profileID)
+	view, err := s.bridgeView(gameID, profileID)
 	if err != nil {
 		return bridgePerf{}, nil, err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), askPerfFor)
 	defer cancel()
-	raw, err := perf.Perf(ctx, loader.ProfileView{Game: gameID, Dir: dir}, start)
+	raw, err := perf.Perf(ctx, view, start)
 	if err != nil {
 		return bridgePerf{}, nil, err
 	}

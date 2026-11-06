@@ -11,7 +11,7 @@ import {
   TableSortLabel,
   Typography,
 } from '@mui/material'
-import { Copy, Gauge, Play, Save } from 'lucide-react'
+import { Copy, Gauge, Play, Save, Square } from 'lucide-react'
 import { type ReactNode, useMemo } from 'react'
 import type {
   PerformanceRow,
@@ -49,6 +49,7 @@ interface HeaderProps {
   reason?: string | undefined
   hasReport: boolean
   onStart: () => void
+  onStop?: (() => void) | undefined
   onReport: () => void
   onCopy: () => void
   reports: SavedReport[]
@@ -181,6 +182,7 @@ function PanelHeader(props: HeaderProps) {
     measuring,
     hasReport,
     onStart,
+    onStop,
     onReport,
     onCopy,
     compareId,
@@ -239,6 +241,17 @@ function PanelHeader(props: HeaderProps) {
           </Button>
         </DisabledReason>
       )}
+      {measuring && onStop ? (
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<Square size={14} />}
+          disabled={busy !== ''}
+          onClick={onStop}
+        >
+          {t`Stop measuring`}
+        </Button>
+      ) : null}
       {measuring ? (
         <Button
           size="small"

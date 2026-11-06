@@ -44,6 +44,8 @@ interface Source {
   rows: PerformanceRow[]
   reportLines: string[]
   startMeasuring: () => void
+  /** Absent where the game's companion cannot end a measurement. */
+  stopMeasuring?: (() => void) | undefined
   showReport: () => void
   /** When measuring started (ms), for the elapsed time; absent where it is not known. */
   since?: number
@@ -89,8 +91,8 @@ function BridgePanel({ game }: { game: string }) {
   const openId = useProfiles((s) => s.openId)
   const running = usePerformanceRunning(game)
   const saved = useSavedReports(game, openId)
-  const perf = useBridgePerf({ game, openId, running, setSavedReports: saved[1] })
   const smapi = useProfileLoader()?.id === 'smapi'
+  const perf = useBridgePerf({ game, openId, running, canStop: !smapi, setSavedReports: saved[1] })
   let hint = t`Start the game, then start measuring here to time each plugin per frame.`
   if (smapi) {
     hint = t`Start the game, then start measuring here to time each mod's event handlers per frame.`
@@ -162,6 +164,7 @@ function PanelView({
         reason: source.reason,
         hasReport: reportLines.length > 0,
         onStart: startMeasuring,
+        onStop: source.stopMeasuring,
         onReport: showReport,
         onCopy: () => copyReportLines(reportLines, t`Report copied`),
         reports: savedReports,

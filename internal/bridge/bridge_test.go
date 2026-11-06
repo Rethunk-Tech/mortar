@@ -159,6 +159,25 @@ func TestQueryReturnsTheRepliesJSON(t *testing.T) {
 	}
 }
 
+func TestQueryPerfStopSendsTheVerbAndReadsMeasured(t *testing.T) {
+	port, got := serve(t, "ok {\"measured\":false}\n", false)
+	file := filepath.Join(t.TempDir(), BepInEx.StateFile)
+	if err := os.MkdirAll(filepath.Dir(file), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	tok := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+	if err := os.WriteFile(file, []byte(fmt.Sprintf(`{"port":%d,"token":"%s"}`, port, tok)), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	out, err := Query(t.Context(), file, "perf stop")
+	if err != nil || string(out) != `{"measured":false}` {
+		t.Fatalf("query = %s, %v", out, err)
+	}
+	if line := <-got; line != tok+"\nperf stop\n" {
+		t.Fatalf("server saw %q", line)
+	}
+}
+
 func TestIsOwnListingMatchesEachSitesSpelling(t *testing.T) {
 	for name, want := range map[string]bool{
 		"Mortar SMAPI Bridge": true, "Mortar BepInEx Bridge": true, "MortarBepInExBridge": true,

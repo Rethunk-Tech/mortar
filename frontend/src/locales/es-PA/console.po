@@ -403,6 +403,10 @@ msgstr ""
 msgid "No performance data was returned."
 msgstr ""
 
+#: src/console/PerformancePanelParts.tsx
+msgid "Stop measuring"
+msgstr ""
+
 #: src/console/UpdateNoteTag.tsx
 msgid "In Mortar's updates"
 msgstr ""
@@ -624,6 +628,10 @@ msgstr ""
 
 #: src/console/useStartupReports.ts
 msgid "Could not cancel the measured launch"
+msgstr ""
+
+#: src/console/useBridgePerf.ts
+msgid "Could not stop measuring"
 msgstr ""
 
 #: src/console/PerformancePanelParts.tsx

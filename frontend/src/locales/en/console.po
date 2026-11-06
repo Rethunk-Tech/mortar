@@ -403,6 +403,10 @@ msgstr "Disable"
 msgid "No performance data was returned."
 msgstr "No performance data was returned."
 
+#: src/console/PerformancePanelParts.tsx
+msgid "Stop measuring"
+msgstr "Stop measuring"
+
 #: src/console/UpdateNoteTag.tsx
 msgid "In Mortar's updates"
 msgstr "In Mortar's updates"
@@ -625,6 +629,10 @@ msgstr "Levels"
 #: src/console/useStartupReports.ts
 msgid "Could not cancel the measured launch"
 msgstr "Could not cancel the measured launch"
+
+#: src/console/useBridgePerf.ts
+msgid "Could not stop measuring"
+msgstr "Could not stop measuring"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Start the game with this profile, then measure here while you play."

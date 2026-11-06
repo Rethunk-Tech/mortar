@@ -15,3 +15,8 @@ func (l Loader) Perf(ctx context.Context, p loader.ProfileView, start bool) (jso
 	}
 	return l.Query(ctx, loader.Target{}, p, what)
 }
+
+// PerfStop ends the bridge's measurement; a later perf query returns the last summary unchanged.
+func (l Loader) PerfStop(ctx context.Context, p loader.ProfileView) (json.RawMessage, error) {
+	return l.Query(ctx, loader.Target{}, p, "perf stop")
+}

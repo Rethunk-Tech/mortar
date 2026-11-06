@@ -51,6 +51,20 @@ func (s *Service) loaderOf(gameID, profileID string) (loader.Loader, bool) {
 	return game.LoaderOf(gameID, s.profileLoader(gameID, profileID))
 }
 
+// bridgeView is the profile as a loader asking its running game's companion sees it: the profile's folder and, where
+// the companion is a mod folder (SMAPI's), that folder.
+func (s *Service) bridgeView(gameID, profileID string) (loader.ProfileView, error) {
+	dir, err := s.profiles.ProfileDir(gameID, profileID)
+	if err != nil {
+		return loader.ProfileView{}, err
+	}
+	view := loader.ProfileView{Game: gameID, Dir: dir}
+	if g := game.Find(gameID); g != nil {
+		view.Companion, _ = s.bridgeFolder(g, profileID)
+	}
+	return view, nil
+}
+
 // view is the profile as loaders see it.
 func (s *Service) view(g game.Game, inst game.Install, profileID string) (loader.ProfileView, error) {
 	dir, err := s.profiles.ProfileDir(g.ID(), profileID)

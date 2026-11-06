@@ -22,7 +22,7 @@ const MAX_SAVED_REPORTS = 20
 
 type SortColumn = 'name' | 'averageMs' | 'p95Ms' | 'peakMs' | 'share' | 'calls'
 type SortDirection = 'asc' | 'desc'
-type PanelBusy = 'start' | 'report' | ''
+type PanelBusy = 'start' | 'stop' | 'report' | ''
 
 function rememberSaved(saved: SavedReport) {
   return (current: SavedReport[]) =>
