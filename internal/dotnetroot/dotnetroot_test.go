@@ -1,4 +1,4 @@
-package devsvc
+package dotnetroot
 
 import (
 	"os"
@@ -7,9 +7,9 @@ import (
 	"testing"
 )
 
-func TestExtensionDotnetRoot(t *testing.T) {
+func TestRoot(t *testing.T) {
 	mount := t.TempDir()
-	if got := extensionDotnetRoot(true, mount); got != "" {
+	if got := Root(true, mount); got != "" {
 		t.Fatalf("empty mount resolved to %q", got)
 	}
 	lib := filepath.Join(mount, "lib")
@@ -19,17 +19,17 @@ func TestExtensionDotnetRoot(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(lib, "dotnet"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if got := extensionDotnetRoot(true, mount); got != lib {
+	if got := Root(true, mount); got != lib {
 		t.Fatalf("got %q, want %q", got, lib)
 	}
-	if got := extensionDotnetRoot(false, mount); got != "" {
+	if got := Root(false, mount); got != "" {
 		t.Fatalf("outside a Flatpak resolved to %q", got)
 	}
 }
 
-func TestWithDotnetRoot(t *testing.T) {
+func TestWithRoot(t *testing.T) {
 	env := []string{"A=1", "PATH=/usr/bin", "DOTNET_ROOT=/old"}
-	got := withDotnetRoot(env, "/ext/lib")
+	got := WithRoot(env, "/ext/lib")
 	for _, want := range []string{"A=1", "DOTNET_ROOT=/ext/lib", "PATH=/ext/lib" + string(os.PathListSeparator) + "/usr/bin"} {
 		if !slices.Contains(got, want) {
 			t.Errorf("%q missing from %v", want, got)
@@ -38,10 +38,10 @@ func TestWithDotnetRoot(t *testing.T) {
 	if slices.Contains(got, "DOTNET_ROOT=/old") {
 		t.Errorf("old DOTNET_ROOT kept: %v", got)
 	}
-	if !slices.Equal(withDotnetRoot(env, ""), env) {
+	if !slices.Equal(WithRoot(env, ""), env) {
 		t.Error("no root must leave env alone")
 	}
-	if dotnetProgram("") != "dotnet" || dotnetProgram("/ext/lib") != filepath.Join("/ext/lib", "dotnet") {
-		t.Error("dotnetProgram")
+	if Program("") != "dotnet" || Program("/ext/lib") != filepath.Join("/ext/lib", "dotnet") {
+		t.Error("Program")
 	}
 }

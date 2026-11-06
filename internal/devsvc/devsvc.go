@@ -27,6 +27,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/dotnetroot"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -149,6 +150,17 @@ func (s *Service) untrustedDir(dir string) bool {
 	return false
 }
 
+// flatpakDotnetRoot and withDotnetRoot are the shared lookup; tests point the root at a temp folder.
+var (
+	flatpakDotnetRoot = dotnetroot.FlatpakRoot
+	withDotnetRoot    = dotnetroot.WithRoot
+)
+
+// isDotnetTool reports whether name is a .NET global tool, which starts the runtime and so needs DOTNET_ROOT.
+func isDotnetTool(name string) bool {
+	return strings.TrimSuffix(strings.ToLower(filepath.Base(name)), filepath.Ext(name)) == "ilspycmd"
+}
+
 func (s *Service) run(ctx context.Context, dir, name string, args ...string) ([]byte, error) {
 	if name == "git" && s.untrustedDir(dir) {
 		// The repository's own .git/config can name a filter driver that runs on git commands.
@@ -160,7 +172,7 @@ func (s *Service) run(ctx context.Context, dir, name string, args ...string) ([]
 	args = guardGit(name, args)
 	program := name
 	if name == "dotnet" {
-		program = dotnetProgram(flatpakDotnetRoot())
+		program = dotnetroot.Program(flatpakDotnetRoot())
 	}
 	cmd, err := toolCommand(ctx, program, args...)
 	if err != nil {
@@ -168,7 +180,7 @@ func (s *Service) run(ctx context.Context, dir, name string, args ...string) ([]
 	}
 	cmd.Dir = dir
 	cmd.Env = hostenv.Environ()
-	if name == "dotnet" {
+	if name == "dotnet" || isDotnetTool(name) {
 		cmd.Env = s.dotnetEnv()
 	}
 	nowindow.Set(cmd)
@@ -199,7 +211,7 @@ func (s *Service) Tools(ctx context.Context, gameID string) Tools {
 	defer cancel()
 	t := Tools{DotnetSDKs: []string{}}
 	if flatpak.Inside() && flatpakDotnetRoot() == "" {
-		t.FlatpakDotnetInstall = FlatpakDotnetInstall
+		t.FlatpakDotnetInstall = dotnetroot.InstallCommand
 	}
 	if out, err := s.run(ctx, "", "dotnet", "--list-sdks"); err == nil {
 		for line := range strings.Lines(string(out)) {
