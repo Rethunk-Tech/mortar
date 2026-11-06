@@ -236,14 +236,33 @@ func ProfileModsDir(gameID, dir string) (string, error) {
 	return filepath.Join(dir, filepath.FromSlash(t.ProfileFolder())), nil
 }
 
-// GeneratedPath is where an extension keeps the file it generates in the profile, which Contribute then places.
-func GeneratedPath(profileDir, genDir, file string) string {
-	return filepath.Join(profileDir, genDir, file)
+// Generated is the part of an Extension that places one generated file: it names the catalog role of the folder the
+// file goes to, and keeps the file under dir in the profile until Contribute places it.
+type Generated struct {
+	// RoleName is the catalog path role of the folder the file is placed in.
+	RoleName string
+	// Dir is where the profile keeps the file: the deployer gives the player's own back afterwards.
+	Dir string
+	// File is the file's name, in both places.
+	File string
 }
 
-// WriteGenerated writes an extension's generated file where GeneratedPath says, atomically.
-func WriteGenerated(profileDir, genDir, file string, data []byte) error {
-	out := GeneratedPath(profileDir, genDir, file)
+// Role implements Extension.
+func (g Generated) Role() string { return g.RoleName }
+
+// Contribute implements Extension.
+func (g Generated) Contribute(plan *launchplan.Plan, p loader.ProfileView) {
+	plan.AddFile(launchplan.PlanFile{Src: g.Path(p.Dir), Dst: g.File, Root: g.RoleName})
+}
+
+// Path is where the extension keeps the file it generates in the profile, which Contribute then places.
+func (g Generated) Path(profileDir string) string {
+	return filepath.Join(profileDir, g.Dir, g.File)
+}
+
+// Write writes the generated file where Path says, atomically.
+func (g Generated) Write(profileDir string, data []byte) error {
+	out := g.Path(profileDir)
 	if err := os.MkdirAll(filepath.Dir(out), 0o700); err != nil {
 		return err
 	}

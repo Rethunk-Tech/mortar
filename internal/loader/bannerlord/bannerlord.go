@@ -13,7 +13,6 @@ import (
 
 	bl "github.com/Rethunk-Tech/go-bannerlord"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/folder"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
@@ -24,11 +23,8 @@ import (
 const Role = "launcherData"
 
 const (
-	launcherFile = "LauncherData.xml"
-	// generatedDir is where the profile keeps the file it places: the deployer gives the player's own back afterwards.
-	generatedDir = ".mortar-bannerlord"
-	submodule    = "SubModule.xml"
-	modulesDir   = "Modules"
+	submodule  = "SubModule.xml"
+	modulesDir = "Modules"
 )
 
 // Finding codes, worded in the frontend's reasonText.
@@ -40,19 +36,11 @@ const (
 	CodeCycle        = "moduleCycle"
 )
 
-var _ = folder.Extend(extension{})
+var ext = extension{folder.Generated{RoleName: Role, Dir: ".mortar-bannerlord", File: "LauncherData.xml"}}
 
-type extension struct{}
+var _ = folder.Extend(ext)
 
-func (extension) Role() string { return Role }
-
-func (extension) Contribute(plan *launchplan.Plan, p loader.ProfileView) {
-	plan.AddFile(launchplan.PlanFile{Src: generatedPath(p.Dir), Dst: launcherFile, Root: Role})
-}
-
-func generatedPath(profileDir string) string {
-	return folder.GeneratedPath(profileDir, generatedDir, launcherFile)
-}
+type extension struct{ folder.Generated }
 
 // modules are the game's official modules and the profile's, in that order.
 type modules struct {
@@ -174,7 +162,7 @@ func (extension) Prelaunch(p loader.ProfileView) error {
 	if err != nil {
 		return err
 	}
-	return folder.WriteGenerated(p.Dir, generatedDir, launcherFile, b)
+	return ext.Write(p.Dir, b)
 }
 
 // Order is the list Prelaunch would write, each module with the sort issues that name it. The sort alone orders it, so

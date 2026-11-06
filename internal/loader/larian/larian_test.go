@@ -43,10 +43,10 @@ func TestPrelaunchWritesModSettingsInProfileOrderAndTheDeployerRestoresTheOwn(t 
 	write(t, filepath.Join(profile, "Mods", "override.pak"), lariantest.BuildPak(t, 18, map[string][]byte{"Public/x.txt": []byte("x")}, larianpak.CompressionNone))
 	// B is earlier in the profile than A.
 	view := loader.ProfileView{Game: game, Dir: profile, Enabled: []string{filepath.Join(root, "store", "ModB"), filepath.Join(root, "store", "ModA")}}
-	if err := (extension{}).Prelaunch(view); err != nil {
+	if err := ext.Prelaunch(view); err != nil {
 		t.Fatal(err)
 	}
-	mods, err := larianpak.ParseModSettings(mustRead(t, generatedPath(profile)))
+	mods, err := larianpak.ParseModSettings(mustRead(t, ext.Path(profile)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +59,7 @@ func TestPrelaunchWritesModSettingsInProfileOrderAndTheDeployerRestoresTheOwn(t 
 	}
 
 	plan := launchplan.New(launchplan.ModeProfile)
-	extension{}.Contribute(plan, view)
+	ext.Contribute(plan, view)
 	if len(plan.Files) != 1 || plan.Files[0].Root != Role || plan.Files[0].Dst != "modsettings.lsx" {
 		t.Fatalf("plan files %+v", plan.Files)
 	}
@@ -76,7 +76,7 @@ func TestPrelaunchWritesModSettingsInProfileOrderAndTheDeployerRestoresTheOwn(t 
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Equal(mustRead(t, own), mustRead(t, generatedPath(profile))) {
+	if !bytes.Equal(mustRead(t, own), mustRead(t, ext.Path(profile))) {
 		t.Fatal("the generated modsettings.lsx is not in place for the run")
 	}
 	if err := d.Purge(t.Context(), m); err != nil {
@@ -106,10 +106,10 @@ func TestPrelaunchListsOnlyTheTopLevelPaksTheGameLoads(t *testing.T) {
 	} {
 		write(t, path, lariantest.BuildPak(t, 18, map[string][]byte{"Mods/" + p.name + "/meta.lsx": []byte(meta(p.uuid, p.name))}, larianpak.CompressionNone))
 	}
-	if err := (extension{}).Prelaunch(loader.ProfileView{Game: game, Dir: profile}); err != nil {
+	if err := ext.Prelaunch(loader.ProfileView{Game: game, Dir: profile}); err != nil {
 		t.Fatal(err)
 	}
-	out := string(mustRead(t, generatedPath(profile)))
+	out := string(mustRead(t, ext.Path(profile)))
 	if !strings.Contains(out, top) || strings.Contains(out, nested) {
 		t.Fatalf("modsettings.lsx = %s", out)
 	}
@@ -130,7 +130,7 @@ func TestOrderListsTheModulesPrelaunchWritesAndNamesTheFolderToMove(t *testing.T
 	// A pak the profile does not hold has no folder to move.
 	hand := lariantest.BuildPak(t, 18, map[string][]byte{"Mods/Hand/meta.lsx": []byte(meta("cccccccc-0000-0000-0000-000000000003", "Hand"))}, larianpak.CompressionNone)
 	write(t, filepath.Join(profile, "Mods", "Hand.pak"), hand)
-	rows, err := (extension{}).Order(loader.ProfileView{Game: game, Dir: profile, Enabled: []string{folders["ModB"], folders["ModA"]}})
+	rows, err := ext.Order(loader.ProfileView{Game: game, Dir: profile, Enabled: []string{folders["ModB"], folders["ModA"]}})
 	if err != nil {
 		t.Fatal(err)
 	}

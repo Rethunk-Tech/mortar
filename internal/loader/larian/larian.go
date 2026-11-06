@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	larianpak "github.com/Rethunk-Tech/go-larian"
-	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/folder"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
@@ -24,25 +23,14 @@ import (
 const Role = "modSettings"
 
 const (
-	settingsFile = "modsettings.lsx"
-	// generatedDir is where the profile keeps the file it places: the deployer gives the player's own back afterwards.
-	generatedDir = ".mortar-larian"
-	unranked     = 1 << 20
+	unranked = 1 << 20
 )
 
-var _ = folder.Extend(extension{})
+var ext = extension{folder.Generated{RoleName: Role, Dir: ".mortar-larian", File: "modsettings.lsx"}}
 
-type extension struct{}
+var _ = folder.Extend(ext)
 
-func (extension) Role() string { return Role }
-
-func (extension) Contribute(plan *launchplan.Plan, p loader.ProfileView) {
-	plan.AddFile(launchplan.PlanFile{Src: generatedPath(p.Dir), Dst: settingsFile, Root: Role})
-}
-
-func generatedPath(profileDir string) string {
-	return folder.GeneratedPath(profileDir, generatedDir, settingsFile)
-}
+type extension struct{ folder.Generated }
 
 // gustavX is the main campaign's entry, listed first as BG3 Mod Manager writes it (MAIN_CAMPAIGN_UUID in DivinityApp.cs).
 var gustavX = larianpak.ModuleInfo{
@@ -107,7 +95,7 @@ func (extension) Prelaunch(p loader.ProfileView) error {
 	for i, m := range mods {
 		infos[i] = m.info
 	}
-	return folder.WriteGenerated(p.Dir, generatedDir, settingsFile, larianpak.FormatModSettings(infos))
+	return ext.Write(p.Dir, larianpak.FormatModSettings(infos))
 }
 
 // Order is the list Prelaunch would write. Row.Folder names the profile's mod folder to move to change a row's place.

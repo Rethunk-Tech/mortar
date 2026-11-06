@@ -63,7 +63,7 @@ func fixture(t *testing.T) (root string, view loader.ProfileView) {
 func TestPrelaunchSelectsSortedModulesAndTheDeployerRestoresTheOwn(t *testing.T) {
 	t.Parallel()
 	root, view := fixture(t)
-	if err := (extension{}).Prelaunch(view); err != nil {
+	if err := ext.Prelaunch(view); err != nil {
 		t.Fatal(err)
 	}
 	got := selectedModules(t, view)
@@ -74,7 +74,7 @@ func TestPrelaunchSelectsSortedModulesAndTheDeployerRestoresTheOwn(t *testing.T)
 	}
 
 	plan := launchplan.New(launchplan.ModeProfile)
-	extension{}.Contribute(plan, view)
+	ext.Contribute(plan, view)
 	if len(plan.Files) != 1 || plan.Files[0].Root != Role || plan.Files[0].Dst != "LauncherData.xml" {
 		t.Fatalf("plan files %+v", plan.Files)
 	}
@@ -91,7 +91,7 @@ func TestPrelaunchSelectsSortedModulesAndTheDeployerRestoresTheOwn(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Equal(mustRead(t, own), mustRead(t, generatedPath(view.Dir))) {
+	if !bytes.Equal(mustRead(t, own), mustRead(t, ext.Path(view.Dir))) {
 		t.Fatal("the generated LauncherData.xml is not in place for the run")
 	}
 	if err := d.Purge(t.Context(), m); err != nil {
@@ -114,7 +114,7 @@ func TestFindingsNameTheProfilesModuleProblems(t *testing.T) {
 	put(t, filepath.Join(view.InstallDir, "Modules"), "Broken", subModule("Broken", true, false, "Gone"))
 
 	byCode := map[string]loader.Finding{}
-	for _, f := range (extension{}).Findings(view) {
+	for _, f := range ext.Findings(view) {
 		byCode[f.Code+":"+f.Plugin] = f
 	}
 	for _, key := range []string{CodeMissing + ":Lonely", CodeOutdated + ":Stale"} {
@@ -150,7 +150,7 @@ func TestPrelaunchSelectsTheOfficialModulesADependencyNeedsTransitively(t *testi
 	put(t, official, "DlcA", subModule("DlcA", true, false, "Native", "DlcB"))
 	put(t, official, "DlcB", subModule("DlcB", true, false, "Native"))
 	put(t, filepath.Join(view.Dir, "Modules"), "NeedsDlc", subModule("NeedsDlc", false, false, "DlcA"))
-	if err := (extension{}).Prelaunch(view); err != nil {
+	if err := ext.Prelaunch(view); err != nil {
 		t.Fatal(err)
 	}
 	got := selectedModules(t, view)
@@ -161,7 +161,7 @@ func TestPrelaunchSelectsTheOfficialModulesADependencyNeedsTransitively(t *testi
 
 func selectedModules(t *testing.T, view loader.ProfileView) []string {
 	t.Helper()
-	l, err := bl.ParseLauncher(bytes.NewReader(mustRead(t, generatedPath(view.Dir))))
+	l, err := bl.ParseLauncher(bytes.NewReader(mustRead(t, ext.Path(view.Dir))))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,7 +178,7 @@ func TestOrderListsTheSelectedModulesWithTheirIssues(t *testing.T) {
 	t.Parallel()
 	_, view := fixture(t)
 	put(t, filepath.Join(view.Dir, "Modules"), "Lonely", subModule("Lonely", false, false, "Nowhere"))
-	rows, err := (extension{}).Order(view)
+	rows, err := ext.Order(view)
 	if err != nil {
 		t.Fatal(err)
 	}
