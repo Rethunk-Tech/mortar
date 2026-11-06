@@ -59,6 +59,7 @@ import { showModLog, useModCosts } from './modCosts.ts'
 import { Outcome } from './Outcome.tsx'
 import { ReleaseDialog } from './ReleaseDialog.tsx'
 import { ReleaseItems } from './ReleaseItems.tsx'
+import { reportTrashFailed } from './trashFailed.ts'
 import { UploadDialog } from './UploadDialog.tsx'
 
 // Whether the project's folder is in its profile: a mod removed there stays out until asked for again.
@@ -350,9 +351,7 @@ function MoreMenu({
           setForgetting(false)
           setTrashFolder(false)
           if (trashFolder) {
-            TrashProject(game, project.dir).catch(
-              reportError(t`Could not move the folder to the trash`),
-            )
+            TrashProject(game, project.dir).catch(reportTrashFailed)
           } else {
             persist(() => Forget(game, project.dir), t`Could not remove the project`)
           }

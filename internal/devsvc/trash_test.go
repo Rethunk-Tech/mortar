@@ -5,11 +5,14 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // trashableProject is a created project in a folder whose name has a space and a "²", as players' folders do.
@@ -76,18 +79,23 @@ func TestTrashLetsGoOfTheProjectBeforeMovingItAndForgetsItOnlyOnceMoved(t *testi
 	}
 }
 
-func TestInUseNamesWhatHoldsTheFolder(t *testing.T) {
+func TestInUseCarriesTheHoldersForTheGUI(t *testing.T) {
 	dir := filepath.Join(t.TempDir(), "CadaversRedone")
-	for names, want := range map[string]string{
-		"Visual Studio Code":                             "CadaversRedone is in use by Visual Studio Code. Close it, then try again",
-		"Visual Studio Code|dotnet":                      "CadaversRedone is in use by Visual Studio Code and dotnet. Close them, then try again",
-		"Visual Studio Code|Windows PowerShell|Explorer": "CadaversRedone is in use by Visual Studio Code, Windows PowerShell and Explorer. Close them, then try again",
-	} {
-		if got := inUse(dir, strings.Split(names, "|")).Error(); got != want {
-			t.Errorf("%s: %q", names, got)
-		}
+	err := inUse(dir, []string{"Visual Studio Code", "dotnet"})
+	if usererr.KindOf(err) != usererr.InUse {
+		t.Fatalf("kind %v", usererr.KindOf(err))
 	}
-	if got := inUse(dir, nil).Error(); !strings.Contains(got, dir) || !strings.Contains(got, "Windows denied access") || !strings.Contains(got, "a terminal open in it") {
+	if got := string(usererr.Marshal(err)); got != `{"kind":"in_use","detail":{"folder":`+strconv.Quote(dir)+`,"holders":["Visual Studio Code","dotnet"]}}` {
+		t.Errorf("wire cause %s", got)
+	}
+	if got := inUse(dir, []string{"dotnet"}).Error(); !strings.HasSuffix(got, "CadaversRedone is in use by: dotnet") {
+		t.Errorf("text %q", got)
+	}
+	got := inUse(dir, nil).Error()
+	if !strings.Contains(got, dir) || !strings.Contains(got, "Windows denied access") || !strings.Contains(got, "a terminal open in it") {
 		t.Errorf("nothing found: %q", got)
+	}
+	if !strings.Contains(string(usererr.Marshal(inUse(dir, nil))), `"holders":[]`) {
+		t.Error("an unknown holder list must marshal as an empty array")
 	}
 }

@@ -1056,6 +1056,10 @@ msgstr ""
 msgid "Copied"
 msgstr ""
 
+#: src/develop/trashFailed.ts
+msgid "In use by {programs}"
+msgstr ""
+
 #: src/share/ImportProblems.tsx
 msgid "Page"
 msgstr ""
@@ -1357,7 +1361,7 @@ msgstr ""
 msgid "The program itself is not touched."
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/trashFailed.ts
 msgid "Could not move the folder to the trash"
 msgstr ""
 
@@ -6826,6 +6830,10 @@ msgstr ""
 
 #: src/launch/PrePlayDialog.tsx
 msgid "Changed since last run ({count})"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "A program is using that folder. Close it, then try again."
 msgstr ""
 
 #: src/launch/LaunchLayer.tsx

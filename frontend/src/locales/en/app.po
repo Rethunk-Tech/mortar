@@ -1062,6 +1062,10 @@ msgstr "Copy mod list"
 msgid "Copied"
 msgstr "Copied"
 
+#: src/develop/trashFailed.ts
+msgid "In use by {programs}"
+msgstr "In use by {programs}"
+
 #: src/share/ImportProblems.tsx
 msgid "Page"
 msgstr "Page"
@@ -1363,7 +1367,7 @@ msgstr "Not signed in"
 msgid "The program itself is not touched."
 msgstr "The program itself is not touched."
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/trashFailed.ts
 msgid "Could not move the folder to the trash"
 msgstr "Could not move the folder to the trash"
 
@@ -6833,6 +6837,10 @@ msgstr "{loader} {version} installed"
 #: src/launch/PrePlayDialog.tsx
 msgid "Changed since last run ({count})"
 msgstr "Changed since last run ({count})"
+
+#: src/toasts/report.ts
+msgid "A program is using that folder. Close it, then try again."
+msgstr "A program is using that folder. Close it, then try again."
 
 #: src/launch/LaunchLayer.tsx
 #: src/launch/LaunchScreen.tsx

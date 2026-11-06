@@ -10,6 +10,8 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/go-safefs"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // holdBuild waits for a build of the project in dir to finish and keeps the next from starting until the returned
@@ -25,7 +27,7 @@ func holdBuild(dir string) (release func()) {
 }
 
 // trashFailed names the programs that hold dir when Windows would not move it, so the player knows what to close. The
-// error is untagged on purpose: a permission kind would show a sentence about Mortar's own permissions instead.
+// error is tagged InUse, not Permission, whose sentence would blame Mortar's own permissions.
 func trashFailed(dir string, err error) error {
 	if !errors.Is(err, safefs.ErrInUse) || !safefs.IsDir(dir) {
 		return err
@@ -44,18 +46,23 @@ func trashFailed(dir string, err error) error {
 	return inUse(dir, names)
 }
 
+// inUseError is a folder Windows would not move. Its English text is for logs; Detail is what the GUI words its own
+// sentence from, so the list of programs is joined in the player's language (usererr.Detailer).
+type inUseError struct {
+	Folder  string   `json:"folder"`
+	Holders []string `json:"holders"`
+}
+
+func (e *inUseError) Error() string {
+	if len(e.Holders) == 0 {
+		return fmt.Sprintf("could not move %s to the Recycle Bin because Windows denied access. Close programs using the folder, such as an editor or a terminal open in it, then try again", e.Folder)
+	}
+	return fmt.Sprintf("%s is in use by: %s", filepath.Base(e.Folder), strings.Join(e.Holders, ", "))
+}
+
+func (e *inUseError) Detail() any { return e }
+
 // inUse is the error for a folder Windows would not move, naming what holds it when that is known.
 func inUse(dir string, names []string) error {
-	if len(names) == 0 {
-		return fmt.Errorf("could not move %s to the Recycle Bin because Windows denied access. Close programs using the folder, such as an editor or a terminal open in it, then try again", dir)
-	}
-	them := "them"
-	if len(names) == 1 {
-		them = "it"
-	}
-	list := names[0]
-	if n := len(names); n > 1 {
-		list = strings.Join(names[:n-1], ", ") + " and " + names[n-1]
-	}
-	return fmt.Errorf("%s is in use by %s. Close %s, then try again", filepath.Base(dir), list, them)
+	return usererr.Wrap(usererr.InUse, &inUseError{Folder: dir, Holders: usererr.NonNil(names)})
 }
