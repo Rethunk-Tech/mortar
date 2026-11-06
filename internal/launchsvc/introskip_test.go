@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -14,12 +13,7 @@ import (
 )
 
 func TestALaunchArmsTheBridgesIntroSkipFromTheSettingOrACrashCheck(t *testing.T) {
-	datadirtest.Use(t, t.TempDir())
-	set, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, profiles := testenv.Stores(t)
+	set, profiles := testenv.Env(t)
 	const lc = "lethal-company"
 	p := testenv.Profile(t, profiles, lc, "A")
 	dir, err := profiles.ProfileDir(lc, p.ID)

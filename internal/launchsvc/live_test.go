@@ -17,17 +17,11 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
 func TestABepInExGameReportsItsSceneOwnVersionAndWhichPackagesLoaded(t *testing.T) {
-	datadirtest.Use(t, t.TempDir())
-	set, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, ps := testenv.Stores(t)
+	set, ps := testenv.Env(t)
 	const lc = "lethal-company"
 	p := testenv.Profile(t, ps, lc, "A")
 	dll, err := os.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))

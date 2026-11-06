@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -66,12 +65,7 @@ func TestGraphicsMarkerAsksAgainOncePerFailureThenStops(t *testing.T) {
 }
 
 func TestAnEarlyExitUnderVulkanBringsBackPlaysQuestion(t *testing.T) {
-	datadirtest.Use(t, t.TempDir())
-	set, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, profiles := testenv.Stores(t)
+	set, profiles := testenv.Env(t)
 	p := testenv.Profile(t, profiles, "peak", "A")
 	svc := NewService(t.TempDir(), set, profiles)
 	g := game.Find("peak")
@@ -119,12 +113,7 @@ func TestAnEarlyExitUnderVulkanBringsBackPlaysQuestion(t *testing.T) {
 
 func peakService(t *testing.T) (*Service, *settings.Store, string) {
 	t.Helper()
-	datadirtest.Use(t, t.TempDir())
-	set, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, profiles := testenv.Stores(t)
+	set, profiles := testenv.Env(t)
 	p := testenv.Profile(t, profiles, "peak", "A")
 	return NewService(t.TempDir(), set, profiles), set, p.ID
 }

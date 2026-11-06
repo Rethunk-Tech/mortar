@@ -7,23 +7,16 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
 // Two packages ship the same plugin (GUID com.fixture.plugin, version 1.2.3), as the matrix's DupA and DupB do, and a
 // third an older copy of it; BepInEx loads one.
 func TestOnlyTheCopyBepInExLoadedReadsLoaded(t *testing.T) {
-	datadirtest.Use(t, t.TempDir())
-	set, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, ps := testenv.Stores(t)
+	set, ps := testenv.Env(t)
 	const lc = "lethal-company"
 	p := testenv.Profile(t, ps, lc, "A")
 	dll, err := os.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))

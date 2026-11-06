@@ -5,7 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -21,6 +23,18 @@ func Stores(t testing.TB) (*store.Store, *profile.Store) {
 		t.Fatal(err)
 	}
 	return items, profiles
+}
+
+// Env gives the test a data folder of its own, then opens the settings and the profile store in it.
+func Env(t testing.TB) (*settings.Store, *profile.Store) {
+	t.Helper()
+	datadirtest.Use(t, t.TempDir())
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, profiles := Stores(t)
+	return set, profiles
 }
 
 // StoresIn opens the item store and the profile store over it in dir, for a test that keeps its data folder to itself.

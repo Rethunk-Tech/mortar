@@ -249,12 +249,7 @@ func TestAnAnswerThatDoesNotWaitKeepsTheLastRowsUntilTheWalkEnds(t *testing.T) {
 // Problems, which the pre-Play check and the command line ask, waits for the walk, and so does the check's health
 // point; ProblemsNoWait then has its rows without walking again.
 func TestProblemsWaitsForTheLongPathWalk(t *testing.T) {
-	datadirtest.Use(t, t.TempDir())
-	set, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, profiles := testenv.Stores(t)
+	set, profiles := testenv.Env(t)
 	p := testenv.Profile(t, profiles, "stardew", "A")
 	modsDir, err := profiles.ModsDir("stardew", p.ID)
 	if err != nil {
