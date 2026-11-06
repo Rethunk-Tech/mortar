@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, List, ListItemButton, ListItemText, Typography } from '@mui/material'
 import { arrowFocus } from '@rethunk/dom-input-nav'
 import { FolderOpen } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { DownloadArchive } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/models.ts'
 import {
   DownloadsArchives,
@@ -21,41 +21,24 @@ import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { useFolderEvent } from '../shell/useFolderEvent.ts'
+import { useLastGood } from '../shell/useLastGood.ts'
 import { space } from '../theme/density.ts'
-import { type InlineError, inlineError, reportError } from '../toasts/report.ts'
+import { type InlineError, reportError, reportUnexpected } from '../toasts/report.ts'
 import { ArchivePreview } from './ArchivePreview.tsx'
 import { listArchives, useDownloadsDialog } from './downloadsDialog.ts'
 import { useInstall } from './store.ts'
 
 function useArchives(open: boolean, game: string) {
-  const [archives, setArchives] = useState<DownloadArchive[] | null>(null)
-  const [error, setError] = useState<InlineError | null>(null)
-  const gen = useRef(0)
+  const { data, error, reload } = useLastGood<DownloadArchive[]>(
+    game === '' ? null : `downloads:${game}`,
+    open ? () => DownloadsArchives(game).then((found) => found ?? []) : null,
+    [open],
+  )
   const load = useCallback(() => {
-    gen.current += 1
-    const token = gen.current
-    setError(null)
-    DownloadsArchives(game)
-      .then((found) => token === gen.current && setArchives(found ?? []))
-      .catch((e: unknown) => {
-        if (token === gen.current) {
-          setError(inlineError(e))
-        }
-      })
-  }, [game])
-  useEffect(() => {
-    if (!(open && game)) {
-      return
-    }
-    setArchives(null)
-    setError(null)
-    load()
-    return () => {
-      gen.current += 1
-    }
-  }, [open, game, load])
+    reload().catch(reportUnexpected)
+  }, [reload])
   useFolderEvent('library:downloads', game, () => open && load())
-  return { archives, error, reload: load }
+  return { archives: data, error: data === null ? error : null, reload: load }
 }
 
 function FolderLine({ open, onClose }: { open: boolean; onClose: () => void }) {

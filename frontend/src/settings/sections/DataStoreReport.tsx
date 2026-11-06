@@ -2,7 +2,7 @@ import type { I18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, Skeleton } from '@mui/material'
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useState } from 'react'
 import type {
   Item as LeftoverItem,
   Preview,
@@ -24,7 +24,9 @@ import { When } from '../../i18n/When.tsx'
 import { AfterDelay } from '../../shell/AfterDelay.tsx'
 import { AppDialog, DialogFooter } from '../../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { useLastGood } from '../../shell/useLastGood.ts'
 import { space } from '../../theme/density.ts'
+import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { nowrap } from './dataStyles.ts'
@@ -220,24 +222,31 @@ function Section({
 }
 
 function useCleanupData(open: boolean) {
-  const [store, setStore] = useState<{ unused: Sel[]; older: Sel[] } | null>(null)
-  const [preview, setPreview] = useState<Preview | null>(null)
-  const [error, setError] = useState(false)
+  const { data, error, refreshing, reload } = useLastGood<{
+    store: { unused: Sel[]; older: Sel[] }
+    preview: Preview
+  }>(
+    'data-store-report',
+    open
+      ? () =>
+          Promise.all([Report(), CleanupPreview()]).then(([rep, preview]) => ({
+            store: removable(rep),
+            preview,
+          }))
+      : null,
+    [open],
+  )
   const load = useCallback(() => {
-    setError(false)
-    Promise.all([Report(), CleanupPreview()])
-      .then(([rep, next]) => {
-        setStore(removable(rep))
-        setPreview(next)
-      })
-      .catch(() => setError(true))
-  }, [])
-  useEffect(() => {
-    if (open) {
-      load()
-    }
-  }, [open, load])
-  return { store, preview, load, error }
+    reload().catch(reportUnexpected)
+  }, [reload])
+  return {
+    store: data?.store ?? null,
+    preview: data?.preview ?? null,
+    load,
+    // Deleting acts on the list shown, so it waits for the re-read.
+    refreshing,
+    error: data === null && error !== null,
+  }
 }
 
 function CleanupBody({
@@ -334,7 +343,7 @@ function CleanupDialog({
   onChanged: () => void
 }) {
   const { t } = useLingui()
-  const { store, preview, load, error } = useCleanupData(open)
+  const { store, preview, load, refreshing, error } = useCleanupData(open)
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [confirm, setConfirm] = useState(false)
   const [busy, runCleanup] = usePending()
@@ -403,7 +412,7 @@ function CleanupDialog({
           <Button
             variant="contained"
             color="error"
-            disabled={picked.size === 0}
+            disabled={picked.size === 0 || refreshing}
             onClick={() => setConfirm(true)}
           >
             {t`Delete`}

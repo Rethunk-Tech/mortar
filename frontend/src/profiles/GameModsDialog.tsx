@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Button, Checkbox, Chip, FormControlLabel, Typography } from '@mui/material'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { GameModPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   ImportGameMods,
@@ -15,6 +15,7 @@ import type { GameId } from '../nav/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { useLastGood } from '../shell/useLastGood.ts'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -22,6 +23,8 @@ import { GameModsProgressLine } from './GameModsProgress.tsx'
 import { formatOutcomeDetail, formatPreviewRow, willImport } from './gameModsFormat.ts'
 import { useProfiles } from './store.ts'
 import { useGameModsProgress } from './useGameModsProgress.ts'
+
+const NO_MODS: GameModPreview[] = []
 
 // What the import will do, and for a game that reads loose files from its folder the choice to move them out.
 function Plan({
@@ -99,56 +102,43 @@ export function GameModsDialog({
   const { t } = useLingui()
   const reasonText = useReasonText()
   const load = useProfiles((s) => s.load)
-  const [mods, setMods] = useState<GameModPreview[]>([])
-  const [canMove, setCanMove] = useState(false)
   const [move, setMove] = useState(false)
-  const [error, setError] = useState<InlineError | null>(null)
+  const [importError, setImportError] = useState<InlineError | null>(null)
   const [busy, setBusy] = useState(false)
-  const [previewing, setPreviewing] = useState(false)
+  const preview = useLastGood<{ mods: GameModPreview[]; canMove: boolean }>(
+    `game-mods:${game}`,
+    open
+      ? () =>
+          PreviewGameMods(game).then((p) => ({ mods: p.mods ?? [], canMove: p.canMove === true }))
+      : null,
+    [open],
+  )
+  const mods = preview.data?.mods ?? NO_MODS
+  const canMove = preview.data?.canMove ?? false
+  const error = importError ?? preview.error
+  const previewing = open && preview.data === null && preview.error === null
+  // Nothing imports from a list the live folder has not confirmed.
+  const rechecking = preview.refreshing
+  const loadPreview = () => {
+    preview.reload().catch(reportUnexpected)
+  }
   const progress = useGameModsProgress(game, busy)
   const gen = useRef(0)
   const live = useRef(false)
-  const loadPreview = useCallback(() => {
-    gen.current += 1
-    const token = gen.current
-    setMods([])
-    setError(null)
-    setPreviewing(true)
-    PreviewGameMods(game)
-      .then((p) => {
-        if (token !== gen.current || !live.current) {
-          return
-        }
-        setMods(p.mods ?? [])
-        setCanMove(p.canMove === true)
-        setPreviewing(false)
-      })
-      .catch((e: unknown) => {
-        if (token !== gen.current || !live.current) {
-          return
-        }
-        setMods([])
-        setError(inlineError(e))
-        setPreviewing(false)
-      })
-  }, [game])
   useEffect(() => {
     if (!open) {
       live.current = false
       gen.current += 1
-      setMods([])
       setMove(false)
-      setError(null)
+      setImportError(null)
       setBusy(false)
-      setPreviewing(false)
       return
     }
     live.current = true
-    loadPreview()
-  }, [open, loadPreview])
+  }, [open])
   const importable = mods.filter((m) => willImport(m.status)).length
   const importMods = async () => {
-    if (busy || previewing || !live.current) {
+    if (busy || previewing || rechecking || !live.current) {
       return
     }
     const token = gen.current
@@ -179,7 +169,7 @@ export function GameModsDialog({
       if (token !== gen.current || !live.current) {
         return
       }
-      setError(inlineError(e))
+      setImportError(inlineError(e))
     } finally {
       if (token === gen.current) {
         setBusy(false)
@@ -196,10 +186,13 @@ export function GameModsDialog({
           <Button onClick={onClose} disabled={busy}>
             {t`Cancel`}
           </Button>
-          <DisabledReason title={t`Nothing to import`} disabled={previewing || importable === 0}>
+          <DisabledReason
+            title={t`Nothing to import`}
+            disabled={previewing || rechecking || importable === 0}
+          >
             <Button
               variant="contained"
-              disabled={busy || previewing || importable === 0 || error !== null}
+              disabled={busy || previewing || rechecking || importable === 0 || error !== null}
               onClick={() => importMods().catch(reportUnexpected)}
             >
               {t`Import`}
@@ -220,6 +213,11 @@ export function GameModsDialog({
       )}
       {error === null && previewing ? (
         <SkeletonRows label={t`Reading the Mods folder…`} count={5} height={36} />
+      ) : null}
+      {error === null && rechecking && !busy ? (
+        <Typography role="status" sx={{ color: 'text.secondary' }}>
+          {t`Rechecking the folder…`}
+        </Typography>
       ) : null}
       {busy ? <GameModsProgressLine progress={progress} moving={canMove && move} /> : null}
       {error === null && !previewing ? (
