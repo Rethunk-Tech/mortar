@@ -94,7 +94,10 @@ func TestBuildKeepsItsOutputForTheDiagnosticsBundle(t *testing.T) {
 	}
 }
 
-func TestBuildQueuedBehindTrashDoesNotRunOnTheRemovedProject(t *testing.T) {
+// queuedBehindTrash runs call while the project's lock is held as Trash holds it, then removes the folder and forgets
+// the project before releasing the lock. It returns what ran and call's error.
+func queuedBehindTrash(t *testing.T, call func(svc *Service, dir string) error) ([]string, error) {
+	t.Helper()
 	svc, _ := testService(t, testTemplate)
 	dir := fixtureProject(t, svc)
 	var ran []string
@@ -104,13 +107,10 @@ func TestBuildQueuedBehindTrashDoesNotRunOnTheRemovedProject(t *testing.T) {
 	}
 	release := holdBuild(dir)
 	done := make(chan error, 1)
-	go func() {
-		_, err := svc.Build(t.Context(), "lethal-company", dir)
-		done <- err
-	}()
-	// Let Build read the project and queue on the lock before the folder goes.
+	go func() { done <- call(svc, dir) }()
+	// Nothing signals that the call has read the project and queued on the lock, so give it time to; a call that is
+	// late only reaches the project lookup after Forget and passes without exercising the lock.
 	time.Sleep(100 * time.Millisecond)
-	// What Trash does under the lock: the folder goes and the project is forgotten.
 	if err := os.RemoveAll(dir); err != nil {
 		t.Fatal(err)
 	}
@@ -118,12 +118,32 @@ func TestBuildQueuedBehindTrashDoesNotRunOnTheRemovedProject(t *testing.T) {
 		t.Fatal(err)
 	}
 	release()
-	err := <-done
+	return ran, <-done
+}
+
+func requireGone(t *testing.T, ran []string, err error) {
+	t.Helper()
 	if len(ran) != 0 {
-		t.Errorf("Build ran %v on a removed project", ran)
+		t.Errorf("ran %v on a removed project", ran)
 	}
 	var ue *usererr.Error
 	if !errors.As(err, &ue) || ue.Kind() != usererr.NotFound {
-		t.Errorf("Build error = %v, want NotFound", err)
+		t.Errorf("error = %v, want NotFound", err)
 	}
+}
+
+func TestBuildQueuedBehindTrashDoesNotRunOnTheRemovedProject(t *testing.T) {
+	ran, err := queuedBehindTrash(t, func(svc *Service, dir string) error {
+		_, err := svc.Build(t.Context(), "lethal-company", dir)
+		return err
+	})
+	requireGone(t, ran, err)
+}
+
+func TestPackQueuedBehindTrashDoesNotRunOnTheRemovedProject(t *testing.T) {
+	ran, err := queuedBehindTrash(t, func(svc *Service, dir string) error {
+		_, err := svc.Pack(t.Context(), "lethal-company", dir)
+		return err
+	})
+	requireGone(t, ran, err)
 }
