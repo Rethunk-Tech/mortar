@@ -619,7 +619,7 @@ func AssetSubfolders(cur settings.Settings, games []string) []AssetFolder {
 				if !d.IsDir() || dir == p.Dir {
 					return nil
 				}
-				if rel, _ := filepath.Rel(p.Dir, dir); slices.Contains([]string{".git", ".mortar", "artifacts"}, rel) {
+				if rel, _ := filepath.Rel(p.Dir, dir); slices.Contains([]string{".git", ".mortar", "artifacts", "node_modules"}, rel) {
 					return fs.SkipDir
 				}
 				out = append(out, AssetFolder{Game: g, Dir: dir, Root: p.Dir})
