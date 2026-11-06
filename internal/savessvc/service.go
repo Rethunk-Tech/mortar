@@ -332,20 +332,7 @@ func (s *Service) describe(ctx context.Context, gameID string, ids map[mod.ID]bo
 				mu.Unlock()
 				return
 			}
-			where, _ := problems.Locate(ctx, s.meta, domain, id, "", nil)
-			d := described{name: id.Local(), where: where}
-			if where != nil && where.Site == "Nexus" {
-				if page, err := s.meta.Page(ctx, where.PageID); err == nil {
-					d.name = cmp.Or(page.Name, id.Local())
-					for _, f := range page.Downloads {
-						for _, m := range f.Mods {
-							if mod.Equal(mod.SMAPI(m.UniqueID), id) && m.Name != "" {
-								d.name = m.Name
-							}
-						}
-					}
-				}
-			}
+			d := s.describeNexus(ctx, domain, id)
 			mu.Lock()
 			out[id] = d
 			mu.Unlock()
@@ -353,6 +340,28 @@ func (s *Service) describe(ctx context.Context, gameID string, ids map[mod.ID]bo
 	}
 	wg.Wait()
 	return out
+}
+
+// describeNexus names a mod from its Nexus page, falling back to the id when the page cannot be read.
+func (s *Service) describeNexus(ctx context.Context, domain string, id mod.ID) described {
+	where, _ := problems.Locate(ctx, s.meta, domain, id, "", nil)
+	d := described{name: id.Local(), where: where}
+	if where == nil || where.Site != "Nexus" {
+		return d
+	}
+	page, err := s.meta.Page(ctx, where.PageID)
+	if err != nil {
+		return d
+	}
+	d.name = cmp.Or(page.Name, id.Local())
+	for _, f := range page.Downloads {
+		for _, m := range f.Mods {
+			if mod.Equal(mod.SMAPI(m.UniqueID), id) && m.Name != "" {
+				d.name = m.Name
+			}
+		}
+	}
+	return d
 }
 
 // LastSaveGap is the most recently written save when it uses mods the profile lacks or has switched off, the save
