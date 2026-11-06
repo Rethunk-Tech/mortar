@@ -1087,6 +1087,17 @@ func isContentPatcherPack(im framework.Mod) bool {
 // parsed changes do not each hold their own.
 func intern(s string) string { return unique.Make(s).Value() }
 
+type contentFileDoc struct {
+	Changes       []json.RawMessage `json:"Changes"`
+	DynamicTokens []dynamicTokenDoc `json:"DynamicTokens"`
+}
+
+type dynamicTokenDoc struct {
+	Name  string                     `json:"Name"`
+	Value json.RawMessage            `json:"Value"`
+	When  map[string]json.RawMessage `json:"When"`
+}
+
 func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack *cachedPack) {
 	rel = filepath.ToSlash(rel)
 	key := strings.ToLower(rel)
@@ -1103,37 +1114,14 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 	if err != nil {
 		return
 	}
-	var doc struct {
-		Changes       []json.RawMessage `json:"Changes"`
-		DynamicTokens []struct {
-			Name  string                     `json:"Name"`
-			Value json.RawMessage            `json:"Value"`
-			When  map[string]json.RawMessage `json:"When"`
-		} `json:"DynamicTokens"`
-	}
+	var doc contentFileDoc
 	if err := json.Unmarshal(lenientjson.Clean(raw), &doc); err != nil {
 		return
 	}
 	// A dynamic token's value gates content like a change does, so its conditions count for compatibility
 	// settings too. Content Patcher reads DynamicTokens only from content.json.
 	if key == "content.json" {
-		for _, tok := range doc.DynamicTokens {
-			withConfigValues(tok.When, pack.values)
-		}
-		for _, tok := range doc.DynamicTokens {
-			value, ok := scalarValue(tok.Value)
-			if !ok {
-				continue
-			}
-			pack.tokens = append(pack.tokens, cpTokenDefinition{name: tokenName(tok.Name), value: value, when: tok.When})
-		}
-		for _, tok := range doc.DynamicTokens {
-			value, ok := scalarValue(tok.Value)
-			if !ok {
-				continue
-			}
-			pack.patches = append(pack.patches, cpPatch{kind: "other", when: outer.with(parseWhen(tok.When, pack.mentions, pack.schema)), tokenName: strings.ToLower(strings.TrimSpace(tok.Name)), tokenValue: value})
-		}
+		scanDynamicTokens(doc.DynamicTokens, outer, pack)
 	}
 	warmOverlayImages(root, rel, doc.Changes, pack.skipImages)
 	var dynamicValues map[string]string
@@ -1147,80 +1135,108 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		when := outer.with(parseWhenWithTokens(ch.When, pack.mentions, pack.schema, pack.tokens))
 		when.conditional = when.conditional || len(ch.When) > 0
 		noteAssetOwners(ch.Target, pack.mentions)
-		var kind string
-		var shapes []cpShape
-		switch {
-		case strings.EqualFold(action, "Include"):
-			for _, from := range splitTargets(ch.FromFile) {
-				from = contentSourceReference(root, rel, from)
-				if hasToken(from) {
-					pack.skips++
-					continue
-				}
-				scanContentFile(root, from, seen, when, pack)
-			}
+		kind, action, shapes, included := classifyChange(root, rel, &ch, action, when, seen, pack)
+		if included {
 			continue
-		case strings.EqualFold(action, kindLoad):
-			kind = "load"
-			action = kindLoad
-			ch.FromFile = contentSourceReference(root, rel, ch.FromFile)
-		case strings.EqualFold(action, kindEditImage), strings.EqualFold(action, kindEditMap):
-			kind = "edit"
-			if strings.EqualFold(action, kindEditImage) {
-				action = kindEditImage
-			} else {
-				action = kindEditMap
-			}
-			ch.FromFile = contentSourceReference(root, rel, ch.FromFile)
-			recordReferencedPackFiles(root, ch.FromFile, action == kindEditImage, pack)
-			shapes = editShapes(root, ch, action == kindEditImage, pack.skipImages)
-			if len(shapes) == 0 {
-				kind = "other"
-			}
-		case strings.EqualFold(action, kindEditData):
-			kind = "edit"
-			action = kindEditData
-			if normalizeTarget(ch.Target) == "data/additionalfarms" {
-				pack.recordFarms(ch.Entries)
-			}
-			shapes = dataShapes(root, ch, pack.values)
-			if len(shapes) == 0 {
-				kind = "other"
-			}
-		default:
-			kind = "other"
 		}
 		// Changes that cannot conflict still count for compatibility settings, whatever their target.
 		if kind == "other" {
 			pack.patches = append(pack.patches, cpPatch{kind: kind, when: when, source: intern(rel), index: i, action: intern(action)})
 			continue
 		}
-		fromArea := string(lenientjson.Clean(ch.FromArea))
-		toArea := string(lenientjson.Clean(ch.ToArea))
-		priority, _ := scalarValue(ch.Priority)
-		extra := changeDoesMore(rawChange, ch)
-		for _, t := range splitTargets(ch.Target) {
-			targets := []tokenTarget{{target: t, fromFile: ch.FromFile, when: when}}
-			if hasToken(t) {
-				if dynamicValues == nil {
-					dynamicValues = singleDynamicValues(pack)
-				}
-				if targets = expandTargetTokens(t, ch.FromFile, when, pack.values, dynamicValues); targets == nil {
-					pack.skips++
-					continue
-				}
+		appendChangePatches(root, rel, i, rawChange, &ch, kind, action, shapes, when, &dynamicValues, pack)
+	}
+}
+
+func scanDynamicTokens(tokens []dynamicTokenDoc, outer cpWhen, pack *cachedPack) {
+	for _, tok := range tokens {
+		withConfigValues(tok.When, pack.values)
+	}
+	for _, tok := range tokens {
+		value, ok := scalarValue(tok.Value)
+		if !ok {
+			continue
+		}
+		pack.tokens = append(pack.tokens, cpTokenDefinition{name: tokenName(tok.Name), value: value, when: tok.When})
+	}
+	for _, tok := range tokens {
+		value, ok := scalarValue(tok.Value)
+		if !ok {
+			continue
+		}
+		pack.patches = append(pack.patches, cpPatch{kind: "other", when: outer.with(parseWhen(tok.When, pack.mentions, pack.schema)), tokenName: strings.ToLower(strings.TrimSpace(tok.Name)), tokenValue: value})
+	}
+}
+
+// classifyChange sorts one change into a patch kind and canonical action. An Include is followed
+// recursively and reported as included, so the caller records nothing for it.
+func classifyChange(root, rel string, ch *cpChange, action string, when cpWhen, seen map[string]bool, pack *cachedPack) (kind, canonAction string, shapes []cpShape, included bool) {
+	switch {
+	case strings.EqualFold(action, "Include"):
+		for _, from := range splitTargets(ch.FromFile) {
+			from = contentSourceReference(root, rel, from)
+			if hasToken(from) {
+				pack.skips++
+				continue
 			}
-			for _, tt := range targets {
-				pack.patches = append(pack.patches, cpPatch{
-					kind: kind, target: intern(normalizeTarget(tt.target)), fromFile: intern(tt.fromFile), priority: intern(strings.TrimSpace(priority)),
-					patchMode: intern(strings.TrimSpace(ch.PatchMode)), when: tt.when,
-					shapes: shapes, spouse: tt.when.spouse, places: tt.when.places, image: action == kindEditImage,
-					imageDigest:   imageFileDigest(root, tt.fromFile, action == kindEditImage),
-					imageFromArea: intern(fromArea),
-					source:        intern(rel), index: i, action: intern(action), toArea: intern(toArea),
-					extra: extra,
-				})
+			scanContentFile(root, from, seen, when, pack)
+		}
+		return "", action, nil, true
+	case strings.EqualFold(action, kindLoad):
+		ch.FromFile = contentSourceReference(root, rel, ch.FromFile)
+		return "load", kindLoad, nil, false
+	case strings.EqualFold(action, kindEditImage), strings.EqualFold(action, kindEditMap):
+		canonAction = kindEditMap
+		if strings.EqualFold(action, kindEditImage) {
+			canonAction = kindEditImage
+		}
+		ch.FromFile = contentSourceReference(root, rel, ch.FromFile)
+		recordReferencedPackFiles(root, ch.FromFile, canonAction == kindEditImage, pack)
+		shapes = editShapes(root, *ch, canonAction == kindEditImage, pack.skipImages)
+		return editOrOther(shapes), canonAction, shapes, false
+	case strings.EqualFold(action, kindEditData):
+		if normalizeTarget(ch.Target) == "data/additionalfarms" {
+			pack.recordFarms(ch.Entries)
+		}
+		shapes = dataShapes(root, *ch, pack.values)
+		return editOrOther(shapes), kindEditData, shapes, false
+	}
+	return "other", action, nil, false
+}
+
+func editOrOther(shapes []cpShape) string {
+	if len(shapes) == 0 {
+		return "other"
+	}
+	return "edit"
+}
+
+func appendChangePatches(root, rel string, i int, rawChange json.RawMessage, ch *cpChange, kind, action string, shapes []cpShape, when cpWhen, dynamicValues *map[string]string, pack *cachedPack) {
+	fromArea := string(lenientjson.Clean(ch.FromArea))
+	toArea := string(lenientjson.Clean(ch.ToArea))
+	priority, _ := scalarValue(ch.Priority)
+	extra := changeDoesMore(rawChange, *ch)
+	for _, t := range splitTargets(ch.Target) {
+		targets := []tokenTarget{{target: t, fromFile: ch.FromFile, when: when}}
+		if hasToken(t) {
+			if *dynamicValues == nil {
+				*dynamicValues = singleDynamicValues(pack)
 			}
+			if targets = expandTargetTokens(t, ch.FromFile, when, pack.values, *dynamicValues); targets == nil {
+				pack.skips++
+				continue
+			}
+		}
+		for _, tt := range targets {
+			pack.patches = append(pack.patches, cpPatch{
+				kind: kind, target: intern(normalizeTarget(tt.target)), fromFile: intern(tt.fromFile), priority: intern(strings.TrimSpace(priority)),
+				patchMode: intern(strings.TrimSpace(ch.PatchMode)), when: tt.when,
+				shapes: shapes, spouse: tt.when.spouse, places: tt.when.places, image: action == kindEditImage,
+				imageDigest:   imageFileDigest(root, tt.fromFile, action == kindEditImage),
+				imageFromArea: intern(fromArea),
+				source:        intern(rel), index: i, action: intern(action), toArea: intern(toArea),
+				extra: extra,
+			})
 		}
 	}
 }
@@ -1384,76 +1400,82 @@ func parseWhenWithTokens(raw map[string]json.RawMessage, mentions map[string]boo
 func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]cpSchema, tokens []cpTokenDefinition, depth int) cpWhen {
 	var w cpWhen
 	for k, v := range raw {
-		if hasToken(k) {
-			if merged, ok := dynamicTokenWhen(k, v, tokens, mentions, schema, depth); ok {
-				w = w.withDefinition(merged)
-			} else {
-				w.assumed = appendAssumed(w.assumed, k, v, tokens)
-			}
-			continue
-		}
-		name, arg, _ := strings.Cut(k, "|")
-		name = tokenName(name)
-		if merged, ok := dynamicTokenWhen(k, v, tokens, mentions, schema, depth); ok {
-			w = w.withDefinition(merged)
-			continue
-		}
-		if strings.EqualFold(name, "hasmod") {
-			arg = strings.TrimSpace(arg)
-			if arg == "" {
-				var list string
-				if json.Unmarshal(v, &list) != nil || hasToken(list) {
-					continue
-				}
-				ids := splitTargets(list)
-				if len(ids) == 0 {
-					continue
-				}
-				w.anyOf = append(w.anyOf, note(ids, mentions))
-				continue
-			}
-			param, list, ok := strings.Cut(arg, "=")
-			if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) {
-				continue
-			}
-			ids := note(splitTargets(list), mentions)
-			var flags []string
-			if !condValues(v, &flags) || len(flags) != 1 {
-				continue
-			}
-			switch strings.ToLower(flags[0]) {
-			case "true":
-				w.anyOf = append(w.anyOf, ids)
-			case "false":
-				w.noneOf = append(w.noneOf, ids...)
-			}
-			continue
-		}
-		if flags, ok := flagConditions(k, v); ok {
-			if len(flags) == 0 {
-				w.assumed = appendAssumed(w.assumed, k, v, tokens)
-			}
-			w.flags = append(w.flags, flags...)
-			continue
-		}
-		field, ok := schema[strings.ToLower(name)]
-		if !ok {
-			w.assumed = appendAssumed(w.assumed, k, v, tokens)
-			continue
-		}
-		var values []string
-		if !condValues(v, &values) {
-			continue
-		}
-		if arg = strings.TrimSpace(arg); arg != "" {
-			var ok bool
-			if values, ok = containsValues(field, arg, values); !ok {
-				continue
-			}
-		}
-		w.config = append(w.config, cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple})
+		addWhenCondition(&w, k, v, mentions, schema, tokens, depth)
 	}
 	return w.with(cpWhen{spouse: spouseOf(raw, tokens), places: placesOf(raw)})
+}
+
+// addWhenCondition folds one When entry into w; entries the scan cannot read are skipped or assumed met.
+func addWhenCondition(w *cpWhen, k string, v json.RawMessage, mentions map[string]bool, schema map[string]cpSchema, tokens []cpTokenDefinition, depth int) {
+	if hasToken(k) {
+		if merged, ok := dynamicTokenWhen(k, v, tokens, mentions, schema, depth); ok {
+			*w = w.withDefinition(merged)
+		} else {
+			w.assumed = appendAssumed(w.assumed, k, v, tokens)
+		}
+		return
+	}
+	name, arg, _ := strings.Cut(k, "|")
+	name = tokenName(name)
+	if merged, ok := dynamicTokenWhen(k, v, tokens, mentions, schema, depth); ok {
+		*w = w.withDefinition(merged)
+		return
+	}
+	if strings.EqualFold(name, "hasmod") {
+		addHasMod(w, strings.TrimSpace(arg), v, mentions)
+		return
+	}
+	if flags, ok := flagConditions(k, v); ok {
+		if len(flags) == 0 {
+			w.assumed = appendAssumed(w.assumed, k, v, tokens)
+		}
+		w.flags = append(w.flags, flags...)
+		return
+	}
+	field, ok := schema[strings.ToLower(name)]
+	if !ok {
+		w.assumed = appendAssumed(w.assumed, k, v, tokens)
+		return
+	}
+	var values []string
+	if !condValues(v, &values) {
+		return
+	}
+	if arg = strings.TrimSpace(arg); arg != "" {
+		var ok bool
+		if values, ok = containsValues(field, arg, values); !ok {
+			return
+		}
+	}
+	w.config = append(w.config, cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple})
+}
+
+func addHasMod(w *cpWhen, arg string, v json.RawMessage, mentions map[string]bool) {
+	if arg == "" {
+		var list string
+		if json.Unmarshal(v, &list) != nil || hasToken(list) {
+			return
+		}
+		if ids := splitTargets(list); len(ids) > 0 {
+			w.anyOf = append(w.anyOf, note(ids, mentions))
+		}
+		return
+	}
+	param, list, ok := strings.Cut(arg, "=")
+	if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) {
+		return
+	}
+	ids := note(splitTargets(list), mentions)
+	var flags []string
+	if !condValues(v, &flags) || len(flags) != 1 {
+		return
+	}
+	switch strings.ToLower(flags[0]) {
+	case "true":
+		w.anyOf = append(w.anyOf, ids)
+	case "false":
+		w.noneOf = append(w.noneOf, ids...)
+	}
 }
 
 // appendAssumed records a condition this scan treats as met, unless it is a spouse or place condition the
@@ -1609,6 +1631,26 @@ func dynamicWhenState(raw map[string]json.RawMessage, tokens []cpTokenDefinition
 	return state
 }
 
+func flagConditionState(flagValues, assumptions []cpFlagCondition) cpConditionState {
+	state := cpConditionTrue
+	for _, flag := range flagValues {
+		current := cpConditionUnknown
+		for _, assumption := range assumptions {
+			if assumption.name != flag.name {
+				continue
+			}
+			if assumption.present != flag.present {
+				return cpConditionFalse
+			}
+			current = cpConditionTrue
+		}
+		if current == cpConditionUnknown {
+			state = cpConditionUnknown
+		}
+	}
+	return state
+}
+
 func dynamicConditionState(key string, raw json.RawMessage, tokens []cpTokenDefinition, reachable map[string]cpTokenReachability, present map[string]bool, schema map[string]cpSchema, config map[string]string, flags []cpFlagCondition) cpConditionState {
 	name, arg, ok := dynamicTokenConditionParts(key)
 	if !ok {
@@ -1621,23 +1663,7 @@ func dynamicConditionState(key string, raw json.RawMessage, tokens []cpTokenDefi
 		if len(flagValues) == 0 {
 			return cpConditionUnknown
 		}
-		state := cpConditionTrue
-		for _, flag := range flagValues {
-			current := cpConditionUnknown
-			for _, assumption := range flags {
-				if assumption.name != flag.name {
-					continue
-				}
-				if assumption.present != flag.present {
-					return cpConditionFalse
-				}
-				current = cpConditionTrue
-			}
-			if current == cpConditionUnknown {
-				state = cpConditionUnknown
-			}
-		}
-		return state
+		return flagConditionState(flagValues, flags)
 	}
 	if tokenDefinitionExists(tokens, name) {
 		reachableToken, computed := reachable[name]
@@ -2102,6 +2128,15 @@ func dropCheckScratch() {
 }
 
 // assetConflictScan also returns the packs whose every change later packs overwrite (see shadowedPacks).
+type hitAt struct{ kind, target, id string }
+
+// hitCollector gathers, per patch kind and target, the packs that touch it.
+type hitCollector struct {
+	at       map[string]map[string][]packHit
+	index    map[hitAt]int
+	authored []authoredPack
+}
+
 func assetConflictScan(mods []framework.Mod, run *partsRun, skip bool) ([]framework.AssetConflict, []framework.SettingHint, []framework.Redundant) {
 	defer dropCheckScratch()
 	preloadContentPacks(mods, skip)
@@ -2111,93 +2146,117 @@ func assetConflictScan(mods []framework.Mod, run *partsRun, skip bool) ([]framew
 			present[im.ModID().Fold()] = true
 		}
 	}
-	at := map[string]map[string][]packHit{"load": {}, "edit": {}}
-	var authored []authoredPack
-	type hitAt struct{ kind, target, id string }
-	index := map[hitAt]int{}
+	hc := &hitCollector{at: map[string]map[string][]packHit{"load": {}, "edit": {}}, index: map[hitAt]int{}}
 	for _, im := range mods {
-		pack := readContentPack(im, skip)
-		knows := maps.Clone(pack.mentions)
-		dependencies := map[string]bool{}
-		loadAfter := map[string]bool{}
-		for _, id := range im.LoadAfter {
-			loadAfter[id.Fold()] = true
-		}
-		for _, d := range im.Dependencies {
-			if knows == nil {
-				knows = map[string]bool{}
-			}
-			id := d.ModID().Fold()
-			if loadAfter[id] {
-				continue
-			}
-			knows[id] = true
-			dependencies[id] = true
-		}
-		config := map[string]string{}
-		if len(pack.schema) > 0 {
-			config = readPackConfig(im.Folder)
-		}
-		seen := presentFor(pack, present)
-		sig, stable := "", false
-		if len(pack.patches) > 0 {
-			sig, stable = packSig(im, pack, seen)
-		}
-		id := im.ModID().Fold()
-		own := authoredPack{key: im.Key, id: id, name: im.Name, author: normalAuthor(im.Author), root: im.Folder, knows: knows}
-		if own.author != "" {
-			own.patches = make([]cpPatch, 0, len(pack.patches))
-		}
-		if stable {
-			own.sig = sig
-		}
-		for _, p := range pack.patches {
-			if p.kind == "other" || !p.when.holds(seen) || !dynamicWhenHolds(p.when, pack.tokens, seen, pack.schema, config) {
-				continue
-			}
-			p = withTokenFarmTypes(p, pack.tokens, seen, pack.schema, config)
-			hits := at[p.kind][p.target]
-			k := hitAt{p.kind, p.target, id}
-			i, found := index[k]
-			if !found {
-				hits = append(hits, packHit{
-					id: im.ModID(), name: im.Name, key: im.Key, priority: p.priority, mentions: knows,
-					root: im.Folder, tokens: pack.patches, present: seen, schema: pack.schema, config: config,
-					dependencies: dependencies, loadAfter: loadAfter, sig: sig, stable: stable, author: normalAuthor(im.Author),
-				})
-				i = len(hits) - 1
-				index[k] = i
-				at[p.kind][p.target] = hits
-			} else {
-				hits[i].priority = strongerContentPatcherPriority(hits[i].priority, p.priority, p.kind)
-				// A second pack with the same id adds its patches to the first one's hit, so its share of the key too.
-				if hits[i].root != im.Folder && !strings.Contains(hits[i].sig, sig) {
-					hits[i].sig += "\x01" + sig
-					hits[i].stable = hits[i].stable && stable
-				}
-			}
-			if p.kind == "edit" {
-				hits[i].eligible = append(hits[i].eligible, p)
-			}
-			if !configHolds(p.when.config, pack.schema, config) {
-				if p.kind == "edit" {
-					hits[i].configOff = append(hits[i].configOff, len(hits[i].eligible)-1)
-				}
-				continue
-			}
-			if p.kind != "edit" {
-				hits[i].loads = append(hits[i].loads, p)
-			}
-			if own.author != "" {
-				own.patches = append(own.patches, p)
-			}
-		}
-		if own.author != "" {
-			authored = append(authored, own)
+		hc.addMod(im, readContentPack(im, skip), present)
+	}
+	at := hc.at
+	activateEdits(at["edit"])
+	shadowed := shadowedPacks(mods, at, skip)
+	bundled := bundles(hc.authored)
+	shadowed = addBundledRedundant(mods, shadowed, bundled)
+	customFarms := map[string]string{}
+	for _, im := range mods {
+		for target, id := range readContentPack(im, skip).farms {
+			customFarms[target] = modIDToken.ReplaceAllLiteralString(id, im.UniqueID)
 		}
 	}
-	// The active edits are the eligible ones minus the config-off positions; most hits have none, and then share the slice.
-	for _, hits := range at["edit"] {
+	out, settings := targetConflicts(at, customFarms, bundled, run, skip)
+	return out, settings, shadowed
+}
+
+func (hc *hitCollector) addMod(im framework.Mod, pack cachedPack, present map[string]bool) {
+	knows := maps.Clone(pack.mentions)
+	dependencies := map[string]bool{}
+	loadAfter := map[string]bool{}
+	for _, id := range im.LoadAfter {
+		loadAfter[id.Fold()] = true
+	}
+	for _, d := range im.Dependencies {
+		if knows == nil {
+			knows = map[string]bool{}
+		}
+		id := d.ModID().Fold()
+		if loadAfter[id] {
+			continue
+		}
+		knows[id] = true
+		dependencies[id] = true
+	}
+	config := map[string]string{}
+	if len(pack.schema) > 0 {
+		config = readPackConfig(im.Folder)
+	}
+	seen := presentFor(pack, present)
+	sig, stable := "", false
+	if len(pack.patches) > 0 {
+		sig, stable = packSig(im, pack, seen)
+	}
+	id := im.ModID().Fold()
+	own := authoredPack{key: im.Key, id: id, name: im.Name, author: normalAuthor(im.Author), root: im.Folder, knows: knows}
+	if own.author != "" {
+		own.patches = make([]cpPatch, 0, len(pack.patches))
+	}
+	if stable {
+		own.sig = sig
+	}
+	for _, p := range pack.patches {
+		if p.kind == "other" || !p.when.holds(seen) || !dynamicWhenHolds(p.when, pack.tokens, seen, pack.schema, config) {
+			continue
+		}
+		p = withTokenFarmTypes(p, pack.tokens, seen, pack.schema, config)
+		i := hc.hitFor(hitAt{p.kind, p.target, id}, p, im, pack, knows, seen, config, dependencies, loadAfter, sig, stable)
+		hits := hc.at[p.kind][p.target]
+		if p.kind == "edit" {
+			hits[i].eligible = append(hits[i].eligible, p)
+		}
+		if !configHolds(p.when.config, pack.schema, config) {
+			if p.kind == "edit" {
+				hits[i].configOff = append(hits[i].configOff, len(hits[i].eligible)-1)
+			}
+			continue
+		}
+		if p.kind != "edit" {
+			hits[i].loads = append(hits[i].loads, p)
+		}
+		if own.author != "" {
+			own.patches = append(own.patches, p)
+		}
+	}
+	if own.author != "" {
+		hc.authored = append(hc.authored, own)
+	}
+}
+
+// hitFor returns the index of im's hit for the patch's target, adding the hit on first sight or folding
+// the patch into the existing one.
+func (hc *hitCollector) hitFor(k hitAt, p cpPatch, im framework.Mod, pack cachedPack, knows, seen map[string]bool, config map[string]string, dependencies, loadAfter map[string]bool, sig string, stable bool) int {
+	hits := hc.at[p.kind][p.target]
+	i, found := hc.index[k]
+	if !found {
+		hits = append(hits, packHit{
+			id: im.ModID(), name: im.Name, key: im.Key, priority: p.priority, mentions: knows,
+			root: im.Folder, tokens: pack.patches, present: seen, schema: pack.schema, config: config,
+			dependencies: dependencies, loadAfter: loadAfter, sig: sig, stable: stable, author: normalAuthor(im.Author),
+		})
+		i = len(hits) - 1
+		hc.index[k] = i
+		hc.at[p.kind][p.target] = hits
+		return i
+	}
+	hits[i].priority = strongerContentPatcherPriority(hits[i].priority, p.priority, p.kind)
+	// A second pack with the same id adds its patches to the first one's hit, so its share of the key too.
+	if hits[i].root != im.Folder && !strings.Contains(hits[i].sig, sig) {
+		hits[i].sig += "\x01" + sig
+		hits[i].stable = hits[i].stable && stable
+	}
+	return i
+}
+
+// activateEdits sets each hit's active edits: the eligible ones minus the config-off positions. Most hits have
+// none off, and then share the slice.
+func activateEdits(edits map[string][]packHit) {
+	for _, hits := range edits {
 		for i := range hits {
 			h := &hits[i]
 			if len(h.configOff) == 0 {
@@ -2213,8 +2272,9 @@ func assetConflictScan(mods []framework.Mod, run *partsRun, skip bool) ([]framew
 			h.configOff = nil
 		}
 	}
-	shadowed := shadowedPacks(mods, at, skip)
-	bundled := bundles(authored)
+}
+
+func addBundledRedundant(mods []framework.Mod, shadowed []framework.Redundant, bundled map[string]framework.ModRef) []framework.Redundant {
 	for _, key := range slices.Sorted(maps.Keys(bundled)) {
 		if slices.ContainsFunc(shadowed, func(r framework.Redundant) bool { return r.Key == key }) {
 			continue
@@ -2223,13 +2283,10 @@ func assetConflictScan(mods []framework.Mod, run *partsRun, skip bool) ([]framew
 		shadowed = append(shadowed, framework.Redundant{Kind: "bundled", Key: key, ID: im.ModID(), Name: im.Name, By: []framework.ModRef{bundled[key]}})
 	}
 	// A Redundant row is offered for removal, and SMAPI skips every enabled pack that requires a removed one.
-	shadowed = slices.DeleteFunc(shadowed, func(r framework.Redundant) bool { return requiredByEnabled(mods, r.ID) })
-	customFarms := map[string]string{}
-	for _, im := range mods {
-		for target, id := range readContentPack(im, skip).farms {
-			customFarms[target] = modIDToken.ReplaceAllLiteralString(id, im.UniqueID)
-		}
-	}
+	return slices.DeleteFunc(shadowed, func(r framework.Redundant) bool { return requiredByEnabled(mods, r.ID) })
+}
+
+func targetConflicts(at map[string]map[string][]packHit, customFarms map[string]string, bundled map[string]framework.ModRef, run *partsRun, skip bool) ([]framework.AssetConflict, []framework.SettingHint) {
 	out := []framework.AssetConflict{}
 	settings := []framework.SettingHint{}
 	for _, kind := range []string{"load", "edit"} {
@@ -2264,7 +2321,7 @@ func assetConflictScan(mods []framework.Mod, run *partsRun, skip bool) ([]framew
 		}
 		return strings.Compare(a.Target, b.Target)
 	})
-	return out, settings, shadowed
+	return out, settings
 }
 
 // requiredByEnabled reports whether an enabled mod needs id: a required dependency, or the framework it is a
@@ -2565,56 +2622,69 @@ func bundles(packs []authoredPack) map[string]framework.ModRef {
 		if len(group) < 2 {
 			continue
 		}
-		// Targets first: they rule out almost every pair before any footprint is spelled out.
-		targets := make([]map[string]bool, len(group))
-		for i, p := range group {
-			targets[i] = map[string]bool{}
-			for _, patch := range p.patches {
-				targets[i][patch.target] = true
-			}
+		out = bundleGroup(group, last, next, out)
+	}
+	return out
+}
+
+// groupFootprints lazily spells out each pack's footprint, reusing the previous scan's set under the same signature.
+type groupFootprints struct {
+	group      []authoredPack
+	last, next map[string]map[string]bool
+	sigs       []map[string]bool
+}
+
+func (g *groupFootprints) of(i int) map[string]bool {
+	if g.sigs[i] != nil {
+		return g.sigs[i]
+	}
+	if sig := g.group[i].sig; sig != "" {
+		if set, ok := g.last[sig]; ok {
+			g.sigs[i], g.next[sig] = set, set
+			return set
 		}
-		sigs := make([]map[string]bool, len(group))
-		footprints := func(i int) map[string]bool {
-			if sigs[i] != nil {
-				return sigs[i]
-			}
-			if sig := group[i].sig; sig != "" {
-				if set, ok := last[sig]; ok {
-					sigs[i], next[sig] = set, set
-					return set
-				}
-			}
-			sigs[i] = make(map[string]bool, len(group[i].patches))
-			for _, patch := range group[i].patches {
-				sigs[i][patchFootprint(patch)] = true
-			}
-			if group[i].sig != "" {
-				next[group[i].sig] = sigs[i]
-			}
-			return sigs[i]
+	}
+	g.sigs[i] = make(map[string]bool, len(g.group[i].patches))
+	for _, patch := range g.group[i].patches {
+		g.sigs[i][patchFootprint(patch)] = true
+	}
+	if g.group[i].sig != "" {
+		g.next[g.group[i].sig] = g.sigs[i]
+	}
+	return g.sigs[i]
+}
+
+func bundleGroup(group []authoredPack, last, next map[string]map[string]bool, out map[string]framework.ModRef) map[string]framework.ModRef {
+	// Targets first: they rule out almost every pair before any footprint is spelled out.
+	targets := make([]map[string]bool, len(group))
+	for i, p := range group {
+		targets[i] = map[string]bool{}
+		for _, patch := range p.patches {
+			targets[i][patch.target] = true
 		}
-		for i, small := range group {
-			for j, big := range group {
-				if i == j || len(small.patches) > len(big.patches) && len(targets[i]) > len(targets[j]) {
-					continue
-				}
-				// A pack built on the other layers over it on purpose, as an add-on does over its base.
-				if small.knows[big.id] || big.knows[small.id] {
-					continue
-				}
-				if _, bundledToo := out[big.key]; bundledToo || !subsetOf(targets[i], targets[j]) {
-					continue
-				}
-				a, b := footprints(i), footprints(j)
-				if len(a) > len(b) || len(a) == len(b) && i < j || !subsetOf(a, b) || !sameLoads(small, big) {
-					continue
-				}
-				if out == nil {
-					out = map[string]framework.ModRef{}
-				}
-				out[small.key] = framework.ModRef{Key: big.key, Name: big.name}
-				break
+	}
+	fp := &groupFootprints{group: group, last: last, next: next, sigs: make([]map[string]bool, len(group))}
+	for i, small := range group {
+		for j, big := range group {
+			if i == j || len(small.patches) > len(big.patches) && len(targets[i]) > len(targets[j]) {
+				continue
 			}
+			// A pack built on the other layers over it on purpose, as an add-on does over its base.
+			if small.knows[big.id] || big.knows[small.id] {
+				continue
+			}
+			if _, bundledToo := out[big.key]; bundledToo || !subsetOf(targets[i], targets[j]) {
+				continue
+			}
+			a, b := fp.of(i), fp.of(j)
+			if len(a) > len(b) || len(a) == len(b) && i < j || !subsetOf(a, b) || !sameLoads(small, big) {
+				continue
+			}
+			if out == nil {
+				out = map[string]framework.ModRef{}
+			}
+			out[small.key] = framework.ModRef{Key: big.key, Name: big.name}
+			break
 		}
 	}
 	return out
@@ -2877,14 +2947,7 @@ func harmlessLoads(hits []packHit, conflict framework.AssetConflict) (bool, *fra
 	}
 	winner := slices.IndexFunc(hits, func(h packHit) bool { return mod.Equal(h.id, conflict.WinnerID) })
 	if winner < 0 {
-		for _, hit := range hits {
-			for _, load := range hit.loads {
-				if !loadFileBlank(hit, load, conflict.Target) {
-					return false, nil
-				}
-			}
-		}
-		return true, nil
+		return allLoadsBlank(hits, conflict.Target), nil
 	}
 
 	winnerBlank := true
@@ -2896,33 +2959,56 @@ func harmlessLoads(hits []packHit, conflict framework.AssetConflict) (bool, *fra
 		if i == winner {
 			continue
 		}
-		for _, load := range hit.loads {
-			blank := loadFileBlank(hit, load, conflict.Target)
-			identical := false
-			for _, winningLoad := range hits[winner].loads {
-				if loadFilesEqual(hit, load, hits[winner], winningLoad, conflict.Target) {
-					identical = true
-					break
-				}
-			}
-			if blank || identical {
-				continue
-			}
-			if winnerBlank {
-				return false, settingForDeadLoad(hit, load, hits[winner], conflict)
-			}
-			if !loadPriorityDecided(hits, conflict) {
-				return false, nil
-			}
-			if hitPriority("load", hit) > -1000 && !hit.mentions[hits[winner].id.Fold()] {
-				return false, nil
-			}
-			if candidate := settingForDeadLoad(hit, load, hits[winner], conflict); candidate != nil {
-				hint = candidate
-			}
+		h, ok := loserLoadsHint(hits, hit, hits[winner], winnerBlank, conflict)
+		if !ok {
+			return false, h
+		}
+		if h != nil {
+			hint = h
 		}
 	}
 	return true, hint
+}
+
+func allLoadsBlank(hits []packHit, target string) bool {
+	for _, hit := range hits {
+		for _, load := range hit.loads {
+			if !loadFileBlank(hit, load, target) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// loserLoadsHint checks a losing pack's loads against the winner. It reports false when a load makes the
+// conflict real; the hint then is the setting that would settle it, if any.
+func loserLoadsHint(hits []packHit, hit, winner packHit, winnerBlank bool, conflict framework.AssetConflict) (*framework.SettingHint, bool) {
+	var hint *framework.SettingHint
+	for _, load := range hit.loads {
+		if loadFileBlank(hit, load, conflict.Target) || loadMatchesAny(hit, load, winner, conflict.Target) {
+			continue
+		}
+		if winnerBlank {
+			return settingForDeadLoad(hit, load, winner, conflict), false
+		}
+		if !loadPriorityDecided(hits, conflict) {
+			return nil, false
+		}
+		if hitPriority("load", hit) > -1000 && !hit.mentions[winner.id.Fold()] {
+			return nil, false
+		}
+		if candidate := settingForDeadLoad(hit, load, winner, conflict); candidate != nil {
+			hint = candidate
+		}
+	}
+	return hint, true
+}
+
+func loadMatchesAny(hit packHit, load cpPatch, winner packHit, target string) bool {
+	return slices.ContainsFunc(winner.loads, func(winningLoad cpPatch) bool {
+		return loadFilesEqual(hit, load, winner, winningLoad, target)
+	})
 }
 
 func settingForDeadLoad(hit packHit, load cpPatch, winner packHit, conflict framework.AssetConflict) *framework.SettingHint {
