@@ -12,6 +12,7 @@ Save layout sources: CatLib's docs (`okatodev/CatLib` `docs/Saves.md`) and the m
 ## Cities: Skylines II
 
 Nobody on the team owns the game. Sources: PCGamingWiki, a decompiled 1.x Steam build (`bworthy89/roadmod`), the GDK build's API dump (`ps1ke/Cities-Skylines-2-Modding-Guide`), LTT Labs' benchmark harness (`LTTLabsOSS/markbench-tests`).
+
 - The folder below `Saves` is `PlatformManager.userSpecificPath`, a Steam id on Steam (`SaveGameMetadata.kPersistentLocation` in the decompile; markbench's `SAVE_LOCATION`). The entry sets `saveUserFolders` for that.
 - The save dialog offers `Local`, `SteamCloud` (`AssetDatabase<SteamCloud>` in `GameManager`) or on Xbox `GdkCloud`; the choice is `lastCloudTarget` in the `UserState` settings file. Autosaves always go local (`AutoSaveSystem.GetAutoSaveDatabaseTarget`).
 - Swapping the local `Saves` folder per profile cannot touch a cloud save: the app declares no Auto-Cloud paths (PCGamingWiki; Steam app info), Steam Cloud saves go through the Steam API into `userdata/<id>/949230/remote`, and Paradox account sync covers mods and playsets only (`PdxSdkPlatform.SyncModConflict`). A city saved to a cloud target stays outside the swap, shared by every profile.
@@ -49,6 +50,7 @@ Sources: r2modman's ecosystem schema (`dome-keeper`: Steam `1637320`, `exeNames`
 ## Lethal Company
 
 Sources: Gale (`Kesomannen/gale`), r2modmanPlus (`ebkr/r2modmanPlus`), the Thunderstore server source (`thunderstore-io/Thunderstore`), BepInEx 5.4.23.5.
+
 - **Doorstop files:** `winhttp.dll` and `doorstop_config.ini` must sit next to the game executable, so launch copies them from the profile into the game folder and removes them after, as Gale does (`Kesomannen/gale` `src-tauri/src/profile/launch/mod.rs:183-224`, `copy_required_files`). Everything else stays in the profile because BepInEx 5 takes its root from the preloader it started with (`BepInEx.Preloader/Entrypoint.cs:61`, `BepInEx/Paths.cs:11-30`).
 - **Launch arguments** follow the profile's `.doorstop_version`: `--doorstop-enable true --doorstop-target <preloader>` for 3.x, `--doorstop-enabled true --doorstop-target-assembly <preloader>` for 4.x. Mortar never writes `doorstop_config.ini`; the arguments override it. Under Proton the target takes the `Z:` form.
 - **Proton:** the Wine override `winhttp=n,b` goes into `compatdata/1966720/pfx/user.reg`, backed up first, as Gale and r2modman do.
@@ -171,6 +173,7 @@ Each decision names its community source (EA documents little). The catalog's `f
 ## Valheim
 
 Sources: r2modman's ecosystem schema, MO2's `games/game_valheim.py`, Vortex's `Nexus-Mods/game-valheim`, the `denikson-BepInExPack_Valheim` zip.
+
 - **Native Linux launch** is always direct, because Steam's own start cannot carry the environment: Mortar does what the pack's Linux start script does (`LD_PRELOAD` the profile's `doorstop_libs/libdoorstop_x64.so`, `DOORSTOP_ENABLED=1`, `DOORSTOP_TARGET_ASSEMBLY`) plus `SteamAppId` so Steamworks does not restart the game through Steam. The shared `BepInEx-BepInExPack` ships no Linux library, so this works only with a community pack that has one.
 - **Loader pack:** the community's own `denikson-BepInExPack_Valheim` (the generic pack is not listed there). Its files sit under `BepInExPack_Valheim/` in the zip, which go-bepinex `InstallPack` finds by the folder holding the preloader.
 - Mods name the pack as a dependency, which Mortar skips because the loader install provides it.
@@ -194,6 +197,7 @@ Sources: r2modman's ecosystem schema, MO2's `games/game_valheim.py`, Vortex's `N
 ## Core Keeper
 
 Two channels, both in one profile: BepInEx 6 plugins from Thunderstore (`core-keeper`; r2modman's and Gale's ecosystem schema: folder `CoreKeeper`, `CoreKeeper.exe`, Steam app 1621690) and the official mod SDK's mods on mod.io (game 5289; Pugstorm's channel).
+
 - **Loader:** BepInEx 6 on IL2CPP, through the `bepinex5` driver, for the Thunderstore packages. The `BepInEx-BepInExPack_Core_Keeper` pack is a community build numbered 2.x, so the catalog's `major` is 2. It runs on Doorstop 3 and ships no .NET runtime; Mortar tells the build from the profile's entry assembly (`BepInEx.Unity.IL2CPP.dll`). The catalog cannot name two loaders active at once, so BepInEx is the loader and mod.io is a second target routed by source.
 - **mod.io mods:** a mod is a folder holding `ModManifest.json`. The `modio` target (path role `modioMods`, `CoreKeeper_Data/StreamingAssets/Mods`) takes the archive whole below `modio-<mod id>`, shared by every profile, as for Timberborn ([mod.io](#modio)). Not checked against a real mod.io download (no token was available), nor whether the game reads a mod one folder deeper than its own Mods folder.
 - **Bridge:** the `bridge` component is `MortarBepInExBridge_IL2CPP` (mortar-bepinex-bridge), whose `plugins/*.dll` the thunderstore-rules installer places under `BepInEx/plugins/Rethunk-MortarBepInExBridge`. It answers the plugin query only, so Mortar offers no startup timing, performance, overlay or intro skip for it.
@@ -202,5 +206,6 @@ Two channels, both in one profile: BepInEx 6 plugins from Thunderstore (`core-ke
 ## mod.io
 
 mod.io is a source for Blade & Sorcery (3852), S.T.A.L.K.E.R. 2 (5761), Baldur's Gate 3 (6715, beside Nexus), Deep Rock Galactic (2475), Core Keeper (5289), Timberborn (3659), BONELAB (3809) and Gladio Mori (11453). The player pastes a read-only token from mod.io/me/access in Settings > Accounts; requests go to the account's own host (`u-{user-id}.modapi.io`) through [go-modio](https://github.com/Rethunk-Tech/go-modio), and each download is checked against the MD5 mod.io publishes. Dependencies are listed, never installed unasked.
+
 - **Placement:** games whose loader is `folder` take the archive in their mods target as for Nexus. Timberborn, BONELAB, Gladio Mori and Core Keeper run BepInEx or MelonLoader, so their `modio` target (path role `modioMods`, the game's own Mods folder) takes the archive whole below `modio-<mod id>`, as Paradox Mods does; it is shared by every profile. Whether each game reads a mod one folder deeper than its own is unverified.
 - **Baldur's Gate 3:** mod.io files go through the same go-larian paks and `modsettings.lsx` handling as Nexus ones.

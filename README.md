@@ -50,18 +50,18 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 
 ## Documentation
 
-| Topic | Location |
-| --- | --- |
-| Using Mortar | [docs/user-guide.md](docs/user-guide.md) |
-| How it works | [docs/architecture.md](docs/architecture.md) |
-| Decided work not yet built | [docs/design.md](docs/design.md) |
-| Screens and styling | [docs/gui-design.md](docs/gui-design.md) |
-| Threat model | [docs/security.md](docs/security.md) |
-| Run, build, gate | [HUMANS.md](HUMANS.md) |
-| Contributing | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| Security policy | [SECURITY.md](SECURITY.md) |
-| Rules for agents | [AGENTS.md](AGENTS.md) |
-| Licence | [LICENSE](LICENSE) |
+| Topic                      | Location                                     |
+| -------------------------- | -------------------------------------------- |
+| Using Mortar               | [docs/user-guide.md](docs/user-guide.md)     |
+| How it works               | [docs/architecture.md](docs/architecture.md) |
+| Decided work not yet built | [docs/design.md](docs/design.md)             |
+| Screens and styling        | [docs/gui-design.md](docs/gui-design.md)     |
+| Threat model               | [docs/security.md](docs/security.md)         |
+| Run, build, gate           | [HUMANS.md](HUMANS.md)                       |
+| Contributing               | [CONTRIBUTING.md](CONTRIBUTING.md)           |
+| Security policy            | [SECURITY.md](SECURITY.md)                   |
+| Rules for agents           | [AGENTS.md](AGENTS.md)                       |
+| Licence                    | [LICENSE](LICENSE)                           |
 
 ## Licence
 

@@ -18,84 +18,84 @@ No vanilla launch runs: it takes no launch prefix, so the regress cannot isolate
 
 ## Measured launch and live state
 
-| Item | Covered by |
-| --- | --- |
-| Patcher times the measured launch | launch (a) `startup.patcher` |
-| Startup report written and consumed | launch (a) `startup.report`; `TestPrepareStartupArmsTheBepInExPatcherOnlyForAMeasuredLaunch` |
-| Startup view names rows by package | launch (a) `startup.mortar`; `TestBepInExReportRowsBecomeTheirPackages` |
-| Start measuring in game | launch (a) `perf.start` |
-| Summary 10 s later, saved and listed | launch (a) `perf.summary`; `TestPerfRowsNameAndAddUpEachPackagesPlugins` |
-| Wrapping raises no new exceptions | launch (a) `perf.stable` |
-| An unmeasured launch measures nothing | launch (c) `perf.unmeasured` |
-| `launch:live` reaches scene MainMenu | launch (a) `live.scene` |
-| Loaded badges | launch (a) `live.badges` |
-| Version last played recorded | after launch (a) `lastplayed.version` |
+| Item                                  | Covered by                                                                                   |
+| ------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Patcher times the measured launch     | launch (a) `startup.patcher`                                                                 |
+| Startup report written and consumed   | launch (a) `startup.report`; `TestPrepareStartupArmsTheBepInExPatcherOnlyForAMeasuredLaunch` |
+| Startup view names rows by package    | launch (a) `startup.mortar`; `TestBepInExReportRowsBecomeTheirPackages`                      |
+| Start measuring in game               | launch (a) `perf.start`                                                                      |
+| Summary 10 s later, saved and listed  | launch (a) `perf.summary`; `TestPerfRowsNameAndAddUpEachPackagesPlugins`                     |
+| Wrapping raises no new exceptions     | launch (a) `perf.stable`                                                                     |
+| An unmeasured launch measures nothing | launch (c) `perf.unmeasured`                                                                 |
+| `launch:live` reaches scene MainMenu  | launch (a) `live.scene`                                                                      |
+| Loaded badges                         | launch (a) `live.badges`                                                                     |
+| Version last played recorded          | after launch (a) `lastplayed.version`                                                        |
 
 ## Loader
 
-| Item | Covered by |
-| --- | --- |
-| Fresh install | offline `loader.fresh`; the install-pack test in [go-bepinex `bepinex_test.go`](https://github.com/Rethunk-Tech/go-bepinex/blob/v0.1.0/bepinex_test.go), `TestLoaderContract` |
-| Pin an older pack over a newer one | offline `loader.pin`; the older-pack-over-newer test in [go-bepinex `bepinex_test.go`](https://github.com/Rethunk-Tech/go-bepinex/blob/v0.1.0/bepinex_test.go) |
-| Pinned pack starts | launch (b) `loader.pin-run` |
-| Unpin and install the latest | offline `loader.unpin` |
-| Reinstall a version over itself | offline `loader.reinstall` |
-| Reinstalled latest pack starts | launch (a) `loader.reinstall-run` |
-| Per-Doorstop files and flag spelling | `loader.pin`, `loader.unpin`, `loader.reinstall`, `loader.reinstall-run`, `loader.pin-run`; the launch-args test in [go-bepinex `bepinex_test.go`](https://github.com/Rethunk-Tech/go-bepinex/blob/v0.1.0/bepinex_test.go) |
-| Uninstall leaves the game folder as before | `stop.a`, `launch.exit`, `loader.pin-exit`; `TestLoaderContract`, the launch-args test in [go-bepinex `bepinex_test.go`](https://github.com/Rethunk-Tech/go-bepinex/blob/v0.1.0/bepinex_test.go) |
-| Wine `winhttp` override in `user.reg` | the `user.reg` tests in [go-bepinex `wineoverride`](https://github.com/Rethunk-Tech/go-bepinex/tree/v0.1.0/wineoverride); launches (a), (c) and (b) |
+| Item                                       | Covered by                                                                                                                                                                                                                 |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fresh install                              | offline `loader.fresh`; the install-pack test in [go-bepinex `bepinex_test.go`](https://github.com/Rethunk-Tech/go-bepinex/blob/v0.1.0/bepinex_test.go), `TestLoaderContract`                                              |
+| Pin an older pack over a newer one         | offline `loader.pin`; the older-pack-over-newer test in [go-bepinex `bepinex_test.go`](https://github.com/Rethunk-Tech/go-bepinex/blob/v0.1.0/bepinex_test.go)                                                             |
+| Pinned pack starts                         | launch (b) `loader.pin-run`                                                                                                                                                                                                |
+| Unpin and install the latest               | offline `loader.unpin`                                                                                                                                                                                                     |
+| Reinstall a version over itself            | offline `loader.reinstall`                                                                                                                                                                                                 |
+| Reinstalled latest pack starts             | launch (a) `loader.reinstall-run`                                                                                                                                                                                          |
+| Per-Doorstop files and flag spelling       | `loader.pin`, `loader.unpin`, `loader.reinstall`, `loader.reinstall-run`, `loader.pin-run`; the launch-args test in [go-bepinex `bepinex_test.go`](https://github.com/Rethunk-Tech/go-bepinex/blob/v0.1.0/bepinex_test.go) |
+| Uninstall leaves the game folder as before | `stop.a`, `launch.exit`, `loader.pin-exit`; `TestLoaderContract`, the launch-args test in [go-bepinex `bepinex_test.go`](https://github.com/Rethunk-Tech/go-bepinex/blob/v0.1.0/bepinex_test.go)                           |
+| Wine `winhttp` override in `user.reg`      | the `user.reg` tests in [go-bepinex `wineoverride`](https://github.com/Rethunk-Tech/go-bepinex/tree/v0.1.0/wineoverride); launches (a), (c) and (b)                                                                        |
 
 ## Mods
 
-| Item | Covered by |
-| --- | --- |
-| Modpack install | offline `modpack.install` |
-| Load order | offline `modpack.loadorder` |
-| Plugin GUIDs match what BepInEx loaded | `mods.guids` (`TestRealBepInExRun` in `internal/dotnet`, run with `-bepinex-profile <profile folder>`) |
-| Problems shows only true problems | `problems.true`; `TestThePlayerLogBelongsOnlyToTheProfileThatRanLast` |
-| Duplicate GUIDs flagged | offline `mods.dupguid`, launch (a) `mods.dupguid-runtime`; `TestEnabledPackagesGiveAFilePackageItsManifestVersion` |
+| Item                                      | Covered by                                                                                                                                             |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Modpack install                           | offline `modpack.install`                                                                                                                              |
+| Load order                                | offline `modpack.loadorder`                                                                                                                            |
+| Plugin GUIDs match what BepInEx loaded    | `mods.guids` (`TestRealBepInExRun` in `internal/dotnet`, run with `-bepinex-profile <profile folder>`)                                                 |
+| Problems shows only true problems         | `problems.true`; `TestThePlayerLogBelongsOnlyToTheProfileThatRanLast`                                                                                  |
+| Duplicate GUIDs flagged                   | offline `mods.dupguid`, launch (a) `mods.dupguid-runtime`; `TestEnabledPackagesGiveAFilePackageItsManifestVersion`                                     |
 | Deprecated packages suggest a replacement | offline `mods.deprecated`; `TestDeprecatedListsPackagesAndTheirNamedReplacement`, `TestDeprecatedPackagesMatchesInstalledOnesAndCarriesTheReplacement` |
-| Config edits reach the plugin | launch (a) `mods.config`, `mods.config-float`, `mods.config-file`; `internal/configsvc` tests |
+| Config edits reach the plugin             | launch (a) `mods.config`, `mods.config-float`, `mods.config-file`; `internal/configsvc` tests                                                          |
 
 ## Launch
 
-| Item | Covered by |
-| --- | --- |
-| Plugin count equals Loading lines | launch (a) `launch.count`, `mods.guids` |
-| Console shows levels and sources live | launch (a) `launch.console`; `internal/launch` parser tests |
-| Stop ends the game politely | launch (a) `stop.a` |
-| Natural exit returns Mortar to idle | launch (c) `launch.exit`, launch (b) `loader.pin-exit` |
-| Bridge answers a status query at the main menu | `bridge.reachable.a`, `.c`, `.b` |
-| Crash analysis of a throwing plugin | launch (c) `launch.crash`; `TestSummarizeReadsTheBepInExVersion`, `TestAnalyze` |
+| Item                                           | Covered by                                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------------------------- |
+| Plugin count equals Loading lines              | launch (a) `launch.count`, `mods.guids`                                         |
+| Console shows levels and sources live          | launch (a) `launch.console`; `internal/launch` parser tests                     |
+| Stop ends the game politely                    | launch (a) `stop.a`                                                             |
+| Natural exit returns Mortar to idle            | launch (c) `launch.exit`, launch (b) `loader.pin-exit`                          |
+| Bridge answers a status query at the main menu | `bridge.reachable.a`, `.c`, `.b`                                                |
+| Crash analysis of a throwing plugin            | launch (c) `launch.crash`; `TestSummarizeReadsTheBepInExVersion`, `TestAnalyze` |
 
 ## Updates
 
-| Item | Covered by |
-| --- | --- |
-| Update all | offline `updates.all` |
-| Update everywhere | offline `updates.everywhere` |
-| Roll back | offline `updates.rollback` |
+| Item                                                 | Covered by                                                                                       |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Update all                                           | offline `updates.all`                                                                            |
+| Update everywhere                                    | offline `updates.everywhere`                                                                     |
+| Roll back                                            | offline `updates.rollback`                                                                       |
 | Save backup before the update restores byte for byte | launch (b) `saves.fixture`; offline `updates.backup`, `updates.restore`; `internal/backup` tests |
 
 ## Sharing
 
-| Item | Covered by |
-| --- | --- |
-| Share link import | offline `share.link` |
-| `.mortar` export and import | offline `share.mortar` |
-| LAN send to a paired sandbox | offline `share.lan`; `internal/lan` loopback tests |
+| Item                            | Covered by                                                                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Share link import               | offline `share.link`                                                                                                            |
+| `.mortar` export and import     | offline `share.mortar`                                                                                                          |
+| LAN send to a paired sandbox    | offline `share.lan`; `internal/lan` loopback tests                                                                              |
 | r2modman code export and import | offline `share.r2code` with `MORTAR_REGRESS_R2_EXPORT=1` (publishes to thunderstore.io); `TestExportCodeCarriesTheConfigFolder` |
-| Gale and r2modman formats | `internal/pack` tests |
+| Gale and r2modman formats       | `internal/pack` tests                                                                                                           |
 
 ## Package layout edge cases
 
-| Item | Covered by |
-| --- | --- |
-| Nested plugin folders | launch (a) `edge.nested`; `TestRoute` |
-| Folders no rule names are flattened | launch (a) `edge.flatten`, `edge.flatten-probe`; `TestRoute`, `TestLayoutGoldens` |
-| Patchers | launch (a) `edge.patcher`, `edge.patchers` |
-| `config` flat, `plugins` per package | launch (a) `edge.config-placement`; `TestRoute` |
-| A package with its own `BepInEx/` layout | launch (a) `edge.own-layout`; `TestRoute` |
-| Case: `BEPINEX/Plugins` | launch (a) `edge.case`; `TestRoute`, `TestLayoutGoldens` |
+| Item                                         | Covered by                                                                                                                   |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Nested plugin folders                        | launch (a) `edge.nested`; `TestRoute`                                                                                        |
+| Folders no rule names are flattened          | launch (a) `edge.flatten`, `edge.flatten-probe`; `TestRoute`, `TestLayoutGoldens`                                            |
+| Patchers                                     | launch (a) `edge.patcher`, `edge.patchers`                                                                                   |
+| `config` flat, `plugins` per package         | launch (a) `edge.config-placement`; `TestRoute`                                                                              |
+| A package with its own `BepInEx/` layout     | launch (a) `edge.own-layout`; `TestRoute`                                                                                    |
+| Case: `BEPINEX/Plugins`                      | launch (a) `edge.case`; `TestRoute`, `TestLayoutGoldens`                                                                     |
 | Two names differing only in case are refused | `TestInstallArchive`; [go-archive `archive_test.go`](https://github.com/Rethunk-Tech/go-archive/blob/v0.1.0/archive_test.go) |
-| Plugin path past 260 characters | launch (a) `edge.longpath` |
+| Plugin path past 260 characters              | launch (a) `edge.longpath`                                                                                                   |

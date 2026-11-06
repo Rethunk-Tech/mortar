@@ -371,10 +371,10 @@ The **Screenshots** tab shows the game's own screenshots and, for a Steam game, 
 
 ## Where your data lives
 
-| | Windows | Linux |
-| --- | --- | --- |
-| Mortar's data (profiles, mods, downloads, backups, settings, logs) | `%LOCALAPPDATA%\Mortar` | `$XDG_DATA_HOME/mortar`, usually `~/.local/share/mortar` |
-| Your saves | `%APPDATA%\StardewValley\Saves` | `~/.config/StardewValley/Saves` |
+|                                                                    | Windows                         | Linux                                                    |
+| ------------------------------------------------------------------ | ------------------------------- | -------------------------------------------------------- |
+| Mortar's data (profiles, mods, downloads, backups, settings, logs) | `%LOCALAPPDATA%\Mortar`         | `$XDG_DATA_HOME/mortar`, usually `~/.local/share/mortar` |
+| Your saves                                                         | `%APPDATA%\StardewValley\Saves` | `~/.config/StardewValley/Saves`                          |
 
 **Settings › Data usage › Open folder** opens the first row.
 
