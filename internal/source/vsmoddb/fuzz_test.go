@@ -1,19 +1,12 @@
 package vsmoddb
 
 import (
-	"bytes"
-	"io"
 	"net/http"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testhttp"
 )
-
-type canned []byte
-
-func (c canned) RoundTrip(*http.Request) (*http.Response, error) {
-	return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader(c)), Header: http.Header{}}, nil
-}
 
 // FuzzDecoders holds that no answer body from the Mod DB makes search, resolve or the update read panic.
 func FuzzDecoders(f *testing.F) {
@@ -22,7 +15,7 @@ func FuzzDecoders(f *testing.F) {
 	f.Add([]byte(`{"mod":null}`))
 	f.Add([]byte(`{`))
 	f.Fuzz(func(t *testing.T, body []byte) {
-		d := Driver{HTTP: &http.Client{Transport: canned(body)}, URL: "http://moddb.test"}
+		d := Driver{HTTP: &http.Client{Transport: testhttp.Canned(body)}, URL: "http://moddb.test"}
 		_, _ = d.Search(t.Context(), source.Query{Page: source.FirstPage + 1})
 		_, _ = d.Resolve(t.Context(), "1-2", "")
 		_, _ = d.Items(t.Context(), "", "", []string{"1-2"})

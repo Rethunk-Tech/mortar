@@ -1,19 +1,12 @@
 package nexus
 
 import (
-	"bytes"
-	"io"
 	"net/http"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testhttp"
 )
-
-type canned []byte
-
-func (c canned) RoundTrip(*http.Request) (*http.Response, error) {
-	return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader(c)), Header: http.Header{}}, nil
-}
 
 // FuzzDecoders holds that no GraphQL answer from Nexus makes search panic.
 func FuzzDecoders(f *testing.F) {
@@ -22,7 +15,7 @@ func FuzzDecoders(f *testing.F) {
 	f.Add([]byte(`{"data":null}`))
 	f.Add([]byte(`{`))
 	f.Fuzz(func(t *testing.T, body []byte) {
-		d := Driver{HTTP: &http.Client{Transport: canned(body)}, URL: "http://nexus.test"}
+		d := Driver{HTTP: &http.Client{Transport: testhttp.Canned(body)}, URL: "http://nexus.test"}
 		_, _ = d.Search(t.Context(), source.Query{Game: "stardew", Key: "stardewvalley", Text: "x"})
 	})
 }

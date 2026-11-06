@@ -1,19 +1,12 @@
 package modrinth
 
 import (
-	"bytes"
-	"io"
 	"net/http"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testhttp"
 )
-
-type canned []byte
-
-func (c canned) RoundTrip(*http.Request) (*http.Response, error) {
-	return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader(c)), Header: http.Header{}}, nil
-}
 
 // FuzzDecoders holds that no answer body from Modrinth makes search, resolve, versions or categories panic.
 func FuzzDecoders(f *testing.F) {
@@ -22,7 +15,7 @@ func FuzzDecoders(f *testing.F) {
 	f.Add([]byte(`[{"name":"fabric"}]`))
 	f.Add([]byte(`{`))
 	f.Fuzz(func(t *testing.T, body []byte) {
-		d := Driver{HTTP: &http.Client{Transport: canned(body)}, URL: "http://modrinth.test"}
+		d := Driver{HTTP: &http.Client{Transport: testhttp.Canned(body)}, URL: "http://modrinth.test"}
 		_, _ = d.Search(t.Context(), source.Query{Key: "fabric"})
 		_, _ = d.Resolve(t.Context(), "p", "", "", nil)
 		_, _ = d.Versions(t.Context(), "p", "")
