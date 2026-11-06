@@ -9,7 +9,7 @@ import { ListVersions } from '../../../bindings/github.com/Rethunk-Tech/mortar/i
 import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useGameBusy, useLaunch } from '../../launch/store.ts'
 import { InstallSteps } from '../../loader/InstallSteps.tsx'
-import { useLoader } from '../../loader/store.ts'
+import { useLoaderInstall } from '../../loader/store.ts'
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
@@ -54,12 +54,7 @@ function LoaderRow({
   const { t, i18n } = useLingui()
   const game = useCurrentGame()
   const pin = useSettings((s) => s.loaderPrefs?.[`${game}/${loader.id}`]?.pin ?? '')
-  const status = useLoader((s) => s.status)
-  const check = useLoader((s) => s.check)
-  const install = useLoader((s) => s.install)
-  const pending = useLoader((s) => s.pending)
-  const installing = useLoader((s) => s.installing)
-  const steps = useLoader((s) => s.steps)
+  const { status, installing, steps, check, install, pending } = useLoaderInstall()
   const refreshLaunch = useLaunch((s) => s.refresh)
   const playing = useGameBusy(game)
   const [confirm, setConfirm] = useState(false)

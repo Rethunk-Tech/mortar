@@ -7,16 +7,11 @@ import { useGameBusy } from '../launch/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { space } from '../theme/density.ts'
 import { InstallSteps } from './InstallSteps.tsx'
-import { useLoader } from './store.ts'
+import { useLoaderInstall } from './store.ts'
 
 export function LoaderBanner({ game }: { game: string }) {
   const { t } = useLingui()
-  const status = useLoader((s) => s.status)
-  const installing = useLoader((s) => s.installing)
-  const steps = useLoader((s) => s.steps)
-  const check = useLoader((s) => s.check)
-  const install = useLoader((s) => s.install)
-  const pending = useLoader((s) => s.pending)
+  const { status, installing, steps, check, install, pending } = useLoaderInstall()
   const loader = { name: useGameInfo(game)?.loader ?? '' }
   // The loader's files are in use while the game starts or runs.
   const playing = useGameBusy(game)

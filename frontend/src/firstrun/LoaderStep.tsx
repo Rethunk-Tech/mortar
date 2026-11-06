@@ -13,7 +13,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { STEAM, WINDOWS } from '../brand/productNames.ts'
 import { useGameName } from '../games/info.ts'
-import { useLoader } from '../loader/store.ts'
+import { useLoader, useLoaderInstall } from '../loader/store.ts'
 import type { GameId } from '../nav/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -301,14 +301,9 @@ export function LoaderStep({
   const ok = useTheme().palette.success.main
   const gameName = useGameName(game)
   const windows = System.IsWindows()
-  const status = useLoader((s) => s.status)
-  const installing = useLoader((s) => s.installing)
-  const steps = useLoader((s) => s.steps)
-  const check = useLoader((s) => s.check)
+  const { status, installing, steps, check, install, pending } = useLoaderInstall()
   const error = useLoader((s) => s.error)
   const errorDetail = useLoader((s) => s.errorDetail)
-  const install = useLoader((s) => s.install)
-  const pending = useLoader((s) => s.pending)
   const [launchSet, setLaunchSet] = useState(false)
   const [checked, setChecked] = useState(false)
   const [checkError, setCheckError] = useState<InlineError | null>(null)
