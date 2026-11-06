@@ -132,155 +132,76 @@ type batchResult struct {
 	read  bool
 }
 
+// usageAcc accumulates the buckets of one Measure walk.
+type usageAcc struct {
+	root       string
+	u          *Usage
+	mods       map[string]int64
+	direct     map[string]int64
+	backupGame map[string]int64
+	cacheSeg   map[[2]string]int64
+	share      *shareAcc
+	report     func(Progress)
+}
+
+func (a *usageAcc) account(path string, info os.FileInfo, probe fileProbe) {
+	a.share.addFollowed(path, info)
+	n, known := fileExclusive(path, info, probe, a.share)
+	if known {
+		a.share.allocated += n
+	}
+	a.u.Total += n
+	rel := path
+	if r, relErr := filepath.Rel(a.root, path); relErr == nil {
+		rel = r
+	}
+	slash := filepath.ToSlash(rel)
+	a.bucket(slash, n)
+	if a.report != nil {
+		a.report(Progress{Measuring: true, Bytes: a.u.Total, Path: slash})
+	}
+}
+
+// bucket charges n bytes of the file at slash (relative to the data root) to its top-level folder and game.
+func (a *usageAcc) bucket(slash string, n int64) {
+	switch {
+	case hasPrefix(slash, "store/"):
+		a.u.Store += n
+		if game := nestedGame(slash, "store/"); game != "" {
+			a.direct[game] += n
+		}
+	case hasPrefix(slash, "cache/"):
+		a.u.Cache += n
+		a.cacheSeg[cacheSegs(slash)] += n
+	case hasPrefix(slash, "backups/"):
+		a.u.Backups += n
+		if game := nestedGame(slash, "backups/"); game != "" {
+			a.backupGame[game] += n
+		}
+	case hasPrefix(slash, "trash/"):
+		a.u.Trash += n
+	default:
+		if game := nestedGame(slash, "profiles/"); game != "" {
+			a.direct[game] += n
+		}
+		if game, id, ok := profileMods(slash); ok {
+			a.mods[game+"/"+id] += n
+		}
+	}
+}
+
 // Measure walks root without following symlinks and reports each bucket's exclusive size.
 func Measure(root string, report func(Progress)) (Usage, error) {
 	u := Usage{Path: root, Profiles: []ProfileSize{}, Games: []GameUsage{}}
-	mods := map[string]int64{}
-	direct := map[string]int64{}
-	backupGame := map[string]int64{}
-	cacheSeg := map[[2]string]int64{}
-	share := newShareAcc()
 	root = filepath.Clean(root)
-	account := func(path string, info os.FileInfo, probe fileProbe) {
-		share.addFollowed(path, info)
-		n, known := fileExclusive(path, info, probe, share)
-		if known {
-			share.allocated += n
-		}
-		u.Total += n
-		rel := path
-		if r, relErr := filepath.Rel(root, path); relErr == nil {
-			rel = r
-		}
-		slash := filepath.ToSlash(rel)
-		switch {
-		case hasPrefix(slash, "store/"):
-			u.Store += n
-			if game := nestedGame(slash, "store/"); game != "" {
-				direct[game] += n
-			}
-		case hasPrefix(slash, "cache/"):
-			u.Cache += n
-			cacheSeg[cacheSegs(slash)] += n
-		case hasPrefix(slash, "backups/"):
-			u.Backups += n
-			if game := nestedGame(slash, "backups/"); game != "" {
-				backupGame[game] += n
-			}
-		case hasPrefix(slash, "trash/"):
-			u.Trash += n
-		default:
-			if game := nestedGame(slash, "profiles/"); game != "" {
-				direct[game] += n
-			}
-			if game, id, ok := profileMods(slash); ok {
-				mods[game+"/"+id] += n
-			}
-		}
-		if report != nil {
-			report(Progress{Measuring: true, Bytes: u.Total, Path: slash})
-		}
+	acc := &usageAcc{
+		root: root, u: &u, mods: map[string]int64{}, direct: map[string]int64{}, backupGame: map[string]int64{},
+		cacheSeg: map[[2]string]int64{}, share: newShareAcc(), report: report,
 	}
-	// Each folder is walked on its own goroutine and its files' extent maps are read by probeWorkers readers shared by
-	// all the walks. Results are accounted in folder order and then walk order, since which file a shared block is
-	// charged to depends on the order.
-	slots := make(chan struct{}, probeWorkers)
-	walk := func(path string, skipNamed bool, out chan<- *probeJob) error {
-		var batch []batchFile
-		flush := func() {
-			if len(batch) > 0 {
-				out <- startProbes(batch, slots)
-				batch = nil
-			}
-		}
-		st, err := os.Lstat(path)
-		if err != nil {
-			if errors.Is(err, fs.ErrNotExist) {
-				return nil
-			}
-			return err
-		}
-		if st.Mode()&os.ModeSymlink != 0 {
-			return nil
-		}
-		if !st.IsDir() {
-			return nil
-		}
-		err = filepath.WalkDir(path, func(p string, d fs.DirEntry, err error) error {
-			if err != nil {
-				if p == path {
-					return err
-				}
-				return fs.SkipDir
-			}
-			if skipNamed && p != root {
-				rel, relErr := filepath.Rel(root, p)
-				if relErr == nil && filepath.Dir(rel) == "." {
-					switch d.Name() {
-					case "store", "profiles", "backups", "cache", "trash":
-						return fs.SkipDir
-					}
-				}
-			}
-			if d.Type()&fs.ModeSymlink != 0 {
-				if d.IsDir() {
-					return fs.SkipDir
-				}
-				if info, infoErr := os.Stat(filepath.Clean(p)); infoErr == nil && info.Mode().IsRegular() {
-					if resolved, resErr := safefs.EvalSymlinks(p); resErr == nil && safefs.UnderRoot(root, resolved) {
-						batch = append(batch, batchFile{followed: info})
-					}
-				}
-				return nil
-			}
-			if !d.Type().IsRegular() {
-				return nil
-			}
-			batch = append(batch, batchFile{path: p, d: d})
-			if len(batch) == probeBatch {
-				flush()
-			}
-			return nil
-		})
-		flush()
-		return err
+	if err := acc.walkAll(); err != nil {
+		return Usage{}, err
 	}
-	type folder struct {
-		path      string
-		skipNamed bool
-	}
-	var folders []folder
-	for _, name := range []string{"store", "profiles", "backups", "cache", "trash"} {
-		folders = append(folders, folder{filepath.Join(root, name), false})
-	}
-	folders = append(folders, folder{root, true})
-	jobs := make([]chan *probeJob, len(folders))
-	errs := make([]error, len(folders))
-	for i, f := range folders {
-		jobs[i] = make(chan *probeJob, jobsBuffered)
-		go func() {
-			defer close(jobs[i])
-			errs[i] = walk(f.path, f.skipNamed, jobs[i])
-		}()
-	}
-	for _, queue := range jobs {
-		for job := range queue {
-			job.wg.Wait()
-			for i, f := range job.files {
-				if f.followed != nil {
-					share.addFollowed(f.path, f.followed)
-				} else if r := job.probes[i]; r.read {
-					account(f.path, r.info, r.probe)
-				}
-			}
-		}
-	}
-	for _, err := range errs {
-		if err != nil {
-			return Usage{}, err
-		}
-	}
-	u.SharedSaved, u.SharedSavedKnown = share.saved()
+	u.SharedSaved, u.SharedSavedKnown = acc.share.saved()
 	dirs, err := datadir.ProfileDirs(filepath.Join(root, "profiles"))
 	if err != nil {
 		return Usage{}, err
@@ -290,19 +211,153 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 		if meta := readProfile(filepath.Join(d.Dir, "profile.json")); meta.Name != "" {
 			name = meta.Name
 		}
-		u.Profiles = append(u.Profiles, ProfileSize{Game: d.Game, ID: d.ID, Name: name, Size: mods[d.Game+"/"+d.ID]})
+		u.Profiles = append(u.Profiles, ProfileSize{Game: d.Game, ID: d.ID, Name: name, Size: acc.mods[d.Game+"/"+d.ID]})
 	}
+	u.Games = acc.gameRows(dirs)
+	return u, nil
+}
+
+// walkAll walks every top-level folder on its own goroutine and accounts the results. The files' extent maps are read
+// by probeWorkers readers shared by all the walks. Results are accounted in folder order and then walk order, since
+// which file a shared block is charged to depends on the order.
+func (a *usageAcc) walkAll() error {
+	slots := make(chan struct{}, probeWorkers)
+	type folder struct {
+		path      string
+		skipNamed bool
+	}
+	var folders []folder
+	for _, name := range []string{"store", "profiles", "backups", "cache", "trash"} {
+		folders = append(folders, folder{filepath.Join(a.root, name), false})
+	}
+	folders = append(folders, folder{a.root, true})
+	jobs := make([]chan *probeJob, len(folders))
+	errs := make([]error, len(folders))
+	for i, f := range folders {
+		jobs[i] = make(chan *probeJob, jobsBuffered)
+		go func() {
+			defer close(jobs[i])
+			errs[i] = walkFolder(a.root, f.path, f.skipNamed, jobs[i], slots)
+		}()
+	}
+	for _, queue := range jobs {
+		for job := range queue {
+			job.wg.Wait()
+			for i, f := range job.files {
+				if f.followed != nil {
+					a.share.addFollowed(f.path, f.followed)
+				} else if r := job.probes[i]; r.read {
+					a.account(f.path, r.info, r.probe)
+				}
+			}
+		}
+	}
+	return firstErr(errs)
+}
+
+func firstErr(errs []error) error {
+	for _, err := range errs {
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// walkFolder walks path and sends its regular files, in batches, to out with their extent maps being read.
+func walkFolder(root, path string, skipNamed bool, out chan<- *probeJob, slots chan struct{}) error {
+	var batch []batchFile
+	flush := func() {
+		if len(batch) > 0 {
+			out <- startProbes(batch, slots)
+			batch = nil
+		}
+	}
+	st, err := os.Lstat(path)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	if st.Mode()&os.ModeSymlink != 0 || !st.IsDir() {
+		return nil
+	}
+	err = filepath.WalkDir(path, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			if p == path {
+				return err
+			}
+			return fs.SkipDir
+		}
+		if skipNamed && isTopLevelBucket(root, p, d) {
+			return fs.SkipDir
+		}
+		if d.Type()&fs.ModeSymlink != 0 {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			if info, ok := followedFile(root, p); ok {
+				batch = append(batch, batchFile{followed: info})
+			}
+			return nil
+		}
+		if !d.Type().IsRegular() {
+			return nil
+		}
+		batch = append(batch, batchFile{path: p, d: d})
+		if len(batch) == probeBatch {
+			flush()
+		}
+		return nil
+	})
+	flush()
+	return err
+}
+
+// isTopLevelBucket is whether p is one of the folders directly under root that has its own walk.
+func isTopLevelBucket(root, p string, d fs.DirEntry) bool {
+	if p == root {
+		return false
+	}
+	rel, err := filepath.Rel(root, p)
+	if err != nil || filepath.Dir(rel) != "." {
+		return false
+	}
+	switch d.Name() {
+	case "store", "profiles", "backups", "cache", "trash":
+		return true
+	}
+	return false
+}
+
+// followedFile is the target of the symlink p when it is a regular file under root.
+func followedFile(root, p string) (os.FileInfo, bool) {
+	info, err := os.Stat(filepath.Clean(p))
+	if err != nil || !info.Mode().IsRegular() {
+		return nil, false
+	}
+	resolved, err := safefs.EvalSymlinks(p)
+	if err != nil || !safefs.UnderRoot(root, resolved) {
+		return nil, false
+	}
+	return info, true
+}
+
+// gameRows turns the per-game sums into rows. Store folders that are not a game (the shared blob store, loader
+// installers) are one row with an empty Game, so they are counted without being listed as games.
+func (a *usageAcc) gameRows(dirs []datadir.ProfileDir) []GameUsage {
 	known := map[string]struct{}{}
 	sizes := map[string]int64{}
-	for id, n := range direct {
+	for id, n := range a.direct {
 		known[id] = struct{}{}
 		sizes[id] = n
 	}
-	for id, n := range backupGame {
+	for id, n := range a.backupGame {
 		known[id] = struct{}{}
 		sizes[id] += n
 	}
-	for segs, n := range cacheSeg {
+	for segs, n := range a.cacheSeg {
 		switch {
 		case segs[0] != "":
 			if _, ok := known[segs[0]]; ok {
@@ -320,8 +375,7 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 	for _, d := range dirs {
 		hasProfiles[d.Game] = true
 	}
-	// Store folders that are not a game (the shared blob store, loader installers) are one row with an empty Game,
-	// so they are counted without being listed as games.
+	rows := []GameUsage{}
 	var shared int64
 	for id, n := range sizes {
 		name := id
@@ -331,12 +385,12 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 			shared += n
 			continue
 		}
-		u.Games = append(u.Games, GameUsage{Game: id, Name: name, Size: n})
+		rows = append(rows, GameUsage{Game: id, Name: name, Size: n})
 	}
 	if shared > 0 {
-		u.Games = append(u.Games, GameUsage{Size: shared})
+		rows = append(rows, GameUsage{Size: shared})
 	}
-	return u, nil
+	return rows
 }
 
 func nestedGame(slash, prefix string) string {
@@ -496,25 +550,32 @@ func profileUse(root string) (names map[string]string, uses map[string]int, copi
 				}
 				id := d.Game + "/" + key
 				if e.Source.Name != "" && names[id] == "" {
-					if e.Source.Version == "" {
-						names[id] = e.Source.Name
-					} else {
-						names[id] = e.Source.Name + " " + e.Source.Version
-					}
+					names[id] = sourceLabel(e.Source.Name, e.Source.Version)
 				}
 				if !seen[id] {
 					uses[id]++
 					seen[id] = true
 				}
-				if key == e.Key && e.Item == "" {
-					copies[id] += dirSize(filepath.Join(mods, key)) + dirSize(filepath.Join(mods, "."+key))
-				} else {
-					copies[id] += dirSize(filepath.Join(mods, e.Key, key))
-				}
+				copies[id] += copySize(mods, e.Key, e.Item, key)
 			}
 		}
 	}
 	return names, uses, copies
+}
+
+func sourceLabel(name, version string) string {
+	if version == "" {
+		return name
+	}
+	return name + " " + version
+}
+
+// copySize is the size of the profile's copy of store key under mods for the entry entryKey.
+func copySize(mods, entryKey, item, key string) int64 {
+	if key == entryKey && item == "" {
+		return dirSize(filepath.Join(mods, key)) + dirSize(filepath.Join(mods, "."+key))
+	}
+	return dirSize(filepath.Join(mods, entryKey, key))
 }
 
 func readProfileEntries(path string) profileEntries {

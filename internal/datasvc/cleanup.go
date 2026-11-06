@@ -48,6 +48,12 @@ type fetchedFile struct {
 	Fetched time.Time `json:"fetched"`
 }
 
+// add appends one removable path and counts its size.
+func (p *Preview) add(kind, label, rel string, size int64) {
+	p.Items = append(p.Items, Item{Kind: kind, Label: label, Rel: rel, Size: size})
+	p.Total += size
+}
+
 // Select lists store items no referenced key names, cache files past their expiry, and leftover temp folders.
 func Select(root string, items *store.Store, referenced map[string][]string, now time.Time, nameOf func(string, string) string) (Preview, error) {
 	out := Preview{Items: []Item{}}
@@ -56,7 +62,6 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 		return Preview{}, err
 	}
 	for _, r := range refs {
-		rel := filepath.ToSlash(filepath.Join("store", r.Game, r.Key))
 		var n int64
 		if dir, err := items.Dir(r.Game, r.Key); err == nil {
 			n = dirSize(dir)
@@ -67,11 +72,21 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 				label = named
 			}
 		}
-		out.Items = append(out.Items, Item{Kind: "store", Label: label, Rel: rel, Size: n})
-		out.Total += n
+		out.add("store", label, filepath.ToSlash(filepath.Join("store", r.Game, r.Key)), n)
 	}
-	cacheRoot := filepath.Join(root, "cache")
-	err = filepath.WalkDir(filepath.Clean(cacheRoot), func(path string, d fs.DirEntry, err error) error {
+	err = selectExpiredCache(root, now, &out)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return Preview{}, err
+	}
+	if err := selectTemp(root, now, &out); err != nil {
+		return Preview{}, err
+	}
+	return out, nil
+}
+
+// selectExpiredCache adds the cache files older than their time to live.
+func selectExpiredCache(root string, now time.Time, out *Preview) error {
+	return filepath.WalkDir(filepath.Clean(filepath.Join(root, "cache")), func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
 				return fs.SkipDir
@@ -97,15 +112,15 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 			return nil
 		}
 		if info, infoErr := d.Info(); infoErr == nil {
-			out.Items = append(out.Items, Item{Kind: "cache", Label: slash, Rel: slash, Size: info.Size()})
-			out.Total += info.Size()
+			out.add("cache", slash, slash, info.Size())
 		}
 		return nil
 	})
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return Preview{}, err
-	}
-	err = filepath.WalkDir(filepath.Clean(root), func(path string, d fs.DirEntry, err error) error {
+}
+
+// selectTemp adds the stale temp files and the temp folders that are empty or Mortar's own scratch.
+func selectTemp(root string, now time.Time, out *Preview) error {
+	return filepath.WalkDir(filepath.Clean(root), func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -129,15 +144,11 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 		name := d.Name()
 		if d.Type().IsRegular() && tempName(name) && fileAge(path, now) > backup.MinGap {
 			if info, infoErr := d.Info(); infoErr == nil {
-				out.Items = append(out.Items, Item{Kind: "temp", Label: slash, Rel: slash, Size: info.Size()})
-				out.Total += info.Size()
+				out.add("temp", slash, slash, info.Size())
 			}
 			return nil
 		}
-		if !d.IsDir() {
-			return nil
-		}
-		if !tempName(name) {
+		if !d.IsDir() || !tempName(name) {
 			return nil
 		}
 		empty, emptyErr := dirEmpty(path)
@@ -147,15 +158,9 @@ func Select(root string, items *store.Store, referenced map[string][]string, now
 		if !empty && !strings.HasPrefix(name, ".tmp-") && !strings.HasPrefix(name, ".tmp_") {
 			return nil
 		}
-		n := dirSize(path)
-		out.Items = append(out.Items, Item{Kind: "temp", Label: slash, Rel: slash, Size: n})
-		out.Total += n
+		out.add("temp", slash, slash, dirSize(path))
 		return fs.SkipDir
 	})
-	if err != nil {
-		return Preview{}, err
-	}
-	return out, nil
 }
 
 func tempName(name string) bool {
