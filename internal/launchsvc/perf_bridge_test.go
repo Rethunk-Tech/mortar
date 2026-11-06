@@ -3,6 +3,8 @@ package launchsvc
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func TestPerfRowsNameAndAddUpEachPackagesPlugins(t *testing.T) {
@@ -31,5 +33,19 @@ func TestPerfRowsNameAndAddUpEachPackagesPlugins(t *testing.T) {
 	}
 	if got.FrameMs.P99 != 33 || got.MonoHeapBytes != 209715200 {
 		t.Fatalf("%+v", got)
+	}
+}
+
+func TestSmapiOwnersReadTheInstalledListOncePerPeek(t *testing.T) {
+	reads := 0
+	owners := smapiOwners(func() ([]profile.Installed, error) {
+		reads++
+		return []profile.Installed{{Name: "Pack", Enabled: true}, {Name: "Off"}}, nil
+	})
+	for range 5 {
+		owners()
+	}
+	if reads != 1 {
+		t.Fatalf("the installed list was read %d times for one peek, want 1", reads)
 	}
 }

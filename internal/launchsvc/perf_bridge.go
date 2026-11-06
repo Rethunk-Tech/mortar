@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -163,21 +164,15 @@ func frameOf(got bridgePerf) *FrameSummary {
 // DLLs the packages declare, a SMAPI mod's UniqueID by the installed mod.
 func (s *Service) perfOwners(l loader.Loader, gameID, profileID string) func() map[string]startupOwner {
 	if c, ok := l.(loader.WithCompanion); ok && c.Companion().ID == bridge.SMAPI.ID {
-		return func() map[string]startupOwner {
-			owners := map[string]startupOwner{}
-			installed, err := s.profiles.Installed(gameID, profileID)
-			if err != nil {
-				return owners
-			}
-			for _, im := range installed {
-				if im.Enabled {
-					owners[strings.ToLower(im.ModID().Local())] = startupOwner{ID: im.ModID(), Name: im.Name, Version: im.Version}
-				}
-			}
-			return owners
-		}
+		return smapiOwners(func() ([]profile.Installed, error) { return s.profiles.Installed(gameID, profileID) })
 	}
 	return s.pluginPackages(gameID, profileID)
+}
+
+func smapiOwners(installed func() ([]profile.Installed, error)) func() map[string]startupOwner {
+	return ownersBy(installed, func(im profile.Installed, owners map[string]startupOwner) {
+		owners[strings.ToLower(im.ModID().Local())] = startupOwner{ID: im.ModID(), Name: im.Name, Version: im.Version}
+	})
 }
 
 // perfRows turns the companion's plugin rows into one row per package, its plugins' times and calls added (a peak

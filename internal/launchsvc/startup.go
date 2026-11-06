@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 const (
@@ -191,18 +192,28 @@ type startupOwner struct {
 // pluginPackages maps each plugin GUID (lower-cased) the profile's enabled packages declare in their DLLs to its
 // package. It reads the DLLs once per call and only when a report needs it.
 func (s *Service) pluginPackages(gameID, profileID string) func() map[string]startupOwner {
+	return ownersBy(func() ([]profile.Installed, error) { return s.profiles.Installed(gameID, profileID) }, func(im profile.Installed, owners map[string]startupOwner) {
+		if im.Folder == "" {
+			return
+		}
+		for _, pl := range plugins.PluginsIn(im.Folder) {
+			owners[strings.ToLower(pl.GUID)] = startupOwner{ID: im.ModID(), Name: im.Name, Version: im.Version}
+		}
+	})
+}
+
+// ownersBy builds an owner map from the enabled installed packages, add filling in what each one owns. The installed
+// list is read on first use and once per returned func, however many rows ask.
+func ownersBy(installed func() ([]profile.Installed, error), add func(profile.Installed, map[string]startupOwner)) func() map[string]startupOwner {
 	return sync.OnceValue(func() map[string]startupOwner {
 		owners := map[string]startupOwner{}
-		installed, err := s.profiles.Installed(gameID, profileID)
+		list, err := installed()
 		if err != nil {
 			return owners
 		}
-		for _, im := range installed {
-			if !im.Enabled || im.Folder == "" {
-				continue
-			}
-			for _, pl := range plugins.PluginsIn(im.Folder) {
-				owners[strings.ToLower(pl.GUID)] = startupOwner{ID: im.ModID(), Name: im.Name, Version: im.Version}
+		for _, im := range list {
+			if im.Enabled {
+				add(im, owners)
 			}
 		}
 		return owners
