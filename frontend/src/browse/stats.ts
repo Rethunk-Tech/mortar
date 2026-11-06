@@ -101,9 +101,19 @@ const CARD_STAT_SX = {
   '&:not(:last-child)': { mr: space.gap },
 }
 
+/** The "updated" stat for an already formatted date, or null when the site gives none. */
+function useUpdatedPart(): (updated: string) => CardStatPart | null {
+  const { t } = useLingui()
+  return (updated) =>
+    updated === ''
+      ? null
+      : { id: 'updated', icon: 'updated', short: updated, full: t`Updated ${{ when: updated }}` }
+}
+
 /** A card's chosen stats, leaving out what the hit's site does not say. */
 function useCardStats(item: BrowseItem, stats: readonly CardStat[]): CardStatPart[] {
   const { t } = useLingui()
+  const updatedPart = useUpdatedPart()
   const popularity = usePopularity(item)
   const version = item.version.replace(leadingV, '')
   const size = item.size > 0 ? formatBytes(item.size) : ''
@@ -132,10 +142,7 @@ function useCardStats(item: BrowseItem, stats: readonly CardStat[]): CardStatPar
       version === ''
         ? null
         : { id: 'version', icon: 'version', short: version, full: t`Version ${{ version }}` },
-    updated:
-      updated === ''
-        ? null
-        : { id: 'updated', icon: 'updated', short: updated, full: t`Updated ${{ when: updated }}` },
+    updated: updatedPart(updated),
   }
   return stats.flatMap((s) => parts[s] ?? [])
 }
@@ -146,7 +153,7 @@ function useModCardStats(
   { mod, size, details }: Pick<ListRow, 'mod' | 'size' | 'details'>,
   stats: readonly CardStat[],
 ): CardStatPart[] {
-  const { t } = useLingui()
+  const updatedPart = useUpdatedPart()
   const page = details?.page
   const endorsements = page?.endorsements ?? mod.endorsements
   const updated = page?.updated ? formatWhen(page.updated) : ''
@@ -174,10 +181,7 @@ function useModCardStats(
       : null,
     size: sized === '' ? null : { id: 'size', icon: 'size', short: sized, full: sized },
     version: null,
-    updated:
-      updated === ''
-        ? null
-        : { id: 'updated', icon: 'updated', short: updated, full: t`Updated ${{ when: updated }}` },
+    updated: updatedPart(updated),
   }
   return stats.flatMap((s) => parts[s] ?? [])
 }
