@@ -14,6 +14,8 @@ const (
 	DatasetPrefix         = "dataset-"
 	KnownBrokenPrefix     = "known-broken-"
 	LogSuppressionsPrefix = "log-suppressions-"
+	// ProblemsLastPrefix names the last completed problem check of each profile.
+	ProblemsLastPrefix = "problems-last-"
 	// NexusModPrefix names the Nexus mod-page cache; the unversioned nexus/mod- files before it are retired.
 	NexusModPrefix = "nexus/mod-v2-"
 )

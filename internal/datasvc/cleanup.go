@@ -20,7 +20,7 @@ const (
 	detailsTTL    = 24 * time.Hour
 	categoriesTTL = 30 * 24 * time.Hour
 	datasetTTL    = 30 * 24 * time.Hour
-	// signedListTTL drops a signed per-game list (known-broken mods, log suppressions) of a game not opened for a month;
+	// signedListTTL drops a signed per-game list (known-broken mods, log suppressions) or a profile's last problem check not rewritten for a month;
 	// the next open fetches it again.
 	signedListTTL = 30 * 24 * time.Hour
 	changelogsTTL = 4 * time.Hour
@@ -214,7 +214,7 @@ func cacheTTL(rel string) (time.Duration, bool) {
 		return collectionTTL, true
 	case strings.HasPrefix(rel, meta.DatasetPrefix):
 		return datasetTTL, true
-	case strings.HasPrefix(rel, meta.KnownBrokenPrefix), strings.HasPrefix(rel, meta.LogSuppressionsPrefix):
+	case strings.HasPrefix(rel, meta.KnownBrokenPrefix), strings.HasPrefix(rel, meta.LogSuppressionsPrefix), strings.HasPrefix(rel, meta.ProblemsLastPrefix):
 		return signedListTTL, true
 	case rel == "smapi-updates.json":
 		return updatesTTL, true

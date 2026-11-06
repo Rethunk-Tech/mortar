@@ -3,6 +3,7 @@ package problems
 import (
 	"cmp"
 	"context"
+	"crypto/sha256"
 	"errors"
 	"io"
 	"log"
@@ -75,6 +76,8 @@ type Service struct {
 	// orphans are the keys of the unneeded implicit mods the last check outside an install reported, per profile.
 	orphans map[string]map[string]bool
 	long    map[string]*longPathWalk
+	// lastSaved is the digest of the check stored for Last under each cache name, so an unchanged one is not rewritten.
+	lastSaved map[string][sha256.Size]byte
 }
 
 type problemCall struct {
@@ -323,7 +326,11 @@ func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, erro
 // are in. The walk is about a sixth of a cold check of an 800-mod profile, for a row only Windows builds show.
 func (s *Service) ProblemsNoWait(ctx context.Context, gameID, id string) (Result, error) {
 	r, err := s.problems(ctx, gameID, id, false)
-	return s.withoutEvidence(r, err)
+	r, err = s.withoutEvidence(r, err)
+	if err == nil {
+		s.saveLast(gameID, id, r)
+	}
+	return r, err
 }
 
 func (s *Service) withoutEvidence(r Result, err error) (Result, error) {
