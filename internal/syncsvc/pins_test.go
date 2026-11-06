@@ -45,10 +45,7 @@ func disabled(t *testing.T, p string) []string {
 
 func TestPinnedModStaysOffTheFolderAndSurvivesAnApply(t *testing.T) {
 	ctx := t.Context()
-	folder := t.TempDir()
-	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	a, ma := newMachine(t, folder, "Desktop", &clock)
-	b, mb := newMachine(t, folder, "Laptop", &clock)
+	folder, a, ma, b, mb := twoMachines(t)
 
 	ma.set("main", payload(t))
 	scan(t, a)

@@ -70,6 +70,16 @@ func newMachine(t *testing.T, folder, name string, clock *time.Time) (*Service, 
 	return s, m
 }
 
+// twoMachines is a Desktop and a Laptop sharing one sync folder and a fixed clock, with each one's profile source.
+func twoMachines(t *testing.T) (folder string, a *Service, ma *machine, b *Service, mb *machine) {
+	t.Helper()
+	folder = t.TempDir()
+	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	a, ma = newMachine(t, folder, "Desktop", &clock)
+	b, mb = newMachine(t, folder, "Laptop", &clock)
+	return folder, a, ma, b, mb
+}
+
 func scan(t *testing.T, s *Service) []Offer {
 	t.Helper()
 	offers, err := s.Scan(t.Context())
@@ -90,10 +100,7 @@ func shared1(t *testing.T, folder string) string {
 
 func TestTwoMachinesOfferApplyAndConflict(t *testing.T) {
 	ctx := t.Context()
-	folder := t.TempDir()
-	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	a, ma := newMachine(t, folder, "Desktop", &clock)
-	b, mb := newMachine(t, folder, "Laptop", &clock)
+	folder, a, ma, b, mb := twoMachines(t)
 
 	ma.set("main", "v1")
 	if offers := scan(t, a); len(offers) != 0 || shared1(t, folder) != "v1" {
@@ -156,10 +163,7 @@ func TestSyncIsOffWithoutAFolder(t *testing.T) {
 
 func TestResolveRefusesARevisionOtherThanTheOneShown(t *testing.T) {
 	ctx := t.Context()
-	folder := t.TempDir()
-	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	a, ma := newMachine(t, folder, "Desktop", &clock)
-	b, mb := newMachine(t, folder, "Laptop", &clock)
+	_, a, ma, b, mb := twoMachines(t)
 	ma.set("main", "v1")
 	scan(t, a)
 	shown := scan(t, b)[0].Revision
@@ -178,10 +182,7 @@ func TestResolveRefusesARevisionOtherThanTheOneShown(t *testing.T) {
 
 // A sync tool may deliver the version file before the payload: nothing is offered or applied until they match.
 func TestVersionFileAheadOfPayloadIsNotOfferedUntilItArrives(t *testing.T) {
-	folder := t.TempDir()
-	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	a, ma := newMachine(t, folder, "Desktop", &clock)
-	b, mb := newMachine(t, folder, "Laptop", &clock)
+	folder, a, ma, b, mb := twoMachines(t)
 	ma.set("main", "v1")
 	scan(t, a)
 	scan(t, b)
@@ -211,10 +212,7 @@ func TestVersionFileAheadOfPayloadIsNotOfferedUntilItArrives(t *testing.T) {
 
 // A new profile whose apply fails is taken away again, so the next scan does not write it out to every machine.
 func TestFailedApplyOfANewProfileLeavesNothingBehind(t *testing.T) {
-	folder := t.TempDir()
-	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	a, ma := newMachine(t, folder, "Desktop", &clock)
-	b, mb := newMachine(t, folder, "Laptop", &clock)
+	folder, a, ma, b, mb := twoMachines(t)
 	ma.set("main", "v1")
 	scan(t, a)
 	offers := scan(t, b)
