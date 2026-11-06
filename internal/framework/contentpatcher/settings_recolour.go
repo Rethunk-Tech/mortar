@@ -72,64 +72,75 @@ func recolourSettings(packMod framework.Mod, pack cachedPack, config map[string]
 		if schema.allowMultiple || len(schema.allowValues) < 2 || covered[strings.ToLower(schema.key)] || mapsByHasMod(pack, schema.key) {
 			continue
 		}
-		valueFamily := map[string]int{}
-		for _, v := range schema.allowValues {
-			if f := familyOfValue(v); f >= 0 {
-				valueFamily[v] = f
-			}
+		if hint, ok := recolourHint(packMod, schema, config, enabled); ok {
+			out = append(out, hint)
 		}
-		if len(valueFamily) == 0 {
-			continue
-		}
-		current, set := config[strings.ToLower(schema.key)]
-		if !set {
-			current = schema.defaultValue
-		}
-		current = strings.TrimSpace(current)
-		if current == "" || slices.Contains(autoChoices, strings.ToLower(current)) {
-			continue
-		}
-		currentFamily := familyOfValue(current)
-		if _, ok := enabled[currentFamily]; currentFamily >= 0 && ok {
-			continue
-		}
-		var suggested, forNames []string
-		var forIDs []mod.ID
-		for _, v := range schema.allowValues {
-			f, ok := valueFamily[v]
-			if !ok {
-				continue
-			}
-			if im, on := enabled[f]; on {
-				addSettingValue(&suggested, v)
-				if !slices.Contains(forIDs, im.ModID()) {
-					forIDs = append(forIDs, im.ModID())
-					forNames = append(forNames, cmp.Or(im.Name, im.ModID().Local()))
-				}
-			}
-		}
-		currentFor := ""
-		if currentFamily >= 0 {
-			currentFor = recolourFamilies[currentFamily].name
-			if len(suggested) == 0 {
-				for _, v := range schema.allowValues {
-					if s := squash(v); s == "vanilla" || s == "default" {
-						suggested = []string{v}
-						break
-					}
-				}
-			}
-		}
-		if len(suggested) == 0 {
-			continue
-		}
-		out = append(out, framework.SettingHint{
-			Key: packMod.Key, ID: packMod.ModID(), Name: packMod.Name, Field: schema.key, Current: current,
-			Suggested: suggested, Description: schema.description, Variant: true, CurrentFor: currentFor,
-			For: forIDs, ForNames: forNames,
-		})
 	}
 	return out
+}
+
+func recolourHint(packMod framework.Mod, schema cpSchema, config map[string]string, enabled map[int]framework.Mod) (framework.SettingHint, bool) {
+	valueFamily := map[string]int{}
+	for _, v := range schema.allowValues {
+		if f := familyOfValue(v); f >= 0 {
+			valueFamily[v] = f
+		}
+	}
+	if len(valueFamily) == 0 {
+		return framework.SettingHint{}, false
+	}
+	current, set := config[strings.ToLower(schema.key)]
+	if !set {
+		current = schema.defaultValue
+	}
+	current = strings.TrimSpace(current)
+	if current == "" || slices.Contains(autoChoices, strings.ToLower(current)) {
+		return framework.SettingHint{}, false
+	}
+	currentFamily := familyOfValue(current)
+	if _, ok := enabled[currentFamily]; currentFamily >= 0 && ok {
+		return framework.SettingHint{}, false
+	}
+	var suggested, forNames []string
+	var forIDs []mod.ID
+	for _, v := range schema.allowValues {
+		f, ok := valueFamily[v]
+		if !ok {
+			continue
+		}
+		if im, on := enabled[f]; on {
+			addSettingValue(&suggested, v)
+			if !slices.Contains(forIDs, im.ModID()) {
+				forIDs = append(forIDs, im.ModID())
+				forNames = append(forNames, cmp.Or(im.Name, im.ModID().Local()))
+			}
+		}
+	}
+	currentFor := ""
+	if currentFamily >= 0 {
+		currentFor = recolourFamilies[currentFamily].name
+		if len(suggested) == 0 {
+			suggested = vanillaChoice(schema.allowValues)
+		}
+	}
+	if len(suggested) == 0 {
+		return framework.SettingHint{}, false
+	}
+	return framework.SettingHint{
+		Key: packMod.Key, ID: packMod.ModID(), Name: packMod.Name, Field: schema.key, Current: current,
+		Suggested: suggested, Description: schema.description, Variant: true, CurrentFor: currentFor,
+		For: forIDs, ForNames: forNames,
+	}, true
+}
+
+// vanillaChoice is the first allowed value that means the game's own look, as a one-value suggestion.
+func vanillaChoice(allowed []string) []string {
+	for _, v := range allowed {
+		if s := squash(v); s == "vanilla" || s == "default" {
+			return []string{v}
+		}
+	}
+	return nil
 }
 
 // mapsByHasMod reports whether the pack ties the field to installed mods itself, so it already follows the profile.
