@@ -48,11 +48,19 @@ func Home(lookPath func(string) (string, error)) string {
 	if err != nil {
 		return ""
 	}
-	dir := filepath.Join(home, ".dotnet")
+	dir := filepath.Join(home, userDir)
 	if _, err := lookPath(filepath.Join(dir, "dotnet")); err != nil {
 		return ""
 	}
 	return dir
+}
+
+// userDir is where Microsoft's install script puts dotnet and where `dotnet tool install -g` puts tools, under home.
+const userDir = ".dotnet"
+
+// Tools is .NET's global tools folder under home, which a fresh install has not added to the PATH yet.
+func Tools(home string) string {
+	return filepath.Join(home, userDir, "tools")
 }
 
 // Program is the dotnet to run: the extension's when there is one, else whatever the PATH holds.

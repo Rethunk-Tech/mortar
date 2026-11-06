@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/go-cfgedit/msbuild"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
+	"github.com/Rethunk-Tech/mortar/internal/dotnetroot"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -297,7 +298,7 @@ func (s *Service) ilspy() (string, bool) {
 		names = []string{"ilspycmd.exe", "ilspycmd.cmd"}
 	}
 	for _, name := range names {
-		p := filepath.Join(s.Home, ".dotnet", "tools", name)
+		p := filepath.Join(dotnetroot.Tools(s.Home), name)
 		if safefs.IsFile(p) {
 			return p, true
 		}
