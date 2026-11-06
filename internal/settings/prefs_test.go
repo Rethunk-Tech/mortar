@@ -661,3 +661,20 @@ func TestSourceIDListsSplitOnCommasAndDropEmpties(t *testing.T) {
 		t.Fatalf("SourcesOffIDs = %q", got)
 	}
 }
+
+func TestValidatePrefsReportsFirstInvalidFieldInOrder(t *testing.T) {
+	s := defaultPrefs()
+	normalizePrefs(&s)
+	s.TrashRetentionDays = MaxTrashRetentionDays + 1
+	s.Graphics = "bogus"
+	err := validatePrefs(s)
+	if err == nil || !strings.HasPrefix(err.Error(), "graphics must be") {
+		t.Fatalf("graphics is checked before trash retention days: got %v", err)
+	}
+	s.Graphics = defaultPrefs().Graphics
+	s.StoreRetentionDays = MaxStoreRetentionDays + 1
+	err = validatePrefs(s)
+	if err == nil || !strings.HasPrefix(err.Error(), "store retention days") {
+		t.Fatalf("store retention days is checked before trash retention days: got %v", err)
+	}
+}

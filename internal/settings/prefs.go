@@ -351,14 +351,9 @@ func normBools(s *Settings) []normBool {
 }
 
 func validatePrefs(s Settings) error {
-	for _, p := range validEnums(s) {
-		if !slices.Contains(p.values, p.value) {
-			return fmt.Errorf("%s, got %q", p.msg, p.value)
-		}
-	}
-	for _, p := range validRanges(s) {
-		if p.value < p.lo || p.value > p.hi {
-			return fmt.Errorf("%s must be %d to %d%s, got %d", p.name, p.lo, p.hi, p.unit, p.value)
+	for _, check := range prefChecks(s) {
+		if err := check(); err != nil {
+			return err
 		}
 	}
 	for _, g := range s.Games {
@@ -372,48 +367,53 @@ func validatePrefs(s Settings) error {
 	return nil
 }
 
-type validEnum struct {
-	value  string
-	values []string
-	msg    string
-}
+type prefCheck func() error
 
-type validRange struct {
-	value, lo, hi int
-	name, unit    string
-}
-
-func validEnums(s Settings) []validEnum {
-	return []validEnum{
-		{s.OnPlay, onPlayValues, "on play must be stay, minimise or hide"},
-		{s.DefaultModsView, modsViewValues, "default mods view must be grid or list"},
-		{s.ImplicitModsView, implicitModsValues, "implicit mods view must be shown, nested or hidden"},
-		{s.StartScreen, startScreenValues, "start screen must be last or gameselect"},
-		{s.Antivirus, antivirusValues, "antivirus must be automatic, clamd, command or off"},
-		{s.Dates, datesValues, "dates must be relative or absolute"},
-		{s.Graphics, graphicsValues, "graphics must be automatic, smooth or compatible"},
-		{s.Density, densityValues, "density must be comfortable or compact"},
-		{s.Theme, themeValues, "theme must be dark, light or system"},
-		{s.GridCardSize, gridCardValues, "grid card size must be small, medium or large"},
-		{s.ReduceMotion, reduceMotionValues, "reduce motion must be system, always or never"},
-		{s.ProfileHero, heroValues, "profile hero must be full, compact or hidden"},
-		{s.ProfileOrder, profileOrderValues, "profile order must be manual, name or lastPlayed"},
-		{s.ThunderstoreHost, thunderstoreHostValues, "thunderstore host must be auto or one of its download hosts"},
-		{s.AutoRetryDownloads, autoRetryValues, "auto-retry downloads must be off, 1 or 3"},
-		{s.SidebarBadges, sidebarBadgesValues, "sidebar badges must be problemsAndUpdates, problems or off"},
-		{s.ExtensionConnection, extensionConnectionValues, "extension connection must be allow or off"},
-		{s.SmapiBuilds, smapiBuildsValues, "smapi builds must be never, show or include"},
+func enumCheck(value string, values []string, msg string) prefCheck {
+	return func() error {
+		if slices.Contains(values, value) {
+			return nil
+		}
+		return fmt.Errorf("%s, got %q", msg, value)
 	}
 }
 
-func validRanges(s Settings) []validRange {
-	return []validRange{
-		{s.ParallelDownloads, MinParallelDownloads, MaxParallelDownloads, "parallel downloads", ""},
-		{s.DownloadSpeedLimit, MinDownloadSpeedLimit, MaxDownloadSpeedLimit, "download speed limit", " MB/s"},
-		{s.UpdateCheckIntervalMinutes, MinUpdateCheckIntervalMinutes, MaxUpdateCheckIntervalMinutes, "update check interval", " minutes"},
-		{s.StoreRetentionDays, MinStoreRetentionDays, MaxStoreRetentionDays, "store retention days", ""},
-		{s.TrashRetentionDays, MinTrashRetentionDays, MaxTrashRetentionDays, "trash retention days", ""},
-		{s.HistoryEventsKept, MinHistoryEventsKept, MaxHistoryEventsKept, "history events kept", ""},
+func rangeCheck(value, lo, hi int, name, unit string) prefCheck {
+	return func() error {
+		if value >= lo && value <= hi {
+			return nil
+		}
+		return fmt.Errorf("%s must be %d to %d%s, got %d", name, lo, hi, unit, value)
+	}
+}
+
+// prefChecks lists the checks in the order the first invalid field is reported.
+func prefChecks(s Settings) []prefCheck {
+	return []prefCheck{
+		enumCheck(s.OnPlay, onPlayValues, "on play must be stay, minimise or hide"),
+		rangeCheck(s.ParallelDownloads, MinParallelDownloads, MaxParallelDownloads, "parallel downloads", ""),
+		rangeCheck(s.DownloadSpeedLimit, MinDownloadSpeedLimit, MaxDownloadSpeedLimit, "download speed limit", " MB/s"),
+		rangeCheck(s.UpdateCheckIntervalMinutes, MinUpdateCheckIntervalMinutes, MaxUpdateCheckIntervalMinutes, "update check interval", " minutes"),
+		rangeCheck(s.StoreRetentionDays, MinStoreRetentionDays, MaxStoreRetentionDays, "store retention days", ""),
+		enumCheck(s.DefaultModsView, modsViewValues, "default mods view must be grid or list"),
+		enumCheck(s.ImplicitModsView, implicitModsValues, "implicit mods view must be shown, nested or hidden"),
+		enumCheck(s.StartScreen, startScreenValues, "start screen must be last or gameselect"),
+		enumCheck(s.Antivirus, antivirusValues, "antivirus must be automatic, clamd, command or off"),
+		enumCheck(s.Dates, datesValues, "dates must be relative or absolute"),
+		enumCheck(s.Graphics, graphicsValues, "graphics must be automatic, smooth or compatible"),
+		rangeCheck(s.TrashRetentionDays, MinTrashRetentionDays, MaxTrashRetentionDays, "trash retention days", ""),
+		rangeCheck(s.HistoryEventsKept, MinHistoryEventsKept, MaxHistoryEventsKept, "history events kept", ""),
+		enumCheck(s.Density, densityValues, "density must be comfortable or compact"),
+		enumCheck(s.Theme, themeValues, "theme must be dark, light or system"),
+		enumCheck(s.GridCardSize, gridCardValues, "grid card size must be small, medium or large"),
+		enumCheck(s.ReduceMotion, reduceMotionValues, "reduce motion must be system, always or never"),
+		enumCheck(s.ProfileHero, heroValues, "profile hero must be full, compact or hidden"),
+		enumCheck(s.ProfileOrder, profileOrderValues, "profile order must be manual, name or lastPlayed"),
+		enumCheck(s.ThunderstoreHost, thunderstoreHostValues, "thunderstore host must be auto or one of its download hosts"),
+		enumCheck(s.AutoRetryDownloads, autoRetryValues, "auto-retry downloads must be off, 1 or 3"),
+		enumCheck(s.SidebarBadges, sidebarBadgesValues, "sidebar badges must be problemsAndUpdates, problems or off"),
+		enumCheck(s.ExtensionConnection, extensionConnectionValues, "extension connection must be allow or off"),
+		enumCheck(s.SmapiBuilds, smapiBuildsValues, "smapi builds must be never, show or include"),
 	}
 }
 
