@@ -8,6 +8,7 @@ import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
 import { openGame, thunderstoreVisit } from './renderProfile.ts'
 import { stubbedCases } from './renderStubbed.ts'
+import { stateCases } from './stateCases.ts'
 import { uploadDialogCases } from './uploadDialogCase.ts'
 
 const CLOSE_TRIES = 4
@@ -381,6 +382,7 @@ export function dialogCases(h: Helpers): Case[] {
     ...uploadDialogCases(kit),
     ...noProjectCodeCases(kit),
     ...flatpakSdkCases(kit),
+    ...stateCases(kit, h.tabs, h.tab),
     ...menuCases(kit, h.tabs),
     // Showing the list and picking a mod is setup: only opening the dialog is measured.
     dialog(
