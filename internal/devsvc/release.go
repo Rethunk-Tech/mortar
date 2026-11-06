@@ -373,7 +373,7 @@ func (s *Service) tagRelease(ctx context.Context, dir, version string, notes []s
 	}
 	next := AddChangelogEntry(string(body), version, notes)
 	if next != string(body) {
-		if err := safefs.WriteFile(log, []byte(next), 0o644); err != nil { // #nosec G306 -- a tracked text file
+		if err := safefs.WriteFile(log, []byte(next), 0o644); err != nil {
 			return err
 		}
 		_, err = s.run(ctx, dir, "git", "add", "CHANGELOG.md")
@@ -385,7 +385,7 @@ func (s *Service) tagRelease(ctx context.Context, dir, version string, notes []s
 			if len(body) == 0 {
 				_ = safefs.Remove(log)
 			} else {
-				_ = safefs.WriteFile(log, body, 0o644) // #nosec G306 -- a tracked text file
+				_ = safefs.WriteFile(log, body, 0o644)
 			}
 			return err
 		}

@@ -248,7 +248,7 @@ func readInfo(dir, csproj string) (ProjectInfo, error) {
 		Team:        msbuild.Property(string(props), "ThunderstoreTeam"),
 		Description: msbuild.Property(string(project), "ThunderstoreDescription"),
 		Categories:  []string{},
-		TestWith:    nonNil(readTestWith(dir)),
+		TestWith:    usererr.NonNil(readTestWith(dir)),
 	}
 	sites := readSites(dir)
 	info.Nexus, info.CurseForge = sites.Nexus, sites.CurseForge
@@ -447,7 +447,7 @@ func editFile(path string, fn func(string) string) error {
 		return err
 	}
 	if next := fn(string(body)); next != string(body) {
-		return safefs.WriteFile(path, []byte(next), 0o644) // #nosec G306 -- a tracked project file
+		return safefs.WriteFile(path, []byte(next), 0o644)
 	}
 	return nil
 }

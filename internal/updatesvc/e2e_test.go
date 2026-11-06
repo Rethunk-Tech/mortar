@@ -251,7 +251,7 @@ func TestUpdaterE2EAppImageSwapsTheImageFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	image := filepath.Join(root, "Mortar.AppImage")
-	if err := os.WriteFile(image, oldB, 0o700); err != nil { // #nosec G306 -- the image has to be executable to relaunch
+	if err := os.WriteFile(image, oldB, 0o700); err != nil { //nolint:gosec // the image has to be executable to relaunch
 		t.Fatal(err)
 	}
 	logPath := runFixture(t, mounted, root, s, key.pubB64, "APPIMAGE="+image, "APPDIR="+appDir)

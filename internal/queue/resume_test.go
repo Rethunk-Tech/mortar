@@ -1,7 +1,7 @@
 package queue
 
 import (
-	"context" // #nosec G501 -- Content-MD5 is MD5 by RFC 1864
+	"context"
 	"fmt"
 	"io"
 	"net/http"

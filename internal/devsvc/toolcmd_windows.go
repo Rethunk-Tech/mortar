@@ -21,7 +21,7 @@ func toolCommand(ctx context.Context, name string, args ...string) (*exec.Cmd, e
 	}
 	ext := strings.ToLower(filepath.Ext(path))
 	if ext != ".cmd" && ext != ".bat" {
-		return exec.CommandContext(ctx, name, args...), nil // #nosec G204 -- fixed tools; arguments validated by the caller
+		return exec.CommandContext(ctx, name, args...), nil //nolint:gosec // fixed tools; arguments validated by the caller
 	}
 	system, err := windows.GetSystemDirectory()
 	if err != nil {

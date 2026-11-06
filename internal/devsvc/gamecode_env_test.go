@@ -18,7 +18,7 @@ func TestIlspyRunsWithDotnetRoot(t *testing.T) {
 	}
 	dir := t.TempDir()
 	tool := filepath.Join(dir, "ilspycmd")
-	if err := os.WriteFile(tool, []byte("#!/bin/sh\necho \"root=$DOTNET_ROOT\"\n"), 0o700); err != nil { // #nosec G306 -- a fake tool the test must execute
+	if err := os.WriteFile(tool, []byte("#!/bin/sh\necho \"root=$DOTNET_ROOT\"\n"), 0o700); err != nil { //nolint:gosec // a fake tool the test must execute
 		t.Fatal(err)
 	}
 	prev := flatpakDotnetRoot
@@ -53,7 +53,7 @@ func TestFlatpakDotnet(t *testing.T) {
 		return
 	}
 	root := t.TempDir()
-	if err := os.WriteFile(filepath.Join(root, "dotnet"), []byte("#!/bin/sh\necho \"ext $1\"\n"), 0o700); err != nil { // #nosec G306 -- a fake dotnet the test must execute
+	if err := os.WriteFile(filepath.Join(root, "dotnet"), []byte("#!/bin/sh\necho \"ext $1\"\n"), 0o700); err != nil { //nolint:gosec // a fake dotnet the test must execute
 		t.Fatal(err)
 	}
 	flatpakDotnetRoot = func() string { return root }

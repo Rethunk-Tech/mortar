@@ -51,7 +51,7 @@ func (s *Service) AddDependency(gameID, dir, pkg, version string, soft bool) err
 		return err
 	}
 	return s.wire(context.Background(), p, func() error {
-		if err := safefs.WriteFile(csproj, []byte(withDependency(string(raw), pkg, version, soft)), 0o644); err != nil { // #nosec G306 -- a tracked project file
+		if err := safefs.WriteFile(csproj, []byte(withDependency(string(raw), pkg, version, soft)), 0o644); err != nil {
 			return err
 		}
 		return s.syncDependencies(gameID, p)
@@ -260,7 +260,7 @@ func (s *Service) syncDependencies(gameID string, p settings.DevProject) error {
 		}
 	}
 	if referenced != string(raw) {
-		if err := safefs.WriteFile(csproj, []byte(referenced), 0o644); err != nil { // #nosec G306 -- a tracked project file
+		if err := safefs.WriteFile(csproj, []byte(referenced), 0o644); err != nil {
 			return err
 		}
 	}

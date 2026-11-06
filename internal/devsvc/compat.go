@@ -70,7 +70,7 @@ func declareDependency(src, guid string, soft bool) error {
 	if body == string(raw) {
 		return nil
 	}
-	return safefs.WriteFile(path, []byte(body), 0o644) // #nosec G306 -- a tracked source file
+	return safefs.WriteFile(path, []byte(body), 0o644)
 }
 
 // compatTemplate keeps every use of a soft dependency's types in one class. The runtime resolves the types a method
@@ -112,7 +112,7 @@ func writeCompat(src, namespace, pkg, guid string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return err
 	}
-	return safefs.WriteFile(path, []byte(fmt.Sprintf(compatTemplate, namespace, name, class, guid)), 0o644) // #nosec G306 -- a tracked source file
+	return safefs.WriteFile(path, []byte(fmt.Sprintf(compatTemplate, namespace, name, class, guid)), 0o644)
 }
 
 // compatFile is a soft dependency's compatibility class: the package's name, the class named after it (empty when the

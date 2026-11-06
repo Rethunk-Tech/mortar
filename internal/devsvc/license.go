@@ -48,7 +48,7 @@ func (s *Service) applyLicense(ctx context.Context, dir, key string) error {
 	if err := json.Unmarshal(b, &license); err != nil || license.Body == "" {
 		return usererr.Wrap(usererr.Network, errors.New("the license text could not be read"))
 	}
-	return safefs.WriteFile(filepath.Join(dir, "LICENSE"), []byte(license.Body), 0o644) // #nosec G306 -- a tracked text file
+	return safefs.WriteFile(filepath.Join(dir, "LICENSE"), []byte(license.Body), 0o644)
 }
 
 // SDKNeed is the SDK a template's global.json pins and how far .NET may roll forward from it.
