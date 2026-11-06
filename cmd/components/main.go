@@ -72,6 +72,9 @@ func run(ctx context.Context, o options) error {
 		}
 		resolved = append(resolved, component)
 	}
+	if err := pinTemplates(ctx, httpClient, "https://api.github.com", source.Games); err != nil {
+		return err
+	}
 	serial, err := nextSerial(o.output)
 	if err != nil {
 		return err
