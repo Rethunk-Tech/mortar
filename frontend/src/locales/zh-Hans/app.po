@@ -1,5 +1,5 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-02 17:19+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/app/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-06 19:25+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/app/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/saves/SavesTab.tsx
 msgid "No saves match"
@@ -127,7 +127,7 @@ msgstr "跳过此配置"
 
 #: src/queue/store.ts
 msgid "{source} rejected your sign-in"
-msgstr ""
+msgstr "{source} 拒绝了你的登录"
 
 #: src/queue/QueueBody.tsx
 #: src/queue/store.ts
@@ -153,7 +153,7 @@ msgstr "{added}；{rest}"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Delete profile"
-msgstr ""
+msgstr "删除配置"
 
 #: src/templates/TemplateDialogs.tsx
 msgid "Could not delete the template"
@@ -169,7 +169,7 @@ msgstr "修订版 {review} 已发布"
 
 #: src/game/FarmMenuItem.tsx
 msgid "Could not queue the downloads"
-msgstr "由游戏保留"
+msgstr "无法将下载加入队列"
 
 #: src/toasts/history.ts
 msgid "That profile is gone."
@@ -271,7 +271,7 @@ msgstr "无法隐藏该模组"
 
 #: src/queue/QueueSheet.tsx
 msgid "History"
-msgstr ""
+msgstr "历史记录"
 
 #: src/develop/EditProjectDialog.tsx
 #: src/develop/ProjectDependencies.tsx
@@ -323,370 +323,370 @@ msgstr "{count, plural, one {已从 {name} 添加 # 个模组} other {已从 {na
 
 #: src/tidy/report.ts
 msgid "Mod store"
-msgstr ""
+msgstr "模组商店"
 
 #: src/loader/Banner.tsx
 msgid "{name} {latest} is available"
-msgstr ""
+msgstr "{name} {latest} 已可更新"
 
 #: src/install/store.ts
 msgid "Could not add the chosen folder"
-msgstr ""
+msgstr "无法添加所选文件夹"
 
 #: src/shell/checkForUpdates.ts
 msgid "A new Mortar is ready"
-msgstr ""
+msgstr "新版本 Mortar 已就绪"
 
 #: src/game/Sidebar.tsx
 msgid "Config"
-msgstr ""
+msgstr "配置"
 
 #: src/lan/SendPanel.tsx
 msgid "Not paired"
-msgstr ""
+msgstr "未配对"
 
 #: src/share/MethodPanes.tsx
 msgid "Enable and continue"
-msgstr ""
+msgstr "启用并继续"
 
 #: src/firstrunTour/TourPopover.tsx
 msgid "Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. Or drop a downloaded archive anywhere on this window."
-msgstr ""
+msgstr "可同时搜索所有模组网站，或选择一个网站；不输入任何内容时，将显示热门模组。可将安装项添加到此配置文件。也可以将下载好的压缩包拖放到本窗口的任何位置。"
 
 #: src/groups/SavedGroupRow.tsx
 msgid "Remove {name} from {group}"
-msgstr ""
+msgstr "从 {group} 中移除 {name}"
 
 #: src/game/HomeNotes.tsx
 #: src/share/ImportProblems.tsx
 #: src/share/Included.tsx
 msgid "Notes"
-msgstr ""
+msgstr "备注"
 
 #: src/game/HeroGlance.tsx
 #: src/saves/SaveDetails.tsx
 msgid "Last played {when}"
-msgstr ""
+msgstr "上次游玩时间：{when}"
 
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "{name} has a new cover"
-msgstr ""
+msgstr "{name} 有新的封面"
 
 #: src/develop/DependencySync.tsx
 msgid "Install missing"
-msgstr ""
+msgstr "安装缺失项"
 
 #: src/develop/GameCodeDialog.tsx
 msgid "Type or method, such as player update"
-msgstr ""
+msgstr "类型或方式，例如玩家更新"
 
 #: src/nxm/ArrivalDialog.tsx
 msgid "You started this download on {source}. Choose the profile it goes into."
-msgstr ""
+msgstr "你在 {source} 上开始了此下载。请选择要安装到的配置文件。"
 
 #: src/share/MethodPanes.tsx
 msgid "Modpack"
-msgstr ""
+msgstr "整合包"
 
 #: src/queue/QueueRows.tsx
 msgid "Move {name} up"
-msgstr ""
+msgstr "上移 {name}"
 
 #: src/share/UploadModpackDialog.tsx
 msgid "Could not forget the token"
-msgstr ""
+msgstr "无法清除令牌"
 
 #: src/develop/DevelopTab.tsx
 msgid "Clone from {source}…"
-msgstr ""
+msgstr "从 {source} 克隆…"
 
 #: src/share/DestinationGrid.tsx
 msgid "An {manager} code or modpack"
-msgstr ""
+msgstr "{manager} 代码或整合包"
 
 #: src/tools/ToolsManageDialog.tsx
 msgid "Add tool…"
-msgstr ""
+msgstr "添加工具…"
 
 #: src/install/ArchivePreview.tsx
 msgid "Showing the first 2,000 files"
-msgstr ""
+msgstr "正在显示前 2,000 个文件"
 
 #: src/toasts/HistoryButton.tsx
 msgid "Downloads…"
-msgstr ""
+msgstr "下载…"
 
 #: src/install/noModText.ts
 #: src/launch/PlayControl.tsx
 msgid "Mod loader"
-msgstr ""
+msgstr "模组加载器"
 
 #: src/share/ImportFooter.tsx
 msgid "Fill in missing dependencies"
-msgstr ""
+msgstr "补全缺失的依赖项"
 
 #: src/share/importCompletion.ts
 msgid "{skipped} skipped"
-msgstr ""
+msgstr "已跳过 {skipped} 项"
 
 #: src/develop/GameCodeDialog.tsx
 msgid "The first type of an assembly takes a while."
-msgstr ""
+msgstr "程序集首次类型分析需要一些时间。"
 
 #: src/develop/DependencySync.tsx
 #: src/saves/SaveGapLine.tsx
 #: src/tips/TipBanner.tsx
 #: src/toasts/ToastHost.tsx
 msgid "Dismiss"
-msgstr ""
+msgstr "忽略"
 
 #: src/queue/QueueHistory.tsx
 msgid "All profiles"
-msgstr ""
+msgstr "所有配置文件"
 
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Open the game's folder"
-msgstr ""
+msgstr "打开游戏文件夹"
 
 #: src/browse/BrowseShow.tsx
 msgid "Mods in this profile"
-msgstr ""
+msgstr "此配置文件中的模组"
 
 #: src/nxm/ArrivalDialog.tsx
 msgid "Apply this profile to all waiting"
-msgstr ""
+msgstr "将此配置应用到所有待处理项"
 
 #: src/browse/CardAction.tsx
 msgid "Open"
-msgstr ""
+msgstr "打开"
 
 #: src/game/FarmMenuItem.tsx
 msgid "Host {host}"
-msgstr ""
+msgstr "主机 {host}"
 
 #: src/toasts/report.ts
 msgid "A network request failed."
-msgstr ""
+msgstr "网络请求失败。"
 
 #: src/share/ModpackDialog.tsx
 msgid "The website must start with http:// or https://."
-msgstr ""
+msgstr "网址必须以 http:// 或 https:// 开头。"
 
 #: src/share/ListFormat.tsx
 msgid "Left out (not on {source}, or disabled): {names}"
-msgstr ""
+msgstr "已排除（不在 {source} 上，或已禁用）：{names}"
 
 #: src/tidy/report.ts
 msgid "Removed leftover temporary folders"
-msgstr ""
+msgstr "已移除残留的临时文件夹"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Remove the shortcut"
-msgstr ""
+msgstr "移除快捷方式"
 
 #: src/queue/QueueBody.tsx
 msgid "{repo} {tag} has several archives. Which one should Mortar install?"
-msgstr ""
+msgstr "{repo} {tag} 包含多个压缩包。Mortar 应安装哪一个？"
 
 #: src/browse/BrowseBody.tsx
 msgid "Find mods to add"
-msgstr ""
+msgstr "查找要添加的模组"
 
 #: src/share/ImportFooter.tsx
 msgid "Add to {name}"
-msgstr ""
+msgstr "添加到 {name}"
 
 #: src/browse/CardProgress.tsx
 msgid "Downloading {percent}%"
-msgstr ""
+msgstr "正在下载 {percent}%"
 
 #: src/game/FarmMenuItem.tsx
 msgid "Copy this profile's list"
-msgstr ""
+msgstr "复制此配置文件的列表"
 
 #: src/launch/LaunchScreen.tsx
 msgid "{name} has not started yet"
-msgstr ""
+msgstr "{name} 尚未启动"
 
 #: src/game/ProfileContextMenu.tsx
 #: src/game/ProfileMenu.tsx
 msgid "This profile"
-msgstr ""
+msgstr "此配置文件"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Add a desktop shortcut"
-msgstr ""
+msgstr "添加桌面快捷方式"
 
 #: src/browse/CardAction.tsx
 msgid "Installed by Mortar"
-msgstr ""
+msgstr "由 Mortar 安装"
 
 #: src/shell/AppMenu.tsx
 msgid "Check mods and Mortar for updates"
-msgstr ""
+msgstr "检查模组和 Mortar 的更新"
 
 #: src/develop/UploadDialog.tsx
 msgid "Paste the token."
-msgstr ""
+msgstr "粘贴令牌。"
 
 #: src/firstrun/ProfileStep.tsx
 msgid "Make your first profile"
-msgstr ""
+msgstr "创建你的第一个配置文件"
 
 #: src/develop/DevelopTab.tsx
 msgid "{n, plural, one {Test with # copy} other {Test with # copies}}"
-msgstr ""
+msgstr "{n, plural, one {用 # 个副本测试} other {用 # 个副本测试}}"
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Configure {name}…"
-msgstr ""
+msgstr "配置 {name}…"
 
 #: src/install/DownloadsDialog.tsx
 msgid "From {source}"
-msgstr ""
+msgstr "来自 {source}"
 
 #: src/share/PreviewDialog.tsx
 msgid "What they see"
-msgstr ""
+msgstr "他们看到的内容"
 
 #: src/game/ProfileContextMenu.tsx
 #: src/templates/TemplateDialogs.tsx
 msgid "Rename"
-msgstr ""
+msgstr "重命名"
 
 #: src/lan/SendPanel.tsx
 msgid "Only links"
-msgstr ""
+msgstr "仅链接"
 
 #: src/lan/SendPanel.tsx
 msgid "Send only links to {name}?"
-msgstr ""
+msgstr "只发送链接给 {name}？"
 
 #: src/groups/dialogs.tsx
 #: src/groups/SavedGroupsSection.tsx
 msgid "No saved groups yet"
-msgstr ""
+msgstr "尚无已保存的分组"
 
 #: src/install/DropOverlay.tsx
 msgid "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows what was added."
-msgstr ""
+msgstr "Zip、RAR、7z、tar、gzip、xz、lzma、zstd 和 bzip2。Mortar 会读取其中的模组并显示已添加的内容。"
 
 #: src/browse/BrowseShow.tsx
 msgid "Broken"
-msgstr ""
+msgstr "已损坏"
 
 #: src/firstrun/LoaderStep.tsx
 #: src/loader/InstallSteps.tsx
 msgid "Bundled mods added"
-msgstr ""
+msgstr "已添加捆绑的模组"
 
 #: src/downloads/newDownloads.ts
 msgid "Add {name} to {profile}?"
-msgstr ""
+msgstr "将 {name} 添加到 {profile}？"
 
 #: src/saves/scheduledBackups.ts
 msgid "A scheduled save backup failed"
-msgstr ""
+msgstr "定时存档备份失败"
 
 #: src/toasts/report.ts
 msgid "Waiting for you to unlock the keyring."
-msgstr ""
+msgstr "正在等待你解锁密钥环。"
 
 #: src/queue/RetryAllButton.tsx
 msgid "{count, plural, one {# already queued} other {# already queued}}"
-msgstr ""
+msgstr "{count, plural, one {# 项已在队列中} other {# 项已在队列中}}"
 
 #: src/queue/QueueBody.tsx
 msgid "Dismiss {name}"
-msgstr ""
+msgstr "忽略 {name}"
 
 #: src/nxm/store.ts
 msgid "Mortar does not manage mods for that game."
-msgstr ""
+msgstr "Mortar 不管理该游戏的模组。"
 
 #: src/share/ImportProblems.tsx
 msgid "Free account: one click on {source} per download"
-msgstr ""
+msgstr "免费账户：每次下载需在 {source} 上点击一次"
 
 #: src/firstrun/ProfileStep.tsx
 msgid "Start empty"
-msgstr ""
+msgstr "从空白开始"
 
 #: src/toasts/report.ts
 msgid "That item could not be found."
-msgstr ""
+msgstr "找不到该项目。"
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Switch to Problems"
-msgstr ""
+msgstr "切换到“问题”页"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "It shows in your {launcher} library the next time {launcher} starts."
-msgstr ""
+msgstr "下次 {launcher} 启动时，它会出现在你的 {launcher} 库中。"
 
 #: src/share/ListFormat.tsx
 msgid "Mod list copied"
-msgstr ""
+msgstr "已复制模组列表"
 
 #: src/toasts/AvOverrideDialog.tsx
 msgid " in {file}"
-msgstr ""
+msgstr " 位于 {file} 中"
 
 #: src/develop/draft.ts
 msgid "Choose the folder for your mod projects."
-msgstr ""
+msgstr "选择你的模组项目文件夹。"
 
 #: src/browse/BrowseFilters.tsx
 msgid "Exclude categories"
-msgstr ""
+msgstr "排除类别"
 
 #: src/queue/QueueHistory.tsx
 msgid "Filter by outcome"
-msgstr ""
+msgstr "按结果筛选"
 
 #: src/tidy/report.ts
 msgid "Put back a mod folder an interrupted install or update left aside"
-msgstr ""
+msgstr "恢复被中断的安装或更新遗留的模组文件夹"
 
 #: src/commandPalette/crashBisect.ts
 msgid "No crash to investigate: the last run ended normally"
-msgstr ""
+msgstr "没有可调查的崩溃：上次运行正常结束"
 
 #: src/develop/RepositoryChoice.tsx
 msgid "Sign in with gh to create a repository on {source}"
-msgstr ""
+msgstr "使用 gh 登录以在 {source} 上创建仓库"
 
 #: src/games/AddGameDialog.tsx
 msgid "Mortar chose this from the game's files."
-msgstr ""
+msgstr "Mortar 从游戏文件中选择了此项。"
 
 #: src/develop/ProjectCard.tsx
 msgid "Starting for debugging"
-msgstr ""
+msgstr "正在启动以进行调试"
 
 #: src/share/MethodPanes.tsx
 msgid "Could not export the collection draft"
-msgstr ""
+msgstr "无法导出收藏草稿"
 
 #: src/toasts/EarlierChanges.tsx
 msgid "Undo this and {count, plural, one {# later change} other {# later changes}}?"
-msgstr ""
+msgstr "撤销此项及 {count, plural, one {之后 # 项更改} other {之后 # 项更改}}？"
 
 #: src/develop/SiteIds.tsx
 msgid "Shown on the project's overview page."
-msgstr ""
+msgstr "显示在项目概览页上。"
 
 #: src/launch/LaunchButtons.tsx
 msgid "Cancelling…"
-msgstr ""
+msgstr "正在取消…"
 
 #: src/share/DestinationGrid.tsx
 msgid "Local archives cannot go here"
-msgstr ""
+msgstr "本地压缩包无法放在此处"
 
 #: src/launch/SweepDialog.tsx
 msgid "{name}: {fix}"
-msgstr ""
+msgstr "{name}：{fix}"
 
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most downloaded"
@@ -736,57 +736,57 @@ msgstr ""
 
 #: src/launch/VanillaPlay.tsx
 msgid "More play options"
-msgstr ""
+msgstr "更多游玩选项"
 
 #: src/loader/Banner.tsx
 msgid "Install Mortar's copy"
-msgstr ""
+msgstr "安装 Mortar 的副本"
 
 #: src/queue/QueueHistory.tsx
 msgid "All outcomes"
-msgstr ""
+msgstr "所有结果"
 
 #: src/queue/store.ts
 #: src/share/importCompletion.ts
 #: src/share/ImportProblems.tsx
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
-msgstr ""
+msgstr "{count, plural, one {已安装 # 个模组} other {已安装 # 个模组}}"
 
 #: src/develop/SiteIds.tsx
 msgid "Shown under Advanced on the mod's Files tab."
-msgstr ""
+msgstr "显示在该模组“文件”选项卡的“高级”下方。"
 
 #: src/tidy/report.ts
 msgid "Mortar tidied up {count, plural, one {# thing} other {# things}}"
-msgstr ""
+msgstr "Mortar 已整理 {count, plural, one {# 项内容} other {# 项内容}}"
 
 #: src/launch/events.ts
 msgid "Set this {launcher} launch option so the mod loader starts on {os}"
-msgstr ""
+msgstr "设置此 {launcher} 启动选项，以便模组加载器在 {os} 上启动"
 
 #: src/shell/FlatpakGrant.tsx
 msgid "Grant access…"
-msgstr ""
+msgstr "授予访问权限…"
 
 #: src/lan/SendPanel.tsx
 msgid "Config files stay here: only a paired computer gets them. Everything else you ticked is sent."
-msgstr ""
+msgstr "配置文件保留在此处：只有已配对的电脑才能获取它们。你勾选的其他所有内容都会被发送。"
 
 #: src/games/ProfileCards.tsx
 msgid "+{more} more"
-msgstr ""
+msgstr "还有 {more} 项"
 
 #: src/toasts/report.ts
 msgid "Save diagnostics…"
-msgstr ""
+msgstr "保存诊断信息…"
 
 #: src/firstrun/ProfileStep.tsx
 msgid "From a shared link"
-msgstr ""
+msgstr "来自分享链接"
 
 #: src/develop/ProjectCard.tsx
 msgid "Also move its folder to the trash"
-msgstr ""
+msgstr "同时将其文件夹移入回收站"
 
 #: src/firstrun/LoaderStep.tsx
 msgid "Install {loader} {latest}"
@@ -794,68 +794,68 @@ msgstr ""
 
 #: src/develop/GameCodeDialog.tsx
 msgid "Search the game's types and methods, then pick one to read its type's code."
-msgstr ""
+msgstr "搜索游戏的类型和方法，然后选择一个以读取其类型的代码。"
 
 #: src/share/ListFormat.tsx
 msgid "Message {count} of {total} copied"
-msgstr ""
+msgstr "已复制 {total} 条消息中的第 {count} 条"
 
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: best match"
-msgstr ""
+msgstr "排序：最佳匹配"
 
 #: src/share/ImportInput.tsx
 msgid "Open a .mortar file, an {manager} or {otherManager} .r2z, or a {source} modpack. You see what it holds before anything downloads."
-msgstr ""
+msgstr "打开 .mortar 文件、{manager} 或 {otherManager} 的 .r2z 文件，或 {source} 整合包。任何内容下载前，你都能先看到它包含什么。"
 
 #: src/firstrun/LoaderStep.tsx
 msgid "{loader} is the loader every {game} mod needs. Mortar puts it in each profile; the game folder stays as it is."
-msgstr ""
+msgstr "{loader} 是每个 {game} 模组都需要的加载器。Mortar 会把它放进每个配置文件；游戏文件夹保持原样。"
 
 #: src/launch/PrePlayDialog.tsx
 msgid "Pending updates ({count})"
-msgstr ""
+msgstr "待处理的更新（{count}）"
 
 #: src/shell/checkForUpdates.ts
 msgid "Update check skipped"
-msgstr ""
+msgstr "已跳过更新检查"
 
 #: src/develop/UploadDialog.tsx
 msgid "{site} as {team}"
-msgstr ""
+msgstr "{site} 作为 {team}"
 
 #: src/sync/store.ts
 msgid "{name} was changed on {machine} and here"
-msgstr ""
+msgstr "{name} 在 {machine} 和此处都已被修改"
 
 #: src/develop/draft.ts
 msgid "{name} needs {other}: {choice}."
-msgstr ""
+msgstr "{name} 需要 {other}：{choice}。"
 
 #: src/lan/IncomingPrompt.tsx
 msgid "The mod files can be copied directly from this Mortar."
-msgstr ""
+msgstr "可以直接从这台 Mortar 复制模组文件。"
 
 #: src/i18n/reasonText.ts
 msgid "The game crashed inside this mod's code."
-msgstr ""
+msgstr "游戏在这个模组的代码中崩溃了。"
 
 #: src/share/ImportProblems.tsx
 msgid "{count} unavailable"
-msgstr ""
+msgstr "{count} 项不可用"
 
 #: src/shell/ViewToggle.tsx
 msgid "Grid view"
-msgstr ""
+msgstr "网格视图"
 
 #: src/develop/DevelopTab.tsx
 #: src/develop/ProjectCard.tsx
 msgid "Could not start the game"
-msgstr ""
+msgstr "无法启动游戏"
 
 #: src/launch/LaunchScreen.tsx
 msgid "A long mod list can take a while on its first start. Mortar keeps waiting."
-msgstr ""
+msgstr "较长的模组列表在首次启动时可能需要一些时间。Mortar 会继续等待。"
 
 #: src/downloads/newDownloads.ts
 #: src/game/Hero.tsx
@@ -864,15 +864,15 @@ msgstr ""
 #: src/launch/events.ts
 #: src/sync/store.ts
 msgid "Review"
-msgstr ""
+msgstr "复查"
 
 #: src/lan/OutgoingProgress.tsx
 msgid "Sending to {peer}: {current} of {total} files"
-msgstr ""
+msgstr "正在发送给 {peer}：共 {total} 个文件，第 {current} 个"
 
 #: src/browse/CardAction.tsx
 msgid "Sign in"
-msgstr ""
+msgstr "登录"
 
 #: src/shell/ViewToggle.tsx
 msgid "List view"

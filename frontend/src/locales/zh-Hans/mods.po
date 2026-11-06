@@ -1,5 +1,5 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-10-31 13:53+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/mods/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-06 19:25+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/mods/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/mods/describe.ts
 msgid "Its {source} page summary"
@@ -263,11 +263,11 @@ msgstr ""
 #: src/mods/runErrorFixButtons.tsx
 #: src/mods/updateReview/UpdateBar.tsx
 msgid "Dismiss"
-msgstr ""
+msgstr "忽略"
 
 #: src/mods/ModSections.tsx
 msgid "Open"
-msgstr ""
+msgstr "打开"
 
 #: src/mods/NexusDetails.tsx
 msgid "Current files on {source} ({count})"
@@ -319,7 +319,7 @@ msgstr ""
 
 #: src/mods/DuplicateDialog.tsx
 msgid "From {source}"
-msgstr ""
+msgstr "来自 {source}"
 
 #: src/mods/problemFix/AssetFix.tsx
 msgid "In {name}; disables its edits here"
@@ -327,7 +327,7 @@ msgstr ""
 
 #: src/mods/GroupMenu.tsx
 msgid "Rename"
-msgstr ""
+msgstr "重命名"
 
 #: src/mods/LoadOrderTab.tsx
 msgid "Enable mods in the Mods tab to see the order {loader} loads them."
@@ -349,7 +349,7 @@ msgstr ""
 #: src/mods/compatChip.ts
 #: src/mods/ModDependencyTree.tsx
 msgid "Broken"
-msgstr ""
+msgstr "已损坏"
 
 #: src/mods/LibrariesChip.tsx
 msgid "{count, plural, one {+# library} other {+# libraries}}"
@@ -357,7 +357,7 @@ msgstr ""
 
 #: src/mods/CleanupSection.tsx
 msgid "Dismiss {name}"
-msgstr ""
+msgstr "忽略 {name}"
 
 #: src/mods/problemFix/fixActions.tsx
 msgid "Other fixes"
@@ -479,7 +479,7 @@ msgstr ""
 #: src/mods/updateDigestToast.ts
 #: src/mods/updates.ts
 msgid "Review"
-msgstr ""
+msgstr "复查"
 
 #: src/mods/updateReview/Changes.tsx
 msgid "Changelog unavailable"
