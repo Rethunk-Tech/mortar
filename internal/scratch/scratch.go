@@ -17,6 +17,11 @@ func Dir(pattern string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	return DirIn(base, pattern)
+}
+
+// DirIn makes the folder under the cache of the data folder base, for a caller that holds its own data folder.
+func DirIn(base, pattern string) (string, error) {
 	cache := filepath.Join(base, "cache")
 	if err := os.MkdirAll(cache, 0o700); err != nil {
 		return "", err

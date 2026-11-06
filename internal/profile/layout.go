@@ -104,13 +104,14 @@ func writeLayout(arch installer.Archive, l installer.Layout, dst string) error {
 }
 
 // layoutItem is a folder holding the store item as its entry lays out. A plain item is its own folder; any other is
-// written to a temp folder, tmp, that the caller removes.
+// written to a temp folder, tmp, that the caller removes. tmp is under the store's own data folder, on the disk of the
+// store and the profiles, so its files are cloned or hard-linked rather than symlinked to a folder about to go.
 func (s *Store) layoutItem(game, id, key string, choices map[string]map[string][]string, legacy bool) (src, tmp string, err error) {
 	arch, l, driver, err := s.layoutOf(game, id, key, choices, legacy)
 	if err != nil || driver == "plain" {
 		return arch.Dir, "", err
 	}
-	tmp, err = scratch.Dir("mortar-fomod-")
+	tmp, err = scratch.DirIn(s.dataDir, "mortar-fomod-")
 	if err != nil {
 		return "", "", err
 	}
