@@ -95,7 +95,7 @@ func (s *Service) checkPackageHash(it Item, path string) error {
 		return err
 	}
 	s.hashes[key] = got
-	if err := datadir.WriteJSON(file, s.hashes); err != nil {
+	if err := datadir.WriteJSONCompact(file, s.hashes); err != nil {
 		delete(s.hashes, key)
 		return err
 	}
