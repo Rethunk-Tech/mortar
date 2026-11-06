@@ -3,14 +3,19 @@ package vsmoddb
 import (
 	"net/http"
 	"net/http/httptest"
-	"strconv"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
+var hits atomic.Int32
+
 func fake(t *testing.T) Driver {
 	t.Helper()
+	hits.Store(0)
+	lists.m = nil
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/mods":
@@ -18,7 +23,8 @@ func fake(t *testing.T) Driver {
 				http.Error(w, "a search with text and no sort must order by downloads", http.StatusBadRequest)
 				return
 			}
-			limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+			hits.Add(1)
+			limit := 3*source.PageSize + 1
 			mods := `{"modid":1,"assetid":11,"name":"A","tags":["Library"],"lastreleased":"2026-10-16 08:25:06"}`
 			for i := 1; i < limit; i++ {
 				mods += `,{"modid":2,"assetid":22,"name":"B","urlalias":"bee","follows":7}`
@@ -75,7 +81,7 @@ func TestResolvePrefersTheNewestStableReleaseAndMatchesAReleaseID(t *testing.T) 
 
 func TestCategoriesHandsOutACopyOfTheCachedTags(t *testing.T) {
 	tags.Lock()
-	tags.ids, tags.names = map[string]string{"library": "1"}, []string{"Library"}
+	tags.ids, tags.names, tags.until = map[string]string{"library": "1"}, []string{"Library"}, now().Add(time.Hour)
 	tags.Unlock()
 	got, err := Driver{}.Categories(t.Context(), "")
 	if err != nil {
@@ -89,10 +95,29 @@ func TestCategoriesHandsOutACopyOfTheCachedTags(t *testing.T) {
 
 func TestSearchOfAnUnknownCategoryIsEmpty(t *testing.T) {
 	tags.Lock()
-	tags.ids, tags.names = map[string]string{"library": "1"}, []string{"Library"}
+	tags.ids, tags.names, tags.until = map[string]string{"library": "1"}, []string{"Library"}, now().Add(time.Hour)
 	tags.Unlock()
 	got, err := fake(t).Search(t.Context(), source.Query{Page: source.FirstPage, Categories: []string{"nope"}})
 	if err != nil || len(got.Items) != 0 || got.Total != 0 {
 		t.Fatalf("page = %+v, %v", got, err)
+	}
+}
+
+func TestPagesShareOneFetchUntilTheTTLPasses(t *testing.T) {
+	d := fake(t)
+	clock := time.Now()
+	now = func() time.Time { return clock }
+	t.Cleanup(func() { now = time.Now })
+	for p := source.FirstPage; p < source.FirstPage+3; p++ {
+		if _, err := d.Search(t.Context(), source.Query{Page: p}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if hits.Load() != 1 {
+		t.Fatalf("3 pages made %d fetches, want 1", hits.Load())
+	}
+	clock = clock.Add(modListTTL + time.Second)
+	if _, err := d.Search(t.Context(), source.Query{Page: source.FirstPage}); err != nil || hits.Load() != 2 {
+		t.Fatalf("after the TTL: %d fetches, %v; want 2", hits.Load(), err)
 	}
 }

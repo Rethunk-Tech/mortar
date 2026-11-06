@@ -125,15 +125,13 @@ func pageURL(alias string, assetID int) string {
 	return siteURL + "/show/mod/" + strconv.Itoa(assetID)
 }
 
-// Search lists the site's mods. The API has no offset, only a limit, so page n asks for n pages and keeps the last.
+// Search lists the site's mods. The API has no offset and returns the whole matching list in one response, so the
+// list is fetched once per query and every page is cut from that copy (see listCached).
 // Included categories go to the site as tag ids; excluded ones are dropped from the page and counted in Hidden.
-// One row past the page tells whether a next page exists; the API gives no total.
-// ponytail: page n downloads n pages, so paging n deep moves O(n²) rows in total: add
-// an offset or cursor param (or cache the first fetch) once the API has one or players page past a few dozen.
-// Measured 2026-11-01: limit=500 took 1.4s (226 kB), 2000 took 1.9s (890 kB), 5000 took 3.3s (2.2 MB), no cap hit; "a few dozen" pages is a guess.
+// Total is the rows through this page plus one when more follow; the API gives no total.
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	page := max(q.Page-source.FirstPage, 0) + 1
-	params := url.Values{"limit": {strconv.Itoa(page*q.Len() + 1)}}
+	params := url.Values{}
 	if q.Text != "" {
 		params.Set("text", q.Text)
 	}
@@ -162,17 +160,15 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 			return source.Page{Items: []source.Item{}}, nil
 		}
 	}
-	var parsed struct {
-		Mods []listedMod `json:"mods"`
-	}
-	if err := d.get(ctx, "/mods", params, &parsed); err != nil {
+	mods, err := d.listCached(ctx, params)
+	if err != nil {
 		return source.Page{}, err
 	}
-	total := len(parsed.Mods)
+	total := min(len(mods), page*q.Len()+1)
 	end := min(page*q.Len(), total)
 	start := min((page-1)*q.Len(), end)
 	out := source.Page{Total: total, Items: []source.Item{}}
-	for _, m := range parsed.Mods[start:end] {
+	for _, m := range mods[start:end] {
 		if !source.CategoryMatch(m.Tags, nil, q.ExcludeCategories) {
 			out.Hidden++
 			continue
@@ -186,19 +182,70 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	return out, nil
 }
 
-// tags caches the site's tag names and their ids by lower-cased name for the life of the process; the list changes
-// rarely.
-// ponytail: never expires, so a tag added upstream shows after a restart; add a TTL like browse.categoryTTL if that matters.
+// now is the clock the caches read; tests replace it.
+var now = time.Now
+
+const (
+	// modListTTL is how long a fetched mod list serves pages.
+	modListTTL = time.Hour
+	// tagsTTL is how long the tag list is reused; it matches the other sources' category lists.
+	tagsTTL = 24 * time.Hour
+)
+
+// lists holds one entry per upstream query; an entry's mutex is held across its fetch so concurrent pages share it.
+var lists struct {
+	sync.Mutex
+	m map[string]*listEntry
+}
+
+type listEntry struct {
+	sync.Mutex
+	mods  []listedMod
+	until time.Time
+}
+
+func (d Driver) listCached(ctx context.Context, params url.Values) ([]listedMod, error) {
+	key := strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + "?" + params.Encode()
+	lists.Lock()
+	if lists.m == nil {
+		lists.m = map[string]*listEntry{}
+	}
+	e := lists.m[key]
+	if e == nil {
+		e = &listEntry{}
+		lists.m[key] = e
+	}
+	lists.Unlock()
+	e.Lock()
+	defer e.Unlock()
+	if e.mods != nil && now().Before(e.until) {
+		return e.mods, nil
+	}
+	var parsed struct {
+		Mods []listedMod `json:"mods"`
+	}
+	if err := d.get(ctx, "/mods", params, &parsed); err != nil {
+		return nil, err
+	}
+	if parsed.Mods == nil {
+		parsed.Mods = []listedMod{}
+	}
+	e.mods, e.until = parsed.Mods, now().Add(modListTTL)
+	return e.mods, nil
+}
+
+// tags caches the site's tag names and their ids by lower-cased name for tagsTTL.
 var tags struct {
 	sync.Mutex
 	ids   map[string]string
 	names []string
+	until time.Time
 }
 
 func (d Driver) tagIDs(ctx context.Context) (map[string]string, error) {
 	tags.Lock()
 	defer tags.Unlock()
-	if tags.ids != nil {
+	if tags.ids != nil && now().Before(tags.until) {
 		return tags.ids, nil
 	}
 	var parsed struct {
@@ -216,7 +263,7 @@ func (d Driver) tagIDs(ctx context.Context) (map[string]string, error) {
 		ids[strings.ToLower(t.Name)] = t.ID
 		names = append(names, t.Name)
 	}
-	tags.ids, tags.names = ids, source.UniqueNames(names)
+	tags.ids, tags.names, tags.until = ids, source.UniqueNames(names), now().Add(tagsTTL)
 	return ids, nil
 }
 
