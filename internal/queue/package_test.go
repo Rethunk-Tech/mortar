@@ -44,9 +44,7 @@ func TestPackageInstallsWithItsDependencies(t *testing.T) {
 	if _, err := f.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "Me-Mod"}, {Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "Me-Other"}}); err != nil {
 		t.Fatal(err)
 	}
-	st := f.wait("both done", func(st State) bool {
-		return len(st.Items) == 2 && st.Items[0].State == StateDone && st.Items[1].State == StateDone
-	})
+	st := f.wait("both done", bothDone)
 	if st.Items[0].Package != "Me-Mod" || st.Items[1].Package != "Me-Other" || st.Items[0].Kind != KindInstall {
 		t.Errorf("a held dependency, the loader pack or a root was mishandled: %+v", st.Items)
 	}
@@ -105,9 +103,7 @@ func TestPackageUpdateInstallsANewDependency(t *testing.T) {
 	if _, err := f.s.Add(t.Context(), []Request{{Kind: KindUpdate, Game: "riskofrain2", Profile: "p1", Package: "Me-Mod", Version: "2.0.0", CurrentKey: "thunderstore-me-mod-1.0.0"}}); err != nil {
 		t.Fatal(err)
 	}
-	st := f.wait("both done", func(st State) bool {
-		return len(st.Items) == 2 && st.Items[0].State == StateDone && st.Items[1].State == StateDone
-	})
+	st := f.wait("both done", bothDone)
 	got := map[string]bool{}
 	for _, it := range st.Items {
 		got[it.Package+" "+it.Version] = it.Implicit
@@ -115,6 +111,14 @@ func TestPackageUpdateInstallsANewDependency(t *testing.T) {
 	if len(got) != 2 || !got["Lib-Added 1.0.0"] || got["Me-Mod 2.0.0"] {
 		t.Errorf("items %v", got)
 	}
+}
+
+// serveMeMod resolves any install to Me-Mod 1.0.0 downloaded from base, and installs it through the fixture's Install.
+func (f *fixture) serveMeMod(base string) {
+	f.s.d.Closure = func(_ context.Context, _ string, _ []tstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
+		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: base + "/p/Me-Mod.zip"}}, nil
+	}
+	f.s.d.InstallPackage = f.s.d.Install
 }
 
 // manualStall replaces the stall clock so the nth download to start is declared stalled only when the returned func
@@ -153,10 +157,7 @@ func TestPackageDownloadFallsBackAcrossCDNs(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.CDNs = []string{deadURL, stalled.URL, good.URL}
 	fire := manualStall(f.s, 2)
-	f.s.d.Closure = func(_ context.Context, _ string, _ []tstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
-		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: deadURL + "/p/Me-Mod.zip"}}, nil
-	}
-	f.s.d.InstallPackage = f.s.d.Install
+	f.serveMeMod(deadURL)
 	f.start()
 	if _, err := f.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "Me-Mod"}}); err != nil {
 		t.Fatal(err)
@@ -185,10 +186,7 @@ func TestPinnedCDNIsTheOnlyOneTried(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.CDNs = []string{a.URL, b.URL}
 	f.s.d.ThunderstoreHost = func() string { return b.URL }
-	f.s.d.Closure = func(_ context.Context, _ string, _ []tstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
-		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: a.URL + "/p/Me-Mod.zip"}}, nil
-	}
-	f.s.d.InstallPackage = f.s.d.Install
+	f.serveMeMod(a.URL)
 	f.start()
 	if _, err := f.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "Me-Mod"}}); err != nil {
 		t.Fatal(err)
@@ -221,10 +219,7 @@ func TestPackageStalledCDNHandsItsPartialToTheNext(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.CDNs = []string{stalled.URL, good.URL}
 	fire := manualStall(f.s, 1)
-	f.s.d.Closure = func(_ context.Context, _ string, _ []tstore.Ref, _ thunderstore.Deps) ([]thunderstore.Resolved, error) {
-		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: stalled.URL + "/p/Me-Mod.zip"}}, nil
-	}
-	f.s.d.InstallPackage = f.s.d.Install
+	f.serveMeMod(stalled.URL)
 	f.start()
 	if _, err := f.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "Me-Mod"}}); err != nil {
 		t.Fatal(err)

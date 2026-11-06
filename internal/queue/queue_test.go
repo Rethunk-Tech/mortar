@@ -250,6 +250,11 @@ func (f *fixture) leftovers() {
 	}
 }
 
+// bothDone holds once the queue has exactly two items and both are done.
+func bothDone(st State) bool {
+	return len(st.Items) == 2 && st.Items[0].State == StateDone && st.Items[1].State == StateDone
+}
+
 func req(fileID int) Request {
 	return Request{Kind: KindInstall, Game: "stardew", Profile: "p1", ModID: 1, FileID: fileID}
 }
@@ -261,9 +266,7 @@ func TestPremiumDownloadsAndInstallsWithoutClicks(t *testing.T) {
 	if _, err := f.s.Add(t.Context(), []Request{req(10), {Kind: KindUpdate, Game: "stardew", Profile: "p1", ModID: 1, Version: "2.0", CurrentKey: "nexus-1-10"}}); err != nil {
 		t.Fatal(err)
 	}
-	st := f.wait("both done", func(st State) bool {
-		return len(st.Items) == 2 && st.Items[0].State == StateDone && st.Items[1].State == StateDone
-	})
+	st := f.wait("both done", bothDone)
 	if st.Items[1].FileID != 11 || st.Items[1].FileName != "a-2.0.zip" || st.Items[0].Name != "Alpha" {
 		t.Errorf("update resolved or named wrongly: %+v", st.Items)
 	}

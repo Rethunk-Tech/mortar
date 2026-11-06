@@ -182,6 +182,20 @@ func TestPausingFreesTheSlotForTheNextItem(t *testing.T) {
 	close(cdn.release)
 }
 
+// reloadedStates is the package, state and auto-resume flag of each item a fresh queue over f's data reads back.
+func reloadedStates(t *testing.T, f *fixture) string {
+	t.Helper()
+	again, err := New(f.s.d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, it := range again.State().Items {
+		got = append(got, fmt.Sprintf("%s:%s:%v", it.Package, it.State, it.AutoResume))
+	}
+	return strings.Join(got, " ")
+}
+
 func TestPausedItemsSurviveAReload(t *testing.T) {
 	t.Parallel()
 	f := packageFixture(t, "https://x")
@@ -194,16 +208,8 @@ func TestPausedItemsSurviveAReload(t *testing.T) {
 	f.s.mu.Unlock()
 	f.s.publish(true)
 
-	again, err := New(f.s.d)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var got []string
-	for _, it := range again.State().Items {
-		got = append(got, fmt.Sprintf("%s:%s:%v", it.Package, it.State, it.AutoResume))
-	}
-	if want := "Me-A:paused:false Me-B:paused:true"; strings.Join(got, " ") != want {
-		t.Fatalf("got %v want %s", got, want)
+	if got, want := reloadedStates(t, f), "Me-A:paused:false Me-B:paused:true"; got != want {
+		t.Fatalf("got %s want %s", got, want)
 	}
 }
 

@@ -2,7 +2,6 @@ package queue
 
 import (
 	"context"
-	"fmt"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -82,15 +81,7 @@ func TestQueueOrderSurvivesAReload(t *testing.T) {
 	f.s.Top(f.stateOf("Me-C").ID)
 	f.s.Move(f.stateOf("Me-C").ID, 1)
 
-	again, err := New(f.s.d)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var got []string
-	for _, it := range again.State().Items {
-		got = append(got, fmt.Sprintf("%s:%s:%v", it.Package, it.State, it.AutoResume))
-	}
-	if want := "Me-A:queued:false Me-C:queued:false Me-B:queued:false"; strings.Join(got, " ") != want {
-		t.Fatalf("got %v want %s", got, want)
+	if got, want := reloadedStates(t, f), "Me-A:queued:false Me-C:queued:false Me-B:queued:false"; got != want {
+		t.Fatalf("got %s want %s", got, want)
 	}
 }
