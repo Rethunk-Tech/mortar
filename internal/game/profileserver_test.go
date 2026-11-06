@@ -36,3 +36,12 @@ func TestProfileServerStart(t *testing.T) {
 		t.Fatal("no dotnet, no error")
 	}
 }
+
+func TestDotnetProgramPrefersExtension(t *testing.T) {
+	t.Setenv("PATH", t.TempDir())
+	t.Setenv("HOME", t.TempDir())
+	got, err := dotnetProgram("/app/extensions/dotnet10/lib")
+	if err != nil || got != filepath.Join("/app/extensions/dotnet10/lib", "dotnet") {
+		t.Fatalf("got %q, %v", got, err)
+	}
+}
