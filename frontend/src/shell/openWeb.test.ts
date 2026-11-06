@@ -8,7 +8,7 @@ let opened: unknown[][] = []
 // Only window.open is stubbed: the DOM the preload installs stays for the tests that run after these.
 beforeEach(() => {
   opened = []
-  spyOn(window, 'open').mockImplementation((...a: unknown[]) => {
+  spyOn(globalThis.window, 'open').mockImplementation((...a: unknown[]) => {
     opened.push(a)
     return null
   })
