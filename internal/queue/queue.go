@@ -784,84 +784,18 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 			return nil, err
 		}
 	}
-	// A file already in the store takes its name, version and picture from the profile that installed it, so it
-	// needs no Nexus lookup; a Latest request still resolves, since it looks for a newer file.
-	known := make([]profile.Source, len(reqs))
-	if s.d.Stored != nil && s.d.SourcesOf != nil {
-		sources := map[string]map[string]profile.Source{}
-		for i, r := range reqs {
-			if r.Repo != "" || r.FileID == 0 || r.Latest {
-				continue
-			}
-			key := store.NexusKey(r.ModID, r.FileID)
-			if !s.d.Stored(r.Game, key) {
-				continue
-			}
-			if _, ok := sources[r.Game]; !ok {
-				sources[r.Game] = s.d.SourcesOf(r.Game)
-			}
-			known[i] = sources[r.Game][key]
-		}
-	}
+	known := s.knownSources(reqs)
 	out := make([]Item, 0, len(reqs))
 	s.mu.Lock()
 	for i, r := range reqs {
 		if i := slices.IndexFunc(s.items, func(it *Item) bool { return sameDownload(it, r) }); i >= 0 {
 			it := s.items[i]
-			if it.State == StateFailed {
-				it.State, it.Error, it.ErrorKind = StateQueued, "", ""
-			}
-			if r.key != "" {
-				it.key, it.expires = r.key, r.expires
-			}
-			if len(r.Disabled) > 0 {
-				it.Disabled = slices.Clone(r.Disabled)
-			}
-			if len(r.Fomod) > 0 {
-				it.Fomod, it.fomod = r.Fomod, r.Fomod
-			}
-			if r.Overlay != nil {
-				it.Overlay = r.Overlay
-			}
-			// A request for the file itself makes a queued dependency an install; never the reverse.
-			if !r.implicit() && !r.fromLink {
-				it.Implicit = false
-			}
-			// The newest batch to want the file waits on it, and its install joins that batch's history.
-			if r.BatchID != "" {
-				it.BatchID = r.BatchID
-			}
+			joinExisting(it, r)
 			log.Printf("queue: mod %d file %d %s joined existing item %s (%s)", r.ModID, r.FileID, r.Repo, it.ID, it.State)
 			out = append(out, *it)
 			continue
 		}
-		it := &Item{
-			ID: ids.New(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
-			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
-			Package: r.Package, Source: r.Source, PackageFile: r.PackageFile, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Picture: cmp.Or(r.picture, r.Picture), Category: r.category, Needs: r.needs, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Exact: r.Exact, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
-			Implicit: r.implicit(), FromLink: r.fromLink,
-		}
-		if r.Replaces != "" {
-			it.Replaces = r.Replaces
-			it.BatchID = cmp.Or(it.BatchID, ids.New())
-		}
-		if r.Everywhere && r.Kind == KindUpdate {
-			it.Everywhere = r.CurrentKey
-		}
-		if it.Repo != "" {
-			it.Name = cmp.Or(it.Name, it.Repo)
-		}
-		if it.Package != "" {
-			it.Name = cmp.Or(it.Name, it.Package)
-		}
-		if src := known[i]; src.Name != "" {
-			it.Name = cmp.Or(it.Name, src.ModName)
-			it.FileName, it.Version = cmp.Or(it.FileName, src.Name), cmp.Or(it.Version, src.Version)
-			it.Picture, it.endorsed = src.Picture, src.EndorsementCount
-		}
-		if id, file, ok := store.NexusFile(r.CurrentKey); ok && id == r.ModID {
-			it.Current = file
-		}
+		it := newItem(r, known[i])
 		s.items = append(s.items, it)
 		log.Printf("queue: mod %d file %d %s queued as %s for profile %s", r.ModID, r.FileID, r.Repo, it.ID, r.Profile)
 		out = append(out, *it)
@@ -870,6 +804,90 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 	s.publish(true)
 	s.poke()
 	return out, nil
+}
+
+// knownSources gives, per request, the profile source of a file already in the store. Such a file takes its name,
+// version and picture from the profile that installed it, so it needs no Nexus lookup; a Latest request still
+// resolves, since it looks for a newer file.
+func (s *Service) knownSources(reqs []Request) []profile.Source {
+	known := make([]profile.Source, len(reqs))
+	if s.d.Stored == nil || s.d.SourcesOf == nil {
+		return known
+	}
+	sources := map[string]map[string]profile.Source{}
+	for i, r := range reqs {
+		if r.Repo != "" || r.FileID == 0 || r.Latest {
+			continue
+		}
+		key := store.NexusKey(r.ModID, r.FileID)
+		if !s.d.Stored(r.Game, key) {
+			continue
+		}
+		if _, ok := sources[r.Game]; !ok {
+			sources[r.Game] = s.d.SourcesOf(r.Game)
+		}
+		known[i] = sources[r.Game][key]
+	}
+	return known
+}
+
+// joinExisting folds a request for a file already waiting in the queue into that item.
+func joinExisting(it *Item, r Request) {
+	if it.State == StateFailed {
+		it.State, it.Error, it.ErrorKind = StateQueued, "", ""
+	}
+	if r.key != "" {
+		it.key, it.expires = r.key, r.expires
+	}
+	if len(r.Disabled) > 0 {
+		it.Disabled = slices.Clone(r.Disabled)
+	}
+	if len(r.Fomod) > 0 {
+		it.Fomod, it.fomod = r.Fomod, r.Fomod
+	}
+	if r.Overlay != nil {
+		it.Overlay = r.Overlay
+	}
+	// A request for the file itself makes a queued dependency an install; never the reverse.
+	if !r.implicit() && !r.fromLink {
+		it.Implicit = false
+	}
+	// The newest batch to want the file waits on it, and its install joins that batch's history.
+	if r.BatchID != "" {
+		it.BatchID = r.BatchID
+	}
+}
+
+// newItem builds the queue entry for a request, named from src when the store already holds the file.
+func newItem(r Request, src profile.Source) *Item {
+	it := &Item{
+		ID: ids.New(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
+		Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
+		Package: r.Package, Source: r.Source, PackageFile: r.PackageFile, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Picture: cmp.Or(r.picture, r.Picture), Category: r.category, Needs: r.needs, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Exact: r.Exact, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
+		Implicit: r.implicit(), FromLink: r.fromLink,
+	}
+	if r.Replaces != "" {
+		it.Replaces = r.Replaces
+		it.BatchID = cmp.Or(it.BatchID, ids.New())
+	}
+	if r.Everywhere && r.Kind == KindUpdate {
+		it.Everywhere = r.CurrentKey
+	}
+	if it.Repo != "" {
+		it.Name = cmp.Or(it.Name, it.Repo)
+	}
+	if it.Package != "" {
+		it.Name = cmp.Or(it.Name, it.Package)
+	}
+	if src.Name != "" {
+		it.Name = cmp.Or(it.Name, src.ModName)
+		it.FileName, it.Version = cmp.Or(it.FileName, src.Name), cmp.Or(it.Version, src.Version)
+		it.Picture, it.endorsed = src.Picture, src.EndorsementCount
+	}
+	if id, file, ok := store.NexusFile(r.CurrentKey); ok && id == r.ModID {
+		it.Current = file
+	}
+	return it
 }
 
 // implicit is whether the request creates its entry implicit.

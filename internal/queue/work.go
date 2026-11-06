@@ -75,24 +75,18 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 			return it, fetch, held
 		case it.Repo != "":
 			act := s.forAsset(it)
-			if act != install && s.waits(it) {
-				continue
+			ok, hold := s.offer(it, act, pauseFetch)
+			held = held || hold
+			if ok {
+				return it, act, held
 			}
-			if act == fetch && pauseFetch {
-				held = true
-				continue
-			}
-			return it, act, held
 		case premium || s.usable(it) || s.stored(it):
 			act := s.forFile(it, fetch)
-			if act != install && s.waits(it) {
-				continue
+			ok, hold := s.offer(it, act, pauseFetch)
+			held = held || hold
+			if ok {
+				return it, act, held
 			}
-			if act == fetch && pauseFetch {
-				held = true
-				continue
-			}
-			return it, act, held
 		case head == nil && (s.forFile(it, click) == install || !s.waits(it)):
 			head = it
 		}
@@ -101,6 +95,17 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 		return nil, resolve, held
 	}
 	return head, s.forFile(head, click), held
+}
+
+// offer reports whether it may start act now, and whether it stays queued only because fetching is paused.
+func (s *Service) offer(it *Item, act action, pauseFetch bool) (ok, held bool) {
+	if act != install && s.waits(it) {
+		return false, false
+	}
+	if act == fetch && pauseFetch {
+		return false, true
+	}
+	return true, false
 }
 
 // maxNetworkRetries is how many network failures in a row an item waits out before it fails, holding its source for
@@ -546,22 +551,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if err != nil {
 		return err
 	}
-	var im nexus.Mod
-	// The picture and name are nice to have: a page that cannot be fetched only leaves the letter tile. describe
-	// usually fetched them while the item waited.
-	if it.Picture != "" {
-		im = nexus.Mod{Name: it.Name, PictureURL: it.Picture, EndorsementCount: it.endorsed}
-	} else if m, merr := nexus.CachedMod(ctx, c, s.d.ModCache, t, it.ModID); merr == nil {
-		im = m
-		s.mu.Lock()
-		if cur := s.find(it.ID); cur != nil {
-			if cur.Name == "" {
-				cur.Name = m.Name
-			}
-			cur.Picture, cur.endorsed = m.PictureURL, m.EndorsementCount
-		}
-		s.mu.Unlock()
-	}
+	im := s.modInfo(ctx, c, t, it)
 	if s.stored(&it) {
 		it.overlay = it.overlay || (s.d.StoredOverlay != nil && s.d.StoredOverlay(it.Game, store.NexusKey(it.ModID, it.FileID)))
 		if s.parkOverlay(it.ID, it.overlay, false) {
@@ -571,12 +561,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 			return err
 		}
 	}
-	s.mu.Lock()
-	key, expires := "", int64(0)
-	if cur := s.find(it.ID); cur != nil && s.usable(cur) {
-		key, expires = cur.key, cur.expires
-	}
-	s.mu.Unlock()
+	key, expires := s.usableKey(it.ID)
 	if parked, err := s.guardSize(it, it.SizeKB<<10); parked || err != nil {
 		return err
 	}
@@ -591,58 +576,25 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	if err != nil {
 		return err
 	}
-	fetchOnce := func() error {
-		uri := links[0].URI
-		var ferr error
-		for attempt := range 2 {
-			ferr = s.fetch(ctx, it, uri, path)
-			if ferr == nil || !errors.Is(ferr, download.ErrLinkExpired) || attempt == 1 {
-				break
-			}
-			next, lerr := s.downloadLinks(ctx, c, t, it, key, expires)
-			if lerr != nil {
-				return usererr.Wrap(usererr.Network, lerr)
-			}
-			if len(next) == 0 {
-				return usererr.New(usererr.Network, "the download has no link")
-			}
-			links = next
-			uri = links[0].URI
+	refetch := func() ([]nexusmods.Link, error) {
+		next, lerr := s.downloadLinks(ctx, c, t, it, key, expires)
+		if lerr != nil {
+			return nil, usererr.Wrap(usererr.Network, lerr)
 		}
-		return ferr
-	}
-	retries := 0
-	if s.d.RetryFetches != nil {
-		retries = s.d.RetryFetches()
-	}
-	var fetchErr error
-	for n := 0; n <= retries; n++ {
-		fetchErr = fetchOnce()
-		if fetchErr == nil || errors.Is(fetchErr, context.Canceled) {
-			break
+		if len(next) == 0 {
+			return nil, usererr.New(usererr.Network, "the download has no link")
 		}
-		if n == retries {
-			break
-		}
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(retryBackoff(n)):
-		}
+		return next, nil
 	}
-	if fetchErr != nil {
-		return fetchErr
+	if err := s.fetchRetrying(ctx, it, path, links, refetch); err != nil {
+		return err
 	}
-	wantMD5 := ""
-	s.mu.Lock()
-	if cur := s.find(it.ID); cur != nil {
-		wantMD5 = cur.fileMD5
-	}
-	s.mu.Unlock()
-	if wantMD5 == "" && s.verifyMD5() {
-		wantMD5 = lookupMD5(ctx, c, t, it)
-	}
-	if err := s.checkNexusMD5(path, wantMD5); err != nil {
+	return s.completeDownload(ctx, c, t, it, path, im)
+}
+
+// completeDownload checks the fetched file at path, then parks it for a merge question or installs it.
+func (s *Service) completeDownload(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item, path string, im nexus.Mod) error {
+	if err := s.checkNexusMD5(path, s.wantedMD5(ctx, c, t, it)); err != nil {
 		download.Remove(path)
 		return err
 	}
@@ -659,12 +611,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 	var ask profile.MergeAsk
 	updates, merge := 0, false
 	if it.Kind != KindUpdate && s.d.SamePage != nil && !optional {
-		ids := archiveModIDs(path)
-		ask, updates, merge = s.d.SamePage(it.Game, it.Profile, it.incoming(category, files, ids))
-		if merge && files == nil {
-			// Only a file from a page the profile already holds needs the page's file list to tell an update.
-			ask, updates, merge = s.d.SamePage(it.Game, it.Profile, it.incoming(category, pageFiles(ctx, c, it), ids))
-		}
+		ask, updates, merge = s.samePage(ctx, c, it, path, category, files)
 	}
 	marked := s.markInstalling(it.ID, func(cur *Item) {
 		cur.readyZip, cur.Category = true, category
@@ -684,6 +631,101 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		it.Current = updates
 	}
 	return s.contentPatcherHint(ctx, it, s.installNexusPath(ctx, it, path, im))
+}
+
+// usableKey is the download key and expiry the queued item holds, empty when it has none or it has expired.
+func (s *Service) usableKey(id string) (string, int64) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if cur := s.find(id); cur != nil && s.usable(cur) {
+		return cur.key, cur.expires
+	}
+	return "", 0
+}
+
+// wantedMD5 is the md5 the download must match: the one the queue read, else a lookup when checking is on.
+func (s *Service) wantedMD5(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item) string {
+	s.mu.Lock()
+	want := ""
+	if cur := s.find(it.ID); cur != nil {
+		want = cur.fileMD5
+	}
+	s.mu.Unlock()
+	if want == "" && s.verifyMD5() {
+		return lookupMD5(ctx, c, t, it)
+	}
+	return want
+}
+
+// modInfo is the Nexus page data shown on the item. The picture and name are nice to have: a page that cannot be
+// fetched only leaves the letter tile. describe usually fetched them while the item waited.
+func (s *Service) modInfo(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item) nexus.Mod {
+	if it.Picture != "" {
+		return nexus.Mod{Name: it.Name, PictureURL: it.Picture, EndorsementCount: it.endorsed}
+	}
+	m, err := nexus.CachedMod(ctx, c, s.d.ModCache, t, it.ModID)
+	if err != nil {
+		return nexus.Mod{}
+	}
+	s.mu.Lock()
+	if cur := s.find(it.ID); cur != nil {
+		if cur.Name == "" {
+			cur.Name = m.Name
+		}
+		cur.Picture, cur.endorsed = m.PictureURL, m.EndorsementCount
+	}
+	s.mu.Unlock()
+	return m
+}
+
+// fetchRetrying downloads links[0] to path, asking refetch for fresh links when the address expired and retrying
+// failed fetches with a growing wait.
+func (s *Service) fetchRetrying(ctx context.Context, it Item, path string, links []nexusmods.Link, refetch func() ([]nexusmods.Link, error)) error {
+	fetchOnce := func() error {
+		uri := links[0].URI
+		var ferr error
+		for attempt := range 2 {
+			ferr = s.fetch(ctx, it, uri, path)
+			if ferr == nil || !errors.Is(ferr, download.ErrLinkExpired) || attempt == 1 {
+				break
+			}
+			next, lerr := refetch()
+			if lerr != nil {
+				return lerr
+			}
+			links = next
+			uri = links[0].URI
+		}
+		return ferr
+	}
+	retries := 0
+	if s.d.RetryFetches != nil {
+		retries = s.d.RetryFetches()
+	}
+	var fetchErr error
+	for n := 0; n <= retries; n++ {
+		fetchErr = fetchOnce()
+		if fetchErr == nil || errors.Is(fetchErr, context.Canceled) || n == retries {
+			break
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(retryBackoff(n)):
+		}
+	}
+	return fetchErr
+}
+
+// samePage asks the profile whether the download merges into a mod page it already holds.
+func (s *Service) samePage(ctx context.Context, c *nexusmods.Client, it Item, path, category string, files []nexusmods.File) (profile.MergeAsk, int, bool) {
+	ids := archiveModIDs(path)
+	ask, updates, merge := s.d.SamePage(it.Game, it.Profile, it.incoming(category, files, ids))
+	if merge && files == nil {
+		// Only a file from a page the profile already holds needs the page's file list to tell an update.
+		ask, updates, merge = s.d.SamePage(it.Game, it.Profile, it.incoming(category, pageFiles(ctx, c, it), ids))
+	}
+	return ask, updates, merge
 }
 
 // markInstalling moves an item still downloading to installing, then runs extra on it under the lock; false means it

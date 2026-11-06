@@ -48,52 +48,65 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 		if done[i] {
 			continue
 		}
-		if s.d.Closure == nil {
-			return nil, errors.New("cannot install Thunderstore packages here")
-		}
-		var roots []tstore.Ref
-		byID := map[string]Request{}
-		for j := i; j < len(reqs); j++ {
-			q := reqs[j]
-			if q.Package == "" || q.Source != "" || q.Game != r.Game || q.Profile != r.Profile || q.AsIs != r.AsIs {
-				continue
-			}
-			done[j] = true
-			ns, name, _ := strings.Cut(q.Package, "-")
-			roots = append(roots, tstore.Ref{Namespace: ns, Name: name, Version: q.Version})
-			byID[strings.ToLower(q.Package)] = q
-		}
-		cctx, cancel := context.WithTimeout(source.WithCutoff(ctx, s.cutoff(r.Game, r.Profile)), closureTimeout)
-		list, err := s.d.Closure(cctx, r.Game, roots, s.depsFor(r.Game, r.Profile, r.AsIs))
-		cancel()
+		group, err := s.expandGroup(ctx, reqs, i, done)
 		if err != nil {
 			return nil, err
 		}
-		inferred := inferPackageReasons(list, byID)
-		for _, p := range list {
-			id := p.Namespace + "-" + p.Name
-			low := strings.ToLower(id)
-			// The profile's loader provides the BepInEx pack, so it is never queued as a package.
-			if components.IsLoaderPackage(id) {
+		out = append(out, group...)
+	}
+	return out, nil
+}
+
+// expandGroup resolves the closure of reqs[i] and every later Thunderstore request for the same game, profile and
+// AsIs setting, marking them done.
+func (s *Service) expandGroup(ctx context.Context, reqs []Request, i int, done map[int]bool) ([]Request, error) {
+	r := reqs[i]
+	if s.d.Closure == nil {
+		return nil, errors.New("cannot install Thunderstore packages here")
+	}
+	var roots []tstore.Ref
+	byID := map[string]Request{}
+	for j := i; j < len(reqs); j++ {
+		q := reqs[j]
+		if q.Package == "" || q.Source != "" || q.Game != r.Game || q.Profile != r.Profile || q.AsIs != r.AsIs {
+			continue
+		}
+		done[j] = true
+		ns, name, _ := strings.Cut(q.Package, "-")
+		roots = append(roots, tstore.Ref{Namespace: ns, Name: name, Version: q.Version})
+		byID[strings.ToLower(q.Package)] = q
+	}
+	cctx, cancel := context.WithTimeout(source.WithCutoff(ctx, s.cutoff(r.Game, r.Profile)), closureTimeout)
+	list, err := s.d.Closure(cctx, r.Game, roots, s.depsFor(r.Game, r.Profile, r.AsIs))
+	cancel()
+	if err != nil {
+		return nil, err
+	}
+	inferred := inferPackageReasons(list, byID)
+	var out []Request
+	for _, p := range list {
+		id := p.Namespace + "-" + p.Name
+		low := strings.ToLower(id)
+		// The profile's loader provides the BepInEx pack, so it is never queued as a package.
+		if components.IsLoaderPackage(id) {
+			continue
+		}
+		dep, isRoot := byID[low]
+		if isRoot && dep.InferReason {
+			dep.Implicit = dep.Implicit || inferred[low]
+		}
+		if !isRoot {
+			if s.holds(r, id, p.Version) {
 				continue
 			}
-			dep, isRoot := byID[low]
-			if isRoot && dep.InferReason {
-				dep.Implicit = dep.Implicit || inferred[low]
-			}
-			if !isRoot {
-				if s.holds(r, id, p.Version) {
-					continue
-				}
-				dep = r
-				dep.Kind, dep.Disabled = KindDependency, nil
-			}
-			dep.Package, dep.Name, dep.Version, dep.url, dep.sizeKB = id, p.Name, p.Version, p.URL, p.Size>>10
-			dep.picture, dep.category = p.Icon, p.Category
-			dep.FileName = id + "-" + p.Version + ".zip"
-			dep.needs = packageNeeds(p.Dependencies)
-			out = append(out, dep)
+			dep = r
+			dep.Kind, dep.Disabled = KindDependency, nil
 		}
+		dep.Package, dep.Name, dep.Version, dep.url, dep.sizeKB = id, p.Name, p.Version, p.URL, p.Size>>10
+		dep.picture, dep.category = p.Icon, p.Category
+		dep.FileName = id + "-" + p.Version + ".zip"
+		dep.needs = packageNeeds(p.Dependencies)
+		out = append(out, dep)
 	}
 	return out, nil
 }
