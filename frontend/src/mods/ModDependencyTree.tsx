@@ -11,7 +11,15 @@ import {
   type LucideIcon,
   TriangleAlert,
 } from 'lucide-react'
-import { memo, useCallback, useDeferredValue, useMemo, useState } from 'react'
+import {
+  createContext,
+  memo,
+  useCallback,
+  useContext,
+  useDeferredValue,
+  useMemo,
+  useState,
+} from 'react'
 import type { Broken } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -48,6 +56,9 @@ const iconSize = 13
 const firstRows = 50
 
 type Expand = (node: DepViewNode) => DepViewNode[]
+
+// A toggle rebuilds the expanders; only an open row's children read them, so closed rows keep their memo.
+const ExpandContext = createContext<Expand>(() => [])
 
 function MissingAdd({ id }: { id: string }) {
   const { t } = useLingui()
@@ -127,15 +138,7 @@ function Mark({ icon: Icon, label, color }: { icon: LucideIcon; label: string; c
   )
 }
 
-function NodeList({
-  nodes,
-  depth,
-  expand,
-}: {
-  nodes: DepViewNode[]
-  depth: number
-  expand: Expand
-}) {
+function NodeList({ nodes, depth }: { nodes: DepViewNode[]; depth: number }) {
   const { t } = useLingui()
   const [all, setAll] = useState(false)
   const total = nodes.length
@@ -143,7 +146,7 @@ function NodeList({
   return (
     <>
       {shown.map((n) => (
-        <NodeRow key={`${n.id}:${n.required}`} node={n} depth={depth} expand={expand} />
+        <NodeRow key={`${n.id}:${n.required}`} node={n} depth={depth} />
       ))}
       {shown.length < nodes.length ? (
         <Button
@@ -158,21 +161,18 @@ function NodeList({
   )
 }
 
+function Children({ node, depth }: { node: DepViewNode; depth: number }) {
+  const expand = useContext(ExpandContext)
+  const nodes = useMemo(() => expand(node), [expand, node])
+  return <NodeList nodes={nodes} depth={depth} />
+}
+
 // Memoised: a node's children are built only when it is opened, and the memo keeps an unrelated re-render of the panel
 // from touching rows.
 const NodeRow = memo(
-  function NodeRowView({
-    node,
-    depth,
-    expand,
-  }: {
-    node: DepViewNode
-    depth: number
-    expand: Expand
-  }) {
+  function NodeRowView({ node, depth }: { node: DepViewNode; depth: number }) {
     const { t } = useLingui()
     const [open, setOpen] = useState(false)
-    const children = useMemo(() => (open ? expand(node) : []), [open, expand, node])
     const show = useDetail((s) => s.show)
     // Whether it is listed, not the mod itself: the store rebuilds every mod on each switch, and a node shows none of it.
     const listed = useMods((s) => modById(s.mods, node.id) !== undefined)
@@ -267,13 +267,12 @@ const NodeRow = memo(
             {node.state === 'missing' ? <MissingAdd id={node.id} /> : null}
           </Box>
         </Box>
-        {open ? <NodeList nodes={children} depth={depth + 1} expand={expand} /> : null}
+        {open ? <Children node={node} depth={depth + 1} /> : null}
       </Box>
     )
   },
   (a, b) =>
     a.depth === b.depth &&
-    a.expand === b.expand &&
     a.node.id === b.node.id &&
     a.node.required === b.node.required &&
     a.node.cycle === b.node.cycle &&
@@ -295,7 +294,9 @@ const Branch = memo(function BranchView({
       <Typography sx={{ fontSize: nameSize, color: 'text.secondary', mt: headingGap }}>
         {title}
       </Typography>
-      <NodeList nodes={nodes} depth={0} expand={expand} />
+      <ExpandContext value={expand}>
+        <NodeList nodes={nodes} depth={0} />
+      </ExpandContext>
     </Box>
   )
 })
