@@ -138,80 +138,110 @@ func (s *Service) Receive(args []string) bool {
 			continue
 		}
 		found = true
-		if s.duplicate(arg) {
-			log.Printf("nxm: duplicate link ignored")
-			if link, err := nexusmods.ParseNXM(arg, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain); err == nil {
-				s.mu.Lock()
-				var waiting *Arrival
-				for _, arrival := range s.arrivals {
-					if arrival.Link == link {
-						duplicate := arrival
-						waiting = &duplicate
-						break
-					}
-				}
-				s.mu.Unlock()
-				if waiting != nil {
-					s.emit(ArrivedEvent, *waiting)
-				}
-			}
-			continue
-		}
-		if ref, err := tstore.ParseLink(arg); err == nil {
-			s.mu.Lock()
-			s.nextID++
-			a := Arrival{ID: s.nextID, Package: ref.Namespace + "-" + ref.Name, Version: ref.Version, Games: gamesWith("thunderstore"), raw: arg}
-			log.Printf("nxm: link %d arrived: package %s", a.ID, a.Package)
-			s.arrivals = append(s.arrivals, a)
-			s.mu.Unlock()
-			s.emit(ArrivedEvent, a)
-			continue
-		}
-		if ref, err := curseforge.ParseLink(arg); err == nil {
-			go s.receiveCurseForge(arg, ref)
-			continue
-		}
-		if ref, err := vsmoddb.ParseLink(arg); err == nil {
-			go s.receiveVSModDB(arg, ref)
-			continue
-		}
-		if domain, gerr := nexusmods.NXMDomain(arg); gerr == nil && !isMortarGame(domain) {
-			cur := s.store.Get()
-			if previous := cur.NxmPreviousHandlers[linkScheme(arg)]; previous != "" && cur.RedirectOtherGames() {
-				err := s.handler.ForwardOther(arg, previous)
-				if err == nil {
-					log.Printf("nxm: %s link forwarded to the previous handler", domain)
-					continue
-				}
-				log.Printf("nxm: forward %s link: %v", domain, err)
-			}
-		}
-		link, err := nexusmods.ParseNXM(arg, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain)
-		if err == nil && s.Route != nil && s.Route(link) {
-			log.Printf("nxm: mod %d file %d resumed a waiting download", link.ModID, link.FileID)
-			continue
-		}
+		s.receiveOne(arg)
+	}
+	return found
+}
+
+// receiveOne routes one link by the scheme a source claims.
+func (s *Service) receiveOne(arg string) {
+	if s.duplicate(arg) {
+		log.Printf("nxm: duplicate link ignored")
+		s.reemitWaiting(arg)
+		return
+	}
+	if ref, err := tstore.ParseLink(arg); err == nil {
 		s.mu.Lock()
 		s.nextID++
-		id := s.nextID
-		if re, ok := errors.AsType[*nexusmods.RejectError](err); ok {
-			s.mu.Unlock()
-			s.forget(arg)
-			s.mu.Lock()
-			r := Rejection{ID: id, Reason: re.Reason}
-			log.Printf("nxm: link %d rejected: %s", id, re.Reason)
-			s.rejections = append(s.rejections, r)
-			s.mu.Unlock()
-			s.emit(RejectedEvent, r)
-			continue
-		}
-		a := Arrival{ID: id, Link: link, raw: arg}
-		log.Printf("nxm: link %d arrived: mod %d file %d", id, link.ModID, link.FileID)
+		a := Arrival{ID: s.nextID, Package: ref.Namespace + "-" + ref.Name, Version: ref.Version, Games: gamesWith("thunderstore"), raw: arg}
+		log.Printf("nxm: link %d arrived: package %s", a.ID, a.Package)
 		s.arrivals = append(s.arrivals, a)
 		s.mu.Unlock()
 		s.emit(ArrivedEvent, a)
+		return
 	}
-	return found
+	if ref, err := curseforge.ParseLink(arg); err == nil {
+		go s.receiveCurseForge(arg, ref)
+		return
+	}
+	if ref, err := vsmoddb.ParseLink(arg); err == nil {
+		go s.receiveVSModDB(arg, ref)
+		return
+	}
+	if s.forwardOtherGame(arg) {
+		return
+	}
+	s.receiveNexus(arg)
+}
+
+// reemitWaiting tells the window again about the arrival a duplicate link repeats, so it is not lost behind the dedupe.
+func (s *Service) reemitWaiting(arg string) {
+	link, err := nexusmods.ParseNXM(arg, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain)
+	if err != nil {
+		return
+	}
+	s.mu.Lock()
+	var waiting *Arrival
+	for _, arrival := range s.arrivals {
+		if arrival.Link == link {
+			duplicate := arrival
+			waiting = &duplicate
+			break
+		}
+	}
+	s.mu.Unlock()
+	if waiting != nil {
+		s.emit(ArrivedEvent, *waiting)
+	}
+}
+
+// forwardOtherGame hands a Nexus link for a game Mortar does not manage back to the previous handler, and reports
+// whether it did.
+func (s *Service) forwardOtherGame(arg string) bool {
+	domain, gerr := nexusmods.NXMDomain(arg)
+	if gerr != nil || isMortarGame(domain) {
+		return false
+	}
+	cur := s.store.Get()
+	previous := cur.NxmPreviousHandlers[linkScheme(arg)]
+	if previous == "" || !cur.RedirectOtherGames() {
+		return false
+	}
+	err := s.handler.ForwardOther(arg, previous)
+	if err == nil {
+		log.Printf("nxm: %s link forwarded to the previous handler", domain)
+		return true
+	}
+	log.Printf("nxm: forward %s link: %v", domain, err)
+	return false
+}
+
+// receiveNexus resumes a waiting download, reports a rejected link, or queues the link as an arrival.
+func (s *Service) receiveNexus(arg string) {
+	link, err := nexusmods.ParseNXM(arg, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain)
+	if err == nil && s.Route != nil && s.Route(link) {
+		log.Printf("nxm: mod %d file %d resumed a waiting download", link.ModID, link.FileID)
+		return
+	}
+	s.mu.Lock()
+	s.nextID++
+	id := s.nextID
+	if re, ok := errors.AsType[*nexusmods.RejectError](err); ok {
+		s.mu.Unlock()
+		s.forget(arg)
+		s.mu.Lock()
+		r := Rejection{ID: id, Reason: re.Reason}
+		log.Printf("nxm: link %d rejected: %s", id, re.Reason)
+		s.rejections = append(s.rejections, r)
+		s.mu.Unlock()
+		s.emit(RejectedEvent, r)
+		return
+	}
+	a := Arrival{ID: id, Link: link, raw: arg}
+	log.Printf("nxm: link %d arrived: mod %d file %d", id, link.ModID, link.FileID)
+	s.arrivals = append(s.arrivals, a)
+	s.mu.Unlock()
+	s.emit(ArrivedEvent, a)
 }
 
 // curseforgeLookup bounds the wait for the project a link names.
