@@ -2,6 +2,8 @@ package scratch
 
 import (
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -31,5 +33,19 @@ func TestSweepRemovesOnlyOldScratchFolders(t *testing.T) {
 	}
 	if _, err := os.Stat(fresh); err != nil {
 		t.Error("fresh folder removed")
+	}
+}
+
+func TestDirInMakesTheFolderUnderTheGivenBasesCache(t *testing.T) {
+	base := t.TempDir()
+	dir, err := DirIn(base, "mortar-x-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if filepath.Dir(dir) != filepath.Join(base, "cache") || !strings.HasPrefix(filepath.Base(dir), "mortar-x-") {
+		t.Fatalf("dir = %q", dir)
+	}
+	if info, err := os.Stat(dir); err != nil || !info.IsDir() {
+		t.Fatalf("stat = %v, %v", info, err)
 	}
 }
