@@ -2127,7 +2127,7 @@ func dropCheckScratch() {
 	})
 }
 
-// assetConflictScan also returns the packs whose every change later packs overwrite (see shadowedPacks).
+// hitAt is one patch kind, target and id a pack touches.
 type hitAt struct{ kind, target, id string }
 
 // hitCollector gathers, per patch kind and target, the packs that touch it.
@@ -2137,6 +2137,7 @@ type hitCollector struct {
 	authored []authoredPack
 }
 
+// assetConflictScan also returns the packs whose every change later packs overwrite (see shadowedPacks).
 func assetConflictScan(mods []framework.Mod, run *partsRun, skip bool) ([]framework.AssetConflict, []framework.SettingHint, []framework.Redundant) {
 	defer dropCheckScratch()
 	preloadContentPacks(mods, skip)

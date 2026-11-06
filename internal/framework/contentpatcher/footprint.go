@@ -1430,10 +1430,6 @@ func markClashes(a, b *packHit) {
 	}
 }
 
-// switchOff finds an on/off field that every clashing edit of the pack needs; its other value removes the pack
-// from the conflict, such as Better Things' DesertMinecart for an expansion that redraws the desert. Of the
-// fields that would, it offers the narrowest: one named for what the target is about, then the one gating
-// the fewest of the pack's patches. When only the pack's master switch would, it offers nothing.
 // fieldGateStats counts the pack's patches, those gated on field, and those still applying once field is value.
 func fieldGateStats(h packHit, field cpSchema, value string) (gated, total, left int) {
 	config := maps.Clone(h.config)
@@ -1453,6 +1449,10 @@ func fieldGateStats(h packHit, field cpSchema, value string) (gated, total, left
 	return gated, total, left
 }
 
+// switchOff finds an on/off field that every clashing edit of the pack needs; its other value removes the pack
+// from the conflict, such as Better Things' DesertMinecart for an expansion that redraws the desert. Of the
+// fields that would, it offers the narrowest: one named for what the target is about, then the one gating
+// the fewest of the pack's patches. When only the pack's master switch would, it offers nothing.
 func switchOff(h packHit, peerSets ...[]packHit) (framework.ConflictFix, bool) {
 	if len(h.clashes) == 0 {
 		return framework.ConflictFix{}, false
