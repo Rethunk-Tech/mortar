@@ -3,12 +3,12 @@ package settings
 import (
 	"fmt"
 	"maps"
-	"os"
 	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 )
 
@@ -23,7 +23,7 @@ const (
 	TypeString = "string"
 )
 
-// GameSettings is the per-game preference block (Stardew Valley today).
+// GameSettings is the per-game preference block (games with per-game options).
 type GameSettings struct {
 	BackupBeforePlay            string `json:"backupBeforePlay"`
 	SaveBackupsKept             int    `json:"saveBackupsKept"`
@@ -865,7 +865,7 @@ func vortexFolderPref() pref {
 		get:  func(s Settings, _ string) string { return s.VortexFolder },
 		set: func(s *Settings, _, raw string) error {
 			if raw != "" {
-				if info, err := os.Stat(filepath.Join(raw, "state.v2")); err != nil || !info.IsDir() {
+				if !safefs.IsDir(filepath.Join(raw, "state.v2")) {
 					return fmt.Errorf("%s has no Vortex data (state.v2)", raw)
 				}
 			}
@@ -881,7 +881,7 @@ func mo2FolderPref() pref {
 		spec: PrefSpec{Key: "mo2Folder", Scope: ScopeApp, Type: TypeString},
 		get:  func(s Settings, _ string) string { return s.MO2Folder },
 		set: func(s *Settings, _, raw string) error {
-			if raw != "" && !fileExists(filepath.Join(raw, "ModOrganizer.ini")) && !fileExists(filepath.Join(raw, "ModOrganizer.exe")) {
+			if raw != "" && !safefs.IsFile(filepath.Join(raw, "ModOrganizer.ini")) && !safefs.IsFile(filepath.Join(raw, "ModOrganizer.exe")) {
 				return fmt.Errorf("%s has no Mod Organizer 2 data (ModOrganizer.ini or ModOrganizer.exe)", raw)
 			}
 			s.MO2Folder = raw
@@ -906,9 +906,4 @@ func listColumnsPref() pref {
 			return nil
 		},
 	}
-}
-
-func fileExists(path string) bool {
-	info, err := os.Stat(path)
-	return err == nil && !info.IsDir()
 }

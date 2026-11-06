@@ -7,6 +7,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -73,7 +74,7 @@ func TestOverlayInstallsOverItsMainFile(t *testing.T) {
 	if b, _ := safefs.ReadFile(filepath.Join(storeDir, overlayDir, "assets", "a.png")); string(b) != "A-main" {
 		t.Fatalf("store item written: %q", b)
 	}
-	if exists(filepath.Join(e.mods(p.ID), optKey)) {
+	if datadir.Exists(filepath.Join(e.mods(p.ID), optKey)) {
 		t.Fatal("an optional file got a folder of its own")
 	}
 	mods, err := e.UserMods("stardew", p.ID)
@@ -170,7 +171,7 @@ func TestOverlayAlternativesSwitchEachOtherOff(t *testing.T) {
 	if !overlayEntry(res.Profile, optKey).OverlayOff || readLive(t, e, p.ID, baseKey, art) != "A-two" {
 		t.Fatalf("adding an alternative should switch the other off: %+v", res.Profile.Entries)
 	}
-	if exists(filepath.Join(e.mods(p.ID), baseKey, filepath.FromSlash(added))) {
+	if datadir.Exists(filepath.Join(e.mods(p.ID), baseKey, filepath.FromSlash(added))) {
 		t.Fatal("a file only the switched-off alternative brought stayed")
 	}
 	sets, err := e.OverlayFiles("stardew", p.ID, baseKey)
@@ -192,7 +193,7 @@ func TestOverlayAlternativesSwitchEachOtherOff(t *testing.T) {
 	if got := readLive(t, e, p.ID, baseKey, art); got != "A-main" {
 		t.Fatalf("after both off = %q", got)
 	}
-	if exists(filepath.Join(e.mods(p.ID), baseKey, filepath.FromSlash(added))) {
+	if datadir.Exists(filepath.Join(e.mods(p.ID), baseKey, filepath.FromSlash(added))) {
 		t.Fatal("a file only the optional file brought stayed")
 	}
 	drift, err := e.ScanModsDrift("stardew", p.ID)
@@ -239,7 +240,7 @@ func TestOverlayNewVersionTakesItsPlace(t *testing.T) {
 	if got := readLive(t, e, p.ID, baseKey, overlayDir+"/assets/a.png"); got != "A-opt2" {
 		t.Fatalf("new version laid = %q", got)
 	}
-	if exists(filepath.Join(e.mods(p.ID), baseKey, overlayDir, "assets", "new.png")) {
+	if datadir.Exists(filepath.Join(e.mods(p.ID), baseKey, overlayDir, "assets", "new.png")) {
 		t.Fatal("a file only the old version brought stayed")
 	}
 }
@@ -267,7 +268,7 @@ func TestOverlayFollowsMainFileUpdate(t *testing.T) {
 	if got := readLive(t, e, p.ID, newKey, overlayDir+"/content.json"); got != "content 1.1.0" {
 		t.Fatalf("main file after update = %q", got)
 	}
-	if exists(filepath.Join(e.mods(p.ID), newKey, overlayDir, "assets", "a.png"+conflictSuffix)) {
+	if datadir.Exists(filepath.Join(e.mods(p.ID), newKey, overlayDir, "assets", "a.png"+conflictSuffix)) {
 		t.Fatal("the overlaid file was carried over as a user edit")
 	}
 	drift, err := e.ScanModsDrift("stardew", p.ID)

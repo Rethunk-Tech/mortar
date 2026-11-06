@@ -33,6 +33,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/picker"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/shortcut"
@@ -306,9 +307,7 @@ func serveNativeHost() error {
 	if err != nil {
 		return err
 	}
-	if img := os.Getenv("APPIMAGE"); img != "" {
-		exe = img
-	}
+	exe = selfexe.Launchable(exe)
 	return nativehost.ServeFrom(os.Args[1:], os.Stdin, os.Stdout, func(link string) error {
 		if !source.IsLink(link) && !sharesvc.IsCollectionURL(link) {
 			return fmt.Errorf("not an nxm or collection link: %q", link)

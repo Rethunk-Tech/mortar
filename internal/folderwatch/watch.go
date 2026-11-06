@@ -228,7 +228,7 @@ func (r *watcher) retarget() {
 
 // add starts watching dir, or notes it as awaited when it does not exist yet. The caller holds mu.
 func (r *watcher) add(dir string, t Target) {
-	if st, err := os.Stat(dir); err != nil || !st.IsDir() {
+	if !safefs.IsDir(dir) {
 		if !r.missing[dir] {
 			log.Printf("folderwatch: waiting for %s to appear", dir)
 		}

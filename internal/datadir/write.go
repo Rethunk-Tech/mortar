@@ -101,3 +101,15 @@ func ReadJournal(path string, busy func() bool, v any) (found bool, err error) {
 	}
 	return true, json.Unmarshal(b, v)
 }
+
+// Exists is true when something, a dangling link included, is at path.
+func Exists(path string) bool {
+	_, err := os.Lstat(path)
+	return err == nil
+}
+
+// Present is true when path resolves to something, so a dangling link is absent.
+func Present(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}

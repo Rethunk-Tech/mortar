@@ -353,7 +353,7 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 		}
 		rel := strings.TrimPrefix(oldFolder, oldPrefix)
 		cur := filepath.Join(profRoot, filepath.FromSlash(rel))
-		if !exists(cur) {
+		if !datadir.Exists(cur) {
 			continue
 		}
 		configOnly := deleteOldVersion(found, om.ID)
@@ -454,7 +454,7 @@ func (s *Store) refreshEntryMods(e *Entry, entryDir string) error {
 
 func liveEntryDir(modsDir, key string) string {
 	dotted := filepath.Join(modsDir, "."+key)
-	if exists(dotted) && !exists(filepath.Join(modsDir, key)) {
+	if datadir.Exists(dotted) && !datadir.Exists(filepath.Join(modsDir, key)) {
 		return dotted
 	}
 	return filepath.Join(modsDir, key)

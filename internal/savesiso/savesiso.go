@@ -55,23 +55,18 @@ func isLink(p string) bool {
 	return err == nil && info.Mode()&os.ModeSymlink != 0
 }
 
-func exists(p string) bool {
-	_, err := os.Lstat(p)
-	return err == nil
-}
-
 // Apply swaps profile's folder in for saves. noLink skips the symlink and uses a copy.
 func Apply(journal, saves, profile string, noLink bool) (Manifest, error) {
-	if exists(journalPath(journal)) {
+	if datadir.Exists(journalPath(journal)) {
 		return Manifest{}, fmt.Errorf("%w: recover %s first", ErrUnrecovered, journal)
 	}
 	if err := os.MkdirAll(profile, 0o700); err != nil {
 		return Manifest{}, err
 	}
 	m := Manifest{Journal: journal, Saves: saves, Profile: profile}
-	if exists(saves) {
+	if datadir.Exists(saves) {
 		m.Held = saves + heldSuffix
-		if exists(m.Held) {
+		if datadir.Exists(m.Held) {
 			return Manifest{}, fmt.Errorf("%s is already set aside", m.Held)
 		}
 	}
@@ -120,7 +115,7 @@ func Purge(m Manifest) error {
 		return nil
 	}
 	switch {
-	case m.Copied && m.Live && exists(m.Saves) && !isLink(m.Saves):
+	case m.Copied && m.Live && datadir.Exists(m.Saves) && !isLink(m.Saves):
 		if !m.WrittenBack {
 			next := m.Profile + ".new"
 			_ = safefs.RemoveAll(next)
@@ -141,7 +136,7 @@ func Purge(m Manifest) error {
 		if err := safefs.RemoveAll(m.Saves); err != nil {
 			return err
 		}
-	case m.Copied && exists(m.Saves) && !isLink(m.Saves):
+	case m.Copied && datadir.Exists(m.Saves) && !isLink(m.Saves):
 		if err := safefs.RemoveAll(m.Saves); err != nil {
 			return err
 		}
@@ -150,8 +145,8 @@ func Purge(m Manifest) error {
 			return err
 		}
 	}
-	if m.Held != "" && exists(m.Held) {
-		if exists(m.Saves) {
+	if m.Held != "" && datadir.Exists(m.Held) {
+		if datadir.Exists(m.Saves) {
 			return fmt.Errorf("%s is in the way of the shared saves kept at %s", m.Saves, m.Held)
 		}
 		if err := safefs.Rename(m.Held, m.Saves); err != nil {

@@ -42,11 +42,13 @@ const (
 	RateLimited Kind = "rate_limited"
 	// SignedOut is a call to a site that needs the player's account while it has none.
 	SignedOut Kind = "signed_out"
-	Unknown   Kind = "unknown"
+	// InUse is a folder the system would not move or delete because a program holds it open; the detail lists the programs.
+	InUse   Kind = "in_use"
+	Unknown Kind = "unknown"
 )
 
 // Kinds lists every Kind, so a table over them (the CLI's sentences, the GUI's) can check it leaves none out.
-var Kinds = []Kind{NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, Unconfirmed, External, Malware, Locked, ProcessDenied, RateLimited, SignedOut, Unknown}
+var Kinds = []Kind{NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, Unconfirmed, External, Malware, Locked, ProcessDenied, RateLimited, SignedOut, InUse, Unknown}
 
 const (
 	prefix = "["
@@ -163,7 +165,7 @@ func Parse(s string) (kind Kind, raw string) {
 		if s[i] == ']' && i+1 < len(s) && s[i+1] == ' ' {
 			k := Kind(s[1:i])
 			switch k {
-			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, Unconfirmed, External, Malware, Locked, ProcessDenied, RateLimited, SignedOut:
+			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, Unconfirmed, External, Malware, Locked, ProcessDenied, RateLimited, SignedOut, InUse:
 				return k, s[i+2:]
 			case Unknown:
 			}
@@ -206,4 +208,12 @@ func Marshal(err error) []byte {
 		return []byte(`{"kind":"` + string(kind) + `"}`)
 	}
 	return b
+}
+
+// NonNil keeps an absent list an empty JSON array rather than null, which the frontend and APIs read differently.
+func NonNil[T any](list []T) []T {
+	if list == nil {
+		return []T{}
+	}
+	return list
 }

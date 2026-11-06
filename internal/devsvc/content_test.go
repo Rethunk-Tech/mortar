@@ -70,7 +70,7 @@ func TestMovingOldLayoutContentKeepsWhatIsAlreadyMoved(t *testing.T) {
 			t.Errorf("%s = %q, %v", f, body, err)
 		}
 	}
-	if isDir(filepath.Join(dir, "plugins", "Custom Songs")) || isDir(filepath.Join(dir, "mortar")) {
+	if safefs.IsDir(filepath.Join(dir, "plugins", "Custom Songs")) || safefs.IsDir(filepath.Join(dir, "mortar")) {
 		t.Error("an emptied old folder stayed")
 	}
 }

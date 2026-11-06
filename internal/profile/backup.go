@@ -82,7 +82,7 @@ func (s *Store) Backup(game, id string) (Profile, map[string][]byte, error) {
 			continue
 		}
 		folder := filepath.Join(modsDir, e.Key)
-		if !exists(folder) {
+		if !datadir.Exists(folder) {
 			folder = filepath.Join(modsDir, "."+e.Key)
 		}
 		err := walk(folder, "mods/"+e.Key+"/", func(rel string, size int64) bool {
@@ -118,7 +118,7 @@ func (s *Store) BackupDirs(game string, p Profile, keep func(Entry) bool) (map[s
 		if err != nil {
 			return nil, err
 		}
-		if exists(dir) {
+		if datadir.Exists(dir) {
 			out[savesPrefix] = dir
 		}
 	}
@@ -377,11 +377,11 @@ func backupPath(rel string, p Profile) bool {
 // applyRestored lays the config files a restore kept for the entry key over its newly placed folder, then drops them.
 func applyRestored(dir, modsDir, key string) error {
 	src := filepath.Join(dir, restoreDir, key)
-	if !exists(src) {
+	if !datadir.Exists(src) {
 		return nil
 	}
 	dst := filepath.Join(modsDir, key)
-	if !exists(dst) {
+	if !datadir.Exists(dst) {
 		dst = filepath.Join(modsDir, "."+key)
 	}
 	err := safefs.WalkRegular(src, func(path string, _ fs.DirEntry) error {

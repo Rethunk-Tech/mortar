@@ -29,7 +29,7 @@ type FileManifest struct {
 func fileJournalPath(dir string) string { return filepath.Join(dir, fileJournal) }
 
 // HasFileJournal reports whether dir holds the record of a file swap not yet undone.
-func HasFileJournal(dir string) bool { return exists(fileJournalPath(dir)) }
+func HasFileJournal(dir string) bool { return datadir.Exists(fileJournalPath(dir)) }
 
 func persistFile(m FileManifest) error {
 	return datadir.WriteJSONIn(m.Journal, fileJournal, m)
@@ -39,14 +39,14 @@ func persistFile(m FileManifest) error {
 // current settings. While another install's swap holds the player's file aside, the file at target is that install's
 // profile copy, so the seed comes from the held one. A missing player's file seeds nothing.
 func SeedFile(target, profile string) error {
-	if exists(profile) {
+	if datadir.Exists(profile) {
 		return nil
 	}
 	src := target
-	if held := target + heldSuffix; exists(held) {
+	if held := target + heldSuffix; datadir.Exists(held) {
 		src = held
 	}
-	if !exists(src) {
+	if !datadir.Exists(src) {
 		return nil
 	}
 	if err := os.MkdirAll(filepath.Dir(profile), 0o700); err != nil {
@@ -61,9 +61,9 @@ func ApplyFile(journal, target, profile string) (FileManifest, error) {
 		return FileManifest{}, fmt.Errorf("%w: recover %s first", ErrFileUnrecovered, journal)
 	}
 	m := FileManifest{Journal: journal, Target: target, Profile: profile}
-	if exists(target) {
+	if datadir.Exists(target) {
 		m.Held = target + heldSuffix
-		if exists(m.Held) {
+		if datadir.Exists(m.Held) {
 			return FileManifest{}, fmt.Errorf("%s is already set aside", m.Held)
 		}
 	}
@@ -76,7 +76,7 @@ func ApplyFile(journal, target, profile string) (FileManifest, error) {
 			return FileManifest{}, err
 		}
 	}
-	if exists(profile) {
+	if datadir.Exists(profile) {
 		if err := os.MkdirAll(filepath.Dir(target), 0o750); err != nil {
 			return m, errors.Join(err, PurgeFile(m))
 		}
@@ -95,7 +95,7 @@ func PurgeFile(m FileManifest) error {
 	}
 	// The path holds the game's file only while the player's is set aside (or there never was one): a record whose
 	// player's file was never moved, or already returned, finds that file at the path and must leave it alone.
-	if (m.Held == "" || exists(m.Held)) && exists(m.Target) {
+	if (m.Held == "" || datadir.Exists(m.Held)) && datadir.Exists(m.Target) {
 		if err := os.MkdirAll(filepath.Dir(m.Profile), 0o700); err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ func PurgeFile(m FileManifest) error {
 			return err
 		}
 	}
-	if m.Held != "" && exists(m.Held) {
+	if m.Held != "" && datadir.Exists(m.Held) {
 		if err := safefs.Rename(m.Held, m.Target); err != nil {
 			return err
 		}

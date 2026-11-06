@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -371,10 +372,10 @@ func TestPurgeTrash(t *testing.T) {
 	if err := e.Purge("stardew", p.ID); err != nil {
 		t.Fatal(err)
 	}
-	if exists(filepath.Join(e.root, "trash", "stardew", p.ID)) {
+	if datadir.Exists(filepath.Join(e.root, "trash", "stardew", p.ID)) {
 		t.Fatal("purged profile remains")
 	}
-	if !exists(outside) {
+	if !datadir.Exists(outside) {
 		t.Fatal("purge escaped trash")
 	}
 	q := mustCreate(t, e, "Q")
@@ -455,7 +456,7 @@ func TestModsParkUnknownFoldersBeforeRebuild(t *testing.T) {
 	if got := testfs.Read(t, held); got != "keep" {
 		t.Fatalf("parked folder = %q", got)
 	}
-	if exists(filepath.Join(e.mods(p.ID), "dropped")) {
+	if datadir.Exists(filepath.Join(e.mods(p.ID), "dropped")) {
 		t.Fatal("unknown folder remained in mods")
 	}
 }

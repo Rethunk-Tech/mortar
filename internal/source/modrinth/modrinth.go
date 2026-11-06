@@ -19,6 +19,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // BaseURL is the real API.
@@ -394,7 +395,7 @@ func (d Driver) Latest(ctx context.Context, src components.GameSource, mortarVer
 			Loaders      []string `json:"loaders"`
 			GameVersions []string `json:"game_versions"`
 			VersionTypes []string `json:"version_types"`
-		}{slices.Sorted(slices.Values(groups[stability])), "sha512", nonNil(src.Loaders), nonNil(src.GameVersions), versionTypes[:stability]}, mortarVersion, &got); err != nil {
+		}{slices.Sorted(slices.Values(groups[stability])), "sha512", usererr.NonNil(src.Loaders), usererr.NonNil(src.GameVersions), versionTypes[:stability]}, mortarVersion, &got); err != nil {
 			return nil, err
 		}
 		maps.Copy(newest, got)
@@ -442,14 +443,6 @@ func (Driver) Dependencies(_ context.Context, _, _ string, refs []source.Version
 
 // versionTypes are Modrinth's version types from the most to the least stable, which a channel's stability cuts off.
 var versionTypes = []string{"release", "beta", "alpha"}
-
-// nonNil keeps an absent filter an empty JSON list, which the API reads as no filter, rather than null.
-func nonNil(list []string) []string {
-	if list == nil {
-		return []string{}
-	}
-	return list
-}
 
 // Details reads the project's page: its description (already Markdown), categories, every version number and the
 // required projects of the newest version.

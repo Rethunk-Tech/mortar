@@ -405,11 +405,11 @@ func (w swapped) undo() error {
 // replaceFolder moves the old entry folder aside and renames tmp into place, restoring the old folder if that fails.
 func replaceFolder(modsDir, oldKey, tmp, final string) (swapped, error) {
 	old := filepath.Join(modsDir, oldKey)
-	if !exists(old) {
+	if !datadir.Exists(old) {
 		old = filepath.Join(modsDir, "."+oldKey)
 	}
 	w := swapped{old: old, placed: filepath.Join(modsDir, final)}
-	if exists(old) {
+	if datadir.Exists(old) {
 		w.aside = filepath.Join(modsDir, asidePrefix+filepath.Base(old))
 		if err := safefs.RemoveAll(w.aside); err != nil {
 			return swapped{}, err
@@ -448,16 +448,16 @@ func carryOverWalk(prof, old, target string, configOnly bool, gone func(rel, p s
 			return nil
 		}
 		oldP, newP := filepath.Join(old, rel), filepath.Join(target, rel)
-		inOld := exists(oldP)
+		inOld := datadir.Exists(oldP)
 		if inOld {
 			if same, err := sameFile(p, oldP); err != nil || same {
-				if err == nil && gone != nil && !exists(newP) {
+				if err == nil && gone != nil && !datadir.Exists(newP) {
 					return gone(rel, p)
 				}
 				return err
 			}
 		}
-		if !exists(newP) {
+		if !datadir.Exists(newP) {
 			return copyOver(p, newP)
 		}
 		if inOld {
@@ -611,10 +611,10 @@ func carryOverMods(modsDir, oldSrc, tmp string, e, ne Entry, newManifests []smap
 			return err
 		}
 		cur := plain
-		if !exists(cur) {
+		if !datadir.Exists(cur) {
 			cur = dotted
 		}
-		if !exists(cur) {
+		if !datadir.Exists(cur) {
 			continue
 		}
 		configOnly := deleteOldVersion(newManifests, nm.ID)

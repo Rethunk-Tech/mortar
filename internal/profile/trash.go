@@ -154,7 +154,7 @@ func (s *Store) Restore(gameID, id string) (Profile, error) {
 		return Profile{}, err
 	}
 	dst, _ := s.profileDir(gameID, id)
-	if exists(dst) {
+	if datadir.Exists(dst) {
 		return Profile{}, fmt.Errorf("profile %s already exists", id)
 	}
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {

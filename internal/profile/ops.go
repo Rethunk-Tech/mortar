@@ -59,11 +59,6 @@ type EnableResult struct {
 	AlsoEnabled []string `json:"alsoEnabled"`
 }
 
-func exists(p string) bool {
-	_, err := os.Lstat(p)
-	return err == nil
-}
-
 func hasID(ids []mod.ID, id mod.ID) bool {
 	return slices.ContainsFunc(ids, func(x mod.ID) bool { return mod.Equal(x, id) })
 }
@@ -105,10 +100,10 @@ func flip(plain, dotted string, enabled bool) error {
 	if !enabled {
 		from, to = plain, dotted
 	}
-	if exists(to) {
+	if datadir.Exists(to) {
 		return nil
 	}
-	if !exists(from) {
+	if !datadir.Exists(from) {
 		return fmt.Errorf("mod folder %s is missing", filepath.Base(plain))
 	}
 	return safefs.Rename(from, to)
@@ -871,7 +866,7 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 	known := map[string]bool{}
 	for _, e := range p.Entries {
 		known[e.Key], known["."+e.Key] = true, true
-		if exists(filepath.Join(modsDir, e.Key)) || exists(filepath.Join(modsDir, "."+e.Key)) {
+		if datadir.Exists(filepath.Join(modsDir, e.Key)) || datadir.Exists(filepath.Join(modsDir, "."+e.Key)) {
 			continue
 		}
 		if err := s.finishInterrupted(modsDir, p.Name, e.Key); err != nil {
@@ -916,7 +911,7 @@ func (s *Store) finishInterrupted(modsDir, profileName, key string) error {
 	for _, name := range []string{key, "." + key} {
 		for _, prefix := range []string{asidePrefix, pendingPrefix} {
 			left := filepath.Join(modsDir, prefix+name)
-			if !exists(left) {
+			if !datadir.Exists(left) {
 				continue
 			}
 			if err := safefs.Rename(left, filepath.Join(modsDir, name)); err != nil {
@@ -998,10 +993,10 @@ func modFolderIn(p Profile, dir, key string, uniqueID mod.ID) (string, error) {
 			if err != nil {
 				return "", err
 			}
-			if exists(plain) {
+			if datadir.Exists(plain) {
 				return plain, nil
 			}
-			if exists(dotted) {
+			if datadir.Exists(dotted) {
 				return dotted, nil
 			}
 			return "", fmt.Errorf("mod folder %s is missing", filepath.Base(plain))

@@ -296,7 +296,7 @@ func livePath(entryDir, rel string) string {
 	parts := strings.Split(rel, "/")
 	for i, part := range parts {
 		next := filepath.Join(cur, part)
-		if i < len(parts)-1 && !exists(next) && exists(filepath.Join(cur, "."+part)) {
+		if i < len(parts)-1 && !datadir.Exists(next) && datadir.Exists(filepath.Join(cur, "."+part)) {
 			next = filepath.Join(cur, "."+part)
 		}
 		cur = next
@@ -454,7 +454,7 @@ func (s *Store) placeOverlayLocked(game, id, key string, source Source) (Profile
 	// A newer version of an installed optional file goes where the old one went when it still has that folder.
 	if old := slices.IndexFunc(cur.Entries, replaced); old >= 0 && source.overlay == nil {
 		o := cur.Entries[old]
-		if info, err := os.Stat(filepath.Join(itemDir, filepath.FromSlash(o.OverlayFrom))); err == nil && info.IsDir() {
+		if safefs.IsDir(filepath.Join(itemDir, filepath.FromSlash(o.OverlayFrom))) {
 			source = source.WithOverlay(o.OverlayFrom, o.OverlayTo)
 		}
 	}
@@ -499,7 +499,7 @@ func (s *Store) overlayTarget(game, id, key string, source Source, base Entry, i
 		if err != nil {
 			return "", "", err
 		}
-		if info, err := os.Stat(filepath.Join(itemDir, filepath.FromSlash(from))); err != nil || !info.IsDir() {
+		if !safefs.IsDir(filepath.Join(itemDir, filepath.FromSlash(from))) {
 			return "", "", fmt.Errorf("%q is not a folder of this file", from)
 		}
 		return from, to, nil

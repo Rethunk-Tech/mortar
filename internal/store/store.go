@@ -320,7 +320,7 @@ func (s *Store) dirReady(game, key, dir string) (bool, error) {
 	if s.completeItem(dir) {
 		return true, nil
 	}
-	if exists(dir) {
+	if datadir.Exists(dir) {
 		if err := safefs.RemoveAll(dir); err != nil {
 			return false, &Error{Game: game, Key: key, Err: err}
 		}
@@ -543,11 +543,6 @@ func syncTree(root string) error {
 		}
 	}
 	return nil
-}
-
-func exists(p string) bool {
-	_, err := os.Lstat(p)
-	return err == nil
 }
 
 // HashDir is the content key of a folder: a hash of its file paths and bytes.

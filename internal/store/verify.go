@@ -348,7 +348,7 @@ func (s *Store) Quarantine(game, key string) (restore func() error, err error) {
 	return func() error {
 		s.mu.Lock()
 		defer s.mu.Unlock()
-		if exists(dir) {
+		if datadir.Exists(dir) {
 			return nil
 		}
 		return safefs.Rename(aside, dir)

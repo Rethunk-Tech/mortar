@@ -225,7 +225,7 @@ func contributeDarwin(plan *launchplan.Plan, p loader.ProfileView, m marker, g c
 // one (Valheim's); the shared BepInExPack is Windows-only.
 func linuxDoorstop(profileDir string) (string, error) {
 	p := filepath.Join(profileDir, "doorstop_libs", "libdoorstop_x64.so")
-	if st, err := os.Stat(p); err != nil || !st.Mode().IsRegular() {
+	if !safefs.IsFile(p) {
 		return "", errors.New("the BepInEx pack has no 64-bit Linux Doorstop library; reinstall the loader")
 	}
 	return filepath.Abs(p)

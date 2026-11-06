@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -34,7 +35,7 @@ func TestFileSwapKeepsPlayersFileAndProfileCopyApart(t *testing.T) {
 	if err := PurgeFile(m); err != nil {
 		t.Fatal(err)
 	}
-	if testfs.Read(t, target) != "player" || testfs.Read(t, prof) != "played" || exists(journal) || exists(target+heldSuffix) {
+	if testfs.Read(t, target) != "player" || testfs.Read(t, prof) != "played" || datadir.Exists(journal) || datadir.Exists(target+heldSuffix) {
 		t.Fatal("the player's file returns untouched and the profile keeps what was played")
 	}
 }
@@ -49,7 +50,7 @@ func TestFileSwapWithNoPlayersFileLeavesNoneBehind(t *testing.T) {
 	if err := PurgeFile(m); err != nil {
 		t.Fatal(err)
 	}
-	if exists(target) || testfs.Read(t, prof) != "created" {
+	if datadir.Exists(target) || testfs.Read(t, prof) != "created" {
 		t.Fatal("a file the game made belongs to the profile")
 	}
 }
@@ -162,7 +163,7 @@ func TestFileRecoverFromEveryKillPoint(t *testing.T) {
 				t.Fatalf("%s: %v", c.name, err)
 			}
 		}
-		if testfs.Read(t, target) != "player" || testfs.Read(t, prof) != c.profile || HasFileJournal(journal) || exists(held(target)) {
+		if testfs.Read(t, target) != "player" || testfs.Read(t, prof) != c.profile || HasFileJournal(journal) || datadir.Exists(held(target)) {
 			t.Errorf("%s: player's file %q, profile copy %q", c.name, testfs.Read(t, target), testfs.Read(t, prof))
 		}
 	}

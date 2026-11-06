@@ -298,7 +298,7 @@ func (s *Service) ilspy() (string, bool) {
 	}
 	for _, name := range names {
 		p := filepath.Join(s.Home, ".dotnet", "tools", name)
-		if st, err := os.Stat(p); err == nil && st.Mode().IsRegular() {
+		if safefs.IsFile(p) {
 			return p, true
 		}
 	}

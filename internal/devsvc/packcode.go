@@ -61,7 +61,7 @@ func (s *Service) packBuilt(ctx context.Context, gameID string, p settings.DevPr
 		ext := strings.ToLower(filepath.Ext(base))
 		own := strings.EqualFold(base, assembly+".dll")
 		provided := slices.ContainsFunc(providedPrefixes, func(pre string) bool { return strings.HasPrefix(base, pre) })
-		if info, err := os.Stat(f); err != nil || !info.Mode().IsRegular() {
+		if !safefs.IsFile(f) {
 			continue
 		}
 		if ext == ".dll" && (own || !provided) || ext == ".bundle" {

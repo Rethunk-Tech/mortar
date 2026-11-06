@@ -96,7 +96,7 @@ func (s *Service) ShowDiagnostics(path string) error {
 	if !strings.EqualFold(filepath.Ext(path), ".zip") {
 		return errors.New("not a diagnostics zip")
 	}
-	if info, err := os.Stat(path); err != nil || !info.Mode().IsRegular() {
+	if !safefs.IsFile(path) {
 		return errors.New("the diagnostics zip is gone")
 	}
 	return datadir.Open(filepath.Dir(path))

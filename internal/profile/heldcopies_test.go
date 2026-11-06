@@ -4,6 +4,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 func TestHeldCopiesExpireWithTheTrashRetention(t *testing.T) {
@@ -34,11 +36,11 @@ func TestHeldCopiesExpireWithTheTrashRetention(t *testing.T) {
 	if err != nil || n != 1 {
 		t.Fatalf("past the retention of the oldest: expired %d, %v; want 1", n, err)
 	}
-	if exists(filepath.Join(dir, "changed", "Mods", "mc", "mc_settings.cfg")) {
+	if datadir.Exists(filepath.Join(dir, "changed", "Mods", "mc", "mc_settings.cfg")) {
 		t.Fatal("the copy held past the retention is still there")
 	}
 	for _, rel := range []string{"changed/Mods/mc/notes.cfg", "changed/Mods/other/restored.cfg"} {
-		if !exists(filepath.Join(dir, filepath.FromSlash(rel))) {
+		if !datadir.Exists(filepath.Join(dir, filepath.FromSlash(rel))) {
 			t.Fatalf("%s was deleted before its own retention ran out", rel)
 		}
 	}

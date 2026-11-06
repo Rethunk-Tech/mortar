@@ -1,12 +1,12 @@
 package launch
 
 import (
-	"path/filepath"
 	"regexp"
-	"runtime"
 	"slices"
 	"strings"
 	"sync"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Level is a console log level: SMAPI's own, which BepInEx's levels map onto.
@@ -91,11 +91,7 @@ func LogOwnedBy(log, home, modsDir string) bool {
 	if rest, ok := strings.CutPrefix(path, "~"); ok && (rest == "" || rest[0] == '/' || rest[0] == '\\') {
 		path = home + rest
 	}
-	path, modsDir = filepath.Clean(path), filepath.Clean(modsDir)
-	if runtime.GOOS == "windows" {
-		return strings.EqualFold(path, modsDir)
-	}
-	return path == modsDir
+	return safefs.SamePath(path, modsDir)
 }
 
 // Parser turns log lines into entries, remembering the last header so continuation lines can inherit it.

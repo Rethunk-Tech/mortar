@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 // stagedInstall stops an install where a kill would: the folder is laid out under its pending name, and profile.json
@@ -24,7 +26,7 @@ func stagedInstall(t *testing.T, s *Store, record bool) (dir, placed, final stri
 	if err != nil {
 		t.Fatal(err)
 	}
-	if placed == final || !exists(placed) || exists(final) {
+	if placed == final || !datadir.Exists(placed) || datadir.Exists(final) {
 		t.Fatalf("staged folder: placed %s, final %s", placed, final)
 	}
 	if record {
@@ -43,7 +45,7 @@ func TestKillBeforeProfileWriteLeavesNoFolderBehind(t *testing.T) {
 	if err := s.Rebuild("stardew", id); err != nil {
 		t.Fatal(err)
 	}
-	if exists(placed) || exists(final) {
+	if datadir.Exists(placed) || datadir.Exists(final) {
 		t.Fatalf("an install profile.json never recorded left %s or %s", placed, final)
 	}
 	left, _ := os.ReadDir(filepath.Join(dir, "mods"))
@@ -59,8 +61,8 @@ func TestKillBeforeFinalRenameIsFinishedByRebuild(t *testing.T) {
 	if err := s.Rebuild("stardew", filepath.Base(dir)); err != nil {
 		t.Fatal(err)
 	}
-	if exists(placed) || !exists(final) {
-		t.Fatalf("after rebuild placed exists = %v, final exists = %v", exists(placed), exists(final))
+	if datadir.Exists(placed) || !datadir.Exists(final) {
+		t.Fatalf("after rebuild placed exists = %v, final exists = %v", datadir.Exists(placed), datadir.Exists(final))
 	}
 }
 

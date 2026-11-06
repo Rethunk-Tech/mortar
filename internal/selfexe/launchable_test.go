@@ -22,3 +22,24 @@ func TestLaunchablePrefersImageOverMount(t *testing.T) {
 		t.Fatalf("outside the mount must be unchanged, got %q", got)
 	}
 }
+
+func TestLaunchableIgnoresAForeignOrNonFileImage(t *testing.T) {
+	dir := t.TempDir()
+	mount := filepath.Join(dir, "mnt")
+	exe := filepath.Join(mount, "usr", "bin", "mortar")
+	t.Setenv("APPDIR", mount)
+
+	t.Setenv("APPIMAGE", dir)
+	if got := Launchable(exe); got != exe {
+		t.Fatalf("a folder is not an image, got %q", got)
+	}
+	img := filepath.Join(dir, "Other.AppImage")
+	if err := os.WriteFile(img, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("APPIMAGE", img)
+	other := filepath.Join(dir, "native", "mortar")
+	if got := Launchable(other); got != other {
+		t.Fatalf("an exe outside APPDIR must not be swapped for the inherited APPIMAGE, got %q", got)
+	}
+}

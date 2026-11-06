@@ -116,8 +116,5 @@ func (s *Store) Remove(game, id string) error {
 
 // NormalizeArguments copies args for storage as a JSON array.
 func NormalizeArguments(args []string) []string {
-	if args == nil {
-		return []string{}
-	}
-	return slices.Clone(args)
+	return usererr.NonNil(slices.Clone(args))
 }

@@ -61,7 +61,7 @@ func (s *Store) MakeServer(gameID, id string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	if cfg := filepath.Join(src, ModConfigFolder); exists(cfg) {
+	if cfg := filepath.Join(src, ModConfigFolder); datadir.Exists(cfg) {
 		if err := datadir.CopyTree(cfg, filepath.Join(dst, ModConfigFolder)); err != nil && !errors.Is(err, os.ErrNotExist) {
 			return Profile{}, err
 		}

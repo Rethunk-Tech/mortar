@@ -111,5 +111,5 @@ func ownsCopyTarget(t string, prof loader.ProfileView) bool {
 		return false
 	}
 	base := copyBase(data, prof.Game, filepath.Base(prof.Dir))
-	return strings.HasPrefix(t, base+string(filepath.Separator)) || strings.HasPrefix(t, wineoverride.ZPath(base)+`\`)
+	return safefs.UnderRoot(base, t) || strings.HasPrefix(t, wineoverride.ZPath(base)+`\`)
 }

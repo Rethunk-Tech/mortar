@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -26,20 +27,20 @@ func TestSwapKeepsSharedSavesAndProfileSavesApart(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if testfs.Read(t, filepath.Join(saves, "mine.sav")) != "mine" || exists(filepath.Join(saves, "shared.sav")) {
+		if testfs.Read(t, filepath.Join(saves, "mine.sav")) != "mine" || datadir.Exists(filepath.Join(saves, "shared.sav")) {
 			t.Fatalf("noLink=%v: the game must see only the profile's saves", noLink)
 		}
 		write(t, filepath.Join(saves, "new.sav"), "played")
 		if err := Purge(m); err != nil {
 			t.Fatal(err)
 		}
-		if testfs.Read(t, filepath.Join(saves, "shared.sav")) != "shared" || exists(filepath.Join(saves, "mine.sav")) {
+		if testfs.Read(t, filepath.Join(saves, "shared.sav")) != "shared" || datadir.Exists(filepath.Join(saves, "mine.sav")) {
 			t.Fatalf("noLink=%v: the shared saves must return untouched", noLink)
 		}
 		if testfs.Read(t, filepath.Join(prof, "new.sav")) != "played" || testfs.Read(t, filepath.Join(prof, "mine.sav")) != "mine" {
 			t.Fatalf("noLink=%v: the profile keeps what was played", noLink)
 		}
-		if exists(journal) || exists(saves+heldSuffix) {
+		if datadir.Exists(journal) || datadir.Exists(saves+heldSuffix) {
 			t.Fatalf("noLink=%v: nothing is left behind", noLink)
 		}
 	}
@@ -55,7 +56,7 @@ func TestRecoverAfterACrashRestoresSharedSaves(t *testing.T) {
 	if _, err := Apply(journal, saves, prof, false); err == nil {
 		t.Fatal("a second swap over an unrecovered one must refuse")
 	}
-	if err := Recover(journal, func() bool { return true }); err != nil || !exists(journalPath(journal)) {
+	if err := Recover(journal, func() bool { return true }); err != nil || !datadir.Exists(journalPath(journal)) {
 		t.Fatalf("a running game must be left alone: %v", err)
 	}
 	if err := Recover(journal, func() bool { return false }); err != nil {
@@ -73,7 +74,7 @@ func TestNoSharedSavesLeavesNothingBehind(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := Purge(m); err != nil || exists(saves) {
+	if err := Purge(m); err != nil || datadir.Exists(saves) {
 		t.Fatalf("no shared folder means none after: %v", err)
 	}
 }
@@ -104,7 +105,7 @@ func TestPurgeRunAgainKeepsTheWrittenBackSaves(t *testing.T) {
 	if err := Recover(journal, nil); err != nil {
 		t.Fatal(err)
 	}
-	if testfs.Read(t, filepath.Join(prof, "a.sav")) != "slot a" || testfs.Read(t, filepath.Join(prof, "locked", "b.sav")) != "slot b" || exists(saves) {
+	if testfs.Read(t, filepath.Join(prof, "a.sav")) != "slot a" || testfs.Read(t, filepath.Join(prof, "locked", "b.sav")) != "slot b" || datadir.Exists(saves) {
 		t.Fatal("the second purge lost saves or left the working copy")
 	}
 }
@@ -117,7 +118,7 @@ func TestApplyNeverOverwritesSavesAlreadySetAside(t *testing.T) {
 	if _, err := Apply(journal, saves, prof, false); err == nil {
 		t.Fatal("a second set of shared saves was set aside over the first")
 	}
-	if testfs.Read(t, filepath.Join(saves, "shared.sav")) != "shared" || testfs.Read(t, filepath.Join(saves+heldSuffix, "older.sav")) != "older" || exists(journal) {
+	if testfs.Read(t, filepath.Join(saves, "shared.sav")) != "shared" || testfs.Read(t, filepath.Join(saves+heldSuffix, "older.sav")) != "older" || datadir.Exists(journal) {
 		t.Fatal("a refused apply changed something")
 	}
 }
@@ -141,7 +142,7 @@ func TestPurgeStopsWhenSomethingIsWhereTheSharedSavesGoBack(t *testing.T) {
 	if err := Purge(m); err == nil {
 		t.Fatal("purge reported success with the shared saves still set aside")
 	}
-	if testfs.Read(t, filepath.Join(m.Held, "shared.sav")) != "shared" || testfs.Read(t, filepath.Join(saves, "stray.sav")) != "stray" || !exists(journalPath(journal)) {
+	if testfs.Read(t, filepath.Join(m.Held, "shared.sav")) != "shared" || testfs.Read(t, filepath.Join(saves, "stray.sav")) != "stray" || !datadir.Exists(journalPath(journal)) {
 		t.Fatal("purge lost the shared saves, the stray folder or its journal")
 	}
 }
@@ -175,11 +176,11 @@ func TestRecoverWaitsForTheGameAndRefusesADamagedJournal(t *testing.T) {
 	if _, err := Apply(journal, saves, prof, false); err != nil {
 		t.Fatal(err)
 	}
-	if err := Recover(journal, func() bool { return true }); err != nil || !exists(saves+heldSuffix) || !exists(journalPath(journal)) {
+	if err := Recover(journal, func() bool { return true }); err != nil || !datadir.Exists(saves+heldSuffix) || !datadir.Exists(journalPath(journal)) {
 		t.Fatalf("recover undid a running game's swap: %v", err)
 	}
 	write(t, journalPath(journal), "{not json")
-	if err := Recover(journal, nil); err == nil || !exists(saves+heldSuffix) {
+	if err := Recover(journal, nil); err == nil || !datadir.Exists(saves+heldSuffix) {
 		t.Fatalf("a damaged journal was purged blind: %v", err)
 	}
 	if _, err := Apply(journal, saves, prof, false); err == nil {

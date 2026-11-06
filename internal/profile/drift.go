@@ -499,7 +499,7 @@ func liveFolders(modsDir, heldDir string) (map[string]string, error) {
 func folderStatAt(modsDir, heldDir, name, peer string) (FolderStat, error) {
 	for _, root := range []string{modsDir, heldDir} {
 		p := filepath.Join(root, name)
-		if exists(p) {
+		if datadir.Exists(p) {
 			return walkFolderStat(p, peer)
 		}
 	}
@@ -582,7 +582,7 @@ func (s *Store) missingEntryFolders(game, id string) ([]string, error) {
 	modsDir := datadir.ModsDirOf(dir)
 	var missing []string
 	for _, key := range entryKeys(p) {
-		if exists(filepath.Join(modsDir, key)) || exists(filepath.Join(modsDir, "."+key)) {
+		if datadir.Exists(filepath.Join(modsDir, key)) || datadir.Exists(filepath.Join(modsDir, "."+key)) {
 			continue
 		}
 		missing = append(missing, key)
@@ -624,12 +624,12 @@ func (s *Store) parkUnknownModsLocked(dir string, p Profile) error {
 
 func uniqueHoldPath(dir, name string) string {
 	dst := filepath.Join(dir, name)
-	if !exists(dst) {
+	if !datadir.Exists(dst) {
 		return dst
 	}
 	for n := 2; ; n++ {
 		dst = filepath.Join(dir, fmt.Sprintf("%s-%d", name, n))
-		if !exists(dst) {
+		if !datadir.Exists(dst) {
 			return dst
 		}
 	}
@@ -879,10 +879,10 @@ func (s *Store) revertDriftEntry(game, id, key string) (Profile, error) {
 				return errors.Join(err, safefs.RemoveAll(scratch))
 			}
 			cur := plain
-			if !exists(cur) {
+			if !datadir.Exists(cur) {
 				cur = dotted
 			}
-			if !exists(cur) {
+			if !datadir.Exists(cur) {
 				continue
 			}
 			if err := carryOver(cur, none, filepath.Join(scratch, filepath.FromSlash(m.Folder))); err != nil {
@@ -912,10 +912,10 @@ func (s *Store) adoptDriftFolder(ctx context.Context, game, id, folder string) (
 		return Profile{}, err
 	}
 	src := filepath.Join(dir, "mods", folder)
-	if !exists(src) {
+	if !datadir.Exists(src) {
 		src = filepath.Join(holdDir(dir), folder)
 	}
-	if !exists(src) {
+	if !datadir.Exists(src) {
 		return Profile{}, os.ErrNotExist
 	}
 	res, err := s.InstallFolder(ctx, game, id, src)
@@ -951,10 +951,10 @@ func (s *Store) trashModsFolder(game, id, folder string) (string, error) {
 		return "", err
 	}
 	src := filepath.Join(dir, "mods", folder)
-	if !exists(src) {
+	if !datadir.Exists(src) {
 		src = filepath.Join(holdDir(dir), folder)
 	}
-	if !exists(src) {
+	if !datadir.Exists(src) {
 		return "", os.ErrNotExist
 	}
 	token := strconv.FormatInt(time.Now().UnixNano(), 10) + "/" + folder
@@ -986,7 +986,7 @@ func (s *Store) restoreSource(game, id, token, trash string) (dir, src, name str
 		return "", "", "", err
 	}
 	src = filepath.Join(trash, stamp, name)
-	if !exists(src) {
+	if !datadir.Exists(src) {
 		return "", "", "", os.ErrNotExist
 	}
 	return dir, src, name, nil
@@ -999,7 +999,7 @@ func (s *Store) RestoreModsFolder(game, id, token string) error {
 		return err
 	}
 	dst := filepath.Join(dir, "mods", folder)
-	if exists(dst) {
+	if datadir.Exists(dst) {
 		return fmt.Errorf("mods already has a folder named %q", folder)
 	}
 	if err := safefs.Rename(src, dst); err != nil {

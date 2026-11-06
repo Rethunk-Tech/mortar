@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // checkOpenable refuses a path the system handler should not be given: one that is not absolute (a leading dash would
@@ -25,7 +26,7 @@ func checkOpenable(path string) error {
 		return err
 	}
 	if link.Mode()&os.ModeSymlink != 0 {
-		if target, err := os.Stat(path); err != nil || !target.IsDir() {
+		if !safefs.IsDir(path) {
 			return errors.New("a link to a file is not opened")
 		}
 	}

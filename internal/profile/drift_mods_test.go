@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 // Service.Mods leaves a deleted entry folder missing (so drift offers Restore) and does not count a switched-off
@@ -23,7 +25,7 @@ func TestServiceModsKeepsMissingFoldersMissing(t *testing.T) {
 	if _, err := svc.Mods("stardew", p.ID); err != nil {
 		t.Fatal(err)
 	}
-	if exists(filepath.Join(mods, "a-1")) || !exists(filepath.Join(mods, "a-2")) {
+	if datadir.Exists(filepath.Join(mods, "a-1")) || !datadir.Exists(filepath.Join(mods, "a-2")) {
 		t.Fatalf("mods/ = %v", names(t, mods))
 	}
 	drift, err := svc.ScanModsDrift("stardew", p.ID)
@@ -47,7 +49,7 @@ func TestServiceModsKeepsMissingFoldersMissing(t *testing.T) {
 	if _, err := svc.Mods("stardew", p.ID); err != nil {
 		t.Fatal(err)
 	}
-	if !exists(filepath.Join(mods, ".a-2")) {
+	if !datadir.Exists(filepath.Join(mods, ".a-2")) {
 		t.Fatalf("hidden copy removed: %v", names(t, mods))
 	}
 }

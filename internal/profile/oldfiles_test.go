@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -38,7 +39,7 @@ func TestUpdateOldFilesFollowTheSetting(t *testing.T) {
 				pending[0].Files[0] != (OldFile{ID: "smapi:me.a", Path: "gone.json"}) {
 				t.Fatalf("%s: pending = %+v", tc.mode, pending)
 			}
-			if exists(filepath.Join(dir, "gone.json")) {
+			if datadir.Exists(filepath.Join(dir, "gone.json")) {
 				t.Fatalf("%s: old file left in the mod before the answer", tc.mode)
 			}
 			if err := e.ResolveOldFiles("stardew", p.ID, "a-2", *tc.answer); err != nil {
@@ -51,7 +52,7 @@ func TestUpdateOldFilesFollowTheSetting(t *testing.T) {
 			t.Fatalf("%s: pending = %+v", tc.mode, pending)
 		}
 		for _, rel := range []string{"gone.json", "sub/old.dll"} {
-			if got := exists(filepath.Join(dir, filepath.FromSlash(rel))); got != tc.wantFiles {
+			if got := datadir.Exists(filepath.Join(dir, filepath.FromSlash(rel))); got != tc.wantFiles {
 				t.Errorf("%s answer %v: %s present = %v", tc.mode, tc.answer, rel, got)
 			}
 		}
@@ -75,7 +76,7 @@ func TestPendingOldFilesDropsSetsOfReplacedVersions(t *testing.T) {
 	if err != nil || len(pending) != 0 {
 		t.Fatalf("pending = %+v, %v", pending, err)
 	}
-	if exists(filepath.Join(e.root, "stardew", p.ID, oldFilesDir, "a-2")) {
+	if datadir.Exists(filepath.Join(e.root, "stardew", p.ID, oldFilesDir, "a-2")) {
 		t.Fatal("stale set kept")
 	}
 }

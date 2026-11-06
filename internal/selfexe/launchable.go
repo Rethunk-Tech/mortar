@@ -3,8 +3,6 @@ package selfexe
 
 import (
 	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
 )
@@ -14,10 +12,10 @@ import (
 // APPIMAGE, hence the check that exe lives under $APPDIR.
 func Launchable(exe string) string {
 	img, mount := os.Getenv("APPIMAGE"), os.Getenv("APPDIR")
-	if img == "" || mount == "" || !strings.HasPrefix(exe, filepath.Clean(mount)+string(filepath.Separator)) {
+	if img == "" || mount == "" || !safefs.UnderRoot(mount, exe) {
 		return exe
 	}
-	if info, err := safefs.Stat(img); err != nil || !info.Mode().IsRegular() {
+	if !safefs.IsFile(img) {
 		return exe
 	}
 	return img

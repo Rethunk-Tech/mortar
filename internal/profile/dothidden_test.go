@@ -3,6 +3,8 @@ package profile
 import (
 	"slices"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 func TestDotHiddenModsListsOnlyDotsMortarDidNotAdd(t *testing.T) {
@@ -65,7 +67,7 @@ func TestUnhideModRenamesDottedFoldersAndRegistersTheMod(t *testing.T) {
 		t.Fatal("unknown folder accepted")
 	}
 	shown, err := svc.store.hiddenModPath("stardew", p.ID, "pack", ".Group/Deep")
-	if err != nil || !exists(shown) {
+	if err != nil || !datadir.Exists(shown) {
 		t.Fatalf("hidden path = %q, %v", shown, err)
 	}
 	got, err := svc.UnhideMod("stardew", p.ID, "pack", ".Group/Deep")
@@ -76,8 +78,8 @@ func TestUnhideModRenamesDottedFoldersAndRegistersTheMod(t *testing.T) {
 	for _, m := range got.Entries[0].Mods {
 		folders = append(folders, m.Folder)
 	}
-	if !slices.Contains(folders, "Group/Deep") || exists(shown) {
-		t.Fatalf("mods = %v, old path exists = %v", folders, exists(shown))
+	if !slices.Contains(folders, "Group/Deep") || datadir.Exists(shown) {
+		t.Fatalf("mods = %v, old path exists = %v", folders, datadir.Exists(shown))
 	}
 	if left, err := e.DotHiddenMods("stardew", p.ID, ""); err != nil || len(left) != 0 {
 		t.Fatalf("still hidden: %+v, %v", left, err)

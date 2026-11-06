@@ -409,7 +409,7 @@ func editAsset(p settings.DevProject, e ProjectEdit) error {
 
 // assetInfo reads an asset project's details from manifest.json and its record.
 func assetInfo(dir string, rec assetRecord) ProjectInfo {
-	info := ProjectInfo{Name: rec.Name, Team: rec.Team, Kind: rec.Kind, Categories: nonNil(rec.Categories), TestWith: nonNil(rec.TestWith), Nexus: rec.Nexus, CurseForge: rec.CurseForge}
+	info := ProjectInfo{Name: rec.Name, Team: rec.Team, Kind: rec.Kind, Categories: usererr.NonNil(rec.Categories), TestWith: usererr.NonNil(rec.TestWith), Nexus: rec.Nexus, CurseForge: rec.CurseForge}
 	if body, err := safefs.ReadFile(filepath.Join(dir, "manifest.json")); err == nil {
 		var m thunderstoreManifest
 		if json.Unmarshal(body, &m) == nil {
@@ -420,13 +420,6 @@ func assetInfo(dir string, rec assetRecord) ProjectInfo {
 		info.Package = rec.Team + "-" + rec.Name
 	}
 	return info
-}
-
-func nonNil(list []string) []string {
-	if list == nil {
-		return []string{}
-	}
-	return list
 }
 
 // packAsset zips an asset project the way Thunderstore takes it, into artifacts/thunderstore/release: manifest.json at
@@ -595,7 +588,7 @@ func (s *Service) OpenAssetFolder(gameID, dir string) error {
 		return datadir.Open(p.Dir)
 	}
 	if kind.ID == kindContent {
-		if folder := filepath.Join(p.Dir, filepath.FromSlash(packContentRoot)); isDir(folder) {
+		if folder := filepath.Join(p.Dir, filepath.FromSlash(packContentRoot)); safefs.IsDir(folder) {
 			return datadir.Open(folder)
 		}
 		return datadir.Open(p.Dir)

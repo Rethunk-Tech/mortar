@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // Flathub's SDK extension is mounted into the app when installed (the add-extensions block in
@@ -28,7 +29,7 @@ func Root(inside bool, mount string) string {
 		return ""
 	}
 	root := filepath.Join(mount, "lib")
-	if st, err := os.Stat(filepath.Join(root, "dotnet")); err != nil || !st.Mode().IsRegular() {
+	if !safefs.IsFile(filepath.Join(root, "dotnet")) {
 		return ""
 	}
 	return root

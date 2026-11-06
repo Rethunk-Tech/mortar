@@ -57,7 +57,7 @@ func (s *Store) CheckFolder(game, id string) (FolderCheck, error) {
 		out.Problem = fmt.Sprintf(format, args...)
 		return out, nil
 	}
-	if fi, err := os.Stat(home); err != nil || !fi.IsDir() {
+	if !safefs.IsDir(home) {
 		return fail("the folder %s is not there; if it is on a drive that is not connected, connect it", cmpFolder(out.Folder, home))
 	}
 	if _, err := os.Stat(filepath.Join(home, fileName)); err != nil {
@@ -94,7 +94,7 @@ func (s *Store) MoveToFolder(game, id, parent string) (Profile, error) {
 		return Profile{}, err
 	}
 	target := filepath.Join(parent, game+"-"+id)
-	if fi, err := os.Stat(parent); err != nil || !fi.IsDir() {
+	if !safefs.IsDir(parent) {
 		return Profile{}, usererr.New(usererr.Invalid, "that folder does not exist")
 	}
 	if safefs.UnderRoot(s.dataDir, target) {

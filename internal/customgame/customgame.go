@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -174,7 +173,7 @@ func Add(name, exe, loader, community string) (Entry, string, error) {
 	if !filepath.IsAbs(exe) {
 		return Entry{}, "", usererr.New(usererr.Invalid, "choose the game's executable by its full path")
 	}
-	if fi, err := os.Stat(exe); err != nil || fi.IsDir() {
+	if !safefs.IsFile(exe) {
 		return Entry{}, "", usererr.New(usererr.Invalid, "that executable is not there")
 	}
 	games, err := List()
@@ -245,17 +244,12 @@ func GuessFrom(exe string) Guess {
 	g := Guess{Name: filepath.Base(dir)}
 	managed, _ := filepath.Glob(filepath.Join(dir, "*_Data", "Managed"))
 	switch {
-	case exists(filepath.Join(dir, "MelonLoader")):
+	case datadir.Present(filepath.Join(dir, "MelonLoader")):
 		g.Loader = MelonLoader
-	case exists(filepath.Join(dir, "GameAssembly.dll")):
+	case datadir.Present(filepath.Join(dir, "GameAssembly.dll")):
 		g.Loader = BepInEx6
 	case len(managed) > 0:
 		g.Loader = BepInEx5
 	}
 	return g
-}
-
-func exists(p string) bool {
-	_, err := os.Stat(p)
-	return err == nil
 }

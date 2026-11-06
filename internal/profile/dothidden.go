@@ -60,7 +60,7 @@ func (s *Store) DotHiddenMods(game, id, key string) ([]HiddenMod, error) {
 // entryRoot is the entry's folder in mods/, which carries a dot while the entry is switched off.
 func entryRoot(modsDir, key string) string {
 	root := filepath.Join(modsDir, key)
-	if !exists(root) {
+	if !datadir.Exists(root) {
 		root = filepath.Join(modsDir, "."+key)
 	}
 	return root
@@ -176,7 +176,7 @@ func stripDots(root, rel string, ours map[string]bool) (string, error) {
 		next := name
 		if strings.HasPrefix(name, ".") && !ours[orig] {
 			next = strings.TrimLeft(name, ".")
-			if next == "" || exists(filepath.Join(cur, next)) {
+			if next == "" || datadir.Exists(filepath.Join(cur, next)) {
 				return "", usererr.Wrap(usererr.Invalid, fmt.Errorf("cannot rename %s: %q is taken", name, next))
 			}
 			if err := safefs.Rename(filepath.Join(cur, name), filepath.Join(cur, next)); err != nil {

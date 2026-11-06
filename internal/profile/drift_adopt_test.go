@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -38,7 +39,7 @@ func TestAdoptDriftFolder(t *testing.T) {
 				if _, err := svc.AdoptDriftFolder(t.Context(), "stardew", p.ID, bad); err == nil {
 					t.Fatalf("adopt %q succeeded", bad)
 				}
-				if !exists(filepath.Join(src, "manifest.json")) {
+				if !datadir.Exists(filepath.Join(src, "manifest.json")) {
 					t.Fatalf("adopt %q removed the folder", bad)
 				}
 			}
@@ -53,14 +54,14 @@ func TestAdoptDriftFolder(t *testing.T) {
 			if len(got.Entries) != 1 {
 				t.Fatalf("entries = %+v", got.Entries)
 			}
-			if exists(src) {
+			if datadir.Exists(src) {
 				t.Fatal("source folder still there")
 			}
 			stored, err := e.items.Path("stardew", got.Entries[0].Key)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !exists(filepath.Join(stored, "manifest.json")) {
+			if !datadir.Exists(filepath.Join(stored, "manifest.json")) {
 				t.Fatalf("store holds %v", names(t, stored))
 			}
 		})

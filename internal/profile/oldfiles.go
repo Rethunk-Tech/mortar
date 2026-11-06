@@ -154,7 +154,7 @@ func (s *Store) trashOldFilesLocked(game, id, key string) (string, error) {
 		return "", err
 	}
 	src := filepath.Join(dir, oldFilesDir, key)
-	if !exists(src) {
+	if !datadir.Exists(src) {
 		return "", nil
 	}
 	stamp := strconv.FormatInt(time.Now().UnixNano(), 10)
@@ -190,7 +190,7 @@ func (s *Store) RestoreOldFiles(game, id, token string) error {
 		return err
 	}
 	dst := filepath.Join(dir, oldFilesDir, key)
-	if exists(dst) {
+	if datadir.Exists(dst) {
 		return fmt.Errorf("old files for %q are already pending", key)
 	}
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
@@ -249,7 +249,7 @@ func (s *Store) restoreOldFilesLocked(game, id, key, dir, set string) error {
 		}
 		for rel := range files {
 			to := filepath.Join(dest, rel)
-			if exists(to) {
+			if datadir.Exists(to) {
 				continue
 			}
 			if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {

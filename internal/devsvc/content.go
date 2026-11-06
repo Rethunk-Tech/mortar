@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -134,20 +135,15 @@ func oldFolders(f components.ContentFolder) []string {
 	return append(slices.Clone(f.Legacy), f.Path())
 }
 
-func isDir(p string) bool {
-	info, err := os.Stat(p)
-	return err == nil && info.IsDir()
-}
-
 // detectContent lists the content folders dir carries in their own folder (below a pack's plugins/, or a code
 // project's content/), and those it carries only in an old or misplaced one.
 func detectContent(dir string, folders []components.ContentFolder) (found, legacy []string) {
 	found, legacy = []string{}, []string{}
 	for _, f := range folders {
-		if isDir(filepath.Join(dir, filepath.FromSlash(packContentRoot), filepath.FromSlash(f.Path()))) || isDir(filepath.Join(dir, filepath.FromSlash(codeContentRoot), filepath.FromSlash(f.Path()))) {
+		if safefs.IsDir(filepath.Join(dir, filepath.FromSlash(packContentRoot), filepath.FromSlash(f.Path()))) || safefs.IsDir(filepath.Join(dir, filepath.FromSlash(codeContentRoot), filepath.FromSlash(f.Path()))) {
 			found = append(found, f.ID)
 		}
-		if slices.ContainsFunc(oldFolders(f), func(l string) bool { return isDir(filepath.Join(dir, filepath.FromSlash(l))) }) {
+		if slices.ContainsFunc(oldFolders(f), func(l string) bool { return safefs.IsDir(filepath.Join(dir, filepath.FromSlash(l))) }) {
 			legacy = append(legacy, f.ID)
 		}
 	}
@@ -196,14 +192,14 @@ func contentIssues(dir, root string, folders []components.ContentFolder, pack bo
 		dirs := []string{root + "/" + f.Path()}
 		if pack {
 			dirs = append(dirs, f.Legacy...)
-			if top := f.Path(); isDir(filepath.Join(dir, filepath.FromSlash(top))) {
+			if top := f.Path(); safefs.IsDir(filepath.Join(dir, filepath.FromSlash(top))) {
 				issues = append(issues, top+"/ installs flattened from the package's top; move it under "+root+"/")
 			}
 		}
 		unloaded := pack
 		for _, d := range dirs {
 			full := filepath.Join(dir, filepath.FromSlash(d))
-			if !isDir(full) {
+			if !safefs.IsDir(full) {
 				continue
 			}
 			present = true
@@ -215,7 +211,7 @@ func contentIssues(dir, root string, folders []components.ContentFolder, pack bo
 				issues = append(issues, fmt.Sprintf("%s/ holds no %s file", d, strings.Join(f.Patterns, ", ")))
 			}
 		}
-		if isDir(filepath.Join(dir, filepath.FromSlash(root+"/"+f.Path()))) {
+		if safefs.IsDir(filepath.Join(dir, filepath.FromSlash(root+"/"+f.Path()))) {
 			for _, need := range f.Needs {
 				if !hasFile(filepath.Join(dir, filepath.FromSlash(root)), need) {
 					issues = append(issues, fmt.Sprintf("%s holds no %s, which %s needs", root, need, f.Label))

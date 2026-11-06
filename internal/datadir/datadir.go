@@ -73,7 +73,7 @@ func resolve() (string, error) {
 	if p == "" {
 		return def, nil
 	}
-	if info, err := os.Stat(p); err != nil || !info.IsDir() {
+	if !safefs.IsDir(p) {
 		return "", &MissingLocationError{Path: p}
 	}
 	return p, nil

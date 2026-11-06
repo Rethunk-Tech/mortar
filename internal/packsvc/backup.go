@@ -18,6 +18,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -236,15 +237,15 @@ func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResu
 		return RestoreResult{}, usererr.Wrap(usererr.OtherGame, fmt.Errorf("this backup is of a %s profile, not %s", doc.Game, gameID))
 	}
 	dirs := map[string]string{}
-	if dir := filepath.Join(tmp, "saves"); exists(dir) {
+	if dir := filepath.Join(tmp, "saves"); datadir.Present(dir) {
 		dirs[savesPrefix] = dir
 	}
-	if dir := filepath.Join(tmp, "changed"); exists(dir) {
+	if dir := filepath.Join(tmp, "changed"); datadir.Present(dir) {
 		dirs[profile.ChangedPrefix] = dir
 	}
 	for key, want := range doc.Store {
 		dir := filepath.Join(tmp, "store", key)
-		if !filepath.IsLocal(key) || !exists(dir) {
+		if !filepath.IsLocal(key) || !datadir.Present(dir) {
 			continue
 		}
 		// A store item that does not hash as it did when backed up is left out, so its mod shows as unavailable.
@@ -271,11 +272,6 @@ func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResu
 	items, err := s.Queue.Add(ctx, reqs)
 	res.Queued = len(items)
 	return res, err
-}
-
-func exists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
 }
 
 // RestoreDialog asks for a backup file, then restores it as Restore does; an empty Profile means the player cancelled.
