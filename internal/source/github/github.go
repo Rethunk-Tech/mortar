@@ -213,39 +213,38 @@ func ownerName(text string) string {
 	return ""
 }
 
-// searchTopics merges the topics' results by the query's sort and returns page q.Page of the merge. GitHub's search
-// ORs only text, never topic: qualifiers, so each topic is its own search, read from its first page to q.Page because
-// a merged page needs every topic's leading rows. A repository under several topics is listed once. A topic GitHub
-// refuses is left out while another answers. A query that could be an owner adds that owner's first page of
-// repositories carrying any of the topics, one request rather than one per topic. A part that fails is named in Failed,
-// so the page is not cached as complete.
-func (d *Driver) searchTopics(ctx context.Context, q source.Query, topics []string) (source.Page, error) {
-	type ranked struct {
-		repo        repo
-		rank, topic int
-	}
-	var all []ranked
-	seen := map[string]bool{}
-	var errs []error
-	var failed []string
-	topicsFailed := 0
-	sum, read := 0, 0
+type rankedRepo struct {
+	repo        repo
+	rank, topic int
+}
+
+// topicScan accumulates what the per-topic searches and the owner search read.
+type topicScan struct {
+	all          []rankedRepo
+	seen         map[string]bool
+	errs         []error
+	failed       []string
+	topicsFailed int
+	sum, read    int
+}
+
+func (t *topicScan) readTopics(ctx context.Context, d *Driver, q source.Query, topics []string) {
 	for ti, topic := range topics {
 		for p := source.FirstPage; p <= q.Page; p++ {
 			got, err := d.searchTopic(ctx, q, topicTerms(q.Text, topic), p)
 			if err != nil {
-				errs, failed = append(errs, err), append(failed, "topic:"+topic)
-				topicsFailed++
+				t.errs, t.failed = append(t.errs, err), append(t.failed, "topic:"+topic)
+				t.topicsFailed++
 				break
 			}
 			if p == source.FirstPage {
-				sum += got.total
+				t.sum += got.total
 			}
 			for i, r := range got.repos {
-				read++
-				if name := strings.ToLower(r.FullName); !seen[name] {
-					seen[name] = true
-					all = append(all, ranked{r, (p-source.FirstPage)*q.Len() + i, ti})
+				t.read++
+				if name := strings.ToLower(r.FullName); !t.seen[name] {
+					t.seen[name] = true
+					t.all = append(t.all, rankedRepo{r, (p-source.FirstPage)*q.Len() + i, ti})
 				}
 			}
 			if len(got.repos) < q.Len() {
@@ -253,22 +252,38 @@ func (d *Driver) searchTopics(ctx context.Context, q source.Query, topics []stri
 			}
 		}
 	}
-	if owner := ownerName(q.Text); owner != "" {
-		got, err := d.searchTopic(ctx, q, "user:"+owner, source.FirstPage)
-		if err != nil {
-			errs, failed = append(errs, err), append(failed, "user:"+owner)
-		}
-		for i, r := range got.repos {
-			name := strings.ToLower(r.FullName)
-			if seen[name] || !slices.ContainsFunc(r.Topics, func(t string) bool { return slices.Contains(topics, t) }) {
-				continue
-			}
-			seen[name] = true
-			sum, read = sum+1, read+1
-			all = append(all, ranked{r, i, len(topics)})
-		}
+}
+
+func (t *topicScan) readOwner(ctx context.Context, d *Driver, q source.Query, owner string, topics []string) {
+	got, err := d.searchTopic(ctx, q, "user:"+owner, source.FirstPage)
+	if err != nil {
+		t.errs, t.failed = append(t.errs, err), append(t.failed, "user:"+owner)
 	}
-	if len(all) == 0 && topicsFailed == len(topics) {
+	for i, r := range got.repos {
+		name := strings.ToLower(r.FullName)
+		if t.seen[name] || !slices.ContainsFunc(r.Topics, func(t string) bool { return slices.Contains(topics, t) }) {
+			continue
+		}
+		t.seen[name] = true
+		t.sum, t.read = t.sum+1, t.read+1
+		t.all = append(t.all, rankedRepo{r, i, len(topics)})
+	}
+}
+
+// searchTopics merges the topics' results by the query's sort and returns page q.Page of the merge. GitHub's search
+// ORs only text, never topic: qualifiers, so each topic is its own search, read from its first page to q.Page because
+// a merged page needs every topic's leading rows. A repository under several topics is listed once. A topic GitHub
+// refuses is left out while another answers. A query that could be an owner adds that owner's first page of
+// repositories carrying any of the topics, one request rather than one per topic. A part that fails is named in Failed,
+// so the page is not cached as complete.
+func (d *Driver) searchTopics(ctx context.Context, q source.Query, topics []string) (source.Page, error) {
+	scan := topicScan{seen: map[string]bool{}}
+	scan.readTopics(ctx, d, q, topics)
+	if owner := ownerName(q.Text); owner != "" {
+		scan.readOwner(ctx, d, q, owner, topics)
+	}
+	all, errs, failed, sum, read := scan.all, scan.errs, scan.failed, scan.sum, scan.read
+	if len(all) == 0 && scan.topicsFailed == len(topics) {
 		return source.Page{}, errs[0]
 	}
 	if len(failed) > 0 {
@@ -276,7 +291,7 @@ func (d *Driver) searchTopics(ctx context.Context, q source.Query, topics []stri
 			len(topics), len(topics)-len(failed), len(all), len(failed), strings.Join(failed, ","), errors.Join(errs...))
 	}
 	by := sortParam(q.Sort, q.Text)
-	slices.SortStableFunc(all, func(a, b ranked) int {
+	slices.SortStableFunc(all, func(a, b rankedRepo) int {
 		if c := compareBySort(by, a.repo, b.repo); c != 0 {
 			return c
 		}
