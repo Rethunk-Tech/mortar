@@ -44,6 +44,7 @@ function useLivePeek(
           if (!alive) {
             return
           }
+          usePerfLive.setState({ stoppable: live.stoppable })
           if (!live.measured) {
             usePerfLive.setState({
               measuring: false,
@@ -85,6 +86,7 @@ export function useBridgePerf(opts: {
   const { t, i18n } = useLingui()
   const [busy, setBusy] = useState<PanelBusy>('')
   const measuring = usePerfLive((s) => s.measuring)
+  const stoppable = usePerfLive((s) => s.stoppable)
   const since = usePerfLive((s) => s.since)
   const reason = usePerfLive((s) => s.reason)
   const [unmeasured, setUnmeasured] = useState(false)
@@ -108,6 +110,7 @@ export function useBridgePerf(opts: {
         setUnmeasured(!r.measured)
         usePerfLive.setState({
           measuring: r.measured,
+          stoppable: r.stoppable,
           since: Date.now(),
           reason: r.measured ? '' : (r.reason ?? ''),
           top: '',
@@ -180,7 +183,7 @@ export function useBridgePerf(opts: {
     frame,
     reportLines,
     startMeasuring,
-    stopMeasuring: canStop ? stopMeasuring : undefined,
+    stopMeasuring: canStop && stoppable ? stopMeasuring : undefined,
     showReport,
   }
 }

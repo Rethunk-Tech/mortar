@@ -138,8 +138,8 @@ export function stateCases(
     since: Date.now(),
   }))
   const measuring = stubCalls({
-    [MEASURE_IN_GAME]: { measured: true },
-    [PEEK_IN_GAME]: { measured: true, rows: [], frame: null },
+    [MEASURE_IN_GAME]: { measured: true, stoppable: true },
+    [PEEK_IN_GAME]: { measured: true, stoppable: true, rows: [], frame: null },
   })
   const under =
     (...stubs: Stub[]) =>

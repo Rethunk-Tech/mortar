@@ -25,25 +25,29 @@ type InGameResult struct {
 	// Reason is why the companion stopped measuring, when it says.
 	Reason string       `json:"reason,omitempty"`
 	Report *SavedReport `json:"report,omitempty"`
+	// Stoppable is whether the companion understands perf stop; a release before it was added does not say so.
+	Stoppable bool `json:"stoppable"`
 }
 
 // InGameLive is the measurement so far, read without saving a report: the rows and frame summary a running
 // measurement shows as it goes.
 type InGameLive struct {
-	Measured bool             `json:"measured"`
-	Reason   string           `json:"reason,omitempty"`
-	Rows     []PerformanceRow `json:"rows"`
-	Frame    *FrameSummary    `json:"frame,omitempty"`
+	Measured  bool             `json:"measured"`
+	Stoppable bool             `json:"stoppable"`
+	Reason    string           `json:"reason,omitempty"`
+	Rows      []PerformanceRow `json:"rows"`
+	Frame     *FrameSummary    `json:"frame,omitempty"`
 }
 
 // bridgePerf is the companion's perf reply.
 type bridgePerf struct {
-	Measured bool    `json:"measured"`
-	Reason   string  `json:"reason"`
-	Seconds  float64 `json:"seconds"`
-	Frames   int64   `json:"frames"`
-	FPS      float64 `json:"fps"`
-	FrameMs  struct {
+	Measured  bool    `json:"measured"`
+	Stoppable bool    `json:"stoppable"`
+	Reason    string  `json:"reason"`
+	Seconds   float64 `json:"seconds"`
+	Frames    int64   `json:"frames"`
+	FPS       float64 `json:"fps"`
+	FrameMs   struct {
 		Avg float64 `json:"avg"`
 		P50 float64 `json:"p50"`
 		P95 float64 `json:"p95"`
@@ -75,17 +79,17 @@ func (s *Service) MeasureInGame(gameID, profileID string, start bool) (InGameRes
 		return InGameResult{}, err
 	}
 	if !got.Measured || start {
-		return InGameResult{Measured: got.Measured, Reason: got.Reason}, nil
+		return InGameResult{Measured: got.Measured, Reason: got.Reason, Stoppable: got.Stoppable}, nil
 	}
 	rows := perfRows(got, s.perfOwners(l, gameID, profileID))
 	if len(rows) == 0 {
-		return InGameResult{Measured: true}, errors.New("the game has not timed any plugin yet; start measuring first")
+		return InGameResult{Measured: true, Stoppable: got.Stoppable}, errors.New("the game has not timed any plugin yet; start measuring first")
 	}
 	saved, err := s.savePerformanceReport(gameID, profileID, rows, frameOf(got))
 	if err != nil {
 		return InGameResult{}, err
 	}
-	return InGameResult{Measured: true, Report: &saved}, nil
+	return InGameResult{Measured: true, Stoppable: got.Stoppable, Report: &saved}, nil
 }
 
 // PeekInGame reads the running measurement so far without saving a report, for a view that updates as it goes.
@@ -95,9 +99,9 @@ func (s *Service) PeekInGame(gameID, profileID string) (InGameLive, error) {
 		return InGameLive{}, err
 	}
 	if !got.Measured {
-		return InGameLive{Reason: got.Reason, Rows: []PerformanceRow{}}, nil
+		return InGameLive{Stoppable: got.Stoppable, Reason: got.Reason, Rows: []PerformanceRow{}}, nil
 	}
-	return InGameLive{Measured: true, Rows: perfRows(got, s.perfOwners(l, gameID, profileID)), Frame: frameOf(got)}, nil
+	return InGameLive{Measured: true, Stoppable: got.Stoppable, Rows: perfRows(got, s.perfOwners(l, gameID, profileID)), Frame: frameOf(got)}, nil
 }
 
 // StopInGame ends the running game's in-game measurement and reports whether one had started; the last summary stays

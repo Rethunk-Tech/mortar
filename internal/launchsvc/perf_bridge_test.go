@@ -44,6 +44,21 @@ func TestPerfRowsNameAndAddUpEachPackagesPlugins(t *testing.T) {
 	}
 }
 
+func TestPerfReplySaysWhetherTheCompanionCanStop(t *testing.T) {
+	for raw, want := range map[string]bool{
+		`{"stoppable":true,"measured":true}`: true,
+		`{"measured":true,"frames":3}`:       false,
+	} {
+		var got bridgePerf
+		if err := json.Unmarshal([]byte(raw), &got); err != nil {
+			t.Fatal(err)
+		}
+		if got.Stoppable != want {
+			t.Fatalf("%s: Stoppable = %v", raw, got.Stoppable)
+		}
+	}
+}
+
 func TestSmapiOwnersReadTheInstalledListOncePerPeek(t *testing.T) {
 	reads := 0
 	owners := smapiOwners(func() ([]profile.Installed, error) {
