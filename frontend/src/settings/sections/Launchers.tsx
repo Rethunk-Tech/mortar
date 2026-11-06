@@ -1,9 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { useCallback, useEffect, useState } from 'react'
-import type { StoreApp } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
+import { useCallback } from 'react'
 import { Launchers as ListLaunchers } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { LauncherList } from '../../launchers/LauncherList.tsx'
 import { SkeletonRows } from '../../shell/SkeletonRows.tsx'
+import { useLastGood } from '../../shell/useLastGood.ts'
 import { useOnWindowFocus } from '../../shell/useOnWindowFocus.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
@@ -14,14 +14,16 @@ const SKELETON_LAUNCHER_PX = 60
 
 export function Launchers() {
   const { t } = useLingui()
-  // null until the first answer, so the page shows where the launchers will be rather than nothing.
-  const [launchers, setLaunchers] = useState<StoreApp[] | null>(null)
+  // null until the very first answer, so the page shows where the launchers will be rather than nothing.
+  const { data: launchers, reload } = useLastGood(
+    'launchers',
+    () => ListLaunchers().then((ls) => ls ?? []),
+    [],
+    { onError: reportUnexpected },
+  )
   const refresh = useCallback(() => {
-    ListLaunchers()
-      .then((ls) => setLaunchers(ls ?? []))
-      .catch(reportUnexpected)
-  }, [])
-  useEffect(refresh, [refresh])
+    reload().catch(reportUnexpected)
+  }, [reload])
   useOnWindowFocus(refresh)
   return (
     <SettingsSection

@@ -1,7 +1,7 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, List, ListItem, ListItemText, ListSubheader, Skeleton } from '@mui/material'
-import { absoluteWhen, useLoaded } from '@rethunk/react-load-hooks'
+import { absoluteWhen } from '@rethunk/react-load-hooks'
 import { ShieldCheck } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import type { HealthFinding } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -17,6 +17,7 @@ import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { useLastGood } from '../shell/useLastGood.ts'
 import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { downloadWantsForEntries, type UndoEntry } from '../toasts/undo.ts'
@@ -173,12 +174,12 @@ export function HealthDialog({
     data: findings,
     error,
     reload: load,
-  } = useLoaded<HealthFinding[] | null>(
-    open && game !== '' ? () => ProfileHealth(game, profileId).then((next) => next ?? []) : null,
+  } = useLastGood<HealthFinding[]>(
+    game === '' ? null : `health:${game}:${profileId}`,
+    open ? () => ProfileHealth(game, profileId).then((next) => next ?? []) : null,
     [open, game, profileId],
-    null,
   )
-  const failed = error !== null
+  const failed = findings === null && error !== null
   const [busy, setBusy] = useState(false)
   const [queued, setQueued] = useState<Set<string>>(new Set())
   const [confirm, setConfirm] = useState<HealthFinding[] | null>(null)

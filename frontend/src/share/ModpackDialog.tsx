@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material'
-import { sameValue, useLoaded } from '@rethunk/react-load-hooks'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { useId, useState } from 'react'
 import type {
   ModpackForm,
@@ -19,9 +19,10 @@ import { Field, FieldRow, FormDialog, FormSection, TextInput } from '../shell/di
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { Fold } from '../shell/Fold.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { useLastGood } from '../shell/useLastGood.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
-import { inlineError, reportError } from '../toasts/report.ts'
+import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { UploadModpackDialog } from './UploadModpackDialog.tsx'
@@ -327,13 +328,14 @@ export function ModpackDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  const { data, error, reload } = useLoaded<ModpackForm | null>(
+  const { data, at, error, reload } = useLastGood<ModpackForm>(
+    `modpack:${game}:${profileId}`,
     () => ReadForm(game, profileId),
     [game, profileId],
-    null,
   )
   if (data) {
-    return <Fields game={game} profileId={profileId} form={data} onClose={onClose} />
+    // Fields copies the form into its own state, so a refresh that changed the form starts it over.
+    return <Fields key={at} game={game} profileId={profileId} form={data} onClose={onClose} />
   }
   return (
     <AppDialog
@@ -349,7 +351,7 @@ export function ModpackDialog({
       {error === null ? (
         <SkeletonRows label={t`Reading the profile…`} count={SKELETON_FIELDS} height={40} />
       ) : (
-        <ErrorRetry error={inlineError(error)} onRetry={reload} />
+        <ErrorRetry error={error} onRetry={reload} />
       )}
     </AppDialog>
   )

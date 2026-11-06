@@ -2,7 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button } from '@mui/material'
 import { Inbox } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { ProfilePreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
 import { LocalProfiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import {
@@ -23,6 +23,7 @@ import { offerMO2Folder, offerVortexFolder } from '../profiles/vortexFolderOffer
 import { DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { useLastGood } from '../shell/useLastGood.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { showImported } from './useImportFlow.ts'
@@ -94,6 +95,22 @@ const toFound = (found: Awaited<ReturnType<typeof LocalProfiles>>): Found[] =>
     imported: p.imported,
   }))
 
+interface Listed {
+  folders: Found[]
+  vortex: boolean
+  mo2: boolean
+}
+
+// Read together, so the pane redraws once for all three answers.
+const listFolders = async (game: string): Promise<Listed> => {
+  const [found, vortex, mo2] = await Promise.all([
+    LocalProfiles(game),
+    ExternalVortexSupported(game),
+    ExternalMO2Supported(game),
+  ])
+  return { folders: toFound(found), vortex, mo2 }
+}
+
 export function useManagerPane({
   game,
   active,
@@ -109,29 +126,21 @@ export function useManagerPane({
 }) {
   const { t } = useLingui()
   const { sources: external, reload } = useExternalImportSources(game, active)
-  const [vortexSupported, setVortexSupported] = useState(false)
-  const [mo2Supported, setMO2Supported] = useState(false)
-  // null until this game's profiles are listed, so opening never flashes "No profiles found".
-  const [folders, setFolders] = useState<Found[] | null>(null)
+  // null until this game's profiles were ever listed, so opening never flashes "No profiles found".
+  const { data: listed, reload: relist } = useLastGood<Listed>(
+    `manager-pane:${game}`,
+    active ? () => listFolders(game) : null,
+    [active],
+    { onError: reportUnexpected },
+  )
+  const folders = listed?.folders ?? null
+  const vortexSupported = listed?.vortex ?? false
+  const mo2Supported = listed?.mo2 ?? false
   const [chosen, setChosen] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const loadFolders = useCallback(() => {
-    LocalProfiles(game)
-      .then((found) => setFolders(toFound(found)))
-      .catch(reportUnexpected)
-  }, [game])
-  // Read together, so the pane redraws once for both answers.
-  useEffect(() => {
-    if (active) {
-      Promise.all([LocalProfiles(game), ExternalVortexSupported(game), ExternalMO2Supported(game)])
-        .then(([found, vortex, mo2]) => {
-          setFolders(toFound(found))
-          setVortexSupported(vortex)
-          setMO2Supported(mo2)
-        })
-        .catch(reportUnexpected)
-    }
-  }, [active, game])
+    relist().catch(reportUnexpected)
+  }, [relist])
   const all = foundProfiles(folders, external)
   const pick = (f: Found) => {
     if (f.folder) {

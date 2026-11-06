@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Typography } from '@mui/material'
-import { useLoaded } from '@rethunk/react-load-hooks'
 import { Camera, ChevronLeft, ChevronRight, FolderOpen, X } from 'lucide-react'
 import { type ReactNode, useId, useState } from 'react'
 import {
@@ -22,8 +21,9 @@ import { BareDialog } from '../shell/dialog/BareDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { useLastGood } from '../shell/useLastGood.ts'
 import { space } from '../theme/density.ts'
-import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 const TILE_MIN_PX = 220
@@ -159,7 +159,7 @@ export function ScreenshotsTab({ game }: { game: string }) {
     data: gallery,
     error,
     reload: load,
-  } = useLoaded<Gallery | null>(() => Screenshots(game), [game], null)
+  } = useLastGood<Gallery>(`screenshots:${game}`, () => Screenshots(game), [game])
   const [open, setOpen] = useState<number | null>(null)
   const shots = gallery?.shots ?? []
   const sources = gallery?.sources ?? []
@@ -173,11 +173,11 @@ export function ScreenshotsTab({ game }: { game: string }) {
       : t`Open the game's folder`
   }
   let body: ReactNode
-  if (error !== null) {
+  if (gallery === null && error !== null) {
     body = (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Typography sx={{ fontSize: 'base.fontSize', color: 'error.main' }}>
-          {errorMessage(error)}
+          {error?.message}
         </Typography>
         <Button size="small" onClick={load}>
           {t`Retry`}
