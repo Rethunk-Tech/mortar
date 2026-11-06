@@ -677,4 +677,13 @@ func TestValidatePrefsReportsFirstInvalidFieldInOrder(t *testing.T) {
 	if err == nil || !strings.HasPrefix(err.Error(), "store retention days") {
 		t.Fatalf("store retention days is checked before trash retention days: got %v", err)
 	}
+
+	s = defaultPrefs()
+	normalizePrefs(&s)
+	s.ParallelDownloads = MaxParallelDownloads + 1
+	s.DefaultModsView = "bogus"
+	err = validatePrefs(s)
+	if err == nil || !strings.HasPrefix(err.Error(), "parallel downloads") {
+		t.Fatalf("parallel downloads is checked before the default mods view: got %v", err)
+	}
 }
