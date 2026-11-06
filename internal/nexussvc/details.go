@@ -2,6 +2,7 @@ package nexussvc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -28,6 +29,9 @@ type Details struct {
 	Changelogs []nexus.Changelog `json:"changelogs"`
 	// Partial marks details from the batched lookup: the page's headline data only, with no files or changelogs.
 	Partial bool `json:"partial,omitempty"`
+	// Stale is when the details shown were fetched (RFC 3339), set only when a refresh was refused because no account is
+	// signed in, so the page can say the copy is an old one.
+	Stale string `json:"stale,omitempty"`
 }
 
 // Details returns a mod page's details from the cache under <datadir>/cache/nexus
@@ -38,9 +42,12 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 	if err != nil {
 		return Details{}, err
 	}
-	return diskcache.Cached(s.meta.Cache(), DetailsName(t.Domain, modID), detailsTTL, func() (Details, error) {
+	name := DetailsName(t.Domain, modID)
+	var refused error
+	d, err := diskcache.Cached(s.meta.Cache(), name, detailsTTL, func() (Details, error) {
 		c, err := Authed(s.store, s.client)
 		if err != nil {
+			refused = err
 			return Details{}, err
 		}
 		page, err := c.Page(ctx, t, modID)
@@ -66,6 +73,12 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 		})
 		return Details{Page: page, Category: cats[page.CategoryID], Files: files, Changelogs: nexusChangelogs(logs)}, nil
 	})
+	if err == nil && errors.Is(refused, ErrSignedOut) {
+		if e, ok := diskcache.Peek[Details](s.meta.Cache(), name); ok {
+			d.Stale = e.Fetched.UTC().Format(time.RFC3339)
+		}
+	}
+	return d, err
 }
 
 // DetailsName is the cache file under cache/ for a Nexus mod's details.

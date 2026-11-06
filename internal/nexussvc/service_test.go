@@ -132,8 +132,8 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 	if hits.Load() != 5 {
 		t.Fatalf("hits = %d, want page, requirements, files, changelogs and categories", hits.Load())
 	}
-	if _, err := s.Details(ctx, "stardew", 541); err != nil || hits.Load() != 5 {
-		t.Fatalf("fresh cache refetched: hits = %d, %v", hits.Load(), err)
+	if d, err := s.Details(ctx, "stardew", 541); err != nil || hits.Load() != 5 || d.Stale != "" {
+		t.Fatalf("fresh cache refetched or marked stale: hits = %d, stale %q, %v", hits.Load(), d.Stale, err)
 	}
 
 	if _, err := s.SignOut(); err != nil {
@@ -148,8 +148,9 @@ func TestDetailsCachedAndServedStaleWhenSignedOut(t *testing.T) {
 	if got := s.CachedDetails("stardew", []int{777}); got[777].Page.Version != "3.0" || hits.Load() != 5 {
 		t.Fatalf("a mod known only from a batched page: %+v, hits %d", got, hits.Load())
 	}
-	if d, err := s.Details(ctx, "stardew", 541); err != nil || d.Page.Name != "Lookup Anything" || hits.Load() != 5 {
-		t.Fatalf("stale signed-out details = %+v, %v, hits %d", d.Page, err, hits.Load())
+	if d, err := s.Details(ctx, "stardew", 541); err != nil || d.Page.Name != "Lookup Anything" || hits.Load() != 5 ||
+		d.Stale != "2026-09-30T12:00:00Z" {
+		t.Fatalf("stale signed-out details = %+v (stale %q), %v, hits %d", d.Page, d.Stale, err, hits.Load())
 	}
 }
 
