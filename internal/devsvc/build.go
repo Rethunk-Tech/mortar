@@ -159,7 +159,10 @@ func (s *Service) lockedBuild(ctx context.Context, gameID string, p settings.Dev
 	}
 	if err != nil {
 		unlock()
-		return p, nil, usererr.Wrap(usererr.NotFound, fmt.Errorf("the mod project in %s is gone", dir))
+		if errors.Is(err, os.ErrNotExist) {
+			return p, nil, usererr.Wrap(usererr.NotFound, fmt.Errorf("the mod project in %s is gone", dir))
+		}
+		return p, nil, err
 	}
 	if err := s.wire(ctx, p, func() error { return s.syncDependencies(gameID, p) }); err != nil {
 		log.Printf("devsvc: declaring %s's dependencies: %v", p.Name, err)

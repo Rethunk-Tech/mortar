@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -146,4 +147,27 @@ func TestPackQueuedBehindTrashDoesNotRunOnTheRemovedProject(t *testing.T) {
 		return err
 	})
 	requireGone(t, ran, err)
+}
+
+func TestLockedBuildPassesOnAFolderErrorThatIsNotAMissingOne(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	file := filepath.Join(t.TempDir(), "file")
+	if err := os.WriteFile(file, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	// A folder below a regular file cannot be read, and is not simply missing.
+	dir := filepath.Join(file, "proj")
+	if err := svc.Settings.AddDevProject("lethal-company", settings.DevProject{Dir: dir, Name: "P"}); err != nil {
+		t.Fatal(err)
+	}
+	_, unlock, err := svc.lockedBuild(t.Context(), "lethal-company", settings.DevProject{Dir: dir})
+	if err == nil {
+		unlock()
+		t.Fatal("a folder that cannot be read was accepted")
+	}
+	if usererr.KindOf(err) == usererr.NotFound {
+		t.Errorf("an unreadable folder was reported as gone: %v", err)
+	}
+	release := holdBuild(dir)
+	release()
 }
