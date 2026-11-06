@@ -50,7 +50,9 @@ const enqueue = (game: string, id: number) => {
     return
   }
   if (!useNexus.getState().signedIn) {
+    // The saved page shows meanwhile, marked as one Nexus cannot refresh until the player signs in.
     waiting.add(key)
+    loadCached(game, id).catch(reportUnexpected)
     return
   }
   waiting.delete(key)
@@ -103,6 +105,14 @@ const detailsFor = (byKey: Record<string, Entry | undefined>, game: string): Nex
 const useGameNexusDetails = (game: string) => useNexusDetails((s) => detailsFor(s.byKey, game))
 
 useNexus.subscribe((s, prev) => {
+  // Pages read while signed in are now ones Nexus will not refresh: they show marked as saved.
+  if (!s.signedIn && prev.signedIn) {
+    for (const [key, entry] of Object.entries(useNexusDetails.getState().byKey)) {
+      if (entry?.details && !entry.signedOut) {
+        put(key, { ...entry, signedOut: true })
+      }
+    }
+  }
   if (s.signedIn && !prev.signedIn) {
     primeDetails(primed.game, primed.ids).catch(reportUnexpected)
     const keys = [...waiting]
@@ -111,7 +121,7 @@ useNexus.subscribe((s, prev) => {
       enqueue(...splitKey(key))
     }
     for (const [key, entry] of Object.entries(useNexusDetails.getState().byKey)) {
-      if (!entry?.details) {
+      if (!entry?.details || entry.signedOut) {
         reads.delete(key)
         enqueue(...splitKey(key))
       }

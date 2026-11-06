@@ -1,11 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, Chip, Link, Typography } from '@mui/material'
+import { Box, Button, Chip, Link, Typography } from '@mui/material'
 import { memo, type ReactNode, useEffect, useState } from 'react'
 import { Details as ReadDetails } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import type { Details as NexusDetails } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
-import { formatWhen } from '../i18n/formatWhen.ts'
 import { listNames } from '../i18n/list.ts'
 import { formatAuthors } from '../mods/authorNormalize.ts'
 import { parseBBCode } from '../mods/bbcode.ts'
@@ -22,11 +21,12 @@ import { Rich } from '../mods/NexusDetails.tsx'
 import { isFull, loadDetails, useNexusPartialEntry } from '../mods/nexusDetails.ts'
 import { useReleases } from '../mods/releases.ts'
 import { listsVersions } from '../mods/versionChoices.ts'
-import { openSettings } from '../nav/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
+import { SavedCopy } from '../shell/SavedCopyNote.tsx'
 import { SignInPrompt } from '../shell/SignInPrompt.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { SAVED_OPACITY } from '../shell/savedOpacity.ts'
 import { useLastGood } from '../shell/useLastGood.ts'
 import { space } from '../theme/density.ts'
 import type { InlineError } from '../toasts/report.ts'
@@ -122,7 +122,6 @@ const changelogOf = (logs: Changelog[] | null | undefined) =>
 
 // A Nexus mod's page comes from the Nexus details the Mods tab reads too: one read per mod per session.
 // Dimmed: a page Nexus would not refresh because no account is signed in.
-const SAVED_OPACITY = 0.7
 
 // What the batched lookup knew about the mod (summary, version, category, requirements) while its files and changelog
 // are still being read.
@@ -213,24 +212,7 @@ function NexusPage({ game, modId, summary }: { game: string; modId: number; summ
   if (!entry?.signedOut) {
     return sections
   }
-  return (
-    <>
-      <Alert
-        variant="compact"
-        severity="info"
-        action={
-          <Button color="inherit" size="small" onClick={() => openSettings('accounts')}>
-            {t`Sign in…`}
-          </Button>
-        }
-      >
-        {details.stale
-          ? t`Saved ${{ when: formatWhen(details.stale) }}. Sign in to refresh it.`
-          : t`Saved from an earlier visit. Sign in to refresh it.`}
-      </Alert>
-      <Box sx={{ opacity: SAVED_OPACITY }}>{sections}</Box>
-    </>
-  )
+  return <SavedCopy at={details.stale}>{sections}</SavedCopy>
 }
 
 type Read = { details: Details } | { error: InlineError } | null

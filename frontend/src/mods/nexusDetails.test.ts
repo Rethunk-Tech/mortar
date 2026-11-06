@@ -104,6 +104,18 @@ test('a page read signed out makes no Nexus call and marks the entry signed out'
   expect(nexusEntryOf(useNexusDetails.getState().byKey, 'stardew', 2400)?.signedOut).toBe(true)
 })
 
+test('signing out marks pages already read as saved, and signing in reads them again', async () => {
+  useNexus.setState({ signedIn: true, name: 'pat', premium: false })
+  await loadDetails('stardew', 2400)
+  expect(nexusEntryOf(useNexusDetails.getState().byKey, 'stardew', 2400)?.signedOut).toBeUndefined()
+  useNexus.setState({ signedIn: false, name: '', premium: false })
+  expect(nexusEntryOf(useNexusDetails.getState().byKey, 'stardew', 2400)?.signedOut).toBe(true)
+  loads.length = 0
+  useNexus.setState({ signedIn: true, name: 'pat', premium: false })
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  expect(loads).toContain(2400)
+})
+
 const named = (id: number, name: string): Details => ({
   ...page(id),
   page: { ...page(id).page, name },

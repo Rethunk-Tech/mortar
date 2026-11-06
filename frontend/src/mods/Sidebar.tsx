@@ -18,6 +18,7 @@ import { formatNumber } from '../i18n/numberFormat.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { Fold } from '../shell/Fold.tsx'
+import { SavedCopy } from '../shell/SavedCopyNote.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -132,23 +133,20 @@ function NexusFields({
   const { t, i18n } = useLingui()
   const customById = customCategoryById(useCustomCategories((s) => s.categories))
   const game = useProfiles((s) => s.game?.id ?? '')
-  const details = useNexusEntry(game, nexusId)?.details
+  const entry = useNexusEntry(game, nexusId)
+  const details = entry?.details
   if (!details) {
     return null
   }
   const { page, category } = details
+  const saved = entry?.signedOut === true
   const gone = nexusPageMark(page.status, page.available, page.updated, page.created)
   const goneLabel = goneCaption(gone, {
     hidden: t`Hidden on ${{ source: sourceLabel('nexus') }}`,
     removed: t`Removed from ${{ source: sourceLabel('nexus') }}`,
   })
-  return (
+  const fields = (
     <>
-      {goneLabel ? (
-        <Typography sx={{ fontSize: 'base.fontSize', color: 'warning.main' }}>
-          {goneLabel}
-        </Typography>
-      ) : null}
       {page.summary ? <Clipped label={t`Summary`} value={page.summary} lines={2} /> : null}
       <Box
         sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: space.gap }}
@@ -165,6 +163,18 @@ function NexusFields({
         <Clipped label={t`Downloads`} value={formatCount(page.downloads, i18n.locale)} />
         <Clipped label={t`Updated`} value={formatWhen(page.updated) || '—'} />
       </Box>
+    </>
+  )
+  return (
+    <>
+      {goneLabel ? (
+        <Typography sx={{ fontSize: 'base.fontSize', color: 'warning.main' }}>
+          {goneLabel}
+        </Typography>
+      ) : null}
+      <SavedCopy saved={saved} at={details.stale}>
+        {fields}
+      </SavedCopy>
     </>
   )
 }

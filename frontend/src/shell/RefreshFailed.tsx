@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Button } from '@mui/material'
 import { formatWhen } from '../i18n/formatWhen.ts'
-import { openSettings } from '../nav/store.ts'
 import type { InlineError } from '../toasts/report.ts'
+import { SavedCopyNote } from './SavedCopyNote.tsx'
 
 /** One line above data a view keeps showing from its last good copy after a refresh failed. Nothing when `error` is
  * null. A missing sign-in offers signing in instead of retrying. */
@@ -20,21 +20,7 @@ export function RefreshFailed({
     return null
   }
   if (error.signedOut) {
-    return (
-      <Alert
-        variant="compact"
-        severity="info"
-        action={
-          <Button color="inherit" size="small" onClick={() => openSettings('accounts')}>
-            {t`Sign in…`}
-          </Button>
-        }
-      >
-        {at
-          ? t`Saved ${{ when: formatWhen(at) }}. Sign in to refresh it.`
-          : t`Saved from an earlier visit. Sign in to refresh it.`}
-      </Alert>
-    )
+    return <SavedCopyNote at={at} />
   }
   return (
     <Alert
