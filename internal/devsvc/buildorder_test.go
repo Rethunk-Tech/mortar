@@ -1,28 +1,20 @@
 package devsvc
 
 import (
-	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // ConfigSync builds first; the mod that depends on it and an unrelated one build together after it, and a project
 // depending on a package none of them publishes waits for nothing.
 func TestBuildOrderPutsADependencyInAnEarlierWave(t *testing.T) {
-	write := func(path, body string) {
-		t.Helper()
-		if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
-	}
 	project := func(name, deps string) string {
 		dir := t.TempDir()
-		write(filepath.Join(dir, propsFile), "<Project><PropertyGroup><ThunderstoreTeam>Mortar</ThunderstoreTeam></PropertyGroup></Project>")
-		write(filepath.Join(dir, "src", name, name+".csproj"), "<Project><ItemGroup>"+deps+"</ItemGroup></Project>")
+		testfs.WriteAt(t, filepath.Join(dir, propsFile), []byte("<Project><PropertyGroup><ThunderstoreTeam>Mortar</ThunderstoreTeam></PropertyGroup></Project>"))
+		testfs.WriteAt(t, filepath.Join(dir, "src", name, name+".csproj"), []byte("<Project><ItemGroup>"+deps+"</ItemGroup></Project>"))
 		return dir
 	}
 	lib := project("ConfigSync", "")

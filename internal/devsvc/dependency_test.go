@@ -97,39 +97,29 @@ func TestWireFoldsOnlyItsOwnChangesIntoTheStartCommit(t *testing.T) {
 	t.Setenv("GIT_COMMITTER_NAME", "t")
 	t.Setenv("GIT_COMMITTER_EMAIL", "t@t")
 	dir := t.TempDir()
-	git := func(args ...string) string {
-		t.Helper()
-		out, err := svc.run(t.Context(), dir, "git", args...)
-		if err != nil {
-			t.Fatal(err)
-		}
-		return strings.TrimSpace(string(out))
+	gitIn(t, svc, dir, "init", "-q")
+	testfs.WriteFile(t, dir, "Plugin.cs", "a")
+	gitIn(t, svc, dir, "add", "-A")
+	gitIn(t, svc, dir, "commit", "-q", "-m", "Start Mod")
+	testfs.WriteFile(t, dir, "Mine.cs", "player's own")
+	wired := func() error {
+		testfs.WriteFile(t, dir, "Compat.cs", "c")
+		testfs.WriteFile(t, dir, "Plugin.cs", "b")
+		return nil
 	}
-	write := func(name, body string) {
-		t.Helper()
-		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
-	}
-	git("init", "-q")
-	write("Plugin.cs", "a")
-	git("add", "-A")
-	git("commit", "-q", "-m", "Start Mod")
-	write("Mine.cs", "player's own")
-	wired := func() error { write("Compat.cs", "c"); write("Plugin.cs", "b"); return nil }
 	if err := svc.wire(t.Context(), settings.DevProject{Dir: dir, Name: "Mod"}, wired); err != nil {
 		t.Fatal(err)
 	}
-	if n, status := git("rev-list", "--count", "HEAD"), git("status", "--porcelain"); n != "1" || status != "?? Mine.cs" {
+	if n, status := gitIn(t, svc, dir, "rev-list", "--count", "HEAD"), gitIn(t, svc, dir, "status", "--porcelain"); n != "1" || status != "?? Mine.cs" {
 		t.Fatalf("after wiring: %s commits, status %q", n, status)
 	}
 	// Once the player commits, wiring stays a change for them to commit.
-	git("add", "Mine.cs")
-	git("commit", "-q", "-m", "Mine")
-	if err := svc.wire(t.Context(), settings.DevProject{Dir: dir, Name: "Mod"}, func() error { write("Plugin.cs", "d"); return nil }); err != nil {
+	gitIn(t, svc, dir, "add", "Mine.cs")
+	gitIn(t, svc, dir, "commit", "-q", "-m", "Mine")
+	if err := svc.wire(t.Context(), settings.DevProject{Dir: dir, Name: "Mod"}, func() error { testfs.WriteFile(t, dir, "Plugin.cs", "d"); return nil }); err != nil {
 		t.Fatal(err)
 	}
-	if status := git("status", "--porcelain"); status != "M Plugin.cs" {
+	if status := gitIn(t, svc, dir, "status", "--porcelain"); status != "M Plugin.cs" {
 		t.Fatalf("after the player's commit, status %q", status)
 	}
 }
@@ -142,18 +132,12 @@ func TestWireLeavesAPlayersStartCommitAlone(t *testing.T) {
 	t.Setenv("GIT_COMMITTER_NAME", "t")
 	t.Setenv("GIT_COMMITTER_EMAIL", "t@t")
 	dir := t.TempDir()
-	git := func(args ...string) {
-		t.Helper()
-		if _, err := svc.run(t.Context(), dir, "git", args...); err != nil {
-			t.Fatal(err)
-		}
-	}
-	git("init", "-q")
+	gitIn(t, svc, dir, "init", "-q")
 	if err := os.WriteFile(filepath.Join(dir, "Plugin.cs"), []byte("a"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	git("add", "-A")
-	git("commit", "-q", "-m", "Start menu rework")
+	gitIn(t, svc, dir, "add", "-A")
+	gitIn(t, svc, dir, "commit", "-q", "-m", "Start menu rework")
 	err := svc.wire(t.Context(), settings.DevProject{Dir: dir, Name: "Mod"}, func() error { return os.WriteFile(filepath.Join(dir, "Plugin.cs"), []byte("b"), 0o600) })
 	out, _ := svc.run(t.Context(), dir, "git", "status", "--porcelain")
 	if err != nil || strings.TrimSpace(string(out)) != "M Plugin.cs" {
@@ -167,20 +151,11 @@ func TestSyncReferencesADependencyAnotherProjectBuilds(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	write := func(path, body string) {
-		t.Helper()
-		if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
-	}
 	lib, mod := t.TempDir(), t.TempDir()
-	write(filepath.Join(lib, propsFile), "<Project><PropertyGroup><ThunderstoreTeam>Mortar</ThunderstoreTeam></PropertyGroup></Project>")
-	write(filepath.Join(lib, "src", "ConfigSync", "ConfigSync.csproj"), "<Project><PropertyGroup><ThunderstoreName>ConfigSync</ThunderstoreName></PropertyGroup></Project>")
+	testfs.WriteAt(t, filepath.Join(lib, propsFile), []byte("<Project><PropertyGroup><ThunderstoreTeam>Mortar</ThunderstoreTeam></PropertyGroup></Project>"))
+	testfs.WriteAt(t, filepath.Join(lib, "src", "ConfigSync", "ConfigSync.csproj"), []byte("<Project><PropertyGroup><ThunderstoreName>ConfigSync</ThunderstoreName></PropertyGroup></Project>"))
 	csproj := filepath.Join(mod, "src", "Mod", "Mod.csproj")
-	write(csproj, "<Project>\n  <ItemGroup>\n    <ThunderstoreDependency Include=\"Mortar-ConfigSync\" Version=\"0.1.0\" />\n  </ItemGroup>\n</Project>\n")
+	testfs.WriteAt(t, csproj, []byte("<Project>\n  <ItemGroup>\n    <ThunderstoreDependency Include=\"Mortar-ConfigSync\" Version=\"0.1.0\" />\n  </ItemGroup>\n</Project>\n"))
 	output := filepath.Join(lib, "artifacts", "bin")
 	for _, p := range []settings.DevProject{{Dir: lib, Name: "ConfigSync", Output: output}, {Dir: mod, Name: "Mod", Profile: prof.ID}} {
 		if err := svc.Settings.AddDevProject("lethal-company", p); err != nil {
@@ -201,23 +176,13 @@ func TestSyncReferencesADependencyAnotherProjectBuilds(t *testing.T) {
 func TestRemoveDependencyUndoesWhatAddingWrote(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	dir := t.TempDir()
-	write := func(rel, body string) {
-		t.Helper()
-		path := filepath.Join(dir, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
-	}
 	project := withDependency(withDependency("<Project>\n  <ItemGroup>\n    <ThunderstoreDependency Include=\"BepInEx-BepInExPack\" Version=\"5.4.2305\" />\n  </ItemGroup>\n</Project>\n",
 		"AinaVT-LethalConfig", "1.4.6", true), "Evaisa-LethalLib", "1.1.1", false)
-	write("src/Mod/Mod.csproj", project)
+	testfs.WriteFile(t, dir, "src/Mod/Mod.csproj", project)
 	if err := writeCompat(filepath.Join(dir, "src", "Mod"), "Mod", "AinaVT-LethalConfig", "ainavt.lc.lethalconfig"); err != nil {
 		t.Fatal(err)
 	}
-	write("Config.Build.user.props", "<Project>\n  <PropertyGroup>\n    <MortarDependency_AinaVT_LethalConfig>/store/x/</MortarDependency_AinaVT_LethalConfig>\n  </PropertyGroup>\n  <ItemGroup>\n    <MortarDependencyFolder Include=\"AinaVT-LethalConfig\" />\n  </ItemGroup>\n</Project>\n")
+	testfs.WriteFile(t, dir, "Config.Build.user.props", "<Project>\n  <PropertyGroup>\n    <MortarDependency_AinaVT_LethalConfig>/store/x/</MortarDependency_AinaVT_LethalConfig>\n  </PropertyGroup>\n  <ItemGroup>\n    <MortarDependencyFolder Include=\"AinaVT-LethalConfig\" />\n  </ItemGroup>\n</Project>\n")
 	if err := svc.Settings.AddDevProject("lethal-company", settings.DevProject{Dir: dir, Name: "Mod"}); err != nil {
 		t.Fatal(err)
 	}
@@ -244,7 +209,7 @@ func TestRemoveDependencyUndoesWhatAddingWrote(t *testing.T) {
 	}
 	edited := filepath.Join(src, "Compat", "LethalLibCompat.cs")
 	body, _ := safefs.ReadFile(edited)
-	write("src/Mod/Compat/LethalLibCompat.cs", strings.Replace(string(body), "// Calls into", "Register();\n        // Calls into", 1))
+	testfs.WriteFile(t, dir, "src/Mod/Compat/LethalLibCompat.cs", strings.Replace(string(body), "// Calls into", "Register();\n        // Calls into", 1))
 	if err := dropUntouchedCompat(src, "Evaisa-LethalLib"); err != nil || !safefs.IsFile(edited) {
 		t.Fatalf("an edited compat class was dropped (%v)", err)
 	}

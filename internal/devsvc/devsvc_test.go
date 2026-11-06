@@ -573,19 +573,13 @@ func TestGitHubOwnersAndRepoCheck(t *testing.T) {
 func TestReleasePushesOnlyToGitHub(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	svc.Run = nil
-	git := func(dir string, args ...string) {
-		t.Helper()
-		if _, err := svc.run(t.Context(), dir, "git", args...); err != nil {
-			t.Fatal(err)
-		}
-	}
 	project := func(name string) string {
 		dir := filepath.Join(t.TempDir(), name)
 		if err := os.MkdirAll(dir, 0o750); err != nil {
 			t.Fatal(err)
 		}
-		git(dir, "init", "-q")
-		git(dir, "commit", "-q", "--allow-empty", "-m", "start")
+		gitIn(t, svc, dir, "init", "-q")
+		gitIn(t, svc, dir, "commit", "-q", "--allow-empty", "-m", "start")
 		if err := svc.Settings.AddDevProject("lethal-company", settings.DevProject{Dir: dir, Name: name}); err != nil {
 			t.Fatal(err)
 		}
@@ -605,16 +599,16 @@ func TestReleasePushesOnlyToGitHub(t *testing.T) {
 	if err := os.MkdirAll(hub, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	git(hub, "init", "-q", "--bare")
+	gitIn(t, svc, hub, "init", "-q", "--bare")
 	shared := project("Shared")
-	git(shared, "remote", "add", "origin", hub)
+	gitIn(t, svc, shared, "remote", "add", "origin", hub)
 	if v, err := svc.NextVersions(t.Context(), "lethal-company", shared); err != nil || v.GitHub != "origin" {
 		t.Fatalf("versions = %+v, %v", v, err)
 	}
 	if remote, err := svc.Release(t.Context(), "lethal-company", shared, "0.1.0", []string{"First"}); err != nil || remote != "origin" {
 		t.Fatalf("github release = %q, %v", remote, err)
 	}
-	git(hub, "rev-parse", "-q", "--verify", "refs/tags/v0.1.0")
+	gitIn(t, svc, hub, "rev-parse", "-q", "--verify", "refs/tags/v0.1.0")
 	if remote, err := svc.Release(t.Context(), "lethal-company", shared, "0.1.0", []string{"First"}); err != nil || remote != "origin" {
 		t.Fatalf("retried release = %q, %v", remote, err)
 	}
@@ -737,4 +731,14 @@ func TestTemplateFetchesThePinnedCommitWhenTheCatalogHasOne(t *testing.T) {
 	if templateCacheKey(tag) != "o_n_v1" || templateCacheKey(pin) != "o_n_"+pin.Commit {
 		t.Errorf("cache keys = %q, %q", templateCacheKey(tag), templateCacheKey(pin))
 	}
+}
+
+// gitIn runs git in dir through the service's runner, fails the test on error and returns the trimmed output.
+func gitIn(t *testing.T, svc *Service, dir string, args ...string) string {
+	t.Helper()
+	out, err := svc.run(t.Context(), dir, "git", args...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return strings.TrimSpace(string(out))
 }

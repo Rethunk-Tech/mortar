@@ -210,12 +210,6 @@ func TestAnAssetProjectReleasesHereAndEditsItsDetails(t *testing.T) {
 	t.Setenv("GIT_AUTHOR_EMAIL", "t@t")
 	t.Setenv("GIT_COMMITTER_NAME", "t")
 	t.Setenv("GIT_COMMITTER_EMAIL", "t@t")
-	git := func(dir string, args ...string) {
-		t.Helper()
-		if _, err := svc.run(t.Context(), dir, "git", args...); err != nil {
-			t.Fatal(err)
-		}
-	}
 	dir := assetDir(t, `{"kind":"sounds","name":"Quacks","author":"A","team":"Ab"}`)
 	if err := writeAll(filepath.Join(dir, "manifest.json"), []byte(`{"name":"Quacks","version_number":"0.1.0","description":"d","dependencies":["BepInEx-BepInExPack-5.4.2100"]}`), 0o644); err != nil {
 		t.Fatal(err)
@@ -224,11 +218,11 @@ func TestAnAssetProjectReleasesHereAndEditsItsDetails(t *testing.T) {
 	if err := os.MkdirAll(hub, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	git(hub, "init", "-q", "--bare")
-	git(dir, "init", "-q")
-	git(dir, "add", ".")
-	git(dir, "commit", "-q", "-m", "start")
-	git(dir, "remote", "add", "origin", hub)
+	gitIn(t, svc, hub, "init", "-q", "--bare")
+	gitIn(t, svc, dir, "init", "-q")
+	gitIn(t, svc, dir, "add", ".")
+	gitIn(t, svc, dir, "commit", "-q", "-m", "start")
+	gitIn(t, svc, dir, "remote", "add", "origin", hub)
 	if _, err := svc.Add(t.Context(), game, dir, ""); err != nil {
 		t.Fatal(err)
 	}
@@ -244,7 +238,7 @@ func TestAnAssetProjectReleasesHereAndEditsItsDetails(t *testing.T) {
 	if remote, err := svc.Release(t.Context(), game, dir, "0.1.0", []string{"First"}); err != nil || remote != "" {
 		t.Fatalf("release = %q, %v", remote, err)
 	}
-	git(hub, "rev-parse", "-q", "--verify", "refs/tags/v0.1.0")
+	gitIn(t, svc, hub, "rev-parse", "-q", "--verify", "refs/tags/v0.1.0")
 
 	if err := svc.AddDependency(game, dir, "Ab-Other", "1.0.0", false); err != nil {
 		t.Fatal(err)
