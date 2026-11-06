@@ -1,6 +1,23 @@
 package store
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
+
+func TestSavedIndexStampIsTheWrittenFile(t *testing.T) {
+	s := newStore(t)
+	if err := s.bind("stardew", "local-a", "blob1"); err != nil {
+		t.Fatal(err)
+	}
+	fi, err := os.Stat(s.indexPath())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.idxFile == nil || !os.SameFile(fi, s.idxFile) || !fi.ModTime().Equal(s.idxFile.ModTime()) {
+		t.Fatal("memo stamp is not the identity of the index file just written")
+	}
+}
 
 func TestMutationKeepsIndexMemo(t *testing.T) {
 	s := newStore(t)

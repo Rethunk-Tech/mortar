@@ -9,6 +9,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -728,12 +729,30 @@ func (s *Store) saveIndex(idx index) error {
 		return err
 	}
 	s.remember(nil, nil)
-	if err := datadir.WriteJSON(s.indexPath(), idx); err != nil {
+	b, err := json.MarshalIndent(idx, "", "  ")
+	if err != nil {
 		return err
 	}
-	// The memo is stamped with the file just written, so a later write by another process changes the stamp and forces
-	// a re-read. The caller may go on changing idx, hence the copy.
-	if fi, err := os.Stat(s.indexPath()); err == nil {
+	var fi os.FileInfo
+	err = safefs.WriteStreamAtomic(s.indexPath(), 0o600, func(w io.Writer) error {
+		if _, err := w.Write(b); err != nil {
+			return err
+		}
+		// The temp file keeps its inode and mtime through the rename, and no lock stops another process renaming its
+		// own over ours: stamping from the temp file means that file never matches, where a stat after the rename could.
+		f, ok := w.(*os.File)
+		if !ok {
+			return nil
+		}
+		var statErr error
+		fi, statErr = f.Stat()
+		return statErr
+	})
+	if err != nil {
+		return err
+	}
+	if fi != nil {
+		// The caller may go on changing idx, hence the copy.
 		s.remember(idx.clone(), fi)
 	}
 	return nil
