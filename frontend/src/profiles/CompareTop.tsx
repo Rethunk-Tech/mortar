@@ -39,40 +39,38 @@ function OtherPicker({
     action()
   }
   return (
-    <>
-      <MenuButton
-        menu={menu}
-        label={profileB?.name ?? t`Choose…`}
-        color="inherit"
-        disabled={disabled}
-        sx={{ height: space.control, whiteSpace: 'nowrap' }}
-      >
-        {others.length > 0 ? <MenuHeading>{t`Your profiles`}</MenuHeading> : null}
-        {others.map((p) => (
-          <MenuCheck
-            key={p.id}
-            radio={true}
-            checked={p.id === profileB?.id}
-            icon={<ProfileDot profile={p} />}
-            label={`${p.name} · ${modsLabel(userModCount(p))}`}
-            onClick={choose(() => onPick(p.id))}
-          />
-        ))}
-        <MenuHeading>{t`Someone else's`}</MenuHeading>
-        <MenuAction
-          icon={<Users size={16} />}
-          label={t`A friend's link or file…`}
-          onClick={choose(onFriend)}
+    <MenuButton
+      menu={menu}
+      label={profileB?.name ?? t`Choose…`}
+      color="inherit"
+      disabled={disabled}
+      sx={{ height: space.control, whiteSpace: 'nowrap' }}
+    >
+      {others.length > 0 ? <MenuHeading>{t`Your profiles`}</MenuHeading> : null}
+      {others.map((p) => (
+        <MenuCheck
+          key={p.id}
+          radio={true}
+          checked={p.id === profileB?.id}
+          icon={<ProfileDot profile={p} />}
+          label={`${p.name} · ${modsLabel(userModCount(p))}`}
+          onClick={choose(() => onPick(p.id))}
         />
-        {hosted ? (
-          <MenuAction
-            icon={<Server size={16} />}
-            label={t`A multiplayer host's list…`}
-            onClick={choose(onHost)}
-          />
-        ) : null}
-      </MenuButton>
-    </>
+      ))}
+      <MenuHeading>{t`Someone else's`}</MenuHeading>
+      <MenuAction
+        icon={<Users size={16} />}
+        label={t`A friend's link or file…`}
+        onClick={choose(onFriend)}
+      />
+      {hosted ? (
+        <MenuAction
+          icon={<Server size={16} />}
+          label={t`A multiplayer host's list…`}
+          onClick={choose(onHost)}
+        />
+      ) : null}
+    </MenuButton>
   )
 }
 

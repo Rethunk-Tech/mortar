@@ -104,43 +104,41 @@ function MoreActions({
   const shares = profileLoader?.share === true || Boolean(profileLoader?.paste)
   const close = menu.hide
   return (
-    <>
-      <MenuButton menu={menu} label={t`More`} variant="text">
-        {nexusID > 0 ? (
-          <MenuAction
-            icon={<ExternalLink size={16} />}
-            label={openPageLabel(i18n, 'nexus')}
-            onClick={() => {
-              close()
-              openPage(nexusModUrl(nexusID, nexusDomain()))
-            }}
-          />
-        ) : null}
-        {shares ? (
-          <MenuAction
-            icon={<LifeBuoy size={16} />}
-            label={t`Share log…`}
-            onClick={() => {
-              close()
-              openRun(crash, false)
-              useConsole.getState().setHelping(true)
-              onDone()
-            }}
-          />
-        ) : null}
-        {withConsole ? (
-          <MenuAction
-            icon={<Terminal size={16} />}
-            label={t`Open console`}
-            onClick={() => {
-              close()
-              openRun(crash, true)
-              onDone()
-            }}
-          />
-        ) : null}
-      </MenuButton>
-    </>
+    <MenuButton menu={menu} label={t`More`} variant="text">
+      {nexusID > 0 ? (
+        <MenuAction
+          icon={<ExternalLink size={16} />}
+          label={openPageLabel(i18n, 'nexus')}
+          onClick={() => {
+            close()
+            openPage(nexusModUrl(nexusID, nexusDomain()))
+          }}
+        />
+      ) : null}
+      {shares ? (
+        <MenuAction
+          icon={<LifeBuoy size={16} />}
+          label={t`Share log…`}
+          onClick={() => {
+            close()
+            openRun(crash, false)
+            useConsole.getState().setHelping(true)
+            onDone()
+          }}
+        />
+      ) : null}
+      {withConsole ? (
+        <MenuAction
+          icon={<Terminal size={16} />}
+          label={t`Open console`}
+          onClick={() => {
+            close()
+            openRun(crash, true)
+            onDone()
+          }}
+        />
+      ) : null}
+    </MenuButton>
   )
 }
 

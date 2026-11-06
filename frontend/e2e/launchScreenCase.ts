@@ -3,7 +3,9 @@ import type { Page } from '@playwright/test'
 import type { Case } from './render-budget.ts'
 import { biggestProfileIds } from './renderProfile.ts'
 
-type Wails = { _wails: { dispatchWailsEvent: (e: { name: string; data: unknown }) => void } }
+interface Wails {
+  _wails: { dispatchWailsEvent: (e: { name: string; data: unknown }) => void }
+}
 
 function emit(p: Page, events: { name: string; data: unknown }[]) {
   return p.evaluate((list) => {
