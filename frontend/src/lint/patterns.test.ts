@@ -374,3 +374,20 @@ test('a title prop does not end in an ellipsis', () => {
   )
   expect(hits, hits.join('\n')).toEqual([])
 })
+
+// A confirmation asks no further input, so the row that only opens one carries no "…". Only a row whose click sets
+// the state a ConfirmationDialog in the same file opens on is visible statically.
+test('a menu row that only opens a confirmation does not end in an ellipsis', () => {
+  const hits = files.flatMap(({ path, src }) => {
+    const states = [...src.matchAll(/<ConfirmationDialog\s+open=\{(\w+)\}/g)].map((m) => m[1] ?? '')
+    return [...src.matchAll(/<Menu(?:Action|Item)\b[\s\S]*?\n\s*\/>/g)]
+      .filter((m) => /label=\{t`[^`]*…`\}/.test(m[0]))
+      .filter((m) =>
+        states.some((state) =>
+          new RegExp(`set${state.slice(0, 1).toUpperCase()}${state.slice(1)}\\(true\\)`).test(m[0]),
+        ),
+      )
+      .map((m) => `${rel(path)}:${lineOf(src, m.index)}`)
+  })
+  expect(hits, hits.join('\n')).toEqual([])
+})

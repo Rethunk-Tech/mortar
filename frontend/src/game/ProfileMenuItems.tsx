@@ -351,7 +351,7 @@ function MoreMenuItems({ profile, close }: Item) {
     <ProfileMenuItem
       key="delete"
       icon={<Trash2 size={16} />}
-      label={t`Delete profile…`}
+      label={t`Delete profile`}
       tone="error"
       onClick={() => {
         close()

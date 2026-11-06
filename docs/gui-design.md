@@ -7,7 +7,7 @@ The design system lives in code: `frontend/src/theme/` (palette, density, the MU
 - Dark is the lead theme: screenshots, the README and store listings show it.
 - Dialog footers: Cancel or Close is a text button, leftmost; at most one contained primary, rightmost; a destructive primary is contained `color="error"`.
 - Spacing uses the `space` roles (`frontend/src/theme/density.ts`) and no hand-set pixels, so a Density change moves every page.
-- A trailing "…" only on a control that opens further input (a dialog, a picker, a confirmation); clicking it never starts the work, and the dialog's title has none.
+- A trailing "…" only on a control that opens further input (a name, a choice, a file: a dialog or picker), never a bare confirmation; clicking it never starts the work, and the dialog's title has none.
 - **Remove** takes something out of a profile, group or list; **Delete** destroys it on disk. The button, its confirmation and its toast use the same verb.
 - Sentence case everywhere; labels, buttons, headings and toast titles take no full stop, body text does. No article where the meaning holds without it. A label reused mid-sentence is lowercased in code (`frontend/src/i18n/lowerFirst.ts`).
 - One placeholder name per concept (`{name}`, `{count}`, `{profile}`, `{game}`, `{version}`, `{path}`, `{when}`, `{source}`, `{manager}`, `{loader}`, `{launcher}`, `{os}`, `{app}`); a plural holds only the counted clause.

@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import type { Page } from '@playwright/test'
 import { openGameSelect, openSettings } from './app.ts'
+import { menuCases } from './menuCases.ts'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
 import { openGame, thunderstoreVisit } from './renderProfile.ts'
@@ -367,7 +368,7 @@ export function dialogCases(h: Helpers): Case[] {
     dialog('compare', (p) => profileMenu(p, /^Compare…/)),
     dialog('save-template', (p) => profileMenu(p, /^Save as template…/)),
     dialog('add-saved-group', (p) => profileMenu(p, /^Add a saved group…/)),
-    dialog('delete-profile', (p) => profileMenu(p, /^Delete profile…/)),
+    dialog('delete-profile', (p) => profileMenu(p, /^Delete profile/)),
     dialog('new-profile', (p) => switcher(p, /^New profile…/)),
     dialog('import', (p) => switcher(p, /^Import…/)),
     dialog('import-link', (p) => importStep(p, /^Link or code/)),
@@ -376,6 +377,7 @@ export function dialogCases(h: Helpers): Case[] {
     ...toolAndWizardCases(kit),
     ...stubbedCases(kit),
     ...uploadDialogCases(kit),
+    ...menuCases(kit),
     // Showing the list and picking a mod is setup: only opening the dialog is measured.
     dialog(
       'mod-also-add',
