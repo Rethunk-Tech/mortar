@@ -48,13 +48,28 @@ function playLabel(installing: string, updating: number): string {
   return installing ? i18n._(msg`Installing ${installing}…`) : i18n._(msg`Play`)
 }
 
+// The running time ticks on its own so the second-by-second update leaves Stop and its dialog alone.
+function useRunningTime(since: number) {
+  return useSecondValue((now) => formatElapsed(now - since), true)
+}
+
+function RunningTime({ since }: { since: number }) {
+  return <>{useRunningTime(since)}</>
+}
+
+function RunningFor({ since }: { since: number }) {
+  const { t } = useLingui()
+  const time = useRunningTime(since)
+  return <>{t`Running for ${time}`}</>
+}
+
 // RailStop is Stop as the narrow sidebar's full-width icon; its tooltip also says how long the game has run.
 function RailStop({
-  time,
+  since,
   stopping,
   onStop,
 }: {
-  time: string
+  since: number
   stopping: boolean
   onStop: () => void
 }) {
@@ -66,7 +81,7 @@ function RailStop({
         <>
           {t`Stop game`}
           <br />
-          {t`Running for ${time}`}
+          <RunningFor since={since} />
         </>
       }
       size="medium"
@@ -96,7 +111,6 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
   const state = stateOf(status, game)
   const running = state === State.Running
   const since = status?.since ?? 0
-  const time = useSecondValue((now) => (running ? formatElapsed(now - since) : ''), running)
   // Fields, not the profiles: a save of the open profile re-renders this only when what it shows changed.
   const runningName = useProfiles((s) => s.profiles.find((p) => p.id === status?.profile)?.name)
   const presets = useOpenPresets()
@@ -144,12 +158,12 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
                   color: 'var(--mortar-ink-soft)',
                 }}
               >
-                {time}
+                <RunningTime since={since} />
               </Typography>
             </Box>
           )}
           {rail ? (
-            <RailStop time={time} stopping={stopping} onStop={() => setConfirming(true)} />
+            <RailStop since={since} stopping={stopping} onStop={() => setConfirming(true)} />
           ) : (
             <Button
               variant="contained"
