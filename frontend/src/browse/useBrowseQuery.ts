@@ -1,4 +1,4 @@
-import { sameValue } from '@rethunk/react-load-hooks'
+import { keepUnchanged, sameValue } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import {
   type Dispatch,
@@ -103,6 +103,15 @@ interface Screen {
 }
 
 // The screen from source pages that have already answered, or null while one of them is still to fetch.
+/** next, keeping prev's object when nothing changed and each card's object when that card did not, so a refresh redraws
+ * only the cards whose numbers moved. */
+function keptResult(prev: BrowseResult, next: BrowseResult): BrowseResult {
+  if (sameValue(prev, next)) {
+    return prev
+  }
+  return { ...next, items: keepUnchanged(prev.items, next.items, hitKey) }
+}
+
 function cachedScreen(done: Map<number, BrowseResult>, page: number, size: number): Screen | null {
   const { first, last, skip } = screenSpan(page, size)
   const head = done.get(first)
@@ -292,7 +301,7 @@ function useBrowseQuery({
     }
     const show = ({ next, whole: all }: Screen) => {
       setWhole(all)
-      setResult((prev) => (sameValue(prev, next) ? prev : next))
+      setResult((prev) => keptResult(prev, next))
       setStatus('done')
       setPage((current) => clampPage({ page: current, total: pagedTotal(next), size }))
     }
