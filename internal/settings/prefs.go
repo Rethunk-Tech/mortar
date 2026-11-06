@@ -243,135 +243,24 @@ func defaultPrefs() Settings {
 }
 
 func normalizePrefs(s *Settings) {
-	if !slices.Contains(onPlayValues, s.OnPlay) {
-		s.OnPlay = OnPlayStay
+	for _, p := range normStrings(s) {
+		if !slices.Contains(p.values, *p.field) {
+			*p.field = p.def
+		}
 	}
-	if s.ParallelDownloads < MinParallelDownloads || s.ParallelDownloads > MaxParallelDownloads {
-		s.ParallelDownloads = DefaultParallelDownloads
+	for _, p := range normInts(s) {
+		if *p.field < p.lo || *p.field > p.hi {
+			*p.field = p.def
+		}
 	}
-	if s.DownloadSpeedLimit < MinDownloadSpeedLimit || s.DownloadSpeedLimit > MaxDownloadSpeedLimit {
-		s.DownloadSpeedLimit = 0
-	}
-	if s.UpdateCheckIntervalMinutes < MinUpdateCheckIntervalMinutes || s.UpdateCheckIntervalMinutes > MaxUpdateCheckIntervalMinutes {
-		s.UpdateCheckIntervalMinutes = DefaultUpdateCheckIntervalMinutes
-	}
-	if s.NotifyModUpdates == nil {
-		s.NotifyModUpdates = on()
+	for _, p := range normBools(s) {
+		if *p.field == nil {
+			*p.field = p.def()
+		}
 	}
 	normalizeUpdateDigest(s)
 	moveAutoInstallFolders(s)
-	if s.StoreRetentionDays < MinStoreRetentionDays || s.StoreRetentionDays > MaxStoreRetentionDays {
-		s.StoreRetentionDays = DefaultStoreRetentionDays
-	}
-	if !slices.Contains(modsViewValues, s.DefaultModsView) {
-		s.DefaultModsView = ModsViewGrid
-	}
-	if !slices.Contains(implicitModsValues, s.ImplicitModsView) {
-		s.ImplicitModsView = ImplicitModsNested
-	}
-	if s.ConfirmRemovals == nil {
-		s.ConfirmRemovals = on()
-	}
-	if s.BackgroundBadgeChecks == nil {
-		s.BackgroundBadgeChecks = on()
-	}
-	if !slices.Contains(startScreenValues, s.StartScreen) {
-		s.StartScreen = StartScreenLast
-	}
-	if !slices.Contains(antivirusValues, s.Antivirus) {
-		s.Antivirus = AntivirusAutomatic
-	}
-	if !slices.Contains(datesValues, s.Dates) {
-		s.Dates = DatesRelative
-	}
-	if !slices.Contains(graphicsValues, s.Graphics) {
-		s.Graphics = GraphicsAutomatic
-	}
-	if s.TrashRetentionDays < MinTrashRetentionDays || s.TrashRetentionDays > MaxTrashRetentionDays {
-		s.TrashRetentionDays = DefaultTrashRetentionDays
-	}
-	if s.HistoryEventsKept < MinHistoryEventsKept || s.HistoryEventsKept > MaxHistoryEventsKept {
-		s.HistoryEventsKept = DefaultHistoryEventsKept
-	}
-	if s.NotifyDownloadFinished == nil {
-		s.NotifyDownloadFinished = off()
-	}
-	if s.NotifyDownloadFailed == nil {
-		s.NotifyDownloadFailed = on()
-	}
-	if s.NotifyRunCrashed == nil {
-		s.NotifyRunCrashed = on()
-	}
-	if !slices.Contains(densityValues, s.Density) {
-		s.Density = DensityComfortable
-	}
-	if !slices.Contains(themeValues, s.Theme) {
-		s.Theme = ThemeDark
-	}
-	if !slices.Contains(gridCardValues, s.GridCardSize) {
-		s.GridCardSize = GridCardMedium
-	}
-	if s.ShowAuthorOnCards == nil {
-		s.ShowAuthorOnCards = on()
-	}
-	if s.MarkLocalMods == nil {
-		s.MarkLocalMods = on()
-	}
 	s.BrowseCardStats = sanitizeBrowseCardStats(s.BrowseCardStats)
-	if !slices.Contains(reduceMotionValues, s.ReduceMotion) {
-		s.ReduceMotion = ReduceMotionSystem
-	}
-	if !slices.Contains(heroValues, s.ProfileHero) {
-		s.ProfileHero = HeroFull
-	}
-	if s.ReuseFomodChoices == nil {
-		s.ReuseFomodChoices = on()
-	}
-	if s.DriftChecks == nil {
-		s.DriftChecks = on()
-	}
-	if s.AutoInstallMortarUpdates == nil {
-		s.AutoInstallMortarUpdates = on()
-	}
-	if !slices.Contains(profileOrderValues, s.ProfileOrder) {
-		s.ProfileOrder = ProfileOrderManual
-	}
-	if !slices.Contains(thunderstoreHostValues, s.ThunderstoreHost) {
-		s.ThunderstoreHost = ThunderstoreHostAuto
-	}
-	if !slices.Contains(autoRetryValues, s.AutoRetryDownloads) {
-		s.AutoRetryDownloads = AutoRetryOff
-	}
-	if !slices.Contains(sidebarBadgesValues, s.SidebarBadges) {
-		s.SidebarBadges = SidebarBadgesAll
-	}
-	if s.ShareIncludeDisabledMods == nil {
-		s.ShareIncludeDisabledMods = on()
-	}
-	if s.ShareIncludeFomodChoices == nil {
-		s.ShareIncludeFomodChoices = on()
-	}
-	if s.ShareIncludeNotes == nil {
-		s.ShareIncludeNotes = on()
-	}
-	if s.ShareIncludeConfigFiles == nil {
-		s.ShareIncludeConfigFiles = on()
-	}
-	if s.ShareIncludeLibraries == nil {
-		s.ShareIncludeLibraries = on()
-	}
-	if s.ShareIncludeProblemChoices == nil {
-		s.ShareIncludeProblemChoices = on()
-	}
-	if !slices.Contains(extensionConnectionValues, s.ExtensionConnection) {
-		s.ExtensionConnection = ExtensionAllow
-	}
-	if !slices.Contains(smapiBuildsValues, s.SmapiBuilds) {
-		s.SmapiBuilds = SmapiBuildsShow
-	}
-	if s.ShowSmapiConsole == nil {
-		s.ShowSmapiConsole = on()
-	}
 	if s.Games == nil {
 		s.Games = map[string]*GameSettings{}
 	}
@@ -385,78 +274,92 @@ func normalizePrefs(s *Settings) {
 	}
 }
 
+// normString is an enumerated setting that falls back to def when its value is not one of values.
+type normString struct {
+	field  *string
+	values []string
+	def    string
+}
+
+// normInt is a ranged setting that falls back to def outside lo to hi.
+type normInt struct {
+	field       *int
+	lo, hi, def int
+}
+
+// normBool is an optional switch that takes def() while unset.
+type normBool struct {
+	field **bool
+	def   func() *bool
+}
+
+func normStrings(s *Settings) []normString {
+	return []normString{
+		{&s.OnPlay, onPlayValues, OnPlayStay},
+		{&s.DefaultModsView, modsViewValues, ModsViewGrid},
+		{&s.ImplicitModsView, implicitModsValues, ImplicitModsNested},
+		{&s.StartScreen, startScreenValues, StartScreenLast},
+		{&s.Antivirus, antivirusValues, AntivirusAutomatic},
+		{&s.Dates, datesValues, DatesRelative},
+		{&s.Graphics, graphicsValues, GraphicsAutomatic},
+		{&s.Density, densityValues, DensityComfortable},
+		{&s.Theme, themeValues, ThemeDark},
+		{&s.GridCardSize, gridCardValues, GridCardMedium},
+		{&s.ReduceMotion, reduceMotionValues, ReduceMotionSystem},
+		{&s.ProfileHero, heroValues, HeroFull},
+		{&s.ProfileOrder, profileOrderValues, ProfileOrderManual},
+		{&s.ThunderstoreHost, thunderstoreHostValues, ThunderstoreHostAuto},
+		{&s.AutoRetryDownloads, autoRetryValues, AutoRetryOff},
+		{&s.SidebarBadges, sidebarBadgesValues, SidebarBadgesAll},
+		{&s.ExtensionConnection, extensionConnectionValues, ExtensionAllow},
+		{&s.SmapiBuilds, smapiBuildsValues, SmapiBuildsShow},
+	}
+}
+
+func normInts(s *Settings) []normInt {
+	return []normInt{
+		{&s.ParallelDownloads, MinParallelDownloads, MaxParallelDownloads, DefaultParallelDownloads},
+		{&s.DownloadSpeedLimit, MinDownloadSpeedLimit, MaxDownloadSpeedLimit, 0},
+		{&s.UpdateCheckIntervalMinutes, MinUpdateCheckIntervalMinutes, MaxUpdateCheckIntervalMinutes, DefaultUpdateCheckIntervalMinutes},
+		{&s.StoreRetentionDays, MinStoreRetentionDays, MaxStoreRetentionDays, DefaultStoreRetentionDays},
+		{&s.TrashRetentionDays, MinTrashRetentionDays, MaxTrashRetentionDays, DefaultTrashRetentionDays},
+		{&s.HistoryEventsKept, MinHistoryEventsKept, MaxHistoryEventsKept, DefaultHistoryEventsKept},
+	}
+}
+
+func normBools(s *Settings) []normBool {
+	return []normBool{
+		{&s.NotifyModUpdates, on},
+		{&s.ConfirmRemovals, on},
+		{&s.BackgroundBadgeChecks, on},
+		{&s.NotifyDownloadFinished, off},
+		{&s.NotifyDownloadFailed, on},
+		{&s.NotifyRunCrashed, on},
+		{&s.ShowAuthorOnCards, on},
+		{&s.MarkLocalMods, on},
+		{&s.ReuseFomodChoices, on},
+		{&s.DriftChecks, on},
+		{&s.AutoInstallMortarUpdates, on},
+		{&s.ShareIncludeDisabledMods, on},
+		{&s.ShareIncludeFomodChoices, on},
+		{&s.ShareIncludeNotes, on},
+		{&s.ShareIncludeConfigFiles, on},
+		{&s.ShareIncludeLibraries, on},
+		{&s.ShareIncludeProblemChoices, on},
+		{&s.ShowSmapiConsole, on},
+	}
+}
+
 func validatePrefs(s Settings) error {
-	if !slices.Contains(onPlayValues, s.OnPlay) {
-		return fmt.Errorf("on play must be stay, minimise or hide, got %q", s.OnPlay)
+	for _, p := range validEnums(s) {
+		if !slices.Contains(p.values, p.value) {
+			return fmt.Errorf("%s, got %q", p.msg, p.value)
+		}
 	}
-	if s.ParallelDownloads < MinParallelDownloads || s.ParallelDownloads > MaxParallelDownloads {
-		return fmt.Errorf("parallel downloads must be %d to %d, got %d", MinParallelDownloads, MaxParallelDownloads, s.ParallelDownloads)
-	}
-	if s.DownloadSpeedLimit < MinDownloadSpeedLimit || s.DownloadSpeedLimit > MaxDownloadSpeedLimit {
-		return fmt.Errorf("download speed limit must be %d to %d MB/s, got %d", MinDownloadSpeedLimit, MaxDownloadSpeedLimit, s.DownloadSpeedLimit)
-	}
-	if s.UpdateCheckIntervalMinutes < MinUpdateCheckIntervalMinutes || s.UpdateCheckIntervalMinutes > MaxUpdateCheckIntervalMinutes {
-		return fmt.Errorf("update check interval must be %d to %d minutes, got %d", MinUpdateCheckIntervalMinutes, MaxUpdateCheckIntervalMinutes, s.UpdateCheckIntervalMinutes)
-	}
-	if s.StoreRetentionDays < MinStoreRetentionDays || s.StoreRetentionDays > MaxStoreRetentionDays {
-		return fmt.Errorf("store retention days must be %d to %d, got %d", MinStoreRetentionDays, MaxStoreRetentionDays, s.StoreRetentionDays)
-	}
-	if !slices.Contains(modsViewValues, s.DefaultModsView) {
-		return fmt.Errorf("default mods view must be grid or list, got %q", s.DefaultModsView)
-	}
-	if !slices.Contains(implicitModsValues, s.ImplicitModsView) {
-		return fmt.Errorf("implicit mods view must be shown, nested or hidden, got %q", s.ImplicitModsView)
-	}
-	if !slices.Contains(startScreenValues, s.StartScreen) {
-		return fmt.Errorf("start screen must be last or gameselect, got %q", s.StartScreen)
-	}
-	if !slices.Contains(antivirusValues, s.Antivirus) {
-		return fmt.Errorf("antivirus must be automatic, clamd, command or off, got %q", s.Antivirus)
-	}
-	if !slices.Contains(datesValues, s.Dates) {
-		return fmt.Errorf("dates must be relative or absolute, got %q", s.Dates)
-	}
-	if !slices.Contains(graphicsValues, s.Graphics) {
-		return fmt.Errorf("graphics must be automatic, smooth or compatible, got %q", s.Graphics)
-	}
-	if s.TrashRetentionDays < MinTrashRetentionDays || s.TrashRetentionDays > MaxTrashRetentionDays {
-		return fmt.Errorf("trash retention days must be %d to %d, got %d", MinTrashRetentionDays, MaxTrashRetentionDays, s.TrashRetentionDays)
-	}
-	if s.HistoryEventsKept < MinHistoryEventsKept || s.HistoryEventsKept > MaxHistoryEventsKept {
-		return fmt.Errorf("history events kept must be %d to %d, got %d", MinHistoryEventsKept, MaxHistoryEventsKept, s.HistoryEventsKept)
-	}
-	if !slices.Contains(densityValues, s.Density) {
-		return fmt.Errorf("density must be comfortable or compact, got %q", s.Density)
-	}
-	if !slices.Contains(themeValues, s.Theme) {
-		return fmt.Errorf("theme must be dark, light or system, got %q", s.Theme)
-	}
-	if !slices.Contains(gridCardValues, s.GridCardSize) {
-		return fmt.Errorf("grid card size must be small, medium or large, got %q", s.GridCardSize)
-	}
-	if !slices.Contains(reduceMotionValues, s.ReduceMotion) {
-		return fmt.Errorf("reduce motion must be system, always or never, got %q", s.ReduceMotion)
-	}
-	if !slices.Contains(heroValues, s.ProfileHero) {
-		return fmt.Errorf("profile hero must be full, compact or hidden, got %q", s.ProfileHero)
-	}
-	if !slices.Contains(profileOrderValues, s.ProfileOrder) {
-		return fmt.Errorf("profile order must be manual, name or lastPlayed, got %q", s.ProfileOrder)
-	}
-	if !slices.Contains(thunderstoreHostValues, s.ThunderstoreHost) {
-		return fmt.Errorf("thunderstore host must be auto or one of its download hosts, got %q", s.ThunderstoreHost)
-	}
-	if !slices.Contains(autoRetryValues, s.AutoRetryDownloads) {
-		return fmt.Errorf("auto-retry downloads must be off, 1 or 3, got %q", s.AutoRetryDownloads)
-	}
-	if !slices.Contains(sidebarBadgesValues, s.SidebarBadges) {
-		return fmt.Errorf("sidebar badges must be problemsAndUpdates, problems or off, got %q", s.SidebarBadges)
-	}
-	if !slices.Contains(extensionConnectionValues, s.ExtensionConnection) {
-		return fmt.Errorf("extension connection must be allow or off, got %q", s.ExtensionConnection)
-	}
-	if !slices.Contains(smapiBuildsValues, s.SmapiBuilds) {
-		return fmt.Errorf("smapi builds must be never, show or include, got %q", s.SmapiBuilds)
+	for _, p := range validRanges(s) {
+		if p.value < p.lo || p.value > p.hi {
+			return fmt.Errorf("%s must be %d to %d%s, got %d", p.name, p.lo, p.hi, p.unit, p.value)
+		}
 	}
 	for _, g := range s.Games {
 		if g == nil {
@@ -467,6 +370,51 @@ func validatePrefs(s Settings) error {
 		}
 	}
 	return nil
+}
+
+type validEnum struct {
+	value  string
+	values []string
+	msg    string
+}
+
+type validRange struct {
+	value, lo, hi int
+	name, unit    string
+}
+
+func validEnums(s Settings) []validEnum {
+	return []validEnum{
+		{s.OnPlay, onPlayValues, "on play must be stay, minimise or hide"},
+		{s.DefaultModsView, modsViewValues, "default mods view must be grid or list"},
+		{s.ImplicitModsView, implicitModsValues, "implicit mods view must be shown, nested or hidden"},
+		{s.StartScreen, startScreenValues, "start screen must be last or gameselect"},
+		{s.Antivirus, antivirusValues, "antivirus must be automatic, clamd, command or off"},
+		{s.Dates, datesValues, "dates must be relative or absolute"},
+		{s.Graphics, graphicsValues, "graphics must be automatic, smooth or compatible"},
+		{s.Density, densityValues, "density must be comfortable or compact"},
+		{s.Theme, themeValues, "theme must be dark, light or system"},
+		{s.GridCardSize, gridCardValues, "grid card size must be small, medium or large"},
+		{s.ReduceMotion, reduceMotionValues, "reduce motion must be system, always or never"},
+		{s.ProfileHero, heroValues, "profile hero must be full, compact or hidden"},
+		{s.ProfileOrder, profileOrderValues, "profile order must be manual, name or lastPlayed"},
+		{s.ThunderstoreHost, thunderstoreHostValues, "thunderstore host must be auto or one of its download hosts"},
+		{s.AutoRetryDownloads, autoRetryValues, "auto-retry downloads must be off, 1 or 3"},
+		{s.SidebarBadges, sidebarBadgesValues, "sidebar badges must be problemsAndUpdates, problems or off"},
+		{s.ExtensionConnection, extensionConnectionValues, "extension connection must be allow or off"},
+		{s.SmapiBuilds, smapiBuildsValues, "smapi builds must be never, show or include"},
+	}
+}
+
+func validRanges(s Settings) []validRange {
+	return []validRange{
+		{s.ParallelDownloads, MinParallelDownloads, MaxParallelDownloads, "parallel downloads", ""},
+		{s.DownloadSpeedLimit, MinDownloadSpeedLimit, MaxDownloadSpeedLimit, "download speed limit", " MB/s"},
+		{s.UpdateCheckIntervalMinutes, MinUpdateCheckIntervalMinutes, MaxUpdateCheckIntervalMinutes, "update check interval", " minutes"},
+		{s.StoreRetentionDays, MinStoreRetentionDays, MaxStoreRetentionDays, "store retention days", ""},
+		{s.TrashRetentionDays, MinTrashRetentionDays, MaxTrashRetentionDays, "trash retention days", ""},
+		{s.HistoryEventsKept, MinHistoryEventsKept, MaxHistoryEventsKept, "history events kept", ""},
+	}
 }
 
 var (

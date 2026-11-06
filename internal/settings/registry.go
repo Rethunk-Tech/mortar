@@ -436,6 +436,11 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.SaveBackupKeep != 0 {
 		dst.SaveBackupKeep = src.SaveBackupKeep
 	}
+	mergeGameTail(dst, src)
+}
+
+// mergeGameTail merges the settings that follow the backup fields; src's switches always win.
+func mergeGameTail(dst *GameSettings, src GameSettings) {
 	dst.UpdateModsBeforePlayDefault = src.UpdateModsBeforePlayDefault
 	dst.SkipPlayCheck = src.SkipPlayCheck
 	dst.PauseDownloadsWhilePlaying = src.PauseDownloadsWhilePlaying
@@ -553,6 +558,11 @@ func normalizeGame(id string, g *GameSettings) {
 	if !slices.Contains(cosmeticValues, g.CosmeticConflicts) {
 		g.CosmeticConflicts = d.CosmeticConflicts
 	}
+	normalizeGameTail(g, d)
+}
+
+// normalizeGameTail resets the requirement, launch, console and sync fields of g that are out of range to d's.
+func normalizeGameTail(g *GameSettings, d GameSettings) {
 	if !slices.Contains(enableReqValues, g.EnableRequirements) {
 		g.EnableRequirements = d.EnableRequirements
 	}
