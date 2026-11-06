@@ -249,105 +249,136 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 	if err != nil {
 		return &Failure{Hint: c.Failure, Err: err}
 	}
-	out := captureOf(exited)
+	a := &attempt{
+		c: c, tm: tm, onLines: onLines, began: began, exited: exited, out: captureOf(exited),
+		reached: map[Stage]bool{StageHanded: false, StageUp: false, StageLoader: false},
+		// File timestamps come from a coarse kernel clock that can trail time.Now by a few milliseconds.
+		tail: tailer{path: c.LogFile, since: began.Add(-clockSlack), onLines: onLines},
+	}
 	// A game that comes up with an exit callback keeps its capture until it exits, so the callback gets the output.
-	keep := false
-	if out != nil {
+	if a.out != nil {
 		captured.Delete(exited)
 		defer func() {
-			if !keep {
-				out.release()
+			if !a.keep {
+				a.out.release()
 			}
 		}()
 	}
-	// stalled reports a known cause in the process's output while the game is not up, and ends the process: Wine
-	// leaves an assertion dialog open forever, so waiting out the timeout would only hide the reason.
-	stalled := func(exited bool) *Failure {
-		hint, line, found := Diagnose(out.tail(), exited)
-		if !found {
-			return nil
-		}
-		out.stop()
-		return &Failure{Hint: hint, Err: errors.New(line)}
-	}
-	// File timestamps come from a coarse kernel clock that can trail time.Now by a few milliseconds.
-	tail := tailer{path: c.LogFile, since: began.Add(-clockSlack), onLines: onLines}
-	deadline := time.NewTimer(tm.Timeout)
-	defer deadline.Stop()
-	tick := time.NewTicker(tm.Poll)
-	defer tick.Stop()
-	ok := func() bool {
-		if c.Ready != nil {
-			return c.Ready()
-		}
-		return tail.poll()
-	}
-	started := func() {
-		if c.LogFile != "" {
-			go follow(ctx, &tail, tm.Poll)
-		}
-		if c.OnExit != nil && exited != nil && !c.Relay {
-			ch := exited
-			keep = true
-			go func() {
-				x := WaitError(<-ch)
-				x.Output = out.tail()
-				out.release()
-				c.OnExit(x)
-			}()
-		}
-	}
-	reached := map[Stage]bool{StageHanded: false, StageUp: false, StageLoader: false}
-	stage := func(st Stage) {
-		if !reached[st] && c.OnStage != nil {
-			c.OnStage(st)
-		}
-		reached[st] = true
-	}
-	// The process table is read until the game is first seen; after that it is known to have come up.
-	up := func() bool {
-		if !reached[StageUp] && c.Alive != nil && c.Alive() {
-			stage(StageUp)
-		}
-		return reached[StageUp]
-	}
-	succeed := func() error {
-		stage(StageUp)
-		if c.LogFile != "" {
-			stage(StageLoader)
-		}
-		started()
+	return a.wait(ctx)
+}
+
+// attempt is the state of one Run: the process, its output capture and the stages reached so far.
+type attempt struct {
+	c       Command
+	tm      Timing
+	onLines func([]string)
+	began   time.Time
+	exited  <-chan error
+	out     *capture
+	tail    tailer
+	reached map[Stage]bool
+	keep    bool
+}
+
+// stalled reports a known cause in the process's output while the game is not up, and ends the process: Wine
+// leaves an assertion dialog open forever, so waiting out the timeout would only hide the reason.
+func (a *attempt) stalled(exited bool) *Failure {
+	hint, line, found := Diagnose(a.out.tail(), exited)
+	if !found {
 		return nil
 	}
+	a.out.stop()
+	return &Failure{Hint: hint, Err: errors.New(line)}
+}
+
+func (a *attempt) ok() bool {
+	if a.c.Ready != nil {
+		return a.c.Ready()
+	}
+	return a.tail.poll()
+}
+
+func (a *attempt) started(ctx context.Context) {
+	if a.c.LogFile != "" {
+		go follow(ctx, &a.tail, a.tm.Poll)
+	}
+	if a.c.OnExit != nil && a.exited != nil && !a.c.Relay {
+		ch := a.exited
+		a.keep = true
+		go func() {
+			x := WaitError(<-ch)
+			x.Output = a.out.tail()
+			a.out.release()
+			a.c.OnExit(x)
+		}()
+	}
+}
+
+func (a *attempt) stage(st Stage) {
+	if !a.reached[st] && a.c.OnStage != nil {
+		a.c.OnStage(st)
+	}
+	a.reached[st] = true
+}
+
+// up reads the process table until the game is first seen; after that it is known to have come up.
+func (a *attempt) up() bool {
+	if !a.reached[StageUp] && a.c.Alive != nil && a.c.Alive() {
+		a.stage(StageUp)
+	}
+	return a.reached[StageUp]
+}
+
+func (a *attempt) succeed(ctx context.Context) error {
+	a.stage(StageUp)
+	if a.c.LogFile != "" {
+		a.stage(StageLoader)
+	}
+	a.started(ctx)
+	return nil
+}
+
+// onExit decides what the process ending means; done is false when a relay launcher handed the game over.
+func (a *attempt) onExit(ctx context.Context, waitErr error) (done bool, err error) {
+	if a.ok() {
+		return true, a.succeed(ctx)
+	}
+	if a.c.Relay && waitErr == nil {
+		a.exited = nil
+		a.stage(StageHanded)
+		return false, nil
+	}
+	if f := a.stalled(true); f != nil {
+		return true, f
+	}
+	return true, &ExitError{Code: waitCode(waitErr), Output: lastLines(a.out.tail(), 5)}
+}
+
+func (a *attempt) wait(ctx context.Context) error {
+	deadline := time.NewTimer(a.tm.Timeout)
+	defer deadline.Stop()
+	tick := time.NewTicker(a.tm.Poll)
+	defer tick.Stop()
 	for {
-		alive := up()
-		if ok() || time.Since(began) >= tm.Slow && alive {
-			return succeed()
+		alive := a.up()
+		if a.ok() || time.Since(a.began) >= a.tm.Slow && alive {
+			return a.succeed(ctx)
 		}
-		if f := stalled(false); f != nil {
+		if f := a.stalled(false); f != nil {
 			return f
 		}
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-deadline.C:
-			if up() {
-				return succeed()
+			if a.up() {
+				return a.succeed(ctx)
 			}
-			return &Failure{Hint: c.Failure, Err: errors.New("the game did not start in time")}
-		case waitErr := <-exited:
-			if ok() {
-				return succeed()
+			return &Failure{Hint: a.c.Failure, Err: errors.New("the game did not start in time")}
+		case waitErr := <-a.exited:
+			if done, err := a.onExit(ctx, waitErr); done {
+				return err
 			}
-			if c.Relay && waitErr == nil {
-				exited = nil
-				stage(StageHanded)
-				continue
-			}
-			if f := stalled(true); f != nil {
-				return f
-			}
-			return &ExitError{Code: waitCode(waitErr), Output: lastLines(out.tail(), 5)}
 		case <-tick.C:
 		}
 	}
