@@ -226,47 +226,8 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 		if o.Undone {
 			continue
 		}
-		// A crashed copy leaves its temp file; the name is Mortar's, so it goes whatever else is known of the operation.
-		if err := safefs.Remove(tmpName(o.Dst)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := undoDst(m, o, i, log); err != nil {
 			return err
-		}
-		_, backupErr := os.Lstat(o.Displaced)
-		switch {
-		case o.Displaced != "" && backupErr == nil:
-			// With the player's file set aside, whatever is at Dst is ours, even if the game wrote to it.
-			if err := writeBackOrRescue(m, o, i, log); err != nil {
-				return err
-			}
-			if err := safefs.Remove(o.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
-				return err
-			}
-			if err := move(o.Displaced, o.Dst); err != nil {
-				return err
-			}
-		case o.Displaced == "":
-			// Nothing was displaced, so Dst is ours only while it still holds our content. A file changed since holds
-			// the player's or a mod's own data (a script mod's settings): one placed from the profile's copy goes back
-			// into that copy, and any other stays.
-			if h, err := safefs.HashFile(o.Dst, sha256.New()); err == nil {
-				switch {
-				case h == o.Hash:
-					if err := safefs.Remove(o.Dst); err != nil {
-						return err
-					}
-				case o.WriteBack:
-					wrote, err := writeBackFile(o, i, log)
-					if err != nil {
-						return err
-					}
-					if wrote {
-						if err := safefs.Remove(o.Dst); err != nil {
-							return err
-						}
-					} else {
-						m.notes = append(m.notes, Note{Path: o.Dst, Kind: NoteRescued})
-					}
-				}
-			}
 		}
 		// A displaced file with no backup left was never moved or is already back: Dst is the player's own.
 		at(fmt.Sprintf("undone-file:%d", i))
@@ -275,6 +236,58 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 			return err
 		}
 		at(fmt.Sprintf("undone-logged:%d", i))
+	}
+	return nil
+}
+
+// undoDst restores the destination of one placed file: the displaced original goes back, or a file still holding our
+// content is removed.
+func undoDst(m *Manifest, o Placed, i int, log *opLog) error {
+	// A crashed copy leaves its temp file; the name is Mortar's, so it goes whatever else is known of the operation.
+	if err := safefs.Remove(tmpName(o.Dst)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	_, backupErr := os.Lstat(o.Displaced)
+	switch {
+	case o.Displaced != "" && backupErr == nil:
+		// With the player's file set aside, whatever is at Dst is ours, even if the game wrote to it.
+		if err := writeBackOrRescue(m, o, i, log); err != nil {
+			return err
+		}
+		if err := safefs.Remove(o.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+		return move(o.Displaced, o.Dst)
+	case o.Displaced == "":
+		return undoUndisplaced(m, o, i, log)
+	}
+	return nil
+}
+
+// undoUndisplaced handles a placed file that displaced nothing, so Dst is ours only while it still holds our content. A
+// file changed since holds the player's or a mod's own data (a script mod's settings): one placed from the profile's copy
+// goes back into that copy, and any other stays.
+func undoUndisplaced(m *Manifest, o Placed, i int, log *opLog) error {
+	if h, err := safefs.HashFile(o.Dst, sha256.New()); err == nil {
+		return undoChanged(m, o, i, log, h)
+	}
+	return nil
+}
+
+func undoChanged(m *Manifest, o Placed, i int, log *opLog, h string) error {
+	switch {
+	case h == o.Hash:
+		return safefs.Remove(o.Dst)
+	case o.WriteBack:
+		wrote, err := writeBackFile(o, i, log)
+		if err != nil {
+			return err
+		}
+		if !wrote {
+			m.notes = append(m.notes, Note{Path: o.Dst, Kind: NoteRescued})
+			return nil
+		}
+		return safefs.Remove(o.Dst)
 	}
 	return nil
 }
