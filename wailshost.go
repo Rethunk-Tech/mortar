@@ -62,8 +62,8 @@ type wailsNotifier struct {
 	svc *notifications.NotificationService
 }
 
-// Notify uses the Notification portal inside Flatpak, where the notification service is not reachable; the portal
-// reports no click, so everywhere else the Wails service keeps the Show action.
+// Notify uses the Notification portal inside Flatpak, where the notification service is not reachable; its clicks
+// return through desktopnotify.RouteClicks. Everywhere else the Wails service shows the notification.
 func (n wailsNotifier) Notify(c desktopnotify.Notice) error {
 	if flatpak.Inside() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

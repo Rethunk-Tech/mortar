@@ -9,7 +9,7 @@ require (
 	github.com/Rethunk-Tech/go-bepinex v0.2.0
 	github.com/Rethunk-Tech/go-cfgedit v0.2.0
 	github.com/Rethunk-Tech/go-curseforge v0.3.0
-	github.com/Rethunk-Tech/go-desktopenv v0.5.0
+	github.com/Rethunk-Tech/go-desktopenv v0.6.0
 	github.com/Rethunk-Tech/go-dotnet v0.2.0
 	github.com/Rethunk-Tech/go-fomod v0.1.0
 	github.com/Rethunk-Tech/go-gamelocator v0.3.0

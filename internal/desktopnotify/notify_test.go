@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/go-desktopenv/portal"
 )
 
 type fakeNotifier struct {
@@ -43,5 +45,33 @@ func TestNoticePortalCarriesIconBytesAndDropsAMissingIcon(t *testing.T) {
 	}
 	if got := (Notice{ID: "a", Title: "T", Icon: filepath.Join(t.TempDir(), "none.png")}).Portal(); got.IconPNG != nil {
 		t.Fatalf("missing icon kept: %v", got.IconPNG)
+	}
+}
+
+func TestPortalDefaultActionCarriesData(t *testing.T) {
+	got := Notice{ID: "run-end-p-1", Title: "T", Data: map[string]any{"game": "g", "profile": "p"}}.Portal()
+	if got.DefaultAction != "open" || got.DefaultActionTarget != `{"game":"g","profile":"p"}` {
+		t.Fatalf("default action %q target %q", got.DefaultAction, got.DefaultActionTarget)
+	}
+	if bare := (Notice{ID: "a", Title: "T"}).Portal(); bare.DefaultAction != "open" || bare.DefaultActionTarget != "" {
+		t.Fatalf("bare notice %+v", bare)
+	}
+}
+
+func TestRouteActionCallsTheHandler(t *testing.T) {
+	var id string
+	var data map[string]any
+	h := func(i string, d map[string]any) { id, data = i, d }
+	routeAction(portal.NotificationAction{ID: "x", Action: "other", Target: `{"a":"b"}`}, h)
+	if id != "" {
+		t.Fatal("foreign action routed")
+	}
+	routeAction(portal.NotificationAction{ID: "run-end-p-1", Action: "open", Target: `{"game":"g","profile":"p"}`}, h)
+	if id != "run-end-p-1" || data["game"] != "g" || data["profile"] != "p" {
+		t.Fatalf("routed %q %v", id, data)
+	}
+	routeAction(portal.NotificationAction{ID: "n", Action: "open"}, h)
+	if id != "n" || data != nil {
+		t.Fatalf("bare click %q %v", id, data)
 	}
 }

@@ -2,6 +2,8 @@
 package desktopnotify
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -84,9 +86,18 @@ func noticeID(kind Kind, data map[string]any) string {
 	return fmt.Sprintf("%s-%s-%d", kind, profile, n)
 }
 
-// Portal converts n for the Notification portal. An unreadable icon is dropped: the text is what matters.
+// openAction is the portal action a click on a notification sends; its target carries the notice's Data.
+const openAction = "open"
+
+// Portal converts n for the Notification portal, whose click comes back through RouteClicks. An unreadable icon is
+// dropped: the text is what matters.
 func (n Notice) Portal() portal.Notification {
-	out := portal.Notification{ID: n.ID, Title: n.Title, Body: n.Body}
+	out := portal.Notification{ID: n.ID, Title: n.Title, Body: n.Body, DefaultAction: openAction}
+	if len(n.Data) > 0 {
+		if raw, err := json.Marshal(n.Data); err == nil {
+			out.DefaultActionTarget = string(raw)
+		}
+	}
 	if n.Icon != "" {
 		if png, err := safefs.ReadFile(n.Icon); err == nil {
 			out.IconPNG = png
@@ -94,3 +105,37 @@ func (n Notice) Portal() portal.Notification {
 	}
 	return out
 }
+
+// ClickFunc receives a clicked notification's id and the Data it was sent with, the same pair the Wails service
+// reports.
+type ClickFunc func(id string, data map[string]any)
+
+// routeAction hands a click on a default action to h; any other action is not ours.
+func routeAction(a portal.NotificationAction, h ClickFunc) {
+	if a.Action != openAction {
+		return
+	}
+	var data map[string]any
+	if a.Target != "" {
+		if err := json.Unmarshal([]byte(a.Target), &data); err != nil {
+			log.Printf("desktop notification click target: %v", err)
+		}
+	}
+	h(a.ID, data)
+}
+
+var stopClicks = func() {}
+
+// RouteClicks delivers portal notification clicks to h until StopClicks. The portal does not report the window
+// activation token to Wails, so the handler raises the window itself.
+func RouteClicks(ctx context.Context, h ClickFunc) error {
+	stop, err := portal.OnNotificationAction(ctx, func(a portal.NotificationAction) { routeAction(a, h) })
+	if err != nil {
+		return err
+	}
+	stopClicks = stop
+	return nil
+}
+
+// StopClicks ends the RouteClicks subscription.
+func StopClicks() { stopClicks() }
