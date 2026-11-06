@@ -398,219 +398,190 @@ func (c *cmd) dispatch() error {
 	if !verbs[verb] {
 		return usageError{"unknown command " + verb}
 	}
-	switch verb {
-	case "help", "--help", "-h":
-		fmt.Fprint(c.out, usage)
-		return nil
-	case "version":
-		commit := appversion.Commit()
-		return c.emit(map[string]string{"version": c.version, "commit": commit}, func() {
-			if commit == "" {
-				fmt.Fprintln(c.out, "mortar", c.version)
-				return
-			}
-			fmt.Fprintf(c.out, "mortar %s (build %s)\n", c.version, commit)
-		})
-	case "completion":
-		a, err := c.need(1, "a shell (bash, zsh or fish)")
-		if err != nil {
-			return err
-		}
-		return completion(c.out, a[0])
-	case "__complete":
-		return c.complete(c.args[1:])
-	case "open":
-		a, err := c.need(1, "a share link or .mortar file")
-		if err != nil {
-			return err
-		}
-		return open(a[0])
-	case "games":
-		return c.games()
-	case "game":
-		return c.gameCmd()
-	case "doctor":
-		return c.doctor()
-	case "uninstall-cleanup":
-		return c.uninstallCleanup()
-	case "quit":
-		return c.quit()
-	case "sweep":
-		return c.sweep()
-	case "launchers":
-		return c.launchers()
-	case "queue":
-		return c.queue()
-	case "templates":
-		return c.templatesCmd()
-	case "library":
-		return c.libraryCmd()
-	case "archive":
-		return c.archiveCmd()
-	case "browse":
-		return c.browse()
-	case "update":
-		return c.update()
-	case "backups":
-		return c.backups()
-	case "loader":
-		return c.loader()
-	case "dev":
-		return c.dev()
-	case "settings":
-		return c.settings()
-	case "antivirus":
-		return c.antivirus()
-	case "groups":
-		return c.savedGroups()
-	case "links":
-		return usageError{"links supports list, register, enable and disable"}
-	case "source":
-		return c.source()
-	case "bisect":
-		return c.bisectCmd()
-	case "trash":
-		return c.trash()
-	case "cache":
-		return c.cacheCmd()
-	case "store":
-		return c.storeCmd()
-	case "data":
-		return c.dataCmd()
-	case "profiles":
-		a, err := c.need(1, "a game")
-		if err != nil {
-			return err
-		}
-		return c.profiles(a[0])
-	case "history":
-		return c.historyCmd()
-	case "tools":
-		return c.tools()
-	case "console":
-		return c.console()
-	case "screenshots":
-		return c.screenshots()
-	case "endorse":
-		return c.endorse()
-	case "sync":
-		return c.syncCmd()
-	case "profile":
-		if len(c.args) > 1 {
-			switch c.args[1] {
-			case "set":
-				return c.profileSet()
-			case "shortcut":
-				return c.profileShortcut()
-			case "steam":
-				return c.profileSteam()
-			case "changes":
-				return c.profileChanges()
-			case "good":
-				return c.profileGood()
-			case "import":
-				return c.profileImport()
-			case "export":
-				return c.profileExport()
-			case "farm":
-				return c.profileFarm()
-			case "backup":
-				return c.profileBackup()
-			case "restore":
-				return c.profileRestore()
-			case "freeze", "unfreeze", "favourite", "unfavourite":
-				return c.profileMark(c.args[1])
-			}
-		}
-		return c.profile()
-	case "status", "stop":
-		a, err := c.need(1, "a game")
-		if err != nil {
-			return err
-		}
-		return c.status(verb, a[0])
-	case "play":
-		return c.play()
-	case "mods":
-		if len(c.args) > 1 {
-			switch c.args[1] {
-			case "enable", "disable", "remove", "pin", "unpin", "tag", "untag", "category", "note", "skip-version", "split", "combine":
-				return c.modsChange(c.args[1])
-			case "group":
-				return c.modsGroup()
-			case "channel":
-				return c.modsChannel()
-			case "win":
-				return c.modsWin()
-			case "files":
-				return c.modsFiles()
-			case "config":
-				return c.modsConfig()
-			case "preset":
-				return c.modsPreset()
-			case "menu":
-				return c.modsMenu()
-			case "compat":
-				return c.modsCompat()
-			case "report":
-				return c.modsReport()
-			case "by-author":
-				return c.modsByAuthor()
-			case "favourite", "unfavourite", "favourites":
-				return c.modsFavourite(c.args[1])
-			}
-		}
+	if handled, err := c.dispatchSimple(verb); handled {
+		return err
 	}
-	if verb == "logs" && len(c.args) >= 2 && c.args[1] == "share" {
-		return c.shareLog()
-	}
-	if verb == "logs" && len(c.args) >= 2 && c.args[1] == "fixes" {
-		return c.logFixes()
-	}
-	if verb == "logs" && len(c.args) >= 3 && c.args[1] == "search" {
-		return c.searchLogs(c.args[2])
-	}
-	if verb == "saves" && len(c.args) > 1 && c.args[1] == "check" {
-		return c.savesCheck()
-	}
-	if verb == "problems" && len(c.args) > 1 {
-		switch c.args[1] {
-		case "dismissed":
-			return c.problemsDismissed()
-		case "dismiss":
-			return c.problemsDismiss()
-		case "restore":
-			return c.problemsRestore()
-		}
-	}
-	if verb == "who" {
-		return c.who()
-	}
-	if verb == "launch" && c.vanilla {
-		a, err := c.need(1, "a game")
-		if err != nil {
-			return err
-		}
-		var st launchsvc.Status
-		if err := c.call("launch.vanilla", control.Params{Game: a[0]}, &st, launchTimeout); err != nil {
-			return err
-		}
-		return c.emit(st, func() { fmt.Fprintf(c.out, "%s is %s without mods.\n", a[0], st.State) })
-	}
-	if verb == "perf" {
-		return c.perfReports()
-	}
-	if verb == "conflicts" && len(c.args) > 1 && c.args[1] == "map" {
-		return c.conflictsMap()
-	}
-	if verb == "updates" && len(c.args) > 1 && c.args[1] == "apply" {
-		return c.updatesApply()
+	if handled, err := c.dispatchSub(verb); handled {
+		return err
 	}
 	a, err := c.need(1, "a game", "a profile")
 	if err != nil {
 		return err
 	}
 	p := control.Params{Game: a[0], Profile: a[1], All: c.all, Run: c.run, Force: c.force, Unscanned: c.allowUnscanned, Preset: c.presetFlag, Install: c.installFlag}
+	return c.dispatchProfiled(verb, a, p)
+}
+
+// dispatchSimple runs the verbs that need no game and profile pair; handled is false for the rest.
+func (c *cmd) dispatchSimple(verb string) (handled bool, err error) {
+	noArgs := map[string]func() error{
+		"games": c.games, "game": c.gameCmd, "doctor": c.doctor, "uninstall-cleanup": c.uninstallCleanup,
+		"quit": c.quit, "sweep": c.sweep, "launchers": c.launchers, "queue": c.queue, "templates": c.templatesCmd,
+		"library": c.libraryCmd, "archive": c.archiveCmd, "browse": c.browse, "update": c.update, "backups": c.backups,
+		"loader": c.loader, "dev": c.dev, "settings": c.settings, "antivirus": c.antivirus, "groups": c.savedGroups,
+		"source": c.source, "bisect": c.bisectCmd, "trash": c.trash, "cache": c.cacheCmd, "store": c.storeCmd,
+		"data": c.dataCmd, "history": c.historyCmd, "tools": c.tools, "console": c.console, "screenshots": c.screenshots,
+		"endorse": c.endorse, "sync": c.syncCmd, "play": c.play,
+	}
+	if f, ok := noArgs[verb]; ok {
+		return true, f()
+	}
+	switch verb {
+	case "help", "--help", "-h":
+		fmt.Fprint(c.out, usage)
+		return true, nil
+	case "version":
+		return true, c.versionCmd()
+	case "completion":
+		a, err := c.need(1, "a shell (bash, zsh or fish)")
+		if err != nil {
+			return true, err
+		}
+		return true, completion(c.out, a[0])
+	case "__complete":
+		c.complete(c.args[1:])
+		return true, nil
+	case "open":
+		a, err := c.need(1, "a share link or .mortar file")
+		if err != nil {
+			return true, err
+		}
+		return true, open(a[0])
+	case "links":
+		return true, usageError{"links supports list, register, enable and disable"}
+	case "profiles":
+		a, err := c.need(1, "a game")
+		if err != nil {
+			return true, err
+		}
+		return true, c.profiles(a[0])
+	case "status", "stop":
+		a, err := c.need(1, "a game")
+		if err != nil {
+			return true, err
+		}
+		return true, c.status(verb, a[0])
+	case "profile":
+		return true, c.profileDispatch()
+	case "mods":
+		return c.modsDispatch()
+	}
+	return false, nil
+}
+
+func (c *cmd) versionCmd() error {
+	commit := appversion.Commit()
+	return c.emit(map[string]string{"version": c.version, "commit": commit}, func() {
+		if commit == "" {
+			fmt.Fprintln(c.out, "mortar", c.version)
+			return
+		}
+		fmt.Fprintf(c.out, "mortar %s (build %s)\n", c.version, commit)
+	})
+}
+
+func (c *cmd) profileDispatch() error {
+	if len(c.args) > 1 {
+		sub := c.args[1]
+		subs := map[string]func() error{
+			"set": c.profileSet, "shortcut": c.profileShortcut, "steam": c.profileSteam, "changes": c.profileChanges,
+			"good": c.profileGood, "import": c.profileImport, "export": c.profileExport, "farm": c.profileFarm,
+			"backup": c.profileBackup, "restore": c.profileRestore,
+		}
+		if f, ok := subs[sub]; ok {
+			return f()
+		}
+		if inList(sub, "freeze", "unfreeze", "favourite", "unfavourite") {
+			return c.profileMark(sub)
+		}
+	}
+	return c.profile()
+}
+
+// modsDispatch runs the `mods` subcommands that take no profile pair; handled is false for the rest.
+func (c *cmd) modsDispatch() (handled bool, err error) {
+	if len(c.args) < 2 {
+		return false, nil
+	}
+	sub := c.args[1]
+	subs := map[string]func() error{
+		"group": c.modsGroup, "channel": c.modsChannel, "win": c.modsWin, "files": c.modsFiles, "config": c.modsConfig,
+		"preset": c.modsPreset, "menu": c.modsMenu, "compat": c.modsCompat, "report": c.modsReport, "by-author": c.modsByAuthor,
+	}
+	if f, ok := subs[sub]; ok {
+		return true, f()
+	}
+	switch sub {
+	case "enable", "disable", "remove", "pin", "unpin", "tag", "untag", "category", "note", "skip-version", "split", "combine":
+		return true, c.modsChange(sub)
+	case "favourite", "unfavourite", "favourites":
+		return true, c.modsFavourite(sub)
+	}
+	return false, nil
+}
+
+// dispatchSub runs the verbs whose subcommand needs no game and profile pair; handled is false for the rest.
+func (c *cmd) dispatchSub(verb string) (handled bool, err error) {
+	sub := ""
+	if len(c.args) > 1 {
+		sub = c.args[1]
+	}
+	switch verb {
+	case "logs":
+		switch {
+		case sub == "share":
+			return true, c.shareLog()
+		case sub == "fixes":
+			return true, c.logFixes()
+		case sub == "search" && len(c.args) >= 3:
+			return true, c.searchLogs(c.args[2])
+		}
+	case "saves":
+		if sub == "check" {
+			return true, c.savesCheck()
+		}
+	case "problems":
+		switch sub {
+		case "dismissed":
+			return true, c.problemsDismissed()
+		case "dismiss":
+			return true, c.problemsDismiss()
+		case "restore":
+			return true, c.problemsRestore()
+		}
+	case "who":
+		return true, c.who()
+	case "launch":
+		if c.vanilla {
+			return true, c.launchVanilla()
+		}
+	case "perf":
+		return true, c.perfReports()
+	case "conflicts":
+		if sub == "map" {
+			return true, c.conflictsMap()
+		}
+	case "updates":
+		if sub == "apply" {
+			return true, c.updatesApply()
+		}
+	}
+	return false, nil
+}
+
+func (c *cmd) launchVanilla() error {
+	a, err := c.need(1, "a game")
+	if err != nil {
+		return err
+	}
+	var st launchsvc.Status
+	if err := c.call("launch.vanilla", control.Params{Game: a[0]}, &st, launchTimeout); err != nil {
+		return err
+	}
+	return c.emit(st, func() { fmt.Fprintf(c.out, "%s is %s without mods.\n", a[0], st.State) })
+}
+
+func (c *cmd) dispatchProfiled(verb string, a []string, p control.Params) error {
 	switch verb {
 	case "mods":
 		return c.mods(p)
@@ -1210,18 +1181,7 @@ func (c *cmd) profile() error {
 	var p profile.Profile
 	switch sub {
 	case "list":
-		a, err := c.need(2, "a game", "a profile")
-		if err != nil {
-			return err
-		}
-		if c.format != "md" && c.format != "text" {
-			return usageError{"profile list needs --format md or text"}
-		}
-		var rows []control.ModRow
-		if err := c.call("mods", control.Params{Game: a[0], Profile: a[1]}, &rows, readTimeout); err != nil {
-			return err
-		}
-		return c.emit(enabledMods(rows), func() { c.printEnabledMods(rows, a[0]) })
+		return c.profileList()
 	case "compare":
 		a, err := c.need(2, "a game", "a profile", "a second profile")
 		if err != nil {
@@ -1229,48 +1189,9 @@ func (c *cmd) profile() error {
 		}
 		return show(c, "profile.compare", control.Params{Game: a[0], Profile: a[1], Name: a[2]}, func(diff profile.CLICompare) { c.compareTable(diff) })
 	case "match":
-		a, err := c.need(2, "a game", "a profile", "a link or .mortar file")
-		if err != nil {
-			return err
-		}
-		return show(c, "profile.match", control.Params{Game: a[0], Profile: a[1], Path: a[2]}, func(match control.ProfileMatch) {
-			fmt.Fprintf(c.out, "%d mods already match %s.\n", match.Already, a[1])
-			if len(match.Missing) > 0 {
-				fmt.Fprintf(c.out, "Missing in %s: %s\n", a[1], strings.Join(match.Missing, ", "))
-			}
-			if len(match.Different) > 0 {
-				fmt.Fprintf(c.out, "Different version: %s\n", strings.Join(match.Different, ", "))
-			}
-			if len(match.OnlyYours) > 0 {
-				fmt.Fprintf(c.out, "Only in yours: %s\n", strings.Join(match.OnlyYours, ", "))
-			}
-		})
+		return c.profileMatch()
 	case "collection":
-		a, err := c.need(2, "a game", "a profile")
-		if err != nil {
-			return err
-		}
-		if c.unlinkFlag && c.updateFlag {
-			return usageError{"profile collection: use either --update or --unlink"}
-		}
-		p := control.Params{Game: a[0], Profile: a[1], All: c.updateFlag, Unlink: c.unlinkFlag}
-		if c.unlinkFlag {
-			return show(c, "profile.collection", p, func(prof profile.Profile) { fmt.Fprintln(c.out, "unlinked collection") })
-		}
-		if c.updateFlag {
-			var res sharesvc.Result
-			if err := c.call("profile.collection", p, &res, installTimeout); err != nil {
-				return err
-			}
-			return c.emit(res, func() { fmt.Fprintf(c.out, "Queued %d downloads.\n", res.Queued) })
-		}
-		return show(c, "profile.collection", p, func(st sharesvc.CollectionStatus) {
-			if !st.Linked {
-				fmt.Fprintln(c.out, "not from a collection")
-				return
-			}
-			fmt.Fprintf(c.out, "%s\n%s\nrevision %d\nlatest %d\n", st.Name, st.URL, st.Revision, st.Latest)
-		})
+		return c.profileCollection()
 	case "load-order":
 		a, err := c.need(2, "a game", "a profile")
 		if err != nil {
@@ -1339,6 +1260,68 @@ func (c *cmd) profile() error {
 		return usageError{"unknown profile command " + sub}
 	}
 	return c.emit(p, func() { fmt.Fprintf(c.out, "%s\t%s\n", p.ID, p.Name) })
+}
+
+func (c *cmd) profileList() error {
+	a, err := c.need(2, "a game", "a profile")
+	if err != nil {
+		return err
+	}
+	if c.format != "md" && c.format != "text" {
+		return usageError{"profile list needs --format md or text"}
+	}
+	var rows []control.ModRow
+	if err := c.call("mods", control.Params{Game: a[0], Profile: a[1]}, &rows, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(enabledMods(rows), func() { c.printEnabledMods(rows, a[0]) })
+}
+
+func (c *cmd) profileMatch() error {
+	a, err := c.need(2, "a game", "a profile", "a link or .mortar file")
+	if err != nil {
+		return err
+	}
+	return show(c, "profile.match", control.Params{Game: a[0], Profile: a[1], Path: a[2]}, func(match control.ProfileMatch) {
+		fmt.Fprintf(c.out, "%d mods already match %s.\n", match.Already, a[1])
+		if len(match.Missing) > 0 {
+			fmt.Fprintf(c.out, "Missing in %s: %s\n", a[1], strings.Join(match.Missing, ", "))
+		}
+		if len(match.Different) > 0 {
+			fmt.Fprintf(c.out, "Different version: %s\n", strings.Join(match.Different, ", "))
+		}
+		if len(match.OnlyYours) > 0 {
+			fmt.Fprintf(c.out, "Only in yours: %s\n", strings.Join(match.OnlyYours, ", "))
+		}
+	})
+}
+
+func (c *cmd) profileCollection() error {
+	a, err := c.need(2, "a game", "a profile")
+	if err != nil {
+		return err
+	}
+	if c.unlinkFlag && c.updateFlag {
+		return usageError{"profile collection: use either --update or --unlink"}
+	}
+	p := control.Params{Game: a[0], Profile: a[1], All: c.updateFlag, Unlink: c.unlinkFlag}
+	if c.unlinkFlag {
+		return show(c, "profile.collection", p, func(prof profile.Profile) { fmt.Fprintln(c.out, "unlinked collection") })
+	}
+	if c.updateFlag {
+		var res sharesvc.Result
+		if err := c.call("profile.collection", p, &res, installTimeout); err != nil {
+			return err
+		}
+		return c.emit(res, func() { fmt.Fprintf(c.out, "Queued %d downloads.\n", res.Queued) })
+	}
+	return show(c, "profile.collection", p, func(st sharesvc.CollectionStatus) {
+		if !st.Linked {
+			fmt.Fprintln(c.out, "not from a collection")
+			return
+		}
+		fmt.Fprintf(c.out, "%s\n%s\nrevision %d\nlatest %d\n", st.Name, st.URL, st.Revision, st.Latest)
+	})
 }
 
 func (c *cmd) compareTable(diff profile.CLICompare) {
@@ -1818,24 +1801,9 @@ func (c *cmd) updates(p control.Params) error {
 	if err := c.call("updates", p, &r, readTimeout); err != nil {
 		return err
 	}
-	changelogs := map[int][]nexus.Changelog{}
-	if c.changelogFlag {
-		for i, u := range r.Updates {
-			src, id := "nexus", strconv.Itoa(u.NexusID)
-			switch {
-			case u.GitHubRepo != "":
-				src, id = "github", u.GitHubRepo
-			case u.Package != "":
-				src, id = cmp.Or(u.PackageSource, profile.KindThunderstore), u.Package
-			case u.NexusID < 1:
-				continue
-			}
-			var logs []nexus.Changelog
-			if err := c.call("changelog", control.Params{Game: p.Game, Source: src, ID: id, Name: u.Installed, Value: u.Version}, &logs, readTimeout); err != nil {
-				return err
-			}
-			changelogs[i] = logs
-		}
+	changelogs, err := c.updateChangelogs(p.Game, r)
+	if err != nil {
+		return err
 	}
 	return c.emit(r, func() {
 		if len(r.Updates) == 0 {
@@ -1850,25 +1818,54 @@ func (c *cmd) updates(p control.Params) error {
 		if !c.changelogFlag {
 			return
 		}
-		for i, u := range r.Updates {
-			logs := changelogs[i]
-			if len(logs) == 0 {
-				continue
+		c.printChangelogs(r, changelogs)
+	})
+}
+
+// updateChangelogs fetches the changelog of each update when --changelog is set, keyed by its index in r.Updates.
+func (c *cmd) updateChangelogs(game string, r problems.UpdatesResult) (map[int][]nexus.Changelog, error) {
+	changelogs := map[int][]nexus.Changelog{}
+	if !c.changelogFlag {
+		return changelogs, nil
+	}
+	for i, u := range r.Updates {
+		src, id := "nexus", strconv.Itoa(u.NexusID)
+		switch {
+		case u.GitHubRepo != "":
+			src, id = "github", u.GitHubRepo
+		case u.Package != "":
+			src, id = cmp.Or(u.PackageSource, profile.KindThunderstore), u.Package
+		case u.NexusID < 1:
+			continue
+		}
+		var logs []nexus.Changelog
+		if err := c.call("changelog", control.Params{Game: game, Source: src, ID: id, Name: u.Installed, Value: u.Version}, &logs, readTimeout); err != nil {
+			return nil, err
+		}
+		changelogs[i] = logs
+	}
+	return changelogs, nil
+}
+
+func (c *cmd) printChangelogs(r problems.UpdatesResult, changelogs map[int][]nexus.Changelog) {
+	for i, u := range r.Updates {
+		logs := changelogs[i]
+		if len(logs) == 0 {
+			continue
+		}
+		fmt.Fprintf(c.out, "%s\n", u.Name)
+		for _, e := range logs {
+			fmt.Fprintf(c.out, "  %s\n", e.Version)
+			for _, line := range e.Notes {
+				fmt.Fprintf(c.out, "    - %s\n", line)
 			}
-			fmt.Fprintf(c.out, "%s\n", u.Name)
-			for _, e := range logs {
-				fmt.Fprintf(c.out, "  %s\n", e.Version)
-				for _, line := range e.Notes {
-					fmt.Fprintf(c.out, "    - %s\n", line)
-				}
-				if len(e.Notes) == 0 && e.Body != "" {
-					for line := range strings.SplitSeq(e.Body, "\n") {
-						fmt.Fprintf(c.out, "    %s\n", strings.TrimRight(line, " \r"))
-					}
+			if len(e.Notes) == 0 && e.Body != "" {
+				for line := range strings.SplitSeq(e.Body, "\n") {
+					fmt.Fprintf(c.out, "    %s\n", strings.TrimRight(line, " \r"))
 				}
 			}
 		}
-	})
+	}
 }
 
 func (c *cmd) share(p control.Params) error {
@@ -2010,12 +2007,7 @@ func (c *cmd) saves(p control.Params) error {
 			if s.Season >= 0 && s.Season < len(seasons) {
 				season = seasons[s.Season]
 			}
-			missing := []string{}
-			for _, m := range append(s.Missing, s.LastMissing...) {
-				if !slices.Contains(missing, m.Name) {
-					missing = append(missing, m.Name)
-				}
-			}
+			missing := missingModNames(s)
 			// A save that is a bare file (Lethal Company's) has no in-game date.
 			date := ""
 			if s.Year > 0 {
@@ -2034,6 +2026,16 @@ func (c *cmd) saves(p control.Params) error {
 		}
 		c.table(head, t)
 	})
+}
+
+func missingModNames(s savessvc.Fit) []string {
+	missing := []string{}
+	for _, m := range append(s.Missing, s.LastMissing...) {
+		if !slices.Contains(missing, m.Name) {
+			missing = append(missing, m.Name)
+		}
+	}
+	return missing
 }
 
 func (c *cmd) launch(p control.Params) error {
@@ -2080,26 +2082,7 @@ func (c *cmd) queue() error {
 		method := "queue." + sub
 		switch sub {
 		case "retry", "skip":
-			var id string
-			if len(c.args) > 2 {
-				id = c.args[2]
-			}
-			var before queue.State
-			if err := c.call("queue", control.Params{}, &before, readTimeout); err != nil {
-				return err
-			}
-			n := queueActionCount(before, sub, id)
-			var st queue.State
-			if err := c.call(method, control.Params{Name: id}, &st, readTimeout); err != nil {
-				return err
-			}
-			return c.emit(st, func() {
-				if sub == "retry" {
-					fmt.Fprintf(c.out, "Retried %d failed downloads.\n", n)
-					return
-				}
-				fmt.Fprintf(c.out, "Skipped %d downloads.\n", n)
-			})
+			return c.queueRetrySkip(sub)
 		case "add":
 			return c.queueAdd()
 		case "retry-failed":
@@ -2124,19 +2107,47 @@ func (c *cmd) queue() error {
 		}
 	}
 	return show(c, "queue", control.Params{}, func(st queue.State) {
-		if len(st.Items) == 0 {
-			fmt.Fprintln(c.out, "The download queue is empty.")
+		c.printQueue(st)
+	})
+}
+
+func (c *cmd) queueRetrySkip(sub string) error {
+	method := "queue." + sub
+	var id string
+	if len(c.args) > 2 {
+		id = c.args[2]
+	}
+	var before queue.State
+	if err := c.call("queue", control.Params{}, &before, readTimeout); err != nil {
+		return err
+	}
+	n := queueActionCount(before, sub, id)
+	var st queue.State
+	if err := c.call(method, control.Params{Name: id}, &st, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(st, func() {
+		if sub == "retry" {
+			fmt.Fprintf(c.out, "Retried %d failed downloads.\n", n)
 			return
 		}
-		t := [][]string{}
-		for _, it := range st.Items {
-			t = append(t, []string{it.ID, it.Name, it.Version, queueHumanState(it.State), it.Profile, queueErrorLine(it.Error)})
-		}
-		c.table("ID\tNAME\tVERSION\tSTATE\tPROFILE\tERROR", t)
-		if st.Paused {
-			fmt.Fprintln(c.out, "Paused.")
-		}
+		fmt.Fprintf(c.out, "Skipped %d downloads.\n", n)
 	})
+}
+
+func (c *cmd) printQueue(st queue.State) {
+	if len(st.Items) == 0 {
+		fmt.Fprintln(c.out, "The download queue is empty.")
+		return
+	}
+	t := [][]string{}
+	for _, it := range st.Items {
+		t = append(t, []string{it.ID, it.Name, it.Version, queueHumanState(it.State), it.Profile, queueErrorLine(it.Error)})
+	}
+	c.table("ID\tNAME\tVERSION\tSTATE\tPROFILE\tERROR", t)
+	if st.Paused {
+		fmt.Fprintln(c.out, "Paused.")
+	}
 }
 
 func (c *cmd) cacheCmd() error {
@@ -2209,44 +2220,11 @@ func (c *cmd) backups() error {
 	if len(c.args) > 1 {
 		switch c.args[1] {
 		case "restore":
-			a, err := c.need(2, "a backup name")
-			if err != nil {
-				return err
-			}
-			if err := c.call("backups.restore", control.Params{Game: game, Name: a[0], IDs: a[1:], Profile: c.profileFlag}, nil, installTimeout); err != nil {
-				return err
-			}
-			return c.emit(map[string]any{"restored": a[0], "saves": a[1:]}, func() {
-				fmt.Fprintf(c.out, "Restored %s.\n", a[0])
-			})
+			return c.backupsRestore(game)
 		case "keep", "unkeep":
-			a, err := c.need(2, "a backup name")
-			if err != nil {
-				return err
-			}
-			method := "backups." + c.args[1]
-			if err := c.call(method, control.Params{Game: game, Name: a[0]}, nil, readTimeout); err != nil {
-				return err
-			}
-			pinned := c.args[1] == "keep"
-			return c.emit(map[string]any{"name": a[0], "pinned": pinned}, func() {
-				if pinned {
-					fmt.Fprintf(c.out, "Kept %s.\n", a[0])
-				} else {
-					fmt.Fprintf(c.out, "Unkept %s.\n", a[0])
-				}
-			})
+			return c.backupsKeep(game)
 		case "create":
-			a, err := c.need(2, "a save")
-			if err != nil {
-				return err
-			}
-			if err := c.call("backups.create", control.Params{Game: game, Name: a[0], Profile: c.profileFlag}, nil, readTimeout); err != nil {
-				return err
-			}
-			return c.emit(map[string]any{"save": a[0]}, func() {
-				fmt.Fprintf(c.out, "Backed up %s.\n", a[0])
-			})
+			return c.backupsCreate(game)
 		case "usage":
 			return c.backupsUsage(game)
 		case "trim":
@@ -2258,24 +2236,73 @@ func (c *cmd) backups() error {
 		}
 	}
 	return show(c, "backups", control.Params{Game: game}, func(list []backup.Backup) {
-		if len(list) == 0 {
-			fmt.Fprintln(c.out, "No backups.")
-			return
-		}
-		rows := make([][]string, 0, len(list))
-		for _, b := range list {
-			var names []string
-			for _, sn := range b.Saves {
-				names = append(names, saves.DisplayName(sn.Farm, sn.Folder))
-			}
-			kept := ""
-			if b.Pinned {
-				kept = "kept"
-			}
-			rows = append(rows, []string{b.Name, relativeDeleted(time.UnixMilli(b.At)), b.Kind, strings.Join(names, ", "), bytefmt.Format(b.Size), kept})
-		}
-		c.table("NAME\tTAKEN\tKIND\tSAVES\tSIZE\tKEPT", rows)
+		c.printBackups(list)
 	})
+}
+
+func (c *cmd) backupsRestore(game string) error {
+	a, err := c.need(2, "a backup name")
+	if err != nil {
+		return err
+	}
+	if err := c.call("backups.restore", control.Params{Game: game, Name: a[0], IDs: a[1:], Profile: c.profileFlag}, nil, installTimeout); err != nil {
+		return err
+	}
+	return c.emit(map[string]any{"restored": a[0], "saves": a[1:]}, func() {
+		fmt.Fprintf(c.out, "Restored %s.\n", a[0])
+	})
+}
+
+func (c *cmd) backupsKeep(game string) error {
+	a, err := c.need(2, "a backup name")
+	if err != nil {
+		return err
+	}
+	method := "backups." + c.args[1]
+	if err := c.call(method, control.Params{Game: game, Name: a[0]}, nil, readTimeout); err != nil {
+		return err
+	}
+	pinned := c.args[1] == "keep"
+	return c.emit(map[string]any{"name": a[0], "pinned": pinned}, func() {
+		if pinned {
+			fmt.Fprintf(c.out, "Kept %s.\n", a[0])
+		} else {
+			fmt.Fprintf(c.out, "Unkept %s.\n", a[0])
+		}
+	})
+}
+
+func (c *cmd) backupsCreate(game string) error {
+	a, err := c.need(2, "a save")
+	if err != nil {
+		return err
+	}
+	if err := c.call("backups.create", control.Params{Game: game, Name: a[0], Profile: c.profileFlag}, nil, readTimeout); err != nil {
+		return err
+	}
+	return c.emit(map[string]any{"save": a[0]}, func() {
+		fmt.Fprintf(c.out, "Backed up %s.\n", a[0])
+	})
+}
+
+func (c *cmd) printBackups(list []backup.Backup) {
+	if len(list) == 0 {
+		fmt.Fprintln(c.out, "No backups.")
+		return
+	}
+	rows := make([][]string, 0, len(list))
+	for _, b := range list {
+		var names []string
+		for _, sn := range b.Saves {
+			names = append(names, saves.DisplayName(sn.Farm, sn.Folder))
+		}
+		kept := ""
+		if b.Pinned {
+			kept = "kept"
+		}
+		rows = append(rows, []string{b.Name, relativeDeleted(time.UnixMilli(b.At)), b.Kind, strings.Join(names, ", "), bytefmt.Format(b.Size), kept})
+	}
+	c.table("NAME\tTAKEN\tKIND\tSAVES\tSIZE\tKEPT", rows)
 }
 
 func (c *cmd) launchers() error {

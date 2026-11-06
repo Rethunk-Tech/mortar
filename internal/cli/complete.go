@@ -74,249 +74,306 @@ var subverbs = map[string][]string{
 	"updates":    {"apply"},
 }
 
-// gameAt and profileAt give the positions (1-based after the verb) where a verb takes a game and a profile.
-func positions(words []string) (gameAt, profileAt, modAt int) {
-	switch words[0] {
-	case "games", "doctor", "backups", "cache", "data", "settings", "antivirus", "version", "help", "open", "completion", "launchers", "app", "support", "links":
-		return 0, 0, 0
-	case "queue":
-		if len(words) > 1 && words[1] == "add" {
+// fixedPositions holds the verbs whose game/profile/mod positions do not depend on the second word.
+var fixedPositions = map[string][3]int{
+	"games": {}, "doctor": {}, "backups": {}, "cache": {}, "data": {}, "settings": {}, "antivirus": {}, "version": {}, "help": {}, "open": {}, "completion": {}, "launchers": {}, "app": {}, "support": {}, "links": {}, "trash": {},
+	"browse":   {1, 0, 0},
+	"game":     {2, 0, 0},
+	"loader":   {2, 0, 0},
+	"dev":      {2, 0, 0},
+	"profiles": {1, 0, 0},
+	"status":   {1, 0, 0},
+	"stop":     {1, 0, 0},
+	"sweep":    {1, 0, 0},
+	"mod":      {1, 2, 3},
+	"who":      {1, 2, 0},
+}
+
+func inList(s string, list ...string) bool { return slices.Contains(list, s) }
+
+// subPositions holds the verbs whose positions depend on the second word.
+var subPositions = map[string]func(sub string) (gameAt, profileAt, modAt int){
+	"queue": func(s string) (int, int, int) {
+		if s == "add" {
 			return 2, 3, 0
 		}
 		return 0, 0, 0
-	case "browse":
-		return 1, 0, 0
-	case "templates", "library", "archive":
-		if len(words) > 1 && (words[1] == "save" || words[1] == "hidden" || words[1] == "old-files" || words[1] == "strays") {
-			return 2, 3, 0
-		}
-		if words[0] == "archive" && len(words) > 1 && words[1] == "preview" {
+	},
+	"templates": libraryPositions,
+	"library":   libraryPositions,
+	"archive": func(s string) (int, int, int) {
+		if s == "preview" {
 			return 0, 0, 0
 		}
-		return 2, 0, 0
-	case "store":
+		return libraryPositions(s)
+	},
+	"store": func(s string) (int, int, int) {
+		switch s {
+		case "repair":
+			return 2, 3, 0
+		case "remove", "check":
+			return 2, 0, 0
+		}
+		return 0, 0, 0
+	},
+	"bisect": func(s string) (int, int, int) {
+		if s == "start" {
+			return 2, 3, 0
+		}
+		return 0, 0, 0
+	},
+	"groups": func(s string) (int, int, int) {
 		switch {
-		case len(words) > 1 && words[1] == "repair":
-			return 2, 3, 0
-		case len(words) > 1 && (words[1] == "remove" || words[1] == "check"):
-			return 2, 0, 0
+		case !slices.Contains(subverbs["groups"], s):
+			return 1, 0, 0
+		case inList(s, "apply", "create", "add"):
+			return 2, 4, 0
 		}
-		return 0, 0, 0
-	case "bisect":
-		if len(words) > 1 && words[1] == "start" {
-			return 2, 3, 0
-		}
-		return 0, 0, 0
-	case "game":
 		return 2, 0, 0
-	case "groups":
-		if len(words) > 1 && slices.Contains(subverbs["groups"], words[1]) {
-			switch words[1] {
-			case "apply", "create", "add":
-				return 2, 4, 0
-			}
-			return 2, 0, 0
-		}
-		return 1, 0, 0
-	case "source":
-		if len(words) > 1 && words[1] == "tracked" {
+	},
+	"source": func(s string) (int, int, int) {
+		if s == "tracked" {
 			return 2, 3, 0
 		}
 		return 2, 0, 0
-	case "trash":
-		return 0, 0, 0
-	case "tools":
-		if len(words) > 1 && words[1] == "run" {
+	},
+	"tools": func(s string) (int, int, int) {
+		switch {
+		case s == "run":
 			return 2, 3, 4
-		}
-		if len(words) > 1 && slices.Contains(subverbs["tools"], words[1]) {
+		case slices.Contains(subverbs["tools"], s):
 			return 2, 0, 0
 		}
 		return 1, 0, 0
-	case "lan":
-		if len(words) > 1 && words[1] == "send" {
+	},
+	"lan": func(s string) (int, int, int) {
+		if s == "send" {
 			return 2, 3, 0
 		}
 		return 0, 0, 0
-	case "profiles", "status", "stop", "sweep":
-		return 1, 0, 0
-	case "loader", "dev":
-		return 2, 0, 0
-	case "history":
-		if len(words) > 1 && (words[1] == "diff" || words[1] == "revert" || words[1] == "trim") {
+	},
+	"history": func(s string) (int, int, int) {
+		switch {
+		case inList(s, "diff", "revert", "trim"):
 			return 2, 3, 0
-		}
-		if len(words) > 1 && words[1] == "usage" {
+		case s == "usage":
 			return 2, 0, 0
 		}
 		return 1, 0, 0
-	case "profile":
-		if len(words) > 1 && words[1] == "farm" {
+	},
+	"profile": func(s string) (int, int, int) {
+		switch {
+		case s == "farm":
 			return 3, 4, 0
-		}
-		if len(words) > 1 && (words[1] == "create" || words[1] == "from-save") {
+		case inList(s, "create", "from-save"):
 			return 2, 0, 0
-		}
-		if len(words) > 1 && (words[1] == "shortcut" || words[1] == "steam") {
-			return 2, 3, 0
 		}
 		return 2, 3, 0
-	case "mods":
-		if len(words) > 1 && slices.Contains(subverbs["mods"], words[1]) {
+	},
+	"mods": func(s string) (int, int, int) {
+		if slices.Contains(subverbs["mods"], s) {
 			return 2, 3, 4
 		}
 		return 1, 2, 0
-	case "mod":
-		return 1, 2, 3
-	case "problems":
-		if len(words) > 1 && slices.Contains(subverbs["problems"], words[1]) {
+	},
+	"problems": func(s string) (int, int, int) {
+		if slices.Contains(subverbs["problems"], s) {
 			return 0, 0, 0
 		}
 		return 1, 2, 0
-	case "updates":
-		if len(words) > 1 && words[1] == "apply" {
+	},
+	"updates": func(s string) (int, int, int) {
+		if s == "apply" {
 			return 2, 0, 3
 		}
 		return 1, 2, 0
-	case "conflicts":
-		if len(words) > 1 && words[1] == "map" {
+	},
+	"conflicts": func(s string) (int, int, int) {
+		if s == "map" {
 			return 2, 3, 0
 		}
 		return 1, 2, 0
-	case "who":
-		return 1, 2, 0
-	case "logs":
-		if len(words) > 1 && words[1] == "search" {
+	},
+	"logs": func(s string) (int, int, int) {
+		switch s {
+		case "search":
 			return 0, 0, 0
-		}
-		if len(words) > 1 && words[1] == "share" {
-			return 2, 3, 0
-		}
-		if len(words) > 1 && words[1] == "fixes" {
+		case "share", "fixes":
 			return 2, 3, 0
 		}
 		return 1, 2, 0
-	case "saves":
-		if len(words) > 1 && words[1] == "check" {
+	},
+	"saves": func(s string) (int, int, int) {
+		if s == "check" {
 			return 2, 4, 0
 		}
 		return 1, 2, 0
+	},
+}
+
+func libraryPositions(s string) (int, int, int) {
+	if inList(s, "save", "hidden", "old-files", "strays") {
+		return 2, 3, 0
+	}
+	return 2, 0, 0
+}
+
+// gameAt and profileAt give the positions (1-based after the verb) where a verb takes a game and a profile.
+func positions(words []string) (gameAt, profileAt, modAt int) {
+	if p, ok := fixedPositions[words[0]]; ok {
+		return p[0], p[1], p[2]
+	}
+	sub := ""
+	if len(words) > 1 {
+		sub = words[1]
+	}
+	if f, ok := subPositions[words[0]]; ok {
+		return f(sub)
 	}
 	return 1, 2, 0
 }
 
 // complete prints candidates for the last word given the words before it; it stays quiet when Mortar is not running.
-func (c *cmd) complete(words []string) error {
+func (c *cmd) complete(words []string) {
 	if len(words) == 0 {
 		words = []string{""}
 	}
 	cur := words[len(words)-1]
-	pos := len(words) - 1
-	var cands []string
-	if pos == 0 {
-		for v := range verbs {
-			if !strings.HasPrefix(v, "-") && !strings.HasPrefix(v, "_") && v != "uninstall-cleanup" {
-				cands = append(cands, v)
-			}
-		}
-	} else if subs, ok := subverbs[words[0]]; ok && pos == 1 && words[0] != "mods" && words[0] != "problems" && words[0] != "logs" && words[0] != "groups" && words[0] != "tools" {
-		cands = subs
-	} else if words[0] == "problems" && pos == 1 {
-		cands = append(cands, subverbs["problems"]...)
-	} else if words[0] == "trash" && pos == 2 && len(words) > 1 && (words[1] == "restore" || words[1] == "delete") {
-		game := c.game
-		for i := 0; i+1 < len(words); i++ {
-			if words[i] == "--game" {
-				game = words[i+1]
-			}
-		}
-		c.game = game
-		var items []profile.TrashItem
-		if game, err := c.gameOrDefault(); err == nil && c.call("trash.list", control.Params{Game: game}, &items, readTimeout) == nil {
-			for _, item := range items {
-				cands = append(cands, item.Name)
-			}
-		}
-	} else {
-		if words[0] == "mods" && pos == 1 {
-			cands = append(cands, subverbs["mods"]...)
-		}
-		if words[0] == "logs" && pos == 1 {
-			cands = append(cands, subverbs["logs"]...)
-		}
-		if (words[0] == "groups" || words[0] == "tools") && pos == 1 {
-			cands = append(cands, subverbs[words[0]]...)
-		}
-		if words[0] == "conflicts" && pos == 1 {
-			cands = append(cands, "map")
-		}
-		if words[0] == "profile" && pos == 2 && words[1] == "farm" {
-			cands = append(cands, "export", "check", "fix")
-		}
-		if words[0] == "app" && pos == 2 && words[1] == "update" {
-			cands = append(cands, "check", "install")
-		}
-		if words[0] == "support" && pos == 2 && words[1] == "diagnostics" {
-			cands = append(cands, "save")
-		}
-		if words[0] == "settings" && pos == 2 && (words[1] == "get" || words[1] == "set" || words[1] == "reset") {
-			var rows [][2]string
-			if c.call("settings.get", control.Params{Game: c.game}, &rows, readTimeout) == nil {
-				for _, r := range rows {
-					cands = append(cands, r[0])
-				}
-			}
-		}
-		cands = append(cands, sourceFlagCands(words, cur)...)
-		prev := ""
-		if len(words) >= 2 {
-			prev = words[len(words)-2]
-		}
-		if prev != "--source" && !strings.HasPrefix(cur, "-") {
-			gameAt, profileAt, modAt := positions(words)
-			switch pos {
-			case gameAt:
-				var rows []control.GameRow
-				if c.call("games", control.Params{}, &rows, readTimeout) == nil {
-					for _, g := range rows {
-						cands = append(cands, g.ID)
-					}
-				}
-			case profileAt:
-				var list []profile.Profile
-				if c.call("profiles", control.Params{Game: words[gameAt]}, &list, readTimeout) == nil {
-					for _, p := range list {
-						if p.Error == "" && p.Name != "" {
-							cands = append(cands, p.Name)
-						}
-					}
-				}
-			case modAt:
-				var rows []control.ModRow
-				if c.call("mods", control.Params{Game: words[gameAt], Profile: words[profileAt]}, &rows, readTimeout) == nil {
-					for _, m := range rows {
-						cands = append(cands, m.ID.Local())
-					}
-				}
-			case 4:
-				var rows []struct {
-					ID string `json:"id"`
-				}
-				if c.call("tools", control.Params{Game: words[gameAt]}, &rows, readTimeout) == nil {
-					for _, tool := range rows {
-						cands = append(cands, tool.ID)
-					}
-				}
-			}
-		}
-	}
+	cands := c.candidates(words, cur, len(words)-1)
 	slices.Sort(cands)
 	for _, s := range cands {
 		if strings.HasPrefix(strings.ToLower(s), strings.ToLower(cur)) {
 			fmt.Fprintln(c.out, s)
 		}
 	}
+}
+
+func (c *cmd) candidates(words []string, cur string, pos int) []string {
+	if pos == 0 {
+		var cands []string
+		for v := range verbs {
+			if !strings.HasPrefix(v, "-") && !strings.HasPrefix(v, "_") && v != "uninstall-cleanup" {
+				cands = append(cands, v)
+			}
+		}
+		return cands
+	}
+	if subs, ok := subverbs[words[0]]; ok && pos == 1 && !inList(words[0], "mods", "problems", "logs", "groups", "tools") {
+		return subs
+	}
+	if words[0] == "problems" && pos == 1 {
+		return slices.Clone(subverbs["problems"])
+	}
+	if words[0] == "trash" && pos == 2 && inList(words[1], "restore", "delete") {
+		return c.trashCands(words)
+	}
+	cands := wordCands(words, pos)
+	if pos == 2 && words[0] == "settings" && inList(words[1], "get", "set", "reset") {
+		cands = append(cands, c.settingNames()...)
+	}
+	cands = append(cands, sourceFlagCands(words, cur)...)
+	prev := ""
+	if len(words) >= 2 {
+		prev = words[len(words)-2]
+	}
+	if prev != "--source" && !strings.HasPrefix(cur, "-") {
+		cands = append(cands, c.positionalCands(words, pos)...)
+	}
+	return cands
+}
+
+// wordCands lists the fixed words that can follow the verb at pos 1 or its subverb at pos 2.
+func wordCands(words []string, pos int) []string {
+	switch pos {
+	case 1:
+		switch words[0] {
+		case "mods", "logs", "groups", "tools":
+			return slices.Clone(subverbs[words[0]])
+		case "conflicts":
+			return []string{"map"}
+		}
+	case 2:
+		switch words[0] + " " + words[1] {
+		case "profile farm":
+			return []string{"export", "check", "fix"}
+		case "app update":
+			return []string{"check", "install"}
+		case "support diagnostics":
+			return []string{"save"}
+		}
+	}
 	return nil
+}
+
+func (c *cmd) trashCands(words []string) []string {
+	for i := 0; i+1 < len(words); i++ {
+		if words[i] == "--game" {
+			c.game = words[i+1]
+		}
+	}
+	var items []profile.TrashItem
+	game, err := c.gameOrDefault()
+	if err != nil || c.call("trash.list", control.Params{Game: game}, &items, readTimeout) != nil {
+		return nil
+	}
+	var cands []string
+	for _, item := range items {
+		cands = append(cands, item.Name)
+	}
+	return cands
+}
+
+func (c *cmd) settingNames() []string {
+	var rows [][2]string
+	if c.call("settings.get", control.Params{Game: c.game}, &rows, readTimeout) != nil {
+		return nil
+	}
+	var cands []string
+	for _, r := range rows {
+		cands = append(cands, r[0])
+	}
+	return cands
+}
+
+// positionalCands asks Mortar for the game, profile, mod or tool names that fit the word at pos.
+func (c *cmd) positionalCands(words []string, pos int) []string {
+	gameAt, profileAt, modAt := positions(words)
+	var cands []string
+	switch pos {
+	case gameAt:
+		var rows []control.GameRow
+		if c.call("games", control.Params{}, &rows, readTimeout) == nil {
+			for _, g := range rows {
+				cands = append(cands, g.ID)
+			}
+		}
+	case profileAt:
+		var list []profile.Profile
+		if c.call("profiles", control.Params{Game: words[gameAt]}, &list, readTimeout) == nil {
+			for _, p := range list {
+				if p.Error == "" && p.Name != "" {
+					cands = append(cands, p.Name)
+				}
+			}
+		}
+	case modAt:
+		var rows []control.ModRow
+		if c.call("mods", control.Params{Game: words[gameAt], Profile: words[profileAt]}, &rows, readTimeout) == nil {
+			for _, m := range rows {
+				cands = append(cands, m.ID.Local())
+			}
+		}
+	case 4:
+		var rows []struct {
+			ID string `json:"id"`
+		}
+		if c.call("tools", control.Params{Game: words[gameAt]}, &rows, readTimeout) == nil {
+			for _, tool := range rows {
+				cands = append(cands, tool.ID)
+			}
+		}
+	}
+	return cands
 }
 
 func sourceFlagCands(words []string, cur string) []string {
