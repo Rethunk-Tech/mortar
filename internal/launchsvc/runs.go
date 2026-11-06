@@ -396,24 +396,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if err != nil {
 		return
 	}
-	var since time.Time
-	if failed {
-		since = started
-	}
-	text := s.runText(g, profileID, modsDir, since)
-	s.mu.Lock()
-	copies := s.logs[keyOf(g)].progress.Copies
-	s.mu.Unlock()
-	if path, own, err := s.logPath(g.ID(), profileID); err == nil && copies > 1 {
-		data, _ := datadir.Dir()
-		copyLog := func(n int) string { return bepinex5.CopyLogPath(data, g.ID(), profileID, n) }
-		text += copyLogs(path, copyLog, own, s.home, modsDir, started, copies)
-	}
-	if s.OnSavePlayed != nil {
-		for _, save := range s.playedSaves(g.ID(), text, started, failed) {
-			s.OnSavePlayed(g.ID(), profileID, save)
-		}
-	}
+	text := s.runLogText(g, profileID, modsDir, started, failed)
 	stats := launch.Summarize(text)
 	ldr := cmp.Or(s.profileLoader(g.ID(), profileID), loaderID(g.ID()))
 	unclassified := launch.Unclassified(text)
@@ -435,7 +418,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	} else if !stats.Crashed && hasPlayer && unityCrashed(player) {
 		stats.Crashed = true
 	}
-	var stderr string
+	stderr := ""
 	if sess.haveExit && launch.ExitCrashed(sess.exit) {
 		stderr = strings.TrimSpace(sess.exit.Output)
 	}
@@ -468,10 +451,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	}
 	var cause Cause
 	if !stopped || stats.Crashed {
-		cause = s.cause(g.ID(), profileID, text)
-		if cause.ModName == "" && stderr != "" {
-			cause = s.outputCause(g.ID(), profileID, stderr)
-		}
+		cause = s.causeOf(g.ID(), profileID, text, stderr)
 	}
 	run := Run{
 		ID: id, Started: started.UTC().Format(time.RFC3339Nano), Ended: ended.UTC().Format(time.RFC3339Nano),
@@ -493,13 +473,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		run.Cause = &cause
 	}
 	idx.Runs = append([]Run{run}, idx.Runs...)
-	keep := maxRuns
-	if s.settings != nil {
-		scope := settings.Scope{Game: g.ID(), Profile: profileID}
-		if n, err := strconv.Atoi(settings.ResolveAt(s.settings.Get(), "runsKept", scope, launchOverrides(s.profiles, g.ID(), profileID))); err == nil && n > 0 {
-			keep = n
-		}
-	}
+	keep := s.runsKept(g.ID(), profileID)
 	var drop []Run
 	if len(idx.Runs) > keep {
 		drop = idx.Runs[keep:]
@@ -515,15 +489,61 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if !failed && s.settings != nil {
 		s.settingsChanged(s.settings.AddPlaytime(g.ID(), ended.Sub(started)))
 	}
+	s.announceRun(g, profileID, id, stats, run.Cause, failed, stopped)
+}
+
+// causeOf blames a mod from the run's log, falling back to the game's own output.
+func (s *Service) causeOf(gameID, profileID, text, stderr string) Cause {
+	cause := s.cause(gameID, profileID, text)
+	if cause.ModName == "" && stderr != "" {
+		cause = s.outputCause(gameID, profileID, stderr)
+	}
+	return cause
+}
+
+// runLogText is the run's log text, with the logs of any extra game copies appended, reporting the saves played.
+func (s *Service) runLogText(g game.Game, profileID, modsDir string, started time.Time, failed bool) string {
+	var since time.Time
+	if failed {
+		since = started
+	}
+	text := s.runText(g, profileID, modsDir, since)
+	s.mu.Lock()
+	copies := s.logs[keyOf(g)].progress.Copies
+	s.mu.Unlock()
+	if path, own, err := s.logPath(g.ID(), profileID); err == nil && copies > 1 {
+		data, _ := datadir.Dir()
+		copyLog := func(n int) string { return bepinex5.CopyLogPath(data, g.ID(), profileID, n) }
+		text += copyLogs(path, copyLog, own, s.home, modsDir, started, copies)
+	}
+	if s.OnSavePlayed != nil {
+		for _, save := range s.playedSaves(g.ID(), text, started, failed) {
+			s.OnSavePlayed(g.ID(), profileID, save)
+		}
+	}
+	return text
+}
+
+// runsKept is how many runs the index holds for the profile.
+func (s *Service) runsKept(gameID, profileID string) int {
+	if s.settings == nil {
+		return maxRuns
+	}
+	scope := settings.Scope{Game: gameID, Profile: profileID}
+	n, err := strconv.Atoi(settings.ResolveAt(s.settings.Get(), "runsKept", scope, launchOverrides(s.profiles, gameID, profileID)))
+	if err != nil || n <= 0 {
+		return maxRuns
+	}
+	return n
+}
+
+// announceRun notifies the player of a crashed run and emits the crash event.
+func (s *Service) announceRun(g game.Game, profileID, runID string, stats launch.Summary, cause *Cause, failed, stopped bool) {
 	if title, body, crashed := RunEndNotificationText(g.Name(), stats); crashed && !failed && s.NotifyRunEnd != nil {
 		s.NotifyRunEnd(RunEndNotice{Game: g.ID(), Profile: profileID, Title: title, Body: body})
 	}
 	if !failed && (stats.Crashed || (!stopped && stats.Errors > 0)) {
-		var crashCause *Cause
-		if run.Cause != nil {
-			crashCause = run.Cause
-		}
-		s.emit(CrashEvent, Crash{Game: g.ID(), Profile: profileID, RunID: id, Mods: stats.Mods, Cause: crashCause, Crashed: stats.Crashed})
+		s.emit(CrashEvent, Crash{Game: g.ID(), Profile: profileID, RunID: runID, Mods: stats.Mods, Cause: cause, Crashed: stats.Crashed})
 	}
 }
 

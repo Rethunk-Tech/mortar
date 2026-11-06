@@ -120,81 +120,20 @@ func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installI
 			modsDir = dir
 		}
 	}
-	hasBridge := profileHasBridge(modsDir)
-	var scenes *sceneWatch
+	r := &bisectRun{
+		s: s, gameID: gameID, profileID: profileID, sl: sl, beforeRunID: beforeRunID, launched: launched,
+		startup: startup, hasBridge: profileHasBridge(modsDir),
+	}
 	if s.profileLoader(gameID, profileID) == bepinex5.ID {
-		scenes = &sceneWatch{}
+		r.scenes = &sceneWatch{}
 	}
 
-	started := false
-	var runningSince time.Time
 	ticker := time.NewTicker(bisectPoll)
 	defer ticker.Stop()
 	for {
-		if hasBridge && startupReportAfter(startup, launched) {
-			s.waitSampled(sl, time.Minute)
-			if err := s.stopSlot(runCtx, sl); err != nil {
-				return false, launch.Summary{}, err
-			}
-			return true, launch.Summary{}, nil
+		if res := r.step(runCtx); res != nil {
+			return res.healthy, res.summary, res.err
 		}
-		status := s.statusOf(sl)
-		if status.State == Idle {
-			if why := s.startFailure(sl); why != "" {
-				return false, launch.Summary{}, fmt.Errorf("the game did not start: %s", why)
-			}
-		}
-		switch status.State {
-		case Launching:
-			started = true
-		case Running:
-			started = true
-			lines, err := s.Lines(gameID, profileID)
-			if err != nil {
-				return false, launch.Summary{}, err
-			}
-			if bisectStartupFailure(lines) {
-				if err := s.stopSlot(runCtx, sl); err != nil {
-					return false, launch.Summary{}, err
-				}
-				return false, launch.Summary{}, nil
-			}
-			if scenes != nil {
-				if scenes.settled(lines, time.Now()) {
-					if err := s.stopSlot(runCtx, sl); err != nil {
-						return false, launch.Summary{}, err
-					}
-					return true, launch.Summary{}, nil
-				}
-			} else if !hasBridge {
-				if runningSince.IsZero() {
-					runningSince = time.Now()
-				}
-				if time.Since(runningSince) >= bisectStartupGrace {
-					if err := s.stopSlot(runCtx, sl); err != nil {
-						return false, launch.Summary{}, err
-					}
-					return true, launch.Summary{}, nil
-				}
-			}
-		case NoSteam:
-			return false, launch.Summary{}, errors.New("the crash check needs a direct launch")
-		case Failed:
-			if !started {
-				return false, launch.Summary{}, fmt.Errorf("bisect launch failed: %s", status.Error)
-			}
-			runID, summary, err := s.LastRunSummary(gameID, profileID)
-			if runID == beforeRunID {
-				return false, summary, err
-			}
-			return summaryHealthy(summary), summary, err
-		case Idle:
-			runID, summary, err := s.LastRunSummary(gameID, profileID)
-			if (started || runID != "") && runID != beforeRunID {
-				return summaryHealthy(summary), summary, err
-			}
-		}
-
 		select {
 		case <-runCtx.Done():
 			_ = s.stopBisectRun(context.WithoutCancel(runCtx), sl)
@@ -205,6 +144,104 @@ func (s *Service) runForInstall(ctx context.Context, gameID, profileID, installI
 		case <-ticker.C:
 		}
 	}
+}
+
+// bisectRun is the state of one bisect step's watch over a launched game.
+type bisectRun struct {
+	s            *Service
+	gameID       string
+	profileID    string
+	sl           slot
+	beforeRunID  string
+	launched     time.Time
+	startup      string
+	hasBridge    bool
+	scenes       *sceneWatch
+	started      bool
+	runningSince time.Time
+}
+
+// bisectResult is a finished step; a nil result from step means keep watching.
+type bisectResult struct {
+	healthy bool
+	summary launch.Summary
+	err     error
+}
+
+// stopWith stops the game and reports the step's verdict.
+func (r *bisectRun) stopWith(ctx context.Context, healthy bool) *bisectResult {
+	if err := r.s.stopSlot(ctx, r.sl); err != nil {
+		return &bisectResult{err: err}
+	}
+	return &bisectResult{healthy: healthy}
+}
+
+// lastRun turns the finished run's summary into the step's result.
+func (r *bisectRun) lastRun() *bisectResult {
+	runID, summary, err := r.s.LastRunSummary(r.gameID, r.profileID)
+	if runID == r.beforeRunID {
+		return &bisectResult{summary: summary, err: err}
+	}
+	return &bisectResult{healthy: summaryHealthy(summary), summary: summary, err: err}
+}
+
+func (r *bisectRun) step(ctx context.Context) *bisectResult {
+	if r.hasBridge && startupReportAfter(r.startup, r.launched) {
+		r.s.waitSampled(r.sl, time.Minute)
+		return r.stopWith(ctx, true)
+	}
+	status := r.s.statusOf(r.sl)
+	if status.State == Idle {
+		if why := r.s.startFailure(r.sl); why != "" {
+			return &bisectResult{err: fmt.Errorf("the game did not start: %s", why)}
+		}
+	}
+	switch status.State {
+	case Launching:
+		r.started = true
+	case Running:
+		r.started = true
+		return r.running(ctx)
+	case NoSteam:
+		return &bisectResult{err: errors.New("the crash check needs a direct launch")}
+	case Failed:
+		if !r.started {
+			return &bisectResult{err: fmt.Errorf("bisect launch failed: %s", status.Error)}
+		}
+		return r.lastRun()
+	case Idle:
+		runID, summary, err := r.s.LastRunSummary(r.gameID, r.profileID)
+		if (r.started || runID != "") && runID != r.beforeRunID {
+			return &bisectResult{healthy: summaryHealthy(summary), summary: summary, err: err}
+		}
+	}
+	return nil
+}
+
+func (r *bisectRun) running(ctx context.Context) *bisectResult {
+	lines, err := r.s.Lines(r.gameID, r.profileID)
+	if err != nil {
+		return &bisectResult{err: err}
+	}
+	if bisectStartupFailure(lines) {
+		return r.stopWith(ctx, false)
+	}
+	if r.scenes != nil {
+		if r.scenes.settled(lines, time.Now()) {
+			return r.stopWith(ctx, true)
+		}
+		return nil
+	}
+	if r.hasBridge {
+		return nil
+	}
+	if r.runningSince.IsZero() {
+		r.runningSince = time.Now()
+	}
+	if time.Since(r.runningSince) >= bisectStartupGrace {
+		return r.stopWith(ctx, true)
+	}
+	return nil
 }
 
 func profileHasBridge(modsDir string) bool {

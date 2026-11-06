@@ -1022,7 +1022,7 @@ func (s *Service) launchSpec(ctx context.Context, gameID, profileID, preset stri
 // begin starts the launch once the loader is in place.
 func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct, vanilla bool) error {
 	gameID := g.ID()
-	profileID, dir, modsDir := t.profileID, t.dir, t.modsDir
+	profileID, modsDir := t.profileID, t.modsDir
 	var spec profile.LaunchSpec
 	if !vanilla && profileID != "" {
 		var err error
@@ -1054,10 +1054,8 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	server := !vanilla && s.serverMode(g.ID(), profileID)
 	direct = direct || server || !inst.StoreStarts()
 	env := game.StartEnv{Direct: direct, HideWindow: !showConsole, Ready: s.seen(g)}
-	env.Proton = settings.ResolveAt(s.settings.Get(), "protonVersion", settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, launchOverrides(s.profiles, g.ID(), profileID))
-	env.StartFirst = settings.ResolveAt(s.settings.Get(), "startFirst", settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, launchOverrides(s.profiles, g.ID(), profileID))
-	env.ALVRProgram = s.settings.Get().ALVRProgram
-	var measure, sample bool
+	s.launchSettings(g, profileID, &env)
+	var sample bool
 	var startupBefore map[string]bool
 	if waitOnChild(direct, vanilla) {
 		env.OnExit = func(x launch.Exit) { s.finishWait(g, x) }
@@ -1065,36 +1063,8 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	}
 	var plan *launchplan.Plan
 	if !vanilla && profileID != "" {
-		st := s.settings.Get()
-		l, _ := s.loaderOf(g.ID(), profileID)
-		measure, err = prepareStartup(l, g.ID(), modsDir)
-		if err != nil {
+		if _, sample, startupBefore, err = s.armProfile(g, profileID, modsDir); err != nil {
 			return err
-		}
-		// The sampler reads .NET's diagnostics port, which SMAPI's runtime has and Unity's Mono does not.
-		sample = measure && l.ID() == smapi.ID
-		if sample {
-			profileDir, profileErr := s.profiles.ProfileDir(g.ID(), profileID)
-			if profileErr != nil {
-				log.Printf("startup sampler: %s: %v", g.ID(), profileErr)
-				measure, sample = false, false
-			} else if startupBefore, profileErr = startupReportIDs(filepath.Join(profileDir, startupDir)); profileErr != nil {
-				log.Printf("startup sampler: %s: %v", g.ID(), profileErr)
-				measure, sample = false, false
-			}
-		}
-		cfg := overlay.BridgeConfig{OverlayEnabled: st.OverlayEnabled, OverlayPort: st.OverlayPort, OverlayToken: st.OverlayToken, StartupProfile: measure}
-		if err := overlay.ApplyToMods(modsDir, cfg); err != nil {
-			return err
-		}
-		if armer, ok := l.(loader.OverlayArmer); ok {
-			dir, dirErr := s.profiles.ProfileDir(g.ID(), profileID)
-			if dirErr != nil {
-				return dirErr
-			}
-			if armErr := armer.ArmOverlay(dir, st.OverlayEnabled, st.OverlayPort, st.OverlayToken); armErr != nil {
-				return armErr
-			}
 		}
 	}
 	if plan, err = s.planProfile(ctx, g, inst, profileID, mode, spec.Options, spec.Prefix, spec.Env); err != nil {
@@ -1109,74 +1079,25 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	if err != nil {
 		return err
 	}
-	store := inst.Store
-	if (inst.Launcher == "" || !s.Starter.LauncherRelays(inst, plan)) && (store == game.StoreGOG || store == game.StoreGOGHeroic || store == game.StoreMinigalaxy || store == game.StoreLutris || store == game.StoreEpicHeroic || store == game.StoreBottles || store == game.StoreEA) {
+	if (inst.Launcher == "" || !s.Starter.LauncherRelays(inst, plan)) && startsItself(inst.Store) {
 		env.Direct = true
 	}
 	if env.Direct {
-		scope := settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}
-		ov := launchOverrides(s.profiles, g.ID(), profileID)
-		env.Instances, _ = strconv.Atoi(settings.ResolveAt(s.settings.Get(), "instances", scope, ov))
-		if n, ok := ctx.Value(instancesKey{}).(int); ok {
-			env.Instances, env.TestCopies = n, true
-			if l, _ := s.loaderOf(g.ID(), profileID); l != nil {
-				if logs, ok := l.(loader.WithLogs); ok {
-					env.LoaderReady = logs.Ready
-				}
-			}
-		}
-		env.DelaySeconds, _ = strconv.Atoi(settings.ResolveAt(s.settings.Get(), "delaySeconds", scope, ov))
+		s.directEnv(ctx, g, profileID, &env)
 	}
-	if st, status := game.LocateSteam(s.home, s.settings.Get()); status == steam.Found {
-		env.Steam = &st
-	}
-	if store == game.StoreFlatpakSteam {
-		for _, one := range steam.LocateAll(s.home, s.settings.Get().LauncherRoots[game.LauncherSteam]...) {
-			if one.Kind == steam.KindFlatpak {
-				env.Steam = &one
-				break
-			}
-		}
-	}
+	s.locateSteam(&env, inst)
 	var restore *settingsRestore
 	var settingsMissing bool
 	var backupErr error
 	if !vanilla && profileID != "" {
-		// The server keeps its saves, options and caches in its own data folder, not the client's.
-		if !server {
-			restore, settingsMissing, err = s.prepareGameSettings(g.ID(), profileID, t.install)
-			if err != nil {
-				dep.unwind(ctx)
-				return err
-			}
-			backupErr = s.backupChangedSaves(ctx, g.ID(), profileID, t.install, dir)
-			err = s.swapSaves(ctx, g.ID(), inst, profileID, t.install, dep)
-			if err == nil {
-				err = s.swapOptions(ctx, g.ID(), inst, profileID, t.install, dep)
-			}
-		}
-		if err == nil {
-			err = s.swapModConfig(ctx, g.ID(), inst, profileID, t.install, dep)
-		}
-		if err != nil {
-			dep.unwind(ctx)
-			if restoreErr := s.restoreGameSettings(restore); restoreErr != nil {
-				s.reportSettingsRestore(g, profileID, restoreErr)
-			}
+		if restore, settingsMissing, backupErr, err = s.swapProfile(ctx, g, inst, t, dep, server); err != nil {
 			return err
-		}
-		if !server {
-			s.clearCaches(g.ID(), profileID, t.install)
 		}
 	}
 	if err := s.ensureRuntime(inst, plan.RuntimeReqs, env.Direct || plan.Exe != ""); err != nil {
-		if errors.Is(err, errNoPrefix) {
-			err = usererr.New(usererr.Invalid, "Start "+g.Name()+" once from Steam and quit it, so Proton can create its prefix; then Play from Mortar. Or set the game's Default launch to Direct.")
-		}
+		err = runtimeError(g, err)
 		dep.unwind(ctx)
-		if restoreErr := s.restoreGameSettings(restore); restoreErr != nil {
-			s.reportSettingsRestore(g, profileID, restoreErr)
-		}
+		s.restoreOrReport(g, profileID, restore)
 		return err
 	}
 	runCtx, cancel := context.WithCancel(ctx)
@@ -1210,6 +1131,162 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		Since: started.UnixMilli(), SlowAt: slowAt(started, progress.UsualMs).UnixMilli(),
 	})
 	s.emit(ProgressEvent, progress)
+	s.announceLaunch(g, profileID, plan, settingsMissing, backupErr)
+	s.watch(g)
+	go s.followRunning(runCtx, g)
+	if sample {
+		s.startSampler(runCtx, g, profileID, modsDir, startupBefore)
+	}
+	go s.run(runCtx, g, profileID, launchRun{inst: inst, plan: plan, env: env, vanilla: vanilla}, buf)
+	return nil
+}
+
+func runtimeError(g game.Game, err error) error {
+	if errors.Is(err, errNoPrefix) {
+		return usererr.New(usererr.Invalid, "Start "+g.Name()+" once from Steam and quit it, so Proton can create its prefix; then Play from Mortar. Or set the game's Default launch to Direct.")
+	}
+	return err
+}
+
+func (s *Service) startSampler(ctx context.Context, g game.Game, profileID, modsDir string, before map[string]bool) {
+	stopped := make(chan struct{})
+	s.mu.Lock()
+	s.sampled[keyOf(g)] = stopped
+	s.mu.Unlock()
+	go s.sampleStartup(ctx, g, profileID, modsDir, before, sync.OnceFunc(func() { close(stopped) }))
+}
+
+// launchSettings applies the settings that shape how the game process starts.
+func (s *Service) launchSettings(g game.Game, profileID string, env *game.StartEnv) {
+	scope := settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}
+	ov := launchOverrides(s.profiles, g.ID(), profileID)
+	env.Proton = settings.ResolveAt(s.settings.Get(), "protonVersion", scope, ov)
+	env.StartFirst = settings.ResolveAt(s.settings.Get(), "startFirst", scope, ov)
+	env.ALVRProgram = s.settings.Get().ALVRProgram
+}
+
+func (s *Service) restoreOrReport(g game.Game, profileID string, restore *settingsRestore) {
+	if err := s.restoreGameSettings(restore); err != nil {
+		s.reportSettingsRestore(g, profileID, err)
+	}
+}
+
+// startsItself reports stores whose client does not relay a launch, so the game is started directly.
+func startsItself(store string) bool {
+	switch store {
+	case game.StoreGOG, game.StoreGOGHeroic, game.StoreMinigalaxy, game.StoreLutris, game.StoreEpicHeroic, game.StoreBottles, game.StoreEA:
+		return true
+	}
+	return false
+}
+
+// armProfile prepares the profile's mods for the launch: the startup measurement, its sampler when the runtime
+// supports one, and the overlay bridge.
+func (s *Service) armProfile(g game.Game, profileID, modsDir string) (measure, sample bool, startupBefore map[string]bool, err error) {
+	st := s.settings.Get()
+	l, _ := s.loaderOf(g.ID(), profileID)
+	measure, err = prepareStartup(l, g.ID(), modsDir)
+	if err != nil {
+		return false, false, nil, err
+	}
+	// The sampler reads .NET's diagnostics port, which SMAPI's runtime has and Unity's Mono does not.
+	sample = measure && l.ID() == smapi.ID
+	if sample {
+		startupBefore, err = s.startupBaseline(g.ID(), profileID)
+		if err != nil {
+			log.Printf("startup sampler: %s: %v", g.ID(), err)
+			measure, sample = false, false
+		}
+	}
+	cfg := overlay.BridgeConfig{OverlayEnabled: st.OverlayEnabled, OverlayPort: st.OverlayPort, OverlayToken: st.OverlayToken, StartupProfile: measure}
+	if err := overlay.ApplyToMods(modsDir, cfg); err != nil {
+		return false, false, nil, err
+	}
+	if armer, ok := l.(loader.OverlayArmer); ok {
+		dir, err := s.profiles.ProfileDir(g.ID(), profileID)
+		if err != nil {
+			return false, false, nil, err
+		}
+		if err := armer.ArmOverlay(dir, st.OverlayEnabled, st.OverlayPort, st.OverlayToken); err != nil {
+			return false, false, nil, err
+		}
+	}
+	return measure, sample, startupBefore, nil
+}
+
+// startupBaseline lists the startup reports present before the launch, so the sampler can tell the new one.
+func (s *Service) startupBaseline(gameID, profileID string) (map[string]bool, error) {
+	profileDir, err := s.profiles.ProfileDir(gameID, profileID)
+	if err != nil {
+		return nil, err
+	}
+	return startupReportIDs(filepath.Join(profileDir, startupDir))
+}
+
+// directEnv sets the instance count and delay of a direct launch, where a test can override the instances.
+func (s *Service) directEnv(ctx context.Context, g game.Game, profileID string, env *game.StartEnv) {
+	scope := settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}
+	ov := launchOverrides(s.profiles, g.ID(), profileID)
+	env.Instances, _ = strconv.Atoi(settings.ResolveAt(s.settings.Get(), "instances", scope, ov))
+	if n, ok := ctx.Value(instancesKey{}).(int); ok {
+		env.Instances, env.TestCopies = n, true
+		if l, _ := s.loaderOf(g.ID(), profileID); l != nil {
+			if logs, ok := l.(loader.WithLogs); ok {
+				env.LoaderReady = logs.Ready
+			}
+		}
+	}
+	env.DelaySeconds, _ = strconv.Atoi(settings.ResolveAt(s.settings.Get(), "delaySeconds", scope, ov))
+}
+
+func (s *Service) locateSteam(env *game.StartEnv, inst game.Install) {
+	if st, status := game.LocateSteam(s.home, s.settings.Get()); status == steam.Found {
+		env.Steam = &st
+	}
+	if inst.Store == game.StoreFlatpakSteam {
+		for _, one := range steam.LocateAll(s.home, s.settings.Get().LauncherRoots[game.LauncherSteam]...) {
+			if one.Kind == steam.KindFlatpak {
+				env.Steam = &one
+				break
+			}
+		}
+	}
+}
+
+// swapProfile puts the profile's game settings, saves, options and mod configs in place, unwinding the deploy and
+// restoring the settings when a step fails.
+func (s *Service) swapProfile(ctx context.Context, g game.Game, inst game.Install, t launchTarget, dep *deployment, server bool) (restore *settingsRestore, settingsMissing bool, backupErr, err error) {
+	gameID, profileID := g.ID(), t.profileID
+	// The server keeps its saves, options and caches in its own data folder, not the client's.
+	if !server {
+		restore, settingsMissing, err = s.prepareGameSettings(gameID, profileID, t.install)
+		if err != nil {
+			dep.unwind(ctx)
+			return nil, false, nil, err
+		}
+		backupErr = s.backupChangedSaves(ctx, gameID, profileID, t.install, t.dir)
+		err = s.swapSaves(ctx, gameID, inst, profileID, t.install, dep)
+		if err == nil {
+			err = s.swapOptions(ctx, gameID, inst, profileID, t.install, dep)
+		}
+	}
+	if err == nil {
+		err = s.swapModConfig(ctx, gameID, inst, profileID, t.install, dep)
+	}
+	if err != nil {
+		dep.unwind(ctx)
+		s.restoreOrReport(g, profileID, restore)
+		return nil, false, nil, err
+	}
+	if !server {
+		s.clearCaches(gameID, profileID, t.install)
+	}
+	return restore, settingsMissing, backupErr, nil
+}
+
+// announceLaunch tells the player what the launch skipped or could not do.
+func (s *Service) announceLaunch(g game.Game, profileID string, plan *launchplan.Plan, settingsMissing bool, backupErr error) {
+	gameID := g.ID()
 	if settingsMissing {
 		s.sayCode(g, profileID, "startup_preferences is missing; skipped profile game settings.", "settingsMissing", nil)
 	}
@@ -1221,17 +1298,6 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	if plan.SteamLaunchOption != "" {
 		s.emit(SteamOptionEvent, SteamOption{Game: gameID, Profile: profileID, Option: plan.SteamLaunchOption})
 	}
-	s.watch(g)
-	go s.followRunning(runCtx, g)
-	if sample {
-		stopped := make(chan struct{})
-		s.mu.Lock()
-		s.sampled[keyOf(g)] = stopped
-		s.mu.Unlock()
-		go s.sampleStartup(runCtx, g, profileID, modsDir, startupBefore, sync.OnceFunc(func() { close(stopped) }))
-	}
-	go s.run(runCtx, g, profileID, launchRun{inst: inst, plan: plan, env: env, vanilla: vanilla}, buf)
-	return nil
 }
 
 // waitSampled waits for a measured launch's sampler to stop its session, so stopping the game does not cut off the
