@@ -150,11 +150,16 @@ func (s *Service) titled(gameID string) (nexusmods.Title, *nexusmods.Client, err
 
 // Endorse records the signed-in user's endorsement of modID at version.
 func (s *Service) Endorse(ctx context.Context, gameID string, modID int, version string) (string, error) {
+	return s.setEndorsement(ctx, gameID, modID, version, (*nexusmods.Client).Endorse)
+}
+
+// setEndorsement runs one of the client's endorse-status calls for the signed-in user.
+func (s *Service) setEndorsement(ctx context.Context, gameID string, modID int, version string, call func(*nexusmods.Client, context.Context, nexusmods.Title, int, string) (nexusmods.EndorseStatus, error)) (string, error) {
 	t, c, err := s.titled(gameID)
 	if err != nil {
 		return "", err
 	}
-	status, err := c.Endorse(ctx, t, modID, version)
+	status, err := call(c, ctx, t, modID, version)
 	return string(status), nexus.Worded(err)
 }
 
@@ -171,12 +176,7 @@ func (s *Service) EndorsementOf(ctx context.Context, gameID string, modID int) (
 
 // Abstain withdraws the signed-in user's endorsement of modID at version.
 func (s *Service) Abstain(ctx context.Context, gameID string, modID int, version string) (string, error) {
-	t, c, err := s.titled(gameID)
-	if err != nil {
-		return "", err
-	}
-	status, err := c.Abstain(ctx, t, modID, version)
-	return string(status), nexus.Worded(err)
+	return s.setEndorsement(ctx, gameID, modID, version, (*nexusmods.Client).Abstain)
 }
 
 // TrackedMods is the signed-in user's tracked list (briefly cached in the Nexus client).
