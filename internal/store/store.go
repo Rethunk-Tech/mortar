@@ -556,49 +556,7 @@ func HashDir(root string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	type hashed struct{ rel, open string }
-	var files []hashed
-	err = filepath.WalkDir(root, func(p string, _ fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		info, err := os.Lstat(p)
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			if p != root && !safefs.RealDirUnder(base, p) {
-				return fs.SkipDir
-			}
-			return nil
-		}
-		if safefs.LinkedDir(p, info) {
-			return nil
-		}
-		resolved, err := safefs.EvalSymlinks(p)
-		if err != nil {
-			return err
-		}
-		if !safefs.UnderRoot(base, resolved) {
-			return fmt.Errorf("%s escapes %s", p, root)
-		}
-		rel, err := filepath.Rel(root, p)
-		if err != nil {
-			return err
-		}
-		// The marker is the store's bookkeeping, not content: a folder hashes the same before and after it lands.
-		if rel == CompleteMarker {
-			return nil
-		}
-		open := p
-		if info.Mode()&os.ModeSymlink != 0 {
-			open = resolved
-		} else if !info.Mode().IsRegular() {
-			return fmt.Errorf("%s is not a regular file", p)
-		}
-		files = append(files, hashed{rel: filepath.ToSlash(rel), open: open})
-		return nil
-	})
+	files, err := hashedFiles(root, base)
 	if err != nil {
 		return "", err
 	}
@@ -621,6 +579,64 @@ func HashDir(root string) (string, error) {
 		h.Write([]byte{0})
 	}
 	return LocalKey(hex.EncodeToString(h.Sum(nil))), nil
+}
+
+type hashed struct{ rel, open string }
+
+// hashedFiles lists the regular files under root, each with the path to read it by, skipping linked folders and
+// refusing any file that resolves outside root (base is root with symlinks resolved).
+func hashedFiles(root, base string) ([]hashed, error) {
+	var files []hashed
+	err := filepath.WalkDir(root, func(p string, _ fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		info, err := os.Lstat(p)
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			if p != root && !safefs.RealDirUnder(base, p) {
+				return fs.SkipDir
+			}
+			return nil
+		}
+		if safefs.LinkedDir(p, info) {
+			return nil
+		}
+		h, ok, err := hashedFile(root, base, p, info)
+		if ok {
+			files = append(files, h)
+		}
+		return err
+	})
+	return files, err
+}
+
+// hashedFile resolves one file for hashing; ok is false for the store's own completion marker.
+func hashedFile(root, base, p string, info fs.FileInfo) (h hashed, ok bool, err error) {
+	resolved, err := safefs.EvalSymlinks(p)
+	if err != nil {
+		return h, false, err
+	}
+	if !safefs.UnderRoot(base, resolved) {
+		return h, false, fmt.Errorf("%s escapes %s", p, root)
+	}
+	rel, err := filepath.Rel(root, p)
+	if err != nil {
+		return h, false, err
+	}
+	// The marker is the store's bookkeeping, not content: a folder hashes the same before and after it lands.
+	if rel == CompleteMarker {
+		return h, false, nil
+	}
+	open := p
+	if info.Mode()&os.ModeSymlink != 0 {
+		open = resolved
+	} else if !info.Mode().IsRegular() {
+		return h, false, fmt.Errorf("%s is not a regular file", p)
+	}
+	return hashed{rel: filepath.ToSlash(rel), open: open}, true, nil
 }
 
 func hashKey(path string) (string, error) {
