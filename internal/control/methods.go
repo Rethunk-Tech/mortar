@@ -280,16 +280,7 @@ func modProblems(p profile.Profile, result problems.Result, source, id string) [
 		if conflict.Cosmetic || !slices.ContainsFunc(conflict.PackIDs, involves) {
 			continue
 		}
-		var names []string
-		for i, id := range conflict.PackIDs {
-			if !involves(id) && i < len(conflict.Names) {
-				names = append(names, conflict.Names[i])
-			}
-		}
-		if len(names) == 0 {
-			names = []string{"another mod"}
-		}
-		out = append(out, ModProblem{Kind: "conflict", Text: fmt.Sprintf("conflicts with %s", strings.Join(names, ", "))})
+		out = append(out, ModProblem{Kind: "conflict", Text: fmt.Sprintf("conflicts with %s", strings.Join(otherPacks(conflict, involves), ", "))})
 	}
 	for _, run := range result.RunErrors {
 		if involves(run.ID) {
@@ -297,6 +288,20 @@ func modProblems(p profile.Profile, result problems.Result, source, id string) [
 		}
 	}
 	return out
+}
+
+// otherPacks names the packs of a conflict that the mod in question is not, or "another mod" when none is named.
+func otherPacks(conflict framework.AssetConflict, involves func(mod.ID) bool) []string {
+	var names []string
+	for i, id := range conflict.PackIDs {
+		if !involves(id) && i < len(conflict.Names) {
+			names = append(names, conflict.Names[i])
+		}
+	}
+	if len(names) == 0 {
+		return []string{"another mod"}
+	}
+	return names
 }
 
 func resolveSavedGroup(list []savedgroups.SavedGroup, name string) (savedgroups.SavedGroup, error) {
@@ -320,8 +325,92 @@ func holdsAll(prof profile.Profile, g savedgroups.SavedGroup) bool {
 	return !slices.ContainsFunc(g.Mods, func(m savedgroups.Mod) bool { return m.ID != "" && !have[m.ID.Fold()] })
 }
 
+// savedGroupRows lists the game's saved groups with the profiles that already hold every mod of each.
+func (s *Services) savedGroupRows(game string) (any, error) {
+	if s.SavedGroups == nil {
+		return nil, errors.New("saved groups are unavailable")
+	}
+	list, err := s.SavedGroups.List(game)
+	if err != nil {
+		return nil, err
+	}
+	profiles, err := s.Profiles.List(game)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]SavedGroupRow, 0, len(list))
+	for _, g := range list {
+		var names []string
+		for _, prof := range profiles {
+			if prof.Error == "" && holdsAll(prof, g) {
+				names = append(names, prof.Name)
+			}
+		}
+		out = append(out, SavedGroupRow{SavedGroup: g, Profiles: names})
+	}
+	return out, nil
+}
+
+// modsSplit moves one extra file of a mod out into an entry of its own.
+func (s *Services) modsSplit(p Params, prof profile.Profile, id string) (any, error) {
+	if len(p.IDs) != 2 {
+		return nil, fmt.Errorf("mods split needs a mod and a file")
+	}
+	keys, err := keysFor(prof, p.IDs[:1])
+	if err != nil {
+		return nil, err
+	}
+	entry, ok := entryByKey(prof, keys[0])
+	if !ok {
+		return nil, fmt.Errorf("%q is not in this profile", keys[0])
+	}
+	extra, err := extraKeyOf(entry, p.IDs[1])
+	if err != nil {
+		return nil, err
+	}
+	return s.changed(p.Game, func() (any, error) {
+		if _, err := s.Profiles.SplitExtra(p.Game, id, keys[0], extra); err != nil {
+			return nil, err
+		}
+		return modRows(s.reload(p.Game, id, prof)), nil
+	})
+}
+
 // Handle runs one method against the live services.
 func (s *Services) Handle(ctx context.Context, method string, p Params) (any, error) {
+	for _, group := range []func(context.Context, string, Params) (any, error){s.dispatchGlobal1, s.dispatchGlobal2, s.dispatchGlobal3, s.dispatchGlobal4, s.dispatchGlobal5, s.dispatchGlobal6, s.dispatchGlobal7, s.dispatchGlobal8, s.dispatchGlobal9, s.dispatchGlobal10, s.dispatchGlobal11, s.dispatchGlobal12, s.dispatchGlobal13, s.dispatchGlobal14} {
+		if res, err := group(ctx, method, p); !errors.Is(err, errUnknownMethod) {
+			return res, err
+		}
+	}
+	if res, ok, err := s.handleLibrary(ctx, method, p); ok {
+		return res, err
+	}
+	if res, ok, err := s.handleMore(ctx, method, p); ok {
+		return res, err
+	}
+	if method == "mods.favourites" {
+		return s.Settings.Get().GamePrefs(p.Game).FavouriteMods, nil
+	}
+	if method == "logs.search" {
+		return s.searchLogs(p)
+	}
+	prof, err := s.resolve(p.Game, p.Profile)
+	if err != nil {
+		return nil, err
+	}
+	id := prof.ID
+	for _, group := range []func(context.Context, string, Params, profile.Profile, string) (any, error){s.dispatchProfile1, s.dispatchProfile2, s.dispatchProfile3, s.dispatchProfile4, s.dispatchProfile5, s.dispatchProfile6, s.dispatchProfile7, s.dispatchProfile8, s.dispatchProfile9, s.dispatchProfile10, s.dispatchProfile11, s.dispatchProfile12} {
+		if res, err := group(ctx, method, p, prof, id); !errors.Is(err, errUnknownMethod) {
+			return res, err
+		}
+	}
+	return nil, fmt.Errorf("unknown method %q", method)
+}
+
+var errUnknownMethod = errors.New("unknown method")
+
+func (s *Services) dispatchGlobal1(ctx context.Context, method string, p Params) (any, error) {
 	switch method {
 	case "app.quit":
 		if s.Quit == nil {
@@ -346,6 +435,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.devRemove(p)
 	case "loader.versions":
 		return s.loaderVersions(ctx, p)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal2(ctx context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "loader.install":
 		return s.loaderInstall(ctx, p)
 	case "loader.pin":
@@ -361,6 +456,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return GameFolderResult{Game: p.Game, Folder: s.Settings.Get().GameFolders[p.Game]}, nil
 	case "game.launchPresetTemplates":
 		return s.gameLaunchPresetTemplates(p)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal3(ctx context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "antivirus.status":
 		v := s.Settings.Get()
 		return avscan.StatusOf(ctx, avscan.Config{Mode: v.Antivirus, Socket: v.AntivirusSocket, Command: v.AntivirusCommand}), nil
@@ -398,6 +499,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return nil, s.SettingsSvc.ApplyImport(p.Path, settings.ImportSections())
 	case "settings.reset":
 		return nil, resetSettings(s.SettingsSvc, p.Key, p.Game)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal4(_ context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "profiles":
 		return s.Profiles.List(p.Game)
 	case "trash.list":
@@ -423,6 +530,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, errors.New("tools are unavailable")
 		}
 		return s.Tools.List(p.Game)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal5(ctx context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "tools.run":
 		if s.Tools == nil {
 			return nil, errors.New("tools are unavailable")
@@ -459,6 +572,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.doctor()
 	case "launchers":
 		return s.Games.Launchers()
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal6(ctx context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "launchers.add":
 		if err := s.SettingsSvc.AddLauncherRoot(p.Name, p.Path); err != nil {
 			return nil, err
@@ -487,6 +606,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Queue.State(), nil
 	case "queue.add":
 		return s.queueAdd(ctx, p)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal7(_ context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "queue.pause":
 		s.Queue.Pause()
 		return s.Queue.State(), nil
@@ -509,6 +634,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		s.Queue.Move(p.Name, delta)
 		return s.Queue.State(), nil
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal8(ctx context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "queue.clear":
 		s.Queue.ClearFinished()
 		return s.Queue.State(), nil
@@ -549,29 +680,14 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			err = backup.ErrNoSaves
 		}
 		return nil, err
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal9(ctx context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "groups":
-		if s.SavedGroups == nil {
-			return nil, errors.New("saved groups are unavailable")
-		}
-		list, err := s.SavedGroups.List(p.Game)
-		if err != nil {
-			return nil, err
-		}
-		profiles, err := s.Profiles.List(p.Game)
-		if err != nil {
-			return nil, err
-		}
-		out := make([]SavedGroupRow, 0, len(list))
-		for _, g := range list {
-			var names []string
-			for _, prof := range profiles {
-				if prof.Error == "" && holdsAll(prof, g) {
-					names = append(names, prof.Name)
-				}
-			}
-			out = append(out, SavedGroupRow{SavedGroup: g, Profiles: names})
-		}
-		return out, nil
+		return s.savedGroupRows(p.Game)
 	case "groups.apply":
 		if s.SavedGroups == nil {
 			return nil, errors.New("saved groups are unavailable")
@@ -625,6 +741,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return nil, errors.New("nexus is unavailable")
 		}
 		return s.updateChangelog(ctx, p)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal10(ctx context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "cache.size":
 		if s.Data == nil {
 			return nil, errors.New("data is unavailable")
@@ -646,6 +768,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.bisectStart(ctx, p)
 	case "bisect.status":
 		return s.bisectStatus(p.Name)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal11(_ context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "bisect.stop":
 		return s.bisectStop(p.Name)
 	case "store.report":
@@ -670,6 +798,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		s.Handoff([]string{p.Path})
 		return map[string]string{"path": p.Path}, nil
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal12(ctx context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "status":
 		if p.Install != "" {
 			return s.Launches.StatusInstall(p.Game, p.Install)
@@ -700,6 +834,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.changed(p.Game, func() (any, error) { return s.applyEverywhere(ctx, p) })
 	case "mods.by-author":
 		return s.modsByAuthor(p)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal13(ctx context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "browse":
 		return s.browseFromParams(ctx, p)
 	case "pack.import":
@@ -712,26 +852,19 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.farmCall(ctx, method, p)
 	case "profile.backup":
 		return s.profileBackup(p)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchGlobal14(ctx context.Context, method string, p Params) (any, error) {
+	switch method {
 	case "profile.restore":
 		return s.profileRestore(ctx, p)
 	}
-	if res, ok, err := s.handleLibrary(ctx, method, p); ok {
-		return res, err
-	}
-	if res, ok, err := s.handleMore(ctx, method, p); ok {
-		return res, err
-	}
-	if method == "mods.favourites" {
-		return s.Settings.Get().GamePrefs(p.Game).FavouriteMods, nil
-	}
-	if method == "logs.search" {
-		return s.searchLogs(p)
-	}
-	prof, err := s.resolve(p.Game, p.Profile)
-	if err != nil {
-		return nil, err
-	}
-	id := prof.ID
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchProfile1(ctx context.Context, method string, p Params, prof profile.Profile, id string) (any, error) {
 	switch method {
 	case "profile.rename":
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Rename(p.Game, id, p.Name) })
@@ -790,6 +923,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Shares.CollectionStatus(ctx, p.Game, id)
 	case "profile.loadOrder":
 		return s.Profiles.LoadOrder(p.Game, id)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchProfile2(_ context.Context, method string, p Params, _ profile.Profile, id string) (any, error) {
+	switch method {
 	case "history.diff":
 		return s.historyDiff(p.Game, id, p.Name, p.Value)
 	case "history.revert":
@@ -810,6 +949,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return events, nil
 	case "profile.health":
 		return s.Profiles.HealthHistory(p.Game, id)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchProfile3(ctx context.Context, method string, p Params, prof profile.Profile, id string) (any, error) {
+	switch method {
 	case "profile.revert":
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Revert(p.Game, id, p.Name) })
 	case "profile.delete":
@@ -824,6 +969,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Repair(p.Game, id) })
 	case "profile.freeze", "profile.unfreeze":
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.SetFrozen(p.Game, id, method == "profile.freeze") })
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchProfile4(_ context.Context, method string, p Params, prof profile.Profile, id string) (any, error) {
+	switch method {
 	case "profile.favourite", "profile.unfavourite":
 		return s.changed(p.Game, func() (any, error) {
 			return s.Profiles.SetFavourite(p.Game, id, method == "profile.favourite")
@@ -838,6 +989,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return modRows(prof), nil
 	case "mods.channel":
 		return s.modsChannel(p, prof, id)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchProfile5(ctx context.Context, method string, p Params, prof profile.Profile, id string) (any, error) {
+	switch method {
 	case "mods.files":
 		if len(p.IDs) == 0 {
 			return nil, fmt.Errorf("mods files needs a mod")
@@ -880,6 +1037,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Games.Screenshots(p.Game)
 	case "nexus.endorse":
 		return s.nexusEndorse(ctx, p)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchProfile6(ctx context.Context, method string, p Params, prof profile.Profile, id string) (any, error) {
+	switch method {
 	case "sync.status", "sync.apply":
 		return s.syncCall(ctx, method, p)
 	case "mods.menu":
@@ -901,6 +1064,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			_, err := s.Profiles.SetPinned(p.Game, id, k, method == "mods.pin", p.Value)
 			return err
 		})
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchProfile7(_ context.Context, method string, p Params, prof profile.Profile, id string) (any, error) {
+	switch method {
 	case "mods.remove":
 		keys, err := keysFor(prof, p.IDs)
 		if err != nil {
@@ -953,27 +1122,13 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 			return err
 		})
 	case "mods.split":
-		if len(p.IDs) != 2 {
-			return nil, fmt.Errorf("mods split needs a mod and a file")
-		}
-		keys, err := keysFor(prof, p.IDs[:1])
-		if err != nil {
-			return nil, err
-		}
-		entry, ok := entryByKey(prof, keys[0])
-		if !ok {
-			return nil, fmt.Errorf("%q is not in this profile", keys[0])
-		}
-		extra, err := extraKeyOf(entry, p.IDs[1])
-		if err != nil {
-			return nil, err
-		}
-		return s.changed(p.Game, func() (any, error) {
-			if _, err := s.Profiles.SplitExtra(p.Game, id, keys[0], extra); err != nil {
-				return nil, err
-			}
-			return modRows(s.reload(p.Game, id, prof)), nil
-		})
+		return s.modsSplit(p, prof, id)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchProfile8(ctx context.Context, method string, p Params, prof profile.Profile, id string) (any, error) {
+	switch method {
 	case "mods.combine":
 		if len(p.IDs) != 2 {
 			return nil, fmt.Errorf("mods combine needs a mod and the entry to combine it into")
@@ -1011,6 +1166,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return out, nil
 	case "who":
 		return s.Problems.WhoChanges(ctx, p.Game, id, p.Query)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchProfile9(ctx context.Context, method string, p Params, _ profile.Profile, id string) (any, error) {
+	switch method {
 	case "conflicts.map":
 		return s.Problems.AssetMap(ctx, p.Game, id, p.Query, false, 0)
 	case "problems":
@@ -1034,6 +1195,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.changed(p.Game, func() (any, error) {
 			return nil, s.restoreDismissedProblem(ctx, p.Game, id, p.Name, p.Index)
 		})
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchProfile10(ctx context.Context, method string, p Params, prof profile.Profile, id string) (any, error) {
+	switch method {
 	case "modProblems":
 		if p.Source == "" || p.ID == "" {
 			return []ModProblem{}, nil
@@ -1065,6 +1232,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return ShareLink{Web: res.Web, App: res.App}, nil
 	case "export":
 		return s.export(p.Game, prof, p.Path)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchProfile11(ctx context.Context, method string, p Params, prof profile.Profile, id string) (any, error) {
+	switch method {
 	case "runs":
 		return s.Launches.Runs(p.Game, id)
 	case "logs":
@@ -1077,6 +1250,12 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.Saves.Saves(ctx, p.Game, id)
 	case "play.check":
 		return s.playCheck(ctx, p.Game, id, prof)
+	}
+	return nil, errUnknownMethod
+}
+
+func (s *Services) dispatchProfile12(ctx context.Context, method string, p Params, _ profile.Profile, id string) (any, error) {
+	switch method {
 	case "play.test":
 		return s.playTest(ctx, p.Game, id, p.Install)
 	case "launch":
@@ -1084,7 +1263,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "perf.reports":
 		return s.Launches.PerformanceReports(p.Game, id)
 	}
-	return nil, fmt.Errorf("unknown method %q", method)
+	return nil, errUnknownMethod
 }
 
 // changed runs a mutating call and tells the window to reload the game's profiles.
@@ -1685,48 +1864,9 @@ func saveGapGroup(save savessvc.Fit) PlayIssueGroup {
 }
 
 func playIssueGroups(prof profile.Profile, res problems.Result, upd problems.UpdatesResult, smapiNever bool) []PlayIssueGroup {
-	var missing []string
-	seen := map[string]bool{}
-	for _, m := range res.Missing {
-		// Missing has a row per dependent mod; the summary counts each absent mod once.
-		if m.Optional || seen[m.ID.Fold()] {
-			continue
-		}
-		seen[m.ID.Fold()] = true
-		name := m.ID.Local()
-		if m.Where != nil && m.Where.PageName != "" {
-			name = m.Where.PageName
-		}
-		missing = append(missing, name)
-	}
-	var conflicts []string
-	for _, c := range res.AssetConflicts {
-		if c.Cosmetic {
-			continue
-		}
-		names := make([]string, 0, len(c.Names))
-		for _, n := range c.Names {
-			if n != "" {
-				names = append(names, n)
-			}
-		}
-		if len(names) > 0 {
-			conflicts = append(conflicts, strings.Join(names, ", "))
-		} else {
-			conflicts = append(conflicts, c.Target)
-		}
-	}
-	var updates []string
-	for _, u := range upd.Updates {
-		if smapiNever && u.Unofficial {
-			continue
-		}
-		e, ok := entryByKey(prof, u.Key)
-		if ok && (e.Pinned || (u.Source != "" && slices.Contains(e.SkipSources, u.Source)) || (e.SkipVersion != "" && e.SkipVersion == u.Version)) {
-			continue
-		}
-		updates = append(updates, u.Name)
-	}
+	missing := missingNames(res.Missing)
+	conflicts := conflictLabels(res.AssetConflicts)
+	updates := pendingUpdateNames(prof, upd, smapiNever)
 	var broken []string
 	for _, b := range res.Broken {
 		if b.Status == "broken" || b.Status == "obsolete" || b.Status == "cycle" {
@@ -1756,6 +1896,60 @@ func playIssueGroups(prof profile.Profile, res problems.Result, upd problems.Upd
 			names = names[:playIssueNameCap]
 		}
 		out = append(out, PlayIssueGroup{Kind: g.kind, Count: len(g.labels), Names: names})
+	}
+	return out
+}
+
+// missingNames lists each absent mod once; Missing has a row per dependent mod.
+func missingNames(rows []problems.Missing) []string {
+	var out []string
+	seen := map[string]bool{}
+	for _, m := range rows {
+		if m.Optional || seen[m.ID.Fold()] {
+			continue
+		}
+		seen[m.ID.Fold()] = true
+		name := m.ID.Local()
+		if m.Where != nil && m.Where.PageName != "" {
+			name = m.Where.PageName
+		}
+		out = append(out, name)
+	}
+	return out
+}
+
+func conflictLabels(conflicts []framework.AssetConflict) []string {
+	var out []string
+	for _, c := range conflicts {
+		if c.Cosmetic {
+			continue
+		}
+		names := make([]string, 0, len(c.Names))
+		for _, n := range c.Names {
+			if n != "" {
+				names = append(names, n)
+			}
+		}
+		if len(names) > 0 {
+			out = append(out, strings.Join(names, ", "))
+		} else {
+			out = append(out, c.Target)
+		}
+	}
+	return out
+}
+
+func pendingUpdateNames(prof profile.Profile, upd problems.UpdatesResult, smapiNever bool) []string {
+	var out []string
+	for _, u := range upd.Updates {
+		if smapiNever && u.Unofficial {
+			continue
+		}
+		e, ok := entryByKey(prof, u.Key)
+		if ok && (e.Pinned || (u.Source != "" && slices.Contains(e.SkipSources, u.Source)) || (e.SkipVersion != "" && e.SkipVersion == u.Version)) {
+			continue
+		}
+		out = append(out, u.Name)
 	}
 	return out
 }
