@@ -26,6 +26,10 @@ const (
 func askMissingLocation(path string) locationChoice {
 	text := i18n.T("Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose "+
 		"Cancel, then start Mortar again, or choose here:\n\nYes: Use the default location\nNo: Choose the data folder…\nCancel: Quit", "path", path)
+	// A server build runs unattended, so a message box would wait for a click nobody makes.
+	if serverBuild {
+		return choiceNoDialog
+	}
 	switch w32.MessageBox(0, text, "Mortar", mbYesNoCancel|mbIconError|mbTopmost) {
 	case idYes:
 		return choiceDefault
@@ -38,6 +42,10 @@ func askMissingLocation(path string) locationChoice {
 // showStartupError shows msg and offers to open folder, the one holding the log ("" for none). A message box copies
 // its text with Ctrl+C, which the prompt says, so the error can be pasted into a report.
 func showStartupError(msg, folder string) {
+	if serverBuild {
+		log.Print(msg)
+		return
+	}
 	if folder == "" {
 		w32.MessageBox(0, msg, "Mortar", mbOK|mbIconError|mbTopmost)
 		return
