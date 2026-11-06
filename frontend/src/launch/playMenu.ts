@@ -6,8 +6,8 @@ type PlayMenuEntry = { kind: 'play'; key: string } | { kind: 'setDefault' } | { 
 function playMenuEntries(presets: PlayPreset[]): PlayMenuEntry[] {
   return [
     ...presets.map((p): PlayMenuEntry => ({ kind: 'play', key: p.key })),
-    ...(presets.length > 0 ? [{ kind: 'setDefault' } as const] : []),
     { kind: 'vanilla' },
+    ...(presets.length > 0 ? [{ kind: 'setDefault' } as const] : []),
   ]
 }
 

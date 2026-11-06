@@ -17,6 +17,7 @@ import { useSettings } from '../settings/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { useOfflineReason } from '../shell/offlineText.ts'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { reportError } from '../toasts/report.ts'
 import { NEXUS, THUNDERSTORE } from './browseConstants.ts'
 import type { BrowseItem } from './browseTypes.ts'
@@ -88,12 +89,6 @@ function Items({
     addWhy = offline
   }
   return [
-    <MenuAction
-      key="details"
-      icon={<Info size={16} />}
-      label={t`More details`}
-      onClick={run(() => useBrowseSelection.getState().select({ item, source }))}
-    />,
     shownItem.external === true ? (
       <MenuAction
         key="add"
@@ -111,6 +106,12 @@ function Items({
         onClick={run(add)}
       />
     ),
+    <MenuAction
+      key="details"
+      icon={<Info size={16} />}
+      label={t`More details`}
+      onClick={run(() => useBrowseSelection.getState().select({ item, source }))}
+    />,
     ...(source === THUNDERSTORE && shownItem.version
       ? projects.map((p) => (
           <MenuAction
@@ -121,6 +122,7 @@ function Items({
           />
         ))
       : []),
+    <MenuRule key="open-rule" />,
     // An external item's own page is the Open page above; only the other sources' pages are listed.
     ...choices
       .filter((c) => !(shownItem.external === true && c.url === url))
@@ -140,6 +142,7 @@ function Items({
         copyText(url, t`Link copied`)
       })}
     />,
+    <MenuRule key="hide-rule" />,
     <MenuAction
       key="hide"
       icon={<EyeOff size={16} />}

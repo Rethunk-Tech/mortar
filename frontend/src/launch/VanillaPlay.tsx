@@ -215,20 +215,7 @@ export function VanillaPlay({
               />,
             ]
           }
-          return [
-            presets.length > 0 ? <MenuRule key="vanilla-divider" /> : null,
-            launchOptions ? (
-              <MenuAction
-                key="launch-options"
-                icon={<SlidersHorizontal size={16} />}
-                label={t`Launch options…`}
-                onClick={() => {
-                  setMenu(null)
-                  launchOptions()
-                }}
-              />
-            ) : null,
-            launchOptions ? <MenuRule key="launch-options-divider" /> : null,
+          return (
             <MenuAction
               key="vanilla"
               disabled={vanillaDisabled}
@@ -238,9 +225,23 @@ export function VanillaPlay({
                 setMenu(null)
                 playVanillaOpen()
               }}
-            />,
-          ]
+            />
+          )
         })}
+        {launchOptions
+          ? [
+              presets.length === 0 ? <MenuRule key="launch-options-divider" /> : null,
+              <MenuAction
+                key="launch-options"
+                icon={<SlidersHorizontal size={16} />}
+                label={t`Launch options…`}
+                onClick={() => {
+                  setMenu(null)
+                  launchOptions()
+                }}
+              />,
+            ]
+          : null}
       </Menu>
       <AppDialog
         open={choosing}
