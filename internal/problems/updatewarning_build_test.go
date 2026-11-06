@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testcatalog"
@@ -23,7 +22,7 @@ func TestUpdateWarningComparesTheSteamBuildWhenTheLoaderReadsNoVersion(t *testin
 		Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
 	})
 
-	datadirtest.Use(t, t.TempDir())
+	set, profiles := testenv.Env(t)
 	lib := t.TempDir()
 	folder := filepath.Join(lib, "steamapps", "common", "Build Game")
 	if err := os.MkdirAll(folder, 0o750); err != nil {
@@ -39,14 +38,9 @@ func TestUpdateWarningComparesTheSteamBuildWhenTheLoaderReadsNoVersion(t *testin
 		}
 	}
 	build("100")
-	set, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
 	if _, err := set.Update(func(v *settings.Settings) { v.GameFolders[id] = folder }); err != nil {
 		t.Fatal(err)
 	}
-	_, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, id, "A")
 	s := NewService(t.TempDir(), set, profiles, nil)
 

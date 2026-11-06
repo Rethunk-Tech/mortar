@@ -22,15 +22,10 @@ func TestRunProblemsReadTheBepInExRunAndItsOwnPlayerLog(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.MkdirAll(filepath.Join(dir, "BepInEx"), 0o700); err != nil {
-		t.Fatal(err)
-	}
 	const logOutput = "[Info   :   BepInEx] BepInEx 5.4.22 - Lethal Company\n" +
 		"[Error  :   BepInEx] Could not load [Foo 1.0.0] because it has missing dependencies: com.bar.lib\n" +
 		"[Message:   BepInEx] Chainloader startup complete\n"
-	if err := os.WriteFile(filepath.Join(dir, "BepInEx", "LogOutput.log"), []byte(logOutput), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	writeBepInExLog(t, dir, logOutput)
 	svc := NewService(t.TempDir(), nil, profiles)
 	svc.record(game.Find("lethal-company"), p.ID, time.Now(), false)
 	runs, err := svc.Runs("lethal-company", p.ID)

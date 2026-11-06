@@ -10,18 +10,16 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testcatalog"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestTestCopiesAddTheDevHelperAndOnlyTheyLaunchWithIt(t *testing.T) {
-	datadirtest.Use(t, t.TempDir())
+	set, ps := testenv.Env(t)
 	const lc, helper = "lethal-company", "Ns-Helper"
 	testcatalog.Use(t, func(m *components.Manifest) {
 		for i := range m.Games {
@@ -38,12 +36,7 @@ func TestTestCopiesAddTheDevHelperAndOnlyTheyLaunchWithIt(t *testing.T) {
 		}
 	})
 
-	_, ps := testenv.Stores(t)
 	p := testenv.Profile(t, ps, lc, "Friends")
-	set, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
 	svc := NewService(t.TempDir(), set, ps)
 	svc.procDir = t.TempDir()
 	svc.EnsureLoader = func(context.Context, string, string, bool) error { return errors.New("stop here") }
@@ -97,14 +90,9 @@ func TestTestCopiesAddTheDevHelperAndOnlyTheyLaunchWithIt(t *testing.T) {
 }
 
 func TestStartInstancesTouchesNothingWhileTheInstallIsBusy(t *testing.T) {
-	datadirtest.Use(t, t.TempDir())
+	set, ps := testenv.Env(t)
 	const lc = "lethal-company"
-	_, ps := testenv.Stores(t)
 	p := testenv.Profile(t, ps, lc, "Friends")
-	set, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
 	svc := NewService(t.TempDir(), set, ps)
 	helped := false
 	svc.InstallPackage = func(context.Context, string, string, string) error { helped = true; return nil }

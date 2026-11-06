@@ -4,17 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
 func TestRecentLaunchesOrdersByNewestRun(t *testing.T) {
-	datadirtest.Use(t, t.TempDir())
-	set, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
+	set, _ := testenv.Env(t)
 	svc, p1, _, _ := runEnv(t)
 	p2, err := svc.profiles.Create("stardew", "B")
 	if err != nil {
@@ -48,11 +43,7 @@ func TestRecentLaunchesOrdersByNewestRun(t *testing.T) {
 }
 
 func TestRecentLaunchesIncludesLastPlayedBeforeRuns(t *testing.T) {
-	datadirtest.Use(t, t.TempDir())
-	set, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
+	set, _ := testenv.Env(t)
 	svc, p, _, _ := runEnv(t)
 	svc.settings = set
 	at := time.Now().Add(-time.Minute)
@@ -66,11 +57,7 @@ func TestRecentLaunchesIncludesLastPlayedBeforeRuns(t *testing.T) {
 }
 
 func TestRecentLaunchesSkipsAProfileThatNoLongerExists(t *testing.T) {
-	datadirtest.Use(t, t.TempDir())
-	set, err := settings.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
+	set, _ := testenv.Env(t)
 	svc, p, _, _ := runEnv(t)
 	svc.settings = set
 	if _, err := set.RecordLastPlayed("stardew", "deleted-profile", time.Now(), ""); err != nil {

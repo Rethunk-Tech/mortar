@@ -117,13 +117,8 @@ func TestABepInExRunRecordsTheVersionItsBridgeReported(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.MkdirAll(filepath.Join(dir, "BepInEx"), 0o700); err != nil {
-		t.Fatal(err)
-	}
 	const body = "[Info   :   BepInEx] BepInEx 5.4.22 - Lethal Company\n"
-	if err := os.WriteFile(filepath.Join(dir, "BepInEx", "LogOutput.log"), []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	writeBepInExLog(t, dir, body)
 	svc := NewService(t.TempDir(), nil, ps)
 	g := game.Find(lc)
 	svc.logs[keyOf(g)] = session{buf: &launch.Buffer{}, profile: p.ID, gameVersion: "v73"}

@@ -9,7 +9,6 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -66,19 +65,14 @@ func TestSettingRowsFollowTheProfilesGameSettingsMode(t *testing.T) {
 		RequiredSettings: []components.RequiredSetting{{Path: "options", Key: "ModsDisabled", Value: "0", Message: "mods off"}},
 	})
 
-	datadirtest.Use(t, t.TempDir())
+	set, profiles := testenv.Env(t)
 	folder := t.TempDir()
 	if err := os.WriteFile(filepath.Join(folder, "G.dll"), []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	set, err := settings.Open()
-	if err != nil {
 		t.Fatal(err)
 	}
 	if _, err := set.Update(func(v *settings.Settings) { v.GameFolders[id] = folder }); err != nil {
 		t.Fatal(err)
 	}
-	_, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, id, "A")
 	home := t.TempDir()
 	opts := filepath.Join(home, "Documents", "G", "Options.ini")

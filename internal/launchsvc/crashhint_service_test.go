@@ -48,12 +48,7 @@ func TestCrashHintPrecedence(t *testing.T) {
 	}
 	setLog := func(body string) {
 		t.Helper()
-		if err := os.MkdirAll(filepath.Join(dir, "BepInEx"), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(filepath.Join(dir, "BepInEx", "LogOutput.log"), []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		writeBepInExLog(t, dir, body)
 	}
 	const header = "[Info   :   BepInEx] BepInEx 5.4.22 - Lethal Company\n"
 	blamesFixture := header + "[Error  :   BepInEx] Could not load [Fixture 1.0.0] because it has missing dependencies: Lib\n"

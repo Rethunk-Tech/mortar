@@ -29,6 +29,17 @@ func runEnv(t *testing.T) (*Service, profile.Profile, string, string) {
 	return NewService(home, nil, profiles), p, cfg, home
 }
 
+// writeBepInExLog gives the profile at dir a BepInEx folder holding LogOutput.log with body.
+func writeBepInExLog(t *testing.T, dir, body string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Join(dir, "BepInEx"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "BepInEx", "LogOutput.log"), []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestMissingFileCauseNamesKyuyaPack(t *testing.T) {
 	modsDir := filepath.Join(t.TempDir(), "mods")
 	path := filepath.Join(modsDir, "nexus-11780-74182", "[FS]Kyuya??s hats Pack", "assets", "hat.png")
