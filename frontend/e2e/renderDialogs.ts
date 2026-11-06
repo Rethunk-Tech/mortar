@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import type { Page } from '@playwright/test'
 import { openGameSelect, openSettings } from './app.ts'
 import { flatpakSdkCases } from './flatpakSdkCase.ts'
+import { flowCases } from './flowCases.ts'
 import { menuCases } from './menuCases.ts'
 import { noProjectCodeCases } from './noProjectCodeCases.ts'
 import type { Case } from './render-budget.ts'
@@ -24,11 +25,13 @@ const TYPING_BUDGET = { updates: 2000 }
 export function dialogKit(h: Helpers) {
   const { toWorkspace, tab } = h
 
+  // An open select or menu hides the dialogs under it from the accessibility tree, so it counts as open too.
+  const overlays = (page: Page) =>
+    page.getByRole('dialog').or(page.getByRole('listbox')).or(page.getByRole('menu'))
   async function closeAll(page: Page) {
-    for (let i = 0; i < CLOSE_TRIES && (await page.getByRole('dialog').count()) > 0; i++) {
+    for (let i = 0; i < CLOSE_TRIES && (await overlays(page).count()) > 0; i++) {
       await page.keyboard.press('Escape')
-      await page
-        .getByRole('dialog')
+      await overlays(page)
         .last()
         .waitFor({ state: 'detached', timeout: CLOSE_WAIT_MS })
         .catch(() => undefined)
@@ -383,6 +386,7 @@ export function dialogCases(h: Helpers): Case[] {
     ...noProjectCodeCases(kit),
     ...flatpakSdkCases(kit),
     ...stateCases(kit, h.tabs, h.tab),
+    ...flowCases(kit, h.tabs, h.tab),
     ...menuCases(kit, h.tabs),
     // Showing the list and picking a mod is setup: only opening the dialog is measured.
     dialog(

@@ -133,6 +133,7 @@ function olderVersionBuildsCase({
   inDialog,
   tabIn,
   editProfile,
+  ready,
 }: ReturnType<typeof dialogKit>): Case {
   const stub = stubCalls({
     [CAN_GET_OLDER_VERSION]: true,
@@ -177,7 +178,10 @@ function olderVersionBuildsCase({
       await p.getByLabel('Builds Mortar has seen').click()
       await p.getByRole('option').first().waitFor()
     },
-    teardown: (p: Page) => p.unroute('**/wails/runtime', stub),
+    teardown: async (p: Page) => {
+      await ready(p)
+      await p.unroute('**/wails/runtime', stub)
+    },
   }
 }
 
