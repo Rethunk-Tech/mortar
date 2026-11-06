@@ -63,6 +63,12 @@ export function detailsCases(
   const openUpdated = async (p: Page) => {
     await openGame(p, tabs(p), 'Stardew Valley')
     await tab(p, 'Mods')
+    // Earlier cases leave the list view or a collapsed group behind.
+    await p.getByRole('button', { name: 'Grid view' }).click()
+    const collapsed = p.getByRole('button', { name: /^Update available/, expanded: false })
+    if ((await collapsed.count()) > 0) {
+      await collapsed.first().click()
+    }
     await p
       .getByRole('button', { name: /^Details of Cornucopia/ })
       .first()
