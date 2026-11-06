@@ -119,10 +119,13 @@ func (s *Service) UploadThunderstore(ctx context.Context, gameID, dir string) (s
 
 // UploadSite is a site the game can be uploaded to: its id is thunderstore, nexus, curseforge or github. Configured is set when
 // the project's ids for it are filled in (Thunderstore needs none), and Ready when the credentials it needs are kept.
+// Account is the Thunderstore team the upload goes out as; the project's own files name it, so the player sees it before
+// a project from someone else uploads with their team's token.
 type UploadSite struct {
 	ID         string `json:"id"`
 	Configured bool   `json:"configured"`
 	Ready      bool   `json:"ready"`
+	Account    string `json:"account,omitempty"`
 }
 
 // uploadSiteTable is each site's probe: whether the game offers it, whether the project's ids for it are filled in,
@@ -158,7 +161,13 @@ func (s *Service) UploadSites(ctx context.Context, gameID, dir string) ([]Upload
 	sites := []UploadSite{}
 	for _, t := range uploadSiteTable {
 		if offered, configured, ready := t.probe(ctx, s, p, gameID, dir); offered {
-			sites = append(sites, UploadSite{ID: t.id, Configured: configured, Ready: ready})
+			site := UploadSite{ID: t.id, Configured: configured, Ready: ready}
+			if t.id == "thunderstore" {
+				if info, err := projectInfo(p); err == nil {
+					site.Account = info.Team
+				}
+			}
+			sites = append(sites, site)
 		}
 	}
 	return sites, nil

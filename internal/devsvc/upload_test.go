@@ -105,6 +105,9 @@ func TestSiteIDsAreKeptInTheProjectsRecordAndOffered(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if sites, _ := svc.UploadSites(t.Context(), "lethal-company", dir); info.Team == "" || sites[0].Account != info.Team {
+		t.Fatalf("Thunderstore names the team %q it uploads as: %+v", info.Team, sites[0])
+	}
 	edit := ProjectEdit{
 		Name: info.Name, Description: info.Description, Author: info.Author, Team: info.Team, IDPrefix: info.IDPrefix,
 		Categories: info.Categories, TestWith: info.TestWith,

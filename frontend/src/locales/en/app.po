@@ -818,6 +818,10 @@ msgstr "Pending updates ({count})"
 msgid "Update check skipped"
 msgstr "Update check skipped"
 
+#: src/develop/UploadDialog.tsx
+msgid "{site} as {team}"
+msgstr "{site} as {team}"
+
 #: src/sync/store.ts
 msgid "{name} was changed on {machine} and here"
 msgstr "{name} was changed on {machine} and here"

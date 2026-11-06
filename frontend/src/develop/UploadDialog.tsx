@@ -159,7 +159,11 @@ function SiteRow({
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minHeight: 36 }}>
       <FormControlLabel
         sx={{ flex: 1, m: 0 }}
-        label={siteLabel(site.id)}
+        label={
+          site.account
+            ? t`${{ site: siteLabel(site.id) }} as ${{ team: site.account }}`
+            : siteLabel(site.id)
+        }
         control={
           <Checkbox
             size="small"
