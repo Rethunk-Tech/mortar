@@ -375,6 +375,14 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 			return ProjectInfo{}, err
 		}
 	}
+	if err := writeEdit(p, csproj, old, e); err != nil {
+		return ProjectInfo{}, err
+	}
+	return s.Inspect(ctx, gameID, dir)
+}
+
+// writeEdit writes e's details into the project file, props file and the files that name the team or author.
+func writeEdit(p settings.DevProject, csproj string, old ProjectInfo, e ProjectEdit) error {
 	if err := editFile(csproj, func(body string) string {
 		for name, v := range map[string]string{
 			"AssemblyName": e.IDPrefix + "." + e.Name, "AssemblyTitle": e.Name, "RootNamespace": e.Name,
@@ -388,7 +396,7 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 		}
 		return body
 	}); err != nil {
-		return ProjectInfo{}, err
+		return err
 	}
 	if guid := e.IDPrefix + "." + e.Name; old.GUID != guid && e.Name == old.Name {
 		// The build only adds files, so the old assembly would load beside the renamed one.
@@ -405,16 +413,16 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 		}
 		return body
 	}); err != nil {
-		return ProjectInfo{}, err
+		return err
 	}
 	if !slices.Equal(old.TestWith, e.TestWith) {
 		if err := writeTestWith(p.Dir, e.TestWith); err != nil {
-			return ProjectInfo{}, err
+			return err
 		}
 	}
 	if sites := (siteIDs{Nexus: e.Nexus, CurseForge: e.CurseForge}); sites != readSites(p.Dir) {
 		if err := writeSites(p.Dir, sites); err != nil {
-			return ProjectInfo{}, err
+			return err
 		}
 	}
 	if old.Team != e.Team {
@@ -430,7 +438,7 @@ func (s *Service) Edit(ctx context.Context, gameID, dir string, e ProjectEdit) (
 			return regexp.MustCompile(`(Copyright \(c\) \d{4} )`+regexp.QuoteMeta(old.Author)).ReplaceAllString(body, "${1}"+strings.ReplaceAll(e.Author, "$", "$$"))
 		})
 	}
-	return s.Inspect(ctx, gameID, dir)
+	return nil
 }
 
 func editFile(path string, fn func(string) string) error {

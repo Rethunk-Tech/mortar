@@ -198,26 +198,33 @@ func WatchedSources(cur settings.Settings, games []string) map[string][]string {
 			// Compat and assets are listed even before they exist, so a folder made later is watched from the next refresh.
 			out[g] = append(out[g], src, filepath.Join(src, "Compat"), assets)
 			for _, root := range []string{src, assets} {
-				_ = filepath.WalkDir(root, func(dir string, d fs.DirEntry, err error) error {
-					if err != nil {
-						// A folder not made yet, or one that cannot be read, is skipped like build output.
-						return fs.SkipDir
-					}
-					if !d.IsDir() {
-						return nil
-					}
-					if dir != root && slices.Contains([]string{"bin", "obj"}, d.Name()) {
-						return fs.SkipDir
-					}
-					if dir != root && dir != filepath.Join(src, "Compat") {
-						out[g] = append(out[g], dir)
-					}
-					return nil
-				})
+				out[g] = append(out[g], subfolders(root, filepath.Join(src, "Compat"))...)
 			}
 		}
 	}
 	return out
+}
+
+// subfolders lists the folders below root, build output and skip aside.
+func subfolders(root, skip string) []string {
+	var dirs []string
+	_ = filepath.WalkDir(root, func(dir string, d fs.DirEntry, err error) error {
+		if err != nil {
+			// A folder not made yet, or one that cannot be read, is skipped like build output.
+			return fs.SkipDir
+		}
+		if !d.IsDir() {
+			return nil
+		}
+		if dir != root && slices.Contains([]string{"bin", "obj"}, d.Name()) {
+			return fs.SkipDir
+		}
+		if dir != root && dir != skip {
+			dirs = append(dirs, dir)
+		}
+		return nil
+	})
+	return dirs
 }
 
 // OpenProject shows the project's folder; OpenAt opens one of its files.

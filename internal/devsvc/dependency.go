@@ -248,20 +248,7 @@ func (s *Service) syncDependencies(gameID string, p settings.DevProject) error {
 	if err != nil {
 		return err
 	}
-	folders := map[string]string{}
-	for _, im := range installed {
-		if im.Source.Kind == profile.KindThunderstore && im.Folder != "" {
-			folders[im.Source.Name] = im.Folder
-		}
-	}
-	// Another project of the game that publishes the package is built from here, and may not be on Thunderstore yet.
-	for _, q := range s.Projects(gameID) {
-		if q.Dir != p.Dir && q.Output != "" {
-			if pkg := packageOf(q.Dir); pkg != "" {
-				folders[pkg] = q.Output
-			}
-		}
-	}
+	folders := s.dependencyFolders(gameID, p, installed)
 	src := filepath.Dir(csproj)
 	namespace := cmpOr(msbuild.Property(string(raw), "RootNamespace"), strings.TrimSuffix(filepath.Base(csproj), ".csproj"))
 	// A dependency the template declared has no reference of its own, since the build downloaded it; once Mortar points
@@ -278,21 +265,48 @@ func (s *Service) syncDependencies(gameID string, p settings.DevProject) error {
 		}
 	}
 	for pkg, soft := range deps {
-		folder := folders[pkg]
-		if folder == "" {
+		if folders[pkg] == "" {
 			continue
 		}
-		if err := setUserDependency(p.Dir, pkg, folder+string(filepath.Separator)); err != nil {
+		if err := linkDependency(p.Dir, src, namespace, pkg, folders[pkg], soft); err != nil {
 			return err
 		}
-		for _, pl := range plugins.PluginsIn(folder) {
-			if err := declareDependency(src, pl.GUID, soft); err != nil {
-				return err
+	}
+	return nil
+}
+
+// dependencyFolders maps each Thunderstore package to the folder it is installed in for the profile.
+func (s *Service) dependencyFolders(gameID string, p settings.DevProject, installed []profile.Installed) map[string]string {
+	folders := map[string]string{}
+	for _, im := range installed {
+		if im.Source.Kind == profile.KindThunderstore && im.Folder != "" {
+			folders[im.Source.Name] = im.Folder
+		}
+	}
+	// Another project of the game that publishes the package is built from here, and may not be on Thunderstore yet.
+	for _, q := range s.Projects(gameID) {
+		if q.Dir != p.Dir && q.Output != "" {
+			if pkg := packageOf(q.Dir); pkg != "" {
+				folders[pkg] = q.Output
 			}
-			if soft {
-				if err := writeCompat(src, namespace, pkg, pl.GUID); err != nil {
-					return err
-				}
+		}
+	}
+	return folders
+}
+
+// linkDependency points pkg's reference at folder and declares its plugins on the mod, with a compatibility class
+// for a soft one.
+func linkDependency(projectDir, src, namespace, pkg, folder string, soft bool) error {
+	if err := setUserDependency(projectDir, pkg, folder+string(filepath.Separator)); err != nil {
+		return err
+	}
+	for _, pl := range plugins.PluginsIn(folder) {
+		if err := declareDependency(src, pl.GUID, soft); err != nil {
+			return err
+		}
+		if soft {
+			if err := writeCompat(src, namespace, pkg, pl.GUID); err != nil {
+				return err
 			}
 		}
 	}

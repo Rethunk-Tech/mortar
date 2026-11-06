@@ -248,30 +248,45 @@ func (s *Service) MoveLegacyContent(gameID, dir string) (int, error) {
 			if err != nil {
 				continue
 			}
-			if err := root.MkdirAll(dest, 0o750); err != nil {
+			n, err := moveOldFolder(root, l, dest, entries)
+			moved += n
+			if err != nil {
 				return moved, err
-			}
-			for _, e := range entries {
-				if !e.Type().IsRegular() {
-					continue
-				}
-				if _, err := root.Lstat(dest + "/" + e.Name()); err == nil {
-					continue
-				}
-				if err := root.Rename(l+"/"+e.Name(), dest+"/"+e.Name()); err != nil {
-					return moved, err
-				}
-				moved++
-			}
-			// Emptied old folders go, up to the package root; one still holding anything stays.
-			for p := l; p != "."; p = path.Dir(p) {
-				if root.Remove(p) != nil {
-					break
-				}
 			}
 		}
 	}
 	return moved, nil
+}
+
+// moveOldFolder moves the regular files among entries, the listing of old, into dest, leaving any already there, and returns how many moved.
+func moveOldFolder(root *os.Root, old, dest string, entries []fs.DirEntry) (int, error) {
+	if err := root.MkdirAll(dest, 0o750); err != nil {
+		return 0, err
+	}
+	moved := 0
+	for _, e := range entries {
+		if !e.Type().IsRegular() {
+			continue
+		}
+		if _, err := root.Lstat(dest + "/" + e.Name()); err == nil {
+			continue
+		}
+		if err := root.Rename(old+"/"+e.Name(), dest+"/"+e.Name()); err != nil {
+			return moved, err
+		}
+		moved++
+	}
+	removeEmptied(root, old)
+	return moved, nil
+}
+
+// removeEmptied removes old and its parents up to the package root; one still holding anything stays.
+func removeEmptied(root *os.Root, old string) {
+	for p := old; p != "."; p = path.Dir(p) {
+		if root.Remove(p) != nil {
+			break
+		}
+	}
 }
 
 // contentExtras are the files beside a folder's own patterns that its mod reads too. A pattern with a folder matches

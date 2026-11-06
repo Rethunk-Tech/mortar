@@ -263,7 +263,6 @@ func orderedSymbols(raw json.RawMessage) ([]string, map[string]symbolJSON, error
 func (f Form) args(values, fills map[string]string) ([]string, map[string]string, error) {
 	var out []string
 	used := map[string]string{}
-	invalid := func(format string, a ...any) error { return usererr.Wrap(usererr.Invalid, fmt.Errorf(format, a...)) }
 	for _, p := range f.all {
 		v, ok := values[p.ID]
 		if p.fill != "" {
@@ -272,30 +271,15 @@ func (f Form) args(values, fills map[string]string) ([]string, map[string]string
 		v = strings.TrimSpace(v)
 		if !ok || v == "" {
 			if p.Required && p.fill == "" {
-				return nil, nil, invalid("fill in %s", p.Label)
+				return nil, nil, invalidf("fill in %s", p.Label)
 			}
 			continue
 		}
-		if strings.ContainsFunc(v, unicode.IsControl) || slices.ContainsFunc(strings.Split(v, "|"), func(part string) bool { return strings.HasPrefix(part, "-") }) {
-			return nil, nil, invalid("%s cannot start with a dash or hold line breaks or other control characters", p.Label)
-		}
-		if p.MaxLength > 0 && len([]rune(v)) > p.MaxLength {
-			return nil, nil, invalid("%s takes at most %d characters", p.Label, p.MaxLength)
-		}
-		if p.Pattern != "" && !regexp.MustCompile(p.Pattern).MatchString(v) {
-			return nil, nil, invalid("%s is not in the form the template needs", p.Label)
-		}
-		parts := []string{v}
-		if p.Multiple {
-			parts = strings.Split(v, "|")
+		parts, err := p.checked(v)
+		if err != nil {
+			return nil, nil, err
 		}
 		for _, part := range parts {
-			if p.Kind == "bool" && part != "true" && part != "false" {
-				return nil, nil, invalid("%s is true or false", p.Label)
-			}
-			if p.Kind == "choice" && !slices.ContainsFunc(p.Choices, func(c Choice) bool { return c.Value == part }) {
-				return nil, nil, invalid("%q is not a choice for %s", part, p.Label)
-			}
 			out = append(out, "--"+p.ID, part)
 		}
 		used[p.ID] = v
@@ -304,6 +288,36 @@ func (f Form) args(values, fills map[string]string) ([]string, map[string]string
 		return nil, nil, err
 	}
 	return out, used, nil
+}
+
+func invalidf(format string, a ...any) error {
+	return usererr.Wrap(usererr.Invalid, fmt.Errorf(format, a...))
+}
+
+// checked validates v against p's rules and returns the values to pass as its option.
+func (p Param) checked(v string) ([]string, error) {
+	if strings.ContainsFunc(v, unicode.IsControl) || slices.ContainsFunc(strings.Split(v, "|"), func(part string) bool { return strings.HasPrefix(part, "-") }) {
+		return nil, invalidf("%s cannot start with a dash or hold line breaks or other control characters", p.Label)
+	}
+	if p.MaxLength > 0 && len([]rune(v)) > p.MaxLength {
+		return nil, invalidf("%s takes at most %d characters", p.Label, p.MaxLength)
+	}
+	if p.Pattern != "" && !regexp.MustCompile(p.Pattern).MatchString(v) {
+		return nil, invalidf("%s is not in the form the template needs", p.Label)
+	}
+	parts := []string{v}
+	if p.Multiple {
+		parts = strings.Split(v, "|")
+	}
+	for _, part := range parts {
+		if p.Kind == "bool" && part != "true" && part != "false" {
+			return nil, invalidf("%s is true or false", p.Label)
+		}
+		if p.Kind == "choice" && !slices.ContainsFunc(p.Choices, func(c Choice) bool { return c.Value == part }) {
+			return nil, invalidf("%q is not a choice for %s", part, p.Label)
+		}
+	}
+	return parts, nil
 }
 
 // requirements refuses a parameter that is on while a value it requires is not set, the template's default counting
