@@ -605,29 +605,41 @@ type AssetFolder struct{ Game, Dir, Root string }
 
 // AssetSubfolders are every asset project's folders below its root, for the folder watch, which sees only a folder's
 // top level: a file dropped into moresuits/ reinstalls the project. Git's, Mortar's and the packs' folders are left out.
-func AssetSubfolders(cur settings.Settings, games []string) []AssetFolder {
+func AssetSubfolders(cur settings.Settings, games []string, cache *WalkCache) []AssetFolder {
 	var out []AssetFolder
+	used := map[string]bool{}
 	for _, g := range games {
 		for _, p := range cur.GamePrefs(g).DevProjects {
 			if assetKindOf(g, p.Dir) == "" {
 				continue
 			}
-			_ = filepath.WalkDir(p.Dir, func(dir string, d fs.DirEntry, err error) error {
-				if err != nil {
-					return fs.SkipDir // an unreadable folder has nothing to watch
-				}
-				if !d.IsDir() || dir == p.Dir {
-					return nil
-				}
-				if rel, _ := filepath.Rel(p.Dir, dir); slices.Contains([]string{".git", ".mortar", "artifacts", "node_modules"}, rel) {
-					return fs.SkipDir
-				}
+			key := "asset\x00" + p.Dir
+			used[key] = true
+			for _, dir := range cache.walk(key, p.Dir, func() []string { return assetDirs(p.Dir) }) {
 				out = append(out, AssetFolder{Game: g, Dir: dir, Root: p.Dir})
-				return nil
-			})
+			}
 		}
 	}
+	cache.keep("asset\x00", used)
 	return out
+}
+
+func assetDirs(root string) []string {
+	var dirs []string
+	_ = filepath.WalkDir(root, func(dir string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return fs.SkipDir // an unreadable folder has nothing to watch
+		}
+		if !d.IsDir() || dir == root {
+			return nil
+		}
+		if rel, _ := filepath.Rel(root, dir); slices.Contains([]string{".git", ".mortar", "artifacts", "node_modules"}, rel) {
+			return fs.SkipDir
+		}
+		dirs = append(dirs, dir)
+		return nil
+	})
+	return dirs
 }
 
 // destination is the new project's folder, which must not exist yet, and its GitHub address when it gets one.

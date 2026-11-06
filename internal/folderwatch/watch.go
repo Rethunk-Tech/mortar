@@ -66,6 +66,9 @@ type Deps struct {
 	Changed <-chan struct{}
 	// Holds takes folders out of the watch while a caller moves them; nil holds none.
 	Holds *Holds
+	// Touched is called at once with the path of every change the watch sees, so a caller that caches what Targets
+	// found can drop it; nil ignores them.
+	Touched func(path string)
 }
 
 type watch struct {
@@ -149,6 +152,9 @@ func (r *watcher) stopAll() {
 }
 
 func (r *watcher) onEvent(ev fsnotify.Event) {
+	if r.d.Touched != nil {
+		r.d.Touched(ev.Name)
+	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if a := r.active[ev.Name]; a != nil && ev.Has(fsnotify.Remove|fsnotify.Rename) {

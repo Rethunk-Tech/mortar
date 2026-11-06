@@ -42,7 +42,7 @@ func TestAnAssetProjectIsItsOwnPackage(t *testing.T) {
 		t.Errorf("starter file = %s (%v)", body, err)
 	}
 	var watched []string
-	for _, f := range AssetSubfolders(svc.Settings.Get(), []string{"lethal-company"}) {
+	for _, f := range AssetSubfolders(svc.Settings.Get(), []string{"lethal-company"}, nil) {
 		if f.Root == dir {
 			watched = append(watched, filepath.Base(f.Dir))
 		}

@@ -195,8 +195,10 @@ func (s *Service) SetWatch(gameID, dir string, on bool) error {
 // WatchedSources are every project's source folders, by game, for the folder watch: a change rebuilds a project with
 // build on save on and marks the others changed since their last build. The folder watch is not recursive, so every
 // folder below src/<Name> and assets/ (build output aside) is listed, and Compat and assets/ even before they exist.
-func WatchedSources(cur settings.Settings, games []string) map[string][]string {
+func WatchedSources(cur settings.Settings, games []string, cache *WalkCache) map[string][]string {
 	out := map[string][]string{}
+	used := map[string]bool{}
+	defer func() { cache.keep("src\x00", used) }()
 	for _, g := range games {
 		for _, p := range cur.GamePrefs(g).DevProjects {
 			if assetKindOf(g, p.Dir) != "" {
@@ -210,7 +212,9 @@ func WatchedSources(cur settings.Settings, games []string) map[string][]string {
 			// Compat and assets are listed even before they exist, so a folder made later is watched from the next refresh.
 			out[g] = append(out[g], src, filepath.Join(src, "Compat"), assets)
 			for _, root := range []string{src, assets} {
-				out[g] = append(out[g], subfolders(root, filepath.Join(src, "Compat"))...)
+				key := "src\x00" + root
+				used[key] = true
+				out[g] = append(out[g], cache.walk(key, root, func() []string { return subfolders(root, filepath.Join(src, "Compat")) })...)
 			}
 		}
 	}

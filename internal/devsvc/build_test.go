@@ -18,7 +18,7 @@ func TestWatchedSourcesCoverCompatAndAssets(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	// Build on save is off: the sources are still watched, so the card can say they changed.
 	dir := fixtureProject(t, svc)
-	got := WatchedSources(svc.Settings.Get(), []string{"lethal-company"})["lethal-company"]
+	got := WatchedSources(svc.Settings.Get(), []string{"lethal-company"}, nil)["lethal-company"]
 	src := filepath.Join(dir, "src", "ShopDrop")
 	for _, want := range []string{src, filepath.Join(src, "Compat"), filepath.Join(dir, "assets")} {
 		if !slices.Contains(got, want) {
@@ -36,7 +36,7 @@ func TestWatchedSourcesIncludeSubfoldersButNotBuildOutput(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	got := WatchedSources(svc.Settings.Get(), []string{"lethal-company"})["lethal-company"]
+	got := WatchedSources(svc.Settings.Get(), []string{"lethal-company"}, nil)["lethal-company"]
 	if !slices.Contains(got, filepath.Join(src, "Patches")) || slices.Contains(got, filepath.Join(src, "obj")) || slices.Contains(got, filepath.Join(src, "obj", "x")) || slices.ContainsFunc(got, func(g string) bool { return strings.Contains(g, "node_modules") || strings.Contains(g, ".git") }) {
 		t.Errorf("watched %v", got)
 	}

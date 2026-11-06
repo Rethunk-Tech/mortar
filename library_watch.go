@@ -46,15 +46,17 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 		default:
 		}
 	})
+	walks := &devsvc.WalkCache{}
 	go func() {
 		err := folderwatch.Run(ctx, folderwatch.Deps{
 			Changed: changed,
 			Holds:   holds,
+			Touched: walks.Touch,
 			Emit: func(name string, data any) {
 				log.Printf("folder watch: %s for %v", name, data)
 				emit(name, data)
 			},
-			Targets: func() []folderwatch.Target { return libraryWatchTargets(home, dataDir, store) },
+			Targets: func() []folderwatch.Target { return libraryWatchTargets(home, dataDir, store, walks) },
 		})
 		if err != nil {
 			log.Printf("folder watch: %v", err)
@@ -63,7 +65,7 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 }
 
 // libraryWatchTargets lists the folders to watch for the settings as they are now.
-func libraryWatchTargets(home, dataDir string, store *settings.Store) []folderwatch.Target {
+func libraryWatchTargets(home, dataDir string, store *settings.Store, walks *devsvc.WalkCache) []folderwatch.Target {
 	cur := store.Get()
 	id := cur.LastGame
 	if id == "" {
@@ -85,10 +87,10 @@ func libraryWatchTargets(home, dataDir string, store *settings.Store) []folderwa
 			out = append(out, folderwatch.Target{Event: syncsvc.FolderEvent, Game: g, Dir: filepath.Join(dir, g)})
 		}
 	}
-	for _, f := range devsvc.AssetSubfolders(cur, game.Implemented()) {
+	for _, f := range devsvc.AssetSubfolders(cur, game.Implemented(), walks) {
 		out = append(out, folderwatch.Target{Event: folderwatch.ExtraFolderEvent, Game: f.Game, Dir: f.Dir, Report: f.Root})
 	}
-	for g, dirs := range devsvc.WatchedSources(cur, game.Implemented()) {
+	for g, dirs := range devsvc.WatchedSources(cur, game.Implemented(), walks) {
 		for _, dir := range dirs {
 			out = append(out, folderwatch.Target{Event: devsvc.SourceEvent, Game: g, Dir: dir, WithDir: true})
 		}
