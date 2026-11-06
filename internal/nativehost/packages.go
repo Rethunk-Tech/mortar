@@ -112,16 +112,11 @@ func openProfile(info components.GameInfo) string {
 
 // activePackages lists the Thunderstore packages the community's game holds in its open profile.
 func activePackages(key string) (state, profile string, packages []string) {
-	info, found := components.GameBySource("thunderstore", key)
-	state, profile, dataDir, ok := readyProfile(info, found)
+	state, profile, entries, ok := openEntries("thunderstore", key)
 	if !ok {
 		return state, profile, nil
 	}
-	p, ok := readOpenProfile(dataDir, info)
-	if !ok {
-		return state, profile, nil
-	}
-	for _, e := range p.Entries {
+	for _, e := range entries {
 		if e.Source.Kind == "thunderstore" && e.Source.Name != "" {
 			packages = append(packages, e.Source.Name)
 		}
@@ -161,6 +156,21 @@ func installVia(src, key string, args map[string]any) error {
 	return controlwire.CallDir(dataDir, "installPackage", args, nil, installTimeout)
 }
 
+// openEntries reads the entries of the open profile of the source's game; state and profile are what the extension
+// shows when ok is false.
+func openEntries(src, key string) (state, profile string, entries []diskEntry, ok bool) {
+	info, found := components.GameBySource(src, key)
+	state, profile, dataDir, ok := readyProfile(info, found)
+	if !ok {
+		return state, profile, nil, false
+	}
+	p, ok := readOpenProfile(dataDir, info)
+	if !ok {
+		return state, profile, nil, false
+	}
+	return state, profile, p.Entries, true
+}
+
 // readyProfile says whether the game has an open profile ready to read, with the data folder when it has; state and
 // profile are what the extension shows either way.
 func readyProfile(info components.GameInfo, found bool) (state, profile, dataDir string, ok bool) {
@@ -179,17 +189,12 @@ func readyProfile(info components.GameInfo, found bool) (state, profile, dataDir
 // profile. A CurseForge entry's Name is the project id; a Mod DB entry's is "<modid>-<assetid>", which pages are
 // addressed by; a Paradox entry's is the mod id and a Modrinth entry's the project id.
 func activeProjects(src, key string) (state, profile string, projects []hostProject) {
-	info, found := components.GameBySource(src, key)
-	state, profile, dataDir, ok := readyProfile(info, found)
-	if !ok {
-		return state, profile, nil
-	}
-	p, ok := readOpenProfile(dataDir, info)
+	state, profile, entries, ok := openEntries(src, key)
 	if !ok {
 		return state, profile, nil
 	}
 	var driverIDs []string
-	for _, e := range p.Entries {
+	for _, e := range entries {
 		if e.Source.Kind != src || e.Source.Name == "" {
 			continue
 		}
