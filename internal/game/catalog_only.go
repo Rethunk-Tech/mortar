@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 )
 
 // catalogOnly is a game its catalog entry describes in full: names, store ids, sources and the marker file.
@@ -15,17 +16,17 @@ type catalogOnly string
 func (g catalogOnly) ID() string { return string(g) }
 
 func (g catalogOnly) Name() string {
-	info, _ := catalogGame(string(g))
+	info, _ := components.Game(string(g))
 	return info.Name
 }
 
 func (g catalogOnly) SteamAppID() string {
-	info, _ := catalogGame(string(g))
+	info, _ := components.Game(string(g))
 	return info.SteamAppID()
 }
 
 func (g catalogOnly) ModSources() []string {
-	info, _ := catalogGame(string(g))
+	info, _ := components.Game(string(g))
 	ids := make([]string, len(info.Sources))
 	for i, s := range info.Sources {
 		ids[i] = s.ID
@@ -37,7 +38,7 @@ func (g catalogOnly) ModSources() []string {
 // process under Proton, and a native build's; the native Linux build's executable when the catalog names one; and the
 // other executables the catalog lists.
 func (g catalogOnly) GameProcesses() []string {
-	info, _ := catalogGame(string(g))
+	info, _ := components.Game(string(g))
 	stem := strings.TrimSuffix(info.Marker, filepath.Ext(info.Marker))
 	out := []string{stem}
 	if strings.EqualFold(filepath.Ext(info.Marker), ".exe") {
@@ -58,7 +59,7 @@ func (g catalogOnly) GameProcesses() []string {
 // ValidInstall reports why dir is not the game's install folder: it lacks the catalog's marker file and its native
 // Linux build's executable.
 func (g catalogOnly) ValidInstall(dir string) error {
-	info, _ := catalogGame(string(g))
+	info, _ := components.Game(string(g))
 	for _, m := range []string{info.MarkerPath(), info.LinuxMarker, filepath.FromSlash(info.DarwinMarker)} {
 		if m != "" && safefs.IsFile(filepath.Join(dir, m)) {
 			return nil

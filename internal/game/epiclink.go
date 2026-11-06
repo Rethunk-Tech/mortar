@@ -13,7 +13,7 @@ import (
 // to Epic's online services; the game still loads its loader from its own folder. The link is the launcher's fixed
 // scheme around an AppName checked as a plain name, so the system handler is never handed anything else.
 func epicCommand(inst Install) (launch.Command, error) {
-	info, _ := catalogGame(inst.Game)
+	info, _ := components.Game(inst.Game)
 	if info.Stores.Epic == nil {
 		return launch.Command{}, fmt.Errorf("%s is not sold on Epic Games", inst.Game)
 	}

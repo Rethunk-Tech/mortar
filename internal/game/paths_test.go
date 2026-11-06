@@ -6,6 +6,7 @@ import (
 	goruntime "runtime"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -19,7 +20,7 @@ func TestStardewCatalogPathsMatchTheFolderStardewUses(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", config)
 	t.Setenv("APPDATA", appData)
 	t.Setenv("FLATPAK_ID", "")
-	g, ok := catalogGame("stardew")
+	g, ok := components.Game("stardew")
 	if !ok {
 		t.Fatal("stardew is not in the catalog")
 	}

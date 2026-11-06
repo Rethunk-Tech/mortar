@@ -10,7 +10,6 @@ import (
 )
 
 func TestAStartNobodyAskedToProfileRecordsNothing(t *testing.T) {
-	t.Setenv("MORTAR_PROFILE_STARTUP", "")
 	dir := t.TempDir()
 	StartStartupProfile(dir)
 	if _, err := os.Stat(filepath.Join(dir, StartupProfileDir)); !os.IsNotExist(err) {

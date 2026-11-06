@@ -34,7 +34,7 @@ const (
 // HasScreenshots reports whether game id has a screenshots folder of its own or is a Steam game, whose screenshots
 // Steam keeps.
 func HasScreenshots(id string) bool {
-	info, ok := catalogGame(id)
+	info, ok := components.Game(id)
 	return ok && (HasPath(id, PathScreenshots) || info.SteamAppID() != "")
 }
 
@@ -47,7 +47,7 @@ func ScreenshotDirs(home string, s settings.Settings, id string) map[string]stri
 			out[shots.SourceGame] = dir
 		}
 	}
-	info, _ := catalogGame(id)
+	info, _ := components.Game(id)
 	if app := info.SteamAppID(); app != "" {
 		if st, status := LocateSteam(home, s); status == steam.Found {
 			if dir, err := st.ScreenshotsDir(app); err == nil {
@@ -61,7 +61,7 @@ func ScreenshotDirs(home string, s settings.Settings, id string) map[string]stri
 // HasPath reports whether the catalog gives game id a path for role: a game has a save folder or startup
 // preferences when its entry says where they live.
 func HasPath(id, role string) bool {
-	g, ok := catalogGame(id)
+	g, ok := components.Game(id)
 	_, has := g.Paths[role]
 	return ok && has
 }
@@ -74,7 +74,7 @@ func HasStartupSettings(id string) bool { return HasPath(id, PathStartupPreferen
 
 // PathFor resolves game id's path for role in the install pin names (the selected install when empty).
 func PathFor(home string, s settings.Settings, id, pin, role string) (string, error) {
-	g, ok := catalogGame(id)
+	g, ok := components.Game(id)
 	t, has := g.Paths[role]
 	if !ok || !has {
 		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("game %q has no %s path", id, role))
@@ -85,7 +85,7 @@ func PathFor(home string, s settings.Settings, id, pin, role string) (string, er
 // PathIn resolves the path template t for game id's install pin names (the selected install when empty), inside its
 // Wine or Proton prefix when it runs in one.
 func PathIn(home string, s settings.Settings, id, pin string, t components.PathTemplate) (string, error) {
-	g, _ := catalogGame(id)
+	g, _ := components.Game(id)
 	in, err := ResolveInstall(home, s, id, pin)
 	if err != nil {
 		return "", err
@@ -133,7 +133,7 @@ func StartupPreferencesPath(home string, s settings.Settings, id, pin string) (s
 // SaveLayout is how game id's saves sit in its saves folder dir: the catalog's file patterns and companions, or a
 // folder per save when it names none.
 func SaveLayout(id, dir string) saves.Layout {
-	g, _ := catalogGame(id)
+	g, _ := components.Game(id)
 	return saves.Layout{Dir: dir, Files: g.SaveFiles, Companions: g.SaveCompanions, CompanionPaths: g.SaveCompanionPaths, Copies: g.SaveCopies, CopyFolders: g.SaveCopyFolders, Linked: g.SaveLinked, UserFolders: g.SaveUserFolders}
 }
 

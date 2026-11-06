@@ -1,7 +1,6 @@
 package browse
 
 import (
-	"slices"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -12,15 +11,8 @@ import (
 // a merged page could not honour them.
 var MergedSorts = []string{source.SortDownloads, source.SortUpdated}
 
-// sortMerged orders hits of every source by sort, stably, so ties keep each source's own ranking. A hit with no value
-// for the sort (an unparsable date, no download count) never ranks above one with it.
-func sortMerged(items []Item, sort string) {
-	if slices.Contains(MergedSorts, sort) {
-		slices.SortStableFunc(items, byMergedSort(sort))
-	}
-}
-
-// byMergedSort compares two hits by one of MergedSorts: negative when a ranks first.
+// byMergedSort compares two hits by one of MergedSorts, negative when a ranks first. A hit with no value for the sort
+// (an unparsable date, no download count) never ranks above one with it.
 func byMergedSort(sort string) func(a, b Item) int {
 	return func(a, b Item) int {
 		if sort == source.SortDownloads {

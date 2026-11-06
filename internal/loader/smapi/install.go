@@ -87,14 +87,11 @@ func launcherHasSMAPI(dir string) bool {
 // buildOS is the OS of the game build in dir: a Windows build on a Linux host (one in a Bottles bottle) is
 // recognised by its executable and is run and installed into the Windows way.
 func buildOS(dir string) string {
-	if hostOS == "linux" && safefs.IsFile(filepath.Join(dir, "Stardew Valley.exe")) {
+	if runtime.GOOS == "linux" && safefs.IsFile(filepath.Join(dir, "Stardew Valley.exe")) {
 		return "windows"
 	}
-	return hostOS
+	return runtime.GOOS
 }
-
-// hostOS is the OS Mortar runs on; tests set it to exercise another host's branch.
-var hostOS = runtime.GOOS
 
 // macBundle is the folder inside the game's macOS bundle that holds the executable, which SMAPI's installer treats
 // as the game folder.

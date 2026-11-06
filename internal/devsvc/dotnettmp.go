@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/dotnetroot"
 
 	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 )
@@ -28,7 +29,7 @@ const (
 )
 
 func (s *Service) dotnetEnv() []string {
-	env := withDotnetRoot(hostenv.Environ(), flatpakDotnetRoot())
+	env := dotnetroot.WithRoot(hostenv.Environ(), flatpakDotnetRoot())
 	if s.CacheDir == "" {
 		return env
 	}

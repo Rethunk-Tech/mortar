@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/go-gameproc"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/dotnetroot"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -279,7 +280,7 @@ func steamSkipsLoader(goos string, inst Install, plan *launchplan.Plan, env Star
 	if goos != "windows" || env.Steam == nil || plan.Mode != launchplan.ModeProfile || plan.Entry == "" {
 		return false
 	}
-	info, _ := catalogGame(inst.Game)
+	info, _ := components.Game(inst.Game)
 	opts, err := env.Steam.LaunchOptions(info.SteamAppID())
 	return err != nil || !launchHas(opts, plan.Entry)
 }
@@ -299,7 +300,7 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 	if env.Direct || plan.Exe != "" || steamSkipsLoader(goos, inst, plan, env) {
 		return directCommand(goos, inst, plan, env, flatpakPath)
 	}
-	info, _ := catalogGame(inst.Game)
+	info, _ := components.Game(inst.Game)
 	return st.steamRelay(goos, env, steamPath, flatpakPath, append([]string{"-applaunch", info.SteamAppID()}, plan.Args...))
 }
 
@@ -342,7 +343,7 @@ func directCommand(goos string, inst Install, plan *launchplan.Plan, env StartEn
 // directExe is the executable to start: exe when the plan names one, else the game's own from the catalog.
 func directExe(inst Install, exe string) string {
 	// A loader that injects into the game (BepInEx) names no executable of its own: the game's is the start.
-	if info, ok := catalogGame(inst.Game); ok && exe == "" {
+	if info, ok := components.Game(inst.Game); ok && exe == "" {
 		switch {
 		case inst.Platform == "linux" && info.LinuxMarker != "":
 			exe = filepath.Join(inst.Dir, filepath.FromSlash(cmp.Or(info.LinuxStart, info.LinuxMarker)))
@@ -360,7 +361,7 @@ func withProton(goos string, inst Install, env StartEnv, exe string, args []stri
 	var protonEnv []string
 	if goos != "windows" && (inst.Runtime == gameruntime.MortarProton || inst.Runtime == gameruntime.LauncherPrefix ||
 		(inst.Runtime == gameruntime.Proton && inst.Store == StoreSteam)) {
-		info, _ := catalogGame(inst.Game)
+		info, _ := components.Game(inst.Game)
 		rt := inst.runtime(info, "")
 		rt.Proton = env.Proton
 		if env.Steam != nil {
@@ -403,7 +404,7 @@ func (st Starter) steamRelay(goos string, env StartEnv, steamPath, flatpakPath s
 
 // flatpakAppCommand starts a game installed as a Flatpak app through `flatpak run`, which stays until the game exits.
 func flatpakAppCommand(inst Install, plan *launchplan.Plan, flatpakPath string) (launch.Command, error) {
-	info, _ := catalogGame(inst.Game)
+	info, _ := components.Game(inst.Game)
 	if info.Stores.Flatpak == nil {
 		return launch.Command{}, errors.New("the game has no Flatpak app")
 	}

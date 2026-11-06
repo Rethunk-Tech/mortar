@@ -113,7 +113,7 @@ func (in Install) readVersion(info components.GameInfo) string {
 // InstallBuild is the Steam build of the install in dir, "" when the game has no Steam app or dir is not in a Steam
 // library. It stands in for the game version of a game whose loader cannot read one.
 func InstallBuild(gameID, dir string) string {
-	info, ok := catalogGame(gameID)
+	info, ok := components.Game(gameID)
 	if !ok || dir == "" || info.SteamAppID() == "" {
 		return ""
 	}
@@ -130,7 +130,7 @@ func BuildLabel(build string) string {
 
 // CompatData is the Steam compatdata folder of a Proton install, the parent of its Wine prefix.
 func (in Install) CompatData(home string) (string, bool) {
-	info, ok := catalogGame(in.Game)
+	info, ok := components.Game(in.Game)
 	if !ok {
 		return "", false
 	}
@@ -213,7 +213,7 @@ func collect(g Game, home string, s settings.Settings) []Install {
 }
 
 func discover(g Game, home string, s settings.Settings) []Install {
-	info, ok := catalogGame(g.ID())
+	info, ok := components.Game(g.ID())
 	if !ok {
 		return nil
 	}
@@ -295,7 +295,7 @@ func ResolveInstall(home string, s settings.Settings, id, pin string) (Install, 
 			return in, nil
 		}
 	}
-	info, _ := catalogGame(id)
+	info, _ := components.Game(id)
 	if dir == "" {
 		in := newInstall(info, "", "", "", OriginFolder)
 		in.ID = ""
@@ -324,7 +324,7 @@ func FolderPinDir(pin string) (string, bool) {
 // folderInstall is the install in dir for a pin that names it; the folder must still hold the game.
 func folderInstall(id, dir, pin string) (Install, error) {
 	g := Find(id)
-	info, _ := catalogGame(id)
+	info, _ := components.Game(id)
 	if g == nil || !filepath.IsAbs(dir) {
 		return Install{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a game folder", dir))
 	}
@@ -369,12 +369,12 @@ func (in Install) RunsInBottle() bool { return in.Runtime == runtime.WinePrefix 
 
 // BottleCommand is the host command that runs exe with args inside the install's bottle.
 func (in Install) BottleCommand(exe string, args ...string) ([]string, error) {
-	info, _ := catalogGame(in.Game)
+	info, _ := components.Game(in.Game)
 	return runtime.Command(in.runtime(info, ""), exe, args...)
 }
 
 // RunInBottle runs exe with args inside the install's bottle through run.
 func (in Install) RunInBottle(ctx context.Context, run runtime.Runner, exe string, args ...string) error {
-	info, _ := catalogGame(in.Game)
+	info, _ := components.Game(in.Game)
 	return runtime.Run(ctx, run, in.runtime(info, ""), exe, args...)
 }

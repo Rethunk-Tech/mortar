@@ -6,12 +6,13 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestSuggestFoldersFindsACopyTwoLevelsDown(t *testing.T) {
 	home := t.TempDir()
-	info, ok := catalogGame("stardew")
+	info, ok := components.Game("stardew")
 	if !ok {
 		t.Fatal("no stardew in the catalog")
 	}

@@ -150,12 +150,11 @@ func (s *Service) untrustedDir(dir string) bool {
 	return false
 }
 
-// flatpakDotnetRoot, flatpakInside and withDotnetRoot are the shared lookup; tests point the root at a temp folder and
-// pretend to be inside a Flatpak.
+// flatpakInside and flatpakDotnetRoot are the shared lookup; tests point the root at a temp folder and pretend to be
+// inside a Flatpak.
 var (
 	flatpakInside     = flatpak.Inside
 	flatpakDotnetRoot = dotnetroot.FlatpakRoot
-	withDotnetRoot    = dotnetroot.WithRoot
 )
 
 // isDotnetTool reports whether name is a .NET global tool, which starts the runtime and so needs DOTNET_ROOT.

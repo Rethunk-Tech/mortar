@@ -75,8 +75,6 @@ var OnChange func()
 var (
 	mu     sync.Mutex
 	states = map[string]State{}
-	// Client sends the probes; tests replace it.
-	client = http.DefaultClient
 )
 
 // isNetwork reports whether err means the host could not be reached (DNS, connection, timeout), not that it answered
@@ -180,7 +178,7 @@ func probe(ctx context.Context, id string) {
 	if err != nil {
 		return
 	}
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err == nil {
 		_ = resp.Body.Close()
 	}

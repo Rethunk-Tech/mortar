@@ -50,12 +50,3 @@ func ThunderstoreRef(s string) (pkg, version string, ok bool) {
 	}
 	return parts[0] + "-" + parts[1], parts[2], true
 }
-
-// SMAPI maps a manifest Dependencies[] entry; required follows IsRequired.
-func SMAPI(uniqueID, minimumVersion string, required bool) Dependency {
-	rel := Required
-	if !required {
-		rel = Optional
-	}
-	return Dependency{Target: Target{Mod: mod.SMAPI(uniqueID)}, Constraint: minimumVersion, Relation: rel}
-}

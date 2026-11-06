@@ -14,8 +14,8 @@ func TestListedStopsGrowingPastTheCap(t *testing.T) {
 		last = VersionRef{ID: strconv.Itoa(i + 1), Version: "v" + strconv.Itoa(i)}
 		s.Put(last, []string{"dep"})
 	}
-	if s.len() != listedCap {
-		t.Fatalf("len = %d, want %d", s.len(), listedCap)
+	if len(s.m) != listedCap {
+		t.Fatalf("len = %d, want %d", len(s.m), listedCap)
 	}
 	if _, ok := s.Get(first); ok {
 		t.Fatal("oldest version still listed")

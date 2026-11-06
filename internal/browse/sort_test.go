@@ -1,6 +1,7 @@
 package browse
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -16,7 +17,7 @@ func TestSortMergedDownloadsNeverRanksAMissingCountAboveAKnownOne(t *testing.T) 
 		{Source: "github", ID: "a/small", Stars: 3},
 		{Source: "modrinth", ID: "m", Downloads: 12},
 	}
-	sortMerged(items, source.SortDownloads)
+	slices.SortStableFunc(items, byMergedSort(source.SortDownloads))
 	want := []string{"T-1", "1", "m", "a/big", "a/small"}
 	for i, id := range want {
 		if items[i].ID != id {
@@ -31,7 +32,7 @@ func TestSortMergedUpdatedPlacesUnparsableDatesLast(t *testing.T) {
 		{ID: "none"},
 		{ID: "new", Updated: "2026-03-01T10:00:00.123Z"},
 	}
-	sortMerged(items, source.SortUpdated)
+	slices.SortStableFunc(items, byMergedSort(source.SortUpdated))
 	if got := ids(items); got[0] != "new" || got[1] != "old" || got[2] != "none" {
 		t.Fatalf("order = %v", got)
 	}
@@ -39,8 +40,8 @@ func TestSortMergedUpdatedPlacesUnparsableDatesLast(t *testing.T) {
 
 func TestSortMergedLeavesOtherSortsInSourceOrder(t *testing.T) {
 	items := []Item{{ID: "a", Downloads: 1}, {ID: "b", Downloads: 9}}
-	sortMerged(items, "")
-	sortMerged(items, source.SortName)
+	slices.SortStableFunc(items, byMergedSort(""))
+	slices.SortStableFunc(items, byMergedSort(source.SortName))
 	if items[0].ID != "a" {
 		t.Fatalf("order = %v", ids(items))
 	}

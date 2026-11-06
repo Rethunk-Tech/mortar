@@ -51,9 +51,3 @@ func (s *ListedStore) GetAll(refs []VersionRef) map[VersionRef][]string {
 	}
 	return out
 }
-
-func (s *ListedStore) len() int {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return len(s.m)
-}

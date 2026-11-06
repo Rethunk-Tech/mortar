@@ -4,7 +4,6 @@ package gamesettings
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/Rethunk-Tech/go-safefs"
 )
@@ -22,11 +21,6 @@ type Settings struct {
 	MusicVolumeLevel      *int    `json:"musicVolumeLevel,omitempty"`
 	SoundVolumeLevel      *int    `json:"soundVolumeLevel,omitempty"`
 }
-
-var (
-	readFile  = os.ReadFile
-	writeFile = safefs.WriteFileAtomic
-)
 
 func (s Settings) Validate() error {
 	if s.WindowMode != nil {
@@ -57,7 +51,7 @@ func (s Settings) Validate() error {
 }
 
 func Load(path string) (Settings, error) {
-	data, err := readFile(path)
+	data, err := safefs.ReadFile(path)
 	if err != nil {
 		return Settings{}, err
 	}
@@ -80,5 +74,5 @@ func Save(path string, settings Settings) error {
 		return err
 	}
 	data = append(data, '\n')
-	return writeFile(path, data, 0o600)
+	return safefs.WriteFileAtomic(path, data, 0o600)
 }

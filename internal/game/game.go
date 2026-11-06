@@ -62,7 +62,7 @@ type Game interface {
 
 // Loaders are the game's loader drivers in catalog order; a catalog entry without a registered driver is left out.
 func Loaders(id string) []loader.Loader {
-	g, _ := catalogGame(id)
+	g, _ := components.Game(id)
 	return loader.For(g)
 }
 
@@ -149,7 +149,7 @@ func LogFile(id string) (string, error) {
 
 // LoaderName is how the catalog names the game's loader with this id; "" is its first.
 func LoaderName(id, loaderID string) string {
-	g, ok := catalogGame(id)
+	g, ok := components.Game(id)
 	if !ok {
 		return ""
 	}
@@ -193,10 +193,6 @@ func CatalogSerial() uint64 {
 	return m.Serial
 }
 
-func catalogGame(id string) (components.GameInfo, bool) {
-	return components.Game(id)
-}
-
 // ByNexusDomain is the enabled game whose Nexus domain is domain.
 func ByNexusDomain(domain string) (string, bool) {
 	for _, g := range Catalog() {
@@ -219,7 +215,7 @@ func ByR2modmanFolder(name string) (string, bool) {
 
 // NexusTitle is how Nexus knows the game with this id, from the catalog's nexus source.
 func NexusTitle(id string) (nexusmods.Title, error) {
-	g, ok := catalogGame(id)
+	g, ok := components.Game(id)
 	if !ok || g.NexusDomain() == "" {
 		return nexusmods.Title{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("game %q has no Nexus domain", id))
 	}
@@ -233,7 +229,7 @@ func Find(id string) Game {
 			return g
 		}
 	}
-	if _, ok := catalogGame(id); ok {
+	if _, ok := components.Game(id); ok {
 		return catalogOnly(id)
 	}
 	return nil
@@ -411,7 +407,7 @@ func InstallArtMiddleware(home string, current func() settings.Settings) func(ht
 				next.ServeHTTP(w, r)
 				return
 			}
-			info, listed := catalogGame(id)
+			info, listed := components.Game(id)
 			if r.Method != http.MethodGet || !listed || info.Art == "" {
 				http.NotFound(w, r)
 				return
@@ -526,7 +522,7 @@ func ScreenshotMiddleware(home string, current func() settings.Settings) func(ht
 				http.NotFound(w, r)
 				return
 			}
-			info, known := catalogGame(parts[0])
+			info, known := components.Game(parts[0])
 			if !known {
 				http.NotFound(w, r)
 				return
