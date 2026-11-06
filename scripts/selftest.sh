@@ -23,7 +23,9 @@
 #
 # Every game a sandbox starts, from the browser or from regress, runs on the sandbox's own headless display (mutter
 # with Xwayland, its own D-Bus and runtime dir; the desktop's DISPLAY, WAYLAND_DISPLAY and bus are unset) through
-# scripts/launch-guard.sh, without the network, and each session gets at most 3 launches across all its sandboxes.
+# scripts/launch-guard.sh, without the host's network (the sandbox's games share one network namespace, so copies reach
+# each other on loopback) and with a private PipeWire null sink as their only audio; each session gets at most 3 launches
+# across all its sandboxes.
 #
 # --copy-data copies the real Mortar profiles and settings (or those in MORTAR_SELFTEST_DATA, a Mortar data folder) into
 # the sandbox once (downloads, cache, trash and backups are left out). Every sandbox root carries a .mortar-selftest marker, and only a marked folder directly under
@@ -163,6 +165,9 @@ owned() {
 # sleep that holds it up; display.hold records that sleep, whose exit ends mutter and its bus. The bus gets a keyring of
 # its own in the sandbox's home before anything asks for one: otherwise D-Bus starts one on the real home's login
 # keyring, locked without its password, and every secret read waits on an unlock prompt nobody can see.
+# The same hold script runs a PipeWire, its Pulse server and WirePlumber on the runtime dir, with one null sink and no
+# real device (WirePlumber's ALSA, Bluetooth and camera monitors are off), so Unity runs its audio callbacks and a game
+# never reaches the desktop's audio. PULSE_SERVER (hidden) points games at it; the hold script ends them with mutter.
 display_up() {
   local run=$ROOT/run
   if [ -s "$run/display.env" ] && owned "$(cat "$ROOT/display.hold" 2>/dev/null || echo 0)"; then
@@ -176,8 +181,32 @@ display_up() {
   chmod 700 "$run"
   rm -f "$run/display.env" "$run/display.x11"
   # mutter runs this inside its session, where DISPLAY names the Xwayland it started.
+  mkdir -p "$ROOT/audio-config/wireplumber/wireplumber.conf.d"
+  cat >"$ROOT/audio-config/wireplumber/wireplumber.conf.d/50-null-only.conf" <<'WPCONF'
+wireplumber.profiles = {
+  main = {
+    monitor.alsa = disabled
+    monitor.alsa-midi = disabled
+    monitor.bluez = disabled
+    monitor.bluez-midi = disabled
+    monitor.libcamera = disabled
+    monitor.v4l2 = disabled
+  }
+}
+WPCONF
   cat >"$ROOT/display-hold.sh" <<'HOLD'
 echo $$ >display.hold
+trap 'kill $(jobs -p) 2>/dev/null' TERM EXIT
+if command -v pipewire >/dev/null && command -v wireplumber >/dev/null && command -v pipewire-pulse >/dev/null; then
+  unset PULSE_SERVER PIPEWIRE_REMOTE PIPEWIRE_RUNTIME_DIR
+  export XDG_CONFIG_HOME="$2/audio-config"
+  pipewire >"$2/audio.log" 2>&1 &
+  for _ in $(seq 1 50); do [ -S "$XDG_RUNTIME_DIR/pipewire-0" ] && break; sleep 0.1; done
+  pw-cli create-node adapter '{ factory.name=support.null-audio-sink node.name=mortar-null media.class=Audio/Sink object.linger=true audio.position=[FL FR] }' >>"$2/audio.log" 2>&1
+  wireplumber >>"$2/audio.log" 2>&1 &
+  pipewire-pulse >>"$2/audio.log" 2>&1 &
+  for _ in $(seq 1 50); do [ -S "$XDG_RUNTIME_DIR/pulse/native" ] && break; sleep 0.1; done
+fi
 # An empty login keyring with no password: unlocked, so a read of a secret the sandbox lacks is simply not found.
 mkdir -p "$1/.local/share/keyrings"
 [ -e "$1/.local/share/keyrings/login.keyring" ] || printf '[keyring]\ndisplay-name=login\nctime=0\nmtime=0\nlock-on-idle=false\nlock-after=false\n' >"$1/.local/share/keyrings/login.keyring"
@@ -186,11 +215,12 @@ HOME=$1 gnome-keyring-daemon --start --components=secrets >/dev/null 2>&1 || tru
 printf '%s\n' "$DISPLAY" >"$XDG_RUNTIME_DIR/display.x11"
 printf 'DISPLAY=%s\nWAYLAND_DISPLAY=%s\nDBUS_SESSION_BUS_ADDRESS=%s\nXAUTHORITY=%s\n' "$DISPLAY" "$WAYLAND_DISPLAY" "$DBUS_SESSION_BUS_ADDRESS" "${XAUTHORITY:-}" >"$XDG_RUNTIME_DIR/display.env.new"
 mv "$XDG_RUNTIME_DIR/display.env.new" "$XDG_RUNTIME_DIR/display.env"
-exec sleep infinity
+sleep infinity &
+wait
 HOLD
-  (cd "$ROOT" && env -u DISPLAY -u WAYLAND_DISPLAY -u XAUTHORITY -u DBUS_SESSION_BUS_ADDRESS -u XDG_SESSION_TYPE -u PULSE_SERVER \
+  (cd "$ROOT" && env -u DISPLAY -u WAYLAND_DISPLAY -u XAUTHORITY -u DBUS_SESSION_BUS_ADDRESS -u XDG_SESSION_TYPE -u PULSE_SERVER -u PIPEWIRE_REMOTE -u PIPEWIRE_RUNTIME_DIR \
     XDG_RUNTIME_DIR="$run" nohup dbus-run-session -- mutter --wayland --headless --virtual-monitor 1280x720 \
-    --wayland-display mortar-hidden -- sh "$ROOT/display-hold.sh" "$SANDBOX_HOME" >"$ROOT/display.log" 2>&1 &)
+    --wayland-display mortar-hidden -- sh "$ROOT/display-hold.sh" "$SANDBOX_HOME" "$ROOT" >"$ROOT/display.log" 2>&1 &)
   for _ in $(seq 1 100); do
     [ -s "$run/display.env" ] && return
     sleep 0.1
@@ -216,8 +246,8 @@ display_down() {
 hidden() {
   local vars=()
   mapfile -t vars <"$ROOT/run/display.env"
-  env -u DISPLAY -u WAYLAND_DISPLAY -u XAUTHORITY -u DBUS_SESSION_BUS_ADDRESS -u XDG_SESSION_TYPE -u PULSE_SERVER \
-    XDG_RUNTIME_DIR="$ROOT/run" "${vars[@]}" MORTAR_HIDDEN_RUNTIME="$ROOT/run" \
+  env -u DISPLAY -u WAYLAND_DISPLAY -u XAUTHORITY -u DBUS_SESSION_BUS_ADDRESS -u XDG_SESSION_TYPE -u PIPEWIRE_REMOTE -u PIPEWIRE_RUNTIME_DIR \
+    PULSE_SERVER="unix:$ROOT/run/pulse/native" XDG_RUNTIME_DIR="$ROOT/run" "${vars[@]}" MORTAR_HIDDEN_RUNTIME="$ROOT/run" \
     MORTAR_LAUNCH_WRAPPER="$REPO/scripts/launch-guard.sh" MORTAR_LAUNCH_CAP="$LAUNCH_CAP" \
     MORTAR_LAUNCH_COUNT="$LAUNCH_COUNT" MORTAR_LAUNCH_PIDS="$ROOT/launches.pids" "$@"
 }
@@ -248,11 +278,11 @@ launch_pid() {
 # pid is never hit, then SIGKILLs what ignored SIGTERM.
 stop_launches() {
   local pid start _ host live=()
-  [ -f "$ROOT/launches.pids" ] || return 0
+  # launch-net.pid is the holder of the games' shared network namespace.
   while read -r pid start _; do
     host=$(launch_pid "$pid" "$start")
     [ -n "$host" ] && live+=("$host:$start")
-  done <"$ROOT/launches.pids"
+  done < <(cat "$ROOT/launches.pids" "$ROOT/launch-net.pid" 2>/dev/null)
   [ ${#live[@]} -gt 0 ] || return 0
   local p
   for p in "${live[@]}"; do kill "${p%%:*}" 2>/dev/null || true; done
@@ -938,12 +968,12 @@ exec bwrap --dev-bind / / --unshare-net -- '$proton/proton' run "\$@"
 EOF
   chmod +x "$ROOT/run-proton.sh"
   if [ -n "$mortar_proton" ]; then
-    # Mortar starts Proton itself; the launch prefix only keeps the game off the network and away from a running Steam,
+    # Mortar starts Proton itself; the launch guard keeps the game off the network and away from a running Steam, and the launch prefix only sets the app ids,
     # and steam_appid.txt keeps Steamworks from handing the start to Steam, as a copy from outside Steam would.
     cat >"$ROOT/run-proton.sh" <<EOF
 #!/bin/bash
 export SteamAppId=$rg_app SteamGameId=$rg_app
-exec bwrap --dev-bind / / --unshare-net -- "\$@"
+exec "\$@"
 EOF
     # A copy Steam does not list: outside steamapps, with the sandbox Steam's manifest for it gone.
     mkdir -p "$ROOT/folder-game"
@@ -962,11 +992,11 @@ EOF
       failures+=("the Proton prefix could not be created; see $ROOT/wineboot.log")
     reap_prefix "$compat" >/dev/null
     # A direct start of a Steam copy runs through Proton in Steam's prefix for the game, found in the sandbox Steam, so
-    # from here the launch prefix only keeps the game off the network and away from a running Steam.
+    # from here the launch guard keeps the game off the network and away from a running Steam.
     cat >"$ROOT/run-proton.sh" <<EOF
 #!/bin/bash
 export STEAM_COMPAT_APP_ID=$rg_app SteamAppId=$rg_app SteamGameId=$rg_app
-exec bwrap --dev-bind / / --unshare-net -- "\$@"
+exec "\$@"
 EOF
     ln -sfn "$proton" "$SANDBOX_STEAM/steamapps/common/$(basename "$proton")"
   fi
