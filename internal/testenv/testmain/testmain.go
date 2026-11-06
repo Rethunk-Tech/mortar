@@ -4,6 +4,8 @@ package testmain
 import (
 	"os"
 	"testing"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // RunInTempData runs the package's tests with the data folder (XDG_DATA_HOME, LOCALAPPDATA) pointing at a temporary
@@ -19,6 +21,6 @@ func RunInTempData(m *testing.M, name string) {
 		}
 	}
 	code := m.Run()
-	_ = os.RemoveAll(data)
+	_ = safefs.RemoveAll(data)
 	os.Exit(code)
 }
