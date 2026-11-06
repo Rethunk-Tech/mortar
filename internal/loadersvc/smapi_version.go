@@ -322,23 +322,16 @@ func (s *Service) installInProfiles(ctx context.Context, id, loaderID, dir strin
 	} else if err != nil {
 		return loader.Status{}, err
 	}
-	all, err := s.profiles.List(id)
-	if err != nil {
-		return loader.Status{}, err
-	}
 	progress := func(step loader.Step) { s.emit(ProgressEvent, Progress{Game: id, Step: step}) }
-	for _, p := range all {
-		if p.Error != "" || p.LoaderFor(id) != l.ID() {
-			continue
-		}
-		pdir, err := s.profiles.ProfileDir(id, p.ID)
-		if err != nil {
-			return loader.Status{}, err
-		}
+	err = s.eachLoaderProfile(id, l, func(p profile.Profile, pdir string) error {
 		pkg := loader.Package{ID: l.ID(), Version: version, Archive: filepath.Join(held, installerFile)}
 		if _, err := l.Install(ctx, loader.Target{Game: id, InstallDir: dir, ProfileDir: pdir, Exec: s.runtimeExec(id)}, pkg, progress); err != nil {
-			return loader.Status{}, fmt.Errorf("install into %s: %w", p.Name, err)
+			return fmt.Errorf("install into %s: %w", p.Name, err)
 		}
+		return nil
+	})
+	if err != nil {
+		return loader.Status{}, err
 	}
 	if err := s.recordLoader(id, l, version, fromStart); err != nil {
 		return loader.Status{}, err

@@ -282,29 +282,43 @@ func (s *Service) LocalStatus(id, loaderID string) (loader.Status, error) {
 	return game.LoaderStatus(id, loaderID, dir, s.settings.Get().Loaders)
 }
 
-// profileStatus is the state of a loader that lives in each profile: installed when a version is recorded and every
-// profile holds it.
-func (s *Service) profileStatus(id string, l loader.Loader, dir, recorded string) (loader.Status, error) {
+// eachLoaderProfile calls fn with every healthy profile of game id that uses loader l, and its folder.
+func (s *Service) eachLoaderProfile(id string, l loader.Loader, fn func(p profile.Profile, dir string) error) error {
 	all, err := s.profiles.List(id)
 	if err != nil {
-		return loader.Status{}, err
+		return err
 	}
-	st := loader.Status{Installed: recorded != "", Version: recorded, PerProfile: true}
 	for _, p := range all {
 		if p.Error != "" || p.LoaderFor(id) != l.ID() {
 			continue
 		}
 		pdir, err := s.profiles.ProfileDir(id, p.ID)
 		if err != nil {
-			return loader.Status{}, err
+			return err
 		}
+		if err := fn(p, pdir); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// profileStatus is the state of a loader that lives in each profile: installed when a version is recorded and every
+// profile holds it.
+func (s *Service) profileStatus(id string, l loader.Loader, dir, recorded string) (loader.Status, error) {
+	st := loader.Status{Installed: recorded != "", Version: recorded, PerProfile: true}
+	err := s.eachLoaderProfile(id, l, func(_ profile.Profile, pdir string) error {
 		got, err := l.Status(loader.Target{Game: id, InstallDir: dir, ProfileDir: pdir})
 		if err != nil {
-			return loader.Status{}, err
+			return err
 		}
 		if !got.Installed || got.Version != recorded {
 			st.Installed = false
 		}
+		return nil
+	})
+	if err != nil {
+		return loader.Status{}, err
 	}
 	return st, nil
 }
