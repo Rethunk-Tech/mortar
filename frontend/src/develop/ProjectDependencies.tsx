@@ -2,13 +2,11 @@ import { useLingui } from '@lingui/react/macro'
 import { Typography } from '@mui/material'
 import { useCallback, useRef } from 'react'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { FormSection } from '../shell/dialog/FormDialog.tsx'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import type { InlineError } from '../toasts/report.ts'
-import { useProjectInfo } from './builds.ts'
 import { AddAnother, PackageRow } from './DependenciesStep.tsx'
-import { knowPackage, ownProject, useKnownPackages, usePackageDetails } from './dependencies.ts'
+import { knowPackage, ownProject } from './dependencies.ts'
 import type { DependencyRow } from './projectDependencies.ts'
 
 /** The Edit dialog's dependency list: untick to drop one, switch it between required and optional, or search to add. */
@@ -31,11 +29,8 @@ export function ProjectDependencies({
   onRetry: () => void
 }) {
   const { t } = useLingui()
-  const profile = useProfiles((s) => s.openId)
-  const known = useKnownPackages((s) => s)
-  const projects = useProjectInfo((s) => s.byDir)
   const ids = rows.map((r) => r.package)
-  usePackageDetails(game, profile, ids)
+  const { profile, known, projects } = usePackageList(game, ids)
   const latest = useRef(setRows)
   latest.current = setRows
   const toggle = useCallback((id: string, on: boolean) => {

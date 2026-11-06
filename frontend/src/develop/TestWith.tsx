@@ -2,11 +2,10 @@ import { useLingui } from '@lingui/react/macro'
 import { Typography } from '@mui/material'
 import { useCallback, useRef } from 'react'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { FormSection } from '../shell/dialog/FormDialog.tsx'
-import { useProjectInfo } from './builds.ts'
 import { AddAnother, PackageRow } from './DependenciesStep.tsx'
-import { knowPackage, ownProject, useKnownPackages, usePackageDetails } from './dependencies.ts'
+import { knowPackage, ownProject } from './dependencies.ts'
+import { usePackageList } from './usePackageList.ts'
 
 /** The Edit dialog's list of mods Test installs beside the project: untick to drop one, search to add. They stay out
  * of the package. */
@@ -20,10 +19,7 @@ export function TestWith({
   onChange: (ids: string[]) => void
 }) {
   const { t } = useLingui()
-  const profile = useProfiles((s) => s.openId)
-  const known = useKnownPackages((s) => s)
-  const projects = useProjectInfo((s) => s.byDir)
-  usePackageDetails(game, profile, ids)
+  const { profile, known, projects } = usePackageList(game, ids)
   const latest = useRef({ ids, onChange })
   latest.current = { ids, onChange }
   const toggle = useCallback((id: string, on: boolean) => {
