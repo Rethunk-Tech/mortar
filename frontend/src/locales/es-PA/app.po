@@ -3401,8 +3401,7 @@ msgstr ""
 msgid "How it is modded"
 msgstr ""
 
-#: src/browse/BrowseDetails.tsx
-#: src/shell/RefreshFailed.tsx
+#: src/shell/SavedCopyNote.tsx
 msgid "Saved from an earlier visit. Sign in to refresh it."
 msgstr ""
 
@@ -6354,8 +6353,7 @@ msgstr ""
 msgid "The {app} runtime crashed ({module}), not a mod's code."
 msgstr ""
 
-#: src/browse/BrowseDetails.tsx
-#: src/shell/RefreshFailed.tsx
+#: src/shell/SavedCopyNote.tsx
 msgid "Saved {when}. Sign in to refresh it."
 msgstr ""
 
@@ -7768,8 +7766,7 @@ msgstr ""
 msgid "Private"
 msgstr ""
 
-#: src/browse/BrowseDetails.tsx
-#: src/shell/RefreshFailed.tsx
+#: src/shell/SavedCopyNote.tsx
 #: src/shell/SignInPrompt.tsx
 msgid "Sign in…"
 msgstr ""
