@@ -1,5 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import type { Status } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loader/models.ts'
+import { Status as LoaderStatus } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadersvc/service.ts'
 import { SetLoaderToastAt } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { gameInfo } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
@@ -33,15 +34,14 @@ export function loaderUpdateText(name: string, status: Status): { title: string;
 }
 
 // The day's toast is kept per game and loader, since the games Mortar checks at start each have their own.
-export function maybeToastLoader(game: string) {
+function maybeToastLoader(game: string, status: Status) {
   const loaderId = gameInfo(game)?.loaderId ?? ''
   const key = `${game}/${loaderId}`
   const { loaderPrefs } = useSettings.getState()
   if (loaderToastShownToday(loaderPrefs?.[key]?.toastAt)) {
     return
   }
-  const { status } = useLoader.getState()
-  if (!(status?.updateAvailable && status.latest)) {
+  if (!(status.updateAvailable && status.latest)) {
     return
   }
   // The day counts as used only once a toast is shown, so an offline start does not silence it.
@@ -58,4 +58,15 @@ export function maybeToastLoader(game: string) {
       run: () => useLoader.getState().install(game),
     },
   })
+}
+
+/**
+ * Offers a newer loader for one game. It reads the status itself: the loader store holds the game the open screen shows,
+ * and a check of every game at startup would leave that screen showing the last one checked.
+ */
+export async function checkLoaderUpdate(game: string) {
+  const status = await LoaderStatus(game, '').catch(() => null)
+  if (status) {
+    maybeToastLoader(game, status)
+  }
 }

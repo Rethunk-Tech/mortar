@@ -6,14 +6,13 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { LastRunCrashed } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { loadGameStatus } from '../games/status.ts'
-import { useLoader } from '../loader/store.ts'
 import { loadUpdates } from '../mods/updates.ts'
 import { settledLastProfile } from '../profiles/lastProfile.ts'
 import { listProfiles } from '../profiles/listProfiles.ts'
 import { reportBug } from '../shell/reportBug.ts'
 import { useToasts } from '../toasts/store.ts'
 import { lastRunCrashToast } from './crashToast.ts'
-import { maybeToastLoader } from './loaderToast.ts'
+import { checkLoaderUpdate } from './loaderToast.ts'
 
 function ignore() {
   return
@@ -67,8 +66,7 @@ export function useStartupChecks() {
           shouldRunStartupCheck(s.games?.[g.id]?.tellWhenLoaderOut) &&
           ((await listProfiles(g.id)) ?? []).length > 0
         ) {
-          await useLoader.getState().check(g.id)
-          maybeToastLoader(g.id)
+          await checkLoaderUpdate(g.id)
         }
       }
     }

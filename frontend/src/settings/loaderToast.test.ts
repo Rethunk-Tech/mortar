@@ -1,6 +1,11 @@
-import { describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, mock, test } from 'bun:test'
 import type { Status } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loader/models.ts'
-import { loaderToastShownToday, loaderUpdateText } from './loaderToast.ts'
+import * as loadersvc from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadersvc/service.ts'
+import * as settingssvc from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { useLoader } from '../loader/store.ts'
+import { stubBinding } from '../testing/stubBinding.ts'
+import { useToasts } from '../toasts/store.ts'
+import { checkLoaderUpdate, loaderToastShownToday, loaderUpdateText } from './loaderToast.ts'
 
 const status = (s: Partial<Status>): Status => ({
   installed: true,
@@ -51,5 +56,25 @@ describe('loaderUpdateText', () => {
     )
     expect(text.title).toBe('BepInEx 5.4.23.3 is out')
     expect(text.body).toBe("Your profiles have 5.4.23.2. Update replaces each profile's copy.")
+  })
+})
+
+describe('checkLoaderUpdate', () => {
+  afterEach(() => {
+    mock.restore()
+  })
+
+  test("offers another game's loader update without changing the status the open screen shows", async () => {
+    const shown = status({ version: '4.3.2', latest: '4.3.2', updateAvailable: false })
+    useLoader.setState({ ...useLoader.getInitialState(), game: 'stardew', status: shown }, true)
+    useToasts.setState(useToasts.getInitialState(), true)
+    stubBinding(loadersvc, 'Status', () => status({ version: '5.4.22', latest: '5.4.23' }))
+    stubBinding(settingssvc, 'SetLoaderToastAt', () => undefined)
+    await checkLoaderUpdate('lethal-company')
+    expect(useLoader.getState().game).toBe('stardew')
+    expect(useLoader.getState().status).toBe(shown)
+    expect(useToasts.getState().toasts.map((t) => t.title?.endsWith('5.4.23 is out'))).toEqual([
+      true,
+    ])
   })
 })
