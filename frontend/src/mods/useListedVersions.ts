@@ -1,8 +1,12 @@
-import { useLoaded } from '@rethunk/react-load-hooks'
 import { useEffect } from 'react'
 import { Details as ReadDetails } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
-import { ReleaseChangelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
-import { type InlineError, inlineError } from '../toasts/report.ts'
+import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
+import {
+  CachedReleaseChangelog,
+  ReleaseChangelog,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
+import { useLastGood } from '../shell/useLastGood.ts'
+import type { InlineError } from '../toasts/report.ts'
 import { loadDetails, useNexusEntry } from './nexusDetails.ts'
 import type { ListedVersion } from './versionChoices.ts'
 
@@ -52,29 +56,34 @@ function useNexusVersions(game: string, modId: number): Listed {
   return { state: 'loading' }
 }
 
+const releaseVersions = (logs: Changelog[] | null): ListedVersion[] =>
+  (logs ?? []).map((l) => ({
+    version: l.version,
+    ...dated(Date.parse(l.date ?? '')),
+  }))
+
 function useSiteVersions(game: string, source: string, id: string): Listed {
-  const { data, error, reload } = useLoaded<ListedVersion[] | null>(
-    source === 'nexus'
-      ? null
-      : () =>
-          source === 'github'
-            ? ReleaseChangelog(id).then((logs) =>
-                (logs ?? []).map((l) => ({
-                  version: l.version,
-                  ...dated(Date.parse(l.date ?? '')),
-                })),
-              )
-            : ReadDetails(game, source, id).then((d) =>
-                (d.versions ?? []).map((version, i) => ({
-                  version,
-                  ...dated((d.released?.[i] ?? 0) * MS_PER_S),
-                })),
-              ),
-    [game, source, id],
-    null,
+  const { data, error, reload } = useLastGood<ListedVersion[]>(
+    source === 'nexus' ? null : `versions:${game}:${source}:${id}`,
+    () =>
+      source === 'github'
+        ? ReleaseChangelog(id).then(releaseVersions)
+        : ReadDetails(game, source, id).then((d) =>
+            (d.versions ?? []).map((version, i) => ({
+              version,
+              ...dated((d.released?.[i] ?? 0) * MS_PER_S),
+            })),
+          ),
+    [],
+    {
+      seed: () =>
+        source === 'github'
+          ? CachedReleaseChangelog(id).then(releaseVersions)
+          : Promise.resolve(null),
+    },
   )
-  if (error !== null) {
-    return { state: 'error', error: inlineError(error), retry: reload }
+  if (data === null && error !== null) {
+    return { state: 'error', error, retry: reload }
   }
   return data === null ? { state: 'loading' } : { state: 'ready', versions: data }
 }

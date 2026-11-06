@@ -1,7 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip } from '@mui/material'
 import { ScrollText } from 'lucide-react'
+import { useEffect } from 'react'
 import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
+import { NEXUS } from '../browse/browseConstants.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -9,7 +11,7 @@ import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { space } from '../theme/density.ts'
 import { MarkdownView } from './MarkdownView.tsx'
-import { useNexusEntry } from './nexusDetails.ts'
+import { loadDetails, useNexusEntry } from './nexusDetails.ts'
 import { isNewer, isSameVersion } from './nexusFormat.ts'
 import { useReleases } from './releases.ts'
 import { ChangelogEntryBody } from './updateReview/Changes.tsx'
@@ -74,6 +76,12 @@ export function ChangelogDialog({
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
   const nexusEntry = useNexusEntry(game, nexusId)
+  // Signed out, the queue only parks the mod; this reads what the cache holds, or says the page needs a sign-in.
+  useEffect(() => {
+    if (open && game && nexusId > 0) {
+      loadDetails(game, nexusId).catch(() => undefined)
+    }
+  }, [open, game, nexusId])
   const { state, retry } = useReleases(open, nexusId > 0 ? '' : githubRepo)
   let logs: Changelog[] | null = null
   if (nexusId > 0) {
@@ -85,6 +93,21 @@ export function ChangelogDialog({
   let body = <SkeletonRows label={t`Reading the changelog…`} count={6} height={20} />
   if (state !== null && 'error' in state) {
     body = <ErrorRetry error={state.error} onRetry={retry} />
+  } else if (nexusId > 0 && nexusEntry?.error && !nexusEntry.details) {
+    const error = {
+      message: nexusEntry.error,
+      details: nexusEntry.error,
+      ...(nexusEntry.signedOut ? { signedOut: true as const } : {}),
+    }
+    body = (
+      <ErrorRetry
+        error={error}
+        source={NEXUS}
+        onRetry={() => {
+          loadDetails(game, nexusId).catch(() => undefined)
+        }}
+      />
+    )
   } else if (logs !== null && logs.length === 0) {
     body = (
       <EmptyState compact={true} icon={null} title={t`No changelog published`}>

@@ -1,9 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, Chip, Link, Typography } from '@mui/material'
-import { useLoaded } from '@rethunk/react-load-hooks'
 import { memo, type ReactNode, useEffect, useState } from 'react'
 import { Details as ReadDetails } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
+import type { Details as NexusDetails } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { listNames } from '../i18n/list.ts'
@@ -19,7 +19,7 @@ import { MarkdownView } from '../mods/MarkdownView.tsx'
 import { Section } from '../mods/ModSections.tsx'
 import { openPage } from '../mods/menu.ts'
 import { Rich } from '../mods/NexusDetails.tsx'
-import { loadDetails, useNexusEntry } from '../mods/nexusDetails.ts'
+import { isFull, loadDetails, useNexusPartialEntry } from '../mods/nexusDetails.ts'
 import { useReleases } from '../mods/releases.ts'
 import { listsVersions } from '../mods/versionChoices.ts'
 import { openSettings } from '../nav/store.ts'
@@ -27,8 +27,9 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { SignInPrompt } from '../shell/SignInPrompt.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { useLastGood } from '../shell/useLastGood.ts'
 import { space } from '../theme/density.ts'
-import { type InlineError, inlineError } from '../toasts/report.ts'
+import type { InlineError } from '../toasts/report.ts'
 import { GITHUB, NEXUS } from './browseConstants.ts'
 import type { BrowseItem } from './browseTypes.ts'
 import { entryIn } from './cardState.ts'
@@ -123,16 +124,41 @@ const changelogOf = (logs: Changelog[] | null | undefined) =>
 // Dimmed: a page Nexus would not refresh because no account is signed in.
 const SAVED_OPACITY = 0.7
 
+// What the batched lookup knew about the mod (summary, version, category, requirements) while its files and changelog
+// are still being read.
+function PartialPage({ details }: { details: NexusDetails }) {
+  const { t } = useLingui()
+  const { summary, version, requirements } = details.page
+  return (
+    <>
+      <PageSections
+        page={{
+          categories: details.category ? [details.category] : [],
+          description: summary ? <Typography sx={text}>{summary}</Typography> : null,
+          versions: version ? [version] : [],
+          dependencies: nexusDependencies(requirements),
+          changelog: null,
+        }}
+      />
+      <Typography role="status" sx={{ ...text, color: 'text.secondary' }}>
+        {t`Reading files…`}
+      </Typography>
+    </>
+  )
+}
+
 function NexusPage({ game, modId, summary }: { game: string; modId: number; summary: string }) {
   const { t } = useLingui()
-  const entry = useNexusEntry(game, modId)
+  const entry = useNexusPartialEntry(game, modId)
   const [attempt, setAttempt] = useState(0)
   useEffect(() => {
     if (attempt >= 0) {
       loadDetails(game, modId).catch(() => undefined)
     }
   }, [game, modId, attempt])
-  const details = entry?.details
+  const details = isFull(entry) ? entry?.details : undefined
+  const batch =
+    entry?.details?.partial && !entry.signedOut && !entry.error ? entry.details : undefined
   if (!details && entry?.signedOut) {
     // The summary the search results gave stands in for the page until a signed-in account can read it.
     return (
@@ -161,6 +187,9 @@ function NexusPage({ game, modId, summary }: { game: string; modId: number; summ
         onRetry={() => setAttempt((n) => n + 1)}
       />
     )
+  }
+  if (!details && batch) {
+    return <PartialPage details={batch} />
   }
   if (!details) {
     return <Loading />
@@ -206,14 +235,19 @@ function NexusPage({ game, modId, summary }: { game: string; modId: number; summ
 
 type Read = { details: Details } | { error: InlineError } | null
 
-// One read per open; the browse service keeps each answer for the session.
+// One read per open; the browse service keeps each answer for the session, and the last one shows at once on a return.
 function useSiteDetails(game: string, source: string, id: string) {
-  const { data, error, reload } = useLoaded<Read>(
-    () => ReadDetails(game, source, id).then((details) => ({ details })),
-    [game, source, id],
-    null,
+  const { data, error, reload } = useLastGood<Details>(
+    `site-details:${game}:${source}:${id}`,
+    () => ReadDetails(game, source, id),
+    [],
   )
-  const state: Read = error === null ? data : { error: inlineError(error) }
+  let state: Read = null
+  if (data !== null) {
+    state = { details: data }
+  } else if (error !== null) {
+    state = { error }
+  }
   return { state, retry: reload }
 }
 

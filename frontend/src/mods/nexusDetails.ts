@@ -252,15 +252,22 @@ async function nexusChanged() {
 // Whether the entry holds a mod's whole details, not just the batched page data.
 const isFull = (entry: Entry | undefined) => Boolean(entry?.details && !entry.details.partial)
 
-// The entry for one mod, read on first use; undefined while the first read is on its way. Page data from the batch is
-// not enough for a caller that asks for one mod, so it reads as missing until the whole details arrive.
-const useNexusEntry = (game: string, id: number) => {
+// The entry for one mod as the store holds it, partial page data included, read on first use; undefined while the
+// first read is on its way. For a screen that draws what it has and waits only for the rest.
+const useNexusPartialEntry = (game: string, id: number) => {
   useEffect(() => {
     if (game && id) {
       enqueue(game, id)
     }
   }, [game, id])
-  const entry = useNexusDetails((s) => nexusEntryOf(s.byKey, game, id))
+  return useNexusDetails((s) => nexusEntryOf(s.byKey, game, id))
+}
+
+// The entry for one mod, read on first use; undefined while the first read is on its way. Page data from the batch is
+// not enough for a caller that asks for one mod's files or changelogs, so it reads as missing until the whole details
+// arrive.
+const useNexusEntry = (game: string, id: number) => {
+  const entry = useNexusPartialEntry(game, id)
   return isFull(entry) ? entry : { ...entry, details: undefined }
 }
 
@@ -440,6 +447,7 @@ export {
   useNexusEntry,
   useNexusFresh,
   useNexusPage,
+  useNexusPartialEntry,
   useNexusSeen,
   useSourceSeen,
   watermarkOf,
