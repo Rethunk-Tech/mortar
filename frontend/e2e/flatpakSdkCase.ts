@@ -1,8 +1,8 @@
 import type { Page } from '@playwright/test'
 import type { Tools } from '../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import type { Case } from './render-budget.ts'
-import type { dialogKit } from './renderDialogs.ts'
 import { patchCalls } from './renderCoverage.ts'
+import type { dialogKit } from './renderDialogs.ts'
 
 const TOOLS = 542_138_650
 const INSTALL = 'flatpak install flathub org.freedesktop.Sdk.Extension.dotnet10//26.08'
