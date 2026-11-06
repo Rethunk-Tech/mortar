@@ -356,7 +356,7 @@ func (s *Store) stageEntries(game string, p *Profile, modsDir, staging string, e
 		}
 		live := liveEntryDir(modsDir, e.Key)
 		if exists(live) {
-			old, tmp, err := s.layoutItem(game, p.ID, e.Key, e.Fomod, !e.FomodSpec)
+			old, tmp, err := s.layoutItem(game, p.ID, e.Key, e.Fomod)
 			if tmp != "" {
 				defer func() { _ = safefs.RemoveAll(tmp) }()
 			}

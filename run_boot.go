@@ -1241,8 +1241,6 @@ func (c *boot) storeMaintenance() error {
 			}
 			c.tidied.Close()
 		}()
-		r := c.profiles.RelayoutFomod(c.launches.Busy)
-		log.Printf("fomod relayout: %d moved, %d unchanged, %d left without their archive, %d failed", r.Moved, r.Unchanged, r.NoArchive, r.Failed)
 		// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
 		retention := c.store.Get().StoreUnusedFor()
 		if keys, err := datasvc.KeepSet(c.profiles, retention != 0, c.keepSources); err != nil {

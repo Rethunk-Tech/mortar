@@ -11,7 +11,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func TestInstallArchiveAsksForFomodThenInstallsChoices(t *testing.T) {
@@ -140,105 +139,5 @@ func TestFomodUpdateReplaysOnlyUnchangedOptions(t *testing.T) {
 				t.Fatalf("update should re-offer: %v", err)
 			}
 		})
-	}
-}
-
-// legacyFomod is a FOMOD archive whose folder has an empty destination, which the spec installs in the mod's folder, not
-// under a folder of the archive's own name.
-func legacyFomod(id, dll string) map[string]string {
-	return map[string]string{
-		"fomod/ModuleConfig.xml": `<config><moduleName>M</moduleName><requiredInstallFiles><folder source="Main" destination=""/></requiredInstallFiles></config>`,
-		"Main/manifest.json":     manifestJSON(id),
-		"Main/m.dll":             dll,
-	}
-}
-
-// installLegacy installs key as Mortar placed it before following the spec, with a config file the player wrote.
-func installLegacy(t *testing.T, e env, id, key string) {
-	t.Helper()
-	if _, err := e.InstallFomod("stardew", id, key, Source{Kind: KindLocal, Name: key}, nil); err != nil {
-		t.Fatal(err)
-	}
-	modsDir := e.mods(id)
-	if _, err := e.updateMods("stardew", id, func(p *Profile, dir string) error {
-		old := &p.Entries[len(p.Entries)-1]
-		old.FomodSpec, old.Mods[0].Folder = false, "Main"
-		if err := removeEntryFolders(modsDir, old.Key); err != nil {
-			return err
-		}
-		return e.place("stardew", modsDir, *old)
-	}); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(modsDir, key, "Main", "config.json"), []byte("mine"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-}
-
-// filesUnder lists the regular files below dir as sorted slash paths.
-func filesUnder(dir string) string {
-	var names []string
-	_ = filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
-		if err == nil && d.Type().IsRegular() {
-			rel, _ := filepath.Rel(dir, p)
-			names = append(names, filepath.ToSlash(rel))
-		}
-		return err
-	})
-	return strings.Join(names, ",")
-}
-
-// An entry placed by the destination rule Mortar used before the FOMOD spec's keeps that layout until it is installed
-// again; the update then lays the new version out by the spec and carries the player's file to the mod's new folder,
-// leaving nothing at the old place.
-func TestAnEntryPlacedByTheOldFomodRuleUpdatesToTheSpecLayoutCleanly(t *testing.T) {
-	t.Parallel()
-	e := newEnv(t)
-	p := mustCreate(t, e, "A")
-	e.item(t, "v1", legacyFomod("A.Main", "one"))
-	e.item(t, "v2", legacyFomod("A.Main", "two"))
-	installLegacy(t, e, p.ID, "v1")
-	got, err := e.UpdateEntry("stardew", p.ID, "v1", "v2")
-	if err != nil {
-		t.Fatal(err)
-	}
-	ne := got.Entries[0]
-	dir := liveEntryDir(e.mods(p.ID), ne.Key)
-	dll, _ := safefs.ReadFile(filepath.Join(dir, "m.dll"))
-	cfg, _ := safefs.ReadFile(filepath.Join(dir, "config.json"))
-	if files := filesUnder(dir); !ne.FomodSpec || ne.Mods[0].Folder != "." || string(dll) != "two" || string(cfg) != "mine" ||
-		files != "config.json,m.dll,manifest.json" {
-		t.Fatalf("entry %+v, m.dll %q, config %q, files %v", ne, dll, cfg, files)
-	}
-}
-
-func TestRelayoutMovesOldRuleEntriesWithTheirArchiveToTheSpecLayout(t *testing.T) {
-	t.Parallel()
-	e := newEnv(t)
-	p := mustCreate(t, e, "A")
-	e.item(t, "kept", legacyFomod("A.Kept", "k"))
-	e.item(t, "gone", legacyFomod("A.Gone", "g"))
-	installLegacy(t, e, p.ID, "kept")
-	installLegacy(t, e, p.ID, "gone")
-	if err := e.items.Remove([]store.Ref{{Game: "stardew", Key: "gone"}}); err != nil {
-		t.Fatal(err)
-	}
-	if got := e.RelayoutFomod(func(string) bool { return true }); got != (FomodRelayout{}) {
-		t.Fatalf("a busy game was relaid out: %+v", got)
-	}
-	if got := e.RelayoutFomod(nil); got != (FomodRelayout{Moved: 1, NoArchive: 1}) {
-		t.Fatalf("counts %+v", got)
-	}
-	after, err := e.read("stardew", p.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	kept, gone := after.Entries[0], after.Entries[1]
-	keptFiles, goneFiles := filesUnder(liveEntryDir(e.mods(p.ID), "kept")), filesUnder(liveEntryDir(e.mods(p.ID), "gone"))
-	if !kept.FomodSpec || kept.Mods[0].Folder != "." || kept.PreviousKey != "" || keptFiles != "config.json,m.dll,manifest.json" {
-		t.Fatalf("kept %+v, files %s", kept, keptFiles)
-	}
-	if gone.FomodSpec || gone.Mods[0].Folder != "Main" || goneFiles != "Main/config.json,Main/m.dll,Main/manifest.json" {
-		t.Fatalf("gone %+v, files %s", gone, goneFiles)
 	}
 }

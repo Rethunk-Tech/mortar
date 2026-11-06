@@ -38,7 +38,7 @@ func supersedes(next, old Source) bool {
 // folderEntries are the entries a folder-loader game's store item key becomes: one per laid-out file, or the one
 // entry holding them all when a file in it only works beside its siblings. Each keeps the archive's source.
 func (s *Store) folderEntries(game, id, key string, source Source, whole []Component) (entries []Entry, tray []installer.File, arch installer.Archive, err error) {
-	arch, l, _, err := s.layoutOf(game, id, key, nil, false)
+	arch, l, _, err := s.layoutOf(game, id, key, nil)
 	if err != nil {
 		return nil, nil, arch, err
 	}
@@ -263,7 +263,7 @@ func (s *Store) placeRestoredTray(game, id string, p *Profile, restored, current
 	if len(want) == 0 {
 		return nil
 	}
-	arch, l, _, err := s.layoutOf(game, id, item, nil, false)
+	arch, l, _, err := s.layoutOf(game, id, item, nil)
 	if err != nil {
 		return err
 	}
