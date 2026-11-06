@@ -7,6 +7,7 @@ import {
   ImportGameMods,
   PreviewGameMods,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useReasonText } from '../i18n/reasonText.ts'
 import { brokenKindLabel } from '../mods/brokenKind.ts'
@@ -37,7 +38,7 @@ function Plan({
   onMove: (on: boolean) => void
 }) {
   const { t } = useLingui()
-  const mods = plural({ count }, { one: '# mod', other: '# mods' })
+  const mods = modsLabel(count)
   return (
     <>
       <Typography sx={{ mb: 1.5, color: 'text.secondary' }}>

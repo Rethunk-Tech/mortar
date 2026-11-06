@@ -4,6 +4,7 @@ import { Box, Button, Typography } from '@mui/material'
 import type { ReactNode, Ref } from 'react'
 import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { BEPINEX, SMAPI, UNITY } from '../brand/productNames.ts'
+import { useGameName } from '../games/info.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { useDuration, useSmapiStartup } from './startupHooks.ts'
@@ -114,6 +115,7 @@ function Phases({ report }: { report: StartupReport }) {
   const { t } = useLingui()
   const duration = useDuration()
   const smapi = useSmapiStartup()
+  const lethalCompany = useGameName('lethal-company')
   const labels: Record<PhaseId, string> = smapi
     ? {
         smapi: t`${{ loader: SMAPI }} loads mods`,
@@ -146,7 +148,7 @@ function Phases({ report }: { report: StartupReport }) {
         content: t`Each plugin's constructor and Awake, run one after another`,
         firstTicks: t`Until the game's first scene has loaded`,
         afterTitle: t`The title screen is up while the game still loads its own content, including content packs from mods. The menu is unusable until this ends`,
-        intro: t`From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice.`,
+        intro: t`From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as ${{ game: lethalCompany }}'s Online or LAN choice.`,
       }
   const segments = phaseSegments(report.phases)
   const total = segments.reduce((n, s) => n + s.ms, 0)

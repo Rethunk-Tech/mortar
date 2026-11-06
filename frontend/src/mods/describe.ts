@@ -4,6 +4,7 @@ import type { Drift } from '../../bindings/github.com/Rethunk-Tech/mortar/intern
 import { BEPINEX, CONTENT_PATCHER, SMAPI, WINDOWS } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { gameName } from '../games/info.ts'
+import { errorsLabel } from '../i18n/counts.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
@@ -16,7 +17,7 @@ type Describe = (p: Problem) => string
 
 function describeRunError(runError: Extract<Problem, { kind: 'runError' }>['runError']): string {
   const { name, first, count, updated } = runError
-  const errors = plural({ count }, { one: '# error', other: '# errors' })
+  const errors = errorsLabel(count)
   if (updated) {
     return first === ''
       ? i18n._(msg`${name} was updated since this run and logged ${errors}.`)

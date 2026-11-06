@@ -1,4 +1,5 @@
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
+import { localDay } from '../i18n/localDay.ts'
 import { formatAll } from './filter.ts'
 
 const UNSAFE = /[<>:"/\\|?*]/g
@@ -12,10 +13,7 @@ const safe = (name: string, fallback: string) =>
 export function logFileName(loaderName: string, profileName: string, at: Date): string {
   const loader = safe(loaderName, 'log')
   const profile = safe(profileName, 'profile')
-  const y = at.getFullYear()
-  const m = String(at.getMonth() + 1).padStart(2, '0')
-  const d = String(at.getDate()).padStart(2, '0')
-  return `${loader}-${profile}-${y}-${m}-${d}.txt`
+  return `${loader}-${profile}-${localDay(at)}.txt`
 }
 
 export function saveLogText(raw: string, entries: Entry[]): string {

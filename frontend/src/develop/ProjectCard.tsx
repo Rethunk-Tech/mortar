@@ -29,6 +29,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { StartDebugging } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
+import { errorsLabel } from '../i18n/counts.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { formatNumber } from '../i18n/numberFormat.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
@@ -92,14 +93,7 @@ function Status({ project }: { project: DevProject }) {
   }
   if (run.build && !run.build.ok) {
     const count = (run.build.problems ?? []).filter((p) => p.severity === 'error').length
-    return (
-      <Chip
-        size="small"
-        sx={statusSx}
-        color="error"
-        label={plural(count, { one: '# error', other: '# errors' })}
-      />
-    )
+    return <Chip size="small" sx={statusSx} color="error" label={errorsLabel(count)} />
   }
   if (asset) {
     return project.untrusted || !inProfile ? (

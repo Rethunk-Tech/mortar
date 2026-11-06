@@ -6,11 +6,11 @@ import type { StoreApp } from '../../bindings/github.com/Rethunk-Tech/mortar/int
 import { Launchers } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { ConfirmLaunchers } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { DiscordLogo } from '../brand/Discord.tsx'
-import { DISCORD_INVITE } from '../brand/discordInvite.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { LauncherList } from '../launchers/LauncherList.tsx'
 import { openPage } from '../mods/menu.ts'
 import { useNav } from '../nav/store.ts'
+import { GO } from '../shell/destination.ts'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { useOnWindowFocus } from '../shell/useOnWindowFocus.ts'
 import { space } from '../theme/density.ts'
@@ -122,7 +122,7 @@ export function FirstRun() {
           color="inherit"
           size="small"
           onClick={() => {
-            openPage(DISCORD_INVITE)
+            openPage(`${GO}help/`)
           }}
         >
           {t`Join our ${{ app: sourceLabel('discord') }}`}

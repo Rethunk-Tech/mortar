@@ -1015,11 +1015,6 @@ msgstr "The profile itself stays as it is."
 msgid "Created {name}"
 msgstr "Created {name}"
 
-#: src/profiles/GameModsDialog.tsx
-#: src/profiles/MergeDialog.tsx
-msgid "{count, plural, one {# mod} other {# mods}}"
-msgstr "{count, plural, one {# mod} other {# mods}}"
-
 #: src/profiles/SinceLastRun.tsx
 msgid "Show all"
 msgstr "Show all"

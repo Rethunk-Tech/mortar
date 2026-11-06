@@ -1913,7 +1913,6 @@ msgstr ""
 msgid "Download {name} now"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
 #: src/i18n/counts.ts
 msgid "{count, plural, one {# error} other {# errors}}"
 msgstr ""
@@ -4494,7 +4493,6 @@ msgid "Open a profile of this game, or pick one beside the folder in Settings, t
 msgstr ""
 
 #: src/i18n/counts.ts
-#: src/share/ListFormat.tsx
 msgid "{count, plural, one {# mod} other {# mods}}"
 msgstr ""
 

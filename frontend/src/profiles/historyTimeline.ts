@@ -3,6 +3,7 @@ import {
   HistoryChange,
   type HistoryEvent,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { localDay } from '../i18n/localDay.ts'
 import { historyLabel } from './historyLabel.ts'
 
 const KIND_OF: Partial<Record<HistoryChange, HistoryKind>> = {
@@ -27,9 +28,6 @@ const KIND_OF: Partial<Record<HistoryChange, HistoryKind>> = {
   [HistoryChange.ChangeOptionSet]: 'settings',
   [HistoryChange.ChangePresetApplied]: 'settings',
 }
-
-const dayKey = (d: Date): string =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
 export type HistoryKind =
   | 'added'
@@ -83,11 +81,11 @@ export function historyDays<T extends { at: string | Date }>(
   events: readonly T[],
   now: Date = new Date(),
 ): HistoryDay<T>[] {
-  const today = dayKey(now)
-  const yesterday = dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))
+  const today = localDay(now)
+  const yesterday = localDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))
   const days: HistoryDay<T>[] = []
   for (const ev of events) {
-    const day = dayKey(new Date(ev.at))
+    const day = localDay(new Date(ev.at))
     const last = days.at(-1)
     if (last?.day === day) {
       last.events.push(ev)

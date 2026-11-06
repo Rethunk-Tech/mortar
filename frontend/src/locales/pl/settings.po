@@ -242,10 +242,6 @@ msgstr ""
 msgid "Mod loader updates"
 msgstr ""
 
-#: src/settings/sections/ModioAccount.tsx
-msgid "Kept in your system keyring. Create a read-only personal access token at mod.io/me/access."
-msgstr ""
-
 #: src/settings/prefCopy.ts
 msgid "Use the system title bar"
 msgstr ""
@@ -739,10 +735,6 @@ msgstr ""
 
 #: src/settings/sections/DataBackups.tsx
 msgid "{game} save backups: {size}"
-msgstr ""
-
-#: src/settings/sections/General.tsx
-msgid "Players translate Mortar on Weblate, and any language can be added there."
 msgstr ""
 
 #: src/settings/prefCopy.ts
@@ -1584,6 +1576,10 @@ msgstr ""
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Portable copy: data is kept in {portableDir}"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Players translate Mortar on {app}, and any language can be added there."
 msgstr ""
 
 #: src/settings/PrefRow.tsx
@@ -2514,10 +2510,6 @@ msgstr ""
 msgid "Play the game without mods"
 msgstr ""
 
-#: src/settings/sections/General.tsx
-msgid "Open Weblate"
-msgstr ""
-
 #: src/settings/sections/NexusMods.tsx
 msgid "Signed in to {source}"
 msgstr ""
@@ -3127,6 +3119,10 @@ msgstr ""
 msgid "Play"
 msgstr ""
 
+#: src/settings/sections/General.tsx
+msgid "Open {name}"
+msgstr ""
+
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Luck skill"
 msgstr ""
@@ -3256,6 +3252,10 @@ msgstr ""
 msgid "Minimise"
 msgstr ""
 
+#: src/settings/sections/ModioAccount.tsx
+msgid "Kept in your system keyring. Create a read-only personal access token at {page}."
+msgstr ""
+
 #: src/settings/sections/checkDetail.ts
 msgid "settings.json is readable"
 msgstr ""
@@ -3343,6 +3343,10 @@ msgstr ""
 
 #: src/settings/prefCopyModsView.ts
 msgid "Mark local mods"
+msgstr ""
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "{source} rejected your access token"
 msgstr ""
 
 #: src/settings/sections/AboutDiagnostics.tsx
@@ -3549,10 +3553,6 @@ msgstr ""
 
 #: src/settings/sections/nxmHandler.tsx
 msgid "Handle links"
-msgstr ""
-
-#: src/settings/sections/ModioAccount.tsx
-msgid "mod.io rejected your access token"
 msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx

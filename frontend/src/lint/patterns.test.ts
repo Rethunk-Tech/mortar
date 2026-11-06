@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { relative } from 'node:path'
 import { SRC, srcFiles } from '../../test/srcFiles.ts'
+import * as productNames from '../brand/productNames.ts'
 
 const SKIP_HOOKS = new Set([
   'useCallback',
@@ -22,6 +23,8 @@ const SKIP_HOOKS = new Set([
   'useTransition',
   'useMediaQuery',
 ])
+
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 function rel(path: string): string {
   return relative(SRC, path).replaceAll('\\', '/')
@@ -388,6 +391,32 @@ test('a menu row that only opens a confirmation does not end in an ellipsis', ()
         ),
       )
       .map((m) => `${rel(path)}:${lineOf(src, m.index)}`)
+  })
+  expect(hits, hits.join('\n')).toEqual([])
+})
+
+// A product's name goes into a message as a placeholder (productNames.ts, sourceLabel()), so translators see one
+// message per sentence and a rename is one edit.
+test('messages do not spell out a product name', () => {
+  const names = Object.values(productNames).filter((n) => typeof n === 'string')
+  const named = new RegExp(`(?<![\\w.])(?:${names.map(escapeRegExp).join('|')})(?![\\w])`)
+  const hits = files.flatMap(({ path, src }) => {
+    if (/\.test\.tsx?$/.test(path)) {
+      return []
+    }
+    const bodies = [
+      ...[...src.matchAll(/\b(?:t|msg|plural)`((?:[^`\\]|\\.)*)`/g)].map((m) => ({
+        at: m.index ?? 0,
+        text: m[1] ?? '',
+      })),
+      ...[...src.matchAll(/<Trans\b[^>]*>([\s\S]*?)<\/Trans>/g)].map((m) => ({
+        at: m.index ?? 0,
+        text: (m[1] ?? '').replace(/\{[^{}]*\}/g, ''),
+      })),
+    ]
+    return bodies
+      .filter(({ text }) => named.test(text.replace(/\$\{(?:[^{}]|\{[^{}]*\})*\}/g, '')))
+      .map(({ at }) => `${rel(path)}:${lineOf(src, at)}`)
   })
   expect(hits, hits.join('\n')).toEqual([])
 })

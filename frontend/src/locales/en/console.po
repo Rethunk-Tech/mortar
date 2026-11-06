@@ -352,10 +352,6 @@ msgid "Start measuring to see which mods take the most time per frame."
 msgstr "Start measuring to see which mods take the most time per frame."
 
 #: src/console/StartupSections.tsx
-msgid "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice."
-msgstr "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice."
-
-#: src/console/StartupSections.tsx
 msgid "First updates"
 msgstr "First updates"
 
@@ -936,6 +932,10 @@ msgstr "The next launch will be measured"
 msgid "You skipped this version"
 msgstr "You skipped this version"
 
+#: src/console/PerformancePanel.tsx
+msgid "{fps} fps over {seconds} s. Frame ms: average {avg}, 95th {p95}, 99th {p99}, worst {max}. Managed heap {monoUsed} of {monoHeap}, {gcCollections} garbage collections."
+msgstr "{fps} fps over {seconds} s. Frame ms: average {avg}, 95th {p95}, 99th {p99}, worst {max}. Managed heap {monoUsed} of {monoHeap}, {gcCollections} garbage collections."
+
 #: src/console/StartupTable.tsx
 msgid "Slowest event"
 msgstr "Slowest event"
@@ -1112,6 +1112,10 @@ msgstr "Every mod in this profile is already disabled, so there is nothing to di
 msgid "No game output yet"
 msgstr "No game output yet"
 
+#: src/console/StartupSections.tsx
+msgid "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as {game}'s Online or LAN choice."
+msgstr "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as {game}'s Online or LAN choice."
+
 #: src/console/LineMenu.tsx
 msgid "Hide every message from {method}"
 msgstr "Hide every message from {method}"
@@ -1199,10 +1203,6 @@ msgstr "No stored run contains that text."
 #: src/console/StartupSections.tsx
 msgid "To the main menu"
 msgstr "To the main menu"
-
-#: src/console/PerformancePanel.tsx
-msgid "{fps} fps over {seconds} s. Frame ms: average {avg}, 95th {p95}, 99th {p99}, worst {max}. Managed heap {monoUsed} of {monoHeap} MiB, {gcCollections} garbage collections."
-msgstr "{fps} fps over {seconds} s. Frame ms: average {avg}, 95th {p95}, 99th {p99}, worst {max}. Managed heap {monoUsed} of {monoHeap} MiB, {gcCollections} garbage collections."
 
 #: src/console/BisectDialog.tsx
 msgid "Stop"

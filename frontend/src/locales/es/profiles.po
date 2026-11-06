@@ -1015,11 +1015,6 @@ msgstr ""
 msgid "Created {name}"
 msgstr ""
 
-#: src/profiles/GameModsDialog.tsx
-#: src/profiles/MergeDialog.tsx
-msgid "{count, plural, one {# mod} other {# mods}}"
-msgstr ""
-
 #: src/profiles/SinceLastRun.tsx
 msgid "Show all"
 msgstr ""

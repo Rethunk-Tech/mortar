@@ -346,10 +346,6 @@ msgid "Start measuring to see which mods take the most time per frame."
 msgstr ""
 
 #: src/console/StartupSections.tsx
-msgid "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice."
-msgstr ""
-
-#: src/console/StartupSections.tsx
 msgid "First updates"
 msgstr ""
 
@@ -930,6 +926,10 @@ msgstr ""
 msgid "You skipped this version"
 msgstr ""
 
+#: src/console/PerformancePanel.tsx
+msgid "{fps} fps over {seconds} s. Frame ms: average {avg}, 95th {p95}, 99th {p99}, worst {max}. Managed heap {monoUsed} of {monoHeap}, {gcCollections} garbage collections."
+msgstr ""
+
 #: src/console/StartupTable.tsx
 msgid "Slowest event"
 msgstr ""
@@ -1106,6 +1106,10 @@ msgstr ""
 msgid "No game output yet"
 msgstr ""
 
+#: src/console/StartupSections.tsx
+msgid "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as {game}'s Online or LAN choice."
+msgstr ""
+
 #: src/console/LineMenu.tsx
 msgid "Hide every message from {method}"
 msgstr ""
@@ -1192,10 +1196,6 @@ msgstr ""
 
 #: src/console/StartupSections.tsx
 msgid "To the main menu"
-msgstr ""
-
-#: src/console/PerformancePanel.tsx
-msgid "{fps} fps over {seconds} s. Frame ms: average {avg}, 95th {p95}, 99th {p99}, worst {max}. Managed heap {monoUsed} of {monoHeap} MiB, {gcCollections} garbage collections."
 msgstr ""
 
 #: src/console/BisectDialog.tsx

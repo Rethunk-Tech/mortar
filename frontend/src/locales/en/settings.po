@@ -242,10 +242,6 @@ msgstr "Installed: Mortar {version}"
 msgid "Mod loader updates"
 msgstr "Mod loader updates"
 
-#: src/settings/sections/ModioAccount.tsx
-msgid "Kept in your system keyring. Create a read-only personal access token at mod.io/me/access."
-msgstr "Kept in your system keyring. Create a read-only personal access token at mod.io/me/access."
-
 #: src/settings/prefCopy.ts
 msgid "Use the system title bar"
 msgstr "Use the system title bar"
@@ -740,10 +736,6 @@ msgstr "Dismissed folders"
 #: src/settings/sections/DataBackups.tsx
 msgid "{game} save backups: {size}"
 msgstr "{game} save backups: {size}"
-
-#: src/settings/sections/General.tsx
-msgid "Players translate Mortar on Weblate, and any language can be added there."
-msgstr "Players translate Mortar on Weblate, and any language can be added there."
 
 #: src/settings/prefCopy.ts
 msgid "Live log starts at this level and above"
@@ -1585,6 +1577,10 @@ msgstr "{count, plural, one {# {game} mod tracked on {source}} other {# {game} m
 #: src/settings/sections/DataUsage.tsx
 msgid "Portable copy: data is kept in {portableDir}"
 msgstr "Portable copy: data is kept in {portableDir}"
+
+#: src/settings/sections/General.tsx
+msgid "Players translate Mortar on {app}, and any language can be added there."
+msgstr "Players translate Mortar on {app}, and any language can be added there."
 
 #: src/settings/PrefRow.tsx
 msgid "Every profile of this game shares this one."
@@ -2514,10 +2510,6 @@ msgstr "its address could not be looked up"
 msgid "Play the game without mods"
 msgstr "Play the game without mods"
 
-#: src/settings/sections/General.tsx
-msgid "Open Weblate"
-msgstr "Open Weblate"
-
 #: src/settings/sections/NexusMods.tsx
 msgid "Signed in to {source}"
 msgstr "Signed in to {source}"
@@ -3127,6 +3119,10 @@ msgstr "{count, plural, one {Deleted # backup} other {Deleted # backups}}, freed
 msgid "Play"
 msgstr "Play"
 
+#: src/settings/sections/General.tsx
+msgid "Open {name}"
+msgstr "Open {name}"
+
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Luck skill"
 msgstr "Luck skill"
@@ -3256,6 +3252,10 @@ msgstr "{owner} opens these links now. Mortar takes them over and gives them bac
 msgid "Minimise"
 msgstr "Minimise"
 
+#: src/settings/sections/ModioAccount.tsx
+msgid "Kept in your system keyring. Create a read-only personal access token at {page}."
+msgstr "Kept in your system keyring. Create a read-only personal access token at {page}."
+
 #: src/settings/sections/checkDetail.ts
 msgid "settings.json is readable"
 msgstr "settings.json is readable"
@@ -3344,6 +3344,10 @@ msgstr "Offer again"
 #: src/settings/prefCopyModsView.ts
 msgid "Mark local mods"
 msgstr "Mark local mods"
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "{source} rejected your access token"
+msgstr "{source} rejected your access token"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Mortar version"
@@ -3550,10 +3554,6 @@ msgstr "Data folder: {path}"
 #: src/settings/sections/nxmHandler.tsx
 msgid "Handle links"
 msgstr "Handle links"
-
-#: src/settings/sections/ModioAccount.tsx
-msgid "mod.io rejected your access token"
-msgstr "mod.io rejected your access token"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Season"

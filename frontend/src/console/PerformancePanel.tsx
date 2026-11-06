@@ -7,7 +7,7 @@ import type {
   PerformanceRow,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { BEPINEX, HARMONY } from '../brand/productNames.ts'
-import { formatNumber } from '../i18n/numberFormat.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
 import { formatTiming } from './formatTiming.ts'
@@ -26,7 +26,6 @@ import {
   useSavedReports,
 } from './usePerformancePanel.ts'
 
-const MIB = 1_048_576
 const SORT_COLUMNS: readonly unknown[] = ['name', 'averageMs', 'p95Ms', 'peakMs', 'share', 'calls']
 
 const isStoredSort = (value: unknown): value is { column: SortColumn; direction: SortDirection } =>
@@ -201,7 +200,6 @@ function PanelView({
 function FrameLine({ frame, smapi }: { frame: FrameSummary | null; smapi: boolean }) {
   const { t, i18n } = useLingui()
   const ms = (v: number) => formatTiming(v, i18n.locale)
-  const mib = (bytes: number) => formatNumber(Math.round(bytes / MIB))
   return (
     <Box
       sx={{
@@ -216,7 +214,7 @@ function FrameLine({ frame, smapi }: { frame: FrameSummary | null; smapi: boolea
     >
       {frame ? (
         <span>
-          {t`${{ fps: Math.round(frame.fps) }} fps over ${{ seconds: Math.round(frame.seconds) }} s. Frame ms: average ${{ avg: ms(frame.avgMs) }}, 95th ${{ p95: ms(frame.p95Ms) }}, 99th ${{ p99: ms(frame.p99Ms) }}, worst ${{ max: ms(frame.maxMs) }}. Managed heap ${{ monoUsed: mib(frame.monoUsed) }} of ${{ monoHeap: mib(frame.monoHeap) }} MiB, ${{ gcCollections: frame.gcCollections }} garbage collections.`}
+          {t`${{ fps: Math.round(frame.fps) }} fps over ${{ seconds: Math.round(frame.seconds) }} s. Frame ms: average ${{ avg: ms(frame.avgMs) }}, 95th ${{ p95: ms(frame.p95Ms) }}, 99th ${{ p99: ms(frame.p99Ms) }}, worst ${{ max: ms(frame.maxMs) }}. Managed heap ${{ monoUsed: formatBytes(frame.monoUsed) }} of ${{ monoHeap: formatBytes(frame.monoHeap) }}, ${{ gcCollections: frame.gcCollections }} garbage collections.`}
         </span>
       ) : null}
       {frame && frame.modsMs > 0 ? (

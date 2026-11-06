@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Check, Copy, FileText, MessageSquare, Package, Save, Type } from 'lucide-react'
@@ -6,6 +5,7 @@ import { useState } from 'react'
 import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { safeFileName } from '../console/save.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { listNames } from '../i18n/list.ts'
 import { formatNumber } from '../i18n/numberFormat.ts'
 import { profileById, useProfiles } from '../profiles/store.ts'
@@ -120,7 +120,7 @@ export function ListFormat() {
   const options = useFormatOptions(thunderstore)
   const count = items.length
   const repeats = repeatedItems(profile, keys)
-  const mods = plural(count, { one: '# mod', other: '# mods' })
+  const mods = modsLabel(count)
   const summary = [
     // The disabled ones are part of the count, not added to it.
     off > 0 ? t`${mods}, ${off} of them disabled` : mods,

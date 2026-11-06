@@ -37,6 +37,7 @@ function usePerformanceRunning(game: string) {
 }
 
 const NO_REPORTS: SavedReport[] = []
+const NO_ROWS: PerformanceRow[] = []
 
 function useSavedReports(game: string, openId: string) {
   const { data, setData } = useLoaded<SavedReport[]>(
@@ -91,44 +92,30 @@ function useParsedReport(
   openId: string,
   setSavedReports: (update: (current: SavedReport[]) => SavedReport[]) => void,
 ) {
-  const [rows, setRows] = useState<PerformanceRow[]>([])
-  useEffect(() => {
-    let active = true
-    const run = async () => {
+  const { data, setData } = useLoaded<PerformanceRow[]>(
+    async (signal) => {
+      let parsed: PerformanceRow[]
       try {
-        const next = await PerformanceReport(reportLines)
-        if (!active) {
-          return
-        }
-        const parsed = next ?? []
-        setRows(parsed)
-        if (parsed.length === 0) {
-          return
-        }
-        try {
-          const saved = await SavePerformanceReport(game, openId, parsed)
-          if (active) {
-            setSavedReports(rememberSaved(saved))
-          }
-        } catch (error) {
-          reportUnexpected(error)
-        }
+        parsed = (await PerformanceReport(reportLines)) ?? NO_ROWS
       } catch (error) {
-        if (active) {
-          setRows([])
-        }
         reportUnexpected(error)
+        return NO_ROWS
       }
-    }
-    run().then(
-      () => undefined,
-      () => undefined,
-    )
-    return () => {
-      active = false
-    }
-  }, [reportLines, game, openId, setSavedReports])
-  return [rows, setRows] as const
+      if (parsed.length > 0) {
+        SavePerformanceReport(game, openId, parsed)
+          .then((saved) => {
+            if (!signal.aborted) {
+              setSavedReports(rememberSaved(saved))
+            }
+          })
+          .catch(reportUnexpected)
+      }
+      return parsed
+    },
+    [reportLines, game, openId, setSavedReports],
+    NO_ROWS,
+  )
+  return [data, setData] as const
 }
 
 function copyReportLines(reportLines: string[], copiedTitle: string) {

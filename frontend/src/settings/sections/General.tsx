@@ -20,7 +20,7 @@ import {
   SetLanSharing,
   SetTipsSeen,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { WINDOWS } from '../../brand/productNames.ts'
+import { WEBLATE, WINDOWS } from '../../brand/productNames.ts'
 import { TRANSLATE_PROJECT } from '../../brand/translateProject.ts'
 import { TourAgainButton } from '../../firstrunTour/TourAgainButton.tsx'
 import { localeLabel, pickerLocales } from '../../i18n/locales.ts'
@@ -132,10 +132,10 @@ function Language() {
       </SettingRow>
       <SettingRow
         label={t`Help translate Mortar`}
-        description={t`Players translate Mortar on Weblate, and any language can be added there.`}
+        description={t`Players translate Mortar on ${{ app: WEBLATE }}, and any language can be added there.`}
       >
         <Button variant="outlined" onClick={() => openPage(TRANSLATE_PROJECT)}>
-          {t`Open Weblate`}
+          {t`Open ${{ name: WEBLATE }}`}
         </Button>
       </SettingRow>
     </SettingsSection>

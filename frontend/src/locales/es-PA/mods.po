@@ -1086,10 +1086,6 @@ msgstr ""
 msgid "Discard"
 msgstr ""
 
-#: src/mods/describe.ts
-msgid "{count, plural, one {# error} other {# errors}}"
-msgstr ""
-
 #: src/mods/problemText.ts
 msgid "Needs a newer loader"
 msgstr ""

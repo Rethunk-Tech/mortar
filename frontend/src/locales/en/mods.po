@@ -1086,10 +1086,6 @@ msgstr "Could not stop ignoring {source} updates"
 msgid "Discard"
 msgstr "Discard"
 
-#: src/mods/describe.ts
-msgid "{count, plural, one {# error} other {# errors}}"
-msgstr "{count, plural, one {# error} other {# errors}}"
-
 #: src/mods/problemText.ts
 msgid "Needs a newer loader"
 msgstr "Needs a newer loader"

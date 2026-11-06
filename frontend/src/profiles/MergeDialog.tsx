@@ -21,6 +21,7 @@ import {
   MergePreview as PreviewMerge,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useOrderedProfiles } from '../game/useSidebarProfiles.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { lockedHint } from '../mods/lockedHint.ts'
 import { applyWithUndo } from '../mods/menu.ts'
 import { lockedIn, useLaunchLocks } from '../mods/useLocked.ts'
@@ -168,9 +169,8 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
     const added = preview?.adds.length ?? 0
     const updated = newerWins ? updates : 0
     const from = source.name
-    const mods = (count: number) => plural({ count }, { one: '# mod', other: '# mods' })
-    const addedMods = mods(added)
-    const updatedMods = mods(updated)
+    const addedMods = modsLabel(added)
+    const updatedMods = modsLabel(updated)
     let title = t`Added ${{ added: addedMods }} and updated ${{ updated: updatedMods }} from ${{ profile: from }} to ${{ name: targetName }}`
     if (updated === 0) {
       title = t`Added ${{ added: addedMods }} from ${{ profile: from }} to ${{ name: targetName }}`

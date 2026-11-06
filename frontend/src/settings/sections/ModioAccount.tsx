@@ -7,6 +7,7 @@ import {
   SignIn,
   SignOut,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/source/modio/service.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { space } from '../../theme/density.ts'
 import { errorKind } from '../../toasts/errorKind.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
@@ -38,7 +39,7 @@ function ModioRow() {
       .catch((err: unknown) =>
         setError(
           errorKind(err) === 'invalid'
-            ? inlineError(err, t`mod.io rejected your access token`)
+            ? inlineError(err, t`${{ source: sourceLabel('modio') }} rejected your access token`)
             : inlineError(err),
         ),
       )
@@ -77,7 +78,7 @@ function ModioRow() {
       {name ? null : (
         <SettingRow
           label={t`Access token`}
-          description={t`Kept in your system keyring. Create a read-only personal access token at mod.io/me/access.`}
+          description={t`Kept in your system keyring. Create a read-only personal access token at ${{ page: `${sourceLabel('modio')}/me/access` }}.`}
         >
           <Box
             component="form"

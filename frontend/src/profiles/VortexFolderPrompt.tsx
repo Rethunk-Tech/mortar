@@ -4,6 +4,7 @@ import type { VortexInventory } from '../../bindings/github.com/Rethunk-Tech/mor
 import { ExternalVortexContents } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { VORTEX } from '../brand/productNames.ts'
 import { useGameName } from '../games/info.ts'
+import { listNames } from '../i18n/list.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { ManagerFolderPrompt } from './ManagerFolderPrompt.tsx'
 
@@ -11,7 +12,7 @@ function useVortexNote(game: string, contents: VortexInventory | null): string {
   const { t } = useLingui()
   const gameName = useGameName(game)
   const folder = contents?.folder ?? ''
-  const found = (contents?.games ?? []).map((g) => `${g.id} (${g.profiles})`).join(', ')
+  const found = listNames((contents?.games ?? []).map((g) => `${g.id} (${g.profiles})`))
   if (!folder) {
     return t`Use ${{ manager: VORTEX }} from another folder?`
   }
