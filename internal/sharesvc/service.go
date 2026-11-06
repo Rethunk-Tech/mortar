@@ -911,69 +911,256 @@ func (s *Service) Import(ctx context.Context, game, session, profileID string, e
 // replace makes the share's order the profile's: its mods keep the order they were shared in, wherever they land.
 // asIs installs the share's Thunderstore packages at exactly their versions and without dependencies it left out.
 func (s *Service) importWithBatch(ctx context.Context, game, session, profileID string, exclude []string, batchID string, replace, asIs bool) (res Result, err error) {
-	s.mu.Lock()
-	cur := s.current
-	switch {
-	case cur == nil || cur.game != game:
-		s.mu.Unlock()
-		return Result{}, ErrNoPreview
-	case cur.id != session:
-		s.mu.Unlock()
-		return Result{}, ErrStalePreview
+	cur, err := s.takePreview(game, session)
+	if err != nil {
+		return Result{}, err
 	}
-	// Taking the preview makes a second submit of it fail instead of creating a second profile.
-	s.current = nil
-	s.mu.Unlock()
+	run := &importRun{s: s, cur: cur, game: game, profileID: profileID, batchID: batchID, replace: replace, asIs: asIs, batchOpen: batchID != ""}
 	defer func() {
 		if err != nil {
-			s.mu.Lock()
-			if s.current == nil {
-				s.current = cur
-			}
-			s.mu.Unlock()
-		}
-	}()
-	// A failure undoes the import: the history batch it holds open is closed and a profile it made is deleted.
-	batchOpen, created := batchID != "", false
-	defer func() {
-		if err == nil {
-			return
-		}
-		if batchOpen {
-			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
-		}
-		if created {
-			err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
+			s.restorePreview(cur)
+			err = run.undo(err)
 		}
 	}()
 	applied := s.applyArchive(ctx, cur)
 	defer func() { res.Collection = applied }()
-	mods := cur.preview.Mods
-	stored := cur.stored
-	if profileID != cur.target {
-		r, err := s.resolverFor(game, profileID)
-		if err != nil {
-			return Result{}, err
-		}
-		mods, _ = r.resolve(ctx, cur.refs)
-		mods = append(append(externalLocalMods(cur.external), carriedRows(cur.carried)...), mods...)
-		stored = r.storedKeys
+	if err := run.prepare(ctx, exclude); err != nil {
+		return Result{}, err
 	}
-	var reqs []queue.Request
-	var wanted []wantedFile
-	var local []profile.ExternalMod
+	if err := run.install(ctx); err != nil {
+		return Result{}, err
+	}
+	if err := run.finish(); err != nil {
+		return Result{}, err
+	}
+	return run.res, nil
+}
+
+// restorePreview gives a failed import's preview back, unless another has been made meanwhile.
+func (s *Service) restorePreview(cur *session) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.current == nil {
+		s.current = cur
+	}
+}
+
+// importRun is the state of one import of the claimed preview.
+type importRun struct {
+	s         *Service
+	cur       *session
+	game      string
+	profileID string
+	batchID   string
+	replace   bool
+	asIs      bool
+	// batchOpen and created are what undo reverts.
+	batchOpen bool
+	created   bool
+	res       Result
+	plan      importPlan
+	configs   []share.Config
+	mods      []Mod
+}
+
+// undo reverts a failed import: the history batch it holds open is closed and a profile it made is deleted.
+func (r *importRun) undo(err error) error {
+	if r.batchOpen {
+		_ = r.s.d.Profiles.CloseHistoryBatch(r.game, r.profileID)
+	}
+	if r.created {
+		err = errors.Join(err, r.s.d.Profiles.Delete(r.game, r.profileID))
+	}
+	return err
+}
+
+// prepare plans the import and readies the profile it lands in.
+func (r *importRun) prepare(ctx context.Context, exclude []string) error {
+	s, cur, game := r.s, r.cur, r.game
+	mods, stored := cur.preview.Mods, cur.stored
+	if r.profileID != cur.target {
+		rs, err := s.resolverFor(game, r.profileID)
+		if err != nil {
+			return err
+		}
+		mods, _ = rs.resolve(ctx, cur.refs)
+		mods = append(append(externalLocalMods(cur.external), carriedRows(cur.carried)...), mods...)
+		stored = rs.storedKeys
+	}
+	r.mods = mods
+	r.plan = planImport(game, cur, mods, stored, exclude, r.asIs)
+	if slices.ContainsFunc(r.plan.reqs, func(q queue.Request) bool { return q.Repo == "" && q.Package == "" }) && !s.d.SignedIn() {
+		return ErrSignedOut
+	}
+	// Entries leave only once nothing that can refuse the import is left to run.
+	if r.replace {
+		if err := s.removeReplaced(game, r.profileID, cur); err != nil {
+			return err
+		}
+	}
+	if err := r.openProfile(); err != nil {
+		return err
+	}
+	fresh := r.created || r.replace
+	return errors.Join(
+		s.writeLoaderConfigs(game, r.profileID, cur.loaderConfigs, fresh),
+		s.writeChangedFiles(game, r.profileID, cur.changedFiles, fresh),
+		s.writePackFiles(game, r.profileID, cur.packFiles, fresh),
+	)
+}
+
+// openProfile makes the profile when the import names none, and otherwise finds it; configs of mods it already
+// holds are the user's and are left out.
+func (r *importRun) openProfile() error {
+	r.configs = r.cur.configs
+	if r.profileID == "" {
+		p, made, err := r.s.createImportProfile(r.game, r.cur, r.mods)
+		if made {
+			r.profileID, r.created = p.ID, true
+		}
+		r.res.Profile = p
+		return err
+	}
+	p, err := r.s.find(r.game, r.profileID)
+	if err != nil {
+		return err
+	}
+	if r.cur.collection != nil {
+		if p, err = r.s.d.Profiles.SetCollection(r.game, r.profileID, *r.cur.collection); err != nil {
+			return err
+		}
+	}
+	r.res.Profile = p
+	r.configs = slices.DeleteFunc(slices.Clone(r.configs), func(c share.Config) bool {
+		_, _, held := p.FindMod("", c.ID)
+		return held
+	})
+	return nil
+}
+
+// install adds the mods the profile can take at once and queues the downloads.
+func (r *importRun) install(ctx context.Context) error {
+	s, plan := r.s, r.plan
+	atOnce := len(plan.local) > 0 || len(plan.carried) > 0 || len(plan.fromStore) > 0
+	if atOnce || len(plan.reqs) > 0 {
+		if r.batchID == "" {
+			r.batchID = historyBatchID()
+		}
+		if err := s.d.Profiles.OpenHistoryBatch(r.game, r.profileID, r.batchID); err != nil {
+			return err
+		}
+		r.batchOpen = true
+	}
+	change, err := s.addLocalMods(ctx, r.game, r.profileID, plan)
+	if err != nil {
+		return err
+	}
+	if atOnce {
+		if p, err := s.find(r.game, r.profileID); err == nil {
+			r.res.Profile = p
+			r.res.Profile.LastChange = change
+		}
+		// Copied folders and store items are on the profile now, so their configs land at once; the rest wait for
+		// their downloads.
+		if r.configs, err = s.applyLandedConfigs(r.game, r.profileID, r.configs); err != nil {
+			return err
+		}
+	}
+	for i := range plan.reqs {
+		plan.reqs[i].Profile, plan.reqs[i].BatchID = r.profileID, r.batchID
+	}
+	r.res.Items = []string{}
+	if len(plan.reqs) > 0 {
+		items, err := s.d.Queue.Add(ctx, plan.reqs)
+		if err != nil {
+			return err
+		}
+		for _, it := range items {
+			r.res.Items = append(r.res.Items, it.ID)
+		}
+	} else if r.batchID != "" {
+		_ = s.d.Profiles.CloseHistoryBatch(r.game, r.profileID)
+	}
+	r.res.Queued = len(plan.reqs)
+	r.res.BatchID = r.batchID
+	return nil
+}
+
+// finish applies the share's notes, groups, choices and order, and leaves what waits on downloads pending.
+func (r *importRun) finish() error {
+	s, cur, game, profileID := r.s, r.cur, r.game, r.profileID
+	refs := cur.refs
+	if r.asIs {
+		refs = pinnedAtTheirVersions(refs)
+	}
+	if err := s.applySharedEntryNotes(game, profileID, refs); err != nil {
+		return err
+	}
+	if err := s.applySharedGroups(game, profileID, cur.groups); err != nil {
+		return err
+	}
+	if err := s.applySharedChoices(game, profileID, cur.choices); err != nil {
+		return err
+	}
+	var placed []string
+	if r.replace {
+		var err error
+		if placed, err = s.followShareOrder(game, profileID, cur.refs); err != nil {
+			return err
+		}
+	}
+	if len(r.plan.reqs) > 0 {
+		// savePending marshals every pending import, which queueChanged edits under applyMu.
+		s.applyMu.Lock()
+		s.mu.Lock()
+		s.pending = append(s.pending, &pending{
+			Game: game, Profile: profileID, BatchID: r.batchID, Wanted: r.plan.wanted, Configs: r.configs,
+			Refs: slices.Clone(refs), Groups: slices.Clone(cur.groups), Choices: cur.choices, Follow: r.replace || r.created, Placed: placed,
+		})
+		s.mu.Unlock()
+		s.savePending()
+		s.applyMu.Unlock()
+	}
+	return nil
+}
+
+// takePreview claims the current preview; taking it makes a second submit of it fail instead of creating a second profile.
+func (s *Service) takePreview(game, session string) (*session, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	cur := s.current
+	switch {
+	case cur == nil || cur.game != game:
+		return nil, ErrNoPreview
+	case cur.id != session:
+		return nil, ErrStalePreview
+	}
+	s.current = nil
+	return cur, nil
+}
+
+// importPlan is what an import does with the mods of a preview.
+type importPlan struct {
+	reqs   []queue.Request
+	wanted []wantedFile
+	local  []profile.ExternalMod
 	// fromStore are files already in the store, whatever their source: a paired computer's copies, placed from there
 	// instead of downloaded again.
-	var fromStore []storedEntry
+	fromStore []storedEntry
+	carried   []pack.LocalMod
+}
+
+func planImport(game string, cur *session, mods []Mod, stored map[string]bool, exclude []string, asIs bool) importPlan {
+	var plan importPlan
 	external := make(map[string]migrate.ModPreview, len(cur.external))
 	for i, im := range cur.external {
 		external[externalKey(i)] = im
 	}
-	var carried []pack.LocalMod
 	carriedByKey := make(map[string]pack.LocalMod, len(cur.carried))
 	for i, lm := range cur.carried {
 		carriedByKey[carriedKey(i)] = lm
 	}
+	inferReason := !share.RecordsReasons(cur.refs)
 	for _, m := range mods {
 		if slices.Contains(exclude, m.Key) || m.State == StateUnavailable ||
 			(m.State == StateInstalled && !stored[m.Key]) {
@@ -981,224 +1168,134 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		}
 		if m.Site == SiteLocal {
 			if im, ok := external[m.Key]; ok {
-				local = append(local, profile.ExternalMod{SourcePath: im.SourcePath, ID: im.ID, Enabled: im.Enabled})
+				plan.local = append(plan.local, profile.ExternalMod{SourcePath: im.SourcePath, ID: im.ID, Enabled: im.Enabled})
 			} else if lm, ok := carriedByKey[m.Key]; ok {
-				carried = append(carried, lm)
+				plan.carried = append(plan.carried, lm)
 			} else if stored[m.Key] {
-				fromStore = append(fromStore, storedEntry{key: m.Key, source: profile.Source{Kind: profile.KindLocal, Name: m.Name}.WithDisabled(m.Disabled)})
+				plan.fromStore = append(plan.fromStore, storedEntry{key: m.Key, source: profile.Source{Kind: profile.KindLocal, Name: m.Name}.WithDisabled(m.Disabled)})
 			}
 			continue
 		}
 		if e, ok := m.storedEntry(); ok && stored[m.Key] {
 			e.source = e.source.WithImplicit(m.Implicit || m.State == StateDependency)
-			fromStore = append(fromStore, e)
+			plan.fromStore = append(plan.fromStore, e)
 			continue
 		}
 		req := requestFor(game, "", m)
-		req.InferReason = !share.RecordsReasons(cur.refs)
+		req.InferReason = inferReason
 		req.AsIs = asIs
-		reqs = append(reqs, req)
-		wanted = append(wanted, wantedOf(m))
+		plan.reqs = append(plan.reqs, req)
+		plan.wanted = append(plan.wanted, wantedOf(m))
 	}
-	if slices.ContainsFunc(reqs, func(r queue.Request) bool { return r.Repo == "" && r.Package == "" }) && !s.d.SignedIn() {
-		return Result{}, ErrSignedOut
+	return plan
+}
+
+// removeReplaced drops the profile's entries that the share does not list.
+func (s *Service) removeReplaced(game, profileID string, cur *session) error {
+	p, err := s.find(game, profileID)
+	if err != nil {
+		return err
 	}
-	// Entries leave only once nothing that can refuse the import is left to run.
-	if replace {
-		p, err := s.find(game, profileID)
+	if remove := PlanReplace(p, cur.preview.Mods).RemoveKeys; len(remove) > 0 {
+		if _, err := s.d.Profiles.RemoveEntries(game, profileID, remove); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// createImportProfile makes the profile a share is imported into and stamps it with the share's facts. made reports
+// that the profile exists even when a later step failed, so the caller can delete it.
+func (s *Service) createImportProfile(game string, cur *session, mods []Mod) (p profile.Profile, made bool, err error) {
+	existing, err := s.d.Profiles.List(game)
+	if err != nil {
+		return p, false, err
+	}
+	p, err = s.d.Profiles.Create(game, profile.UniqueName(profile.Names(existing), cur.preview.Name))
+	if err != nil {
+		return p, false, err
+	}
+	notes := joinNotes(cur.notes, unavailableNote(mods))
+	if utf8.RuneCountInString(notes) > profile.MaxNotes {
+		notes = string([]rune(notes)[:profile.MaxNotes])
+	}
+	// Each step returns the profile as stamped; a skipped one keeps the profile before it.
+	steps := []struct {
+		on  bool
+		run func() (profile.Profile, error)
+	}{
+		{cur.origin != "", func() (profile.Profile, error) { return s.d.Profiles.SetOrigin(game, p.ID, cur.origin, "") }},
+		{cur.importedFrom != "", func() (profile.Profile, error) { return s.d.Profiles.SetImportedFrom(game, p.ID, cur.importedFrom) }},
+		{cur.collection != nil, func() (profile.Profile, error) { return s.d.Profiles.SetCollection(game, p.ID, *cur.collection) }},
+		{notes != "", func() (profile.Profile, error) { return s.d.Profiles.SetNotes(game, p.ID, notes) }},
+		{cur.favourite, func() (profile.Profile, error) { return s.d.Profiles.SetFavourite(game, p.ID, true) }},
+	}
+	for _, st := range steps {
+		if !st.on {
+			continue
+		}
+		stamped, err := st.run()
 		if err != nil {
-			return Result{}, err
+			return p, true, err
 		}
-		if remove := PlanReplace(p, cur.preview.Mods).RemoveKeys; len(remove) > 0 {
-			if _, err := s.d.Profiles.RemoveEntries(game, profileID, remove); err != nil {
-				return Result{}, err
-			}
-		}
+		p = stamped
 	}
-	configs := cur.configs
-	if profileID == "" {
-		existing, err := s.d.Profiles.List(game)
-		if err != nil {
-			return Result{}, err
-		}
-		p, err := s.d.Profiles.Create(game, profile.UniqueName(profile.Names(existing), cur.preview.Name))
-		if err != nil {
-			return Result{}, err
-		}
-		profileID, created = p.ID, true
-		if cur.origin != "" {
-			stamped, err := s.d.Profiles.SetOrigin(game, p.ID, cur.origin, "")
-			if err != nil {
-				return Result{}, err
-			}
-			p = stamped
-		}
-		if cur.importedFrom != "" {
-			stamped, err := s.d.Profiles.SetImportedFrom(game, p.ID, cur.importedFrom)
-			if err != nil {
-				return Result{}, err
-			}
-			p = stamped
-		}
-		if cur.collection != nil {
-			stamped, err := s.d.Profiles.SetCollection(game, p.ID, *cur.collection)
-			if err != nil {
-				return Result{}, err
-			}
-			p = stamped
-		}
-		notes := joinNotes(cur.notes, unavailableNote(mods))
-		if utf8.RuneCountInString(notes) > profile.MaxNotes {
-			notes = string([]rune(notes)[:profile.MaxNotes])
-		}
-		if notes != "" {
-			withNotes, err := s.d.Profiles.SetNotes(game, p.ID, notes)
-			if err != nil {
-				return Result{}, err
-			}
-			p = withNotes
-		}
-		if cur.favourite {
-			starred, err := s.d.Profiles.SetFavourite(game, p.ID, true)
-			if err != nil {
-				return Result{}, err
-			}
-			p = starred
-		}
-		res.Profile = p
-		profileID = p.ID
-	} else {
-		p, err := s.find(game, profileID)
-		if err != nil {
-			return Result{}, err
-		}
-		if cur.collection != nil {
-			stamped, err := s.d.Profiles.SetCollection(game, profileID, *cur.collection)
-			if err != nil {
-				return Result{}, err
-			}
-			p = stamped
-		}
-		res.Profile = p
-		configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool {
-			_, _, held := p.FindMod("", c.ID)
-			return held
-		})
-	}
-	if err := errors.Join(
-		s.writeLoaderConfigs(game, profileID, cur.loaderConfigs, created || replace),
-		s.writeChangedFiles(game, profileID, cur.changedFiles, created || replace),
-		s.writePackFiles(game, profileID, cur.packFiles, created || replace),
-	); err != nil {
-		return Result{}, err
-	}
-	if len(local) > 0 || len(carried) > 0 || len(reqs) > 0 || len(fromStore) > 0 {
-		if batchID == "" {
-			batchID = historyBatchID()
-		}
-		if err := s.d.Profiles.OpenHistoryBatch(game, profileID, batchID); err != nil {
-			return Result{}, err
-		}
-		batchOpen = true
-	}
-	var change string
-	for _, e := range fromStore {
+	return p, true, nil
+}
+
+// addLocalMods puts the plan's store, external and carried mods on the profile and returns the last change's id.
+func (s *Service) addLocalMods(ctx context.Context, game, profileID string, plan importPlan) (change string, err error) {
+	for _, e := range plan.fromStore {
 		added, err := s.d.Profiles.AddEntry(game, profileID, e.key, e.source)
 		if err != nil {
-			return Result{}, err
+			return "", err
 		}
 		change = added.LastChange
 	}
-	if len(local) > 0 {
-		imported, err := s.d.Profiles.ImportExternalMods(ctx, game, profileID, local)
+	if len(plan.local) > 0 {
+		imported, err := s.d.Profiles.ImportExternalMods(ctx, game, profileID, plan.local)
 		if err != nil {
-			return Result{}, err
+			return "", err
 		}
 		if len(imported) > 0 {
 			change = imported[len(imported)-1]
 		}
 	}
-	for _, lm := range carried {
+	for _, lm := range plan.carried {
 		added, err := s.installCarried(ctx, game, profileID, lm)
 		if err != nil {
-			return Result{}, err
+			return "", err
 		}
 		change = cmp.Or(added, change)
 	}
-	if len(local) > 0 || len(carried) > 0 || len(fromStore) > 0 {
-		if p, err := s.find(game, profileID); err == nil {
-			res.Profile = p
-			res.Profile.LastChange = change
-		}
-		// Copied folders and store items are on the profile now, so their configs land at once; the rest wait for
-		// their downloads.
-		if len(configs) > 0 {
-			var written []mod.ID
-			err := s.d.Profiles.InMods(game, profileID, func(prof profile.Profile, modsDir string) error {
-				var err error
-				written, err = share.Apply(modsDir, prof.Entries, configs)
-				return err
-			})
-			if err != nil {
-				return Result{}, err
-			}
-			configs = slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool {
-				return slices.ContainsFunc(written, func(id mod.ID) bool { return mod.Equal(id, c.ID) })
-			})
-		}
+	return change, nil
+}
+
+// applyLandedConfigs writes the configs whose mods are on the profile and returns the rest.
+func (s *Service) applyLandedConfigs(game, profileID string, configs []share.Config) ([]share.Config, error) {
+	if len(configs) == 0 {
+		return configs, nil
 	}
-	for i := range reqs {
-		reqs[i].Profile, reqs[i].BatchID = profileID, batchID
+	var written []mod.ID
+	err := s.d.Profiles.InMods(game, profileID, func(prof profile.Profile, modsDir string) error {
+		var err error
+		written, err = share.Apply(modsDir, prof.Entries, configs)
+		return err
+	})
+	if err != nil {
+		return configs, err
 	}
-	res.Items = []string{}
-	if len(reqs) > 0 {
-		items, err := s.d.Queue.Add(ctx, reqs)
-		if err != nil {
-			return Result{}, err
-		}
-		for _, it := range items {
-			res.Items = append(res.Items, it.ID)
-		}
-	} else if batchID != "" {
-		_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
+	return slices.DeleteFunc(slices.Clone(configs), func(c share.Config) bool {
+		return slices.ContainsFunc(written, func(id mod.ID) bool { return mod.Equal(id, c.ID) })
+	}), nil
+}
+
+// followShareOrder puts the profile in the share's order and returns the keys it placed.
+func (s *Service) followShareOrder(game, profileID string, refs []share.Ref) ([]string, error) {
+	if err := s.d.Profiles.FollowOrder(game, profileID, refRank(refs)); err != nil {
+		return nil, err
 	}
-	res.Queued = len(reqs)
-	res.BatchID = batchID
-	refs := cur.refs
-	if asIs {
-		refs = pinnedAtTheirVersions(refs)
-	}
-	if err := s.applySharedEntryNotes(game, profileID, refs); err != nil {
-		return Result{}, err
-	}
-	if err := s.applySharedGroups(game, profileID, cur.groups); err != nil {
-		return Result{}, err
-	}
-	if err := s.applySharedChoices(game, profileID, cur.choices); err != nil {
-		return Result{}, err
-	}
-	var placed []string
-	if replace {
-		if err := s.d.Profiles.FollowOrder(game, profileID, refRank(cur.refs)); err != nil {
-			return Result{}, err
-		}
-		if placed, err = s.d.Profiles.PlaceArrivals(game, profileID, refRank(cur.refs), nil); err != nil {
-			return Result{}, err
-		}
-	}
-	if len(reqs) > 0 {
-		// savePending marshals every pending import, which queueChanged edits under applyMu.
-		s.applyMu.Lock()
-		s.mu.Lock()
-		s.pending = append(s.pending, &pending{
-			Game: game, Profile: profileID, BatchID: batchID, Wanted: wanted, Configs: configs,
-			Refs: slices.Clone(refs), Groups: slices.Clone(cur.groups), Choices: cur.choices, Follow: replace || created, Placed: placed,
-		})
-		s.mu.Unlock()
-		s.savePending()
-		s.applyMu.Unlock()
-	}
-	return res, nil
+	return s.d.Profiles.PlaceArrivals(game, profileID, refRank(refs), nil)
 }
 
 // Replace makes profileID match the preview: missing mods are queued as Import does, entries not in the share
@@ -1321,81 +1418,101 @@ func (s *Service) queueChanged(st queue.State) {
 	s.mu.Unlock()
 	changed := false
 	for _, p := range todo {
-		var done []string
-		settled := 0
-		for _, it := range st.Items {
-			if it.Game != p.Game || it.Profile != p.Profile {
-				continue
-			}
-			if p.BatchID != "" && it.BatchID != p.BatchID {
-				continue
-			}
-			if slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return w.item(it) }) &&
-				(it.State == queue.StateDone || it.State == queue.StateFailed || it.State == queue.StateSkipped || it.State == queue.StateCancelled) {
-				settled++
-			}
-			if it.State == queue.StateDone && slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return w.item(it) }) {
-				done = append(done, it.ID)
-			}
-		}
-		// The queue drops old finished items, so apply also when every wanted file is already on the profile.
-		slices.Sort(done)
-		seen := strings.Join(done, ",")
-		installed, gone := s.wantedState(p)
-		if gone {
-			s.mu.Lock()
-			s.pending = slices.DeleteFunc(s.pending, func(x *pending) bool { return x == p })
-			s.mu.Unlock()
-			changed = true
-			continue
-		}
-		if installed {
-			seen = "on-profile"
-		}
-		if len(p.Configs) > 0 && seen != p.seen && (len(done) > 0 || settled >= len(p.Wanted) || seen == "on-profile") {
-			p.seen = seen
-			before := len(p.Configs)
-			s.apply(p)
-			changed = changed || len(p.Configs) != before
-		}
-		if p.Follow && len(p.Refs) > 0 && seen != p.ordered && (len(done) > 0 || settled >= len(p.Wanted) || seen == "on-profile") {
-			if placed, err := s.d.Profiles.PlaceArrivals(p.Game, p.Profile, refRank(p.Refs), p.Placed); err != nil {
-				log.Printf("share: order %s/%s as shared: %v", p.Game, p.Profile, err)
-			} else {
-				changed = changed || len(placed) != len(p.Placed)
-				p.Placed, p.ordered = placed, seen
-			}
-		}
-		if len(p.Refs) > 0 && (seen == "on-profile" || settled >= len(p.Wanted)) {
-			if err := s.applySharedEntryNotes(p.Game, p.Profile, p.Refs); err == nil {
-				p.Refs = nil
-				changed = true
-			}
-		}
-		if len(p.Groups) > 0 && (seen == "on-profile" || settled >= len(p.Wanted)) {
-			if err := s.applySharedGroups(p.Game, p.Profile, p.Groups); err == nil {
-				p.Groups = nil
-				changed = true
-			}
-		}
-		if !p.Choices.Empty() && (seen == "on-profile" || settled >= len(p.Wanted)) {
-			if err := s.applySharedChoices(p.Game, p.Profile, p.Choices); err == nil {
-				p.Choices = share.ProblemChoices{}
-				changed = true
-			}
-		}
-		// Configs stay until they land; queue eviction must not drop them.
-		if len(p.Configs) == 0 && len(p.Refs) == 0 && len(p.Groups) == 0 && p.Choices.Empty() {
-			s.mu.Lock()
-			s.pending = slices.DeleteFunc(s.pending, func(x *pending) bool { return x == p })
-			s.mu.Unlock()
-			changed = true
-		}
+		advanced := s.advancePending(p, st)
+		changed = changed || advanced
 	}
 	if changed {
 		s.savePending()
 	}
 	s.armPendingRetry(st)
+}
+
+// dropPending removes a pending import.
+func (s *Service) dropPending(p *pending) {
+	s.mu.Lock()
+	s.pending = slices.DeleteFunc(s.pending, func(x *pending) bool { return x == p })
+	s.mu.Unlock()
+}
+
+// pendingProgress counts the queue items of p's wanted files that finished (settled) and, of those, the ids that
+// succeeded (done).
+func pendingProgress(st queue.State, p *pending) (done []string, settled int) {
+	for _, it := range st.Items {
+		if it.Game != p.Game || it.Profile != p.Profile {
+			continue
+		}
+		if p.BatchID != "" && it.BatchID != p.BatchID {
+			continue
+		}
+		if !slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return w.item(it) }) {
+			continue
+		}
+		if it.State == queue.StateDone || it.State == queue.StateFailed || it.State == queue.StateSkipped || it.State == queue.StateCancelled {
+			settled++
+		}
+		if it.State == queue.StateDone {
+			done = append(done, it.ID)
+		}
+	}
+	return done, settled
+}
+
+// advancePending does what the queue state lets one pending import do and reports whether it changed.
+func (s *Service) advancePending(p *pending, st queue.State) (changed bool) {
+	done, settled := pendingProgress(st, p)
+	// The queue drops old finished items, so apply also when every wanted file is already on the profile.
+	slices.Sort(done)
+	seen := strings.Join(done, ",")
+	installed, gone := s.wantedState(p)
+	if gone {
+		s.dropPending(p)
+		return true
+	}
+	if installed {
+		seen = "on-profile"
+	}
+	landed := seen == "on-profile" || settled >= len(p.Wanted)
+	ready := len(done) > 0 || landed
+	if len(p.Configs) > 0 && seen != p.seen && ready {
+		p.seen = seen
+		before := len(p.Configs)
+		s.apply(p)
+		changed = len(p.Configs) != before
+	}
+	if p.Follow && len(p.Refs) > 0 && seen != p.ordered && ready {
+		if placed, err := s.d.Profiles.PlaceArrivals(p.Game, p.Profile, refRank(p.Refs), p.Placed); err != nil {
+			log.Printf("share: order %s/%s as shared: %v", p.Game, p.Profile, err)
+		} else {
+			changed = changed || len(placed) != len(p.Placed)
+			p.Placed, p.ordered = placed, seen
+		}
+	}
+	if landed && s.applySharedLanded(p) {
+		changed = true
+	}
+	// Configs stay until they land; queue eviction must not drop them.
+	if len(p.Configs) == 0 && len(p.Refs) == 0 && len(p.Groups) == 0 && p.Choices.Empty() {
+		s.dropPending(p)
+		changed = true
+	}
+	return changed
+}
+
+// applySharedLanded applies the notes, groups and choices a pending import still holds and reports whether any applied.
+func (s *Service) applySharedLanded(p *pending) (changed bool) {
+	if len(p.Refs) > 0 && s.applySharedEntryNotes(p.Game, p.Profile, p.Refs) == nil {
+		p.Refs = nil
+		changed = true
+	}
+	if len(p.Groups) > 0 && s.applySharedGroups(p.Game, p.Profile, p.Groups) == nil {
+		p.Groups = nil
+		changed = true
+	}
+	if !p.Choices.Empty() && s.applySharedChoices(p.Game, p.Profile, p.Choices) == nil {
+		p.Choices = share.ProblemChoices{}
+		changed = true
+	}
+	return changed
 }
 
 func (s *Service) armPendingRetry(st queue.State) {
