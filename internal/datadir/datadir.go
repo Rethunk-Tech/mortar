@@ -16,6 +16,9 @@ import (
 // PointerName is the file in the default data folder that names a relocated data folder.
 const PointerName = "data-location"
 
+// BuildLogs is the folder under the data folder that keeps each Develop project's last build output.
+const BuildLogs = "builds"
+
 // Dir returns the user data folder, creating it (0700) if needed: <exe dir>/data in portable mode, else the folder
 // data-location names, else the OS default.
 func Dir() (string, error) {

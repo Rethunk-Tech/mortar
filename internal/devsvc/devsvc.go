@@ -59,6 +59,8 @@ type Service struct {
 	HTTP     *http.Client
 	// CacheDir keeps each template version Mortar downloaded and the template hive `dotnet new` runs in.
 	CacheDir string
+	// BuildLogDir keeps each project's last build output for the diagnostics bundle; empty keeps none.
+	BuildLogDir string
 	// Run runs a tool (dotnet, git, gh) in dir and returns its output; nil runs it.
 	Run func(ctx context.Context, dir, name string, args ...string) ([]byte, error)
 	// Version is Mortar's version, which Nexus Mods and CurseForge are told in uploads.

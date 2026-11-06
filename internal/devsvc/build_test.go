@@ -2,9 +2,11 @@ package devsvc
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -64,5 +66,27 @@ func TestBuildRemovesBundlesAssetsNoLongerHolds(t *testing.T) {
 	}
 	if want := []string{"ShopDrop.dll", "kept.bundle"}; !slices.Equal(left, want) {
 		t.Errorf("output holds %v, want %v", left, want)
+	}
+}
+
+func TestBuildKeepsItsOutputForTheDiagnosticsBundle(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	svc.BuildLogDir = t.TempDir()
+	dir := fixtureProject(t, svc)
+	svc.Run = func(context.Context, string, string, ...string) ([]byte, error) {
+		return []byte("Plugin.cs(3,1): error CS1002: ; expected [ShopDrop.csproj]\n"), errors.New("exit status 1")
+	}
+	if r, err := svc.Build(t.Context(), "lethal-company", dir); err != nil || r.OK {
+		t.Fatalf("build = %+v, %v", r, err)
+	}
+	logs, _ := filepath.Glob(filepath.Join(svc.BuildLogDir, "*.log"))
+	if len(logs) != 1 {
+		t.Fatalf("kept logs %v", logs)
+	}
+	body, _ := os.ReadFile(logs[0])
+	for _, want := range []string{"dotnet build", "result: failed: exit status 1", "error CS1002"} {
+		if !strings.Contains(string(body), want) {
+			t.Errorf("kept log lacks %q:\n%s", want, body)
+		}
 	}
 }

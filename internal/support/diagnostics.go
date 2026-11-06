@@ -178,6 +178,15 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 		files[StartupProfileDir+"/trace.out"] = b
 		included = append(included, StartupProfileDir+"/trace.out: the last recorded startup's execution trace (what Mortar's code waited on, and for how long)")
 	}
+	builds, _ := filepath.Glob(filepath.Join(dir, datadir.BuildLogs, "*.log"))
+	for _, path := range builds {
+		if b := readFile(path); len(b) > 0 {
+			files[datadir.BuildLogs+"/"+filepath.Base(path)] = []byte(hideHomeIn(string(b), s.home))
+		}
+	}
+	if len(builds) > 0 {
+		included = append(included, datadir.BuildLogs+"/: each Develop project's last build (the dotnet command, result and up to "+fmt.Sprint(diagnosticsLogLines)+" lines of its output), home folder written as ~")
+	}
 	if profileID == "" {
 		profileID = lastRunProfile(runs, gameID)
 	}

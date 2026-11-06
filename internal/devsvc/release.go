@@ -57,7 +57,9 @@ func (s *Service) Pack(ctx context.Context, gameID, dir string) (PackResult, err
 	}
 	defer s.lockedBuild(ctx, gameID, p)()
 	started := time.Now()
-	out, err := s.run(ctx, p.Dir, "dotnet", buildArgs(p, "Release")...)
+	args := buildArgs(p, "Release")
+	out, err := s.run(ctx, p.Dir, "dotnet", args...)
+	s.keepBuildLog(p, args, out, err, time.Since(started))
 	r := PackResult{OK: err == nil, Problems: ParseProblems(string(out)), Log: tail(string(out)), Issues: []string{}, Warnings: []string{}}
 	if !r.OK {
 		return r, nil

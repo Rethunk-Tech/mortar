@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 )
 
@@ -98,6 +99,13 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	if err := os.MkdirAll(filepath.Join(data, datadir.BuildLogs), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	buildLog := "dotnet build\nfolder: " + home + "/Mods/Foo\nerror CS1002\n"
+	if err := os.WriteFile(filepath.Join(data, datadir.BuildLogs, "Foo-0a1b2c3d.log"), []byte(buildLog), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	runsDir := filepath.Join(profDir, "runs")
 	if err := os.MkdirAll(runsDir, 0o700); err != nil {
 		t.Fatal(err)
@@ -161,7 +169,7 @@ func TestDiagnosticsRedactsSecrets(t *testing.T) {
 	for _, body := range files {
 		blob += body
 	}
-	for _, name := range []string{"mortar.log", "mortar.prev.log", "crash.log", "doctor.txt", "runs.json", "manifest.txt"} {
+	for _, name := range []string{"mortar.log", "mortar.prev.log", "crash.log", "doctor.txt", "runs.json", "manifest.txt", "builds/Foo-0a1b2c3d.log"} {
 		if _, ok := files[name]; !ok {
 			t.Errorf("zip lacks %s", name)
 		}

@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
@@ -115,7 +116,10 @@ func (s *Service) Build(ctx context.Context, gameID, dir string) (BuildResult, e
 		return BuildResult{OK: true}, nil
 	}
 	defer s.lockedBuild(ctx, gameID, p)()
-	out, err := s.run(ctx, p.Dir, "dotnet", buildArgs(p, "Debug")...)
+	args := buildArgs(p, "Debug")
+	started := time.Now()
+	out, err := s.run(ctx, p.Dir, "dotnet", args...)
+	s.keepBuildLog(p, args, out, err, time.Since(started))
 	if _, missing := errors.AsType[*exec.Error](err); missing {
 		return BuildResult{}, usererr.Wrap(usererr.NotFound, errors.New("install the .NET SDK to build mods"))
 	}

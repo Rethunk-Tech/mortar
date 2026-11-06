@@ -44,6 +44,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/configsvc"
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/datasvc"
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
 	"github.com/Rethunk-Tech/mortar/internal/devsvc"
@@ -778,7 +779,7 @@ func run() error {
 	savesSvc.Enqueue = queueSvc.Add
 	profileSvc.Version = version
 	savedGroupsSvc := savedgroups.NewService(profiles, dataDir)
-	devSvc := &devsvc.Service{Version: version, Home: home, Settings: svc, Profiles: profileSvc, CacheDir: filepath.Join(dataDir, "cache")}
+	devSvc := &devsvc.Service{Version: version, Home: home, Settings: svc, Profiles: profileSvc, CacheDir: filepath.Join(dataDir, "cache"), BuildLogDir: filepath.Join(dataDir, datadir.BuildLogs)}
 	devSvc.MigrateRecords()
 	problemsSvc := problems.NewService(home, store, profiles, modMeta)
 	problemsSvc.Runs = launches
