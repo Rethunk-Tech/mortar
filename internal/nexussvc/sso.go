@@ -23,13 +23,17 @@ const SSOEvent = "nexus:sso"
 const (
 	SSODone   = "done"
 	SSOFailed = "failed"
+	// SSOOpenInPage hands the sign-in address to the page when a server build may not start the host's browser.
+	SSOOpenInPage = "open-in-page"
 )
 
-// SSOState is one stage of a sign-in; Error is set with SSOFailed, and Cancelled when the user ended it.
+// SSOState is one stage of a sign-in; Error is set with SSOFailed, Cancelled when the user ended it, and URL with
+// SSOOpenInPage.
 type SSOState struct {
 	State     string `json:"state"`
 	Error     string `json:"error,omitempty"`
 	Cancelled bool   `json:"cancelled,omitempty"`
+	URL       string `json:"url,omitempty"`
 }
 
 type ssoRun struct {
@@ -91,7 +95,12 @@ func (s *Service) openBrowser(url string) error {
 	if s.App == nil {
 		return errors.New("no browser to open")
 	}
-	return s.App.OpenURL(web)
+	err = s.App.OpenURL(web)
+	if errors.Is(err, opener.ErrOpenInPage) {
+		s.emitSSO(SSOState{State: SSOOpenInPage, URL: web})
+		return nil
+	}
+	return err
 }
 
 func (s *Service) emitSSO(st SSOState) {

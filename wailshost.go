@@ -5,6 +5,7 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
+	"github.com/Rethunk-Tech/mortar/internal/opener"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 
@@ -42,7 +43,13 @@ func (h wailsHost) SaveFile(d winhost.Dialog) (string, error) {
 
 func (h wailsHost) ClipboardText() (string, bool) { return h.app.Clipboard.Text() }
 
-func (h wailsHost) OpenURL(url string) error { return h.app.Browser.OpenURL(url) }
+// OpenURL refuses in a server build like the opener service does, so nothing reaches the host's own browser.
+func (h wailsHost) OpenURL(url string) error {
+	if serverBuild {
+		return opener.ErrOpenInPage
+	}
+	return h.app.Browser.OpenURL(url)
+}
 
 // wailsNotifier adapts the Wails notifications service to desktopnotify.Notifier.
 type wailsNotifier struct {

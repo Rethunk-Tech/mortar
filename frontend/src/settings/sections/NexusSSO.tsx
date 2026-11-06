@@ -19,7 +19,11 @@ export function NexusSSO() {
   useEffect(
     () =>
       Events.On('nexus:sso', (event) => {
-        const { state, error, cancelled } = event.data
+        const { state, error, cancelled, url } = event.data
+        if (state === 'open-in-page') {
+          window.open(url, '_blank', 'noopener,noreferrer')
+          return
+        }
         if (state === 'connected' || state === 'waiting-browser') {
           setStage(state)
           return
