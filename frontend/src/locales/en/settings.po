@@ -2997,6 +2997,10 @@ msgstr "{count, plural, one {# has damaged files} other {# have damaged files}}"
 msgid "{name} (recommended)"
 msgstr "{name} (recommended)"
 
+#: src/settings/sections/DataUsage.tsx
+msgid "Measured {when}"
+msgstr "Measured {when}"
+
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Show labels"
 msgstr "Show labels"

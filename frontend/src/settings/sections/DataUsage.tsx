@@ -6,7 +6,7 @@ import type { Usage as DiskUse } from '../../../bindings/github.com/Rethunk-Tech
 import { DataLocation } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import { OpenDataFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
-import { When } from '../../i18n/When.tsx'
+import { formatWhen } from '../../i18n/formatWhen.ts'
 import { cmpText } from '../../mods/cmpText.ts'
 import { Tooltip } from '../../shell/Tooltip.tsx'
 import { space } from '../../theme/density.ts'
@@ -162,7 +162,7 @@ function StorageBar({
         ) : null}
         {usage && !measuring && measuredAt !== null ? (
           <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
-            {t`Measured`} <When value={measuredAt} withTime={true} />
+            {t`Measured ${{ when: formatWhen(measuredAt, { withTime: true }) }}`}
           </Box>
         ) : null}
         {usage?.sharedSavedKnown && usage.sharedSaved > 0 ? (

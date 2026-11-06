@@ -2997,6 +2997,10 @@ msgstr ""
 msgid "{name} (recommended)"
 msgstr ""
 
+#: src/settings/sections/DataUsage.tsx
+msgid "Measured {when}"
+msgstr ""
+
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Show labels"
 msgstr ""

@@ -1751,6 +1751,10 @@ msgstr "Plugin id"
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
+#: src/browse/BrowseDetails.tsx
+msgid "Reading files…"
+msgstr "Reading files…"
+
 #: src/saves/SavesTab.tsx
 msgid "{count, plural, one {Filter # save} other {Filter # saves}}"
 msgstr "{count, plural, one {Filter # save} other {Filter # saves}}"

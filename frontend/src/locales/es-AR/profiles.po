@@ -152,6 +152,10 @@ msgstr ""
 msgid "build {commit}"
 msgstr ""
 
+#: src/profiles/GameModsDialog.tsx
+msgid "Rechecking the folder…"
+msgstr ""
+
 #: src/profiles/ProfilesPage.tsx
 msgid "Find a mod in all profiles"
 msgstr ""
