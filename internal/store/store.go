@@ -92,6 +92,8 @@ type Store struct {
 	idxMu   sync.Mutex
 	idx     index
 	idxFile os.FileInfo
+	// idxDecodes counts index decodes, for tests.
+	idxDecodes atomic.Int64
 	// idxReset is set when a corrupt index was replaced by an empty one: until Collect has run, no blob is known to be unused.
 	idxReset atomic.Bool
 	// UnusedFor is unused-item lifetime; 0 uses the built-in 30 days, negative means keep forever.
@@ -699,6 +701,7 @@ func (s *Store) viewIndex() (index, error) {
 	}
 	s.idxMu.Unlock()
 	idx := index{}
+	s.idxDecodes.Add(1)
 	found, err := datadir.ReadJSON(s.indexPath(), &idx)
 	if err != nil {
 		if !found {
@@ -724,9 +727,16 @@ func (s *Store) saveIndex(idx index) error {
 	if err := os.MkdirAll(s.root, 0o700); err != nil {
 		return err
 	}
-	// The caller may go on changing idx, so the next read decodes the file again.
 	s.remember(nil, nil)
-	return datadir.WriteJSON(s.indexPath(), idx)
+	if err := datadir.WriteJSON(s.indexPath(), idx); err != nil {
+		return err
+	}
+	// The memo is stamped with the file just written, so a later write by another process changes the stamp and forces
+	// a re-read. The caller may go on changing idx, hence the copy.
+	if fi, err := os.Stat(s.indexPath()); err == nil {
+		s.remember(idx.clone(), fi)
+	}
+	return nil
 }
 
 // remember keeps idx, which no caller changes afterwards, as the decoded form of the file fi describes; a nil fi
