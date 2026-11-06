@@ -50,6 +50,7 @@ import { SetNexusPageDialog } from './SetNexusPageDialog.tsx'
 import { ModSidebar } from './Sidebar.tsx'
 import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
+import { recallProfile } from './storeLoad.ts'
 import { storedFilter, storedTags, type View } from './storeView.ts'
 import { EmptyMods, type ModFilter, Toolbar } from './Toolbar.tsx'
 import { TrackedNotInProfile } from './TrackedNotInProfile.tsx'
@@ -372,11 +373,10 @@ export function ModsTab({ profile }: { profile: Profile }) {
   // and the selection, and only rereads the mods below.
   useEffect(() => {
     if (useMods.getState().modsFor !== profile.id) {
+      // A profile open before in this session draws its mods and last problem check at once; the reads refresh them.
       useMods.setState({
-        mods: [],
-        loaded: false,
+        ...recallProfile(profile.id),
         loadError: '',
-        problems: null,
         resolving: null,
         removing: [],
       })

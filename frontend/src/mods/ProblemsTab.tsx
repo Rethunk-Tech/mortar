@@ -51,6 +51,13 @@ function useOpenProblems() {
   return useMods((s) => (s.problemsFor === openId ? s.problems : null))
 }
 
+// Whether the open profile's result is only the snapshot the previous run stored, which the live check has not yet
+// confirmed.
+function useProblemsSnapshot() {
+  const openId = useProfiles((s) => s.openId)
+  return useMods((s) => s.problemsFor === openId && s.problemsSeed)
+}
+
 function OfflineChecksNote() {
   const { t } = useLingui()
   return (
@@ -485,6 +492,7 @@ function CheckingLine() {
 function ProblemsTab() {
   const { t } = useLingui()
   const result = useOpenProblems()
+  const snapshot = useProblemsSnapshot()
   useLoadProblemsOnFocus()
   if (result === null) {
     return (
@@ -500,7 +508,15 @@ function ProblemsTab() {
       </>
     )
   }
-  return <ProblemsContent result={result} />
+  // Fixes and dismissals act on the live result, so a snapshot is read-only until the check answers.
+  return (
+    <>
+      {snapshot ? <CheckingLine /> : null}
+      <Box inert={snapshot} sx={{ display: 'contents' }}>
+        <ProblemsContent result={result} />
+      </Box>
+    </>
+  )
 }
 
 export { ProblemsTab }

@@ -30,7 +30,7 @@ import {
   skipVersionMany,
   setUpdateChannel as writeUpdateChannel,
 } from './storeEntries.ts'
-import { loadModProblems, loadMods, showUpdatesView } from './storeLoad.ts'
+import { loadModProblems, loadMods, rememberShown, showUpdatesView } from './storeLoad.ts'
 import { problemActions } from './storeProblems.ts'
 import {
   removingOf,
@@ -78,6 +78,8 @@ export const useMods = create<{
   problemsFor: string
   // problemsAt is when that result arrived, in epoch ms.
   problemsAt: number
+  // problemsSeed is set while the result shown is only the snapshot the previous run stored, not yet confirmed by a check.
+  problemsSeed: boolean
   resolving: Duplicate | null
   setView: (view: View) => void
   load: () => Promise<void>
@@ -136,6 +138,7 @@ export const useMods = create<{
   problems: null,
   problemsFor: '',
   problemsAt: 0,
+  problemsSeed: false,
   resolving: null,
   ...viewActions(set),
   load: () => loadMods(set, get),
@@ -221,3 +224,5 @@ export const useMods = create<{
   ...problemActions(set, get),
   showUpdates: () => showUpdatesView(),
 }))
+
+useMods.subscribe(rememberShown)
