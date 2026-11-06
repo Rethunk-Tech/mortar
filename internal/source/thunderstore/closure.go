@@ -214,27 +214,34 @@ func (w *walk) visit(ref tstore.Ref, chain []string) error {
 		if ver.Number != w.chosen[id] || w.deps == DepsNone || loader {
 			continue
 		}
-		for _, dep := range p.Dependencies(ver) {
-			r, err := parseDependency(dep)
-			if err != nil {
-				return fmt.Errorf("%w (in %s)", err, via)
-			}
-			if to, ok := w.dropIns[packageID(r.Namespace, r.Name)]; ok {
-				if ns, name, cut := strings.Cut(to, "-"); cut {
-					r = tstore.Ref{Namespace: ns, Name: name}
-				}
-			}
-			if dep := packageID(r.Namespace, r.Name); w.byID[dep].Name == "" && !isManager(r.Namespace, r.Name) &&
-				!components.IsBepInExPackage(r.Namespace+"-"+r.Name) {
-				w.missing[id] = append(w.missing[id], r.Namespace+"-"+r.Name)
-				continue
-			}
-			if err := w.visit(r, append(chain, id+" "+ver.Number)); err != nil {
-				return err
-			}
+		if err := w.visitDeps(id, via, chain, p, ver); err != nil {
+			return err
 		}
 	}
 	w.state[id] = 2
 	w.order = append(w.order, id)
+	return nil
+}
+
+func (w *walk) visitDeps(id, via string, chain []string, p tstore.Package, ver tstore.Version) error {
+	for _, dep := range p.Dependencies(ver) {
+		r, err := parseDependency(dep)
+		if err != nil {
+			return fmt.Errorf("%w (in %s)", err, via)
+		}
+		if to, ok := w.dropIns[packageID(r.Namespace, r.Name)]; ok {
+			if ns, name, cut := strings.Cut(to, "-"); cut {
+				r = tstore.Ref{Namespace: ns, Name: name}
+			}
+		}
+		if dep := packageID(r.Namespace, r.Name); w.byID[dep].Name == "" && !isManager(r.Namespace, r.Name) &&
+			!components.IsBepInExPackage(r.Namespace+"-"+r.Name) {
+			w.missing[id] = append(w.missing[id], r.Namespace+"-"+r.Name)
+			continue
+		}
+		if err := w.visit(r, append(chain, id+" "+ver.Number)); err != nil {
+			return err
+		}
+	}
 	return nil
 }
