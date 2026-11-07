@@ -3,7 +3,6 @@ package lan
 import (
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,13 +25,12 @@ func TestFetchEntryThrottlesFileProgress(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server, key := sealedStoreServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_ = writeTar(r.Context(), w, source)
 	}))
-	defer server.Close()
 	var emitted int
 	svc := NewService(Deps{Store: receiverStore, Emit: func(string, any) { emitted++ }})
-	incoming := incomingTransfer{Peer: strings.TrimPrefix(server.URL, "http://"), Game: "stardew", Token: "t"}
+	incoming := incomingTransfer{Peer: strings.TrimPrefix(server.URL, "http://"), Game: "stardew", Token: "t", Key: key}
 	if _, err := svc.fetchEntry(t.Context(), incoming, transferItem{Key: store.NexusKey(1, 1), Hash: "local-forged"}, 1, 1, 1, 0, time.Now()); err == nil {
 		t.Fatal("an entry that does not match the vouched hash was installed")
 	}

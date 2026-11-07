@@ -42,7 +42,8 @@ func TestAReaderThatPausesMidEntryStillGetsTheWholeEntry(t *testing.T) {
 		t.Fatal(err)
 	}
 	sender := NewService(Deps{Store: senderStore})
-	sender.rememberGrant("tok", "stardew", []string{key})
+	transfer := bytes.Repeat([]byte{7}, 32)
+	sender.rememberGrant("tok", "stardew", []string{key}, transfer)
 	server := httptest.NewUnstartedServer(sender.handler())
 	server.Config = newHTTPServer(sender.handler())
 	// Headers are read before the pause, so this bound only has to outlast a loaded runner sending them.
@@ -51,12 +52,7 @@ func TestAReaderThatPausesMidEntryStillGetsTheWholeEntry(t *testing.T) {
 	server.Start()
 	defer server.Close()
 
-	request, err := http.NewRequestWithContext(t.Context(), http.MethodGet, server.URL+"/store/stardew/"+key, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	request.Header.Set("Authorization", "Bearer tok")
-	response, err := http.DefaultClient.Do(request)
+	response, err := sealedDo(t.Context(), http.MethodGet, server.URL+"/store/stardew/"+key, transfer, tokenHandle("tok"), nil, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +75,7 @@ func TestAReaderThatPausesMidEntryStillGetsTheWholeEntry(t *testing.T) {
 func TestAGrantSlidesWithActivityAndExpiresWhenIdle(t *testing.T) {
 	t.Parallel()
 	s := NewService(Deps{})
-	s.rememberGrant("tok", "stardew", []string{"k"})
+	s.rememberGrant("tok", "stardew", []string{"k"}, nil)
 	s.mu.Lock()
 	grant := s.grants["tok"]
 	grant.Expires = time.Now().Add(time.Second)
@@ -161,11 +157,10 @@ func fetchRig(t *testing.T, keys []string, drops map[string]int) (*Service, inco
 		flaky.hits[key] = new(atomic.Int32)
 		items[i] = transferItem{Key: key, Hash: hash, Package: "Mod" + key}
 	}
-	server := httptest.NewServer(flaky)
-	t.Cleanup(server.Close)
+	server, key := sealedStoreServer(t, flaky)
 	receiver := NewService(Deps{Store: store.OpenAt(t.TempDir())})
 	incoming := incomingTransfer{
-		Peer: strings.TrimPrefix(server.URL, "http://"), Sender: "Desk", Game: "stardew", Token: "t",
+		Peer: strings.TrimPrefix(server.URL, "http://"), Sender: "Desk", Game: "stardew", Token: "t", Key: key,
 		Items: items, Expires: time.Now().Add(time.Hour),
 	}
 	receiver.incoming[1] = incoming
@@ -239,18 +234,16 @@ func TestReceiveFailuresNameTheModAndTheCause(t *testing.T) {
 
 func TestASilentSenderIsGivenUpOnAndRetried(t *testing.T) {
 	t.Parallel()
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Length", "100000")
+	server, key := sealedStoreServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("partial"))
 		_ = http.NewResponseController(w).Flush()
 		<-r.Context().Done()
 	}))
-	t.Cleanup(server.Close)
 	receiver := NewService(Deps{Store: store.OpenAt(t.TempDir())})
 	receiver.receiveIdle = 50 * time.Millisecond
 	var tries atomic.Int32
 	receiver.fetchTried = func() { tries.Add(1) }
-	incoming := incomingTransfer{Peer: strings.TrimPrefix(server.URL, "http://"), Sender: "Desk", Game: "stardew", Token: "t"}
+	incoming := incomingTransfer{Peer: strings.TrimPrefix(server.URL, "http://"), Sender: "Desk", Game: "stardew", Token: "t", Key: key}
 	item := transferItem{Key: store.NexusKey(7, 1), Package: "Mod"}
 	_, err := receiver.fetchEntry(t.Context(), incoming, item, 1, 0, 1, 0, time.Now())
 	if usererr.KindOf(err) != usererr.Network || tries.Load() != fetchAttempts {
@@ -299,7 +292,7 @@ func TestABackupsStoreItemIsNeitherVouchedForNorServed(t *testing.T) {
 	if _, ok := digests[backed]; ok || len(digests) != 1 {
 		t.Fatalf("digests = %v: the backup's item must not be vouched for", digests)
 	}
-	sender.rememberGrant("tok", "stardew", []string{backed, sourced})
+	sender.rememberGrant("tok", "stardew", []string{backed, sourced}, nil)
 	for key, want := range map[string]int{backed: http.StatusNotFound, sourced: http.StatusOK} {
 		request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://mortar.test/store/stardew/"+key, nil)
 		request.Header.Set("Authorization", "Bearer tok")

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/hmac"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -53,7 +54,9 @@ const (
 	httpTimeout    = 5 * time.Second
 	nonceTTL       = time.Minute
 	maxNonces      = 1024
-	transferTTL    = 5 * time.Minute
+	// maxNoncesPerPeer keeps one host from using up the handshakes every sender needs.
+	maxNoncesPerPeer = 16
+	transferTTL      = 5 * time.Minute
 	// maxShareRequests bounds /share bodies held in memory at once; maxUnpairedInbox bounds arrivals nobody paired.
 	maxShareRequests = 4
 	// senderHeader names the sending device on a /share request so the receiver can rate limit strangers before reading.
@@ -131,7 +134,11 @@ type Service struct {
 	pairing pairHost
 
 	nonces map[string]nonceRecord
-	grants map[string]transferGrant
+	// salts are the seals already served, so a captured sealed request is not served twice; decoyKey answers /hello
+	// for an id this computer is not paired with.
+	salts    map[string]time.Time
+	decoyKey []byte
+	grants   map[string]transferGrant
 
 	outMu        sync.Mutex
 	outgoing     map[string]*outgoingState
@@ -170,8 +177,6 @@ type shareRequest struct {
 	Payload    string `json:"payload"`
 	Version    string `json:"version"`
 	SenderID   string `json:"senderId"`
-	Nonce      string `json:"nonce,omitempty"`
-	Proof      string `json:"proof,omitempty"`
 	SenderPort int    `json:"senderPort"`
 	ProfileID  string `json:"profileId,omitempty"`
 	// Digests vouches for each store entry the share lists, by entry key; only a paired sender sends them.
@@ -181,7 +186,10 @@ type shareRequest struct {
 // NewService returns a LAN sharing service that is disabled until SetEnabled is called.
 func NewService(deps Deps) *Service {
 	instanceID := randomToken()
+	decoy := make([]byte, 32)
+	_, _ = rand.Read(decoy)
 	service := &Service{
+		decoyKey:      decoy,
 		deps:          deps,
 		checkFirewall: firewallBlocked,
 		networkPublic: networkIsPublic,
@@ -550,6 +558,14 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 	if err != nil {
 		return err
 	}
+	var session []byte
+	if key != nil {
+		selfID, err := s.book.self()
+		if err != nil {
+			return err
+		}
+		session = sessionKey(key, hello.challenge, hello.Nonce, selfID, hello.ID, hello.host)
+	}
 	payload, err := build(key != nil)
 	if err != nil {
 		return err
@@ -570,12 +586,10 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 		Game:       game,
 		Payload:    encoded,
 		Version:    protocolVersion,
-		Nonce:      hello.Nonce,
 		SenderPort: s.port(),
 		ProfileID:  profileID,
 	}
 	if key != nil {
-		request.Proof = hmacProof(key, hello.Nonce, encoded)
 		request.Digests = s.entryDigests(key, game, transferItems(shared))
 	}
 	body, err := json.Marshal(request)
@@ -588,13 +602,19 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 	}
 	ctx, cancel := context.WithTimeout(ctx, httpTimeout)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
-	if err != nil {
-		return fmt.Errorf("prepare profile share: %w", err)
+	var resp *http.Response
+	if session != nil {
+		resp, err = sealedDo(ctx, http.MethodPost, endpoint, session, "", bytes.NewReader(body), "application/json", senderHeader, selfID, nonceHeader, hello.Nonce)
+	} else {
+		var req *http.Request
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
+		if err != nil {
+			return fmt.Errorf("prepare profile share: %w", err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set(senderHeader, selfID)
+		resp, err = peerClient.Do(req)
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(senderHeader, selfID)
-	resp, err := peerClient.Do(req)
 	if err != nil {
 		return usererr.Wrap(usererr.Network, fmt.Errorf("%s could not be reached: %w", name, err))
 	}
@@ -616,9 +636,15 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 	if err := json.NewDecoder(safefs.CapReader(resp.Body, 64<<10)).Decode(&result); err != nil && !errors.Is(err, io.EOF) {
 		return fmt.Errorf("read profile share response: %w", err)
 	}
-	if result.Paired && result.TransferToken != "" && proofMatches(key, hello.Nonce, "response|"+result.TransferToken+"|"+strings.Join(result.EntryKeys, ","), result.Proof) {
-		s.rememberGrant(result.TransferToken, game, result.EntryKeys)
-		s.startOutgoing(result.TransferToken, game, name, shared.Name, len(result.EntryKeys))
+	if session != nil && result.Paired && result.TransferToken != "" {
+		// The receiver names the files it will pull, but only files this share lists may be granted.
+		listed := transferItems(shared)
+		granted := slices.DeleteFunc(slices.Clone(result.EntryKeys), func(k string) bool {
+			return !slices.ContainsFunc(listed, func(item transferItem) bool { return item.Key == k })
+		})
+		tk := transferKey(session, result.TransferToken)
+		s.rememberGrant(result.TransferToken, game, granted, tk)
+		s.startOutgoing(result.TransferToken, game, name, shared.Name, len(granted), tk)
 	}
 	log.Printf("lan: %s took %q, paired %t", name, shared.Name, result.Paired)
 	s.rememberAddress(peerID)
@@ -657,7 +683,7 @@ func (s *Service) provenKey(hello helloResponse) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !proofMatches(key, hello.challenge, "hello|"+selfID+"|"+hello.ID, hello.Proof) {
+	if !proofMatches(key, hello.challenge, "hello|"+selfID+"|"+hello.ID+"|"+hello.host, hello.Proof) {
 		return nil, nil
 	}
 	return key, nil
@@ -693,11 +719,12 @@ func (s *Service) hello(ctx context.Context, peerID string) (helloResponse, erro
 		return helloResponse{}, fmt.Errorf("read LAN peer handshake: %w", err)
 	}
 	hello.challenge = challenge
+	hello.host, _ = peerAddress(peerID)
 	if hello.Nonce == "" {
 		return helloResponse{}, usererr.Wrap(usererr.Damaged, errors.New("LAN peer returned no handshake nonce"))
 	}
 	if hello.Version != protocolVersion {
-		return helloResponse{}, usererr.Wrap(usererr.Outdated, errors.New("update Mortar on the other computer"))
+		return helloResponse{}, usererr.Wrap(usererr.Outdated, errors.New("update Mortar on both computers"))
 	}
 	return hello, nil
 }
@@ -765,9 +792,9 @@ func newHTTPServer(handler http.Handler) *http.Server {
 func (s *Service) handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /hello", withDeadline(s.handleHello))
-	mux.HandleFunc("POST /share", jsonOnly(withDeadline(s.handleShare)))
-	mux.HandleFunc("GET /store/", s.handleStore)
-	mux.HandleFunc("POST /outgoing", jsonOnly(withDeadline(s.handleOutgoing)))
+	mux.HandleFunc("POST /share", jsonOnly(withDeadline(s.sealed(s.resolveShare, true, s.handleShare))))
+	mux.HandleFunc("GET /store/", s.sealed(s.resolveGrant, false, s.handleStore))
+	mux.HandleFunc("POST /outgoing", jsonOnly(withDeadline(s.sealed(s.resolveOutgoing, false, s.handleOutgoing))))
 	mux.HandleFunc("POST /pair/begin", jsonOnly(withDeadline(s.handlePairBegin)))
 	mux.HandleFunc("POST /pair/finish", jsonOnly(withDeadline(s.handlePairFinish)))
 	return mux
@@ -804,18 +831,23 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 	nonce := randomToken()
 	now := time.Now()
 	peer := remotePeer(r)
+	query := r.URL.Query()
+	callerID, challenge := query.Get("id"), query.Get("challenge")
 	s.mu.Lock()
+	fromPeer := 0
 	for value, record := range s.nonces {
 		if now.After(record.expires) {
 			delete(s.nonces, value)
+		} else if record.peer == peer {
+			fromPeer++
 		}
 	}
-	if len(s.nonces) >= maxNonces {
+	if len(s.nonces) >= maxNonces || fromPeer >= maxNoncesPerPeer {
 		s.mu.Unlock()
 		http.Error(w, "too many handshakes", http.StatusTooManyRequests)
 		return
 	}
-	s.nonces[nonce] = nonceRecord{peer: peer, expires: now.Add(nonceTTL)}
+	s.nonces[nonce] = nonceRecord{peer: peer, expires: now.Add(nonceTTL), challenge: challenge, callerID: callerID, host: r.Host}
 	s.mu.Unlock()
 	w.Header().Set("Content-Type", "application/json")
 	id, err := s.book.self()
@@ -824,11 +856,14 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resp := helloResponse{ID: id, Name: s.deviceName(), Version: protocolVersion, Nonce: nonce}
-	// The caller's challenge is answered only for a paired caller, so an unpaired one learns nothing about the book.
-	query := r.URL.Query()
-	callerID, challenge := query.Get("id"), query.Get("challenge")
-	if key := s.book.key(callerID); key != nil && challenge != "" {
-		resp.Proof = helloProof(key, challenge, callerID, id)
+	// Every caller gets a proof; an id this computer is not paired with gets one under a throwaway key, so the
+	// answer does not say which ids are paired.
+	if challenge != "" {
+		key := s.book.key(callerID)
+		if key == nil {
+			key = s.decoyKey
+		}
+		resp.Proof = helloProof(key, challenge, callerID, id, r.Host)
 	}
 	_ = json.NewEncoder(w).Encode(resp)
 }
@@ -872,8 +907,13 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), status)
 		return
 	}
-	key := s.book.key(request.SenderID)
-	paired := request.SenderPort > 0 && s.consumeProof(peer, request) && proofMatches(key, request.Nonce, request.Payload, request.Proof)
+	var key, session []byte
+	paired := false
+	if sealed, ok := r.Context().Value(sealedCtxKey{}).(*sealedPeer); ok && request.SenderPort > 0 {
+		// The seal proved the sender holds the pair key; its id comes from the handshake, not from the body.
+		request.SenderID, session = sealed.id, sealed.session
+		key, paired = s.book.key(sealed.id), true
+	}
 	if !paired && !charged && !s.allowReceive(peer) {
 		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
 		return
@@ -897,12 +937,12 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		}
 		response.TransferToken = token
 		response.EntryKeys = keys
-		response.Proof = responseProof(key, request.Nonce, token, keys)
 		arrivalTransfer = incomingTransfer{
 			Sender:  request.Sender,
 			Peer:    net.JoinHostPort(peer, strconv.Itoa(request.SenderPort)),
 			Game:    request.Game,
 			Token:   token,
+			Key:     transferKey(session, token),
 			Items:   items,
 			Expires: time.Now().Add(transferTTL),
 		}
@@ -988,16 +1028,37 @@ func (s *Service) releaseShare() {
 	s.rateMu.Unlock()
 }
 
-func (s *Service) consumeProof(peer string, request shareRequest) bool {
-	if request.Nonce == "" {
-		return false
-	}
-	now := time.Now()
+// resolveShare finds the session key of a sealed share from the handshake its nonce names. The nonce is spent
+// either way, and must have been handed to the address now asking.
+func (s *Service) resolveShare(r *http.Request) ([]byte, string, *sealedPeer, error) {
+	id, nonce := r.Header.Get(senderHeader), r.Header.Get(nonceHeader)
 	s.mu.Lock()
-	record, ok := s.nonces[request.Nonce]
-	delete(s.nonces, request.Nonce)
+	record, ok := s.nonces[nonce]
+	delete(s.nonces, nonce)
 	s.mu.Unlock()
-	return ok && record.peer == peer && now.Before(record.expires)
+	key := s.book.key(id)
+	if !ok || key == nil || record.peer != remotePeer(r) || time.Now().After(record.expires) || record.callerID != id {
+		return nil, "", nil, errors.New("handshake not recognised")
+	}
+	selfID, err := s.book.self()
+	if err != nil {
+		return nil, "", nil, err
+	}
+	session := sessionKey(key, record.challenge, nonce, id, selfID, record.host)
+	return session, "", &sealedPeer{id: id, session: session}, nil
+}
+
+// resolveGrant finds the transfer key of the grant a store pull names.
+func (s *Service) resolveGrant(r *http.Request) ([]byte, string, *sealedPeer, error) {
+	handle := r.Header.Get(handleHeader)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for token, grant := range s.grants {
+		if tokenHandle(token) == handle && grant.Key != nil {
+			return grant.Key, token, nil, nil
+		}
+	}
+	return nil, "", nil, errors.New("no such grant")
 }
 
 // Inbox returns profile shares received before the window started listening.
@@ -1054,7 +1115,7 @@ func validateRequest(request shareRequest) (share.Shared, error) {
 		return share.Shared{}, usererr.Wrap(usererr.Invalid, errors.New("game is invalid"))
 	}
 	if request.Version != protocolVersion {
-		return share.Shared{}, usererr.Wrap(usererr.Outdated, errors.New("update Mortar on the other computer"))
+		return share.Shared{}, usererr.Wrap(usererr.Outdated, errors.New("update Mortar on both computers"))
 	}
 	raw, err := base64.RawStdEncoding.DecodeString(request.Payload)
 	if err != nil {

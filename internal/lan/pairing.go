@@ -40,15 +40,17 @@ import (
 // to the joiner yields one offline test per guess against the joiner's proof; each costs pairIterations of PBKDF2 and
 // the code lives five minutes, so it is bounded by that cost, not by a rate limit.
 const (
-	codeLength       = 8
-	codeAlphabet     = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
-	codeTTL          = 5 * time.Minute
-	sessionTTL       = time.Minute
-	maxSessions      = 8
-	maxFailures      = 5
-	burnFailures     = 15
-	lockout          = 10 * time.Minute
-	pairProtocolInfo = "mortar-lan-pair-v1"
+	codeLength   = 8
+	codeAlphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+	codeTTL      = 5 * time.Minute
+	sessionTTL   = time.Minute
+	maxSessions  = 8
+	// maxSessionsPerPeer keeps one host from holding every slot while a code is open.
+	maxSessionsPerPeer = 2
+	maxFailures        = 5
+	burnFailures       = 15
+	lockout            = 10 * time.Minute
+	pairProtocolInfo   = "mortar-lan-pair-v1"
 
 	// PairedEvent tells the window a computer finished pairing with this one.
 	PairedEvent = "lan:paired"
@@ -333,7 +335,13 @@ func (s *Service) handlePairBegin(w http.ResponseWriter, r *http.Request) {
 			delete(h.sessions, id)
 		}
 	}
-	if len(h.sessions) >= maxSessions {
+	perPeer := 0
+	for _, sess := range h.sessions {
+		if sess.remote == remote {
+			perPeer++
+		}
+	}
+	if len(h.sessions) >= maxSessions || perPeer >= maxSessionsPerPeer {
 		http.Error(w, "pairing is busy", http.StatusTooManyRequests)
 		return
 	}
@@ -353,6 +361,10 @@ func (s *Service) handlePairFinish(w http.ResponseWriter, r *http.Request) {
 	delete(h.sessions, req.Session)
 	err := s.pairOpen(remote, now)
 	code := h.code
+	if ok && err == nil {
+		// The guess is counted before it is checked, so guesses made side by side cannot outnumber the limit.
+		s.pairChargeLocked(remote, now)
+	}
 	h.mu.Unlock()
 	if !ok || sess.remote != remote || now.After(sess.expires) {
 		http.Error(w, "pairing session expired", http.StatusForbidden)
@@ -385,7 +397,6 @@ func (s *Service) handlePairFinish(w http.ResponseWriter, r *http.Request) {
 	}
 	got, _ := base64.RawStdEncoding.DecodeString(req.Proof)
 	if !hmac.Equal(got, pairProof(authKey, "J", transcript, shared)) {
-		s.pairFailed(remote, now)
 		http.Error(w, "wrong code", http.StatusForbidden)
 		return
 	}
@@ -396,6 +407,7 @@ func (s *Service) handlePairFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.code = ""
+	s.pairRefundLocked(remote)
 	h.mu.Unlock()
 	peer := PairedPeer{ID: sess.peerID, Name: sess.name}
 	if err := s.book.add(peer, peerKey); err != nil {
@@ -408,10 +420,9 @@ func (s *Service) handlePairFinish(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, pairFinishResponse{Proof: base64.RawStdEncoding.EncodeToString(pairProof(authKey, "H", transcript, shared))})
 }
 
-func (s *Service) pairFailed(remote string, now time.Time) {
+// pairChargeLocked counts one guess from remote and locks it out after maxFailures; the caller holds h.mu.
+func (s *Service) pairChargeLocked(remote string, now time.Time) {
 	h := &s.pairing
-	h.mu.Lock()
-	defer h.mu.Unlock()
 	if h.locks == nil {
 		h.locks = map[string]peerLock{}
 	}
@@ -424,12 +435,22 @@ func (s *Service) pairFailed(remote string, now time.Time) {
 	lock.failures++
 	lock.last = now
 	if lock.failures >= maxFailures {
-		lock = peerLock{until: now.Add(lockout), last: now}
+		lock = peerLock{until: now.Add(lockout), last: now, failures: maxFailures}
 	}
 	h.locks[remote] = lock
 	if h.failures++; h.failures >= burnFailures {
 		h.code = ""
 	}
+}
+
+// pairRefundLocked gives back the guess a correct code spent.
+func (s *Service) pairRefundLocked(remote string) {
+	h := &s.pairing
+	if lock, ok := h.locks[remote]; ok && lock.failures > 0 && !time.Now().Before(lock.until) {
+		lock.failures--
+		h.locks[remote] = lock
+	}
+	h.failures = max(0, h.failures-1)
 }
 
 // Pair enters the code shown by the computer at peerID (host:port) and stores the key both sides derive.

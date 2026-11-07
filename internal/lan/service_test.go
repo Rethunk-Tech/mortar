@@ -16,7 +16,6 @@ import (
 	"runtime"
 	"slices"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -132,16 +131,11 @@ func TestPairingLocksOutAfterWrongCodes(t *testing.T) {
 	if code == wrong {
 		wrong = "BBBB-BBBB"
 	}
-	// Each attempt spends a full key derivation, so they run side by side.
-	var wg sync.WaitGroup
 	for range maxFailures {
-		wg.Go(func() {
-			if err := joiner.Pair(t.Context(), hostAddr, wrong); err == nil {
-				t.Error("a wrong code paired")
-			}
-		})
+		if err := joiner.Pair(t.Context(), hostAddr, wrong); err == nil {
+			t.Error("a wrong code paired")
+		}
 	}
-	wg.Wait()
 	if err := joiner.Pair(t.Context(), hostAddr, code); err == nil {
 		t.Fatal("a locked-out computer paired")
 	}
@@ -180,7 +174,7 @@ func TestPairing(t *testing.T) {
 func TestTransferTokenScope(t *testing.T) {
 	t.Parallel()
 	service := NewService(Deps{})
-	service.rememberGrant("token", "stardew", []string{"nexus-1-2"})
+	service.rememberGrant("token", "stardew", []string{"nexus-1-2"}, nil)
 
 	request := httptest.NewRequestWithContext(t.Context(), "GET", "http://mortar.test/store/stardew/nexus-9-9", nil)
 	request.Header.Set("Authorization", "Bearer token")
@@ -337,6 +331,9 @@ func TestLoopbackTransfer(t *testing.T) {
 	}
 	if string(got) != "from sender" {
 		t.Fatalf("installed contents = %q", got)
+	}
+	if !receiverStore.Unverified("stardew", key) || receiverStore.Unverified("stardew", localKey) {
+		t.Error("a file taken from a computer is vouched for by it alone, except a local archive")
 	}
 	if src, pkg, _, ok := receiverStore.Meta("stardew", localKey); !ok || src != profile.KindLocal || pkg != "Mine.zip" {
 		t.Fatalf("local entry meta = %q %q %v", src, pkg, ok)
@@ -727,8 +724,14 @@ func TestPairFailedForgetsPeersLongQuiet(t *testing.T) {
 	t.Parallel()
 	service := NewService(Deps{Dir: t.TempDir()})
 	now := time.Now()
-	service.pairFailed("old", now.Add(-2*lockout))
-	service.pairFailed("new", now)
+	for _, c := range []struct {
+		peer string
+		at   time.Time
+	}{{"old", now.Add(-2 * lockout)}, {"new", now}} {
+		service.pairing.mu.Lock()
+		service.pairChargeLocked(c.peer, c.at)
+		service.pairing.mu.Unlock()
+	}
 	if _, kept := service.pairing.locks["old"]; kept || len(service.pairing.locks) != 1 {
 		t.Errorf("locks = %v", service.pairing.locks)
 	}

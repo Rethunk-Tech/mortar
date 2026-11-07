@@ -20,6 +20,7 @@ import (
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/scratch"
 
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -49,7 +50,9 @@ type TransferProgress struct {
 }
 
 type transferGrant struct {
-	Game    string
+	Game string
+	// Key seals this grant's pulls and reports.
+	Key     []byte
 	Keys    map[string]bool
 	Expires time.Time
 }
@@ -59,6 +62,7 @@ type incomingTransfer struct {
 	Sender  string
 	Game    string
 	Token   string
+	Key     []byte
 	Items   []transferItem
 	Expires time.Time
 }
@@ -158,13 +162,7 @@ func (s *Service) reportOutgoing(ctx context.Context, incoming incomingTransfer,
 	}
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
-	if err != nil {
-		return
-	}
-	request.Header.Set("Authorization", "Bearer "+incoming.Token)
-	request.Header.Set("Content-Type", "application/json")
-	if response, err := peerClient.Do(request); err == nil {
+	if response, err := sealedDo(ctx, http.MethodPost, endpoint, incoming.Key, tokenHandle(incoming.Token), bytes.NewReader(body), "application/json"); err == nil {
 		_ = response.Body.Close()
 	}
 }
@@ -277,12 +275,7 @@ func (s *Service) fetchOnce(
 	defer cancel()
 	idle := newIdleWatch(cmp.Or(s.receiveIdle, storeIdle), cancel)
 	defer idle.stop()
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
-	if err != nil {
-		return 0, err
-	}
-	request.Header.Set("Authorization", "Bearer "+incoming.Token)
-	response, err := peerClient.Do(request)
+	response, err := sealedDo(ctx, http.MethodGet, endpoint, incoming.Key, tokenHandle(incoming.Token), nil, "")
 	if err != nil {
 		if idle.stalled.Load() {
 			return 0, idle.err(incoming.Sender)
@@ -329,7 +322,13 @@ func (s *Service) fetchOnce(
 		return 0, usererr.New(usererr.Damaged, fmt.Sprintf("%s from %s arrived damaged: it does not match what they vouched for", modName(item), incoming.Sender))
 	}
 	// The hash the sender vouched for is the check: a local key names the archive it came from, not this folder.
-	if err := s.deps.Store.AddDir(ctx, incoming.Game, key, temp); err != nil {
+	// Any other key names a source's file, which the sender's word does not prove, so that item serves this share
+	// only and every other install fetches from the source.
+	add := s.deps.Store.AddBackupDir
+	if item.Source == profile.KindLocal {
+		add = s.deps.Store.AddDir
+	}
+	if err := add(ctx, incoming.Game, key, temp); err != nil {
 		return 0, installError("install", item, incoming.Sender, err)
 	}
 	if item.Source != "" {
@@ -467,7 +466,7 @@ func (s *Service) grantAllows(token, game, key string) bool {
 	return allowed
 }
 
-func (s *Service) rememberGrant(token, game string, keys []string) {
+func (s *Service) rememberGrant(token, game string, keys []string, key []byte) {
 	if token == "" {
 		return
 	}
@@ -476,7 +475,7 @@ func (s *Service) rememberGrant(token, game string, keys []string) {
 		allowed[key] = true
 	}
 	s.mu.Lock()
-	s.grants[token] = transferGrant{Game: game, Keys: allowed, Expires: time.Now().Add(transferTTL)}
+	s.grants[token] = transferGrant{Game: game, Key: key, Keys: allowed, Expires: time.Now().Add(transferTTL)}
 	s.mu.Unlock()
 }
 

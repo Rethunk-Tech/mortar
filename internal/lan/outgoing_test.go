@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -142,15 +141,14 @@ func TestSenderGivesUpOnAPullThatWentQuiet(t *testing.T) {
 
 func TestSenderGoingAwayMidTransferSaysSo(t *testing.T) {
 	t.Parallel()
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	server, key := sealedStoreServer(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		// Promising more than is sent makes the server drop the connection, as a sender that shut down would.
 		w.Header().Set("Content-Length", "100000")
 		_, _ = w.Write([]byte("partial"))
 	}))
-	defer server.Close()
 	receiver := NewService(Deps{Store: store.OpenAt(t.TempDir())})
 	incoming := incomingTransfer{
-		Peer: strings.TrimPrefix(server.URL, "http://"), Sender: "Desk", Game: "stardew", Token: "t",
+		Peer: strings.TrimPrefix(server.URL, "http://"), Sender: "Desk", Game: "stardew", Token: "t", Key: key,
 		Items: []transferItem{{Key: store.NexusKey(7, 1), Hash: "h"}},
 	}
 	_, err := receiver.fetchEntry(t.Context(), incoming, incoming.Items[0], 1, 0, 1, 0, time.Now())

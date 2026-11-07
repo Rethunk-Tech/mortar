@@ -2,6 +2,7 @@ package lan
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"slices"
@@ -43,6 +44,7 @@ type OutgoingTransfer struct {
 type outgoingState struct {
 	OutgoingTransfer
 	game    string
+	key     []byte
 	started time.Time
 	emitted time.Time
 	stall   *time.Timer
@@ -71,10 +73,10 @@ func (s *Service) OutgoingTransfers() []OutgoingTransfer {
 	return out
 }
 
-func (s *Service) startOutgoing(token, game, peer, profile string, total int) {
+func (s *Service) startOutgoing(token, game, peer, profile string, total int, key []byte) {
 	s.outMu.Lock()
 	s.nextOutgoing++
-	o := &outgoingState{game: game}
+	o := &outgoingState{game: game, key: key}
 	o.ID, o.Peer, o.Profile, o.Total, o.State = s.nextOutgoing, peer, profile, total, OutgoingSending
 	o.stall = time.AfterFunc(outgoingStall, func() {
 		s.updateOutgoing(token, func(o *OutgoingTransfer) {
@@ -143,6 +145,19 @@ func (s *Service) emitOutgoing(o OutgoingTransfer) {
 	if s.deps.Emit != nil {
 		s.deps.Emit(OutgoingEvent, o)
 	}
+}
+
+// resolveOutgoing finds the transfer key of the sent profile a report names.
+func (s *Service) resolveOutgoing(r *http.Request) ([]byte, string, *sealedPeer, error) {
+	handle := r.Header.Get(handleHeader)
+	s.outMu.Lock()
+	defer s.outMu.Unlock()
+	for token, o := range s.outgoing {
+		if tokenHandle(token) == handle && o.key != nil {
+			return o.key, token, nil, nil
+		}
+	}
+	return nil, "", nil, errors.New("no such transfer")
 }
 
 // handleOutgoing takes the pulling computer's plan and ending; the transfer token is the credential.

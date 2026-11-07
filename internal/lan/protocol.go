@@ -17,11 +17,14 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
-const protocolVersion = "5"
+const protocolVersion = "6"
 
 type nonceRecord struct {
 	peer    string
 	expires time.Time
+	// challenge, callerID and host are what the caller sent or dialed, kept to derive the session key when the sealed
+	// share arrives.
+	challenge, callerID, host string
 }
 
 type helloResponse struct {
@@ -30,24 +33,23 @@ type helloResponse struct {
 	Version string `json:"version"`
 	Nonce   string `json:"nonce"`
 	// Proof answers the caller's challenge with the pairing key, so a host merely claiming a paired id is treated as
-	// unpaired. A peer that predates it sends none.
+	// unpaired. An id this computer is not paired with gets a proof under a throwaway key, so the answer never says
+	// which ids are paired.
 	Proof string `json:"proof,omitempty"`
-	// challenge is what this computer sent; it never travels back.
-	challenge string
+	// challenge is what this computer sent and host the address it dialed; neither travels back.
+	challenge, host string
 }
 
-// helloProof binds a /hello answer to the caller's challenge and both ids in a fixed order (caller, then answerer).
-func helloProof(key []byte, challenge, callerID, answererID string) string {
-	return hmacProof(key, challenge, "hello|"+callerID+"|"+answererID)
+// helloProof binds a /hello answer to the caller's challenge, both ids in a fixed order (caller, then answerer) and
+// the address the caller dialed, so an answer relayed from another computer fails.
+func helloProof(key []byte, challenge, callerID, answererID, host string) string {
+	return hmacProof(key, challenge, "hello|"+callerID+"|"+answererID+"|"+host)
 }
 
 type shareResponse struct {
 	Paired        bool     `json:"paired"`
 	TransferToken string   `json:"transferToken,omitempty"`
 	EntryKeys     []string `json:"entryKeys,omitempty"`
-	// Proof shows the sender that the receiver holds the pairing key, so a computer posing as a paired one cannot
-	// hand out a transfer token and pull files.
-	Proof string `json:"proof,omitempty"`
 }
 
 func hmacProof(key []byte, nonce, payload string) string {
@@ -63,11 +65,6 @@ func proofMatches(key []byte, nonce, payload, proof string) bool {
 		return false
 	}
 	return hmac.Equal([]byte(hmacProof(key, nonce, payload)), []byte(proof))
-}
-
-// responseProof binds a receiver's transfer token and key list to the share it answers.
-func responseProof(key []byte, nonce, token string, keys []string) string {
-	return hmacProof(key, nonce, "response|"+token+"|"+strings.Join(keys, ","))
 }
 
 // entryDigest is a store entry's content hash and the sender's MAC over it.
