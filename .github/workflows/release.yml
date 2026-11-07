@@ -301,9 +301,33 @@ jobs:
           path: out/
           if-no-files-found: error
 
+  # Two clean builds of the Linux binary must hash alike, or a user cannot tell a tampered download from a rebuild.
+  reproducible:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Mortar
+        uses: ./.github/actions/setup-mortar
+        with:
+          frontend: "false"
+
+      - name: Setup Bun
+        uses: Rethunk-Tech/gh-actions/setup-bun@0fd53b2e66ac157aab89e4dc0ebbf4627969acef # v1.23
+
+      - name: Build twice and compare
+        run: scripts/repro-check.sh
+
   finalize:
-    needs: [prebuilt, release, ci-passed, gate]
-    if: ${{ !cancelled() && (needs.release.result == 'success' || (needs.release.result == 'skipped' && needs.prebuilt.outputs.run != '')) && (needs.ci-passed.outputs.ok == 'true' || needs.gate.result == 'success') }}
+    needs: [prebuilt, release, ci-passed, gate, reproducible]
+    if: ${{ !cancelled() && needs.reproducible.result == 'success' && (needs.release.result == 'success' || (needs.release.result == 'skipped' && needs.prebuilt.outputs.run != '')) && (needs.ci-passed.outputs.ok == 'true' || needs.gate.result == 'success') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -413,6 +437,11 @@ jobs:
             cp "bin/flathub/$f" "bin/flathub-$f"
           done
           rm -r bin/aur bin/flathub
+
+      # An SBOM of the Go module and the bun workspaces; it sits in bin/, so the checksums, the attestation and the
+      # release carry it like any other file.
+      - name: SBOM
+        run: build/release/sbom.sh bin/mortar.cdx.json
 
       # SHA256SUMS lets a person check any download by hand; its signature uses the same key as the package repository.
       - name: Checksums and signature

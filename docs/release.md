@@ -17,6 +17,15 @@ The recipes are the `wails3 task` targets in `Taskfile.yml` (`linux:create:appim
 - **Optional org secret `MORTAR_REPO_GPG_KEY`** is the armored private key of "Mortar packages <opensource@rethunk.tech>"; its fingerprint must match the committed `build/linux/repo/mortar-archive-keyring.asc`. While unset the package repository step is skipped with a notice. Set it with `gh secret set MORTAR_REPO_GPG_KEY --org Rethunk-Tech --repos Rethunk-Tech/mortar`.
 - **Package repository:** `scripts/package-repo.sh` builds the signed apt, rpm, pacman and Flatpak (OSTree) tree from the release's packages and the `package-repo` job force-pushes it, under `packages/` beside the tag's `site/`, as the single commit of the orphan `packages` branch; App Platform deploys both from it. Actions › Package repository rebuilds both for an existing tag. Locally (needs podman or docker, and gpg): `MORTAR_REPO_KEY=<private key file> MORTAR_REPO_URL=<base url> scripts/package-repo.sh <asset dir> <out dir>`.
 
+## Verifying a download
+
+A tag run attests every file in the release (the packages, installers, `manifest.json`, `SHA256SUMS` and the SBOM) with GitHub's build provenance, signed through Sigstore. The attestation names this repository's `release.yml` and the tag's commit. Dry runs attest nothing.
+
+- **Provenance:** `gh attestation verify <file> --repo Rethunk-Tech/mortar` (add `--signer-workflow Rethunk-Tech/mortar/.github/workflows/release.yml` to pin the workflow). It checks the file's digest against the attestation, so it also catches a swapped download.
+- **Updater:** the app installs only an artifact whose signature in the signed `manifest.json` verifies against `updateKey` (see Self-update below). The attestation is a second, independent proof that the manifest itself came from this workflow: `gh attestation verify manifest.json --repo Rethunk-Tech/mortar`.
+- **SBOM:** `mortar.cdx.json` is a CycloneDX list of the Go modules and the bun workspaces' packages (`build/release/sbom.sh`, syft pinned by checksum), generated from `go.mod` and `bun.lock`.
+- **Reproducibility:** `release.yml`'s `reproducible` job runs `scripts/repro-check.sh`, which builds the Linux binary twice from fresh clones at different paths with empty Go caches and `SOURCE_DATE_EPOCH` set to the commit time, and fails the release if the binaries or the embedded frontend bundles differ. Run it locally on the same tools: `scripts/repro-check.sh [rev]`.
+
 ## Each release
 
 1. **Check it.** Gate-green is not QA: run `bun run renders:release` at the commit to tag and look at the pictures it saves under `shots` ([AGENTS.md](../AGENTS.md) § Testing).
