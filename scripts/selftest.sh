@@ -479,6 +479,7 @@ seed_lc() {
   # jq reads the whole listing: grep -q exits at the first match, SIGPIPEs the long output and fails the pipeline under pipefail.
   cli games --json | jq -e 'any(.[]; .id == "lethal-company")' >/dev/null || return 0
   if cli profiles lethal-company --json | grep -q '"Seed Lobby"'; then
+    seed_lc_project
     return
   fi
   local fx=$ROOT/seed-lc name
@@ -498,6 +499,18 @@ seed_lc() {
     cli install lethal-company "Seed Lobby" "$fx/zips/$name.zip"
   done
   seed_lc_configs "$fx"
+  seed_lc_project
+}
+
+# seed_lc_project puts one content-pack project in Lethal Company's Develop tab, which the render budget's develop cases
+# open; a folder with a project record needs no template or build. It is skipped when the tab already lists a project.
+seed_lc_project() {
+  if cli dev list lethal-company --json | jq -e 'length > 0' >/dev/null; then
+    return
+  fi
+  mkdir -p "$ROOT/seed-dev/SeedMod/.mortar"
+  printf '{"kind":"content","name":"SeedMod"}\n' >"$ROOT/seed-dev/SeedMod/.mortar/project.json"
+  cli dev add lethal-company "$ROOT/seed-dev/SeedMod"
 }
 
 # seed_lc_configs gives the Lethal Company profile what the Config page lists: SeedAlpha's plugin (the repo's
