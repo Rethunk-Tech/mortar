@@ -11,6 +11,7 @@ const LOAD_ORDER = 3_963_816_757
 const PACK = 1_330_956_574
 const UPLOAD_GITHUB = 3_405_360_245
 const UPLOAD_THUNDERSTORE = 1_056_045_837
+const PREVIEW_LINK = 3_537_659_613
 const UPDATE_CHECK = 3_749_236_397
 const UPDATE_INFO = 3_769_649_439
 export const HAS_DECOMPILER = 745_351_519
@@ -216,6 +217,48 @@ function updateReadyCase(): Case {
   }
 }
 
+/** The import preview of a share that carries changed copies: the count in the bar and the folded list of paths. */
+function importPreviewChangedFilesCase({ dialog, importStep }: ReturnType<typeof dialogKit>): Case {
+  const stub = stubCalls({
+    [PREVIEW_LINK]: {
+      session: 'render-check',
+      name: 'Farm with changed files',
+      notes: '',
+      settings: 3,
+      choices: 0,
+      changedFiles: [
+        'Mods/mc/mc_settings.cfg',
+        'Mods/mc/mc_state.dat',
+        'changed/Mods/old/old_settings.cfg',
+      ],
+      mods: [],
+      problems: [],
+      signedIn: true,
+      premium: false,
+      replace: { removeKeys: [], remove: [], keepLocal: [] },
+    },
+  })
+  return {
+    ...dialog(
+      '',
+      async (p) => {
+        const link = p.getByRole('textbox', { name: 'Link or code' })
+        await link.fill('mortar://render-check')
+        await link.press('Enter')
+        await p.getByText(/files changed while playing are included/).click()
+        await p.getByText('Mods/mc/mc_state.dat').waitFor()
+      },
+      undefined,
+      async (p) => {
+        await p.route('**/wails/runtime', stub)
+        await importStep(p, /^Link or code/)
+      },
+    ),
+    name: 'import-preview-changed-files',
+    teardown: (p: Page) => p.unroute('**/wails/runtime', stub),
+  }
+}
+
 /** Screens the render data may not reach on its own, each with the backend answer that opens it stubbed. */
 export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
   const {
@@ -232,6 +275,7 @@ export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
   } = kit
   return [
     updateReadyCase(),
+    importPreviewChangedFilesCase(kit),
     // The Mods tab with the project and its development profile disagreeing in all three ways.
     (() => {
       const stub = stubCalls({

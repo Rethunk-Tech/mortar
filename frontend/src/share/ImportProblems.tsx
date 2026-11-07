@@ -168,6 +168,29 @@ function LeftOut({ title, paths }: { title: string; paths: string[] }) {
   )
 }
 
+// The changed copies the share carries, folded under the settings count until the player asks which files they are.
+function ChangedFiles({ paths }: { paths: string[] }) {
+  return (
+    <Box component="details">
+      <Typography
+        component="summary"
+        variant="body2"
+        sx={{ fontWeight: 600, color: SHARE_CARD.muted, cursor: 'pointer' }}
+      >
+        {plural(paths.length, {
+          one: '# file changed while playing is included',
+          other: '# files changed while playing are included',
+        })}
+      </Typography>
+      <Box component="ul" sx={cardList}>
+        {paths.map((p) => (
+          <li key={p}>{p}</li>
+        ))}
+      </Box>
+    </Box>
+  )
+}
+
 function CountLabel({ state, count }: { state: ModState; count: number }) {
   const { t } = useLingui()
   return {
@@ -240,6 +263,7 @@ export function StatusBar({
   )
   const skippedSettings = preview.skippedSettings ?? []
   const skippedPrograms = preview.skippedPrograms ?? []
+  const changedFiles = preview.changedFiles ?? []
   const carried = carriedBy(preview)
   const carriedLabels = {
     notes: t`Notes`.toLocaleLowerCase(i18n.locale),
@@ -306,6 +330,7 @@ export function StatusBar({
             paths={skippedSettings}
           />
         ) : null}
+        {changedFiles.length > 0 ? <ChangedFiles paths={changedFiles} /> : null}
         {skippedPrograms.length > 0 ? (
           <LeftOut
             title={t`${plural({ count: skippedPrograms.length }, { one: '# program file was', other: '# program files were' })} left out; Mortar copies settings, not programs:`}

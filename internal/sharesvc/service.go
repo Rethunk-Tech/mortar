@@ -517,6 +517,7 @@ func (s *Service) previewShared(ctx context.Context, game string, pv share.Previ
 		return Preview{}, err
 	}
 	out.Settings += len(pv.LoaderConfigs) + len(pv.ChangedFiles)
+	out.ChangedFiles = changedPaths(pv.ChangedFiles)
 	out.Choices = pv.Choices.Count()
 	s.mu.Lock()
 	if s.current != nil && s.current.id == out.Session {
@@ -526,9 +527,23 @@ func (s *Service) previewShared(ctx context.Context, game string, pv share.Previ
 		s.current.loaderConfigs = pv.LoaderConfigs
 		s.current.changedFiles = pv.ChangedFiles
 		s.current.preview.Settings = out.Settings
+		s.current.preview.ChangedFiles = out.ChangedFiles
 	}
 	s.mu.Unlock()
 	return out, nil
+}
+
+// changedPaths are the paths of a share's changed copies, sorted.
+func changedPaths(files []share.ChangedFile) []string {
+	if len(files) == 0 {
+		return nil
+	}
+	paths := make([]string, len(files))
+	for i, f := range files {
+		paths[i] = f.Path
+	}
+	slices.Sort(paths)
+	return paths
 }
 
 // PreviewData reads a base64-encoded .mortar payload received from another Mortar.

@@ -153,6 +153,9 @@ type Preview struct {
 	Choices int `json:"choices"`
 	// SkippedSettings lists the external import's config files left out as too large, as mod id/path.
 	SkippedSettings []string `json:"skippedSettings,omitempty"`
+	// ChangedFiles lists, by path in the profile, the changed copies a .mortar file or LAN send carries (counted in
+	// Settings), so the player sees what will be written beside the mods.
+	ChangedFiles []string `json:"changedFiles,omitempty"`
 	// SkippedPrograms lists the executable files a profile code or file carried, which Mortar never copies.
 	SkippedPrograms []string    `json:"skippedPrograms,omitempty"`
 	Mods            []Mod       `json:"mods"`

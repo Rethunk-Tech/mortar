@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -141,5 +142,23 @@ func TestAChangedCopyCannotBeWrittenThroughALink(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(outside, "x.cfg")); err == nil {
 		t.Fatal("a file landed outside the profile")
+	}
+}
+
+// The preview names the changed copies a share carries, sorted, beside the count the player already sees.
+func TestThePreviewListsTheChangedCopiesAShareCarries(t *testing.T) {
+	s, _ := newService(t, true)
+	src := changedSender(t, s)
+	payload, _, err := s.ExportBytes(changedGame, src, share.OwnInclude())
+	if err != nil {
+		t.Fatal(err)
+	}
+	pv, err := s.PreviewData(t.Context(), changedGame, base64.RawStdEncoding.EncodeToString(payload), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"Mods/mc/mc_settings.cfg", "Mods/mc/mc_state.dat", "changed/Mods/old/old_settings.cfg"}
+	if !slices.Equal(pv.ChangedFiles, want) {
+		t.Fatalf("changed files = %v, want %v", pv.ChangedFiles, want)
 	}
 }

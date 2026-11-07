@@ -1526,6 +1526,11 @@ msgstr "Fix all"
 msgid "Could not clone the project"
 msgstr "Could not clone the project"
 
+#. placeholder {0}: paths.length
+#: src/share/ImportProblems.tsx
+msgid "{0, plural, one {# file changed while playing is included} other {# files changed while playing are included}}"
+msgstr "{0, plural, one {# file changed while playing is included} other {# files changed while playing are included}}"
+
 #: src/commandPalette/CommandPalette.tsx
 msgid "Mods and profiles"
 msgstr "Mods and profiles"
