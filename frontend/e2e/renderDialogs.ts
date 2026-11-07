@@ -153,7 +153,16 @@ function shareCases(kit: ReturnType<typeof dialogKit>): Case[] {
   const { dialog, share, shareNearby, inDialog, atHome, toThunderstore, fromThunderstore } = kit
   return [
     dialog('share', (p) => share(p), undefined, atHome),
-    dialog('share-mortar-link', (p) => share(p, /^Mortar/), undefined, atHome),
+    // A profile this size opens on File; the case picks Link to picture it.
+    dialog(
+      'share-mortar-link',
+      async (p) => {
+        await share(p, /^Mortar/)
+        await inDialog(p, /^Link$/)
+      },
+      undefined,
+      atHome,
+    ),
     dialog(
       'share-mortar-file',
       async (p) => {
