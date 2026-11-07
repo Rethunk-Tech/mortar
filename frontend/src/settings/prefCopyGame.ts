@@ -1,6 +1,6 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
-import { GALE, STEAM } from '../brand/productNames.ts'
+import { GALE, LINUX, STEAM } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import type { PrefCopy } from './prefCopyAntivirus.ts'
 
@@ -118,7 +118,7 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
     sandboxLaunch: {
       label: i18n._(msg`Sandbox the game`),
       description: i18n._(
-        msg`Starts the game directly, without the ${{ launcher: STEAM }} overlay or playtime, and hides your home folder from it and its mods. The game keeps its install, saves and this profile. Linux only; needs bubblewrap.`,
+        msg`Starts the game directly, without the ${{ launcher: STEAM }} overlay or playtime, and hides your home folder from it and its mods. The game keeps its install, saves and this profile. ${{ os: LINUX }} only; needs bubblewrap.`,
       ),
     },
     sandboxExtraFolders: {

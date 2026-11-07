@@ -97,6 +97,10 @@ msgstr "Connected from {browser}, last seen "
 msgid "Sand"
 msgstr "Sand"
 
+#: src/settings/prefCopyGame.ts
+msgid "Starts the game directly, without the {launcher} overlay or playtime, and hides your home folder from it and its mods. The game keeps its install, saves and this profile. {os} only; needs bubblewrap."
+msgstr "Starts the game directly, without the {launcher} overlay or playtime, and hides your home folder from it and its mods. The game keeps its install, saves and this profile. {os} only; needs bubblewrap."
+
 #: src/settings/sections/Notifications.tsx
 msgid "{name}: in Mortar"
 msgstr "{name}: in Mortar"
@@ -1215,10 +1219,6 @@ msgstr "Mortar"
 #: src/settings/shortcutLabels.ts
 msgid "Focus the next mod"
 msgstr "Focus the next mod"
-
-#: src/settings/prefCopyGame.ts
-msgid "Starts the game directly, without the {launcher} overlay or playtime, and hides your home folder from it and its mods. The game keeps its install, saves and this profile. Linux only; needs bubblewrap."
-msgstr "Starts the game directly, without the {launcher} overlay or playtime, and hides your home folder from it and its mods. The game keeps its install, saves and this profile. Linux only; needs bubblewrap."
 
 #: src/settings/prefCopy.ts
 msgid "Offer new downloads"
