@@ -404,6 +404,10 @@ func (s *Service) handleStore(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "local store is unavailable", http.StatusInternalServerError)
 		return
 	}
+	if s.deps.Store.Unverified(game, key) {
+		http.Error(w, "store entry not found", http.StatusNotFound)
+		return
+	}
 	root, err := s.deps.Store.Path(game, key)
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {

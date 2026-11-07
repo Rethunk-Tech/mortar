@@ -281,3 +281,32 @@ func TestPeerClientDoesNotFollowRedirects(t *testing.T) {
 		t.Fatalf("status = %d", resp.StatusCode)
 	}
 }
+
+func TestABackupsStoreItemIsNeitherVouchedForNorServed(t *testing.T) {
+	t.Parallel()
+	senderStore := store.OpenAt(t.TempDir())
+	dir, _ := entryDir(t, 16)
+	backed, sourced := store.NexusKey(7, 1), store.NexusKey(7, 2)
+	if err := senderStore.AddBackupDir(t.Context(), "stardew", backed, dir); err != nil {
+		t.Fatal(err)
+	}
+	if err := senderStore.AddDir(t.Context(), "stardew", sourced, dir); err != nil {
+		t.Fatal(err)
+	}
+	sender := NewService(Deps{Store: senderStore})
+	items := []transferItem{{Key: backed}, {Key: sourced}}
+	digests := sender.entryDigests([]byte("pair key"), "stardew", items)
+	if _, ok := digests[backed]; ok || len(digests) != 1 {
+		t.Fatalf("digests = %v: the backup's item must not be vouched for", digests)
+	}
+	sender.rememberGrant("tok", "stardew", []string{backed, sourced})
+	for key, want := range map[string]int{backed: http.StatusNotFound, sourced: http.StatusOK} {
+		request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://mortar.test/store/stardew/"+key, nil)
+		request.Header.Set("Authorization", "Bearer tok")
+		response := httptest.NewRecorder()
+		sender.handleStore(response, request)
+		if response.Code != want {
+			t.Errorf("%s served with %d, want %d", key, response.Code, want)
+		}
+	}
+}

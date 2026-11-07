@@ -629,6 +629,10 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 func (s *Service) entryDigests(key []byte, game string, items []transferItem) map[string]entryDigest {
 	out := make(map[string]entryDigest, len(items))
 	for _, item := range items {
+		// A backup's item was vouched for only by the backup; the receiver downloads it from its source instead.
+		if s.deps.Store.Unverified(game, item.Key) {
+			continue
+		}
 		dir, err := s.deps.Store.Path(game, item.Key)
 		if err != nil {
 			continue
