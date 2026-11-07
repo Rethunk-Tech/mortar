@@ -95,3 +95,20 @@ func TestArgvKeepsMissingRWStrict(t *testing.T) {
 		t.Fatalf("a missing writable folder must reach bwrap, which fails the launch: %v", a)
 	}
 }
+
+func TestDenialsFindsOnlyPathsTheSandboxHides(t *testing.T) {
+	log := strings.Join([]string{
+		"[Error] UnauthorizedAccessException: Access to the path '/home/u/.ssh/id_rsa' is denied.",
+		"[Error] Could not find a part of the path 'Z:\\home\\u\\.config\\mod\\a.json'.",
+		"[Warning] No such file or directory: /mnt/games/Steam/steamapps/common/G/missing.dll",
+		"[Error] Permission denied: /mnt/data/x",
+		"[Error] Could not find a part of the path '/home/u/.config/StardewValley/Saves/x'.",
+		"[Info] loaded /home/u/.ssh/id_rsa",
+		"[Error] Permission denied: /home/u/.ssh/id_rsa",
+	}, "\n")
+	got := Denials([]string{log}, []string{"/home/u/.config/StardewValley"}, "/home/u")
+	want := []string{"/home/u/.ssh/id_rsa", "/home/u/.config/mod/a.json", "/mnt/data/x"}
+	if !slices.Equal(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+}

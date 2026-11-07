@@ -62,3 +62,36 @@ func (s *Service) sandboxSpec(gameID, profileID string, inst game.Install, plan 
 	spec.RW = rw
 	return spec, nil
 }
+
+// SandboxReport is what a stored run says about the sandbox.
+type SandboxReport struct {
+	// Writable is the folders the run could write; empty when the run was not sandboxed.
+	Writable []string `json:"writable"`
+	// Denied are the paths its logs show it reached for outside them.
+	Denied []string `json:"denied"`
+}
+
+// SandboxReport reads run runID (the newest when empty) of a profile.
+func (s *Service) SandboxReport(gameID, profileID, runID string) (SandboxReport, error) {
+	report := SandboxReport{Writable: []string{}, Denied: []string{}}
+	runs, err := s.Runs(gameID, profileID)
+	if err != nil {
+		return report, err
+	}
+	for _, r := range runs {
+		if runID != "" && r.ID != runID {
+			continue
+		}
+		if len(r.Sandbox) == 0 {
+			return report, nil
+		}
+		text, player, err := s.storedRunLogs(gameID, profileID, r.ID)
+		if err != nil {
+			return report, err
+		}
+		report.Writable = r.Sandbox
+		report.Denied = sandbox.Denials([]string{text, player}, r.Sandbox, s.home)
+		return report, nil
+	}
+	return report, nil
+}

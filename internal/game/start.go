@@ -70,6 +70,8 @@ type StartEnv struct {
 	// Sandbox, when set, starts a direct Linux launch inside bubblewrap with only these folders (and the game's own,
 	// its Proton prefix and the Steam parts Proton reads) reachable. A start that cannot be sandboxed fails.
 	Sandbox *sandbox.Spec
+	// OnSandbox reports every folder the sandboxed game may write, once the start has added its own.
+	OnSandbox func(writable []string)
 }
 
 // Starter starts launch plans the way the install's store requires: Steam installs through `steam -applaunch`, which
@@ -289,6 +291,9 @@ func sandboxed(cmd *launch.Command, inst Install, env StartEnv) error {
 		spec.RO = append(spec.RO, filepath.Join(lib, "common"))
 	}
 	spec.RO = append(spec.RO, envValue(cmd.Env, "DOTNET_ROOT"))
+	if env.OnSandbox != nil {
+		env.OnSandbox(slices.Clone(spec.RW))
+	}
 	cmd.Name, cmd.Args = bwrap, sandbox.Argv(bwrap, spec, cmd.Name, cmd.Args)[1:]
 	return nil
 }

@@ -152,6 +152,8 @@ type session struct {
 	progress    Progress
 	// readyMs is how long the launch took until its loader said it was done; zero until it has.
 	readyMs int64
+	// sandbox is the folders a sandboxed launch could write; empty for a launch that was not sandboxed.
+	sandbox []string
 	// cancelled is a launch the player called off before the game was up.
 	cancelled bool
 }
@@ -1123,6 +1125,13 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	}
 	progress := s.newProgress(g, profileID, copies, vanilla)
 	env.OnStage = s.onStage(g, buf)
+	env.OnSandbox = func(writable []string) {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		sess := s.logs[keyOf(g)]
+		sess.sandbox = writable
+		s.logs[keyOf(g)] = sess
+	}
 	env.OnVia = func(via string) { s.updateProgress(g, buf, func(p *Progress) { p.Via = via }) }
 	s.mu.Lock()
 	s.logs[keyOf(g)], s.stop[keyOf(g)] = session{

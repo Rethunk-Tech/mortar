@@ -32,6 +32,7 @@ import { LogActions } from './LogActions.tsx'
 import { useLevelNames, useShownEntries, useVisible } from './logHooks.ts'
 import { RunProblemsStrip } from './RunProblems.tsx'
 import { RunsPicker } from './RunsPicker.tsx'
+import { SandboxNote } from './SandboxNote.tsx'
 import { canSendTo, useConsole } from './store.ts'
 import { useConsoleEmpty } from './useConsoleEmpty.ts'
 import { useJumpToSearchHit } from './useJumpToSearchHit.ts'
@@ -435,6 +436,7 @@ const ConsoleControls = memo(function ConsoleControlsView({
       ) : null}
       <CauseBanner game={runGame} profile={profile} run={run} />
       <RunProblemsStrip game={runGame} profile={profile} run={run} />
+      <SandboxNote game={runGame} profile={profile} run={run} />
       {offerReinstall ? <ReinstallLoader game={game} /> : null}
     </>
   )
