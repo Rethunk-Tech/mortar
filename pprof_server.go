@@ -9,11 +9,12 @@ import (
 	"net/http/pprof"
 	"os"
 	"runtime/metrics"
-	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/netstate"
 )
 
-// MORTAR_PPROF=<addr> serves Go's profiling endpoints (/debug/pprof/) in server mode, for the memory harness and for
+// MORTAR_PPROF=<addr> (a bare port listens on loopback only) serves Go's profiling endpoints (/debug/pprof/) in server mode, for the memory harness and for
 // profiling a self-test sandbox. Unset, nothing listens; the desktop build never has it. prepareServerMode starts it,
 // which only the long-running server reaches, not a CLI call of the same binary.
 func servePprof() {
@@ -27,11 +28,8 @@ func servePprof() {
 	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	mux.HandleFunc("/debug/metrics", serveRuntimeMetrics)
-	if !strings.Contains(addr, ":") {
-		addr = ":" + addr
-	}
 	srv := &http.Server{
-		Addr:              addr,
+		Addr:              netstate.LoopbackUnlessNamed(addr),
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
