@@ -1,4 +1,5 @@
 import { msg } from '@lingui/core/macro'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import type {
@@ -120,7 +121,10 @@ export const useProjectInfo = create<{ byDir: Record<string, ProjectInfo> }>(() 
 export async function refreshInfo(game: string, dir: string, quiet = false) {
   try {
     const info = await Inspect(game, dir)
-    useProjectInfo.setState((s) => ({ byDir: { ...s.byDir, [dir]: info } }))
+    // An unchanged answer keeps the stored object, so every card selecting it does not redraw.
+    useProjectInfo.setState((s) =>
+      sameValue(s.byDir[dir], info) ? s : { byDir: { ...s.byDir, [dir]: info } },
+    )
   } catch (e) {
     if (!quiet) {
       toastError(i18n._(msg`Could not read the mod project`), e)
