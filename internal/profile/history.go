@@ -149,6 +149,7 @@ func (s *Store) History(game, id string) ([]HistoryEvent, error) {
 	if err != nil {
 		return nil, err
 	}
+	data.Events = collapseHistory(data.Events)
 	out := make([]HistoryEvent, len(data.Events))
 	for i, e := range data.Events {
 		if modNamed(e.Change) {
@@ -596,34 +597,23 @@ func (s *Store) OpenHistoryBatch(game, id, batchID string) error {
 }
 
 // RecordHistoryBatch associates a completed queued install with its bulk event and returns that event's id; an
-// empty batchID closes the batch and returns "".
+// empty batchID closes the batch and returns "". A batch that is no longer open records nothing: every change it
+// made recorded its own event against its real before-state, and the newest event belongs to whichever change
+// wrote it, not to this completion.
 func (s *Store) RecordHistoryBatch(game, id, batchID string) (string, error) {
 	if batchID == "" {
 		return "", s.CloseHistoryBatch(game, id)
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, dir, data, err := s.historyAt(game, id)
-	if err != nil {
-		return "", err
-	}
 	key := historyBatchKey(game, id)
 	batch, ok := s.historyBatches[key]
 	if !ok || batch.ID != batchID {
-		batch = historyBatch{ID: batchID, Before: cloneEntries(p.Entries)}
+		return "", nil
 	}
-	if batch.EventID == "" && len(data.Events) > 0 {
-		last := data.Events[len(data.Events)-1]
-		if entries, exists := snapshotEntries(&data, last.SnapshotID); exists && entriesEqual(entries, p.Entries) {
-			batch.EventID = last.ID
-			if len(data.Events) > 1 {
-				if previous, exists := snapshotEntries(&data, data.Events[len(data.Events)-2].SnapshotID); exists {
-					batch.Before = cloneEntries(previous)
-				}
-			} else {
-				batch.Before = []Entry{}
-			}
-		}
+	p, dir, data, err := s.historyAt(game, id)
+	if err != nil {
+		return "", err
 	}
 	if err := s.recordHistoryBatchData(dir, &data, &batch, p.Entries); err != nil {
 		return "", err
@@ -818,6 +808,31 @@ func historyFromBytes(b []byte) (historyFileData, error) {
 		data.Snapshots = map[string][]Entry{}
 	}
 	return data, nil
+}
+
+// collapseHistory drops the second of two events a bad writer recorded twice for one change, which reads as two
+// identical rows. The first of the pair stands, because it is the change's own event and the profile's references
+// name it.
+func collapseHistory(events []HistoryEvent) []HistoryEvent {
+	out := make([]HistoryEvent, 0, len(events))
+	for _, ev := range events {
+		if n := len(out); n > 0 && exactDuplicate(out[n-1], ev) {
+			continue
+		}
+		out = append(out, ev)
+	}
+	return out
+}
+
+// exactDuplicate reports two bulk "Changed N mods" events that say the same thing at the same time about the same
+// snapshot, so one change recorded twice. Only those events are compared: a settings change and an edit of one
+// mod carry their own text, and two of them in one second are two changes.
+func exactDuplicate(a, b HistoryEvent) bool {
+	if a.ID == b.ID || a.Kind != historyBulk || a.Change != ChangeMods {
+		return false
+	}
+	return b.Kind == historyBulk && b.Change == ChangeMods && a.At.Equal(b.At) && a.Count == b.Count &&
+		a.Added == b.Added && a.Removed == b.Removed && a.Updated == b.Updated && a.SnapshotID == b.SnapshotID
 }
 
 func emptyHistory() historyFileData {
