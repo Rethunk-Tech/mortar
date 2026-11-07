@@ -4850,13 +4850,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-mdast-util-gfm-autolink-literal@2.0.1
+mdast-util-gfm-autolink-literal@2.1.0
 licence: MIT
 https://github.com/syntax-tree/mdast-util-gfm-autolink-literal
 
 (The MIT License)
 
-Copyright (c) 2020 Titus Wormer <tituswormer@gmail.com>
+Copyright (c) Titus Wormer <tituswormer@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -4966,13 +4966,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-mdast-util-gfm-task-list-item@2.0.0
+mdast-util-gfm-task-list-item@2.0.1
 licence: MIT
 https://github.com/syntax-tree/mdast-util-gfm-task-list-item
 
 (The MIT License)
 
-Copyright (c) 2020 Titus Wormer <tituswormer@gmail.com>
+Copyright (c) Titus Wormer <tituswormer@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -5083,7 +5083,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-mdast-util-to-markdown@2.2.2
+mdast-util-to-markdown@2.2.3
 licence: MIT
 https://github.com/syntax-tree/mdast-util-to-markdown
 
