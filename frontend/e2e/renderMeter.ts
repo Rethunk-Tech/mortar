@@ -70,7 +70,7 @@ export async function quietToasts(page: Page, name: string) {
 
 /** A piece of text on a render's picture, in CSS pixels of the screenshot. A label is an aria-label, title, placeholder or
  * alt that the picture does not show, such as an icon button's tooltip; its box is the element that carries it. */
-export interface ShotText {
+interface ShotText {
   text: string
   kind: 'text' | 'label'
   x: number
@@ -83,7 +83,7 @@ const LABELS = ['aria-label', 'title', 'placeholder', 'alt']
 
 /** Every visible element's own text and labels on the page as the screenshot shows it, so a string can be traced to the
  * render and the spot that shows it without reading the picture. */
-export const shotText = (page: Page): Promise<ShotText[]> =>
+const shotText = (page: Page): Promise<ShotText[]> =>
   page.evaluate((labels) => {
     const out: ShotText[] = []
     const flat = (s: string) => s.replace(/\s+/gu, ' ').trim()
