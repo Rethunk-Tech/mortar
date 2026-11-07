@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -119,6 +120,9 @@ func TestExtractNamesFromTheOriginalName(t *testing.T) {
 
 func TestExtractOpenedReadsTheFileItHoldsNotThePath(t *testing.T) {
 	t.Parallel()
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows refuses to replace a file another handle holds open, so the swap this guards against cannot happen")
+	}
 	held := zipAt(t, map[string]string{"held.txt": "held"})
 	other := zipAt(t, map[string]string{"swapped.txt": "swapped"})
 	f, err := safefs.Open(held)

@@ -3,6 +3,7 @@ package game
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"testing"
 
@@ -10,6 +11,9 @@ import (
 )
 
 func TestProtonDirsFindsProtonBehindAPrefix(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Proton and the game sandbox run only on Linux")
+	}
 	root := t.TempDir()
 	target := filepath.Join(root, "elsewhere", "GE-Proton")
 	if err := os.MkdirAll(target, 0o750); err != nil {

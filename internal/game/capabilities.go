@@ -181,7 +181,9 @@ func DataDirs(home string, s settings.Settings, id, pin string) []string {
 			continue
 		}
 		p, err := PathIn(home, s, id, pin, t)
-		if err != nil || p == "" {
+		// A path the catalog roots in an install Mortar does not know comes back relative, which bwrap would bind
+		// from wherever the game happens to start.
+		if err != nil || p == "" || !filepath.IsAbs(p) {
 			continue
 		}
 		if dataFileRoles[role] {

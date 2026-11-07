@@ -3,6 +3,7 @@ package game
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"testing"
 	"time"
@@ -68,6 +69,9 @@ func TestManifestModsFolderBelongsToTheSMAPIGameOnly(t *testing.T) {
 
 // SMAPI writes ErrorLogs beside Saves in the config folder; a sandbox that binds only Saves loses the logs.
 func TestDataDirsMergesStardewsRolesIntoItsConfigFolder(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("the game sandbox these folders are for runs only on Linux")
+	}
 	home := t.TempDir()
 	got := DataDirs(home, settings.Defaults(), "stardew", "")
 	if want := []string{filepath.Join(home, ".config", "StardewValley")}; !slices.Equal(got, want) {
