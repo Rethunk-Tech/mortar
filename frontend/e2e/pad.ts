@@ -10,7 +10,8 @@ export const RIGHT = 15
 // A standard-mapping pad the page polls through navigator.getGamepads, driven by setting window.pad.
 export function installPad(page: Page) {
   return page.addInitScript(() => {
-    const state = { buttons: Array.from({ length: 17 }, () => false), axes: [0, 0, 0, 0] }
+    const buttons: boolean[] = new Array(17).fill(false)
+    const state = { buttons, axes: [0, 0, 0, 0] }
     Object.assign(globalThis, { pad: state })
     navigator.getGamepads = () => [
       {
