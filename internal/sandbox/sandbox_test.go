@@ -2,6 +2,7 @@ package sandbox
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -67,11 +68,11 @@ func TestArgvKeepsOnlyNamedSocketsInTheRuntimeDir(t *testing.T) {
 
 func TestArgvCacheAndCredentials(t *testing.T) {
 	cache := t.TempDir()
-	a := Argv("bwrap", Spec{CacheDir: cache, Environ: []string{"HOME=/h", "GITHUB_TOKEN=x", "SSH_AUTH_SOCK=/s", "PATH=/bin", "DBUS_SESSION_BUS_ADDRESS=u"}}, "g", nil)
+	a := Argv("bwrap", Spec{CacheDir: cache, Environ: []string{"HOME=/h", "GITHUB_TOKEN=x", "SSH_AUTH_SOCK=/s", "PATH=/bin"}}, "g", nil)
 	if index(a, "--setenv", "MESA_SHADER_CACHE_DIR", cache) < 0 || index(a, "--bind", cache, cache) < 0 {
 		t.Fatalf("cache not bound: %v", a)
 	}
-	for _, k := range []string{"GITHUB_TOKEN", "SSH_AUTH_SOCK", "DBUS_SESSION_BUS_ADDRESS"} {
+	for _, k := range []string{"GITHUB_TOKEN", "SSH_AUTH_SOCK"} {
 		if index(a, "--unsetenv", k) < 0 {
 			t.Fatalf("%s kept: %v", k, a)
 		}
@@ -157,5 +158,97 @@ func TestAllowableOffersTheNearestFolderBelowHome(t *testing.T) {
 	}
 	if got := Allowable("/mnt/nowhere/x", home); got != "" {
 		t.Fatalf("a hidden root is never offered, got %q", got)
+	}
+}
+
+// A sandbox that keeps DISPLAY but loses the session bus lets libdbus autolaunch dbus-launch, which forks without
+// bound under no_new_privs; every Argv must therefore name a session bus address.
+func TestArgvAlwaysSetsASessionBusAddress(t *testing.T) {
+	run := t.TempDir()
+	for name, s := range map[string]Spec{
+		"no proxy":      {Runtime: run, Environ: []string{"DISPLAY=:0", "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"}},
+		"no runtime":    {Environ: []string{"DISPLAY=:0"}},
+		"proxy":         {Runtime: run, Bus: filepath.Join(run, "proxy", "bus")},
+		"proxy, no dir": {Runtime: filepath.Join(run, "absent"), Bus: "/x/bus"},
+	} {
+		a := Argv("bwrap", s, "g", nil)
+		i := index(a, "--setenv", "DBUS_SESSION_BUS_ADDRESS")
+		if i < 0 {
+			t.Fatalf("%s: no session bus address set: %v", name, a)
+		}
+		if index(a, "--unsetenv", "DBUS_SESSION_BUS_ADDRESS") >= 0 {
+			t.Fatalf("%s: the address is stripped instead of replaced: %v", name, a)
+		}
+		want := busOff
+		if name == "proxy" {
+			want = "unix:path=" + filepath.Join(run, "bus")
+			if index(a, "--bind", s.Bus, filepath.Join(run, "bus")) < index(a, "--tmpfs", run) {
+				t.Fatalf("proxy socket bound before the runtime dir is emptied: %v", a)
+			}
+		}
+		if a[i+2] != want {
+			t.Fatalf("%s: address %q, want %q", name, a[i+2], want)
+		}
+		if index(a, "--setenv", "DBUS_SYSTEM_BUS_ADDRESS", busOff) < 0 {
+			t.Fatalf("%s: system bus left reachable: %v", name, a)
+		}
+	}
+}
+
+func TestProxyArgvFiltersToTheNamesGamesUse(t *testing.T) {
+	a := ProxyArgv("/usr/bin/xdg-dbus-proxy", "unix:path=/run/user/1/bus", "/run/user/1/mortar/bus", 3)
+	if !slices.Equal(a[:5], []string{"/usr/bin/xdg-dbus-proxy", "unix:path=/run/user/1/bus", "/run/user/1/mortar/bus", "--filter", "--fd=3"}) {
+		t.Fatalf("head: %v", a)
+	}
+	for _, n := range []string{"com.feralinteractive.GameMode", "org.freedesktop.ScreenSaver", "org.freedesktop.portal.*"} {
+		if !slices.Contains(a, "--talk="+n) {
+			t.Fatalf("missing %s: %v", n, a)
+		}
+	}
+	for _, x := range a {
+		if strings.HasPrefix(x, "--own=") || x == "--log" || strings.Contains(x, "systemd1") {
+			t.Fatalf("too much exposed: %v", a)
+		}
+	}
+}
+
+func TestSessionAddressPrefersTheHostsThenTheDefaultSocket(t *testing.T) {
+	if got := SessionAddress([]string{"A=1", "DBUS_SESSION_BUS_ADDRESS=unix:path=/x"}, "/run/user/1"); got != "unix:path=/x" {
+		t.Fatal(got)
+	}
+	if got := SessionAddress(nil, "/run/user/1"); got != "unix:path=/run/user/1/bus" {
+		t.Fatal(got)
+	}
+	if got := SessionAddress(nil, ""); got != "" {
+		t.Fatal(got)
+	}
+}
+
+func TestTaskCapWrapsInATransientUserScope(t *testing.T) {
+	p, _ := TaskCap(TasksMax)
+	if p == nil {
+		t.Skip("no systemd user manager here")
+	}
+	if !slices.Equal(p[1:], []string{"--user", "--scope", "--quiet", "-p", "TasksMax=4096", "--"}) {
+		t.Fatalf("%v", p)
+	}
+}
+
+func TestStartProxyListensAndCloseRemovesIt(t *testing.T) {
+	run := os.Getenv("XDG_RUNTIME_DIR")
+	if _, err := exec.LookPath("xdg-dbus-proxy"); err != nil || run == "" || !exists(filepath.Join(run, "bus")) {
+		t.Skip("needs xdg-dbus-proxy and a session bus")
+	}
+	b, err := StartProxy(SessionAddress(os.Environ(), run), run)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists(b.Socket) {
+		t.Fatal("proxy socket missing")
+	}
+	b.Close()
+	b.Close()
+	if exists(b.Socket) {
+		t.Fatal("proxy socket left behind")
 	}
 }

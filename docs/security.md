@@ -130,7 +130,7 @@ Mortar's `avscan` picks the scanner the settings name; [go-avscan](https://githu
 
 ## Out of scope
 
-A malicious mod's own code runs inside the game with the user's rights; Mortar installs it where the loader expects it and does not sandbox the game. Mortar does not verify Nexus or Thunderstore content beyond the archive checks above.
+A malicious mod's own code runs inside the game with the user's rights; Mortar installs it where the loader expects it and, unless the player turns on the opt-in Linux game sandbox ([design](design.md#game-sandbox-linux-opt-in)), does not sandbox the game. With the sandbox on, the game reaches D-Bus only through a filtered `xdg-dbus-proxy` (GameMode, ScreenSaver and `org.freedesktop.portal.*` names; portals can show the player a file chooser), or no session bus at all when the proxy is missing; the system bus is unreachable, and the game's process count is capped (`sandbox.Argv`, `sandbox.StartProxy`, `sandbox.TaskCap`; tests `TestArgvAlwaysSetsASessionBusAddress`, `TestProxyArgvFiltersToTheNamesGamesUse`). Mortar does not verify Nexus or Thunderstore content beyond the archive checks above.
 
 One Ed25519 key signs the updates, their statements, the catalog and the signed lists. The signatures cannot stand in for one another (files use ed25519ph, statements and catalogs sign different text), but one leaked key forges all of them; splitting the keys needs new secrets from the maintainer and is not done.
 

@@ -1132,6 +1132,9 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		sess.sandbox = writable
 		s.logs[keyOf(g)] = sess
 	}
+	env.OnSandboxNote = func(note string) {
+		buf.Add(launch.Entry{Level: launch.Warn, Mod: "Mortar", Message: "Sandbox: " + note})
+	}
 	env.OnVia = func(via string) { s.updateProgress(g, buf, func(p *Progress) { p.Via = via }) }
 	s.mu.Lock()
 	s.logs[keyOf(g)], s.stop[keyOf(g)] = session{

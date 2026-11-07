@@ -37,6 +37,8 @@ type Spec struct {
 	Sockets []string
 	// CacheDir holds the shader caches, so they persist without sharing the player's own.
 	CacheDir string
+	// Bus is the host socket of a filtered session-bus proxy (StartProxy). Empty means the game gets no session bus.
+	Bus string
 	// Environ is the environment the game inherits; credential-looking variables are removed from it.
 	Environ []string
 }
@@ -74,6 +76,7 @@ func Argv(bwrap string, s Spec, name string, args []string) []string {
 	for _, p := range s.RW {
 		a = append(a, "--bind", p, p)
 	}
+	a = append(a, busArgs(s)...)
 	if s.CacheDir != "" {
 		a = append(a, "--bind", s.CacheDir, s.CacheDir,
 			"--setenv", "MESA_SHADER_CACHE_DIR", s.CacheDir,
@@ -87,7 +90,7 @@ func Argv(bwrap string, s Spec, name string, args []string) []string {
 }
 
 // credentialMarks are fragments of variable names that carry a secret or a route to one.
-var credentialMarks = []string{"TOKEN", "SECRET", "PASSWORD", "CREDENTIAL", "API_KEY", "AUTH_SOCK", "DBUS_SESSION_BUS_ADDRESS", "GPG_AGENT_INFO"}
+var credentialMarks = []string{"TOKEN", "SECRET", "PASSWORD", "CREDENTIAL", "API_KEY", "AUTH_SOCK", "GPG_AGENT_INFO"}
 
 // Credentials are the names in environ a game must not inherit.
 func Credentials(environ []string) []string {
@@ -120,4 +123,22 @@ func exists(p string) bool { _, err := os.Stat(p); return err == nil }
 func isDir(p string) bool {
 	fi, err := os.Lstat(p)
 	return err == nil && fi.IsDir()
+}
+
+// busArgs always sets DBUS_SESSION_BUS_ADDRESS: the host's address is useless in here (the runtime dir is emptied),
+// and leaving it unset while DISPLAY is set makes libdbus autolaunch `dbus-launch`. The system bus socket is
+// readable through the read-only root and its services (logind, polkit-gated units, NetworkManager) are not
+// something a game needs, so /run/dbus is emptied and the address disabled.
+func busArgs(s Spec) []string {
+	var a []string
+	addr := busOff
+	if s.Bus != "" && s.Runtime != "" && isDir(s.Runtime) {
+		in := filepath.Join(s.Runtime, "bus")
+		a = append(a, "--bind", s.Bus, in)
+		addr = "unix:path=" + in
+	}
+	if isDir("/run/dbus") {
+		a = append(a, "--tmpfs", "/run/dbus")
+	}
+	return append(a, "--setenv", "DBUS_SESSION_BUS_ADDRESS", addr, "--setenv", "DBUS_SYSTEM_BUS_ADDRESS", busOff)
 }
