@@ -296,6 +296,11 @@ func (s *Service) SetTestCopies(game, id string, n int) (Profile, error) {
 	return s.store.SetTestCopies(game, id, n)
 }
 
+// SetModOrder remembers the order the Mods tab shows entries in under its Manual sort.
+func (s *Service) SetModOrder(game, id string, keys []string) (Profile, error) {
+	return s.store.SetModOrder(game, id, keys)
+}
+
 // SetLaunchOptions replaces a profile's extra SMAPI arguments.
 func (s *Service) SetLaunchOptions(game, id, options string) (Profile, error) {
 	return s.store.SetLaunchOptions(game, id, options)

@@ -9,6 +9,7 @@ import (
 const (
 	defaultListSortColumn = "name"
 	defaultListSortDir    = "asc"
+	manualListSort        = "manual"
 	defaultListGroupBy    = "status"
 )
 
@@ -22,6 +23,10 @@ var (
 	listSortDirs       = []string{"asc", "desc"}
 	listGroupBys       = []string{"none", "status", "category", "source", "tag", "framework", "download", "author", "group", "reason"}
 )
+
+func knownListSortColumn(id string) bool {
+	return id == manualListSort || (id != "on" && knownListColumn(id))
+}
 
 func knownListColumn(id string) bool {
 	return slices.Contains(knownListColumns, id)
@@ -56,7 +61,7 @@ func sanitizeListColumns(ids []string) []string {
 }
 
 func sanitizeListSort(column, dir string) (string, string) {
-	if column == "on" || !knownListColumn(column) {
+	if !knownListSortColumn(column) {
 		column = defaultListSortColumn
 	}
 	if !slices.Contains(listSortDirs, dir) {
@@ -78,7 +83,7 @@ func validateList(s Settings) error {
 			return fmt.Errorf("unknown list column %q", id)
 		}
 	}
-	if s.ListSortColumn != "" && s.ListSortColumn != "on" && !knownListColumn(s.ListSortColumn) {
+	if s.ListSortColumn != "" && s.ListSortColumn != "on" && !knownListSortColumn(s.ListSortColumn) {
 		return fmt.Errorf("unknown list sort column %q", s.ListSortColumn)
 	}
 	if s.ListSortDir != "" && !slices.Contains(listSortDirs, s.ListSortDir) {

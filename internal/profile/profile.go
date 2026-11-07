@@ -298,6 +298,9 @@ type Profile struct {
 	// TestCopies is how many copies the Develop tab's Test starts, as last picked from its menu; 0 lets the tab choose
 	// from the mods in development.
 	TestCopies int `json:"testCopies,omitempty"`
+	// ModOrder is the entry keys in the order the player dragged them into for the Mods tab's Manual sort. It is only
+	// how the list is shown, not the package order; entries missing from it show after the listed ones.
+	ModOrder []string `json:"modOrder,omitempty"`
 	// CacheSet is ModSetHash as it was when the game's caches were last cleared for this profile.
 	CacheSet string `json:"cacheSet,omitempty"`
 	// Loader is the id of the game loader this profile runs; empty means the game's primary loader.

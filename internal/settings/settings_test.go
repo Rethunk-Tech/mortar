@@ -202,6 +202,9 @@ func TestListColumns(t *testing.T) {
 	if _, err := s.Update(func(v *Settings) { v.ListSortColumn = "nope" }); err == nil {
 		t.Fatal("unknown sort column accepted")
 	}
+	if _, err := s.Update(func(v *Settings) { v.ListSortColumn = "manual" }); err != nil || s.Get().ListSortColumn != "manual" {
+		t.Fatalf("manual sort rejected: %v", err)
+	}
 	if _, err := s.Update(func(v *Settings) { v.ListGroupBy = "status" }); err != nil {
 		t.Fatal(err)
 	}

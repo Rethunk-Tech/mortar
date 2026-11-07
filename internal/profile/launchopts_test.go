@@ -27,3 +27,26 @@ func TestSetLaunchOptionsDeniesMortarFlags(t *testing.T) {
 		t.Fatalf("err = %v", err)
 	}
 }
+
+func TestSetModOrderKeepsOnlyTheProfilesEntriesAndRefusesRepeats(t *testing.T) {
+	t.Parallel()
+	s := newStore(t)
+	p := mustCreate(t, s, "Farm")
+	if _, err := s.update("stardew", p.ID, func(p *Profile, _ string) error {
+		p.Entries = append(p.Entries, Entry{Key: "a"}, Entry{Key: "b"}, Entry{Key: "c"})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.SetModOrder("stardew", p.ID, []string{"c", "gone", "a"})
+	if err != nil || len(got.ModOrder) != 2 || got.ModOrder[0] != "c" || got.ModOrder[1] != "a" {
+		t.Fatalf("set = %+v, %v", got.ModOrder, err)
+	}
+	listed, err := s.List("stardew")
+	if err != nil || len(listed[0].ModOrder) != 2 || listed[0].ModOrder[0] != "c" {
+		t.Fatalf("list = %+v, %v", listed, err)
+	}
+	if _, err := s.SetModOrder("stardew", p.ID, []string{"a", "b", "a"}); err == nil {
+		t.Fatal("repeated key accepted")
+	}
+}

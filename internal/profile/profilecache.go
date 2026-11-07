@@ -48,6 +48,7 @@ func (p Profile) Clone() Profile {
 	p.Groups = cloneSlice(p.Groups, Group.clone)
 	p.Collection = clonePtr(p.Collection)
 	p.LaunchPresets = slices.Clone(p.LaunchPresets)
+	p.ModOrder = slices.Clone(p.ModOrder)
 	p.Overrides = maps.Clone(p.Overrides)
 	if p.Modpack != nil {
 		d := *p.Modpack
