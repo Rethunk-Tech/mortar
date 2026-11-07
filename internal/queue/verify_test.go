@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -35,6 +36,11 @@ func TestVerifyDigest(t *testing.T) {
 	}
 	if err := verifyDigest(p, "sha1:00"); err == nil {
 		t.Error("a wrong sha1 passed")
+	}
+	for _, digest := range []string{"blake3:00", "sha-256:00", "00"} {
+		if err := verifyDigest(p, digest); err == nil {
+			t.Errorf("digest %q, which this build cannot check, passed", digest)
+		}
 	}
 	if err := verifyDigest(p, ""); err != nil {
 		t.Errorf("no digest: %v", err)
@@ -100,5 +106,14 @@ func TestPackageHashesAreReadOnce(t *testing.T) {
 	}
 	if err := s.checkPackageHash(it, writeFile(t, "two")); err == nil {
 		t.Error("the file was read again instead of the held hashes")
+	}
+}
+
+func TestFetchRefusesAPlainHTTPAddress(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	err := f.s.fetch(t.Context(), Item{ID: "x"}, "http://downloads.example/a.zip", filepath.Join(t.TempDir(), "a.zip"))
+	if err == nil || !strings.Contains(err.Error(), "https") {
+		t.Fatalf("a plain http download was fetched: %v", err)
 	}
 }

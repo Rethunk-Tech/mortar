@@ -1,6 +1,7 @@
 package source
 
 import (
+	"net"
 	"net/url"
 	"strings"
 	"time"
@@ -50,4 +51,18 @@ func ParseHTTPSURL(text string) (*url.URL, bool) {
 		return nil, false
 	}
 	return u, true
+}
+
+// SecureDownload reports whether a download address travels over TLS. A loopback address is exempt, since nothing
+// leaves the machine and a local test server has no certificate.
+func SecureDownload(link string) bool {
+	u, err := url.Parse(link)
+	if err != nil {
+		return false
+	}
+	if u.Scheme == "https" {
+		return true
+	}
+	host := u.Hostname()
+	return u.Scheme == "http" && (host == "localhost" || net.ParseIP(host).IsLoopback())
 }

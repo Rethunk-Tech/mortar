@@ -15,7 +15,7 @@ import (
 const packageHashFile = "package-hashes.json"
 
 // verifyDigest checks path against a "sha256:<hex>", "sha512:<hex>" or mod.io's "md5:<hex>" digest; an empty digest
-// (GitHub did not publish one) passes, and so does CurseForge's "sha1:<hex>", which only names the file for update checks.
+// (GitHub did not publish one) passes, and "sha1:<hex>" is CurseForge's; any other form is refused.
 func verifyDigest(path, digest string) error {
 	digest = strings.ToLower(strings.TrimSpace(digest))
 	if want, ok := strings.CutPrefix(digest, "sha512:"); ok {
@@ -27,11 +27,14 @@ func verifyDigest(path, digest string) error {
 	if want, ok := strings.CutPrefix(digest, "sha1:"); ok {
 		return compareSHA1(path, want)
 	}
-	want, ok := strings.CutPrefix(digest, "sha256:")
-	if !ok {
+	if want, ok := strings.CutPrefix(digest, "sha256:"); ok {
+		return compareSHA256(path, want)
+	}
+	if digest == "" {
 		return nil
 	}
-	return compareSHA256(path, want)
+	// A digest this build cannot check must not read as a passed check.
+	return usererr.New(usererr.Invalid, "the site published a checksum in a form Mortar cannot verify")
 }
 
 func compareSHA512(path, want string) error {

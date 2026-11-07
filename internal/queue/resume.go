@@ -16,6 +16,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
+	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func (s *Service) downloadRoot() string {
@@ -90,6 +92,9 @@ func (s *Service) fetch(ctx context.Context, it Item, url, path string) error {
 
 // fetchTicking is fetch that calls tick whenever bytes arrive.
 func (s *Service) fetchTicking(ctx context.Context, it Item, url, path string, tick func()) error {
+	if !source.SecureDownload(url) {
+		return usererr.New(usererr.Invalid, "the download address is not https, so Mortar will not fetch it")
+	}
 	p := &progress{s: s, id: it.ID, total: it.SizeKB << 10, last: s.d.Now()}
 	err := github.Download(ctx, s.d.HTTP, url, path, archive.DefaultMaxTotalBytes, func(done, total int64) {
 		if total > 0 {

@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -648,7 +647,7 @@ func (d Driver) Resolve(ctx context.Context, id, version string) (Resolved, erro
 	if link == "" {
 		return Resolved{}, &NotDistributableError{Mod: m.Name, PageURL: page}
 	}
-	if !secure(link) {
+	if !source.SecureDownload(link) {
 		return Resolved{}, fmt.Errorf("CurseForge mod %s has no https download address", id)
 	}
 	res := Resolved{
@@ -659,20 +658,6 @@ func (d Driver) Resolve(ctx context.Context, id, version string) (Resolved, erro
 		res.Digest = "sha1:" + h
 	}
 	return res, nil
-}
-
-// secure reports whether a download address travels over TLS. A loopback address is exempt, since nothing leaves the
-// machine and a local test server has no certificate.
-func secure(link string) bool {
-	u, err := url.Parse(link)
-	if err != nil {
-		return false
-	}
-	if u.Scheme == "https" {
-		return true
-	}
-	host := u.Hostname()
-	return u.Scheme == "http" && (host == "localhost" || net.ParseIP(host).IsLoopback())
 }
 
 func (d Driver) pick(ctx context.Context, id int, version string) (cf.File, error) {

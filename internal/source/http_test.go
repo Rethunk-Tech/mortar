@@ -21,3 +21,20 @@ func TestParseHTTPSURL(t *testing.T) {
 		}
 	}
 }
+
+func TestSecureDownloadWantsTLSExceptOnLoopback(t *testing.T) {
+	t.Parallel()
+	for link, want := range map[string]bool{
+		"https://cdn.example/a.zip":  true,
+		"http://cdn.example/a.zip":   false,
+		"http://127.0.0.1:8080/a":    true,
+		"http://localhost/a":         true,
+		"ftp://cdn.example/a":        false,
+		"http://localhost.evil.io/a": false,
+		"":                           false,
+	} {
+		if got := SecureDownload(link); got != want {
+			t.Errorf("SecureDownload(%q) = %v, want %v", link, got, want)
+		}
+	}
+}
