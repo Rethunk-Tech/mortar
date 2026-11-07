@@ -1269,14 +1269,15 @@ PYEOF
 # MORTAR_LIVE_HOST_PLUGINS and MORTAR_LIVE_CLIENT_PLUGINS list what each copy gets (space separated .dll files, copied to
 # BepInEx/plugins, or .zip packages, unpacked into BepInEx/plugins/<name>); DevLaunch belongs in both. The run waits for
 # a "LIVETEST summary" line in the host's BepInEx log (MORTAR_LIVE_TIMEOUT seconds, default 600), prints every LIVETEST
-# line of both logs, and passes when the summary has no FAIL and the client logged MORTAR_LIVE_EXPECT_CLIENT, if set. A failed run keeps its folder for the logs.
+# line of both logs, and with MORTAR_LIVE_PATH_SUFFIX (a folder name, e.g. "Mörtar Test ✓") puts both game copies under it and
+# also requires BepInEx and every plugin to load from that path. It passes when the summary has no FAIL and the client logged MORTAR_LIVE_EXPECT_CLIENT, if set. A failed run keeps its folder for the logs.
 live_lobby() {
   regress_sandbox -live
   verdict=FAIL
   local proton=${MORTAR_REGRESS_PROTON:-$STEAM/steamapps/common/Proton - Experimental}
   local src="$STEAM/steamapps/common/$LC_FOLDER" cache=${MORTAR_LIVE_CACHE:-/var/tmp/mortar-live-cache}
   local pack=${MORTAR_LIVE_BEPINEX_PACK:-BepInEx/BepInExPack/5.4.2305} timeout=${MORTAR_LIVE_TIMEOUT:-600} t0=$SECONDS
-  local role game compat zip entry name list failures=() summary="" f
+  local role game compat zip entry name list failures=() summary="" f suffix=${MORTAR_LIVE_PATH_SUFFIX:-}
   finish() {
     for role in host client; do reap_prefix "$ROOT/compat-$role" >/dev/null 2>&1 || true; done
     release_sandbox
@@ -1303,11 +1304,11 @@ live_lobby() {
   ln -sfn "$SANDBOX_STEAM/linux32" "$SANDBOX_HOME/.steam/sdk32"
   display_up
   for role in host client; do
-    game="$ROOT/$role/$LC_FOLDER"
+    game="$ROOT/$role${suffix:+/$suffix}/$LC_FOLDER"
     compat=$ROOT/compat-$role
-    mkdir -p "$ROOT/$role" "$compat"
+    mkdir -p "$ROOT/$role${suffix:+/$suffix}" "$compat"
     echo "copying the game for the $role"
-    cp -a --reflink=auto "$src" "$ROOT/$role/"
+    cp -a --reflink=auto "$src" "$ROOT/$role${suffix:+/$suffix}/"
     cp -a "$ROOT/pack/BepInExPack/." "$game/"
     mkdir -p "$game/BepInEx/plugins"
     printf '%s\n' "$LC_APP_ID" >"$game/steam_appid.txt"
@@ -1339,7 +1340,7 @@ EOF
   live_start() {
     local r=$1
     shift
-    (cd "$ROOT/$r/$LC_FOLDER" && hidden nohup "$REPO/scripts/launch-guard.sh" "$ROOT/run-$r.sh" "$ROOT/$r/$LC_FOLDER/Lethal Company.exe" "$@" \
+    (cd "$ROOT/$r${suffix:+/$suffix}/$LC_FOLDER" && hidden nohup "$REPO/scripts/launch-guard.sh" "$ROOT/run-$r.sh" "$ROOT/$r${suffix:+/$suffix}/$LC_FOLDER/Lethal Company.exe" "$@" \
       >"$ROOT/$r.out" 2>&1 &)
   }
   live_wait() {
@@ -1350,7 +1351,7 @@ EOF
     done
     return 1
   }
-  local hostlog="$ROOT/host/$LC_FOLDER/BepInEx/LogOutput.log" clientlog="$ROOT/client/$LC_FOLDER/BepInEx/LogOutput.log"
+  local hostlog="$ROOT/host${suffix:+/$suffix}/$LC_FOLDER/BepInEx/LogOutput.log" clientlog="$ROOT/client${suffix:+/$suffix}/$LC_FOLDER/BepInEx/LogOutput.log"
   if [ ${#failures[@]} -eq 0 ]; then
     echo "starting the host"
     live_start host --lan --host --tile 1/2
@@ -1367,6 +1368,14 @@ EOF
   # A check whose result only the client sees (a host without the mod under test) names the line the client must log.
   if [ -n "${MORTAR_LIVE_EXPECT_CLIENT:-}" ] && [ ${#failures[@]} -eq 0 ]; then
     live_wait "$clientlog" "$MORTAR_LIVE_EXPECT_CLIENT" 60 || failures+=("the client never logged '$MORTAR_LIVE_EXPECT_CLIENT'; see $clientlog")
+  fi
+  # With a path suffix the run proves the loader and every plugin load from that path, which is its pass condition.
+  if [ -n "$suffix" ] && [ ${#failures[@]} -eq 0 ]; then
+    for f in "$hostlog" "$clientlog"; do
+      grep -q 'Chainloader startup complete' "$f" || failures+=("BepInEx did not finish loading from the path '$suffix': $f")
+      [ "$(grep -c 'BepInEx\] Loading \[' "$f")" = "$(grep -oE 'BepInEx\] [0-9]+ plugins? to load' "$f" | grep -oE '[0-9]+' | head -1)" ] ||
+        failures+=("not every plugin loaded from the path '$suffix': $f")
+    done
   fi
   summary=$(grep -h 'LIVETEST summary' "$hostlog" 2>/dev/null | tail -1 || true)
   if [ -n "$summary" ] && [ ${#failures[@]} -eq 0 ] && ! grep -q ' [1-9][0-9]* FAIL' <<<"$summary"; then verdict=PASS; fi
