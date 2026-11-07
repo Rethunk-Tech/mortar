@@ -63,8 +63,11 @@ quit=0
 [ "$quit" = 0 ] || [ "$quit" = 3 ] || echo "Mortar stayed open (a game or downloads are running): restart it to load $sha" >&2
 
 cp bin/mortar-linux-x86_64.AppImage "$HOME/Downloads/mortar.appimage"
-flatpak run it.mijorus.gearlever --remove "$HOME/Apps/mortar.appimage" <<<y >/dev/null 2>&1 || true
-flatpak run it.mijorus.gearlever --integrate "$HOME/Downloads/mortar.appimage" <<<y >/dev/null 2>&1
+# Gear Lever extracts into $TMPDIR/it.mijorus.gearlever-* (GLib's tmp dir) and never cleans it up, so it gets a folder of its own.
+gearlever_tmp=$(mktemp -d /var/tmp/gearlever.XXXXXX)
+trap 'rm -rf -- "$gearlever_tmp"' EXIT
+flatpak run --env=TMPDIR="$gearlever_tmp" it.mijorus.gearlever --remove "$HOME/Apps/mortar.appimage" <<<y >/dev/null 2>&1 || true
+flatpak run --env=TMPDIR="$gearlever_tmp" it.mijorus.gearlever --integrate "$HOME/Downloads/mortar.appimage" <<<y >/dev/null 2>&1
 installed=$("$HOME/Apps/mortar.appimage" version)
 echo "installed: $installed"
 case "$installed" in
