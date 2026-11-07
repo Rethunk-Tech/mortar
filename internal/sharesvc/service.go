@@ -321,18 +321,19 @@ func describe(game string, p profile.Profile, facts profile.ShareFacts, include 
 	for _, key := range off {
 		info.LeftOut = append(info.LeftOut, Omitted{Name: strings.Join(entryNames(byKey[key], true), ", "), Reason: "off"})
 	}
-	groups := map[string]*Group{}
+	groupAt := map[string]int{}
 	counted := map[string]bool{}
 	for _, e := range p.Entries {
 		if e.Source.Bundled() || leftKeys[e.StoreKey()] || slices.Contains(off, e.StoreKey()) {
 			continue
 		}
-		g := groups[e.Source.Kind]
-		if g == nil {
+		at, ok := groupAt[e.Source.Kind]
+		if !ok {
+			at = len(info.Groups)
 			info.Groups = append(info.Groups, Group{Source: e.Source.Kind})
-			g = &info.Groups[len(info.Groups)-1]
-			groups[e.Source.Kind] = g
+			groupAt[e.Source.Kind] = at
 		}
+		g := &info.Groups[at]
 		if !counted[e.StoreKey()] {
 			counted[e.StoreKey()] = true
 			g.Count++

@@ -309,6 +309,24 @@ func TestDescribeGroupsAndLeftOut(t *testing.T) {
 	}
 }
 
+func TestDescribeKeepsEveryModOfAGroupOpenedBeforeAnother(t *testing.T) {
+	nx := func(key, name string) profile.Entry {
+		return profile.Entry{
+			Key: key, Source: profile.Source{Kind: profile.KindNexus, ModID: 1, FileID: 1},
+			Mods: []profile.Component{{ID: mod.SMAPI("U." + key), Name: name}},
+		}
+	}
+	p := profile.Profile{Name: "Farm", Entries: []profile.Entry{
+		nx("a", "Alpha"),
+		{Key: "gh", Source: profile.Source{Kind: profile.KindGitHub, Repo: "o/r", Tag: "v1", Asset: "a.zip"}, Mods: []profile.Component{{ID: "smapi:G", Name: "Gee"}}},
+		nx("b", "Beta"),
+	}}
+	info, err := describe("stardew", p, profile.ShareFacts{})
+	if err != nil || len(info.Groups) != 2 || info.Groups[0].Count != 2 || !slices.Equal(info.Groups[0].Mods, []string{"Alpha", "Beta"}) {
+		t.Errorf("groups = %+v, %v", info.Groups, err)
+	}
+}
+
 func TestDescribeCountsThunderstorePackages(t *testing.T) {
 	p := profile.Profile{Name: "Lobby", Entries: []profile.Entry{
 		{Key: "ts", Source: profile.Source{Kind: profile.KindThunderstore, Name: "x753-More_Suits", Version: "1.5.4"}, Mods: []profile.Component{{ID: "thunderstore:x753-More_Suits", Name: "More_Suits"}}},
