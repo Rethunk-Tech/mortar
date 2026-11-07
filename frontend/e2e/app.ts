@@ -124,7 +124,7 @@ const NOTICE_POLL_MS = 250
 
 // Start-up notices (updates found once the first check finishes, checks paused) show and expire in the first seconds;
 // they are not the first case's own, so measuring waits until none has shown for a while.
-export async function waitForQuietNotices(page: Page) {
+async function waitForQuietNotices(page: Page) {
   const region = page.getByRole('region', { name: 'Notifications' })
   let lastSeen = Date.now()
   for (const end = Date.now() + NOTICE_WAIT_MS; Date.now() < end; ) {
