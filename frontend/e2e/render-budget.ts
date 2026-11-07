@@ -14,7 +14,7 @@ import {
 import { serveModTemplate } from './modTemplate.ts'
 import { clickIfPresent, gameSettingsCases, newCases } from './renderCases.ts'
 import { dialogCases } from './renderDialogs.ts'
-import { writeGallery } from './renderGallery.ts'
+import { newRunDir, writeGallery } from './renderGallery.ts'
 import { printExtras, report, startupLine, watchLog } from './renderLog.ts'
 import { HOOK, mortarBoxes, mortarGaps, mortarMeter, quietToasts, saveShot } from './renderMeter.ts'
 import { biggestProfile, rememberMainGame } from './renderProfile.ts'
@@ -446,7 +446,7 @@ async function main(): Promise<number> {
   const chosen = chosenCases()
   const external = process.env.MORTAR_RENDER_URL
   const dir = `${BASE}/mortar-render-${process.pid}`
-  const out = process.env.MORTAR_RENDER_OUT ?? `${BASE}/render-budget-${Date.now()}`
+  const out = process.env.MORTAR_RENDER_OUT ?? newRunDir(BASE)
   const shots = process.env.MORTAR_RENDER_SHOTS ?? `${out}/shots`
   let results: Result[]
   let breaks: string[]

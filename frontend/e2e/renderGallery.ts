@@ -1,10 +1,28 @@
 // The render budget's gallery: one page with every screen loading and settled, in Chromium and in WebKitGTK, beside its
 // figures and layout breaks, for a person to look over after a run.
-import { existsSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import type { Result } from './render-budget.ts'
 
 const ENGINES = ['chromium', 'webkit'] as const
+
+// Runs kept beside a new one: the one before is what `renders:diff` compares against.
+const KEEP_RUNS = 2
+const RUN_DIR = /^render-budget-(\d+)$/u
+
+/** A new run's folder under `base`, after removing all but the newest KEEP_RUNS earlier ones (100+ MB each). */
+export function newRunDir(base: string): string {
+  const runs = readdirSync(base)
+    .map((name) => RUN_DIR.exec(name))
+    .filter((m) => m !== null)
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+  const old = runs.slice(KEEP_RUNS)
+  for (const m of old) {
+    rmSync(join(base, m[0]), { recursive: true, force: true })
+  }
+  console.log(`earlier runs: kept ${runs.length - old.length}, removed ${old.length}`)
+  return join(base, `render-budget-${Date.now()}`)
+}
 
 const esc = (s: string) =>
   s
