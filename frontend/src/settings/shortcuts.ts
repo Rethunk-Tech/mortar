@@ -1,4 +1,10 @@
-import { type Chord, isTypingTarget, matchChord, type TypingTarget } from '@rethunk/dom-input-nav'
+import {
+  type Chord,
+  isTypingTarget,
+  matchChord,
+  parseKeys,
+  type TypingTarget,
+} from '@rethunk/dom-input-nav'
 
 let capturing = false
 
@@ -105,8 +111,9 @@ export function mergeBindings(stored?: ShortcutBindings | null): Record<Shortcut
   }
   for (const row of SHORTCUTS) {
     const keys = stored[row.id]
-    // An empty chord is an action Mortar unbound because the user gave its default to another one.
-    if (keys !== undefined) {
+    // An empty chord is an action Mortar unbound because the user gave its default to another one. A value that is
+    // no chord is dropped, so one bad stored binding cannot make every keydown throw.
+    if (keys !== undefined && (keys === '' || parseKeys(keys) !== null)) {
       next[row.id] = keys
     }
   }

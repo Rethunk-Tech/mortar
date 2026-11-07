@@ -109,3 +109,10 @@ test("a default's chord can be taken from it, a chord the user chose cannot", ()
   expect(takeableFrom('play', 'Ctrl+J', chosen)).toBeNull()
   expect(takeableFrom('play', 'Ctrl+Alt+F12', defaultBindings())).toBeNull()
 })
+
+test('a stored binding that is no chord falls back to the default', () => {
+  const bindings = mergeBindings({ play: 'Ctrl+', 'command-palette': 'Ctrl+Shift' })
+  expect(bindings.play).toBe(defaultBindings().play)
+  expect(bindings['command-palette']).toBe(defaultBindings()['command-palette'])
+  expect(() => matchShortcut({ key: 'k', ctrlKey: true }, bindings)).not.toThrow()
+})
