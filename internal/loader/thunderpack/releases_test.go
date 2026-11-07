@@ -12,6 +12,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 type offline struct{}
@@ -73,7 +74,13 @@ func TestAPackThatDiffersFromItsCatalogPinIsRefused(t *testing.T) {
 	if err := r.checkPin("bepinex-bepinexpack", "5.4.2100", file); err != nil {
 		t.Fatalf("the pinned pack: %v", err)
 	}
-	if err := r.checkPin("BepInEx-BepInExPack", "5.4.2200", file); err != nil {
-		t.Fatalf("an unpinned version installs unverified: %v", err)
+	if err := r.offered("BepInEx-BepInExPack", "5.4.2100"); err != nil {
+		t.Fatalf("the pinned version: %v", err)
+	}
+	if err := r.offered("BepInEx-BepInExPack", "5.4.2200"); err == nil || usererr.KindOf(err) != usererr.Outdated {
+		t.Fatalf("a version newer than the catalog's pins was offered: %v", err)
+	}
+	if err := r.offered("Other-Pack", "1.0.0"); err != nil {
+		t.Fatalf("a package the catalog pins nothing of installs unverified: %v", err)
 	}
 }

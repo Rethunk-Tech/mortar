@@ -1,0 +1,1489 @@
+{
+  "pins": [
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.2.4",
+      "sha256": "fe924c61a4144a59a5c0f8de5e192550a123160df86850504073b8340d3f7fa0"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.2.5",
+      "sha256": "08730b904677826c426b0047066637e0feac7610de7481713705d1df9bf6c03a"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.2.6",
+      "sha256": "1447e83c30b5bc0270dca4b97eacc03ee5db9ce575a064f72b0b7432118642bd"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.2.7",
+      "sha256": "887edc4693563fd3f4bfd99bafefd4a7e2c1698157e10c0016323ea2ac189705"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.2.7.1",
+      "sha256": "b985a07f5b1a36a5a6b4c56f3d8ab4c06664942a8fc1cf407b493bdb4c31a37c"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.2.7.2",
+      "sha256": "f1083d232d5db0d195f946953ae500b9c5a968df7a1a56e721bc822f87c83020"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.2.7.3",
+      "sha256": "75dcbb5b2bd4e1c7f48c83033c50d4f6bcaaddaf71099d031107dd21e1dfdd2e"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.2.7.4",
+      "sha256": "6860a3b5afdcb8a9d28f815810ee5d6808a770fefc44fb8c64d7b96ab571de97"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.3.0",
+      "sha256": "7ad645b251d274b7f475deca1707458810c6b8b1e49539565b8edbfbdc749cdc"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.4.0",
+      "sha256": "1dc507b787def1805f000e294f64f1cdb6df6e5121b69d072baab65c705ff59d"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.4.1",
+      "sha256": "236c22bb1c0e0b45cebd65a6424b8a004e1fea50310f6b6d9a0e536b21f8fcef"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.4.2",
+      "sha256": "0c9742d3301069e31d680e8be0285b01591fd998a9cc7370c1a00e27c87a0472"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.4.3",
+      "sha256": "402c77ad51572b7071f485b240df1506b9604719c0654b0a494fb9c6594ab3b7"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.5.1",
+      "sha256": "94295b2d1d601b24835fa2b2139bfc29f58c20cbd48ac9c7a5e0b80aaa4c11dc"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.5.2",
+      "sha256": "8882c144409b9d3e32a0240908bd174f7c6eab39e4cbfcb69ab8230b80ac8750"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.5.3",
+      "sha256": "658f0e8dfb905020515171f21ea2c7e7e58680c3b8bb7b2b7cbcbf730fdfeed7"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.5.4",
+      "sha256": "f5e552d66ddfe4f9bb6c8b727d9ed762ae62fa5dedb534763f1b17f6ac6ee016"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.5.5",
+      "sha256": "642091315993fdf52fc62052c24083ba723e868beca6b080a89350fc5ee82313"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.5.7",
+      "sha256": "147d79e2d61ffd4d1da2811162478d3e22764bc2c5c93fa2c7f0e47dc792b4d0"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.6.1",
+      "sha256": "a1e22f6787270e335cad89d971d9d2300461254ec2637df750dbedfbc9332090"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.6.2",
+      "sha256": "9302c0ab79cd0531d44031d543e9c750e0996a1a92be01524a45d92234359694"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.6.3",
+      "sha256": "ffd9a9e118bb143d4ebe23cef22e37504846f4e79ca0e90f01811e9b5b7b38dd"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.6.4",
+      "sha256": "abf9fbf5f89ac89ae59d45e69cbdd32bb45e0b28bc6876392640409292fc9416"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.6.5",
+      "sha256": "90cea9355f5fac7749b86039e5c7fe5cdba6c31d7baa273170ead8a95b368dcc"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.6.6",
+      "sha256": "687b82605606e941cefdc007b880b720922cc319bb70270064590d4038c3c0db"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.7.0",
+      "sha256": "e41f9860c6676ee562c7614c2027f779d68fd3138c75342689981abf0f2979f6"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.7.1",
+      "sha256": "ff3a863500d3e5a30e2f2553615d34f3eeced53277e4bccca7ee7508ebe92aa8"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.7.2",
+      "sha256": "5cedb66dc5595de19fd4dd6b4c178440da293c6d7f511e14bdf0fea407c9a1f7"
+    },
+    {
+      "kind": "component",
+      "game": "melonloader",
+      "name": "loader",
+      "version": "0.7.3",
+      "sha256": "5b2b2f3d1cd42b59ec886c5bdc2663edae87a0097a4f4a8f58c0965a99dda416"
+    },
+    {
+      "kind": "component",
+      "game": "stardew",
+      "name": "smapi",
+      "version": "4.1.10",
+      "sha256": "8c127148a76c890e485aea73910189dc41c80f822c2a0a5e3b0e762b4ee3a93e"
+    },
+    {
+      "kind": "component",
+      "game": "stardew",
+      "name": "smapi",
+      "version": "4.2.0",
+      "sha256": "7a4c4f06071dacc30236ac0ae60d523652e54e9730deca9a9e4f574ae82b2f7d"
+    },
+    {
+      "kind": "component",
+      "game": "stardew",
+      "name": "smapi",
+      "version": "4.2.1",
+      "sha256": "15e1eb1e3edb405f56c44f9f66ad740305ff716498ad021bcec569123e4f27d6"
+    },
+    {
+      "kind": "component",
+      "game": "stardew",
+      "name": "smapi",
+      "version": "4.3.0",
+      "sha256": "b53b2eeb4ab4b1891fd9c077eabbbbb4e2f4218c786612e3da24166f41f0cd54"
+    },
+    {
+      "kind": "component",
+      "game": "stardew",
+      "name": "smapi",
+      "version": "4.3.1",
+      "sha256": "801513f8fec1560ca3383fa6d72d263875667c19055ac944aef56059217374c3"
+    },
+    {
+      "kind": "component",
+      "game": "stardew",
+      "name": "smapi",
+      "version": "4.3.2",
+      "sha256": "fa5d2ecdf87f49b1bcc7acb230bc99824d7c393f80f9464bef3f209a9a5c9fb3"
+    },
+    {
+      "kind": "component",
+      "game": "stardew",
+      "name": "smapi",
+      "version": "4.4.0",
+      "sha256": "dba6d7e4e3d1ce5821f4d7902f931d80793ac46bae4c8aadd39fec8da204573a"
+    },
+    {
+      "kind": "component",
+      "game": "stardew",
+      "name": "smapi",
+      "version": "4.5.0",
+      "sha256": "eea283df503fb14cbc23efad363a02f7cb3796ce200e80dd773b8591b6307d3f"
+    },
+    {
+      "kind": "component",
+      "game": "stardew",
+      "name": "smapi",
+      "version": "4.5.1",
+      "sha256": "ee3dc8f771858da8610c9e6b1322d934b0e981804a2d656fcb237989dbe8f7b7"
+    },
+    {
+      "kind": "component",
+      "game": "stardew",
+      "name": "smapi",
+      "version": "4.5.2",
+      "sha256": "dd01ddca7b566bfe0d3b3d2d03833496abc56c53da976241f2ab443f5484acc4"
+    },
+    {
+      "kind": "pack",
+      "name": "ApproximatelyUp_Modding-BepInExPack_ApproximatelyUp",
+      "version": "6.0.788",
+      "sha256": "e554107fd644a676e7b4a62cf90e55fa33051f2e85af630ea9917c05c9b864b6"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepis-BepInEx_Rogue_Tower",
+      "version": "5.4.1900",
+      "sha256": "fa329bb223193b8791013d576a0745d7bf8b7f75fb7d5f9d8949046b37fe3491"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepis-BepInExPack",
+      "version": "5.4.2113",
+      "sha256": "7dd94628f00507969ac0bffc9d98ba810871f9e95f11be001fe49982b7b15dfa"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepis-BepInExPack",
+      "version": "5.4.2114",
+      "sha256": "db9391840baebe84b3ae8f54293061747a1fa01b37fe91af03db59f4f3ba460e"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepis-BepInExPack",
+      "version": "5.4.2115",
+      "sha256": "fcadc6159f44b4c156074931b89df5f201088581a3e7906cc4923d7c24b9587c"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepis-BepInExPack",
+      "version": "5.4.2116",
+      "sha256": "1376883f82fe0899b06a46639788ed9f8aca0f6d0862ddb39a32f4781d024e33"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepis-BepInExPack",
+      "version": "5.4.2117",
+      "sha256": "46c0b4269b29d60debafda8cab333ea9ec12344e603e319eff0fc2653eff89e0"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepis-BepInExPack",
+      "version": "5.4.2118",
+      "sha256": "96df853d31ab6b9f947aeeccd8856f5f5712f8e669f4ce0019e6fd174a0a11ce"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepis-BepInExPack",
+      "version": "5.4.2119",
+      "sha256": "268406e34e0da3a9202b8aa735a51c0ff480bc1d38c58cdc75bef8824574cb8f"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepis-BepInExPack",
+      "version": "5.4.2120",
+      "sha256": "cf75debe4b48958e740c5a4c99aed76c44c4cf801a366dbaf5428e11dd37f467"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepis-BepInExPack",
+      "version": "5.4.2121",
+      "sha256": "26bf7c65ade04e1dee479b6e8ec29725167b19a6a75425bba2d7e05095d7314a"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepis-BepInExPack",
+      "version": "5.4.2122",
+      "sha256": "8a98c3cfa83c920d21c447e0b7606c8a26ab218c35c478394a1fb080efbdb527"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepisTaleSpire-BepInExPack",
+      "version": "5.4.10",
+      "sha256": "9f477da80c262877ee28bec4c69e52a056ddaac19b51fcc4d43944afce54747e"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepisTaleSpire-BepInExPack",
+      "version": "5.4.21",
+      "sha256": "cbbc71522b82a5a9f7bbfc4b9d009df8b8fba5767080215cf2a359aac1bbb435"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepisTaleSpire-BepInExPack",
+      "version": "5.4.22",
+      "sha256": "fcb9c880af1b01408d86c72ac7db1ea6777c611db58b99d532a127dc424aac6c"
+    },
+    {
+      "kind": "pack",
+      "name": "bbepisTaleSpire-BepInExPack",
+      "version": "5.4.9",
+      "sha256": "b7d98ac17c515825b940f2471ed3999e519f437fa1af72e34f1b305d9563f7d0"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack",
+      "version": "5.4.2100",
+      "sha256": "0792b04ac18a70948acfaa2fa9005724809c14538a5a17b765fde2b626f6c710"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack",
+      "version": "5.4.2304",
+      "sha256": "c05e6af954bd1c6385ef85c9f0e6ce1e1eb50f8acf628092f84dd8a889b1760a"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack",
+      "version": "5.4.2305",
+      "sha256": "f99b6302b6bdca5bab26f275c261cca448b29bbac34eaa5cbebb42c4246fb244"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_AcrossTheObelisk",
+      "version": "5.4.21",
+      "sha256": "951e26e21dd94b31835b290fcdab00a13340201de88929d56f6dc812bc27e4e7"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_AcrossTheObelisk",
+      "version": "5.4.22",
+      "sha256": "c7feccc4d7257865edb47439c84c1c149b728afbd116caed2d45adb77afcaaec"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_AcrossTheObelisk",
+      "version": "5.4.23",
+      "sha256": "6f9fa57153b35288db883874086877fbf1fc1c6e11a41c048181ff738c17e22e"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Aeruta",
+      "version": "6.0.741",
+      "sha256": "cf02a6e225d534815e36ce5fdc3cb48fe9c44475d6c0163fd32ef8b2ef9f3da3"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_AGAINST",
+      "version": "5.4.1800",
+      "sha256": "7d3b07dbf94e289e2961edf2b2b2b5bc8b655e27eb9db85a3906759484a8f6c0"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Aloft",
+      "version": "5.4.21",
+      "sha256": "17c418f7b2e3d76575bd78fc48ad399fa02d60b02f3bda94088e47b963e61757"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_AmongUs",
+      "version": "6.0.700",
+      "sha256": "88bbefc79b4f30fe42e10dadb9f536dbe669532b8d4b9e3b08239d88146e1564"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_CaLABP",
+      "version": "5.4.1700",
+      "sha256": "699e5c72352aae7dd41b1c7c0b4c885f8844cd7778d5e9ea2de6e588f1cadf69"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_CaLABP",
+      "version": "5.4.1701",
+      "sha256": "857b9f9d354cf6798d6da43fa2df0652db00d12ce74be2cc122bc8c742c30808"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_CaLABP",
+      "version": "5.4.1702",
+      "sha256": "bc6623bde6fd051a3be72f1478b15be03d571bac5c9670b024915914049e1b2e"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_CaLABP",
+      "version": "5.4.1900",
+      "sha256": "2adbe47e6133f79cec908029c25ab32c80e46efd582f4e557d6627b0bddf2a66"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_CaLABP",
+      "version": "5.4.2100",
+      "sha256": "281730aca19e6c6ce2197990a9ba32b412fdaf48b842188c0319683280bd080e"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Chrono_Ark",
+      "version": "5.4.21",
+      "sha256": "90ed8fa25e8b5bc886481889eece1a980ba93ae2e2548cb0b5e21ebbbe0fd282"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Core_Keeper",
+      "version": "2.0.0",
+      "sha256": "c28f4822fe196af6b14f8d98554ef4b6e484b98d5e11d7fafaa1fafc84ea7b5e"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Core_Keeper",
+      "version": "2.0.1",
+      "sha256": "ffc4b593d8fa4bf2ee1182ebb212233db3dbdf9cfdb3bc08241a177ffcaa6806"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Core_Keeper",
+      "version": "2.0.2",
+      "sha256": "d2b9844681229feb5cf2c1fd3284a97e2f78fd2297612c600f30b7bfb74fa56a"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Core_Keeper",
+      "version": "2.0.3",
+      "sha256": "e62ed89de8f017b95baf48db6c3d94ad48f51e317ce450ffb2b481e93ad7f904"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Core_Keeper",
+      "version": "2.1.0",
+      "sha256": "0d67f5393848c9c53d133f709669c5439b563da801e9ff6a567eefb9809c0f94"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_CrabGame",
+      "version": "6.0.577",
+      "sha256": "89b11514ccc9c5e93b419f988205f428c5e01225e664966a4ba3c872a213d052"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_CultOfTheLamb",
+      "version": "5.4.21",
+      "sha256": "eb984498cd111034b3b2532d0122d5e1cc1d4494acd9863408058eea62a4d212"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_CultOfTheLamb",
+      "version": "5.4.2101",
+      "sha256": "99856440548c62b0c253aee25da220595ac01b902ee8c94132930049d967b609"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_EtG",
+      "version": "5.4.2100",
+      "sha256": "c9e9982fde31664047debce382e144189d1be43311fb28fbd6d44fe47bd69738"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_EtG",
+      "version": "5.4.2101",
+      "sha256": "6b97edb311e961e78ca1cd913a886fd72b1ee936c73300c8992b8bf86ffde7ba"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_FootballManager26",
+      "version": "6.0.738",
+      "sha256": "045fbf3339a8beb3feba9e0cc6b660e859b1f036d0e81f398bb75019b8f7c243"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_ForTheKing",
+      "version": "5.4.19",
+      "sha256": "9a97a5dd216e659e3c5740d9d9a1db74e6c0e02a9d9ff3305363fe013e0f669d"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_ForTheKing",
+      "version": "5.4.19001",
+      "sha256": "c95019cfcd36129dd2af735be27bc9738894560d5915a194832d54d21eeadbdb"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_H3VR",
+      "version": "5.4.1100",
+      "sha256": "ae95c01cf54e040c1858322fe65de276b723b3546899bfb5cd4454b148362594"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_H3VR",
+      "version": "5.4.1101",
+      "sha256": "ff4f395a89b63338b865f99723aaafd37c82e66aff3ca58ab82edcd7e62d03cf"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_H3VR",
+      "version": "5.4.1700",
+      "sha256": "1438a84ad44d2b87073f0ca85bec48c8efcedc03eb3bbfbd8c3760ff259d468f"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_HOTDS",
+      "version": "5.4.1900",
+      "sha256": "640976fcf47149585c6e39efe2c5c707050e203160d90ee5f65a6ce66b8b6607"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_HumanFallFlat",
+      "version": "5.4.2302",
+      "sha256": "5e3aa90017346438b6e3f8584b0e5484441572af8e216863dc4fed78d386a093"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_IL2CPP",
+      "version": "6.0.667",
+      "sha256": "6186b794a0e16307ea4859400bcc9f82fef6f199991d6a172dc502b5516eaed8"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_IL2CPP",
+      "version": "6.0.698",
+      "sha256": "01ac26e7bfb464700494fa05b013927a12c31a2a43981794868e14723f79e253"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_IL2CPP",
+      "version": "6.0.733",
+      "sha256": "8cf6698cfe1bb8e97560c81708d0d5d049e7c23a04e6e10797b0f0d333c31047"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_IL2CPP",
+      "version": "6.0.738",
+      "sha256": "974c9c58e42b2e7673385cd49be3d99ba33763726fb6f0fd2a6b3a7b089323d7"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_IL2CPP",
+      "version": "6.0.755",
+      "sha256": "a3ec977c7760c6045b742a9bf3e59c7b11baa80b023f402ebdbff07bad6b0d96"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_IL2CPP",
+      "version": "6.0.788",
+      "sha256": "ce25d925f9eaba817214f5d6b2083b8e135ed0592b5a61b9f75ea5d4c02f5300"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Inscryption",
+      "version": "5.4.17",
+      "sha256": "0bde9807494c2ec8f59ad9a874e74a006a52b005064bdf3496704c063359f097"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Inscryption",
+      "version": "5.4.1701",
+      "sha256": "e6349d5d384dc8c7254b95a557517c363c5736015837caa4a8e8fb045fb46d09"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Inscryption",
+      "version": "5.4.1900",
+      "sha256": "1f4e898861f7d1d0bdca12dfcd6c83da05d94b20c08dd49985a3bfa4ceb028ee"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Inscryption",
+      "version": "5.4.1901",
+      "sha256": "1f2dfd26080d29be04b429dc00b94a3826c9ea999139c870f6cdeb2d0f832f7a"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Inscryption",
+      "version": "5.4.1902",
+      "sha256": "25a50bd63e64da69bfba99e41e5973ea5b5ae2099cf001735779a629508db076"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Inscryption",
+      "version": "5.4.2305",
+      "sha256": "050bbb5a3daba0b2a1d2eb2c1ff6f5fb4ecd6e879c9594d761a75881113d4944"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Inscryption",
+      "version": "5.4.2306",
+      "sha256": "ebe85a1e1e426b193302faeec4612984276b5f0de092c31ba8725f308437ac59"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_InSilence",
+      "version": "5.4.2305",
+      "sha256": "cd512f6d3d0013440add4a3c719662c34478022efac78de9553960d2a0f272ae"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_LensIsland",
+      "version": "5.4.2303",
+      "sha256": "9581e9af2d1141ad53233a49e25633a2fb45894ffde62fed5ed7b2624ce49b53"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_LLBlaze",
+      "version": "5.4.1500",
+      "sha256": "b035b9c039aa046545dc357be7cf50a59b0a680c015b15134950ee5265b1842b"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_LLBlaze",
+      "version": "5.4.1900",
+      "sha256": "ef22021a3e666e2c1ed4141c99c7a51feca0d1baed9ccd446375ce82738a042d"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_LostSkies",
+      "version": "6.0.738",
+      "sha256": "8e57392c0dcee65d2862428c066ed8d9bd76aee4685586b6374b5a60c13d9af9"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_LostSkies",
+      "version": "6.0.75301",
+      "sha256": "e95b7d9186b96b8c8600a2f6cdfa79354ef11feb8c5682cba6d8886b3b3796a7"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_LostSkies",
+      "version": "6.0.75302",
+      "sha256": "a9754f4d95aa1cb6315728caf43e9183426724d24f6c11d04817ac7bbbb9ec78"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Magicite",
+      "version": "5.4.2100",
+      "sha256": "a0fa0842eaed86701ff53e07ad6dd0003526ec63abd965369fecbba0b3a9577a"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Magicite",
+      "version": "5.4.2302",
+      "sha256": "42c5a4ec13bcd69c0c036628a8283a4bc8f0425304afd4650dcb41c6366dca7f"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Muck",
+      "version": "5.4.1100",
+      "sha256": "5eb26afebf7f13d2b4d46f31562ad7350017eff7c53ede63459dcb0b8536891e"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Muck",
+      "version": "5.4.1101",
+      "sha256": "7e9cebed7ee3d5daadbc381e742c2b593c76ceb3e7b4da968c545ede979dbdba"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Mycopunk",
+      "version": "5.4.2403",
+      "sha256": "3bc2455ac96a7b1dbe164b0eb82ef9334bacf6c95ea42ad07a34e03079be4a6e"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_NASB",
+      "version": "5.4.16",
+      "sha256": "5c598b384e521a274bb2f4ecaca92e1dc7727e8821306f02e091a6ef15c28533"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_NASB",
+      "version": "5.4.17",
+      "sha256": "ef1ce4bda56ef46c0ce586a417283806df4fbc36e51feb55e15720a16ce356da"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Necropolis",
+      "version": "5.4.2304",
+      "sha256": "ffeffc9e92c39857c582e87b65b02083df10103c8ca4ceecf64ede325406fef5"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Ostranauts",
+      "version": "5.4.2303",
+      "sha256": "a2c6542cb2f53520546a1659687079330c3f3bd1d274f0b8656ba21773e0ffe9"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Ostranauts",
+      "version": "5.4.2305",
+      "sha256": "061773032f67c95929c2228058b1dba3f654681e49ac2fc8a5efd189ed2990d7"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Outward",
+      "version": "5.4.15",
+      "sha256": "f0233a06d9a8e49933f1110a35c7894234380f9418e48b4426d56dcf9171fe3c"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Outward",
+      "version": "5.4.18",
+      "sha256": "1e3f5537045c5832cd580601de35232b3225a34049812dbcb5095bf29ec7c0cf"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Outward",
+      "version": "5.4.19",
+      "sha256": "ae703fcdfd33e65defb8b4e441fbc4d388a8223c0cc251ad791361a0dd6ce35b"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Outward",
+      "version": "5.4.8",
+      "sha256": "833d3687311306740d29881594aeb1adb19bec4f0fd10f54704107f38611210a"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Patapon",
+      "version": "6.0.75301",
+      "sha256": "bc23eb69edb164a5ee4c31020642209d38c4b785fd6d9607d9fe9ed9b87b10ae"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_PEAK",
+      "version": "5.4.2403",
+      "sha256": "724c93ca87c212ac8fe75b81fbe7c37d622b1df93b71ae2c4f13ad249a902370"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_PEAK",
+      "version": "5.4.75301",
+      "sha256": "a71432613ab0b2f560046bc341d949c9d853b4f5d5223ab5e7f2ef1f113522e7"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Peglin",
+      "version": "5.4.1900",
+      "sha256": "0c0157e12788e1355b78f144b3304ab84c61b49a042ca57bf40ca30da0ecd716"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Peglin",
+      "version": "5.4.1901",
+      "sha256": "dd53dc40932c549d91663345223b8fbebbd20568d80cd6521f11363699825744"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Peglin",
+      "version": "5.4.2100",
+      "sha256": "004e021bc4f059f549b665dad92860465d08379a8aaee9ce91f1272a84f0f0dd"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_PotionCraft",
+      "version": "5.4.18",
+      "sha256": "d53ef5f1a457d084930d66e49d09ec3e02f3a3a418a3866469cc0bbafca949a6"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Ravenfield",
+      "version": "5.4.21",
+      "sha256": "7b04de035c5994c078a3c928bed36ffb9054bd5312220465b392a856d080d35b"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_ROUNDS",
+      "version": "5.4.1100",
+      "sha256": "4df707b75e2c5b04dd389ac1a7fa36df7e2a82b88af8a7fdf22d9f4c1557cbaa"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_ROUNDS",
+      "version": "5.4.1900",
+      "sha256": "6ec635199239284ca21db39aa0a6d0ef9f204d60c102c54bd866f309a3b2a164"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_ROUNDS",
+      "version": "5.4.1901",
+      "sha256": "789c9cb21801edd7cecb3768f8563216397bff175661fe80f6696ccf584eda7d"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Silksong",
+      "version": "5.4.2303",
+      "sha256": "20991a757463599f06caf02e8d4fba8a8311b5010ffe75696c05bcb6d9f22404"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Silksong",
+      "version": "5.4.2304",
+      "sha256": "597edde201ed61438efcccc2a00a6829cc4b3ba816f9bdfeaf26054efd893f6d"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Silksong",
+      "version": "5.4.75300",
+      "sha256": "f0c3815102122076b52f6652554a40a9d0ae1fb18abef912395b8f92e101a93c"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Silksong",
+      "version": "5.4.75301",
+      "sha256": "28723140127309623cf11374aa56186950f1008fb8b9705aad0fc7c82fac2f83"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Silksong",
+      "version": "5.4.75302",
+      "sha256": "e48f1d801abcca9da916385164c4044891cbc1440017e17d43f46d5c0be7dd5c"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Silksong",
+      "version": "5.4.75304",
+      "sha256": "46df4652ff09782864ed3024337b6fe93b17e802a77d808943c6bdb6f1d96a1d"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Sineus",
+      "version": "6.0.788",
+      "sha256": "8f19575d4974837607ff447f1acb3268497f52649ee1847dc3cbecd52198e0d0"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Skul",
+      "version": "5.4.2100",
+      "sha256": "e9303ab6a00590ef95309927b06def03b798184b9bd41cb9c8f1319119747391"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_SlashersKeep",
+      "version": "5.4.2304",
+      "sha256": "3ff115cdfd4a8defb81f162864ef9dac09c8c659eec3820aaa053cdb72c030c5"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Starsand",
+      "version": "5.4.16",
+      "sha256": "8b2c9c8706e171a9fc10011fcb41405209fc988d8fa075ca54c155a68353461d"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_TABS",
+      "version": "5.4.16",
+      "sha256": "8dc98045bab8291bb971a30f936041172a0e256f5d678803a69b239613150c65"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_TABS",
+      "version": "5.4.2306",
+      "sha256": "73264c7d98936f5752770bce05bb48bb995d6658983177c5b26d3ce5be09fb3f"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_TABS",
+      "version": "5.4.75301",
+      "sha256": "59d08c4915f96cbfa3b7817eaa50c4c389be236c9a99d5ab51de65a1c5237135"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Thronefall",
+      "version": "5.4.2100",
+      "sha256": "5dac5b2f62b25c5dd52fc02e1955263be10b6e4212941aba71b08d17bf9ad9c8"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Timberborn",
+      "version": "5.4.15",
+      "sha256": "4c1e24e3cf5bfe0b708a671fd77fb8d63555ae382237154b21e6bcf0243dea34"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Timberborn",
+      "version": "5.4.16",
+      "sha256": "00a78bc5c2dc9eb62e37921116416494906d3cff27d7a46893ba12d60cd5c327"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_Timberborn",
+      "version": "5.4.19",
+      "sha256": "b24d30987d76f00f4df86659c3ec0004c5ca4f04f5cfb160344118903d7fbefe"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_TromboneChamp",
+      "version": "5.4.21",
+      "sha256": "6efcea2fd8e4a41eed1fa65337676bb658fd2e7ade388565fc8a65e1fe27a9e4"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_VTOL_VR",
+      "version": "5.4.1900",
+      "sha256": "01e96bddef4c254230f29dafb47f3020ba6e6678f5a5cb5da4950e4e674a126c"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx-BepInExPack_x86",
+      "version": "5.4.2100",
+      "sha256": "222fe6ae8b35e5d6e91eba77199d14497555f80339161ca307a24af79b8fc444"
+    },
+    {
+      "kind": "pack",
+      "name": "BepInEx_Wormtown-BepInExPack",
+      "version": "5.4.22",
+      "sha256": "8ac63be88a3e7a5210b1da0c253bed2e782808769ba9d75779a47f50f079e524"
+    },
+    {
+      "kind": "pack",
+      "name": "Bombanana_Modding-BepInExPack_BOMBANANA",
+      "version": "6.0.755",
+      "sha256": "4d9649430adaf654ca050b586f63e0afa58f2a8fb589909504554881710561d4"
+    },
+    {
+      "kind": "pack",
+      "name": "denikson-BepInExPack_Valheim",
+      "version": "5.4.2200",
+      "sha256": "148c2b898556b0a0cf60ad5a6c4c4a7f89fdd56255e697795811892b755cbc84"
+    },
+    {
+      "kind": "pack",
+      "name": "denikson-BepInExPack_Valheim",
+      "version": "5.4.2201",
+      "sha256": "7c55daf7a948ea0c926526a1efdade05d1153bc6759b94ac43ae0e960e225a08"
+    },
+    {
+      "kind": "pack",
+      "name": "denikson-BepInExPack_Valheim",
+      "version": "5.4.2202",
+      "sha256": "d9c3b16992aa6a02069a921a3e4d613240fe291282bb67fe92261b00c6fabf8c"
+    },
+    {
+      "kind": "pack",
+      "name": "denikson-BepInExPack_Valheim",
+      "version": "5.4.2330",
+      "sha256": "940dddeecc5a2fe0719ea73028abb60e9d11404e22c4c184644bd57e7f2cb6b7"
+    },
+    {
+      "kind": "pack",
+      "name": "denikson-BepInExPack_Valheim",
+      "version": "5.4.2331",
+      "sha256": "16b949b56a403563703d7a29c76425c42579dc3aefc23f1d48660f58b72ef2b5"
+    },
+    {
+      "kind": "pack",
+      "name": "denikson-BepInExPack_Valheim",
+      "version": "5.4.2332",
+      "sha256": "827aed265725faf993bd28a6275a34271de54854171a246e6f8904bd065e95a6"
+    },
+    {
+      "kind": "pack",
+      "name": "denikson-BepInExPack_Valheim",
+      "version": "5.4.2333",
+      "sha256": "5dd24ccbcaa9260f714b200f23c4c15547e2aa5f06906cafcc0dee56db1bf716"
+    },
+    {
+      "kind": "pack",
+      "name": "denikson-BepInExPack_Valheim",
+      "version": "5.4.2350",
+      "sha256": "37a91c000b4e88f2ed7a4bd7d812239852d2e36cbf0ff0a9f5faacfba46b105f"
+    },
+    {
+      "kind": "pack",
+      "name": "denikson-BepInExPack_Valheim",
+      "version": "5.4.2351",
+      "sha256": "bce631497976a93977ceb08e166712e6c31d15244956f89f17df092a9b62e29f"
+    },
+    {
+      "kind": "pack",
+      "name": "denikson-BepInExPack_Valheim",
+      "version": "5.4.2360",
+      "sha256": "6bca77b1016acfe0ffaebb6534c84b12ae8d12e5a96abbf59ec6e4526204fc6f"
+    },
+    {
+      "kind": "pack",
+      "name": "GoblinCleanupModding-BepInExPack_GoblinCleanup",
+      "version": "5.4.230501",
+      "sha256": "06e658c2924d1ba357b807ea2d9b92444e514f278d91330ae1799ded6727f052"
+    },
+    {
+      "kind": "pack",
+      "name": "GodotModding-GodotModLoader",
+      "version": "5.0.1",
+      "sha256": "de1362dc79724908a6a7d4c790ead2f82406bba5e62ad3ff20aca2379f0f03ce"
+    },
+    {
+      "kind": "pack",
+      "name": "GodotModding-GodotModLoader",
+      "version": "7.0.1",
+      "sha256": "6eaf5da7da46827cc38fc31dd4d92f5dca767f41dacf5374e3ea74f074f5fa5c"
+    },
+    {
+      "kind": "pack",
+      "name": "Hell2Modding-Hell2Modding",
+      "version": "1.0.113",
+      "sha256": "baf5d751c546acc451f0acfbc2aca0466e49f938156a618c27f21ea99853207c"
+    },
+    {
+      "kind": "pack",
+      "name": "Hell2Modding-Hell2Modding",
+      "version": "1.0.114",
+      "sha256": "61250e4fbe5cbcfbea4f32e2ea0fcbf8f13aac4bf68db8d8fb38608349517c94"
+    },
+    {
+      "kind": "pack",
+      "name": "Hell2Modding-Hell2Modding",
+      "version": "1.0.115",
+      "sha256": "86fc5018b1fa07de93a767112c4192223ab9dcba80e0cd36fb1df51437c89ab4"
+    },
+    {
+      "kind": "pack",
+      "name": "Hell2Modding-Hell2Modding",
+      "version": "1.0.116",
+      "sha256": "048e5ce268f1a78a2253cfb6ea6338efa29c9ae166813e1f7e9d3381b8fefde2"
+    },
+    {
+      "kind": "pack",
+      "name": "Hell2Modding-Hell2Modding",
+      "version": "1.0.117",
+      "sha256": "d1c8a0b4b335c2f2c8ecab71428603328a2abd7c11ae4a77e0108da40e27b2d2"
+    },
+    {
+      "kind": "pack",
+      "name": "Hell2Modding-Hell2Modding",
+      "version": "1.0.118",
+      "sha256": "d1f1f12f33ce4f994e74b379d0e593bdcd7fd7dfe23fce597cf43c70ce7ed593"
+    },
+    {
+      "kind": "pack",
+      "name": "Hell2Modding-Hell2Modding",
+      "version": "1.0.119",
+      "sha256": "1889d2bc6111e497e7f598c42351176ace8d1c3b5de0ef8d12feaad14ff71b97"
+    },
+    {
+      "kind": "pack",
+      "name": "Hell2Modding-Hell2Modding",
+      "version": "1.0.120",
+      "sha256": "2bd82314dd692daf97959b2c2f5203ab20bf9b39553021b4b0d311e82bae082c"
+    },
+    {
+      "kind": "pack",
+      "name": "Hell2Modding-Hell2Modding",
+      "version": "1.0.121",
+      "sha256": "d18c996b182295754d35410a4370165b8e5bafe38d25c469d2f2642e43dc4f64"
+    },
+    {
+      "kind": "pack",
+      "name": "Hell2Modding-Hell2Modding",
+      "version": "1.0.122",
+      "sha256": "6c63ba1d523fc81efe674b942f9952eec2fd51ec5c28c9c09f3494c138d569d8"
+    },
+    {
+      "kind": "pack",
+      "name": "HoldfastModding-BepInExPack_Holdfast",
+      "version": "5.4.2305",
+      "sha256": "13ae5908f1f25fb19ea1b6a32ef11f50552f416d967cf3e35ed7dad6a955d5c3"
+    },
+    {
+      "kind": "pack",
+      "name": "Modding_Council-BepInExPack_of_Legend",
+      "version": "5.4.2100",
+      "sha256": "b1af36ae2fc7146f2fac813628cc226d62cf77cbbe9d651e32cc17746470a715"
+    },
+    {
+      "kind": "pack",
+      "name": "NotNet-GDWeave",
+      "version": "2.0.12",
+      "sha256": "a9c0ca5608c5ade6b6e3ed9c6e09f1ce2e8b01909b19c5c9ab952449a5763017"
+    },
+    {
+      "kind": "pack",
+      "name": "NotNet-GDWeave",
+      "version": "2.0.13",
+      "sha256": "6a0f300276196b9dfd2875181e004aef0f737c44b8cdb16e4799628725972990"
+    },
+    {
+      "kind": "pack",
+      "name": "NotNet-GDWeave",
+      "version": "2.0.14",
+      "sha256": "8a6d060bbbea0bff9e63753d984e0d2db6a7dce81ab870a73b678abfecbdf4da"
+    },
+    {
+      "kind": "pack",
+      "name": "Nucleares_Modding-BepInExPack_Nucleares",
+      "version": "5.4.2305",
+      "sha256": "cc804255da8b1f2b7e9de696c1c06b4aff00ea1f075ab3063493b8e5ecdf747a"
+    },
+    {
+      "kind": "pack",
+      "name": "PCVR_Modders-BepInExPack_GHVR",
+      "version": "5.4.19",
+      "sha256": "05304168d958550ede62e928d895716d83de25559b50654b35277d6aa35f5858"
+    },
+    {
+      "kind": "pack",
+      "name": "ReDoIngMods-Rivet",
+      "version": "0.1.17",
+      "sha256": "9cc84fd4a316a72e7cd037e10b72c52d1e43dfa34566120082adbab6ed308d73"
+    },
+    {
+      "kind": "pack",
+      "name": "ReDoIngMods-Rivet",
+      "version": "0.1.5",
+      "sha256": "cb3bf375b47fc270ecb4ab8ab706083afc97a4561e1782c8b7a4202f579a949e"
+    },
+    {
+      "kind": "pack",
+      "name": "ReDoIngMods-Rivet",
+      "version": "0.1.6",
+      "sha256": "97b476d72be5f9da59da9630e8bf1b82c0e30c6d9cabe007ce2febd62493a4a4"
+    },
+    {
+      "kind": "pack",
+      "name": "ReDoIngMods-Rivet",
+      "version": "0.1.8",
+      "sha256": "7fe46d561050f5a20bc8acbcecbe41a762f113ff2b710bf1bcfc4d074c3b0ea4"
+    },
+    {
+      "kind": "pack",
+      "name": "ReDoIngMods-Rivet",
+      "version": "0.1.9",
+      "sha256": "d458afabc56092e44afe7d3ba3fac5d6ea60c7f5818984811d3fc4fd16acb091"
+    },
+    {
+      "kind": "pack",
+      "name": "ResoniteModding-BepisLoader",
+      "version": "1.3.1",
+      "sha256": "740055ea701a82d562ab131e83a80df7feb8dfe88d2105fa6d81aefb782d0c8f"
+    },
+    {
+      "kind": "pack",
+      "name": "ResoniteModding-BepisLoader",
+      "version": "1.4.0",
+      "sha256": "f954e66e7581f6ac9e86305e824d321b31c736023b4bf7cf4cb9f1fe7e7f2cd9"
+    },
+    {
+      "kind": "pack",
+      "name": "ResoniteModding-BepisLoader",
+      "version": "1.4.1",
+      "sha256": "13d14c1d4b91f3184cbab783162f614bb411bd3e64726f9d998e05835e4ada71"
+    },
+    {
+      "kind": "pack",
+      "name": "ResoniteModding-BepisLoader",
+      "version": "1.5.0",
+      "sha256": "dee024c8b075591a085547d50c3871317cffad120ed9984c8e0de0b1e2a33481"
+    },
+    {
+      "kind": "pack",
+      "name": "ResoniteModding-BepisLoader",
+      "version": "1.5.1",
+      "sha256": "e70fa0bde6f1fabbf8ac3c7d09002b842df4bcc45344a234ac1b4b42c0d3ed0c"
+    },
+    {
+      "kind": "pack",
+      "name": "ResoniteModding-BepisLoader",
+      "version": "1.6.0",
+      "sha256": "35ba957de380d25bfa44903c84398a70187bda414e82196dc0becef3efff86e9"
+    },
+    {
+      "kind": "pack",
+      "name": "ResoniteModding-BepisLoader",
+      "version": "1.7.0",
+      "sha256": "9cce815f8c468d5c2da59036b78a74b6d36a063232090691cdbad011ec0633a4"
+    },
+    {
+      "kind": "pack",
+      "name": "ReturnOfModding-ReturnOfModding",
+      "version": "1.1.21",
+      "sha256": "ce3a8d45f21dc598b06172aedcc0002ba74b30971aec25376ab99a87880ef0ce"
+    },
+    {
+      "kind": "pack",
+      "name": "ReturnOfModding-ReturnOfModding",
+      "version": "1.1.22",
+      "sha256": "978ccb0d66bec190a700f31296433314ce75cfacc42d0827dd675598782c68af"
+    },
+    {
+      "kind": "pack",
+      "name": "ReturnOfModding-ReturnOfModding",
+      "version": "1.1.23",
+      "sha256": "a54f72f5993d6d0594872f6a36e6c483c7834bcee15895467e07c34bba537817"
+    },
+    {
+      "kind": "pack",
+      "name": "ReturnOfModding-ReturnOfModding",
+      "version": "1.1.24",
+      "sha256": "9efa5ec9f9f1d5645017581a3dc2d5b4678152d2fb5bd4c9539545721f3f29bd"
+    },
+    {
+      "kind": "pack",
+      "name": "ReturnOfModding-ReturnOfModding",
+      "version": "1.1.25",
+      "sha256": "e00020e4e8b7a858e3e1eba198301e11067e85a07fbd6505495a2936a0b004fe"
+    },
+    {
+      "kind": "pack",
+      "name": "ReturnOfModding-ReturnOfModding",
+      "version": "1.1.26",
+      "sha256": "41d243d46ca62d9d7ce37392f823763928b38e415a4022feba08fe6b62996f97"
+    },
+    {
+      "kind": "pack",
+      "name": "ReturnOfModding-ReturnOfModding",
+      "version": "1.1.27",
+      "sha256": "1a9ba03329bfe34ed29ac40731b662cadeca372d79ade58346609c15ef14ff50"
+    },
+    {
+      "kind": "pack",
+      "name": "ReturnOfModding-ReturnOfModding",
+      "version": "1.1.28",
+      "sha256": "8cfaeba16847a232a2d792ea7c563cea966e6e097c13c510e051c044607cae7e"
+    },
+    {
+      "kind": "pack",
+      "name": "ReturnOfModding-ReturnOfModding",
+      "version": "1.1.29",
+      "sha256": "ba414fa2c8eb77fc7feb0b6fe8863b267d3bbee7cee3cb9a82a3e14f150cce6e"
+    },
+    {
+      "kind": "pack",
+      "name": "ReturnOfModding-ReturnOfModding",
+      "version": "1.1.30",
+      "sha256": "7a529b1dab014283de3644e0b09874b7127899c0af0214176d9aad8b98fcdadc"
+    },
+    {
+      "kind": "pack",
+      "name": "SlipSkid_Modding-BepInExPack_SlipSkid",
+      "version": "6.0.697",
+      "sha256": "5ccfd4ebcb102706b973bf3379ff98dfb53bb966b72c9760ac4fb55d789d5350"
+    },
+    {
+      "kind": "pack",
+      "name": "Subnautica_Modding-BepInExPack_BelowZero",
+      "version": "5.4.19",
+      "sha256": "99f13ecd1ef3c7aa5f7ce33368f7b379b28b673f047503c0290ac4ee0d1fa60c"
+    },
+    {
+      "kind": "pack",
+      "name": "Subnautica_Modding-BepInExPack_BelowZero",
+      "version": "5.4.1901",
+      "sha256": "166ba8a3212697f8737e0f86349ac60ed4df6bd6d31b7121bfb183c9f698d5fc"
+    },
+    {
+      "kind": "pack",
+      "name": "Subnautica_Modding-BepInExPack_Subnautica",
+      "version": "5.4.19",
+      "sha256": "4aca2631b8815766881e779bc21ea7d7bc3ccfd87ac37c214fa4c8e04c6ee3a8"
+    },
+    {
+      "kind": "pack",
+      "name": "Subnautica_Modding-BepInExPack_Subnautica",
+      "version": "5.4.1901",
+      "sha256": "f7cb664e4c60ee7972ff61cfbcdf46580c66deda6360de70e253eca81dc3db2b"
+    },
+    {
+      "kind": "pack",
+      "name": "Subnautica_Modding-BepInExPack_Subnautica",
+      "version": "5.4.21",
+      "sha256": "d4ce7312d2eea033f4284807e374965daefc3e21c741e608847ecdb3e9309685"
+    },
+    {
+      "kind": "pack",
+      "name": "SunkenlandModding-BepInExPack_Sunkenland",
+      "version": "5.4.22",
+      "sha256": "fa8c78a6c19be4bad92744f37ebab21f9342a35052237a5a382dae7fc6229119"
+    },
+    {
+      "kind": "pack",
+      "name": "TheSexyBrutale_Modding-BepInExPack_TheSexyBrutale",
+      "version": "5.4.230501",
+      "sha256": "de803137d6773f7a3f1e933053073d07c0af5319b79f97cb9e427948b3cf65ad"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-lovely",
+      "version": "0.10.0",
+      "sha256": "6b925211abcd0df90137da403aba70fb885e64cfcb27c4e7b67f8a4286e518df"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-lovely",
+      "version": "0.3.0",
+      "sha256": "d220cd5150125c09c8d29b494d6dc7ccafb01cc478c25d309db411455a22fdd6"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-lovely",
+      "version": "0.3.1",
+      "sha256": "4873396c43163f09cda9a1a96d6b718276eca0df2efe4a42bf3469977a7547a0"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-lovely",
+      "version": "0.4.0",
+      "sha256": "1a1e2257713fb280eb8733191cbee6b6625c3ace5dbf8f4fac06aa6d70393ce3"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-lovely",
+      "version": "0.6.0",
+      "sha256": "1afbd60754251d04c356b056fce98c4e81dab5b5c85ac8620c6067e606fcdd86"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-lovely",
+      "version": "0.7.1",
+      "sha256": "e6a43ae0abd762776346c42b547ad397abf14f1eab44b96267f717704bd42111"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-lovely",
+      "version": "0.8.0",
+      "sha256": "5e9e77f2c7889974e36f7c80ed7f81dec89d2ee5cc6f8005422794b2241e6b33"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-lovely",
+      "version": "0.9.0",
+      "sha256": "814249b773710dc8c8384b8df2acf1615803deed8a2663568ef03ea25b52d658"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-unreal_shimloader",
+      "version": "1.0.10",
+      "sha256": "b3b75806d671c91681e99a49b825d4070a67af3f810c1d4bd8fe0910c8062094"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-unreal_shimloader",
+      "version": "1.0.11",
+      "sha256": "aeae01c29c0b3f0bcde1b34cdf0ec2abd8da9bab1fd351b6c3ded61713f39c7e"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-unreal_shimloader",
+      "version": "1.1.0",
+      "sha256": "ec4959d60c729765557ba1f88a293b551d91ccbbea62c12c10b17ed2afe22435"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-unreal_shimloader",
+      "version": "1.1.1",
+      "sha256": "a30c25ad9d6b0df18f833f18d8299bfac3c7a827dfef12be9b5335ff207bb812"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-unreal_shimloader",
+      "version": "1.1.2",
+      "sha256": "f48c50001f7fb8923bcf0f08c70c9a3954d18f73e58bad102fdb1f5e8b12aecb"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-unreal_shimloader",
+      "version": "1.1.3",
+      "sha256": "aa4e586cc8cdfd6ab3b4a1f843935db88667ca34d298b75300d3409c7cee048c"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-unreal_shimloader",
+      "version": "1.1.4",
+      "sha256": "73a2cdb9ee3394c13b00e38db23e5423a670466211f49e61e608ba98517c1964"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-unreal_shimloader",
+      "version": "1.1.5",
+      "sha256": "0377e487c2f5224d1c8577f6617e2544830a4d7f028a0baf273d2b6e9beb8be1"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-unreal_shimloader",
+      "version": "1.1.6",
+      "sha256": "76ddeeba585287fe186c2cb90abab7d48f95139e953c4646f837433818e29f6d"
+    },
+    {
+      "kind": "pack",
+      "name": "Thunderstore-unreal_shimloader",
+      "version": "1.1.7",
+      "sha256": "8deaf2a7246370f4e30f65af37645cdef481a28cb353d7285c3a62576bcba853"
+    },
+    {
+      "kind": "pack",
+      "name": "UMM-UMM",
+      "version": "1.0.0",
+      "sha256": "6653cb5fe2581af5662e9e42a2ce6c821016ae96415b09abe1757c3290363db2"
+    },
+    {
+      "kind": "pack",
+      "name": "UMM-UMM",
+      "version": "1.0.1",
+      "sha256": "d009da203cfb6080bcdda38eb2f9a5ad732c0cdd9e8739f79e06f122453cbe7b"
+    },
+    {
+      "kind": "pack",
+      "name": "UMM-UMM",
+      "version": "1.0.2",
+      "sha256": "875297d9ee741d224f096e1c39928043982aa77a819fa9299e04c33ffc9f0382"
+    },
+    {
+      "kind": "pack",
+      "name": "UMM-UMM",
+      "version": "1.1.0",
+      "sha256": "5e3e8e9fc6173f974200551286fc4980294ea68ab80a24189c215e9eb7f24bda"
+    },
+    {
+      "kind": "pack",
+      "name": "WhisperOfTheHouse_Modding-BepInExPack_WhisperOfTheHouse",
+      "version": "5.4.2305",
+      "sha256": "35757891049e7baba99ffbe98d36c54bcb2b6c26c542c75d3f6f709aadb746e8"
+    },
+    {
+      "kind": "pack",
+      "name": "Zinal001-BepInExPack_MECHANICA",
+      "version": "5.4.1100",
+      "sha256": "c2a73d565df40bcac5aed2ee7fb1ec79f6da7b33d503a29c0b46cc7f4fbda2ec"
+    },
+    {
+      "kind": "pack",
+      "name": "Zinal001-BepInExPack_MECHANICA",
+      "version": "5.4.1101",
+      "sha256": "cf7432a78db5585f437129251f3e5cbc03ba72536c04de2936b2752f097f4d45"
+    }
+  ]
+}

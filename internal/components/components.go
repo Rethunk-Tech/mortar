@@ -88,11 +88,6 @@ type SourceFile struct {
 	Components []SourceComponent `json:"components"`
 	Games      []GameInfo        `json:"games"`
 	Authors    []AuthorAliases   `json:"authors,omitempty"`
-	// Pins are extra versions of a listed component, resolved and hashed from their GitHub releases: older loaders a
-	// player may choose.
-	Pins []SourceComponent `json:"pins,omitempty"`
-	// PackPins are Thunderstore loader package versions with the checksum measured when they were reviewed.
-	PackPins []Pin `json:"packPins,omitempty"`
 }
 
 // versionConstraint is one operator and version of a known-broken entry's GameVersions.
@@ -1378,6 +1373,12 @@ type Manifest struct {
 	NeedsNewer []string `json:"-"`
 }
 
+// PinFile is the committed list of release checksums cmd/components -refresh-pins writes and every signing merges
+// into the manifest's Pins.
+type PinFile struct {
+	Pins []Pin `json:"pins"`
+}
+
 // Pin kinds.
 const (
 	// PinComponent pins a version of a component (Game, Name) other than the one the manifest lists for it.
@@ -1447,6 +1448,21 @@ func (c *Client) Pin(kind, game, name, version string) (string, bool) {
 		return m.pinned(kind, game, name, version)
 	}
 	return "", false
+}
+
+// HasPins reports whether the catalog pins any version of the component or package, which makes every unpinned
+// version of it unavailable until a later catalog pins it.
+func (c *Client) HasPins(kind, game, name string) bool {
+	has := func(m Manifest) bool {
+		return slices.ContainsFunc(m.Pins, func(p Pin) bool {
+			return p.Kind == kind && p.Game == game && strings.EqualFold(p.Name, name)
+		})
+	}
+	if has(c.manifest) {
+		return true
+	}
+	m, err := BundledManifest()
+	return err == nil && has(m)
 }
 
 // StaleAfter is how old a catalog may get before Mortar tells the player it could not refresh it.

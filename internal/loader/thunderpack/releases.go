@@ -75,7 +75,7 @@ func (r Releases) Versions(ctx context.Context, g components.GameInfo) ([]string
 		if len(out) == lastReleases {
 			break
 		}
-		if r.Keep == nil || r.Keep(v) {
+		if (r.Keep == nil || r.Keep(v)) && r.offered(namespace+"-"+name, v) == nil {
 			out = append(out, v)
 		}
 	}
@@ -104,6 +104,9 @@ func (r Releases) Fetch(ctx context.Context, g components.GameInfo, version, dst
 	if err != nil {
 		return fmt.Errorf("find %s %s: %w", r.Name, version, err)
 	}
+	if err := r.offered(namespace+"-"+name, version); err != nil {
+		return err
+	}
 	work, err := os.MkdirTemp(filepath.Dir(dst), ".thunderpack-fetch-*")
 	if err != nil {
 		return err
@@ -120,19 +123,17 @@ func (r Releases) Fetch(ctx context.Context, g components.GameInfo, version, dst
 }
 
 // checkPin holds the downloaded pack to the SHA-256 the signed catalog pins for its version. Thunderstore publishes no
-// digest, so a version the catalog does not pin installs unverified, as it did before pins existed; a pinned version
-// whose bytes differ is refused.
+// digest, so a package the catalog pins nothing of installs unverified, as it did before pins existed. Once the catalog
+// pins any version of a package, only pinned versions are offered and installed, and a pinned version whose bytes
+// differ is refused.
 func (r Releases) checkPin(pack, version, file string) error {
-	client := r.Components
-	if client == nil {
-		client = components.Active()
-	}
+	client := r.client()
 	if client == nil {
 		return nil
 	}
 	want, ok := client.Pin(components.PinPack, "", pack, version)
 	if !ok {
-		log.Printf("%s %s: the catalog pins no checksum for this version, so it is installed unverified", r.Name, version)
+		log.Printf("%s %s: the catalog pins no checksum for this package, so it is installed unverified", r.Name, version)
 		return nil
 	}
 	got, err := safefs.HashFile(file, sha256.New())
@@ -146,17 +147,22 @@ func (r Releases) checkPin(pack, version, file string) error {
 	return nil
 }
 
-// Versions are the releases of the game's loader package in its community index, newest first.
-func (l Loader) Versions(ctx context.Context, g components.GameInfo) ([]string, error) {
-	return l.releases().Versions(ctx, g)
+func (r Releases) client() *components.Client {
+	if r.Components != nil {
+		return r.Components
+	}
+	return components.Active()
 }
 
-// Latest is the package's newest release.
-func (l Loader) Latest(ctx context.Context, g components.GameInfo) (string, error) {
-	return l.releases().Latest(ctx, g)
-}
-
-// Fetch downloads the game's loader package zip of version to dst.
-func (l Loader) Fetch(ctx context.Context, g components.GameInfo, version, dst string) error {
-	return l.releases().Fetch(ctx, g, version, dst)
+// offered is nil when version of pack may be installed: the catalog pins it, or pins nothing of the package. A version
+// released after the catalog was signed waits for the next catalog.
+func (r Releases) offered(pack, version string) error {
+	client := r.client()
+	if client == nil || !client.HasPins(components.PinPack, "", pack) {
+		return nil
+	}
+	if _, ok := client.Pin(components.PinPack, "", pack, version); ok {
+		return nil
+	}
+	return usererr.New(usererr.Outdated, fmt.Sprintf("%s %s is newer than Mortar's signed catalog, which pins the files it installs. It becomes available with the next catalog update (weekly).", r.Name, version))
 }

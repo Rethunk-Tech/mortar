@@ -33,6 +33,9 @@ type options struct {
 	bundled   string
 	signature string
 	public    string
+	pins      string
+	refresh   bool
+	budget    time.Duration
 }
 
 func main() {
@@ -42,7 +45,17 @@ func main() {
 	flag.StringVar(&o.signature, "signature", "components.json.sig", "detached signature path")
 	flag.StringVar(&o.bundled, "bundled", "internal/components/components.json", "embedded manifest path")
 	flag.StringVar(&o.public, "public-key", "build/updater/public.key", "Ed25519 public key path")
+	flag.StringVar(&o.pins, "pins", "components.pins.json", "release checksum pin file")
+	flag.BoolVar(&o.refresh, "refresh-pins", false, "download the releases the loader pickers offer and add their checksums to the pin file, then exit")
+	flag.DurationVar(&o.budget, "budget", 4*time.Minute, "with -refresh-pins, stop after this long; run again to resume")
 	flag.Parse()
+	if o.refresh {
+		if err := refreshPins(context.Background(), o); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
 	if err := run(context.Background(), o); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -72,15 +85,10 @@ func run(ctx context.Context, o options) error {
 		}
 		resolved = append(resolved, component)
 	}
-	var pins []components.Pin
-	for _, item := range source.Pins {
-		component, err := resolve(ctx, client, item)
-		if err != nil {
-			return err
-		}
-		pins = append(pins, components.Pin{Kind: components.PinComponent, Game: component.Game, Name: component.Name, Version: component.Version, SHA256: component.SHA256})
+	pins, err := readPins(o.pins)
+	if err != nil {
+		return err
 	}
-	pins = append(pins, source.PackPins...)
 	if err := pinTemplates(ctx, httpClient, "https://api.github.com", source.Games); err != nil {
 		return err
 	}
