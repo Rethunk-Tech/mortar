@@ -1,7 +1,6 @@
-import { join } from 'node:path'
 import type { Page } from '@playwright/test'
 import type { Case } from './render-budget.ts'
-import { biggestProfileIds } from './renderProfile.ts'
+import { biggestProfileIds, renderDataDir } from './renderProfile.ts'
 
 interface Wails {
   _wails: { dispatchWailsEvent: (e: { name: string; data: unknown }) => void }
@@ -14,10 +13,6 @@ function emit(p: Page, events: { name: string; data: unknown }[]) {
     }
   }, events)
 }
-
-// The same data the run opened its profile from (render-budget.ts land).
-const dataDir = () =>
-  process.env.MORTAR_RENDER_DATA ?? join(process.env.HOME ?? '', '.local', 'share', 'mortar')
 
 const status = (game: string, profile: string, state: string, over: object = {}) => ({
   name: 'launch:state',
@@ -57,7 +52,7 @@ const progress = (game: string, profile: string, over: object = {}) => ({
 /** The launch screen as the backend's launch events drive it: the game starting, its loader loading mods, and a failure. */
 export function launchScreenCases(): Case[] {
   const ids = () => {
-    const found = biggestProfileIds(dataDir())
+    const found = biggestProfileIds(renderDataDir())
     if (!found) {
       throw new Error('the render data holds no profile to launch')
     }

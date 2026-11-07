@@ -33,11 +33,14 @@ function dataProfiles(dataDir: string): ProfileFacts[] {
   return found
 }
 
+// The seeded sandbox's Lethal Company profile ties Seed Farm on mod count (it counts the bridge), so it names its own.
 const mostMods = (all: ProfileFacts[]) =>
-  all.reduce<ProfileFacts | undefined>(
-    (best, p) => (!best || p.mods > best.mods ? p : best),
-    undefined,
-  )
+  process.env.MORTAR_RENDER_SEEDED
+    ? all.find((p) => p.name === 'Seed Farm')
+    : all.reduce<ProfileFacts | undefined>(
+        (best, p) => (!best || p.mods > best.mods ? p : best),
+        undefined,
+      )
 
 /**
  * The name of the profile with the most mods in the copied data, across every game, so the Mods cases have rows
@@ -45,6 +48,20 @@ const mostMods = (all: ProfileFacts[]) =>
  */
 export function biggestProfile(dataDir: string): string {
   return mostMods(dataProfiles(dataDir))?.name ?? ''
+}
+
+/**
+ * The data folder the run measures: the copied data, the seeded sandbox's own, or the maintainer's. A seeded run
+ * must not read the maintainer's profile ids, which name no profile of its sandbox.
+ */
+export function renderDataDir(): string {
+  const sandbox = process.env.MORTAR_E2E_DIR ?? process.env.MORTAR_SELFTEST_DIR
+  return (
+    process.env.MORTAR_RENDER_DATA ??
+    (process.env.MORTAR_RENDER_SEEDED && sandbox
+      ? join(sandbox, 'home', '.local', 'share', 'mortar')
+      : join(process.env.HOME ?? '', '.local', 'share', 'mortar'))
+  )
 }
 
 /** The game and profile ids of the profile with the most mods, which the run opens. */

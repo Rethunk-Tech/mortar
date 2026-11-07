@@ -1,10 +1,9 @@
-import process from 'node:process'
 import type { Page, Route } from '@playwright/test'
 import { openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import { patchCalls } from './renderCoverage.ts'
 import type { dialogKit } from './renderDialogs.ts'
-import { biggestProfileIds, openGame } from './renderProfile.ts'
+import { biggestProfileIds, openGame, renderDataDir } from './renderProfile.ts'
 import { stubCalls } from './renderStubbed.ts'
 
 export const NEXUS_ACCOUNT = 1_189_232_250
@@ -55,9 +54,6 @@ const withLoaders = (edit: (l: LoaderEdit & Record<string, unknown>) => void) =>
     }
     return games
   })
-
-const dataDir = () =>
-  process.env.MORTAR_RENDER_DATA ?? `${process.env.HOME ?? ''}/.local/share/mortar`
 
 /** Reloads the app under the stubs, which the game list read at startup then goes through. */
 export async function reloadUnder(p: Page, tabs: (p: Page) => ReturnType<Page['locator']>) {
@@ -130,11 +126,11 @@ export function stateCases(
     }
     return games
   })
-  const ids = biggestProfileIds(dataDir())
   const running = patchCalls<{ state: string; profile: string }>([LAUNCH_STATUS], (status) => ({
     ...status,
     state: 'running',
-    profile: ids?.profile ?? status.profile,
+    // Read per call: the seeded sandbox's data folder exists only once the run has started it.
+    profile: biggestProfileIds(renderDataDir())?.profile ?? status.profile,
     since: Date.now(),
   }))
   const measuring = stubCalls({
