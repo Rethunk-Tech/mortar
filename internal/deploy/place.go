@@ -113,15 +113,65 @@ func (Place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 	if err != nil {
 		return Manifest{}, err
 	}
+	// Files are copied unsynced and made durable together by one flush; only then are they logged done, so a done op is
+	// always whole on disk and one not yet logged is taken back by recovery, whatever its bytes.
+	var placed []int
+	var runErr error
 	for i := range m.Ops {
-		if err := ctx.Err(); err != nil {
-			return m, errors.Join(err, log.close())
+		if runErr = ctx.Err(); runErr != nil {
+			break
 		}
-		if err := put(&m, i, log); err != nil {
-			return m, errors.Join(err, log.close())
+		if runErr = put(&m, i, log); runErr != nil {
+			break
 		}
+		placed = append(placed, i)
+	}
+	commitErr := commitPlaced(&m, placed, log)
+	if runErr != nil || commitErr != nil {
+		return m, errors.Join(runErr, commitErr, log.close())
 	}
 	return m, errors.Join(log.close(), persist(m))
+}
+
+// commitPlaced flushes the files put copied, once per file system they landed on, then marks each done in the log. A
+// failed flush marks none.
+func commitPlaced(m *Manifest, placed []int, log *opLog) error {
+	type group struct{ files, dirs []string }
+	groups := map[string]*group{}
+	var order []string
+	for _, i := range placed {
+		dst := m.Ops[i].Dst
+		dir := filepath.Dir(dst)
+		key := dir
+		if dev, err := safefs.Device(dir); err == nil {
+			key = fmt.Sprint(dev)
+		}
+		g := groups[key]
+		if g == nil {
+			g = &group{}
+			groups[key] = g
+			order = append(order, key)
+		}
+		g.files = append(g.files, dst)
+		if !slices.Contains(g.dirs, dir) {
+			g.dirs = append(g.dirs, dir)
+		}
+	}
+	for _, k := range order {
+		g := groups[k]
+		if err := safefs.Flush(g.dirs[0], g.files, g.dirs); err != nil {
+			return err
+		}
+	}
+	at("flushed")
+	for _, i := range placed {
+		m.Ops[i].Done = true
+		if err := log.add(step{P: &i}, false); err != nil {
+			return err
+		}
+		at("logged:" + fmt.Sprint(i))
+	}
+	return nil
 }
 
 func put(m *Manifest, i int, log *opLog) error {
@@ -140,15 +190,10 @@ func put(m *Manifest, i int, log *opLog) error {
 		return err
 	}
 	at("before-copy:" + n)
-	if err := datadir.CopyFile(pl.Src, pl.Dst); err != nil {
+	if err := datadir.CopyFileNoSync(pl.Src, pl.Dst); err != nil {
 		return err
 	}
 	at("copied:" + n)
-	pl.Done = true
-	if err := log.add(step{P: &i}, false); err != nil {
-		return err
-	}
-	at("logged:" + n)
 	return nil
 }
 
@@ -281,8 +326,12 @@ func undoUndisplaced(m *Manifest, o Placed, i int, log *opLog) error {
 
 func undoChanged(m *Manifest, o Placed, i int, log *opLog, h string) error {
 	switch {
-	case h == o.Hash:
+	case h == o.Hash || !o.Done && emptyFile(o.Dst):
 		return safefs.Remove(o.Dst)
+	case !o.Done:
+		// Copied unsynced and never logged: a mismatch is a torn copy or a file that is not ours, never the game's
+		// change, so it goes neither into the profile nor away.
+		return nil
 	case o.WriteBack:
 		wrote, err := writeBackFile(o, i, log)
 		if err != nil {
@@ -297,12 +346,18 @@ func undoChanged(m *Manifest, o Placed, i int, log *opLog, h string) error {
 	return nil
 }
 
+// emptyFile reports a file of no bytes, which is what a copy that never reached the disk leaves.
+func emptyFile(p string) bool {
+	st, err := os.Lstat(p)
+	return err == nil && st.Mode().IsRegular() && st.Size() == 0
+}
+
 // writeBackOrRescue copies a changed Dst of a profile-copy file over its Src before Dst is removed and the displaced file
 // returns. When the profile's folder is gone it keeps the bytes beside Dst under a rescue name, on the log first, so a
 // changed file is never removed without a copy.
 func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
 	// A link a mod left in place of the file is not followed into the profile; removing it loses no bytes.
-	if st, err := os.Lstat(o.Dst); !o.WriteBack || (err == nil && !st.Mode().IsRegular()) {
+	if st, err := os.Lstat(o.Dst); !o.WriteBack || !o.Done || (err == nil && !st.Mode().IsRegular()) {
 		return nil
 	}
 	h, err := safefs.HashFile(o.Dst, sha256.New())
