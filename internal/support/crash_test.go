@@ -200,3 +200,21 @@ func TestBundleProfilesAndQueueHideTheHomeFolder(t *testing.T) {
 		t.Fatalf("queue: %s", q)
 	}
 }
+
+func TestHideHomeInBlanksEverySecretAnAddressOrHeaderCarries(t *testing.T) {
+	t.Parallel()
+	line := `download failed: Get "https://cf-files.nexusmods.com/cdn/1/2/x.zip?md5=abc123&expires=1700000000&user_id=4242": dial tcp: timeout` +
+		` ; https://user:hunter2@example.com/p?api_key=K3Y&page=2#frag ; Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.abc.def ; ` +
+		`/home/me/.local/share/mortar/x`
+	got := hideHomeIn(line, "/home/me")
+	for _, leaked := range []string{"abc123", "1700000000", "4242", "hunter2", "K3Y", "eyJhbGci"} {
+		if strings.Contains(got, leaked) {
+			t.Errorf("%q survived: %s", leaked, got)
+		}
+	}
+	for _, kept := range []string{"cf-files.nexusmods.com/cdn/1/2/x.zip?md5=REDACTED", "&user_id=REDACTED", "page=REDACTED", "~/.local/share/mortar/x"} {
+		if !strings.Contains(got, kept) {
+			t.Errorf("%q lost: %s", kept, got)
+		}
+	}
+}

@@ -168,12 +168,30 @@ func shrinkTail(s string) string {
 	return ""
 }
 
-// linkSecret matches the nxm download key and expiry a logged request URL can carry.
-var linkSecret = regexp.MustCompile(`([?&](?:key|expires)=)[^&\s"']+`)
+// loggedURL is an address in free text. A logged request carries its secrets in the address itself: the nxm key and
+// expiry, a signed CDN link's user id, digest and expiry, an API key or an access token in the query, a password in
+// the user info.
+var loggedURL = regexp.MustCompile(`[A-Za-z][A-Za-z0-9+.-]*://[^\s"'<>]+`)
+
+var (
+	queryValue = regexp.MustCompile(`([?&;][^=&;\s#]*=)[^&;\s#]*`)
+	userInfo   = regexp.MustCompile(`^([A-Za-z][A-Za-z0-9+.-]*://)[^/@?#]*@`)
+	bearer     = regexp.MustCompile(`(?i)((?:authorization|bearer|apikey|api-key)["']?\s*[:=]?\s*(?:bearer\s+)?)[A-Za-z0-9._~+/=-]{8,}`)
+)
+
+// scrubSecrets blanks the value of every query parameter and the user info of every address in text, and any
+// bearer token or API key written as a header.
+func scrubSecrets(text string) string {
+	text = loggedURL.ReplaceAllStringFunc(text, func(u string) string {
+		u = userInfo.ReplaceAllString(u, "${1}REDACTED@")
+		return queryValue.ReplaceAllString(u, "${1}REDACTED")
+	})
+	return bearer.ReplaceAllString(text, "${1}REDACTED")
+}
 
 // hideHomeIn replaces every occurrence of the home folder in free text such as a log, where paths appear mid-line.
 func hideHomeIn(text, home string) string {
-	text = linkSecret.ReplaceAllString(text, "${1}REDACTED")
+	text = scrubSecrets(text)
 	for _, h := range []string{home, filepath.ToSlash(home), filepath.FromSlash(home)} {
 		if h = strings.TrimRight(h, `/\`); h != "" {
 			text = strings.ReplaceAll(text, h, "~")
