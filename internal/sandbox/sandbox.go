@@ -38,6 +38,8 @@ type Spec struct {
 	Sockets []string
 	// CacheDir holds the shader caches, so they persist without sharing the player's own.
 	CacheDir string
+	// Warn, when set, is shown in the run's console: something the game may write is not bound.
+	Warn string
 	// Bus is the host socket of a filtered session-bus proxy (StartProxy). Empty means the game gets no session bus.
 	Bus string
 	// Environ is the environment the game inherits; credential-looking variables are removed from it.

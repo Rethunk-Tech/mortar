@@ -172,6 +172,9 @@ func DataDirs(home string, s settings.Settings, id, pin string) []string {
 		return nil
 	}
 	var all []string
+	if u := unityDataDir(home, s, id, pin); u != "" {
+		all = append(all, u)
+	}
 	for role, t := range g.Paths {
 		if !dataRoles[role] {
 			continue
@@ -194,4 +197,45 @@ func DataDirs(home string, s settings.Settings, id, pin string) []string {
 		out = append(out, p)
 	}
 	return out
+}
+
+// unityDataDir is the folder a native Unity player keeps its saves and Player.log in, ~/.config/unity3d/<company>/<product>.
+// The build records both names in <exe>_Data/app.info, so a game needs no catalog path for it. Empty when the install
+// is not a native Unity build or a name could step out of the folder.
+func unityDataDir(home string, s settings.Settings, id, pin string) string {
+	in, err := ResolveInstall(home, s, id, pin)
+	if err != nil || in.Platform != "linux" {
+		return ""
+	}
+	company, product, ok := unityNames(in.Dir)
+	if !ok {
+		return ""
+	}
+	p, err := PathIn(home, s, id, pin, components.PathTemplate{Linux: "{xdgConfig}/unity3d/" + company + "/" + product})
+	if err != nil {
+		return ""
+	}
+	return p
+}
+
+// unityNames reads the company and product a Unity build records in <exe>_Data/app.info of dir.
+func unityNames(dir string) (company, product string, ok bool) {
+	infos, _ := filepath.Glob(filepath.Join(dir, "*_Data", "app.info"))
+	if len(infos) == 0 {
+		return "", "", false
+	}
+	b, err := os.ReadFile(infos[0]) //nolint:gosec // G304: a fixed name inside the install
+	if err != nil {
+		return "", "", false
+	}
+	names := strings.Split(strings.TrimSpace(strings.ReplaceAll(string(b), "\r", "")), "\n")
+	if len(names) < 2 {
+		return "", "", false
+	}
+	for _, n := range names[:2] {
+		if n == "" || n == "." || n == ".." || strings.ContainsAny(n, "/\\") {
+			return "", "", false
+		}
+	}
+	return names[0], names[1], true
 }

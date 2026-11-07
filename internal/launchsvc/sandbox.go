@@ -44,7 +44,11 @@ func (s *Service) sandboxSpec(gameID, profileID string, inst game.Install, plan 
 	// Everything the game writes beside its saves (SMAPI's ErrorLogs, startup preferences, screenshots) shares their
 	// folder; binding only the saves would send those to the throwaway home.
 	if inst.Platform == "linux" {
-		spec.RW = append(spec.RW, game.DataDirs(s.home, s.settings.Get(), gameID, inst.ID)...)
+		dirs := game.DataDirs(s.home, s.settings.Get(), gameID, inst.ID)
+		spec.RW = append(spec.RW, dirs...)
+		if len(dirs) == 0 {
+			spec.Warn = "this game's save folder is not known, so anything it writes outside the install is lost when it exits; add the folder under Extra folders"
+		}
 	}
 	if game.HasSaves(gameID) {
 		saves, err := s.playedSavesDir(s.settings.Get(), gameID, profileID, inst.ID)
