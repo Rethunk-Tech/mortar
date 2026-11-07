@@ -79,12 +79,6 @@ Mortar's side is built (`internal/devsvc/content.go`, the catalog's `devTemplate
 
 Done when: a pack with posters + boombox + tv in `plugins/mortar/`, suits in `plugins/moresuits/` and a sound pack loads all three in game; a legacy-layout pack still loads; a code project's ticked content ships in its package.
 
-### Lethal Company facts to verify
-
-Record each in [games.md](games.md#lethal-company) once seen.
-
-- Profile paths with spaces or non-ASCII characters (BepInEx flags `Assembly.LoadFile` issues on some Mono builds, `Entrypoint.cs:94,142`).
-
 ## Later
 
 Parked; take up when asked.
