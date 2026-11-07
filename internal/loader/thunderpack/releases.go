@@ -36,8 +36,6 @@ type Releases struct {
 	Keep func(version string) bool
 }
 
-func (l Loader) releases() Releases { return Releases{Name: l.Name, Index: l.Index, HTTP: l.HTTP} }
-
 func (r Releases) driver() thunderstore.Driver {
 	if r.Index != nil {
 		return *r.Index

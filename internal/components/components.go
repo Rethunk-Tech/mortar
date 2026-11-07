@@ -1884,21 +1884,7 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 		return Manifest{}, bundledErr
 	}
 	// A fetched manifest older than the one this build ships or the one already cached is a rollback.
-	oldSerial := bundled.Serial
-	var floor uint64
-	if cache != nil {
-		if stored, ok := diskcache.Peek[uint64](cache.Cache(), floorName); ok {
-			floor = stored.Value
-			oldSerial = max(oldSerial, floor)
-		}
-		if old, ok := diskcache.Peek[cachedManifest](cache.Cache(), cacheName); ok {
-			if err := Verify(old.Value.Manifest, old.Value.Signature, publicKey); err == nil {
-				if parsed, err := Decode(old.Value.Manifest); err == nil {
-					oldSerial = max(oldSerial, parsed.Serial)
-				}
-			}
-		}
-	}
+	oldSerial, floor := serialFloors(cache, bundled, publicKey)
 	var fetchFailure error
 	fetch := func() (cachedManifest, error) {
 		_, manifest, signature, err := c.fetch(ctx, func(url string, manifest, signature []byte) error {
@@ -1932,23 +1918,51 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 		entry, err = fetch()
 	}
 	if err == nil {
-		if verifyErr := Verify(entry.Manifest, entry.Signature, publicKey); verifyErr == nil {
-			// The cache answers a failed fetch with its last copy however old, so its serial is checked here too: a
-			// blocked download must not bring back a catalog older than this build's.
-			if parsed, parseErr := Decode(entry.Manifest); parseErr != nil {
-				err = parseErr
-			} else if parsed.Serial < max(bundled.Serial, floor) {
-				err = fmt.Errorf("%w: cached copy has serial %d, below the bundled %d", ErrRollback, parsed.Serial, bundled.Serial)
-			} else {
-				c.SetManifest(parsed)
-				return parsed, fetchFailure
-			}
-		} else {
-			err = fmt.Errorf("%w: cached copy: %w", ErrBadSignature, verifyErr)
+		var parsed Manifest
+		if parsed, err = checkCached(entry, bundled, floor, publicKey); err == nil {
+			c.SetManifest(parsed)
+			return parsed, fetchFailure
 		}
 	}
 	c.SetManifest(bundled)
 	return bundled, err
+}
+
+// serialFloors is the serial a fetched catalog must reach: the bundled one, the highest ever accepted (floor) and the
+// cached copy's, when it verifies.
+func serialFloors(cache *meta.Client, bundled Manifest, publicKey []byte) (oldSerial, floor uint64) {
+	oldSerial = bundled.Serial
+	if cache == nil {
+		return oldSerial, 0
+	}
+	if stored, ok := diskcache.Peek[uint64](cache.Cache(), floorName); ok {
+		floor = stored.Value
+		oldSerial = max(oldSerial, floor)
+	}
+	if old, ok := diskcache.Peek[cachedManifest](cache.Cache(), cacheName); ok {
+		if err := Verify(old.Value.Manifest, old.Value.Signature, publicKey); err == nil {
+			if parsed, err := Decode(old.Value.Manifest); err == nil {
+				oldSerial = max(oldSerial, parsed.Serial)
+			}
+		}
+	}
+	return oldSerial, floor
+}
+
+// checkCached verifies a cache entry. The cache answers a failed fetch with its last copy however old, so its serial is
+// checked here too: a blocked download must not bring back a catalog older than this build's.
+func checkCached(entry cachedManifest, bundled Manifest, floor uint64, publicKey []byte) (Manifest, error) {
+	if err := Verify(entry.Manifest, entry.Signature, publicKey); err != nil {
+		return Manifest{}, fmt.Errorf("%w: cached copy: %w", ErrBadSignature, err)
+	}
+	parsed, err := Decode(entry.Manifest)
+	if err != nil {
+		return Manifest{}, err
+	}
+	if parsed.Serial < max(bundled.Serial, floor) {
+		return Manifest{}, fmt.Errorf("%w: cached copy has serial %d, below the bundled %d", ErrRollback, parsed.Serial, bundled.Serial)
+	}
+	return parsed, nil
 }
 
 // UseCached selects the manifest an earlier run cached when it verifies and is no older than the bundled one, so

@@ -1290,7 +1290,7 @@ func (c *boot) tellIfCatalogStale() {
 	}
 }
 
-func (c *boot) catalogRefresh() error {
+func (c *boot) catalogRefresh(ctx context.Context) error {
 	go func() {
 		defer c.tellIfCatalogStale()
 		failurePath := filepath.Join(c.dataDir, "cache", "components-failure")
@@ -1301,7 +1301,7 @@ func (c *boot) catalogRefresh() error {
 			}
 		}
 		start := time.Now()
-		m, err := c.componentClient.Load(context.Background(), c.modMeta, updateKey)
+		m, err := c.componentClient.Load(ctx, c.modMeta, updateKey)
 		log.Printf("catalog: serial %d after %s", m.Serial, since(start))
 		if err != nil {
 			if errors.Is(err, components.ErrBadSignature) || errors.Is(err, components.ErrRollback) {
@@ -1321,7 +1321,7 @@ func (c *boot) catalogRefresh() error {
 		}
 		c.problemsSvc.ForgetCached()
 		for _, id := range game.Implemented() {
-			loadersvc.SyncBundled(context.Background(), c.loaders, id)
+			loadersvc.SyncBundled(ctx, c.loaders, id)
 		}
 		for _, g := range game.Catalog() {
 			if err := c.profiles.FillPackageLooks(g.ID); err != nil {
@@ -1354,7 +1354,7 @@ func (c *boot) windowFuncs(updateCtx context.Context) error {
 	}
 	c.app.Event.On(game.CatalogRetryEvent, func(*application.CustomEvent) {
 		_ = safefs.Remove(filepath.Join(c.dataDir, "cache", "components-failure"))
-		_ = c.catalogRefresh()
+		_ = c.catalogRefresh(updateCtx)
 	})
 	pongs := make(chan struct{}, 1)
 	c.app.Event.On(windowPongEvent, func(*application.CustomEvent) {

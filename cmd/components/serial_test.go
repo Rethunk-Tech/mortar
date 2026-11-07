@@ -13,7 +13,7 @@ func TestTheSerialIsTheSigningTimeSoTheCatalogCarriesItsOwnAge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if serial < uint64(before) || serial > uint64(time.Now().Unix()+1) {
+	if serial < uint64(before) || serial > uint64(time.Now().Unix()+1) { //nolint:gosec // G115: Unix times here are positive
 		t.Fatalf("serial %d is not the signing time %d", serial, before)
 	}
 }

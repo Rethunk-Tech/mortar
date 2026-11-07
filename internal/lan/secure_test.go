@@ -39,10 +39,10 @@ func relay(t *testing.T, target string, seen *relayed) string {
 	t.Helper()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
-		out, _ := http.NewRequestWithContext(r.Context(), r.Method, "http://"+target+r.URL.RequestURI(), bytes.NewReader(body))
+		out, _ := http.NewRequestWithContext(r.Context(), r.Method, "http://"+target+r.URL.RequestURI(), bytes.NewReader(body)) //nolint:gosec // G704: the target is the test rig's own listener
 		out.Header = r.Header.Clone()
 		out.Host = r.Host
-		resp, err := http.DefaultClient.Do(out)
+		resp, err := http.DefaultClient.Do(out) //nolint:gosec // G704: the target is the test rig's own listener
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadGateway)
 			return
@@ -143,9 +143,9 @@ func TestARelayThatChangesTheDialedHostFailsTheHandshake(t *testing.T) {
 	t.Parallel()
 	rig := newPairRig(t)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		out, _ := http.NewRequestWithContext(r.Context(), r.Method, "http://"+rig.receiverAddr+r.URL.RequestURI(), r.Body)
+		out, _ := http.NewRequestWithContext(r.Context(), r.Method, "http://"+rig.receiverAddr+r.URL.RequestURI(), r.Body) //nolint:gosec // G704: the target is the test rig's own listener
 		out.Header = r.Header.Clone()
-		resp, err := http.DefaultClient.Do(out)
+		resp, err := http.DefaultClient.Do(out) //nolint:gosec // G704: the target is the test rig's own listener
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadGateway)
 			return
@@ -262,7 +262,7 @@ func TestHelloDoesNotSayWhichIdsArePaired(t *testing.T) {
 	rig := newPairRig(t)
 	selfID, _ := rig.sender.book.self()
 	proofFor := func(id string) string {
-		resp, err := http.Get("http://" + rig.receiverAddr + "/hello?" + url.Values{"id": {id}, "challenge": {"c"}}.Encode())
+		resp, err := getURL(t, "http://"+rig.receiverAddr+"/hello?"+url.Values{"id": {id}, "challenge": {"c"}}.Encode())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -283,7 +283,7 @@ func TestOneHostCannotUseUpTheHandshakes(t *testing.T) {
 	_, addr := pairedService(t, nil, nil)
 	codes := map[int]int{}
 	for range maxNoncesPerPeer + 4 {
-		resp, err := http.Get("http://" + addr + "/hello")
+		resp, err := getURL(t, "http://"+addr+"/hello")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -304,7 +304,7 @@ func TestOneHostCannotHoldEveryPairingSession(t *testing.T) {
 	body, _ := json.Marshal(pairBeginRequest{ID: "x", Name: "x", A: base64.RawStdEncoding.EncodeToString(bytes.Repeat([]byte{9}, 32))})
 	codes := map[int]int{}
 	for range maxSessionsPerPeer + 3 {
-		resp, err := http.Post("http://"+addr+"/pair/begin", "application/json", bytes.NewReader(body))
+		resp, err := postJSON(t, "http://"+addr+"/pair/begin", body)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -331,4 +331,23 @@ func TestGuessesAreCountedBeforeTheyAreChecked(t *testing.T) {
 	if err := host.pairOpen("192.0.2.9", now); err == nil {
 		t.Fatal("a sixth guess was allowed")
 	}
+}
+
+func getURL(t *testing.T, link string) (*http.Response, error) {
+	t.Helper()
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, link, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return http.DefaultClient.Do(req)
+}
+
+func postJSON(t *testing.T, link string, body []byte) (*http.Response, error) {
+	t.Helper()
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, link, bytes.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	return http.DefaultClient.Do(req)
 }

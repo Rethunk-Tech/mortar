@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 const escapingKey = "../../../../VICTIM"
@@ -29,7 +31,7 @@ func TestRestoreRefusesAnEntryKeyThatLeavesTheModsFolder(t *testing.T) {
 	e := newEnv(t)
 	src, files := backupWithKey(t, e, escapingKey)
 	victim := filepath.Join(filepath.Dir(e.root), "VICTIM")
-	if err := os.MkdirAll(victim, 0o755); err != nil {
+	if err := os.MkdirAll(victim, 0o750); err != nil {
 		t.Fatal(err)
 	}
 	if _, _, err := newEnv(t).RestoreBackup(t.Context(), "stardew", src, files, nil); err == nil {
@@ -46,7 +48,7 @@ func TestLoadDropsAnEntryWhoseKeyLeavesTheModsFolder(t *testing.T) {
 		t.Fatal(err)
 	}
 	path := filepath.Join(e.root, "stardew", p.ID, fileName)
-	b, err := os.ReadFile(path)
+	b, err := safefs.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +57,7 @@ func TestLoadDropsAnEntryWhoseKeyLeavesTheModsFolder(t *testing.T) {
 	if string(evil) == string(b) {
 		t.Fatal("the key was not rewritten")
 	}
-	if err := os.WriteFile(path, evil, 0o600); err != nil {
+	if err := safefs.WriteFile(path, evil, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	forgetProfile(path)
@@ -79,7 +81,7 @@ func TestRemoveEntryFoldersRefusesAKeyOutsideTheModsFolder(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
 	victim := filepath.Join(dir, "VICTIM")
-	if err := os.MkdirAll(victim, 0o755); err != nil {
+	if err := os.MkdirAll(victim, 0o750); err != nil {
 		t.Fatal(err)
 	}
 	if err := removeEntryFolders(filepath.Join(dir, "a", "mods"), "../../VICTIM"); err == nil {

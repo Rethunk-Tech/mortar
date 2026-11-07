@@ -1060,7 +1060,7 @@ func TestValidateRefusesATemplateCommitThatIsNotAFullSHA(t *testing.T) {
 func TestACatalogSignedOverFourteenDaysAgoIsStaleButStillDecodes(t *testing.T) {
 	t.Parallel()
 	signed := time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC)
-	m := Manifest{Serial: uint64(signed.Unix())}
+	m := Manifest{Serial: uint64(signed.Unix())} //nolint:gosec // G115: a fixed positive date
 	if !m.IssuedAt().Equal(signed) {
 		t.Fatalf("issued %v, want %v", m.IssuedAt(), signed)
 	}

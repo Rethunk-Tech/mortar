@@ -40,7 +40,7 @@ func kdf(secret []byte, purpose string, parts ...string) []byte {
 	h := sha256.New()
 	for _, p := range parts {
 		var n [4]byte
-		binary.BigEndian.PutUint32(n[:], uint32(len(p)))
+		binary.BigEndian.PutUint32(n[:], uint32(len(p))) //nolint:gosec // G115: a kdf part is a short literal
 		h.Write(n[:])
 		h.Write([]byte(p))
 	}
@@ -106,7 +106,7 @@ func (s *sealWriter) frame(final bool) error {
 	s.n++
 	head := make([]byte, 5)
 	head[0] = flag
-	binary.BigEndian.PutUint32(head[1:], uint32(len(ct)))
+	binary.BigEndian.PutUint32(head[1:], uint32(len(ct))) //nolint:gosec // G115: a frame holds at most frameMax plus the AEAD overhead
 	s.buf = s.buf[:0]
 	if _, err := s.w.Write(head); err != nil {
 		return err
@@ -179,7 +179,7 @@ func (s *sealReader) next() error {
 		return err
 	}
 	size := binary.BigEndian.Uint32(head[1:])
-	if head[0] > 1 || size > frameMax+uint32(s.aead.Overhead()) {
+	if head[0] > 1 || size > frameMax+uint32(s.aead.Overhead()) { //nolint:gosec // G115: Overhead is a small positive constant
 		return errors.New("sealed stream is malformed")
 	}
 	ct := make([]byte, size)

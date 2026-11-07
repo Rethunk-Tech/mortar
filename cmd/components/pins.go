@@ -180,56 +180,79 @@ func pinPacks(ctx context.Context, set *pinSet, games []components.GameInfo) err
 		return err
 	}
 	defer func() { _ = os.RemoveAll(scratch) }()
+	for _, t := range packTargets(games) {
+		versions, err := t.rel.Versions(ctx, t.game)
+		if err != nil {
+			if ctx.Err() != nil {
+				return nil
+			}
+			log.Printf("pins: %s %s: %v", t.game.ID, t.game.LoaderPackage(), err)
+			continue
+		}
+		stop, err := pinPackVersions(ctx, set, scratch, t, versions)
+		if err != nil || stop {
+			return err
+		}
+	}
+	return nil
+}
+
+type packTarget struct {
+	game components.GameInfo
+	rel  loader.Releases
+}
+
+// packTargets lists each Thunderstore loader pack once per package and major, leaving out the loaders pinned as components.
+func packTargets(games []components.GameInfo) []packTarget {
+	var out []packTarget
 	done := map[string]bool{}
 	for _, g := range games {
+		if _, ok := g.Source("thunderstore"); !ok {
+			continue
+		}
 		for _, gl := range g.Loaders {
 			l, ok := loader.Get(gl.ID)
 			rel, releases := l.(loader.Releases)
 			if !ok || !releases || gl.ID == "smapi" || gl.ID == "melonloader" {
 				continue
 			}
-			if _, ok := g.Source("thunderstore"); !ok {
-				continue
-			}
 			key := gl.ID + "|" + g.LoaderPackage() + "|" + strconv.Itoa(g.LoaderMajor(gl.ID))
-			if done[key] {
-				continue
-			}
-			done[key] = true
-			versions, err := rel.Versions(ctx, g)
-			if err != nil {
-				if ctx.Err() != nil {
-					return nil
-				}
-				log.Printf("pins: %s %s: %v", g.ID, g.LoaderPackage(), err)
-				continue
-			}
-			for _, v := range versions {
-				pin := components.Pin{Kind: components.PinPack, Name: g.LoaderPackage(), Version: v}
-				if set.have[pinKey(pin)] {
-					continue
-				}
-				dst := filepath.Join(scratch, "pack.zip")
-				if err := rel.Fetch(ctx, g, v, dst); err != nil {
-					if ctx.Err() != nil {
-						log.Printf("pins: budget used; run again to continue")
-						return nil
-					}
-					log.Printf("pins: %s %s %s: %v", g.ID, pin.Name, v, err)
-					continue
-				}
-				sum, err := safefs.HashFile(dst, sha256.New())
-				_ = safefs.Remove(dst)
-				if err != nil {
-					return err
-				}
-				pin.SHA256 = sum
-				if err := set.add(pin); err != nil {
-					return err
-				}
-				log.Printf("pins: %s %s", pin.Name, v)
+			if !done[key] {
+				done[key] = true
+				out = append(out, packTarget{game: g, rel: rel})
 			}
 		}
 	}
-	return nil
+	return out
+}
+
+// pinPackVersions downloads and hashes each version the set lacks; stop reports that the budget ran out.
+func pinPackVersions(ctx context.Context, set *pinSet, scratch string, t packTarget, versions []string) (stop bool, err error) {
+	for _, v := range versions {
+		pin := components.Pin{Kind: components.PinPack, Name: t.game.LoaderPackage(), Version: v}
+		if set.have[pinKey(pin)] {
+			continue
+		}
+		dst := filepath.Join(scratch, "pack.zip")
+		if err := t.rel.Fetch(ctx, t.game, v, dst); err != nil {
+			if ctx.Err() != nil {
+				log.Printf("pins: budget used; run again to continue")
+				stop = true
+				break
+			}
+			log.Printf("pins: %s %s %s: %v", t.game.ID, pin.Name, v, err)
+			continue
+		}
+		sum, err := safefs.HashFile(dst, sha256.New())
+		_ = safefs.Remove(dst)
+		if err != nil {
+			return false, err
+		}
+		pin.SHA256 = sum
+		if err := set.add(pin); err != nil {
+			return false, err
+		}
+		log.Printf("pins: %s %s", pin.Name, v)
+	}
+	return stop, nil
 }

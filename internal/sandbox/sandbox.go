@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // ErrNoBwrap means the opt-in sandbox is on but bubblewrap is not installed.
@@ -126,7 +128,10 @@ func SteamRO(root string) []string {
 	return out
 }
 
-func exists(p string) bool { _, err := os.Stat(p); return err == nil }
+func exists(p string) bool {
+	_, err := safefs.Stat(p)
+	return err == nil
+}
 
 func isDir(p string) bool {
 	fi, err := os.Lstat(p)

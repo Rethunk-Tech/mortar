@@ -228,7 +228,7 @@ func (st Starter) startOne(ctx context.Context, inst Install, plan *launchplan.P
 		return err
 	}
 	if env.Sandbox != nil && !cmd.Relay {
-		bus, err := sandboxed(&cmd, inst, env)
+		bus, err := sandboxed(ctx, &cmd, inst, env)
 		if err != nil {
 			return err
 		}
@@ -279,7 +279,7 @@ func (st Starter) startOne(ctx context.Context, inst Install, plan *launchplan.P
 
 // sandboxed rewrites cmd to run inside bubblewrap. The folders the start itself names are added to the caller's: the
 // install, the Proton prefix, the Proton build and the read-only parts of Steam.
-func sandboxed(cmd *launch.Command, inst Install, env StartEnv) (*sandbox.Bus, error) {
+func sandboxed(ctx context.Context, cmd *launch.Command, inst Install, env StartEnv) (*sandbox.Bus, error) {
 	if runtime.GOOS != "linux" || flatpak.Inside() {
 		return nil, errors.New("the game sandbox runs only from Mortar's own Linux build, not the Flatpak")
 	}
@@ -315,10 +315,13 @@ func sandboxed(cmd *launch.Command, inst Install, env StartEnv) (*sandbox.Bus, e
 			env.OnSandboxNote(n)
 		}
 	}
+	if spec.Warn != "" {
+		note(spec.Warn)
+	}
 	var bus *sandbox.Bus
 	if addr := sandbox.SessionAddress(append(os.Environ(), cmd.Env...), spec.Runtime); addr != "" && spec.Runtime != "" {
 		var err error
-		if bus, err = sandbox.StartProxy(addr, spec.Runtime); err != nil {
+		if bus, err = sandbox.StartProxy(ctx, addr, spec.Runtime); err != nil {
 			note("no session bus for the game (GameMode, screensaver inhibit and portals are off): " + err.Error())
 		} else {
 			spec.Bus = bus.Socket
@@ -327,7 +330,7 @@ func sandboxed(cmd *launch.Command, inst Install, env StartEnv) (*sandbox.Bus, e
 		note("no session bus for the game: none to proxy")
 	}
 	argv := sandbox.Argv(bwrap, spec, cmd.Name, cmd.Args)
-	if prefix, why := sandbox.TaskCap(sandbox.TasksMax); why != "" {
+	if prefix, why := sandbox.TaskCap(ctx, sandbox.TasksMax); why != "" {
 		note(why)
 	} else {
 		argv = append(prefix, argv...)

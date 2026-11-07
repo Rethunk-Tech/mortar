@@ -1029,6 +1029,42 @@ func (s *Service) profileSpec(ctx context.Context, gameID, profileID, preset str
 	return s.launchSpec(ctx, gameID, profileID, preset)
 }
 
+// hookEnv points a start's progress, sandbox report and via callbacks at the game's console buffer and session.
+func (s *Service) hookEnv(g game.Game, buf *launch.Buffer, env *game.StartEnv) {
+	env.OnStage = s.onStage(g, buf)
+	env.OnSandbox = func(writable []string) {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		sess := s.logs[keyOf(g)]
+		sess.sandbox = writable
+		s.logs[keyOf(g)] = sess
+	}
+	env.OnSandboxNote = func(note string) {
+		buf.Add(launch.Entry{Level: launch.Warn, Mod: "Mortar", Message: "Sandbox: " + note})
+	}
+	env.OnVia = func(via string) { s.updateProgress(g, buf, func(p *Progress) { p.Via = via }) }
+}
+
+func launchModeOf(vanilla bool) launchplan.Mode {
+	if vanilla {
+		return launchplan.ModeVanilla
+	}
+	return launchplan.ModeProfile
+}
+
+// runnableInstall is the install a launch runs, pinned by the profile unless the launch is vanilla, with its run error.
+func (s *Service) runnableInstall(g game.Game, t launchTarget, vanilla bool) (game.Install, error) {
+	pin := ""
+	if !vanilla {
+		pin = s.pinOf(g.ID(), t.profileID, t.install)
+	}
+	inst, err := game.ResolveInstall(s.home, s.settings.Get(), g.ID(), pin)
+	if err != nil {
+		return inst, err
+	}
+	return inst, inst.RunError(g.Name(), s.settings.Get().LauncherRoots[game.LauncherSteam]...)
+}
+
 // begin starts the launch once the loader is in place.
 func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct, vanilla bool) error {
 	gameID := g.ID()
@@ -1042,19 +1078,9 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	}
 	ov := spec.Overrides(launchOverrides(s.profiles, g.ID(), profileID))
 	showConsole := settings.ResolveAt(s.settings.Get(), "showSmapiConsole", settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, ov) == "true"
-	mode := launchplan.ModeProfile
-	if vanilla {
-		mode = launchplan.ModeVanilla
-	}
-	pin := ""
-	if !vanilla {
-		pin = s.pinOf(g.ID(), profileID, t.install)
-	}
-	inst, err := game.ResolveInstall(s.home, s.settings.Get(), g.ID(), pin)
+	mode := launchModeOf(vanilla)
+	inst, err := s.runnableInstall(g, t, vanilla)
 	if err != nil {
-		return err
-	}
-	if err := inst.RunError(g.Name(), s.settings.Get().LauncherRoots[game.LauncherSteam]...); err != nil {
 		return err
 	}
 	// A store's relay starts the client, so the server is always started directly.
@@ -1124,18 +1150,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		copies = min(max(env.Instances, 1), 8)
 	}
 	progress := s.newProgress(g, profileID, copies, vanilla)
-	env.OnStage = s.onStage(g, buf)
-	env.OnSandbox = func(writable []string) {
-		s.mu.Lock()
-		defer s.mu.Unlock()
-		sess := s.logs[keyOf(g)]
-		sess.sandbox = writable
-		s.logs[keyOf(g)] = sess
-	}
-	env.OnSandboxNote = func(note string) {
-		buf.Add(launch.Entry{Level: launch.Warn, Mod: "Mortar", Message: "Sandbox: " + note})
-	}
-	env.OnVia = func(via string) { s.updateProgress(g, buf, func(p *Progress) { p.Via = via }) }
+	s.hookEnv(g, buf, &env)
 	s.mu.Lock()
 	s.logs[keyOf(g)], s.stop[keyOf(g)] = session{
 		buf:             buf,

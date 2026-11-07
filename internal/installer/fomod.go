@@ -102,22 +102,7 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 	listed := map[string][]string{}
 	placed := 0
 	for _, op := range lastOfEach(ops) {
-		src := slash(op.Source)
-		if !fs.ValidPath(src) {
-			return Layout{}, fmt.Errorf("%w: %q", ErrUnsafe, op.Source)
-		}
-		dest := destination(op, src)
-		// A leading slash means the package's folder, as no slash does.
-		dest = slash(cmp.Or(strings.TrimLeft(slash(dest), "/"), "."))
-		// A destination is inside the package's own folder: ".." would reach another mod's files.
-		if dest == ".." || strings.HasPrefix(dest, "../") {
-			return Layout{}, fmt.Errorf("%w: %q", ErrUnsafe, dest)
-		}
-		src, err := safefs.ResolveFold(base.FS, src)
-		if err != nil {
-			return Layout{}, err
-		}
-		info, err := fs.Stat(base.FS, src)
+		src, dest, info, err := fomodOperand(base, op)
 		if err != nil {
 			return Layout{}, err
 		}
@@ -144,4 +129,24 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 		}
 	}
 	return l, validate(l, g)
+}
+
+// fomodOperand checks an operation's untrusted source and destination and resolves the source in the archive.
+func fomodOperand(base Archive, op fomod.Op) (src, dest string, info fs.FileInfo, err error) {
+	src = slash(op.Source)
+	if !fs.ValidPath(src) {
+		return "", "", nil, fmt.Errorf("%w: %q", ErrUnsafe, op.Source)
+	}
+	dest = destination(op, src)
+	// A leading slash means the package's folder, as no slash does.
+	dest = slash(cmp.Or(strings.TrimLeft(slash(dest), "/"), "."))
+	// A destination is inside the package's own folder: ".." would reach another mod's files.
+	if dest == ".." || strings.HasPrefix(dest, "../") {
+		return "", "", nil, fmt.Errorf("%w: %q", ErrUnsafe, dest)
+	}
+	if src, err = safefs.ResolveFold(base.FS, src); err != nil {
+		return "", "", nil, err
+	}
+	info, err = fs.Stat(base.FS, src)
+	return src, dest, info, err
 }

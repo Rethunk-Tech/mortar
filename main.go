@@ -247,7 +247,7 @@ func run() error {
 		c.openWindow,
 		c.playMode,
 		c.storeMaintenance,
-		c.catalogRefresh,
+		func() error { return c.catalogRefresh(updateCtx) },
 		func() error { return c.windowFuncs(updateCtx) },
 		c.setupTray,
 	); err != nil {

@@ -225,7 +225,7 @@ func TestSessionAddressPrefersTheHostsThenTheDefaultSocket(t *testing.T) {
 }
 
 func TestTaskCapWrapsInATransientUserScope(t *testing.T) {
-	p, _ := TaskCap(TasksMax)
+	p, _ := TaskCap(t.Context(), TasksMax)
 	if p == nil {
 		t.Skip("no systemd user manager here")
 	}
@@ -239,7 +239,7 @@ func TestStartProxyListensAndCloseRemovesIt(t *testing.T) {
 	if _, err := exec.LookPath("xdg-dbus-proxy"); err != nil || run == "" || !exists(filepath.Join(run, "bus")) {
 		t.Skip("needs xdg-dbus-proxy and a session bus")
 	}
-	b, err := StartProxy(SessionAddress(os.Environ(), run), run)
+	b, err := StartProxy(t.Context(), SessionAddress(os.Environ(), run), run)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -257,5 +257,27 @@ func TestArgvPointsTMPDIRAtTheSandboxsOwnTmp(t *testing.T) {
 	a := Argv("bwrap", Spec{Environ: []string{"TMPDIR=/var/tmp/elsewhere"}}, "g", nil)
 	if index(a, "--setenv", "TMPDIR", "/tmp") < 0 || index(a, "--tmpfs", "/tmp") < 0 {
 		t.Fatalf("TMPDIR not pinned to the sandbox's tmpfs: %v", a)
+	}
+}
+
+// A save written inside the sandbox must land in the host folder, not in the throwaway home.
+func TestAFileWrittenInsideAnRWFolderLandsOnTheHost(t *testing.T) {
+	bw, err := Bwrap()
+	if err != nil {
+		t.Skip("needs bubblewrap")
+	}
+	home := t.TempDir()
+	data := filepath.Join(home, ".config", "StardewValley")
+	if err := os.MkdirAll(filepath.Join(data, "ErrorLogs"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	a := Argv(bw, Spec{Home: home, RW: []string{data}}, "sh", []string{"-c", "echo log > " + data + "/ErrorLogs/SMAPI-latest.txt; echo save > " + data + "/Saves-x"})
+	if out, err := exec.CommandContext(t.Context(), a[0], a[1:]...).CombinedOutput(); err != nil { //nolint:gosec // G204: bwrap found on PATH, arguments built by Argv
+		t.Skipf("bwrap cannot run here: %v %s", err, out)
+	}
+	for _, f := range []string{"ErrorLogs/SMAPI-latest.txt", "Saves-x"} {
+		if _, err := os.Stat(filepath.Join(data, f)); err != nil {
+			t.Fatalf("%s did not reach the host: %v", f, err)
+		}
 	}
 }

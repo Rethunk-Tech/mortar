@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // busOff is the address libdbus and GDBus both read as "no bus": unlike an unset variable it never makes them
@@ -54,7 +56,7 @@ func (b *Bus) Close() {
 	}
 	_ = b.hold.Close()
 	_ = b.cmd.Wait()
-	_ = os.RemoveAll(b.dir)
+	_ = safefs.RemoveAll(b.dir)
 	b.hold = nil
 }
 
@@ -75,8 +77,8 @@ func SessionAddress(environ []string, runtime string) string {
 var ErrNoProxy = errors.New("xdg-dbus-proxy is not installed")
 
 // StartProxy runs a filtered proxy of the session bus at upstream, with its socket in a fresh folder under runtime.
-// The caller closes it when the game ends; if Mortar dies first the held pipe closes and the proxy exits anyway.
-func StartProxy(upstream, runtime string) (*Bus, error) {
+// The proxy outlives ctx: the caller closes it when the game ends; if Mortar dies first the held pipe closes and the proxy exits anyway.
+func StartProxy(ctx context.Context, upstream, runtime string) (*Bus, error) {
 	proxy, err := exec.LookPath("xdg-dbus-proxy")
 	if err != nil {
 		return nil, ErrNoProxy
@@ -90,18 +92,18 @@ func StartProxy(upstream, runtime string) (*Bus, error) {
 	}
 	r, w, err := os.Pipe()
 	if err != nil {
-		_ = os.RemoveAll(dir)
+		_ = safefs.RemoveAll(dir)
 		return nil, err
 	}
 	sock := filepath.Join(dir, "bus")
 	argv := ProxyArgv(proxy, upstream, sock, 3)
-	cmd := exec.Command(argv[0], argv[1:]...)
+	cmd := exec.CommandContext(context.WithoutCancel(ctx), argv[0], argv[1:]...) //nolint:gosec // G204: argv is the xdg-dbus-proxy found on PATH and Mortar's own socket paths
 	cmd.ExtraFiles = []*os.File{w}
 	err = cmd.Start()
 	_ = w.Close()
 	if err != nil {
 		_ = r.Close()
-		_ = os.RemoveAll(dir)
+		_ = safefs.RemoveAll(dir)
 		return nil, err
 	}
 	b := &Bus{Socket: sock, hold: r, dir: dir, cmd: cmd}
@@ -113,18 +115,18 @@ func StartProxy(upstream, runtime string) (*Bus, error) {
 	return b, nil
 }
 
-// TaskCap is the prefix that runs a command in a transient systemd user scope limited to max tasks, or a note saying
+// TaskCap is the prefix that runs a command in a transient systemd user scope limited to maxTasks tasks, or a note saying
 // why the launch goes without one. systemd-run --scope execs the command in place, so Mortar still tracks its pid.
-func TaskCap(max int) (prefix []string, note string) {
+func TaskCap(ctx context.Context, maxTasks int) (prefix []string, note string) {
 	p, err := exec.LookPath("systemd-run")
 	if err != nil {
 		return nil, "the process cap was not applied: systemd-run is not installed"
 	}
-	prefix = []string{p, "--user", "--scope", "--quiet", "-p", "TasksMax=" + strconv.Itoa(max), "--"}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	prefix = []string{p, "--user", "--scope", "--quiet", "-p", "TasksMax=" + strconv.Itoa(maxTasks), "--"}
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	probe := append(append([]string{}, prefix...), "true")
-	if err := exec.CommandContext(ctx, probe[0], probe[1:]...).Run(); err != nil {
+	if err := exec.CommandContext(ctx, probe[0], probe[1:]...).Run(); err != nil { //nolint:gosec // G204: systemd-run found on PATH with fixed arguments
 		return nil, "the process cap was not applied: no systemd user manager answered (" + err.Error() + ")"
 	}
 	return prefix, ""

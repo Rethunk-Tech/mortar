@@ -121,7 +121,7 @@ func TestExtractOpenedReadsTheFileItHoldsNotThePath(t *testing.T) {
 	t.Parallel()
 	held := zipAt(t, map[string]string{"held.txt": "held"})
 	other := zipAt(t, map[string]string{"swapped.txt": "swapped"})
-	f, err := os.Open(held)
+	f, err := safefs.Open(held)
 	if err != nil {
 		t.Fatal(err)
 	}

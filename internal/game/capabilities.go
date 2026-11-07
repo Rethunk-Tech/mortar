@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/metadata"
@@ -224,7 +225,7 @@ func unityNames(dir string) (company, product string, ok bool) {
 	if len(infos) == 0 {
 		return "", "", false
 	}
-	b, err := os.ReadFile(infos[0]) //nolint:gosec // G304: a fixed name inside the install
+	b, err := safefs.ReadFile(infos[0])
 	if err != nil {
 		return "", "", false
 	}

@@ -14,7 +14,7 @@ import (
 func TestTerminateLeavesAPidThatIsNoLongerTheGame(t *testing.T) {
 	svc, _ := startEnv(t)
 	sl := svc.selectedSlot(game.Find("stardew"))
-	other := exec.Command("sleep", "30")
+	other := exec.CommandContext(t.Context(), "sleep", "30")
 	if err := other.Start(); err != nil {
 		t.Skip("no sleep program:", err)
 	}
