@@ -5,7 +5,7 @@ import { chromium, type Page } from '@playwright/test'
 import { openProfile } from './app.ts'
 import { browserBreakdown, goBreakdown } from './mem-breakdown.ts'
 import { browserRoot, cpuSeconds, MIB, pssKiB, sample, serverPid, tree } from './mem-proc.ts'
-import { removeSandbox, sandboxPort, selftest, serverEnv } from './sandbox.ts'
+import { destroySandbox, prepareRunSandbox, sandboxPort, selftest, serverEnv } from './sandbox.ts'
 
 // Measures the memory Mortar holds while it does its heaviest work: peak PSS of the Go server's process tree and of the
 // browser's, per scenario. The WebView exists only in the desktop build, so in server mode headless Chromium (Playwright)
@@ -47,7 +47,8 @@ const QUIET_MIN_S = Number(process.env.MORTAR_MEM_SETTLE_S ?? '30')
 const QUIET_MAX_S = QUIET_MIN_S + 150
 const IDLE_SAMPLE_MS = 5000
 
-const dir = `${BASE}/mortar-mem-${process.pid}`
+const MEM_PREFIX = 'mortar-mem-'
+const dir = `${BASE}/${MEM_PREFIX}${process.pid}`
 
 function verdict(failure: string | undefined, over: boolean): string {
   if (failure) {
@@ -422,9 +423,9 @@ async function main(): Promise<number> {
       `MORTAR_MEM_ONLY names no scenario (${scenarios.map((s) => s.name).join(', ')})`,
     )
   }
+  prepareRunSandbox(MEM_PREFIX)
   process.env.MORTAR_E2E_DIR = dir
   process.env.MORTAR_LAUNCH_SESSION = `mem-${process.pid}`
-  mkdirSync(dir, { recursive: true })
   let code = 0
   const rows: string[] = []
   const reports: string[] = []
@@ -464,14 +465,7 @@ async function main(): Promise<number> {
     }
     await browser.close()
   } finally {
-    try {
-      selftest(dir, 'destroy')
-    } catch {
-      // A start that failed before the marker leaves destroy nothing to delete.
-    }
-    if (dir === `${BASE}/mortar-mem-${process.pid}`) {
-      removeSandbox(dir)
-    }
+    destroySandbox(dir)
   }
   console.log(
     `${'scenario'.padEnd(9)} ${'Go'.padStart(8)} ${'browser'.padStart(8)} ${'total'.padStart(8)} ${'game'.padStart(8)}   (game: a launched game, not in the total)`,

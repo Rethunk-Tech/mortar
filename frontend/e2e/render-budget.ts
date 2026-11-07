@@ -21,7 +21,13 @@ import { biggestProfile, rememberMainGame } from './renderProfile.ts'
 import { STAND_IN_GAMES, screenCases } from './renderScreens.ts'
 import { modsView, nthOrLast } from './renderView.ts'
 import { PAGE } from './renderViewport.ts'
-import { keepServerLogs, removeSandbox, sandboxPort, selftest } from './sandbox.ts'
+import {
+  destroySandbox,
+  keepServerLogs,
+  prepareRunSandbox,
+  sandboxPort,
+  selftest,
+} from './sandbox.ts'
 import { webkitWalk } from './webkit-walk.ts'
 
 // Render budget: walks every screen and the common interactions of a copied (or seeded) profile in headless Chromium and
@@ -445,7 +451,7 @@ async function walk(url: string, sandboxDir: string, chosen: Case[], shots: stri
 async function main(): Promise<number> {
   const chosen = chosenCases()
   const external = process.env.MORTAR_RENDER_URL
-  const dir = `${BASE}/mortar-render-${process.pid}`
+  const dir = external ? '' : prepareRunSandbox('mortar-render-')
   const out = process.env.MORTAR_RENDER_OUT ?? newRunDir(BASE)
   const shots = process.env.MORTAR_RENDER_SHOTS ?? `${out}/shots`
   let results: Result[]
@@ -455,7 +461,6 @@ async function main(): Promise<number> {
     ;({ results, breaks } = await walk(external, sandboxDir, chosen, shots))
   } else {
     process.env.MORTAR_E2E_DIR = dir
-    mkdirSync(dir, { recursive: true })
     const stopTemplate = serveModTemplate(dir)
     try {
       const seeded = Boolean(process.env.MORTAR_RENDER_SEEDED)
@@ -474,12 +479,7 @@ async function main(): Promise<number> {
     } finally {
       keepServerLogs(dir, `${out}/sandbox-server`)
       stopTemplate()
-      try {
-        selftest(dir, 'destroy')
-      } catch {
-        // A start that failed before the marker leaves destroy nothing to delete.
-      }
-      removeSandbox(dir)
+      destroySandbox(dir)
     }
   }
   mkdirSync(out, { recursive: true })

@@ -8,7 +8,7 @@ const SCRIPT = fileURLToPath(new URL('../../scripts/selftest.sh', import.meta.ur
 const RM_SANDBOX = fileURLToPath(new URL('../../scripts/rm-sandbox.sh', import.meta.url))
 
 /** Deletes a sandbox folder without deleting the user's files through the desktop mounts its hidden display leaves there. */
-export const removeSandbox = (dir: string) => execFileSync(RM_SANDBOX, [dir], { stdio: 'inherit' })
+const removeSandbox = (dir: string) => execFileSync(RM_SANDBOX, [dir], { stdio: 'inherit' })
 // The sandbox holds copies of the games (GBs), so it lives on disk: /tmp is a tmpfs.
 const BASE = '/var/tmp'
 /** Catalog ids the sandbox enables for itself (comma separated), as scripts/selftest.sh reads them. */
@@ -31,7 +31,7 @@ const launchSession = (dir: string) => `e2e-${dir.slice(dir.lastIndexOf('-') + 1
 const launchCounter = (dir: string) => `${BASE}/mortar-launch-cap/${launchSession(dir)}`
 
 /** A sandbox folder is only ever named from a run's pid, so a path to delete is never read from anywhere. */
-const sandboxDir = (runner: number) => `${BASE}/${PREFIX}${runner}`
+const sandboxDir = (runner: number, prefix = PREFIX) => `${BASE}/${prefix}${runner}`
 
 function selftest(dir: string, ...args: string[]) {
   execFileSync(SCRIPT, args, {
@@ -67,8 +67,8 @@ function exeOf(pid: number): string {
 }
 
 /** Stops a dead run's server, when the pid it recorded still runs that sandbox's own binary, then removes it. */
-function reap(runner: number) {
-  const dir = sandboxDir(runner)
+function reap(runner: number, prefix: string) {
+  const dir = sandboxDir(runner, prefix)
   let server = 0
   try {
     server = Number.parseInt(readFileSync(`${dir}/server.pid`, 'utf8'), 10)
@@ -96,15 +96,36 @@ function reap(runner: number) {
   rmSync(`${launchCounter(dir)}.lock`, { force: true })
 }
 
-/** Sandboxes left by runs that died before their teardown; a folder named for this process is an older run's. */
-function reapStale() {
+/** Sandboxes named `prefix` + a run's pid, left by runs that died before their teardown; a folder named for this
+ * process is an older run's. */
+function reapStale(prefix = PREFIX) {
   for (const name of readdirSync(BASE)) {
-    const match = /^mortar-e2e-(\d+)$/.exec(name)
+    const match = name.startsWith(prefix) ? /^(\d+)$/.exec(name.slice(prefix.length)) : null
     const runner = match ? Number(match[1]) : 0
     if (runner > 0 && (runner === process.pid || !alive(runner))) {
-      reap(runner)
+      reap(runner, prefix)
     }
   }
+}
+
+/** Stops what runs from a render or mem run's sandbox and removes it. */
+function destroySandbox(dir: string) {
+  try {
+    selftest(dir, 'destroy')
+  } catch {
+    // A start that failed before the marker leaves destroy nothing to delete.
+  }
+  removeSandbox(dir)
+}
+
+/** Readies a render or mem run's sandbox folder named `prefix` + this pid: sweeps the folders of runs that were killed,
+ * and points the run's TMPDIR (so Chromium's profile dirs) into the folder, which teardown removes whole. */
+function prepareRunSandbox(prefix: string): string {
+  reapStale(prefix)
+  const dir = sandboxDir(process.pid, prefix)
+  process.env.TMPDIR = `${dir}/tmp`
+  mkdirSync(process.env.TMPDIR, { recursive: true })
+  return dir
 }
 
 /** Where Playwright keeps a failed test's artefacts; the server's logs go beside them. */
@@ -155,14 +176,9 @@ function keepServerLogs(dir: string, out: string) {
 
 /** Seeds this run's own sandbox, since specs mutate it, and returns the teardown that removes exactly that one. */
 function freshSandbox(): () => void {
-  reapStale()
-  const dir = sandboxDir(process.pid)
+  const dir = prepareRunSandbox(PREFIX)
   // Specs that run the sandbox's own binary (play.pw.ts) find it here; workers inherit the main process's env.
   process.env.MORTAR_E2E_DIR = dir
-  // Chromium and the workers write their scratch (profile dirs a killed browser leaves behind) under the sandbox,
-  // which teardown and reapStale remove whole.
-  process.env.TMPDIR = `${dir}/tmp`
-  mkdirSync(process.env.TMPDIR, { recursive: true })
   let tornDown = false
   const teardown = () => {
     if (tornDown) {
@@ -216,4 +232,12 @@ function serverEnv(dir: string): Record<string, string> {
   return env
 }
 
-export { freshSandbox, keepServerLogs, sandboxPort, selftest, serverEnv }
+export {
+  destroySandbox,
+  freshSandbox,
+  keepServerLogs,
+  prepareRunSandbox,
+  sandboxPort,
+  selftest,
+  serverEnv,
+}

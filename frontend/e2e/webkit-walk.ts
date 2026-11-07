@@ -85,7 +85,9 @@ function sandboxEnv(sandbox: string): Record<string, string> | null {
       env[k] = v.join('=')
     }
   }
-  return { ...env, GDK_BACKEND: 'x11' }
+  // A run's sandbox keeps the browser's scratch in its own tmp folder, which goes with it.
+  const tmp = join(sandbox, 'tmp')
+  return { ...env, GDK_BACKEND: 'x11', ...(existsSync(tmp) ? { TMPDIR: tmp } : {}) }
 }
 
 // Walks every screen and returns its layout breaks, or null when WebKitGTK's driver or the sandbox's display is missing.
