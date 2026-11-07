@@ -99,6 +99,38 @@ func TestStoredGrantWithoutAccessRefreshes(t *testing.T) {
 	}
 }
 
+func TestARefreshThatCannotBeSavedStillSignsTheCall(t *testing.T) {
+	keyring.MockInit()
+	prev := setItem
+	t.Cleanup(func() { setItem = prev })
+	idp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{"access_token":"NEW","refresh_token":"R2","expires_in":3600}`))
+	}))
+	defer idp.Close()
+	if err := secret.Set(keyringItem, `{"access":"","refresh":"R","expires":"2099-01-01T00:00:00Z"}`); err != nil {
+		t.Fatal(err)
+	}
+	setItem = func(string, string) error { return errors.New("keyring locked") }
+	o := oauthConfig()
+	o.ClientID, o.AuthBase = "cid", idp.URL
+	t.Cleanup(func() { unsaved.tokens = sso.Tokens{} })
+	if got, err := bearer(t.Context(), o); err != nil || got != "NEW" {
+		t.Fatalf("bearer = %q, %v", got, err)
+	}
+	// The keyring still holds the spent refresh token, so a second call must not try it again.
+	idp.Close()
+	if got, err := bearer(t.Context(), o); err != nil || got != "NEW" {
+		t.Fatalf("second bearer = %q, %v", got, err)
+	}
+	setItem = prev
+	if _, err := bearer(t.Context(), o); err != nil {
+		t.Fatal(err)
+	}
+	if saved, _ := tokenStore.Load(); saved.Refresh != "R2" || unsaved.tokens.Access != "" {
+		t.Fatalf("saved %+v, unsaved %+v", saved, unsaved.tokens)
+	}
+}
+
 // Windows refuses a keyring item over 2,560 bytes: the access token is dropped, never the refresh token.
 func TestSaveDropsTheAccessTokenWhenTheItemIsTooBig(t *testing.T) {
 	keyring.MockInit()
