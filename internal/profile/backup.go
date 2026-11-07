@@ -300,6 +300,26 @@ func (s *Store) RestoreBackup(ctx context.Context, game string, p Profile, files
 	return placed, missing, nil
 }
 
+// restoredFields is the new profile cur with the fields of a backup's profile p that are only data. A field that
+// names a program, a place on this computer or a launch command (the prefix and environment of the profile and of its
+// presets, the install, the folder link, the setting overrides) stays cur's: a backup is a file from anywhere, and
+// nothing it says may choose what Play runs. A field added to Profile is local until it is listed here.
+func restoredFields(cur, p Profile) Profile {
+	out := cur
+	out.Notes, out.Cover = p.Notes, p.Cover
+	out.IntentSince, out.IntentOffered, out.LastChange = p.IntentSince, p.IntentOffered, p.LastChange
+	out.Groups, out.Origin, out.ImportedFrom, out.Collection, out.CopyOf = p.Groups, p.Origin, p.ImportedFrom, p.Collection, p.CopyOf
+	out.Color, out.Icon, out.Favourite = p.Color, p.Icon, p.Favourite
+	out.LaunchOptions, out.DefaultLaunchPreset = p.LaunchOptions, p.DefaultLaunchPreset
+	out.LaunchPresets = slices.Clone(p.LaunchPresets)
+	for i := range out.LaunchPresets {
+		out.LaunchPresets[i].LaunchPrefix, out.LaunchPresets[i].LaunchEnv = "", ""
+	}
+	out.ModsUpTo, out.SeparateSaves, out.Server, out.TestCopies = p.ModsUpTo, p.SeparateSaves, p.Server, p.TestCopies
+	out.CacheSet, out.Loader, out.Modpack = p.CacheSet, p.Loader, p.Modpack
+	return out
+}
+
 func (s *Store) restoreInto(game string, created, p Profile, files map[string][]byte, saves string) (Profile, []Entry, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -307,10 +327,8 @@ func (s *Store) restoreInto(game string, created, p Profile, files map[string][]
 	if err != nil {
 		return Profile{}, nil, err
 	}
-	out := p
-	out.ID, out.Name, out.Order = cur.ID, cur.Name, cur.Order
+	out := restoredFields(cur, p)
 	out.Created, out.Updated = time.Now().UTC().Truncate(time.Second), time.Now().UTC().Truncate(time.Second)
-	out.Error, out.RepairError = "", ""
 	if _, ok := files[p.Cover]; !ok || coverType(p.Cover) == "" {
 		out.Cover = ""
 	}
