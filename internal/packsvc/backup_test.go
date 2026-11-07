@@ -115,7 +115,7 @@ func TestRestoreRequestPinsCurseForgeFile(t *testing.T) {
 	}
 }
 
-func TestBackupWithModsRestoresOffline(t *testing.T) {
+func TestRestoreNeverAddsABackupsItemForAModASourceDelivers(t *testing.T) {
 	dataHome(t)
 	items, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "stardew", "Farm")
@@ -130,34 +130,24 @@ func TestBackupWithModsRestoresOffline(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc := &Service{Profiles: profiles}
-	with, without := filepath.Join(t.TempDir(), "with.zip"), filepath.Join(t.TempDir(), "without.zip")
+	with := filepath.Join(t.TempDir(), "with.zip")
 	if err := svc.Backup("stardew", p.ID, with, true); err != nil {
 		t.Fatal(err)
 	}
-	if err := svc.Backup("stardew", p.ID, without, false); err != nil {
-		t.Fatal(err)
-	}
-	sizeWith, _ := svc.BackupSize("stardew", p.ID, true)
-	sizeWithout, _ := svc.BackupSize("stardew", p.ID, false)
-	if sizeWith <= sizeWithout {
-		t.Fatalf("size with mods %d, without %d", sizeWith, sizeWithout)
-	}
 
-	for path, queued := range map[string]int{with: 0, without: 1} {
-		dataHome(t)
-		freshItems, fresh := testenv.Stores(t)
-		q := &fakeQueue{}
-		res, err := (&Service{Profiles: fresh, Queue: q}).Restore(t.Context(), path, "")
-		if err != nil || res.Queued != queued || len(res.Unavailable) != 0 {
-			t.Fatalf("%s: %+v, %v", path, res, err)
-		}
-		if _, err := freshItems.Path("stardew", "nexus-12-34"); (err == nil) != (queued == 0) {
-			t.Fatalf("%s: store item present: %v", path, err == nil)
-		}
+	dataHome(t)
+	freshItems, fresh := testenv.Stores(t)
+	q := &fakeQueue{}
+	res, err := (&Service{Profiles: fresh, Queue: q}).Restore(t.Context(), with, "")
+	if err != nil || res.Queued != 1 || len(res.Unavailable) != 0 {
+		t.Fatalf("%+v, %v", res, err)
+	}
+	if _, err := freshItems.Path("stardew", "nexus-12-34"); err == nil {
+		t.Fatal("the backup's own bytes were added under a Nexus store key")
 	}
 }
 
-func TestBackupOfAFolderGameProfileCarriesTheSplitArchiveOnceAndReplacesTray(t *testing.T) {
+func TestBackupOfAFolderGameProfileRestoresItsEntriesAndQueuesTheArchive(t *testing.T) {
 	dataHome(t)
 	_, profiles := testenv.Stores(t)
 	tray := filepath.Join(t.TempDir(), "Tray")
@@ -188,12 +178,11 @@ func TestBackupOfAFolderGameProfileCarriesTheSplitArchiveOnceAndReplacesTray(t *
 	if err != nil || len(all) != 1 || len(all[0].Entries) != 3 {
 		t.Fatalf("restored profiles %+v, %v", all, err)
 	}
-	owners, err := fresh.PackageFileOwners("sims4", res.Profile)
-	if err != nil || len(owners) != 2 {
-		t.Fatalf("owners = %v, %v", owners, err)
+	if res.Queued == 0 {
+		t.Fatal("the CurseForge archive must be downloaded again, not added from the backup")
 	}
-	if b, err := safefs.ReadFile(filepath.Join(freshTray, "Smith.trayitem")); err != nil || string(b) != "t" {
-		t.Fatalf("tray file: %q, %v", b, err)
+	if _, err := os.Stat(freshTray); !os.IsNotExist(err) {
+		t.Fatalf("the tray is placed only once the archive is back: %v", err)
 	}
 }
 

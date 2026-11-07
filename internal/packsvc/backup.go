@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -245,7 +246,7 @@ func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResu
 	}
 	for key, want := range doc.Store {
 		dir := filepath.Join(tmp, "store", key)
-		if !filepath.IsLocal(key) || !datadir.Present(dir) {
+		if !filepath.IsLocal(key) || !datadir.Present(dir) || !fromBackupOnly(doc.Profile.Entries, key) {
 			continue
 		}
 		// A store item that does not hash as it did when backed up is left out, so its mod shows as unavailable.
@@ -272,6 +273,20 @@ func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResu
 	items, err := s.Queue.Add(ctx, reqs)
 	res.Queued = len(items)
 	return res, err
+}
+
+// fromBackupOnly reports whether the store item key of a backup may be added from the backup itself: its entry has no
+// source to download it from. The hash that vouches for a backup's item is written in the same file, so for a mod a
+// source delivers the item would be unverified bytes under the key a later install of that mod finds ready; those
+// items are downloaded again instead.
+func fromBackupOnly(entries []profile.Entry, key string) bool {
+	return slices.ContainsFunc(entries, func(e profile.Entry) bool {
+		if e.StoreKey() != key || e.Source.Bundled() {
+			return false
+		}
+		_, downloadable := restoreRequest("", "", e)
+		return !downloadable
+	})
 }
 
 // RestoreDialog asks for a backup file, then restores it as Restore does; an empty Profile means the player cancelled.
