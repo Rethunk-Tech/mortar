@@ -277,6 +277,20 @@ func (st Starter) startOne(ctx context.Context, inst Install, plan *launchplan.P
 	return launch.Run(ctx, run, cmd, st.Timing, onLines)
 }
 
+// protonDirs are the folders of the Proton build cmd runs, whether Proton is the command or an argument of a launch
+// prefix (gamemoderun, mangohud). The sandbox mounts what a linked folder resolves to (GE-Proton and Steam libraries
+// are often linked in from elsewhere).
+func protonDirs(cmd *launch.Command) []string {
+	var out []string
+	for _, p := range append([]string{cmd.Name}, cmd.Args...) {
+		if filepath.Base(p) != "proton" || !filepath.IsAbs(p) {
+			continue
+		}
+		out = append(out, filepath.Dir(p))
+	}
+	return out
+}
+
 // sandboxed rewrites cmd to run inside bubblewrap. The folders the start itself names are added to the caller's: the
 // install, the Proton prefix, the Proton build and the read-only parts of Steam.
 func sandboxed(ctx context.Context, cmd *launch.Command, inst Install, env StartEnv) (*sandbox.Bus, error) {
@@ -300,9 +314,13 @@ func sandboxed(ctx context.Context, cmd *launch.Command, inst Install, env Start
 	if env.Steam != nil {
 		spec.RO = append(spec.RO, sandbox.SteamRO(env.Steam.Root)...)
 	}
-	if filepath.Base(cmd.Name) == "proton" {
-		spec.RO = append(spec.RO, filepath.Dir(cmd.Name))
+	// Proton's steamclient bridge loads Steam's client library through these links in the emptied home. ~/.steam/root
+	// and ~/.steam/steam are left out: they lead to all of Steam, sign-in config included.
+	if spec.Home != "" {
+		spec.RO = append(spec.RO, filepath.Join(spec.Home, ".steam", "sdk32"), filepath.Join(spec.Home, ".steam", "sdk64"))
 	}
+	spec.Scratch = append(slices.Clone(spec.Scratch), protonDirs(cmd)...)
+	spec.Overlay = sandbox.OverlaySupported(ctx, bwrap)
 	if lib, ok := steam.LibraryOf(inst.Dir); ok {
 		spec.RO = append(spec.RO, filepath.Join(lib, "common"))
 	}

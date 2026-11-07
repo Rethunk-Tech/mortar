@@ -3,6 +3,7 @@
 package sandbox
 
 import (
+	"context"
 	"errors"
 	"os"
 	"os/exec"
@@ -25,6 +26,12 @@ func Bwrap() (string, error) {
 	return p, nil
 }
 
+// OverlaySupported reports whether the bwrap at path mounts temporary overlays (bubblewrap 0.9 or later).
+func OverlaySupported(ctx context.Context, bwrap string) bool {
+	out, err := exec.CommandContext(ctx, bwrap, "--help").CombinedOutput()
+	return err == nil && strings.Contains(string(out), "--tmp-overlay")
+}
+
 // Spec is what the sandboxed game may reach beyond the read-only system.
 type Spec struct {
 	// Home is the user's home folder, which the sandbox replaces with an empty one.
@@ -36,6 +43,12 @@ type Spec struct {
 	RW []string
 	// RO are folders the game reads; one that is missing is skipped.
 	RO []string
+	// Scratch are folders the game reads and must be able to write without the writes landing: Proton takes a lock
+	// and unpacks into its own folder. Each gets an overlay whose writes go to a tmpfs, so a mod cannot change the
+	// Proton every other game uses. Without overlay support in bwrap they are bound read-only, as RO is.
+	Scratch []string
+	// Overlay reports whether bwrap can mount the Scratch overlays (bubblewrap 0.9 or later).
+	Overlay bool
 	// Sockets are files under Runtime or elsewhere (Wayland, PipeWire, Pulse) that stay reachable; missing ones are skipped.
 	Sockets []string
 	// CacheDir holds the shader caches, so they persist without sharing the player's own.
@@ -76,11 +89,27 @@ func Argv(bwrap string, s Spec, name string, args []string) ([]string, error) {
 	if s.Runtime != "" && isDir(s.Runtime) {
 		a = append(a, "--tmpfs", s.Runtime)
 	}
+	var links []string
 	for _, p := range s.RO {
-		if exists(p) {
-			a = append(a, "--ro-bind", p, p)
+		if src, ok := source(p, s.Home); ok {
+			dest, link := s.mountPoint(p, src)
+			a, links = append(a, "--ro-bind", src, dest), append(links, link...)
 		}
 	}
+	for _, p := range s.Scratch {
+		src, ok := source(p, s.Home)
+		if !ok || !isDir(src) {
+			continue
+		}
+		dest, link := s.mountPoint(p, src)
+		links = append(links, link...)
+		if s.Overlay {
+			a = append(a, "--overlay-src", src, "--tmp-overlay", dest)
+		} else {
+			a = append(a, "--ro-bind", src, dest)
+		}
+	}
+	a = append(a, links...)
 	for _, p := range s.Sockets {
 		if exists(p) {
 			a = append(a, "--bind", p, p)
@@ -129,6 +158,43 @@ func SteamRO(root string) []string {
 		out = append(out, filepath.Join(root, d))
 	}
 	return out
+}
+
+// source is the host path to mount at p: p itself, or what its links resolve to. A link into a folder the sandbox
+// empties (Proton or a Steam runtime linked in from the real home or another drive) would otherwise point at nothing,
+// and a link may not lead into the player's keys and sign-ins. bwrap reads a bind's source from the host, so the
+// target need not be visible inside.
+func source(p, home string) (string, bool) {
+	if p == "" {
+		return "", false
+	}
+	target, err := filepath.EvalSymlinks(p)
+	if err != nil || !exists(target) || (home != "" && holdsSecrets(target, home)) {
+		return "", false
+	}
+	return target, true
+}
+
+// mountPoint is where src is mounted for the folder p. bwrap cannot mount onto a symlink, so a linked p is mounted at
+// its target, and the link is made again inside when p sits in a folder the sandbox empties.
+func (s Spec) mountPoint(p, src string) (string, []string) {
+	if fi, err := os.Lstat(p); err != nil || fi.Mode()&os.ModeSymlink == 0 {
+		return p, nil
+	}
+	if !s.hides(p) {
+		return src, nil
+	}
+	return src, []string{"--dir", filepath.Dir(p), "--symlink", src, p}
+}
+
+// hides reports whether p is inside a folder the sandbox replaces with an empty one.
+func (s Spec) hides(p string) bool {
+	for _, d := range append(slices.Clip(hidden), s.Home, s.Runtime) {
+		if d != "" && (p == d || strings.HasPrefix(p, strings.TrimSuffix(d, "/")+"/")) {
+			return true
+		}
+	}
+	return false
 }
 
 // exists is false for "": safefs.Stat resolves it to a real entry, and a bind with an empty source fails the launch.

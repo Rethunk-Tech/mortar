@@ -324,3 +324,64 @@ func TestArgvRefusesEmptyRWAndSkipsEmptyOptionalPaths(t *testing.T) {
 		t.Fatalf("empty socket path bound: %v", a)
 	}
 }
+
+// Proton writes into its own folder on every start; the game gets a throwaway overlay there, never the real folder.
+func TestArgvGivesScratchFoldersAThrowawayOverlay(t *testing.T) {
+	dir := t.TempDir()
+	with, _ := Argv("bwrap", Spec{Scratch: []string{dir}, Overlay: true}, "g", nil)
+	if index(with, "--overlay-src", dir, "--tmp-overlay", dir) < 0 {
+		t.Fatalf("overlay: %v", with)
+	}
+	if index(with, "--bind", dir) >= 0 {
+		t.Fatalf("a scratch folder was bound writable: %v", with)
+	}
+	without, _ := Argv("bwrap", Spec{Scratch: []string{dir}}, "g", nil)
+	if index(without, "--ro-bind", dir, dir) < 0 || index(without, "--overlay-src", dir) >= 0 {
+		t.Fatalf("no overlay support: %v", without)
+	}
+}
+
+func TestArgvBindsTheTargetOfALinkedReadOnlyFolder(t *testing.T) {
+	root := t.TempDir()
+	target := filepath.Join(root, "real", "ubuntu12_64")
+	if err := os.MkdirAll(target, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	link := filepath.Join(root, "steam", "ubuntu12_64")
+	if err := os.MkdirAll(filepath.Dir(link), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(target, link); err != nil {
+		t.Fatal(err)
+	}
+	// bwrap cannot mount onto a symlink: the target is mounted at its own path, where the visible link leads.
+	a, _ := Argv("bwrap", Spec{RO: []string{link}, Scratch: []string{link}, Overlay: true}, "g", nil)
+	if index(a, "--ro-bind", target, target) < 0 || index(a, "--ro-bind", target, link) >= 0 {
+		t.Fatalf("the link's target mounted at its own path: %v", a)
+	}
+	if index(a, "--overlay-src", target, "--tmp-overlay", target) < 0 {
+		t.Fatalf("the scratch overlay reads the target: %v", a)
+	}
+	if index(a, "--symlink") >= 0 {
+		t.Fatalf("a visible link was made again: %v", a)
+	}
+	// Inside an emptied home the link is gone, so it is made again pointing at the mounted target.
+	hidden := Spec{Home: filepath.Join(root, "steam"), RO: []string{link}}
+	h, _ := Argv("bwrap", hidden, "g", nil)
+	if index(h, "--ro-bind", target, target) < 0 || index(h, "--symlink", target, link) < 0 {
+		t.Fatalf("the link inside the emptied home: %v", h)
+	}
+	home := filepath.Join(root, "home")
+	keys := filepath.Join(home, ".ssh")
+	if err := os.MkdirAll(keys, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	bait := filepath.Join(root, "steam", "linux64")
+	if err := os.Symlink(keys, bait); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := Argv("bwrap", Spec{Home: home, RO: []string{bait}}, "g", nil)
+	if index(b, "--ro-bind", keys, bait) >= 0 {
+		t.Fatalf("a link into ~/.ssh was mounted: %v", b)
+	}
+}
