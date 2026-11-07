@@ -15,11 +15,11 @@ import { serveModTemplate } from './modTemplate.ts'
 import { clickIfPresent, gameSettingsCases, newCases } from './renderCases.ts'
 import { dialogCases } from './renderDialogs.ts'
 import { newRunDir, writeGallery } from './renderGallery.ts'
-import { printExtras, report, startupLine, watchLog } from './renderLog.ts'
+import { printExtras, report, startupLine, watchLog, withoutSeededSkips } from './renderLog.ts'
 import { HOOK, mortarBoxes, mortarGaps, mortarMeter, quietToasts, saveShot } from './renderMeter.ts'
 import { biggestProfile, rememberMainGame } from './renderProfile.ts'
 import { STAND_IN_GAMES, screenCases } from './renderScreens.ts'
-import { modsView } from './renderView.ts'
+import { modsView, nthOrLast } from './renderView.ts'
 import { PAGE } from './renderViewport.ts'
 import { keepServerLogs, removeSandbox, sandboxPort, selftest } from './sandbox.ts'
 import { webkitWalk } from './webkit-walk.ts'
@@ -105,7 +105,7 @@ async function tab(page: Page, name: string) {
     .click()
 }
 
-const row = (page: Page, n: number) => page.locator('[data-mod-id]').nth(n)
+const row = (page: Page, n: number) => nthOrLast(page.locator('[data-mod-id]'), n)
 const view = modsView(tab, tabs, row)
 
 async function typeInto(page: Page, label: RegExp | string, text: string) {
@@ -357,7 +357,7 @@ function chosenCases(): Case[] {
   if (chosen.length === 0) {
     throw new Error(`MORTAR_RENDER_ONLY names no case (${cases.map((c) => c.name).join(', ')})`)
   }
-  return chosen
+  return process.env.MORTAR_RENDER_SEEDED ? withoutSeededSkips(chosen) : chosen
 }
 
 async function run(

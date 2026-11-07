@@ -2,6 +2,7 @@ import type { Page } from '@playwright/test'
 import { openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import { openGame } from './renderProfile.ts'
+import { nthOrLast } from './renderView.ts'
 import { failCalls } from './stateCases.ts'
 
 const READ_MS = 60_000
@@ -90,7 +91,7 @@ export function swrCases(
   // The list view has a switch on every row; the grid has none.
   const toggleNinth = async (p: Page) => {
     await tab(p, 'Mods')
-    await p.getByRole('switch').nth(8).click()
+    await nthOrLast(p.getByRole('switch'), 8).click()
   }
   return [
     {

@@ -4,6 +4,7 @@ import { close, open } from './menuKit.ts'
 import { modMenuCases } from './modMenuCases.ts'
 import type { Case } from './render-budget.ts'
 import type { dialogKit } from './renderDialogs.ts'
+import { returnToMainGame } from './renderProfile.ts'
 
 /** Menus no screen case opens, pictured open so their grouping and rules can be reviewed. */
 export function menuCases(
@@ -39,6 +40,10 @@ export function menuCases(
       setup: async (p) => {
         await ready(p)
         await tab(p, 'Mods')
+        // The develop menus before it leave the game whose development profile holds no mods to group.
+        if (await returnToMainGame(p, tabs(p), () => p.locator('[data-mod-id]').count())) {
+          await tab(p, 'Mods')
+        }
         await p.getByRole('button', { name: 'Group by' }).click()
         // The grouping is a stored setting, so the case puts back the one it found.
         previous = (await p.getByRole('menuitemradio', { checked: true }).textContent()) ?? 'None'

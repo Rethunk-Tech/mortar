@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import type { Sample } from '@rethunk/react-render-audit'
-import type { Result } from './render-budget.ts'
+import type { Case, Result } from './render-budget.ts'
 import { methodOf } from './renderMeter.ts'
 
 // A backend call this slow is felt as a stalled screen.
@@ -106,4 +106,34 @@ export function report(results: Result[]): string {
     extra('because', [...a.why, ...idle('', i.why), ...idle('call ', i.callsBy)])
   }
   return lines.join('\n')
+}
+
+const LOCAL_MODS =
+  'the seeded mods are local archives, with no Nexus or Thunderstore page behind them'
+const NO_RELEASE =
+  'the seeded Develop project is untrusted (only the Trust dialog changes that), so it has no release to upload'
+
+// Cases whose starting data only the maintainer's copied profiles hold.
+const SKIPS: Record<string, string> = {
+  'dialog-share-nexus': LOCAL_MODS,
+  'dialog-share-thunderstore': LOCAL_MODS,
+  'dialog-share-modpack': LOCAL_MODS,
+  'dialog-share-mod-list-thunderstore': LOCAL_MODS,
+  'dialog-upload-modpack': LOCAL_MODS,
+  'mods-details-nexus-saved': `${LOCAL_MODS}, so no mod has an update`,
+  'menu-update-review': `${LOCAL_MODS}, so no mod has an update to review`,
+  'develop-upload-github': NO_RELEASE,
+  'develop-release-everywhere': NO_RELEASE,
+  'upload-dialog-sites': NO_RELEASE,
+}
+
+/** Drops, with the printed reason, the cases the seeded sandbox cannot give their starting data. */
+export function withoutSeededSkips(cases: Case[]): Case[] {
+  return cases.filter((c) => {
+    const reason = SKIPS[c.name]
+    if (reason) {
+      console.log(`${c.name} skipped: ${reason}`)
+    }
+    return !reason
+  })
 }
