@@ -1082,6 +1082,7 @@ msgid "Your build changed; it is added when the game stops"
 msgstr ""
 
 #: src/develop/AdoptDialog.tsx
+#: src/develop/DevelopTab.tsx
 #: src/firstrun/ProfileStep.tsx
 #: src/games/AddGameDialog.tsx
 #: src/groups/dialogs.tsx
@@ -1315,6 +1316,10 @@ msgstr ""
 
 #: src/share/ModpackDialog.tsx
 msgid "A plain icon ({source} needs a 256x256 PNG)"
+msgstr ""
+
+#: src/develop/SortableCard.tsx
+msgid "Reorder {name}"
 msgstr ""
 
 #: src/browse/BrowseShow.tsx
@@ -1904,6 +1909,7 @@ msgstr ""
 msgid "Open files page"
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
 #: src/saves/backups.ts
 msgid "Manual"
 msgstr ""
@@ -4644,6 +4650,10 @@ msgstr ""
 msgid "Add a program to run alongside the game, such as a save editor or map viewer."
 msgstr ""
 
+#: src/develop/DevelopTab.tsx
+msgid "Sort projects"
+msgstr ""
+
 #: src/firstrun/LoaderStep.tsx
 msgid "Mortar checks {launcher}'s settings for it: not found yet."
 msgstr ""
@@ -6033,6 +6043,10 @@ msgstr ""
 
 #: src/share/ImportPreview.tsx
 msgid "Needs your {source} access token in Settings, Accounts"
+msgstr ""
+
+#: src/develop/DevelopTab.tsx
+msgid "Sort: {by}"
 msgstr ""
 
 #: src/lan/IncomingPrompt.tsx

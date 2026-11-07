@@ -1063,6 +1063,10 @@ msgstr ""
 msgid "Open files page"
 msgstr ""
 
+#: src/mods/Toolbar.tsx
+msgid "Manual"
+msgstr ""
+
 #: src/mods/describe.ts
 msgid "Its installed manifest name"
 msgstr ""
@@ -1191,6 +1195,10 @@ msgstr ""
 
 #: src/mods/LegacyReview.tsx
 msgid "Supplies tilesheets for other mods"
+msgstr ""
+
+#: src/mods/Toolbar.tsx
+msgid "Drag mods into any order. New mods go to the bottom."
 msgstr ""
 
 #: src/mods/Sidebar.tsx
@@ -1525,6 +1533,10 @@ msgstr ""
 
 #: src/mods/NexusAccountActions.tsx
 msgid "You chose not to endorse this mod."
+msgstr ""
+
+#: src/mods/Toolbar.tsx
+msgid "Sort"
 msgstr ""
 
 #: src/mods/updateReview/updateAll.ts
@@ -3858,6 +3870,10 @@ msgstr ""
 #: src/mods/problemFixButtons.tsx
 #: src/mods/ReplacedSection.tsx
 msgid "Restore"
+msgstr ""
+
+#: src/mods/ManualOrder.tsx
+msgid "Move {name}"
 msgstr ""
 
 #: src/mods/ModSections.tsx

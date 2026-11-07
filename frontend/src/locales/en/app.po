@@ -1088,6 +1088,7 @@ msgid "Your build changed; it is added when the game stops"
 msgstr "Your build changed; it is added when the game stops"
 
 #: src/develop/AdoptDialog.tsx
+#: src/develop/DevelopTab.tsx
 #: src/firstrun/ProfileStep.tsx
 #: src/games/AddGameDialog.tsx
 #: src/groups/dialogs.tsx
@@ -1322,6 +1323,10 @@ msgstr "Kept in the system keyring"
 #: src/share/ModpackDialog.tsx
 msgid "A plain icon ({source} needs a 256x256 PNG)"
 msgstr "A plain icon ({source} needs a 256x256 PNG)"
+
+#: src/develop/SortableCard.tsx
+msgid "Reorder {name}"
+msgstr "Reorder {name}"
 
 #: src/browse/BrowseShow.tsx
 #: src/nxm/store.ts
@@ -1910,6 +1915,7 @@ msgstr "This save was last played with {count, plural, one {# mod this profile l
 msgid "Open files page"
 msgstr "Open files page"
 
+#: src/develop/DevelopTab.tsx
 #: src/saves/backups.ts
 msgid "Manual"
 msgstr "Manual"
@@ -4650,6 +4656,10 @@ msgstr "{downloading} downloading"
 msgid "Add a program to run alongside the game, such as a save editor or map viewer."
 msgstr "Add a program to run alongside the game, such as a save editor or map viewer."
 
+#: src/develop/DevelopTab.tsx
+msgid "Sort projects"
+msgstr "Sort projects"
+
 #: src/firstrun/LoaderStep.tsx
 msgid "Mortar checks {launcher}'s settings for it: not found yet."
 msgstr "Mortar checks {launcher}'s settings for it: not found yet."
@@ -6040,6 +6050,10 @@ msgstr "Quit"
 #: src/share/ImportPreview.tsx
 msgid "Needs your {source} access token in Settings, Accounts"
 msgstr "Needs your {source} access token in Settings, Accounts"
+
+#: src/develop/DevelopTab.tsx
+msgid "Sort: {by}"
+msgstr "Sort: {by}"
 
 #: src/lan/IncomingPrompt.tsx
 msgid "Update an existing profile"
