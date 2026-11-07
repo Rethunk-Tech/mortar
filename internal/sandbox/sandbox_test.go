@@ -161,6 +161,33 @@ func TestAllowableOffersTheNearestFolderBelowHome(t *testing.T) {
 	}
 }
 
+func TestNoFolderOfKeysOrSignInsIsOfferedOrAccepted(t *testing.T) {
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	for _, d := range []string{".ssh", ".config/gh", ".config/mod", ".local/share/keyrings"} {
+		if err := os.MkdirAll(filepath.Join(home, d), 0o750); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, path := range []string{
+		filepath.Join(home, ".ssh", "id_ed25519"),
+		filepath.Join(home, ".config", "absent", "a.json"),
+		filepath.Join(home, ".local", "share", "keyrings", "login.keyring"),
+	} {
+		if got := Allowable(path, home); got != "" {
+			t.Fatalf("%s offered %q", path, got)
+		}
+	}
+	for _, bad := range []string{".ssh", ".config", ".config/gh", ".local"} {
+		if _, err := ExtraFolders(filepath.Join(home, bad), home); err == nil {
+			t.Fatalf("%s was accepted", bad)
+		}
+	}
+	if got, err := ExtraFolders(filepath.Join(home, ".config", "mod"), home); err != nil || len(got) != 1 {
+		t.Fatalf("a mod's own folder: %v, %v", got, err)
+	}
+}
+
 // A sandbox that keeps DISPLAY but loses the session bus lets libdbus autolaunch dbus-launch, which forks without
 // bound under no_new_privs; every Argv must therefore name a session bus address.
 func TestArgvAlwaysSetsASessionBusAddress(t *testing.T) {
