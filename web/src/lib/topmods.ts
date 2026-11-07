@@ -140,7 +140,7 @@ export async function refreshTopMods(games: Game[]): Promise<void> {
     )
   }
   const sorted = Object.fromEntries(Object.entries(out).sort(([a], [b]) => a.localeCompare(b)))
-  writeFileSync(TOP, `${JSON.stringify(sorted)}\n`)
+  writeFileSync(TOP, `${JSON.stringify(sorted, null, 2)}\n`)
   process.stderr.write(
     `site: top mods: ${Object.keys(sorted).length} games from ${jobs.length} lists, ${kept} kept from the committed file; ${[...skipped].map((s) => SOURCE_NAMES[s] ?? s).join(', ')} skipped, since their lists need an account key\n`,
   )
