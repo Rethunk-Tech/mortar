@@ -140,7 +140,11 @@ export function OlderVersionDialog({
                     : ''
                 }
                 onChange={pickBuild}
+                displayEmpty={true}
               >
+                <MenuItem value="" disabled={true}>
+                  {t`Choose a build`}
+                </MenuItem>
                 {builds.map((b) => (
                   <MenuItem key={`${b.depotId}:${b.manifest}`} value={`${b.depotId}:${b.manifest}`}>
                     {[

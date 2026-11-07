@@ -146,6 +146,10 @@ msgstr ""
 msgid "build {commit}"
 msgstr ""
 
+#: src/profiles/OlderVersionDialog.tsx
+msgid "Choose a build"
+msgstr ""
+
 #: src/profiles/GameModsDialog.tsx
 msgid "Rechecking the folder…"
 msgstr ""
