@@ -3,33 +3,33 @@ module github.com/Rethunk-Tech/mortar
 go 1.27.3
 
 require (
-	github.com/Rethunk-Tech/go-archive v0.2.0
-	github.com/Rethunk-Tech/go-avscan v0.2.0
-	github.com/Rethunk-Tech/go-bannerlord v0.1.0
-	github.com/Rethunk-Tech/go-bepinex v0.2.0
-	github.com/Rethunk-Tech/go-cfgedit v0.2.0
-	github.com/Rethunk-Tech/go-curseforge v0.3.0
-	github.com/Rethunk-Tech/go-desktopenv v0.6.0
-	github.com/Rethunk-Tech/go-dotnet v0.2.0
-	github.com/Rethunk-Tech/go-fomod v0.1.0
-	github.com/Rethunk-Tech/go-gamelocator v0.3.0
-	github.com/Rethunk-Tech/go-gameproc v0.1.1
-	github.com/Rethunk-Tech/go-github v0.2.0
-	github.com/Rethunk-Tech/go-httpkit v0.1.0
-	github.com/Rethunk-Tech/go-keyring v0.1.0
-	github.com/Rethunk-Tech/go-larian v0.1.1
-	github.com/Rethunk-Tech/go-lenientjson v0.1.0
-	github.com/Rethunk-Tech/go-modio v0.1.0
-	github.com/Rethunk-Tech/go-modmanagers v0.2.0
-	github.com/Rethunk-Tech/go-nettrace v0.1.0
-	github.com/Rethunk-Tech/go-nexusmods v0.5.0
-	github.com/Rethunk-Tech/go-safefs v0.7.1
-	github.com/Rethunk-Tech/go-semverish v0.2.0
-	github.com/Rethunk-Tech/go-smapi v0.2.0
-	github.com/Rethunk-Tech/go-smapiweb v0.1.0
-	github.com/Rethunk-Tech/go-thunderstore v0.3.2
-	github.com/Rethunk-Tech/go-tilemask v0.1.0
-	github.com/Rethunk-Tech/go-winsym v0.2.0
+	github.com/Rethunk-Tech/go-archive v0.2.1
+	github.com/Rethunk-Tech/go-avscan v0.2.1
+	github.com/Rethunk-Tech/go-bannerlord v0.1.1
+	github.com/Rethunk-Tech/go-bepinex v0.2.1
+	github.com/Rethunk-Tech/go-cfgedit v0.3.0
+	github.com/Rethunk-Tech/go-curseforge v0.4.0
+	github.com/Rethunk-Tech/go-desktopenv v0.7.0
+	github.com/Rethunk-Tech/go-dotnet v0.2.1
+	github.com/Rethunk-Tech/go-fomod v0.1.1
+	github.com/Rethunk-Tech/go-gamelocator v0.4.0
+	github.com/Rethunk-Tech/go-gameproc v0.1.2
+	github.com/Rethunk-Tech/go-github v0.3.0
+	github.com/Rethunk-Tech/go-httpkit v0.2.0
+	github.com/Rethunk-Tech/go-keyring v0.2.0
+	github.com/Rethunk-Tech/go-larian v0.1.2
+	github.com/Rethunk-Tech/go-lenientjson v0.1.1
+	github.com/Rethunk-Tech/go-modio v0.1.1
+	github.com/Rethunk-Tech/go-modmanagers v0.2.1
+	github.com/Rethunk-Tech/go-nettrace v0.2.0
+	github.com/Rethunk-Tech/go-nexusmods v0.6.0
+	github.com/Rethunk-Tech/go-safefs v0.8.0
+	github.com/Rethunk-Tech/go-semverish v0.3.0
+	github.com/Rethunk-Tech/go-smapi v0.2.1
+	github.com/Rethunk-Tech/go-smapiweb v0.1.1
+	github.com/Rethunk-Tech/go-thunderstore v0.4.0
+	github.com/Rethunk-Tech/go-tilemask v0.1.1
+	github.com/Rethunk-Tech/go-winsym v0.2.1
 	github.com/andybalholm/brotli v1.2.8
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/go-ole/go-ole v1.3.0
@@ -49,7 +49,7 @@ require (
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
-	github.com/andygrunwald/vdf v1.1.0 // indirect
+	github.com/Rethunk-Tech/vdf/v2 v2.1.0 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/sevenzip v1.6.5 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
@@ -57,6 +57,7 @@ require (
 	github.com/danieljoos/wincred v1.2.3 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/ebitengine/purego v0.11.3 // indirect
+	github.com/gofrs/flock v0.13.1 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
@@ -78,4 +79,4 @@ require (
 	modernc.org/memory v1.12.1 // indirect
 )
 
-replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.1.0-mortar.1
+replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.1.0-mortar.2

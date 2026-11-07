@@ -35,7 +35,7 @@ func CopyTree(src, dst string) error {
 func CopyTreeResolvingLinks(src, dst string) error {
 	opts := mortarCopy
 	opts.Skip = vortexTag
-	err := safefs.CopyTreeFollowingLinks(src, dst, opts)
+	_, err := safefs.CopyTreeFollowingLinks(src, dst, opts)
 	if dangling, ok := errors.AsType[*safefs.DanglingLinkError](err); ok {
 		return fmt.Errorf("%s links to a file that no longer exists; if Vortex put it there, its staging folder was moved or purged", dangling.Rel)
 	}

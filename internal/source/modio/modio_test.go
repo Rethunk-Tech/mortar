@@ -15,7 +15,7 @@ import (
 const timberAPI = `{"id":42,"name":"TimberAPI","summary":"api","profile_url":"https://mod.io/g/timberborn/m/timberapi",
 "date_updated":1775230769,"maturity_option":8,"submitted_by":{"username":"eyes"},"logo":{"thumb_320x180":"https://thumb.modcdn.io/l.png"},
 "stats":{"downloads_total":125963,"ratings_positive":143},"tags":[{"name":"Mod"}],"description":"<p>Hello <b>you</b></p>",
-"modfile":{"id":9,"filesize":2048,"filename":"t.zip","version":"0.8","filehash":{"md5":"ABC"},"download":{"binary_url":"https://g-1.modapi.io/f/9"}}}`
+"modfile":{"id":9,"filesize":2048,"filename":"t.zip","version":"0.8","filehash":{"md5":"ABCABCABCABCABCABCABCABCABCABCAB"},"download":{"binary_url":"https://g-1.modapi.io/f/9"}}}`
 
 func fake(t *testing.T) Driver {
 	t.Helper()
@@ -45,8 +45,8 @@ func fake(t *testing.T) Driver {
 			_, _ = w.Write([]byte(timberAPI))
 		case "/games/3659/mods/42/files":
 			_, _ = w.Write([]byte(`{"data":[{"id":9,"version":"0.8","changelog":" fixed ","download":{"binary_url":"https://x/9"}},
-				{"id":7,"version":"","filename":"old.zip","download":{"binary_url":"https://x/7"},"filehash":{"md5":"def"}},
-				{"id":5,"version":"5","download":{"binary_url":"http://x/5"},"filehash":{"md5":"def"}},
+				{"id":7,"version":"","filename":"old.zip","download":{"binary_url":"https://x/7"},"filehash":{"md5":"defdefdefdefdefdefdefdefdefdefde"}},
+				{"id":5,"version":"5","download":{"binary_url":"http://x/5"},"filehash":{"md5":"defdefdefdefdefdefdefdefdefdefde"}},
 				{"id":6,"version":"6","download":{"binary_url":"https://x/6"}}]}`))
 		case "/games/3659/mods/42/dependencies":
 			_, _ = w.Write([]byte(`{"data":[{"id":5,"name":"Harmony"}]}`))
@@ -89,15 +89,15 @@ func TestDetailsResolveAndLatest(t *testing.T) {
 		t.Fatalf("%+v %v", det, err)
 	}
 	cur, err := d.Resolve(ctx, "3659", "42", "")
-	if err != nil || cur.FileID != 9 || cur.MD5 != "abc" || cur.URL != "https://g-1.modapi.io/f/9" || cur.Name != "TimberAPI" {
+	if err != nil || cur.FileID != 9 || cur.MD5 != "abcabcabcabcabcabcabcabcabcabcab" || cur.URL != "https://g-1.modapi.io/f/9" || cur.Name != "TimberAPI" {
 		t.Fatalf("%+v %v", cur, err)
 	}
 	old, err := d.Resolve(ctx, "3659", "42", "7")
-	if err != nil || old.FileID != 7 || old.Version != "7" || old.MD5 != "def" {
+	if err != nil || old.FileID != 7 || old.Version != "7" || old.MD5 != "defdefdefdefdefdefdefdefdefdefde" {
 		t.Fatalf("%+v %v", old, err)
 	}
 	for _, version := range []string{"5", "6"} {
-		if r, err := d.Resolve(ctx, "3659", "42", version); err == nil || !strings.Contains(err.Error(), "https download address and an MD5") {
+		if r, err := d.Resolve(ctx, "3659", "42", version); err == nil || !strings.Contains(err.Error(), "has no file to download") {
 			t.Errorf("file %s resolved to %+v (%v)", version, r, err)
 		}
 	}
@@ -105,9 +105,9 @@ func TestDetailsResolveAndLatest(t *testing.T) {
 		t.Fatal("unknown file resolved")
 	}
 	latest, err := d.Latest(ctx, components.GameSource{ID: "modio", Key: "3659"}, "", []source.InstalledFile{
-		{ID: "42", Version: "7", Digest: "md5:def"}, {ID: "42", Version: "0.8", Digest: "md5:abc"},
+		{ID: "42", Version: "7", Digest: "md5:defdefdefdefdefdefdefdefdefdefde"}, {ID: "42", Version: "0.8", Digest: "md5:abcabcabcabcabcabcabcabcabcabcab"},
 	})
-	if err != nil || len(latest) != 1 || latest["md5:def"].VersionID != "9" || latest["md5:def"].Version != "0.8" {
+	if err != nil || len(latest) != 1 || latest["md5:defdefdefdefdefdefdefdefdefdefde"].VersionID != "9" || latest["md5:defdefdefdefdefdefdefdefdefdefde"].Version != "0.8" {
 		t.Fatalf("%+v %v", latest, err)
 	}
 }

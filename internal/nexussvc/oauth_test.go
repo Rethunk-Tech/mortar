@@ -113,7 +113,6 @@ func TestARefreshThatCannotBeSavedStillSignsTheCall(t *testing.T) {
 	setItem = func(string, string) error { return errors.New("keyring locked") }
 	o := oauthConfig()
 	o.ClientID, o.AuthBase = "cid", idp.URL
-	t.Cleanup(func() { unsaved.tokens = sso.Tokens{} })
 	if got, err := bearer(t.Context(), o); err != nil || got != "NEW" {
 		t.Fatalf("bearer = %q, %v", got, err)
 	}
@@ -126,8 +125,8 @@ func TestARefreshThatCannotBeSavedStillSignsTheCall(t *testing.T) {
 	if _, err := bearer(t.Context(), o); err != nil {
 		t.Fatal(err)
 	}
-	if saved, _ := tokenStore.Load(); saved.Refresh != "R2" || unsaved.tokens.Access != "" {
-		t.Fatalf("saved %+v, unsaved %+v", saved, unsaved.tokens)
+	if saved, _ := tokenStore.Load(); saved.Refresh != "R2" {
+		t.Fatalf("saved %+v", saved)
 	}
 }
 

@@ -640,6 +640,9 @@ func (d Driver) Resolve(ctx context.Context, id, version string) (Resolved, erro
 		if cf.Denied(err) || errors.Is(err, cf.ErrNoDownload) {
 			return Resolved{}, &NotDistributableError{Mod: m.Name, PageURL: page}
 		}
+		if errors.Is(err, cf.ErrInsecureURL) {
+			return Resolved{}, fmt.Errorf("CurseForge mod %s has no https download address", id)
+		}
 		if err != nil {
 			return Resolved{}, err
 		}

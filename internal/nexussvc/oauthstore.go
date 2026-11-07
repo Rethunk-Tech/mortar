@@ -3,9 +3,11 @@ package nexussvc
 import (
 	"encoding/json"
 	"errors"
+	"path/filepath"
 	"time"
 
 	"github.com/Rethunk-Tech/go-nexusmods/sso"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 )
 
@@ -16,13 +18,19 @@ const (
 	// there is no fallback port. 51762 sits in the IANA dynamic range, which no service owns.
 	oauthAddr   = "127.0.0.1:51762"
 	keyringItem = "nexus-oauth"
+	lockName    = "nexus-oauth.lock"
 	doneText    = "Signed in. You can close this tab and return to Mortar."
 	failText    = "Sign-in did not finish. You can close this tab and try again in Mortar."
 )
 
 // oauthConfig is the OAuth sign-in Mortar registered with Nexus, with its grant kept in the keyring.
+// Its lock file keeps two Mortar processes from spending one rotated refresh token.
 func oauthConfig() sso.OAuth {
-	return sso.OAuth{ClientID: clientID, Addr: oauthAddr, DoneText: doneText, FailText: failText, Store: oauthStore{}}
+	o := sso.OAuth{ClientID: clientID, Addr: oauthAddr, DoneText: doneText, FailText: failText, Store: oauthStore{}}
+	if dir, err := datadir.Dir(); err == nil {
+		o.LockFile = filepath.Join(dir, lockName)
+	}
+	return o
 }
 
 // storedTokens is the keyring item's JSON, which releases since 0.3.8 wrote.
