@@ -7,6 +7,7 @@ import (
 	"path"
 	"slices"
 	"strings"
+	"sync/atomic"
 
 	"github.com/Rethunk-Tech/go-fomod"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -45,6 +46,9 @@ const (
 	maxFomodOps   = 20000
 	maxFomodFiles = 200000
 )
+
+// Counted each time a FOMOD folder operation walks its source. Tests compare a repeated operation to a single one.
+var fomodFolderWalks atomic.Int64
 
 // lastOfEach keeps the final occurrence of each identical operation: a later copy of the same operation rewrites what
 // the earlier one wrote, so the result is the same with one walk instead of many.
@@ -116,6 +120,7 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 		}
 		inside, ok := listed[src]
 		if !ok {
+			fomodFolderWalks.Add(1)
 			if inside, err = files(base, src); err != nil {
 				return Layout{}, err
 			}
