@@ -208,7 +208,7 @@ async function selectVersioned(
 
 /** The game settings page opened from a profile's Home, and its switch to every profile's values. */
 export function gameSettingsCases(h: Helpers): Case[] {
-  const { toWorkspace, tab, tabs } = h
+  const { toWorkspace, tab } = h
   const openGameSettings = async (p: Page) => {
     await toWorkspace(p)
     await tab(p, 'Home')
@@ -219,20 +219,6 @@ export function gameSettingsCases(h: Helpers): Case[] {
     await p.getByRole('button', { name: /^This profile: / }).waitFor()
   }
   return [
-    {
-      // Only a loader with a devTemplate has the Develop tab.
-      name: 'develop',
-      setup: (p) => tab(p, 'Home'),
-      run: async (p) => {
-        if (
-          await tabs(p)
-            .getByRole('tab', { name: /^Develop/ })
-            .count()
-        ) {
-          await tab(p, 'Develop')
-        }
-      },
-    },
     {
       // Home opens the game's settings on the open profile's own values.
       name: 'game-settings-profile',

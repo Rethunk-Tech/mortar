@@ -377,6 +377,12 @@ export function dialogCases(h: Helpers): Case[] {
     dialog('import', (p) => switcher(p, /^Import…/)),
     dialog('import-link', (p) => importStep(p, /^Link or code/)),
     dialog('import-manager', (p) => importStep(p, /^Another mod manager/)),
+    {
+      // The run's main game may have no Develop tab, so the case switches to Lethal Company.
+      name: 'develop',
+      setup: (p) => h.tab(p, 'Home'),
+      run: kit.developTab,
+    },
     ...shareCases(kit),
     ...toolAndWizardCases(kit),
     ...stubbedCases(kit),
