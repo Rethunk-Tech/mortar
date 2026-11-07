@@ -12,7 +12,7 @@ func TestBackgroundTick(t *testing.T) {
 		rel  Release
 	}
 	newTick := func(autoInstall func() bool) (*fake, *Service, func() []emitted) {
-		f := &fake{rel: &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}}
+		f := &fake{rel: &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}, StatementSignature: []byte{3}}}}
 		s := signedService(t, f)
 		s.AutoInstall = autoInstall
 		var got []emitted

@@ -133,6 +133,9 @@ func configure(s *Service, u Updater, version string, publicKey []byte, producti
 		Providers:       []updater.Provider{chain},
 		PublicKey:       publicKey,
 		OnUpdateApplied: onApplied(version),
+		// The statement signature binds version and platform to the file, so a feed cannot serve an older signed
+		// build, or another platform's, as the newer release.
+		RequireStatement: true,
 	})
 }
 
@@ -184,8 +187,10 @@ func (s *Service) Check(ctx context.Context) (*Release, error) {
 		}
 		return nil, err
 	}
-	// The verifier accepts a digest alone, and a digest proves nothing about who published the release.
-	if rel.Verification == nil || len(rel.Verification.Signature) == 0 {
+	// The verifier accepts a digest alone, and a digest proves nothing about who published the release. A statement
+	// signature is what binds the version and platform, so a release without one is refused here, not after the
+	// download.
+	if rel.Verification == nil || len(rel.Verification.Signature) == 0 || len(rel.Verification.StatementSignature) == 0 {
 		s.found = nil
 		return nil, errUnsigned
 	}

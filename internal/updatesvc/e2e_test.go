@@ -5,6 +5,7 @@ package updatesvc_test
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -117,11 +118,21 @@ func (s *site) publishAs(t *testing.T, version string, artifact []byte, key, pla
 	run(t, "wails3", append(args, asset)...)
 	// wails3 infers "linux"; the bare program updates from the portable entry, as release:manifest marks it.
 	if platform != "linux" {
-		manifest := filepath.Join(s.dir, "manifest.json")
-		b := bytes.ReplaceAll(readFile(t, manifest), []byte(`"platform": "linux"`), []byte(`"platform": "`+platform+`"`))
-		if err := os.WriteFile(manifest, b, 0o600); err != nil {
-			t.Fatal(err)
-		}
+		s.editManifest(t, func(b []byte) []byte {
+			return bytes.ReplaceAll(b, []byte(`"platform": "linux"`), []byte(`"platform": "`+platform+`"`))
+		})
+	}
+	// The statement covers the platform, so it is signed after the rewrite, as release:manifest does.
+	if key != "" {
+		run(t, "wails3", "updater", "statement", "-manifest", filepath.Join(s.dir, "manifest.json"), "-key", key)
+	}
+}
+
+func (s *site) editManifest(t *testing.T, edit func([]byte) []byte) {
+	t.Helper()
+	manifest := filepath.Join(s.dir, "manifest.json")
+	if err := os.WriteFile(manifest, edit(readFile(t, manifest)), 0o600); err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -301,6 +312,57 @@ func TestUpdaterE2EDowngradeIgnored(t *testing.T) {
 	oldB, newB, s, key := setup(t)
 	s.publish(t, "0.1.0", newB, key.priv)
 	refused(t, oldB, s, key.pubB64, "check release=<nil> err=<nil>")
+}
+
+// A feed that relabels an older signed build as the newer release keeps the file's signature valid but not the
+// statement, which names the version it was signed for.
+func TestUpdaterE2ERelabelledOlderBuildRefused(t *testing.T) {
+	oldB, newB, s, key := setup(t)
+	s.publish(t, "0.1.0", newB, key.priv)
+	s.editManifest(t, func(b []byte) []byte {
+		return bytes.Replace(b, []byte(`"version": "0.1.0"`), []byte(`"version": "0.1.2"`), 1)
+	})
+	refused(t, oldB, s, key.pubB64, "statement signature does not match")
+}
+
+// The AppImage's signed entry served under the portable platform: the file signature still verifies, the statement
+// was signed for "linux".
+func TestUpdaterE2EOtherPlatformsFileRefused(t *testing.T) {
+	oldB, newB, s, key := setup(t)
+	s.publishAs(t, "0.1.2", newB, key.priv, "linux")
+	s.editManifest(t, func(b []byte) []byte {
+		return bytes.ReplaceAll(b, []byte(`"platform": "linux"`), []byte(`"platform": "linux-portable"`))
+	})
+	refused(t, oldB, s, key.pubB64, "statement signature does not match")
+}
+
+// A release published before statements existed carries only the file signature and is refused.
+func TestUpdaterE2EReleaseWithoutStatementRefused(t *testing.T) {
+	oldB, newB, s, key := setup(t)
+	s.publish(t, "0.1.2", newB, key.priv)
+	s.editManifest(t, func(b []byte) []byte {
+		var m map[string]any
+		if err := json.Unmarshal(b, &m); err != nil {
+			t.Fatal(err)
+		}
+		arts, ok := m["artifacts"].([]any)
+		if !ok {
+			t.Fatal("manifest has no artifacts list")
+		}
+		for _, a := range arts {
+			art, ok := a.(map[string]any)
+			if !ok {
+				t.Fatalf("artifact is %T, not an object", a)
+			}
+			delete(art, "statementSignature")
+		}
+		out, err := json.Marshal(m)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return out
+	})
+	refused(t, oldB, s, key.pubB64, "not signed")
 }
 
 func TestMain(m *testing.M) {

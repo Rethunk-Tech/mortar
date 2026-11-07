@@ -102,4 +102,6 @@ tasks:
         jq '(.artifacts[] | select(.platform == "linux" and (.url | endswith(".AppImage") | not)) | .platform) = "linux-portable"' bin/manifest.json >bin/manifest.json.tmp
         mv bin/manifest.json.tmp bin/manifest.json
         test "$(jq '[.artifacts[] | select(.platform == "linux-portable")] | length' bin/manifest.json)" -ge 1
-      - wails3 updater verify -manifest bin/manifest.json -publickey build/updater/public.key
+      # The statement covers each entry's platform and arch, so it is signed after the platform rewrite above.
+      - wails3 updater statement -manifest bin/manifest.json -key "$MORTAR_UPDATE_KEY"
+      - wails3 updater verify -manifest bin/manifest.json -publickey build/updater/public.key -require-statement

@@ -80,6 +80,10 @@ func TestOnlyASignedReleaseInstalls(t *testing.T) {
 		t.Fatalf("install after unsigned: %v, downloaded %v", err, f.downloaded)
 	}
 	f.rel.Verification.Signature = []byte{2}
+	if _, err := s.Check(t.Context()); !errors.Is(err, errUnsigned) {
+		t.Fatalf("a file signature without a statement: %v", err)
+	}
+	f.rel.Verification.StatementSignature = []byte{3}
 	if rel, err := s.Check(t.Context()); err != nil || rel.Version != "1.1.0" {
 		t.Fatalf("signed: %+v, %v", rel, err)
 	}
@@ -89,7 +93,7 @@ func TestOnlyASignedReleaseInstalls(t *testing.T) {
 }
 
 func TestCheckKeepsAStagedRelease(t *testing.T) {
-	f := &fake{rel: &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}}
+	f := &fake{rel: &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}, StatementSignature: []byte{3}}}}
 	s := signedService(t, f)
 	if _, err := s.Check(t.Context()); err != nil {
 		t.Fatal(err)
@@ -111,7 +115,7 @@ func TestRestartWaitsUntilInstallHasStaged(t *testing.T) {
 		dlHold:  hold,
 		dlStart: started,
 	}
-	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
+	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}, StatementSignature: []byte{3}}}
 	s := signedService(t, f)
 	if _, err := s.Check(t.Context()); err != nil {
 		t.Fatal(err)
@@ -141,7 +145,7 @@ func TestRestartWaitsUntilInstallHasStaged(t *testing.T) {
 func TestRestartDoesNotHoldTheMutex(t *testing.T) {
 	s := &Service{}
 	f := &reenterRestart{s: s}
-	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
+	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}, StatementSignature: []byte{3}}}
 	if err := configure(s, f, "1.0.0", []byte("key"), true, "", nil); err != nil {
 		t.Fatal(err)
 	}
@@ -177,7 +181,7 @@ func TestCheckDoesNotHoldTheLockForTheNetwork(t *testing.T) {
 		checkHold:  hold,
 		checkStart: started,
 	}
-	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
+	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}, StatementSignature: []byte{3}}}
 	s := signedService(t, f)
 	errc := make(chan error, 1)
 	go func() {
@@ -205,7 +209,7 @@ func TestInstallReleasesTheMutexDuringDownload(t *testing.T) {
 	hold := make(chan struct{})
 	started := make(chan struct{})
 	f := &stall{dlHold: hold, dlStart: started}
-	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
+	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}, StatementSignature: []byte{3}}}
 	s := signedService(t, f)
 	if _, err := s.Check(t.Context()); err != nil {
 		t.Fatal(err)
@@ -351,7 +355,7 @@ func TestASecondInstallWaitsForTheFirst(t *testing.T) {
 	hold := make(chan struct{})
 	started := make(chan struct{})
 	f := &stall{dlHold: hold, dlStart: started}
-	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
+	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}, StatementSignature: []byte{3}}}
 	s := signedService(t, f)
 	if _, err := s.Check(t.Context()); err != nil {
 		t.Fatal(err)
