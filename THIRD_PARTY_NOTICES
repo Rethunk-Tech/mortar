@@ -4713,7 +4713,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-lucide-react@1.69.0
+lucide-react@1.70.0
 licence: MIT
 https://lucide.dev
 
@@ -6919,7 +6919,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-vfile-message@4.0.3
+vfile-message@4.0.4
 licence: MIT
 https://github.com/vfile/vfile-message
 
@@ -6984,7 +6984,7 @@ Bundled source icon (frontend/src/brand/vendor/vsmoddb.png) from the Vintage Sto
 
 --------------------------------------------------------------------------------
 
-zustand@5.0.16
+zustand@5.1.0
 licence: MIT
 https://github.com/pmndrs/zustand
 
