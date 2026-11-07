@@ -72,6 +72,15 @@ func run(ctx context.Context, o options) error {
 		}
 		resolved = append(resolved, component)
 	}
+	var pins []components.Pin
+	for _, item := range source.Pins {
+		component, err := resolve(ctx, client, item)
+		if err != nil {
+			return err
+		}
+		pins = append(pins, components.Pin{Kind: components.PinComponent, Game: component.Game, Name: component.Name, Version: component.Version, SHA256: component.SHA256})
+	}
+	pins = append(pins, source.PackPins...)
 	if err := pinTemplates(ctx, httpClient, "https://api.github.com", source.Games); err != nil {
 		return err
 	}
@@ -79,7 +88,7 @@ func run(ctx context.Context, o options) error {
 	if err != nil {
 		return err
 	}
-	manifest := components.Manifest{Serial: serial, Components: resolved, Games: source.Games, Authors: source.Authors}
+	manifest := components.Manifest{Serial: serial, Components: resolved, Games: source.Games, Authors: source.Authors, Pins: pins}
 	if err := manifest.Validate(); err != nil {
 		return err
 	}

@@ -16,9 +16,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"io/fs"
 	"log/slog"
+	"math"
 	"net/http"
 	"os"
 	"path"
@@ -50,6 +50,9 @@ const (
 	// schema goes under a new prefix (and cache name) that older clients never read.
 	tagPrefix = "components-v2-"
 	cacheName = "components-v2-manifest.json"
+	// floorName holds the highest serial accepted, apart from the cache entry so an expired entry cannot reopen the way
+	// to an older signed catalog.
+	floorName = "serial-floor-" + cacheName
 	day       = 24 * time.Hour
 
 	maxManifest  = 8 << 20
@@ -85,6 +88,11 @@ type SourceFile struct {
 	Components []SourceComponent `json:"components"`
 	Games      []GameInfo        `json:"games"`
 	Authors    []AuthorAliases   `json:"authors,omitempty"`
+	// Pins are extra versions of a listed component, resolved and hashed from their GitHub releases: older loaders a
+	// player may choose.
+	Pins []SourceComponent `json:"pins,omitempty"`
+	// PackPins are Thunderstore loader package versions with the checksum measured when they were reviewed.
+	PackPins []Pin `json:"packPins,omitempty"`
 }
 
 // versionConstraint is one operator and version of a known-broken entry's GameVersions.
@@ -1363,8 +1371,82 @@ type Manifest struct {
 	Games      []GameInfo  `json:"games"`
 	// Authors are people known by different names on different mod sites.
 	Authors []AuthorAliases `json:"authors,omitempty"`
+	// Pins are the SHA-256 of release files the catalog vouches for beyond each component's own version: older
+	// loader versions a player may choose, and the Thunderstore packs of BepInEx. An older Mortar ignores the field.
+	Pins []Pin `json:"pins,omitempty"`
 	// NeedsNewer lists the games Decode left out because their minVersion is newer than this Mortar.
 	NeedsNewer []string `json:"-"`
+}
+
+// Pin kinds.
+const (
+	// PinComponent pins a version of a component (Game, Name) other than the one the manifest lists for it.
+	PinComponent = "component"
+	// PinPack pins a Thunderstore package version; Name is its Namespace-Name and Game is empty.
+	PinPack = "pack"
+)
+
+// Pin is the SHA-256 of one release file of a loader.
+type Pin struct {
+	Kind    string `json:"kind"`
+	Game    string `json:"game,omitempty"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	SHA256  string `json:"sha256"`
+}
+
+// Validate checks a pin names a release and carries a SHA-256.
+func (p Pin) Validate() error {
+	switch p.Kind {
+	case PinComponent:
+		if p.Game == "" {
+			return errors.New("a component pin needs a game")
+		}
+	case PinPack:
+		if p.Game != "" {
+			return errors.New("a pack pin names no game")
+		}
+	default:
+		return fmt.Errorf("pin has unknown kind %q", p.Kind)
+	}
+	if p.Name == "" || p.Version == "" {
+		return errors.New("a pin needs a name and a version")
+	}
+	if len(p.SHA256) != sha256.Size*2 {
+		return fmt.Errorf("pin %s %s has an invalid sha256", p.Name, p.Version)
+	}
+	if _, err := hex.DecodeString(p.SHA256); err != nil {
+		return fmt.Errorf("pin %s %s has an invalid sha256: %w", p.Name, p.Version, err)
+	}
+	return nil
+}
+
+// pinned is the SHA-256 the manifest vouches for, from a pin or, for a component, its own listed version.
+func (m Manifest) pinned(kind, game, name, version string) (string, bool) {
+	for _, p := range m.Pins {
+		if p.Kind == kind && p.Game == game && strings.EqualFold(p.Name, name) && p.Version == version {
+			return p.SHA256, true
+		}
+	}
+	if kind == PinComponent {
+		if c, ok := findComponent(m.Components, game, name); ok && c.Version == version {
+			return c.SHA256, true
+		}
+	}
+	return "", false
+}
+
+// Pin is the SHA-256 the catalog vouches for the release file of a component (kind PinComponent, game and name) or a
+// Thunderstore package (kind PinPack, name Namespace-Name) at version. A Mortar that has not loaded a catalog answers
+// from the bundled one.
+func (c *Client) Pin(kind, game, name, version string) (string, bool) {
+	if sum, ok := c.manifest.pinned(kind, game, name, version); ok {
+		return sum, true
+	}
+	if m, err := BundledManifest(); err == nil {
+		return m.pinned(kind, game, name, version)
+	}
+	return "", false
 }
 
 // StaleAfter is how old a catalog may get before Mortar tells the player it could not refresh it.
@@ -1381,7 +1463,9 @@ func (m Manifest) IssuedAt() time.Time {
 }
 
 // Stale reports a catalog signed more than StaleAfter before now. The copy stays in use; this only says it is not new.
-func (m Manifest) Stale(now time.Time) bool { return m.Serial > 0 && now.Sub(m.IssuedAt()) > StaleAfter }
+func (m Manifest) Stale(now time.Time) bool {
+	return m.Serial > 0 && now.Sub(m.IssuedAt()) > StaleAfter
+}
 
 // AuthorAliases is one person's names on the mod sites (a Thunderstore team and a GitHub account, say), which Browse
 // counts as one author when it folds the same mod from two sites into one card.
@@ -1424,6 +1508,9 @@ func (c Component) Validate() error {
 	if err := c.Source.Validate(); err != nil {
 		return fmt.Errorf("component %q: %w", c.Name, err)
 	}
+	if !validPart(c.Tag) || !validPart(c.Asset) || c.Tag == ".." || c.Asset == ".." {
+		return fmt.Errorf("component %q has a release tag or asset name that is not a plain name", c.Name)
+	}
 	if len(c.SHA256) != sha256.Size*2 {
 		return fmt.Errorf("component %q has an invalid sha256", c.Name)
 	}
@@ -1437,6 +1524,11 @@ func (c Component) Validate() error {
 func (m Manifest) Validate() error {
 	if m.Serial == 0 {
 		return errors.New("component manifest has no serial")
+	}
+	for _, p := range m.Pins {
+		if err := p.Validate(); err != nil {
+			return err
+		}
 	}
 	seen := make(map[string]struct{}, len(m.Components))
 	for _, c := range m.Components {
@@ -1497,6 +1589,13 @@ func withoutUnreadable(m Manifest) (Manifest, int) {
 		err := c.Validate()
 		if err != nil {
 			slog.Warn("component manifest: skipping an entry this Mortar cannot read", "game", c.Game, "component", c.Name, "err", err)
+		}
+		return err != nil
+	})
+	m.Pins = slices.DeleteFunc(m.Pins, func(p Pin) bool {
+		err := p.Validate()
+		if err != nil {
+			slog.Warn("component manifest: skipping a pin this Mortar cannot read", "name", p.Name, "err", err)
 		}
 		return err != nil
 	})
@@ -1656,13 +1755,15 @@ func (c *Client) httpClient() *http.Client {
 	return http.DefaultClient
 }
 
-func (c *Client) manifestURL(ctx context.Context) (string, error) {
+// manifestURLs are the addresses of the published catalogs, newest release first. A release created later than a
+// good one can carry a manifest that does not verify, so Load tries them in turn instead of trusting the first.
+func (c *Client) manifestURLs(ctx context.Context) ([]string, error) {
 	if c.ManifestURL != "" {
-		return c.ManifestURL, nil
+		return []string{c.ManifestURL}, nil
 	}
 	body, err := c.get(ctx, cmp.Or(c.ReleasesURL, ReleasesURL), maxManifest)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	var releases []struct {
 		Tag    string `json:"tag_name"`
@@ -1673,19 +1774,24 @@ func (c *Client) manifestURL(ctx context.Context) (string, error) {
 		} `json:"assets"`
 	}
 	if err := json.Unmarshal(body, &releases); err != nil {
-		return "", err
+		return nil, err
 	}
+	var urls []string
 	for _, r := range releases {
 		if r.Draft || !strings.HasPrefix(r.Tag, tagPrefix) {
 			continue
 		}
 		for _, a := range r.Assets {
 			if a.Name == "components.json" {
-				return a.URL, nil
+				urls = append(urls, a.URL)
+				break
 			}
 		}
 	}
-	return "", errors.New("no components release is published")
+	if len(urls) == 0 {
+		return nil, errors.New("no components release is published")
+	}
+	return urls, nil
 }
 
 // SetManifest selects the already verified manifest used by Component and Download.
@@ -1763,7 +1869,12 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 	}
 	// A fetched manifest older than the one this build ships or the one already cached is a rollback.
 	oldSerial := bundled.Serial
+	var floor uint64
 	if cache != nil {
+		if stored, ok := diskcache.Peek[uint64](cache.Cache(), floorName); ok {
+			floor = stored.Value
+			oldSerial = max(oldSerial, floor)
+		}
 		if old, ok := diskcache.Peek[cachedManifest](cache.Cache(), cacheName); ok {
 			if err := Verify(old.Value.Manifest, old.Value.Signature, publicKey); err == nil {
 				if parsed, err := Decode(old.Value.Manifest); err == nil {
@@ -1774,23 +1885,25 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 	}
 	var fetchFailure error
 	fetch := func() (cachedManifest, error) {
-		url, manifest, signature, err := c.fetch(ctx)
+		_, manifest, signature, err := c.fetch(ctx, func(url string, manifest, signature []byte) error {
+			if err := Verify(manifest, signature, publicKey); err != nil {
+				return fmt.Errorf("%w: %s: %w", ErrBadSignature, url, err)
+			}
+			parsed, err := Decode(manifest)
+			if err != nil {
+				return err
+			}
+			if parsed.Serial < oldSerial {
+				return fmt.Errorf("%w: %s has serial %d, below %d", ErrRollback, url, parsed.Serial, oldSerial)
+			}
+			if cache != nil && parsed.Serial > floor {
+				_ = diskcache.Put(cache.Cache(), floorName, parsed.Serial)
+			}
+			return nil
+		})
 		if err != nil {
 			fetchFailure = err
 			return cachedManifest{}, err
-		}
-		if err := Verify(manifest, signature, publicKey); err != nil {
-			fetchFailure = fmt.Errorf("%w: %s: %w", ErrBadSignature, url, err)
-			return cachedManifest{}, fetchFailure
-		}
-		parsed, err := Decode(manifest)
-		if err != nil {
-			fetchFailure = err
-			return cachedManifest{}, err
-		}
-		if parsed.Serial < oldSerial {
-			fetchFailure = fmt.Errorf("%w: %s has serial %d, below %d", ErrRollback, url, parsed.Serial, oldSerial)
-			return cachedManifest{}, fetchFailure
 		}
 		return cachedManifest{Manifest: manifest, Signature: signature}, nil
 	}
@@ -1808,7 +1921,7 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 			// blocked download must not bring back a catalog older than this build's.
 			if parsed, parseErr := Decode(entry.Manifest); parseErr != nil {
 				err = parseErr
-			} else if parsed.Serial < bundled.Serial {
+			} else if parsed.Serial < max(bundled.Serial, floor) {
 				err = fmt.Errorf("%w: cached copy has serial %d, below the bundled %d", ErrRollback, parsed.Serial, bundled.Serial)
 			} else {
 				c.SetManifest(parsed)
@@ -1843,21 +1956,35 @@ func (c *Client) UseCached(cache *meta.Client, publicKey []byte) bool {
 	return true
 }
 
-// fetch returns the manifest's URL, which names its release, with the manifest and its signature.
-func (c *Client) fetch(ctx context.Context) (string, []byte, []byte, error) {
-	url, err := c.manifestURL(ctx)
+// fetch returns the address, manifest and signature of the newest published catalog that accept takes. A release whose
+// manifest fails accept (a bad signature, a serial below the floor) is skipped for the next older one, so one bad
+// release does not block every refresh; with none accepted the newest one's failure is returned.
+func (c *Client) fetch(ctx context.Context, accept func(url string, manifest, signature []byte) error) (string, []byte, []byte, error) {
+	urls, err := c.manifestURLs(ctx)
 	if err != nil {
 		return "", nil, nil, err
 	}
-	manifest, err := c.get(ctx, url, maxManifest)
-	if err != nil {
-		return url, nil, nil, err
+	var first error
+	var firstURL string
+	for _, url := range urls {
+		manifest, err := c.get(ctx, url, maxManifest)
+		var signature []byte
+		if err == nil {
+			signature, err = c.get(ctx, url+".sig", maxSignature)
+		}
+		if err == nil {
+			if err = accept(url, manifest, signature); err == nil {
+				return url, manifest, signature, nil
+			}
+		}
+		if first == nil {
+			first, firstURL = err, url
+		}
+		if ctx.Err() != nil {
+			break
+		}
 	}
-	signature, err := c.get(ctx, url+".sig", maxSignature)
-	if err != nil {
-		return url, nil, nil, err
-	}
-	return url, manifest, signature, nil
+	return firstURL, nil, nil, first
 }
 
 func (c *Client) get(ctx context.Context, address string, limit int64) ([]byte, error) {
