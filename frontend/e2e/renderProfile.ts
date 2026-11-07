@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Locator, Page } from '@playwright/test'
 import { escapeRegExp } from './app.ts'
+import { clickBackdrop } from './menuKit.ts'
 
 const CLOSE_TRIES = 4
 const CLOSE_WAIT_MS = 1000
@@ -21,6 +22,17 @@ export async function closeAll(page: Page) {
       .elementHandle({ timeout: CLOSE_WAIT_MS })
       .catch(() => null)
     if (!top) {
+      continue
+    }
+    // A menu or select popover opens without focus inside it, so neither the focus wait nor Escape reaches it: its
+    // backdrop takes the click instead.
+    if (['menu', 'listbox'].includes((await top.getAttribute('role')) ?? '')) {
+      await clickBackdrop(page)
+      await page
+        .waitForFunction((el) => !el.isConnected || el.getClientRects().length === 0, top, {
+          timeout: CLOSE_WAIT_MS,
+        })
+        .catch(() => undefined)
       continue
     }
     const text = await top.textContent()
@@ -61,6 +73,7 @@ export async function closeAll(page: Page) {
 /** Whether Escape could still lead to the workspace: not there yet, and a game is open to go back to. Closes dialogs first, as they hide the tabs. */
 export async function backable(page: Page, workspaceTabs: Locator) {
   await closeAll(page)
+  await clearSearch(page)
   return !(
     (await workspaceTabs.isVisible()) ||
     (await page.getByRole('button', { name: 'Choose a game' }).isVisible())
@@ -260,5 +273,13 @@ export function thunderstoreVisit(
         left = ''
       }
     },
+  }
+}
+
+/** On a full page, Escape in a settings search clears the text first and leaves the page only on the next press, so a case that typed a search is cleared here instead. */
+async function clearSearch(page: Page) {
+  const search = page.getByRole('textbox', { name: /^Search/ }).first()
+  if ((await search.isVisible()) && (await search.inputValue()) !== '') {
+    await search.fill('')
   }
 }

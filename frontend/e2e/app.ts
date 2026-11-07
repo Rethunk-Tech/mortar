@@ -171,3 +171,15 @@ export async function clearBell(page: Page, stepMs: number) {
   await page.keyboard.press('Escape')
   await bell.waitFor({ state: 'detached', timeout: stepMs })
 }
+
+/** Runs a setup step; with MORTAR_RENDER_TIMING set, prints how long it took, so slow setups can be told from slow quiet waits. */
+export async function timed<T>(name: string, step: string, fn: () => Promise<T>): Promise<T> {
+  const start = performance.now()
+  try {
+    return await fn()
+  } finally {
+    if (process.env.MORTAR_RENDER_TIMING) {
+      console.log(`TIMING ${name} | ${step} ${Math.round(performance.now() - start)} ms`)
+    }
+  }
+}
