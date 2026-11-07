@@ -469,11 +469,6 @@ msgstr ""
 msgid "This profile skips updates from this source for this mod."
 msgstr ""
 
-#. placeholder {0}: denied.length - SHOWN
-#: src/console/SandboxNote.tsx
-msgid "{0, plural, one {and # more} other {and # more}}"
-msgstr ""
-
 #: src/console/BisectDialog.tsx
 msgid "The original profile was not changed."
 msgstr ""
@@ -488,10 +483,6 @@ msgstr ""
 
 #: src/console/LineMenu.tsx
 msgid "Hide this message"
-msgstr ""
-
-#: src/console/SandboxNote.tsx
-msgid "If a mod needs one of these folders, allow its folder here, or turn off “Sandbox the game” on the Play page."
 msgstr ""
 
 #: src/console/RunProblems.tsx
@@ -525,6 +516,10 @@ msgstr ""
 #: src/console/HelpDialog.tsx
 #: src/console/LogActions.tsx
 msgid "Log copied"
+msgstr ""
+
+#: src/console/SandboxNote.tsx
+msgid "{count, plural, one {This run was sandboxed: the game could write # folder} other {This run was sandboxed: the game could write # folders}}"
 msgstr ""
 
 #: src/console/ConsoleTab.tsx
@@ -611,6 +606,10 @@ msgstr ""
 msgid "Written {repeat} times in a row"
 msgstr ""
 
+#: src/console/SandboxNote.tsx
+msgid "{count, plural, one {and # more} other {and # more}}"
+msgstr ""
+
 #: src/console/LineMenu.tsx
 msgid "Hide this message from {name}"
 msgstr ""
@@ -637,11 +636,6 @@ msgstr ""
 
 #: src/console/useStartupReports.ts
 msgid "Could not cancel the measured launch"
-msgstr ""
-
-#. placeholder {0}: data.writable.length
-#: src/console/SandboxNote.tsx
-msgid "{0, plural, one {This run was sandboxed: the game could write # folder} other {This run was sandboxed: the game could write # folders}}"
 msgstr ""
 
 #: src/console/useBridgePerf.ts
@@ -1080,6 +1074,10 @@ msgstr ""
 #: src/console/PerformanceCards.tsx
 #: src/console/StartupTable.tsx
 msgid "In game"
+msgstr ""
+
+#: src/console/SandboxNote.tsx
+msgid "If a mod needs one of these folders, allow its folder here, or disable \"Sandbox the game\" on the Play page."
 msgstr ""
 
 #: src/console/StartupSections.tsx

@@ -177,10 +177,13 @@ function ChangedFiles({ paths }: { paths: string[] }) {
         variant="body2"
         sx={{ fontWeight: 600, color: SHARE_CARD.muted, cursor: 'pointer' }}
       >
-        {plural(paths.length, {
-          one: '# file changed while playing is included',
-          other: '# files changed while playing are included',
-        })}
+        {plural(
+          { count: paths.length },
+          {
+            one: '# file changed while playing is included',
+            other: '# files changed while playing are included',
+          },
+        )}
       </Typography>
       <Box component="ul" sx={cardList}>
         {paths.map((p) => (

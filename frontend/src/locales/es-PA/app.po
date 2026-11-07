@@ -1526,11 +1526,6 @@ msgstr ""
 msgid "Could not clone the project"
 msgstr ""
 
-#. placeholder {0}: paths.length
-#: src/share/ImportProblems.tsx
-msgid "{0, plural, one {# file changed while playing is included} other {# files changed while playing are included}}"
-msgstr ""
-
 #: src/commandPalette/CommandPalette.tsx
 msgid "Mods and profiles"
 msgstr ""
@@ -4256,6 +4251,10 @@ msgstr ""
 
 #: src/firstrun/LoaderStep.tsx
 msgid "Could not set it in {launcher}"
+msgstr ""
+
+#: src/share/ImportProblems.tsx
+msgid "{count, plural, one {# file changed while playing is included} other {# files changed while playing are included}}"
 msgstr ""
 
 #: src/firstrun/LoaderStep.tsx

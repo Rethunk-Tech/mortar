@@ -469,11 +469,6 @@ msgstr "Mortar"
 msgid "This profile skips updates from this source for this mod."
 msgstr "This profile skips updates from this source for this mod."
 
-#. placeholder {0}: denied.length - SHOWN
-#: src/console/SandboxNote.tsx
-msgid "{0, plural, one {and # more} other {and # more}}"
-msgstr "{0, plural, one {and # more} other {and # more}}"
-
 #: src/console/BisectDialog.tsx
 msgid "The original profile was not changed."
 msgstr "The original profile was not changed."
@@ -489,10 +484,6 @@ msgstr "This mod is pinned in this profile, so Mortar does not offer updates for
 #: src/console/LineMenu.tsx
 msgid "Hide this message"
 msgstr "Hide this message"
-
-#: src/console/SandboxNote.tsx
-msgid "If a mod needs one of these folders, allow its folder here, or turn off “Sandbox the game” on the Play page."
-msgstr "If a mod needs one of these folders, allow its folder here, or turn off “Sandbox the game” on the Play page."
 
 #: src/console/RunProblems.tsx
 msgid "Update"
@@ -526,6 +517,10 @@ msgstr "startup_preferences is missing; skipped profile game settings."
 #: src/console/LogActions.tsx
 msgid "Log copied"
 msgstr "Log copied"
+
+#: src/console/SandboxNote.tsx
+msgid "{count, plural, one {This run was sandboxed: the game could write # folder} other {This run was sandboxed: the game could write # folders}}"
+msgstr "{count, plural, one {This run was sandboxed: the game could write # folder} other {This run was sandboxed: the game could write # folders}}"
 
 #: src/console/ConsoleTab.tsx
 msgid "Filter by level or mod, and use Save log or Copy log to pass this run on."
@@ -611,6 +606,10 @@ msgstr "Startup time by mod"
 msgid "Written {repeat} times in a row"
 msgstr "Written {repeat} times in a row"
 
+#: src/console/SandboxNote.tsx
+msgid "{count, plural, one {and # more} other {and # more}}"
+msgstr "{count, plural, one {and # more} other {and # more}}"
+
 #: src/console/LineMenu.tsx
 msgid "Hide this message from {name}"
 msgstr "Hide this message from {name}"
@@ -638,11 +637,6 @@ msgstr "Levels"
 #: src/console/useStartupReports.ts
 msgid "Could not cancel the measured launch"
 msgstr "Could not cancel the measured launch"
-
-#. placeholder {0}: data.writable.length
-#: src/console/SandboxNote.tsx
-msgid "{0, plural, one {This run was sandboxed: the game could write # folder} other {This run was sandboxed: the game could write # folders}}"
-msgstr "{0, plural, one {This run was sandboxed: the game could write # folder} other {This run was sandboxed: the game could write # folders}}"
 
 #: src/console/useBridgePerf.ts
 msgid "Could not stop measuring"
@@ -1081,6 +1075,10 @@ msgstr "The game was still loading after the title screen showed"
 #: src/console/StartupTable.tsx
 msgid "In game"
 msgstr "In game"
+
+#: src/console/SandboxNote.tsx
+msgid "If a mod needs one of these folders, allow its folder here, or disable \"Sandbox the game\" on the Play page."
+msgstr "If a mod needs one of these folders, allow its folder here, or disable \"Sandbox the game\" on the Play page."
 
 #: src/console/StartupSections.tsx
 msgid "{loader}'s preloader patches the game, then {app} starts it"

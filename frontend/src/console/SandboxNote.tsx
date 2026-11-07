@@ -48,10 +48,13 @@ export function SandboxNote({
     >
       <Tooltip title={<Box sx={{ whiteSpace: 'pre-line' }}>{data.writable.join('\n')}</Box>}>
         <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
-          {plural(data.writable.length, {
-            one: 'This run was sandboxed: the game could write # folder',
-            other: 'This run was sandboxed: the game could write # folders',
-          })}
+          {plural(
+            { count: data.writable.length },
+            {
+              one: 'This run was sandboxed: the game could write # folder',
+              other: 'This run was sandboxed: the game could write # folders',
+            },
+          )}
         </Typography>
       </Tooltip>
       {denied.length > 0 ? (
@@ -69,7 +72,7 @@ export function SandboxNote({
             {t`The sandbox hid folders from the game or a mod`}
           </Typography>
           <Typography sx={{ fontSize: 'base.fontSize' }}>
-            {t`If a mod needs one of these folders, allow its folder here, or turn off “Sandbox the game” on the Play page.`}
+            {t`If a mod needs one of these folders, allow its folder here, or disable "Sandbox the game" on the Play page.`}
           </Typography>
           <Box
             component="ul"
@@ -99,7 +102,7 @@ export function SandboxNote({
           </Box>
           {denied.length > SHOWN ? (
             <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary' }}>
-              {plural(denied.length - SHOWN, { one: 'and # more', other: 'and # more' })}
+              {plural({ count: denied.length - SHOWN }, { one: 'and # more', other: 'and # more' })}
             </Typography>
           ) : null}
         </Box>
