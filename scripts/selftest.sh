@@ -1269,7 +1269,7 @@ PYEOF
 # MORTAR_LIVE_HOST_PLUGINS and MORTAR_LIVE_CLIENT_PLUGINS list what each copy gets (space separated .dll files, copied to
 # BepInEx/plugins, or .zip packages, unpacked into BepInEx/plugins/<name>); DevLaunch belongs in both. The run waits for
 # a "LIVETEST summary" line in the host's BepInEx log (MORTAR_LIVE_TIMEOUT seconds, default 600), prints every LIVETEST
-# line of both logs, and passes when the summary has no FAIL. A failed run keeps its folder for the logs.
+# line of both logs, and passes when the summary has no FAIL and the client logged MORTAR_LIVE_EXPECT_CLIENT, if set. A failed run keeps its folder for the logs.
 live_lobby() {
   regress_sandbox -live
   verdict=FAIL
@@ -1363,6 +1363,10 @@ EOF
   fi
   if [ ${#failures[@]} -eq 0 ]; then
     live_wait "$hostlog" 'LIVETEST summary' "$timeout" || failures+=("no LIVETEST summary within ${timeout}s")
+  fi
+  # A check whose result only the client sees (a host without the mod under test) names the line the client must log.
+  if [ -n "${MORTAR_LIVE_EXPECT_CLIENT:-}" ] && [ ${#failures[@]} -eq 0 ]; then
+    live_wait "$clientlog" "$MORTAR_LIVE_EXPECT_CLIENT" 60 || failures+=("the client never logged '$MORTAR_LIVE_EXPECT_CLIENT'; see $clientlog")
   fi
   summary=$(grep -h 'LIVETEST summary' "$hostlog" 2>/dev/null | tail -1 || true)
   if [ -n "$summary" ] && [ ${#failures[@]} -eq 0 ] && ! grep -q ' [1-9][0-9]* FAIL' <<<"$summary"; then verdict=PASS; fi
