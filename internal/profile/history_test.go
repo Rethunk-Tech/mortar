@@ -305,6 +305,76 @@ func TestProfileUpdateKeepsFilesWhenHistoryFails(t *testing.T) {
 	}
 }
 
+// A queue item that names a batch nobody opened (a replaced mod's item mints one, and a batch closed before its
+// downloads finish leaves one behind) must not rewrite the newest event: that event belongs to its own change, and
+// diffed against nothing it reads as the whole profile changing.
+func TestHistoryBatchClosedRecordsNothing(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	for _, key := range []string{"a", "b", "c"} {
+		e.item(t, key, map[string]string{"manifest.json": manifestJSON(key)})
+	}
+	p := mustCreate(t, e, "Farm")
+	e.setHistoryQuiet(p.ID, true)
+	for _, key := range []string{"a", "b", "c"} {
+		if _, err := e.AddEntry("stardew", p.ID, key, Source{}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	e.setHistoryQuiet(p.ID, false)
+	if _, err := e.recordSnapshot("stardew", p.ID, historyImported, HistoryEvent{Change: ChangeImported}, 3); err != nil {
+		t.Fatal(err)
+	}
+	imported := e.mustHistory(t, p.ID)
+	if len(imported) != 1 {
+		t.Fatalf("history = %+v, want the one import event", imported)
+	}
+	id, err := e.RecordHistoryBatch("stardew", p.ID, "never-opened")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if id != "" {
+		t.Fatalf("recorded %q for a batch that was never opened", id)
+	}
+	events := e.mustHistory(t, p.ID)
+	if len(events) != 1 || !reflect.DeepEqual(events[0], imported[0]) {
+		t.Fatalf("history = %+v, want the import event untouched", events)
+	}
+}
+
+// A history written by a build that recorded one change twice reads as the one change it was.
+func TestHistoryReadCollapsesAnEventRecordedTwice(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	p := addFarmMod(t, e)
+	dir, err := e.profileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	head := e.mustHistory(t, p.ID)[0]
+	at := time.Date(2026, 11, 7, 12, 0, 0, 0, time.UTC)
+	doubled := HistoryEvent{Kind: historyBulk, Change: ChangeMods, Count: 2, At: at, SnapshotID: head.SnapshotID}
+	first, second := doubled, doubled
+	first.ID, second.ID = "one", "two"
+	data := emptyHistoryAt(dir)
+	data.Counted = true
+	data.Events = []HistoryEvent{head, first, second}
+	if err := writeHistory(dir, data, 0); err != nil {
+		t.Fatal(err)
+	}
+	events, err := e.History("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 2 {
+		t.Fatalf("history = %+v, want the added event and one of the double", events)
+	}
+	if events[0].ID != "one" || events[0].Count != 2 {
+		t.Fatalf("doubled event = %+v, want the first of the pair once", events[0])
+	}
+}
+
 func TestHistoryBatchRecordsOneUpdatedSnapshot(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
