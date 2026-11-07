@@ -5,6 +5,7 @@ import { GitBranch } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 import {
   Clone,
+  DefaultProjectsDir,
   Detect,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
@@ -40,7 +41,14 @@ export function CloneDialog({
   useEffect(() => {
     if (open) {
       setRepo('')
-      setParent(readStored(REMEMBERED, {}, isRemembered).parent ?? '')
+      const remembered = readStored(REMEMBERED, {}, isRemembered).parent
+      setParent(remembered ?? '')
+      if (!remembered) {
+        // The folder New mod starts from when none is remembered.
+        DefaultProjectsDir()
+          .then((dir) => setParent((p) => p || dir))
+          .catch(reportUnexpected)
+      }
     }
   }, [open])
   const pick = () => {

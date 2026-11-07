@@ -742,3 +742,11 @@ func gitIn(t *testing.T, svc *Service, dir string, args ...string) string {
 	}
 	return strings.TrimSpace(string(out))
 }
+
+func TestToolsProjectsDirIsTheDefaultCloneDirToo(t *testing.T) {
+	svc := &Service{Home: t.TempDir()}
+	want := filepath.Join(svc.Home, "Projects")
+	if got := svc.DefaultProjectsDir(); got != want {
+		t.Fatalf("DefaultProjectsDir = %q, want %q", got, want)
+	}
+}

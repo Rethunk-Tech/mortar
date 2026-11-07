@@ -227,11 +227,16 @@ func (s *Service) Tools(ctx context.Context, gameID string) Tools {
 	if len(t.GitHubOwners) > 0 {
 		t.GitHubUser = t.GitHubOwners[0].Login
 	}
-	t.ProjectsDir = filepath.Join(s.Home, "Projects")
+	t.ProjectsDir = s.DefaultProjectsDir()
 	if inst, err := game.ResolveInstall(s.Home, s.Settings.Get(), gameID, ""); err == nil {
 		t.GameDir = inst.Dir
 	}
 	return t
+}
+
+// DefaultProjectsDir is where a new or cloned project goes unless the player picked a folder before.
+func (s *Service) DefaultProjectsDir() string {
+	return filepath.Join(s.Home, "Projects")
 }
 
 // GitHubOwner is a GitHub account and its avatar's URL.
