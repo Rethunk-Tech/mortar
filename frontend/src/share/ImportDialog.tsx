@@ -265,11 +265,7 @@ function Body({ request }: { request: ImportRequest }) {
           {preview.collection ? <CollectionNotes collection={preview.collection} /> : null}
           {hasMods ? (
             <Tiles mods={preview.mods} excluded={flow.excluded} onToggle={flow.toggle} />
-          ) : (
-            <Typography sx={{ p: space.pad, textAlign: 'center', color: 'text.secondary' }}>
-              {t`This profile has no mods to download`}
-            </Typography>
-          )}
+          ) : null}
         </Box>
       ) : (
         <ImportPane flow={flow} game={game} close={close} manager={managers.body} />

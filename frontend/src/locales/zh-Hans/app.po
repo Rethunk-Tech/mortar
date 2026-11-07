@@ -3432,10 +3432,6 @@ msgstr ""
 msgid "Profile backed up"
 msgstr ""
 
-#: src/share/ImportDialog.tsx
-msgid "This profile has no mods to download"
-msgstr ""
-
 #: src/share/ModpackDialog.tsx
 msgid "Letters, digits and underscores only."
 msgstr ""

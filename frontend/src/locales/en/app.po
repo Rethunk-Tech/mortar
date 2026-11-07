@@ -3438,10 +3438,6 @@ msgstr "Could not close the window"
 msgid "Profile backed up"
 msgstr "Profile backed up"
 
-#: src/share/ImportDialog.tsx
-msgid "This profile has no mods to download"
-msgstr "This profile has no mods to download"
-
 #: src/share/ModpackDialog.tsx
 msgid "Letters, digits and underscores only."
 msgstr "Letters, digits and underscores only."
