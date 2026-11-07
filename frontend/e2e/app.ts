@@ -91,8 +91,10 @@ export async function openGameSelect(page: Page) {
 
 /** Opens Mortar's settings from the Mortar menu. */
 export async function openSettings(page: Page) {
-  await page.getByRole('button', { name: 'Mortar menu' }).click()
-  await page.getByRole('menuitem', { name: /^Mortar settings/ }).click()
+  await sub('open Mortar menu', () => page.getByRole('button', { name: 'Mortar menu' }).click())
+  await sub('pick Mortar settings', () =>
+    page.getByRole('menuitem', { name: /^Mortar settings/ }).click(),
+  )
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
@@ -172,8 +174,13 @@ export async function clearBell(page: Page, stepMs: number) {
   await bell.waitFor({ state: 'detached', timeout: stepMs })
 }
 
+let timingCase = ''
+
 /** Runs a setup step; with MORTAR_RENDER_TIMING set, prints how long it took, so slow setups can be told from slow quiet waits. */
 export async function timed<T>(name: string, step: string, fn: () => Promise<T>): Promise<T> {
+  if (!step.startsWith(' ')) {
+    timingCase = name
+  }
   const start = performance.now()
   try {
     return await fn()
@@ -183,3 +190,6 @@ export async function timed<T>(name: string, step: string, fn: () => Promise<T>)
     }
   }
 }
+
+/** A step inside the setup `timed` is running, printed indented under its case. */
+export const sub = <T>(step: string, fn: () => Promise<T>) => timed(timingCase, `  ${step}`, fn)

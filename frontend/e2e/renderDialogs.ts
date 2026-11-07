@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import type { Page } from '@playwright/test'
-import { openGameSelect, openSettings } from './app.ts'
+import { openGameSelect, openSettings, sub } from './app.ts'
 import { detailsCases } from './detailsCases.ts'
 import { flatpakSdkCases } from './flatpakSdkCase.ts'
 import { flowCases } from './flowCases.ts'
@@ -26,10 +26,11 @@ export function dialogKit(h: Helpers) {
   const { toWorkspace, tab } = h
 
   // The report pictures each case after it ends, so a case closes the dialog the one before it left open.
-  async function ready(page: Page) {
-    await closeAll(page)
-    await toWorkspace(page)
-  }
+  const ready = (page: Page) =>
+    sub('ready', async () => {
+      await closeAll(page)
+      await toWorkspace(page)
+    })
   const shown = (page: Page) => page.getByRole('dialog').last().waitFor()
   const pick = (page: Page, item: RegExp) => page.getByRole('menuitem', { name: item }).click()
   const button = (page: Page, name: RegExp) => page.getByRole('button', { name }).last().click()

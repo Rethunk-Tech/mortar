@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Locator, Page } from '@playwright/test'
-import { escapeRegExp } from './app.ts'
+import { escapeRegExp, sub } from './app.ts'
 import { clickBackdrop } from './menuKit.ts'
 
 const CLOSE_TRIES = 4
@@ -11,7 +11,8 @@ const CLOSE_WAIT_MS = 1000
 const overlays = (page: Page) =>
   page.getByRole('dialog').or(page.getByRole('listbox')).or(page.getByRole('menu'))
 // A form dialog with edits answers Escape with "Discard changes?", which Escape only dismisses again.
-export async function closeAll(page: Page) {
+export const closeAll = (page: Page) => sub('closeAll', () => closeOverlays(page))
+async function closeOverlays(page: Page) {
   const discard = page.getByRole('dialog', { name: 'Discard changes?' }).getByRole('button', {
     name: 'Discard',
   })
@@ -71,7 +72,9 @@ export async function closeAll(page: Page) {
 }
 
 /** Whether Escape could still lead to the workspace: not there yet, and a game is open to go back to. Closes dialogs first, as they hide the tabs. */
-export async function backable(page: Page, workspaceTabs: Locator) {
+export const backable = (page: Page, workspaceTabs: Locator) =>
+  sub('backable', () => closeAndCheck(page, workspaceTabs))
+async function closeAndCheck(page: Page, workspaceTabs: Locator) {
   await closeAll(page)
   await clearSearch(page)
   return !(
@@ -174,7 +177,9 @@ async function currentGame(page: Page): Promise<string> {
 }
 
 /** Opens a game from the title bar's game menu, which reopens that game's last profile. */
-export async function openGame(page: Page, workspaceTabs: Locator, name: string) {
+export const openGame = (page: Page, workspaceTabs: Locator, name: string) =>
+  sub(`openGame ${name}`, () => switchGame(page, workspaceTabs, name))
+async function switchGame(page: Page, workspaceTabs: Locator, name: string) {
   if ((await currentGame(page)) === name) {
     return
   }
@@ -203,7 +208,9 @@ export async function rememberMainGame(page: Page, profile: string) {
  * Closes what a case left open and, from the game select page, opens the run's profile, without the reload that
  * lands the run again; false when neither shows the workspace.
  */
-export async function reopenMainProfile(page: Page, workspaceTabs: Locator) {
+export const reopenMainProfile = (page: Page, workspaceTabs: Locator) =>
+  sub('reopenMainProfile', () => reopenProfile(page, workspaceTabs))
+async function reopenProfile(page: Page, workspaceTabs: Locator) {
   await closeAll(page)
   if (await workspaceTabs.isVisible()) {
     return true
