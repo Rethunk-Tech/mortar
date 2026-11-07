@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/Rethunk-Tech/go-gameproc"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -25,7 +26,7 @@ func (s *Service) CancelLaunch(ctx context.Context, gameID string) error {
 			// A game already up may still be loading its mods, which holds off a polite close until they have all
 			// loaded, so a cancel ends it outright here too.
 			if s.stoppable(sl) {
-				return s.endSlot(sl, terminate)
+				return s.endSlot(sl, func(p gameproc.Process) error { return s.terminate(sl, p) })
 			}
 			continue
 		}
@@ -50,7 +51,7 @@ func (s *Service) CancelLaunch(ctx context.Context, gameID string) error {
 			errs = append(errs, err)
 		}
 		for _, p := range procs {
-			errs = append(errs, stopError(terminate(p)))
+			errs = append(errs, stopError(s.terminate(sl, p)))
 		}
 		cancel()
 		if handedOnly {
@@ -95,7 +96,7 @@ func (s *Service) endLateStart(ctx context.Context, sl slot) {
 			continue
 		}
 		for _, p := range procs {
-			if err := terminate(p); err != nil {
+			if err := s.terminate(sl, p); err != nil {
 				log.Printf("launch: %s: ending the game started after its launch was cancelled: %v", sl.ID(), err)
 			}
 		}

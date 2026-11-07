@@ -1643,15 +1643,35 @@ func (s *Service) stoppable(sl slot) bool {
 // quits, which copies share.
 func (s *Service) stopSlot(ctx context.Context, g slot) error {
 	return s.endSlot(g, func(p gameproc.Process) error {
+		if !s.stillRuns(g, p) {
+			return nil
+		}
 		if game.TestJoiner(p.Args) {
-			return terminate(p)
+			return gameproc.Terminate(p.PID, stopGrace)
 		}
 		return gameproc.Stop(ctx, p, stopGrace)
 	})
 }
 
-// terminate ends a process outright, without first asking it to close.
-func terminate(p gameproc.Process) error { return gameproc.Terminate(p.PID, stopGrace) }
+// terminate ends a process outright, without first asking it to close, unless its pid now belongs to another program:
+// the listing p came from may be older than an earlier process's grace period, and a pid can be reused in that time.
+func (s *Service) terminate(g slot, p gameproc.Process) error {
+	if !s.stillRuns(g, p) {
+		return nil
+	}
+	return gameproc.Terminate(p.PID, stopGrace)
+}
+
+// stillRuns reports whether p, listed earlier, is still the same process of g's install.
+func (s *Service) stillRuns(g slot, p gameproc.Process) bool {
+	procs, err := s.gameProcs(g)
+	if err != nil {
+		return false
+	}
+	return slices.ContainsFunc(procs, func(q gameproc.Process) bool {
+		return q.PID == p.PID && q.Exe == p.Exe && (q.Start.IsZero() || p.Start.IsZero() || q.Start.Equal(p.Start))
+	})
+}
 
 // endSlot ends the game's processes with end and records the run as stopped from Mortar.
 func (s *Service) endSlot(g slot, end func(gameproc.Process) error) error {
