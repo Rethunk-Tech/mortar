@@ -1679,6 +1679,10 @@ msgstr "Combine it with closed code"
 msgid "Off"
 msgstr "Off"
 
+#: src/launch/events.ts
+msgid "Mortar keeps using the copy signed on {date}. Check your connection and try again."
+msgstr "Mortar keeps using the copy signed on {date}. Check your connection and try again."
+
 #: src/queue/QueueSheet.tsx
 msgid "Queue"
 msgstr "Queue"
@@ -2714,6 +2718,10 @@ msgstr "{game} is now {installed}. This profile last launched on {recorded}."
 #: src/install/OverlayPlaceDialog.tsx
 msgid "Main mod's folder"
 msgstr "Main mod's folder"
+
+#: src/launch/events.ts
+msgid "The game catalog could not be refreshed"
+msgstr "The game catalog could not be refreshed"
 
 #: src/nxm/store.ts
 msgid "The link was made for another {source} account than the one signed in."
@@ -4129,6 +4137,7 @@ msgid "From another mod manager"
 msgstr "From another mod manager"
 
 #: src/develop/GameCodeDialog.tsx
+#: src/launch/events.ts
 msgid "Try again"
 msgstr "Try again"
 

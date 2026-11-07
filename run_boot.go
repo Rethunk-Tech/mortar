@@ -1281,8 +1281,18 @@ func (c *boot) storeMaintenance() error {
 	return nil
 }
 
+// tellIfCatalogStale lets the window offer a retry when the catalog in use was signed long ago, whether the refresh
+// failed or was skipped.
+func (c *boot) tellIfCatalogStale() {
+	m := c.componentClient.Manifest()
+	if c.app != nil && m.Stale(time.Now()) {
+		c.app.Event.Emit(game.CatalogStaleEvent, game.CatalogStale{Issued: m.IssuedAt().Format(time.RFC3339)})
+	}
+}
+
 func (c *boot) catalogRefresh() error {
 	go func() {
+		defer c.tellIfCatalogStale()
 		failurePath := filepath.Join(c.dataDir, "cache", "components-failure")
 		if b, err := safefs.ReadFile(failurePath); err == nil {
 			if at, err := time.Parse(time.RFC3339Nano, strings.TrimSpace(string(b))); err == nil && time.Since(at) < time.Hour {
@@ -1342,6 +1352,10 @@ func (c *boot) windowFuncs(updateCtx context.Context) error {
 		}
 		c.window.Show().Focus()
 	}
+	c.app.Event.On(game.CatalogRetryEvent, func(*application.CustomEvent) {
+		_ = safefs.Remove(filepath.Join(c.dataDir, "cache", "components-failure"))
+		_ = c.catalogRefresh()
+	})
 	pongs := make(chan struct{}, 1)
 	c.app.Event.On(windowPongEvent, func(*application.CustomEvent) {
 		select {

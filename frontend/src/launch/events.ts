@@ -89,6 +89,24 @@ export function initLaunch() {
       body: data.error ?? '',
     })
   })
+  Events.On('catalog:stale', (event) => {
+    const data = event.data as { issued?: string }
+    const issued = data.issued ? new Date(data.issued) : null
+    const date =
+      issued && !Number.isNaN(issued.getTime()) ? issued.toLocaleDateString(i18n.locale) : ''
+    useToasts.getState().push({
+      kind: 'info',
+      topic: 'catalog-stale',
+      title: i18n._(msg`The game catalog could not be refreshed`),
+      body: i18n._(
+        msg`Mortar keeps using the copy signed on ${date}. Check your connection and try again.`,
+      ),
+      action: {
+        label: i18n._(msg`Try again`),
+        run: () => Events.Emit('catalog:retry', ''),
+      },
+    })
+  })
   Events.On('launch:settings-restore-warning', (event) => {
     const data = event.data as { error?: string }
     toastError(i18n._(msg`Could not restore profile game settings`), data.error)

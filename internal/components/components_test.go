@@ -1056,3 +1056,24 @@ func TestValidateRefusesATemplateCommitThatIsNotAFullSHA(t *testing.T) {
 		}
 	}
 }
+
+func TestACatalogSignedOverFourteenDaysAgoIsStaleButStillDecodes(t *testing.T) {
+	t.Parallel()
+	signed := time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC)
+	m := Manifest{Serial: uint64(signed.Unix())}
+	if !m.IssuedAt().Equal(signed) {
+		t.Fatalf("issued %v, want %v", m.IssuedAt(), signed)
+	}
+	for at, want := range map[time.Time]bool{
+		signed.Add(StaleAfter):               false,
+		signed.Add(StaleAfter + time.Second): true,
+		signed.Add(-time.Hour):               false,
+	} {
+		if got := m.Stale(at); got != want {
+			t.Errorf("stale at %v = %v, want %v", at, got, want)
+		}
+	}
+	if (Manifest{}).Stale(signed) {
+		t.Error("a manifest with no serial has no age to judge")
+	}
+}

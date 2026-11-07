@@ -16,6 +16,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -1365,6 +1366,22 @@ type Manifest struct {
 	// NeedsNewer lists the games Decode left out because their minVersion is newer than this Mortar.
 	NeedsNewer []string `json:"-"`
 }
+
+// StaleAfter is how old a catalog may get before Mortar tells the player it could not refresh it.
+const StaleAfter = 14 * 24 * time.Hour
+
+// IssuedAt is when the catalog was signed: the generator makes the serial the signing time in Unix seconds (a serial
+// that would not rise is bumped by one), so the signature already covers it and no older Mortar meets a new field.
+func (m Manifest) IssuedAt() time.Time {
+	seconds := int64(0)
+	if m.Serial <= math.MaxInt64 {
+		seconds = int64(m.Serial)
+	}
+	return time.Unix(seconds, 0).UTC()
+}
+
+// Stale reports a catalog signed more than StaleAfter before now. The copy stays in use; this only says it is not new.
+func (m Manifest) Stale(now time.Time) bool { return m.Serial > 0 && now.Sub(m.IssuedAt()) > StaleAfter }
 
 // AuthorAliases is one person's names on the mod sites (a Thunderstore team and a GitHub account, say), which Browse
 // counts as one author when it folds the same mod from two sites into one card.

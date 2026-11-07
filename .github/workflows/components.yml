@@ -1,6 +1,9 @@
 name: Components
 
 on:
+  # A weekly signing keeps the catalog's age under the 14 days after which Mortar says it could not refresh.
+  schedule:
+    - cron: '17 6 * * 1'
   workflow_dispatch:
   repository_dispatch:
     types: [components]
