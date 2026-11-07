@@ -7,6 +7,7 @@ Mortar is a desktop mod manager for several games (`mortar games` lists the cata
 - Test in the Wails dev server's browser view, and with the real game when a test needs it, always against a copied game folder (never symlinks into a real install: the SMAPI installer writes through them), stopped by its recorded PID.
 - Browser self-tests use the `scripts/selftest.sh` sandbox ([HUMANS.md](HUMANS.md#run-and-build); the script's header lists every subcommand), with `restart` after changes.
 - Your own sandbox (`MORTAR_SELFTEST_DIR=/var/tmp/<name>`, 2 to 6 GB) ends with `selftest.sh destroy` when the task is done.
+- A sandbox folder is deleted only by `selftest.sh destroy` or `scripts/rm-sandbox.sh`, never `rm -rf`, `rmSync` or `find -delete`: its hidden display's document portal and gvfs mount the user's real shared files inside it, and a recursive delete through them deletes the originals.
 - Give each hidden-display regress or matrix run its own `MORTAR_LAUNCH_SESSION` key ([cap](docs/testing.md#sandbox-game-launches)). Launch only against a sandbox copy, never on the maintainer's screen or real data.
 - The maintainer owns no Steam Deck and no Valheim install; the faked gamepad and sandboxed fixtures cover them.
 - To try a template before pushing it, start Mortar (or the sandbox) with `MORTAR_DEV_TEMPLATE` set to the template's folder or a `.zip` of it; New mod then reads it fresh each time instead of the catalog's tag.
