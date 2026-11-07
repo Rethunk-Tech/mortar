@@ -774,6 +774,10 @@ msgstr ""
 msgid "Sound volume"
 msgstr ""
 
+#: src/settings/sections/LoaderRow.tsx
+msgid "Only versions in Mortar's signed catalog are listed; a newer release appears with the next weekly catalog."
+msgstr ""
+
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyAntivirus.ts
 #: src/settings/prefCopyGame.ts

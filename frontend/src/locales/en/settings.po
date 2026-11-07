@@ -780,6 +780,10 @@ msgstr "Should Mortar open {source} \"Mod Manager Download\" links, so a click o
 msgid "Sound volume"
 msgstr "Sound volume"
 
+#: src/settings/sections/LoaderRow.tsx
+msgid "Only versions in Mortar's signed catalog are listed; a newer release appears with the next weekly catalog."
+msgstr "Only versions in Mortar's signed catalog are listed; a newer release appears with the next weekly catalog."
+
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyAntivirus.ts
 #: src/settings/prefCopyGame.ts

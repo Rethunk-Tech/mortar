@@ -96,6 +96,7 @@ function LoaderRow({
       ? t`${{ name: loader.name }} ${{ latest: status.latest }} is available`
       : t`Installed and up to date`
   }
+  const catalogNote = t`Only versions in Mortar's signed catalog are listed; a newer release appears with the next weekly catalog.`
   // The status above is what a search matches; the launch state and the version list only feed the controls.
   const relevant = useSettingsMatch(title, detail)
   useEffect(() => {
@@ -127,7 +128,11 @@ function LoaderRow({
   }
   return (
     <>
-      <SettingRow label={title} description={detail} block={installing}>
+      <SettingRow
+        label={title}
+        description={detail ? `${detail}. ${catalogNote}` : catalogNote}
+        block={installing}
+      >
         {installing ? (
           <InstallSteps steps={steps} />
         ) : (
