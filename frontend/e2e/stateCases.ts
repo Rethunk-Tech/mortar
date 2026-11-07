@@ -13,6 +13,7 @@ const GAME_LIST = 2_813_804_068
 const LAUNCH_STATUS = 239_586_243
 const MEASURE_IN_GAME = 1_064_106_242
 const PEEK_IN_GAME = 512_110_599
+const SANDBOX_REPORT = 3_359_515_706
 
 type Stub = (route: Route) => Promise<void>
 
@@ -208,6 +209,7 @@ export function stateCases(
         await reloadUnder(p, tabs)
       },
     },
+    sandboxedRunCase(tabs, tab),
     overlayFieldsCase(tabs, tab),
     {
       name: 'game-page-no-load-order',
@@ -231,4 +233,47 @@ export function stateCases(
       },
     },
   ]
+}
+
+/** A sandboxed run's Console note: the writable folders, and denied paths each with its Allow button. */
+function sandboxedRunCase(
+  tabs: (p: Page) => ReturnType<Page['locator']>,
+  tab: (p: Page, name: string) => Promise<void>,
+): Case {
+  const stub = stubCalls({
+    [SANDBOX_REPORT]: {
+      writable: [
+        '/games/Stardew Valley',
+        '/data/profiles/stardew/main',
+        '/home/render/.config/StardewValley',
+      ],
+      denied: [
+        {
+          path: '/home/render/.config/ExampleMod/settings.json',
+          folder: '/home/render/.config/ExampleMod',
+        },
+        { path: '/home/render/.ssh/id_ed25519', folder: '/home/render/.ssh' },
+        { path: '/home/render/x.json', folder: '' },
+      ],
+      extra: '',
+    },
+  })
+  return {
+    name: 'console-sandboxed-run',
+    setup: async (p) => {
+      await p.route('**/wails/runtime', stub)
+      await reloadUnder(p, tabs)
+      await openGame(p, tabs(p), 'Stardew Valley')
+      await tab(p, 'Console')
+    },
+    run: async (p) => {
+      await p.getByText(/^This run was sandboxed: the game could write 3 folders/).waitFor()
+      await p.getByText('The sandbox hid folders from the game or a mod').waitFor()
+      await p.getByRole('button', { name: /^Allow \/home\/render\/\.config\/ExampleMod/ }).waitFor()
+    },
+    teardown: async (p) => {
+      await p.unroute('**/wails/runtime', stub)
+      await reloadUnder(p, tabs)
+    },
+  }
 }

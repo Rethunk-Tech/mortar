@@ -121,6 +121,12 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
         msg`Starts the game directly, without the ${{ launcher: STEAM }} overlay or playtime, and hides your home folder from it and its mods. The game keeps its install, saves and this profile. Linux only; needs bubblewrap.`,
       ),
     },
+    sandboxExtraFolders: {
+      label: i18n._(msg`Extra folders for the sandboxed game`),
+      description: i18n._(
+        msg`Folders the sandboxed game may also write, separated by a colon. Each must be an absolute path to a folder that exists, and not your home folder itself.`,
+      ),
+    },
     instances: {
       label: i18n._(msg`Instances`),
       description: i18n._(

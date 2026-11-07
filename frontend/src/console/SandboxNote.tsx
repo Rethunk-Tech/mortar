@@ -1,12 +1,14 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Tooltip, Typography } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
 import { SandboxReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { saveOpenPref } from '../profiles/openOverrides.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 
-const NONE = { writable: [], denied: [] }
+const NONE = { writable: [], denied: [], extra: '' }
 const SHOWN = 5
 
 // Says a run was sandboxed and, when its logs show the game or a mod reaching for a folder the sandbox hides, which.
@@ -20,10 +22,10 @@ export function SandboxNote({
   run: string
 }) {
   const { t } = useLingui()
-  const { data } = useLoaded(
+  const { data, reload } = useLoaded(
     () =>
       SandboxReport(game, profile, run).then(
-        (r) => ({ writable: r.writable ?? [], denied: r.denied ?? [] }),
+        (r) => ({ writable: r.writable ?? [], denied: r.denied ?? [], extra: r.extra }),
         () => NONE,
       ),
     [game, profile, run],
@@ -66,14 +68,32 @@ export function SandboxNote({
             {t`The sandbox hid folders from the game or a mod`}
           </Typography>
           <Typography sx={{ fontSize: 'base.fontSize' }}>
-            {t`If a mod needs one of these, turn off “Sandbox the game” for this game or profile on the Play page.`}
+            {t`If a mod needs one of these folders, allow its folder here, or turn off “Sandbox the game” on the Play page.`}
           </Typography>
           <Box
             component="ul"
             sx={{ m: 0, pl: 3, fontFamily: 'monospace', fontSize: 'base.fontSize' }}
           >
             {denied.slice(0, SHOWN).map((p) => (
-              <li key={p}>{p}</li>
+              <li key={p.path}>
+                {p.path}{' '}
+                {p.folder === '' ? null : (
+                  <Button
+                    size="small"
+                    onClick={() =>
+                      saveOpenPref(
+                        game,
+                        'sandboxExtraFolders',
+                        data.extra === '' ? p.folder : `${data.extra}:${p.folder}`,
+                      )
+                        .then(reload)
+                        .catch(reportUnexpected)
+                    }
+                  >
+                    {t`Allow ${{ folder: p.folder }}`}
+                  </Button>
+                )}
+              </li>
             ))}
           </Box>
           {denied.length > SHOWN ? (

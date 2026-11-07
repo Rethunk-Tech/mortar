@@ -112,3 +112,50 @@ func TestDenialsFindsOnlyPathsTheSandboxHides(t *testing.T) {
 		t.Fatalf("got %v, want %v", got, want)
 	}
 }
+
+func TestExtraFoldersRefusesWhatWouldEndTheSandbox(t *testing.T) {
+	root := t.TempDir()
+	home, dir := filepath.Join(root, "home"), filepath.Join(root, "data")
+	for _, d := range []string{home, dir} {
+		if err := os.MkdirAll(d, 0o750); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got, err := ExtraFolders(dir+string(os.PathListSeparator)+dir+"/", home)
+	if err != nil || len(got) != 2 || got[0] != dir {
+		t.Fatalf("a valid list: %v, %v", got, err)
+	}
+	for _, bad := range []string{"relative/dir", "/", home, home + "/", filepath.Join(root, "absent")} {
+		if _, err := ExtraFolders(bad, home); err == nil {
+			t.Fatalf("%q was accepted", bad)
+		}
+	}
+	if got, err := ExtraFolders("", home); err != nil || got != nil {
+		t.Fatalf("an empty list is no folders: %v, %v", got, err)
+	}
+}
+
+func TestAllowableOffersTheNearestFolderBelowHome(t *testing.T) {
+	root := t.TempDir()
+	home := filepath.Join(root, "home")
+	cfg := filepath.Join(home, ".config", "mod")
+	if err := os.MkdirAll(cfg, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	file := filepath.Join(cfg, "a.json")
+	if err := os.WriteFile(file, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := Allowable(file, home); got != cfg {
+		t.Fatalf("a file offers its folder, got %q", got)
+	}
+	if got := Allowable(filepath.Join(cfg, "new", "b.json"), home); got != cfg {
+		t.Fatalf("a missing path offers the nearest folder, got %q", got)
+	}
+	if got := Allowable(filepath.Join(home, "x.json"), home); got != "" {
+		t.Fatalf("home itself is never offered, got %q", got)
+	}
+	if got := Allowable("/mnt/nowhere/x", home); got != "" {
+		t.Fatalf("a hidden root is never offered, got %q", got)
+	}
+}

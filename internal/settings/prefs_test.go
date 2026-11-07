@@ -106,7 +106,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 	overrides := map[string]string{
 		"onPlay": "hide", "backupBeforePlay": "always", "saveBackupsKept": "9",
 		"updateModsBeforePlayDefault": "true", "runsKept": "10", "consoleLogCap": "5000",
-		"parallelDownloads": "4", "downloadSpeedLimit": "5", "pauseDownloadsWhilePlaying": "true", "sandboxLaunch": "true", "updateCheckIntervalMinutes": "30", "checkModUpdatesOnStart": "false",
+		"parallelDownloads": "4", "downloadSpeedLimit": "5", "pauseDownloadsWhilePlaying": "true", "sandboxLaunch": "true", "sandboxExtraFolders": "/tmp", "updateCheckIntervalMinutes": "30", "checkModUpdatesOnStart": "false",
 		"notifyModUpdates": "true", "keepDownloadArchives": "true", "storeRetentionDays": "7",
 		"nxmDefaultProfile": "abc", "defaultModsView": "list", "implicitModsView": "nested", "listGroupBy": "author",
 		"listSortColumn": "version", "listSortDir": "desc", "confirmRemovals": "false",

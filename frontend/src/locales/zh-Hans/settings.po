@@ -1109,6 +1109,10 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
+#: src/settings/prefCopyGame.ts
+msgid "Extra folders for the sandboxed game"
+msgstr ""
+
 #: src/settings/prefCopyAntivirus.ts
 msgid "Custom command"
 msgstr ""
@@ -2042,6 +2046,10 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Badge checks for other profiles"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Folders the sandboxed game may also write, separated by a colon. Each must be an absolute path to a folder that exists, and not your home folder itself."
 msgstr ""
 
 #: src/settings/sections/checkDetail.ts

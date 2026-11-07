@@ -7,11 +7,13 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // sandboxSpec is what a sandboxed launch of profileID may write besides the install and its Proton prefix, which
 // game.Starter adds: the profile, the saves the launch plays, the folders mods are placed in, and the shader caches.
-func (s *Service) sandboxSpec(gameID, profileID string, inst game.Install, plan *launchplan.Plan) (*sandbox.Spec, error) {
+func (s *Service) sandboxSpec(gameID, profileID string, inst game.Install, plan *launchplan.Plan, extra string) (*sandbox.Spec, error) {
 	spec := &sandbox.Spec{Home: s.home, Runtime: os.Getenv("XDG_RUNTIME_DIR")}
 	if spec.Runtime != "" {
 		spec.Sockets = []string{os.Getenv("XAUTHORITY"), filepath.Join(spec.Runtime, "pipewire-0"), filepath.Join(spec.Runtime, "pulse")}
@@ -19,6 +21,11 @@ func (s *Service) sandboxSpec(gameID, profileID string, inst game.Install, plan 
 			spec.Sockets = append(spec.Sockets, filepath.Join(spec.Runtime, wl))
 		}
 	}
+	folders, err := sandbox.ExtraFolders(extra, s.home)
+	if err != nil {
+		return nil, usererr.Wrap(usererr.Invalid, err)
+	}
+	spec.RW = append(spec.RW, folders...)
 	roots, err := s.planRoots(gameID, inst, plan)
 	if err != nil {
 		return nil, err
@@ -68,12 +75,24 @@ type SandboxReport struct {
 	// Writable is the folders the run could write; empty when the run was not sandboxed.
 	Writable []string `json:"writable"`
 	// Denied are the paths its logs show it reached for outside them.
-	Denied []string `json:"denied"`
+	Denied []SandboxDenial `json:"denied"`
+	// Extra is the profile's current list of extra folders, which Allow adds to.
+	Extra string `json:"extra"`
+}
+
+// SandboxDenial is a refused path and the folder to offer allowing for it; empty when none is safe to offer.
+type SandboxDenial struct {
+	Path   string `json:"path"`
+	Folder string `json:"folder"`
 }
 
 // SandboxReport reads run runID (the newest when empty) of a profile.
 func (s *Service) SandboxReport(gameID, profileID, runID string) (SandboxReport, error) {
-	report := SandboxReport{Writable: []string{}, Denied: []string{}}
+	report := SandboxReport{Writable: []string{}, Denied: []SandboxDenial{}}
+	if g := game.Find(gameID); g != nil {
+		scope := settings.Scope{Game: gameID, Install: installOf(g), Profile: profileID}
+		report.Extra = settings.ResolveAt(s.settings.Get(), "sandboxExtraFolders", scope, launchOverrides(s.profiles, gameID, profileID))
+	}
 	runs, err := s.Runs(gameID, profileID)
 	if err != nil {
 		return report, err
@@ -90,7 +109,9 @@ func (s *Service) SandboxReport(gameID, profileID, runID string) (SandboxReport,
 			return report, err
 		}
 		report.Writable = r.Sandbox
-		report.Denied = sandbox.Denials([]string{text, player}, r.Sandbox, s.home)
+		for _, path := range sandbox.Denials([]string{text, player}, r.Sandbox, s.home) {
+			report.Denied = append(report.Denied, SandboxDenial{Path: path, Folder: sandbox.Allowable(path, s.home)})
+		}
 		return report, nil
 	}
 	return report, nil

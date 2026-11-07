@@ -47,6 +47,8 @@ type GameSettings struct {
 	SkipPlayCheck bool `json:"skipPlayCheck"`
 	// SandboxLaunch starts the game directly on Linux inside bubblewrap, with the user's home hidden from it.
 	SandboxLaunch bool `json:"sandboxLaunch"`
+	// SandboxExtraFolders is a path list (the OS separator between folders) of folders a sandboxed game may also write.
+	SandboxExtraFolders string `json:"sandboxExtraFolders,omitempty"`
 	// PauseDownloadsWhilePlaying holds the download queue while a game Mortar launched runs.
 	PauseDownloadsWhilePlaying bool `json:"pauseDownloadsWhilePlaying"`
 	SkipIntro                  bool `json:"skipIntro"`
@@ -263,6 +265,7 @@ var registry = withDefaults([]pref{
 	overridable(loaderPref("smapi", ptrPref("showSmapiConsole", ScopeLoader, func(s Settings, _ string) *bool { return s.ShowSmapiConsole }, func(s *Settings, _ string, on bool) { s.ShowSmapiConsole = &on }))),
 	overridable(gameBool("skipPlayCheck", func(g *GameSettings) *bool { return &g.SkipPlayCheck })),
 	overridable(gameBool("sandboxLaunch", func(g *GameSettings) *bool { return &g.SandboxLaunch })),
+	overridable(gameStr("sandboxExtraFolders", func(g *GameSettings) *string { return &g.SandboxExtraFolders })),
 	overridable(gameBool("pauseDownloadsWhilePlaying", func(g *GameSettings) *bool { return &g.PauseDownloadsWhilePlaying })),
 	overridable(gameBool("skipIntro", func(g *GameSettings) *bool { return &g.SkipIntro })),
 	overridable(gameStr("graphicsApi", func(g *GameSettings) *string { return &g.GraphicsAPI })),
@@ -447,6 +450,7 @@ func mergeGameTail(dst *GameSettings, src GameSettings) {
 	dst.UpdateModsBeforePlayDefault = src.UpdateModsBeforePlayDefault
 	dst.SkipPlayCheck = src.SkipPlayCheck
 	dst.SandboxLaunch = src.SandboxLaunch
+	dst.SandboxExtraFolders = src.SandboxExtraFolders
 	dst.PauseDownloadsWhilePlaying = src.PauseDownloadsWhilePlaying
 	dst.SkipIntro = src.SkipIntro
 	dst.GraphicsAPI = src.GraphicsAPI

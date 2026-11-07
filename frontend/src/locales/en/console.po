@@ -490,6 +490,10 @@ msgstr "This mod is pinned in this profile, so Mortar does not offer updates for
 msgid "Hide this message"
 msgstr "Hide this message"
 
+#: src/console/SandboxNote.tsx
+msgid "If a mod needs one of these folders, allow its folder here, or turn off “Sandbox the game” on the Play page."
+msgstr "If a mod needs one of these folders, allow its folder here, or turn off “Sandbox the game” on the Play page."
+
 #: src/console/RunProblems.tsx
 msgid "Update"
 msgstr "Update"
@@ -791,10 +795,6 @@ msgstr "Performance comparison"
 #: src/console/LogActions.tsx
 msgid "Save log"
 msgstr "Save log"
-
-#: src/console/SandboxNote.tsx
-msgid "If a mod needs one of these, turn off “Sandbox the game” for this game or profile on the Play page."
-msgstr "If a mod needs one of these, turn off “Sandbox the game” for this game or profile on the Play page."
 
 #: src/console/RunProblems.tsx
 msgid "Problems in this run"
@@ -1169,6 +1169,10 @@ msgstr "Now ms"
 #: src/console/StartupSections.tsx
 msgid "Game content"
 msgstr "Game content"
+
+#: src/console/SandboxNote.tsx
+msgid "Allow {folder}"
+msgstr "Allow {folder}"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Compare saved reports"

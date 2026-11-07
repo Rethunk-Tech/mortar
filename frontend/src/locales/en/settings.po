@@ -1115,6 +1115,10 @@ msgstr "Could not trim history"
 msgid "Cancel"
 msgstr "Cancel"
 
+#: src/settings/prefCopyGame.ts
+msgid "Extra folders for the sandboxed game"
+msgstr "Extra folders for the sandboxed game"
+
 #: src/settings/prefCopyAntivirus.ts
 msgid "Custom command"
 msgstr "Custom command"
@@ -2049,6 +2053,10 @@ msgstr "Show the console window"
 #: src/settings/prefCopy.ts
 msgid "Badge checks for other profiles"
 msgstr "Badge checks for other profiles"
+
+#: src/settings/prefCopyGame.ts
+msgid "Folders the sandboxed game may also write, separated by a colon. Each must be an absolute path to a folder that exists, and not your home folder itself."
+msgstr "Folders the sandboxed game may also write, separated by a colon. Each must be an absolute path to a folder that exists, and not your home folder itself."
 
 #: src/settings/sections/checkDetail.ts
 msgid "Browser extension can reach Mortar in {app}"

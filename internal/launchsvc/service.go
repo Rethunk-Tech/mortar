@@ -1080,7 +1080,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		return err
 	}
 	if sandboxed {
-		if env.Sandbox, err = s.sandboxSpec(g.ID(), profileID, inst, plan); err != nil {
+		if env.Sandbox, err = s.sandboxSpec(g.ID(), profileID, inst, plan, settings.ResolveAt(s.settings.Get(), "sandboxExtraFolders", settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, ov)); err != nil {
 			return err
 		}
 	}

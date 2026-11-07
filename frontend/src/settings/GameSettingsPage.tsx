@@ -204,6 +204,7 @@ function GamePages({
                 'updateModsBeforePlayDefault',
                 'skipPlayCheck',
                 'sandboxLaunch',
+                'sandboxExtraFolders',
                 'pauseDownloadsWhilePlaying',
               ]}
               game={game}
