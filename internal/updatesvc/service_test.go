@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 )
 
@@ -63,6 +64,17 @@ func TestPackagedBuildsNeverCheck(t *testing.T) {
 	}
 	if _, err := s.Check(t.Context()); !errors.Is(err, errOff) {
 		t.Fatalf("check %v", err)
+	}
+}
+
+// main wraps http.DefaultTransport for its User-Agent before the updater is configured; a production configure must
+// accept that wrapper.
+func TestProductionConfigureAcceptsTheWrappedDefaultTransport(t *testing.T) {
+	old := http.DefaultTransport
+	http.DefaultTransport = &httpkit.Transport{Base: old, UserAgent: "mortar-test"}
+	t.Cleanup(func() { http.DefaultTransport = old })
+	if err := configure(&Service{}, &fake{}, "1.0.0", []byte("key"), true, "", nil); err != nil {
+		t.Fatal(err)
 	}
 }
 
