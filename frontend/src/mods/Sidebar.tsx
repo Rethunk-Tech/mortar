@@ -24,6 +24,7 @@ import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AlsoAdd } from './AlsoAdd.tsx'
 import { AuthorLink } from './AuthorLink.tsx'
+import { BreakAfterDots } from './breakAfterDots.tsx'
 import { ChangelogDialog } from './ChangelogDialog.tsx'
 import { CompatDetail } from './CompatChip.tsx'
 import { useModIdName } from './contributedColumns.ts'
@@ -83,7 +84,9 @@ function Field({ label, value, hint }: { label: string; value: string; hint?: st
       <Tooltip title={hint ?? ''} disableHoverListener={!hint} describeChild={true}>
         {caption}
       </Tooltip>
-      <Typography sx={{ fontSize: 'base.fontSize', overflowWrap: 'anywhere' }}>{value}</Typography>
+      <Typography sx={{ fontSize: 'base.fontSize', overflowWrap: 'break-word' }}>
+        <BreakAfterDots text={value} />
+      </Typography>
     </Box>
   )
 }
