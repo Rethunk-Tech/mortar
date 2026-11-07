@@ -1,9 +1,9 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-22 10:43-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: es\nPO-Revision-Date: 2026-11-07 20:22+0000\nLast-Translator: Skript <skriptty@users.noreply.hosted.weblate.org>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/mortar/app/es/>\nPlural-Forms: nplurals=2; plural=n != 1;\n"
+msgstr "POT-Creation-Date: 2026-10-22 10:43-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: es\nPO-Revision-Date: 2026-11-07 20:22+0000\nLast-Translator: Damon Blais <albinogeek@users.noreply.hosted.weblate.org>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/mortar/app/es/>\nPlural-Forms: nplurals=2; plural=n != 1;\n"
 
 #: src/saves/SavesTab.tsx
 msgid "No saves match"
-msgstr ""
+msgstr "Ningun guardado coincide"
 
 #: src/launch/SaveWarnDialog.tsx
 msgid "{name} ({path}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
@@ -36,7 +36,7 @@ msgstr "No se pudo abrir la carpeta"
 
 #: src/toasts/EarlierChanges.tsx
 msgid "These changes will be reverted too:"
-msgstr "Estos cambios tambien van a ser revertidos"
+msgstr "Estos cambios tambien van a ser revertidos:"
 
 #: src/develop/CloneDialog.tsx
 #: src/develop/NewModDialog.tsx
@@ -63,7 +63,7 @@ msgstr "{name} fue cambiado en {machine}"
 
 #: src/queue/QueueBody.tsx
 msgid "Press Mod Manager Download on {source}. Mortar picks it up and opens the next page."
-msgstr "Elige descargar administrador de mods en {source}. Mortar lo agarra y abre la proxima pagina"
+msgstr "Elige descargar administrador de mods en {source}. Mortar lo agarra y abre la proxima pagina."
 
 #: src/queue/LargeDownloadDialog.tsx
 msgid "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive."
@@ -185,7 +185,7 @@ msgstr "Probar con"
 
 #: src/develop/draft.ts
 msgid "{name}: cannot start with a dash."
-msgstr "{name}: no puede empezar con una barrita."
+msgstr "{name}: no puede empezar con una barrita"
 
 #: src/share/CollectionNotes.tsx
 msgid "These come from outside {source}, so Mortar does not download them."
