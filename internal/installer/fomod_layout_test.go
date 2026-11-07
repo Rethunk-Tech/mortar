@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"errors"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -58,5 +59,32 @@ func TestFomodSourceBacktracksAcrossCaseVariantFolders(t *testing.T) {
 	}
 	if len(l.Files) != 1 || l.Files[0].Src != "data/y.txt" || l.Files[0].Rel != "k/y.txt" {
 		t.Fatalf("layout %+v", l.Files)
+	}
+}
+
+func TestFomodRefusesSourceOrDestinationOutsideTheMod(t *testing.T) {
+	for name, op := range map[string]string{
+		"source parent":      `<file source="../x" destination="a"/>`,
+		"source absolute":    `<file source="/x" destination="a"/>`,
+		"source backslash":   `<file source="..\x" destination="a"/>`,
+		"dest cleaned out":   `<file source="a.txt" destination="a/../../b"/>`,
+		"dest backslash out": `<file source="a.txt" destination="..\x"/>`,
+		"dest parent":        `<file source="a.txt" destination=".."/>`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			dir := t.TempDir()
+			cfg := `<config><moduleName>M</moduleName><requiredInstallFiles>` + op + `</requiredInstallFiles></config>`
+			testfs.WriteAt(t, filepath.Join(dir, "fomod", "ModuleConfig.xml"), []byte(cfg))
+			testfs.WriteAt(t, filepath.Join(dir, "a.txt"), []byte("x"))
+			g := Game{Loaders: []string{"smapi"}, Targets: []Target{{ID: TargetMods}}}
+			a := Open(dir, "k")
+			i, ok := Pick(a, g)
+			if !ok {
+				t.Fatal("no installer")
+			}
+			if _, err := i.Layout(a, g, nil); !errors.Is(err, ErrUnsafe) {
+				t.Fatalf("err = %v, want ErrUnsafe", err)
+			}
+		})
 	}
 }
