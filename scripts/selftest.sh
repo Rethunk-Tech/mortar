@@ -40,6 +40,7 @@
 # regress --game lethal-company builds its own sandbox, bootstraps a Proton prefix, installs BepInEx and three plugins
 # from Thunderstore (cached in /var/tmp/mortar-regress-cache; MORTAR_REGRESS_OFFLINE=1 proves a rerun needs no network),
 # launches directly under Proton, and requires the plugins to load and the purge to leave the game folder identical.
+# MORTAR_REGRESS_SANDBOX=1 runs those launches inside the opt-in game sandbox and requires the stored runs to say so.
 # MORTAR_REGRESS_EXTRA (local package zips) and MORTAR_REGRESS_EXTRA_PLUGINS (their plugin names) add a mod under test.
 # MORTAR_REGRESS_MATRIX=1 also runs the BepInEx test matrix (scripts/regress-bepinex.sh, docs/bepinex-test-matrix.md)
 # within three launches, the base one and two more, which leaves none for MORTAR_REGRESS_R2_CODE (refused with it); it needs the network and the .NET SDK, and MORTAR_REGRESS_R2_EXPORT=1
@@ -1074,6 +1075,7 @@ PYEOF
     for d in "${gdirs[@]}"; do [ -d "$cache/$d" ] && mkdir -p "$data/$(dirname "$d")" && cp -a "$cache/$d" "$data/$(dirname "$d")/"; done
   fi
   cli settings set --game "$rg_id" defaultLaunchMethod direct >/dev/null
+  [ -n "${MORTAR_REGRESS_SANDBOX:-}" ] && cli settings set --game "$rg_id" sandboxLaunch true >/dev/null
   profile=$(cli profile create "$rg_id" "Regress LC" | cut -f1)
   # The server may already be installing the loader for the new game; a second install waits its turn.
   for _ in $(seq 1 30); do
@@ -1245,6 +1247,12 @@ PYEOF
     [ "$failed" -eq 0 ] || failures+=("matrix: $failed rows failed; see $ROOT/matrix.tsv")
   fi
 
+  # A sandboxed pass must come from runs the sandbox actually wrapped, not from a launch that quietly went around it.
+  if [ -n "${MORTAR_REGRESS_SANDBOX:-}" ]; then
+    local boxed
+    boxed=$(cli runs "$rg_id" "$profile" --json 2>/dev/null | jq '[.[] | select((.sandbox // []) | length > 0)] | length' 2>/dev/null || echo 0)
+    [ "${boxed:-0}" -gt 0 ] || failures+=("sandbox: no stored run of $profile reports sandboxed folders")
+  fi
   [ ${#failures[@]} -eq 0 ] && verdict=PASS
   echo "---- regress $rg_id: $verdict ($((SECONDS - t0))s)"
   echo "profile        $profile"
