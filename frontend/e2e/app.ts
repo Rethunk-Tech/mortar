@@ -137,6 +137,15 @@ export async function waitForQuietNotices(page: Page) {
   }
 }
 
+// The start-up check may serve cached answers and refresh them behind the screen, so the update count would change
+// mid-run; an explicit check settles it before the first shot.
+export async function settleUpdateCheck(page: Page) {
+  await waitForQuietNotices(page)
+  await page.getByRole('button', { name: 'Mortar menu' }).click()
+  await page.getByRole('menuitem', { name: /^Check mods and Mortar for updates/ }).click()
+  await waitForQuietNotices(page)
+}
+
 // Holds for ms on the page's own clock, polled in the page so a hung renderer fails the wait instead of passing it. For
 // dwells that wait on the absence of an event, where no state change exists to wait for.
 export async function dwell(page: Page, ms: number) {

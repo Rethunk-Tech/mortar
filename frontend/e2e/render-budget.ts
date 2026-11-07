@@ -9,8 +9,8 @@ import {
   openProfile,
   openSeedFarm,
   openSettings,
+  settleUpdateCheck,
   timed,
-  waitForQuietNotices,
 } from './app.ts'
 import { serveModTemplate } from './modTemplate.ts'
 import { clickIfPresent, gameSettingsCases, newCases } from './renderCases.ts'
@@ -284,7 +284,7 @@ async function land(page: Page): Promise<number | null> {
     await openProfile(page, biggest)
   }
   await rememberMainGame(page, biggest)
-  await waitForQuietNotices(page)
+  await settleUpdateCheck(page)
   return shownMs
 }
 
