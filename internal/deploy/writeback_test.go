@@ -324,3 +324,28 @@ func TestRecoveryAfterACrashMidRestoreLeavesTheProfilesCopyAlone(t *testing.T) {
 		t.Fatalf("the shared file = %q", got)
 	}
 }
+
+func TestALinkLeftWhereAPlacedFileWasIsRemovedNotWrittenBack(t *testing.T) {
+	t.Parallel()
+	rr := newRootRig(t)
+	m := rr.apply()
+	secret := filepath.Join(rr.root, "secret.txt")
+	write(t, secret, "not ours")
+	dst := filepath.Join(rr.shared, "top.package")
+	if err := os.Remove(dst); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(secret, dst); err != nil {
+		t.Skip("symlinks unavailable:", err)
+	}
+	rr.purge(m)
+	if got := read(filepath.Join(rr.profile, "top.package")); got != "top" {
+		t.Fatalf("the profile's copy took the link target's bytes: %q", got)
+	}
+	if _, err := os.Lstat(dst); !os.IsNotExist(err) {
+		t.Fatalf("the link is still there: %v", err)
+	}
+	if got := read(secret); got != "not ours" {
+		t.Fatalf("the link's target changed: %q", got)
+	}
+}

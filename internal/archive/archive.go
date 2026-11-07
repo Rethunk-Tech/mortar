@@ -48,17 +48,28 @@ func RecoverMalformed(err *error) { ga.RecoverMalformed(err) }
 // Extract unpacks the archive at archivePath into dest, which must exist. It stops at the first failure and leaves
 // what it wrote, so the caller passes a temp directory and discards it on error.
 func Extract(archivePath, dest string) error {
-	f, size, err := openFile(archivePath)
+	f, _, err := openFile(archivePath)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = f.Close() }()
+	return ExtractOpened(f, archivePath, dest)
+}
+
+// ExtractOpened is Extract for an archive the caller already holds open, so what it hashed or checked is what it
+// unpacks even if the path is replaced meanwhile. name is the archive's path, which names its format and the saved file.
+func ExtractOpened(f *os.File, name, dest string) error {
+	info, err := f.Stat()
+	if err != nil {
+		return err
+	}
+	size := info.Size()
 	root, err := os.OpenRoot(dest)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = root.Close() }()
-	return ga.Extract(f, size, originalName(archivePath), root, ga.Options{})
+	return ga.Extract(f, size, originalName(name), root, ga.Options{})
 }
 
 // Options lowers or raises extraction's caps; a zero field takes go-archive's default.

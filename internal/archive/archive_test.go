@@ -116,3 +116,24 @@ func TestExtractNamesFromTheOriginalName(t *testing.T) {
 		t.Fatalf("an empty tar unpacked %d entries", len(got))
 	}
 }
+
+func TestExtractOpenedReadsTheFileItHoldsNotThePath(t *testing.T) {
+	t.Parallel()
+	held := zipAt(t, map[string]string{"held.txt": "held"})
+	other := zipAt(t, map[string]string{"swapped.txt": "swapped"})
+	f, err := os.Open(held)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = f.Close() }()
+	if err := os.Rename(other, held); err != nil {
+		t.Fatal(err)
+	}
+	dest := t.TempDir()
+	if err := ExtractOpened(f, held, dest); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dest, "held.txt")); err != nil {
+		t.Fatalf("the held archive was not the one extracted: %v", err)
+	}
+}

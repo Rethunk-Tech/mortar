@@ -268,6 +268,11 @@ func undoDst(m *Manifest, o Placed, i int, log *opLog) error {
 // file changed since holds the player's or a mod's own data (a script mod's settings): one placed from the profile's copy
 // goes back into that copy, and any other stays.
 func undoUndisplaced(m *Manifest, o Placed, i int, log *opLog) error {
+	// A link a mod left where our file was holds none of our bytes, and hashing it would read, and a write-back copy,
+	// whatever it points at. Removing the link loses nothing.
+	if st, err := os.Lstat(o.Dst); err == nil && st.Mode()&fs.ModeSymlink != 0 {
+		return safefs.Remove(o.Dst)
+	}
 	if h, err := safefs.HashFile(o.Dst, sha256.New()); err == nil {
 		return undoChanged(m, o, i, log, h)
 	}
