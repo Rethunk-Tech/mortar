@@ -2,8 +2,8 @@ git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 h1:N3IGoHHp9pb6mj1cbXbuaSXV/UMKwmbKLf
 git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3/go.mod h1:QtOLZGz8olr4qH2vWK0QH0w0O4T9fEIjMuWpKUsH7nc=
 github.com/BurntSushi/toml v1.6.0 h1:dRaEfpa2VI55EwlIW72hMRHdWouJeRF7TPYhI+AUQjk=
 github.com/BurntSushi/toml v1.6.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
-github.com/Rethunk-AI/wails/v3 v3.1.0-mortar.4 h1:QLDTyAgAyUG5VUjtYyrbRtVzGWXiV6zPBVVGfSjkHzE=
-github.com/Rethunk-AI/wails/v3 v3.1.0-mortar.4/go.mod h1:tzDY3W1jzN3ksSqfGalTt7K3PwnGfIqtl+IgIXlXz0I=
+github.com/Rethunk-AI/wails/v3 v3.1.0-mortar.5 h1:N5oIePfm/a3HWCZOdlFnojZWoAYtsdPEU0dCPUaM8os=
+github.com/Rethunk-AI/wails/v3 v3.1.0-mortar.5/go.mod h1:tzDY3W1jzN3ksSqfGalTt7K3PwnGfIqtl+IgIXlXz0I=
 github.com/Rethunk-Tech/go-archive v0.2.2 h1:5g+FDY8niKoB3AaaVi0A2tH+a9UROammprccnGxFlrw=
 github.com/Rethunk-Tech/go-archive v0.2.2/go.mod h1:1JzPcZbgXCJZq+cnEppc5EZDE95rD8mDgeHC5yZHwJU=
 github.com/Rethunk-Tech/go-avscan v0.2.2 h1:ha52mUbGqRJ8PgiAROUElGbPfcMN6tM274tJmw0iwIo=
