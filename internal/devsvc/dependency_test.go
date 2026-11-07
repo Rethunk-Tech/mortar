@@ -268,3 +268,31 @@ func TestUndeclareDependencyDropsOnlyThatGUIDsLine(t *testing.T) {
 		}
 	}
 }
+
+func TestSyncIgnoresPackageNamesThatAreNotPackages(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	prof, err := svc.Profiles.Create("lethal-company", "Dev")
+	if err != nil {
+		t.Fatal(err)
+	}
+	lib, mod := t.TempDir(), t.TempDir()
+	const evil = "Mortar$(Evil)-Lib"
+	testfs.WriteAt(t, filepath.Join(lib, propsFile), []byte("<Project><PropertyGroup><ThunderstoreTeam>Mortar$(Evil)</ThunderstoreTeam></PropertyGroup></Project>"))
+	testfs.WriteAt(t, filepath.Join(lib, "src", "Lib", "Lib.csproj"), []byte("<Project><PropertyGroup><ThunderstoreName>Lib</ThunderstoreName></PropertyGroup></Project>"))
+	csproj := filepath.Join(mod, "src", "Mod", "Mod.csproj")
+	testfs.WriteAt(t, csproj, []byte("<Project>\n  <ItemGroup>\n    <ThunderstoreDependency Include=\""+evil+"\" Version=\"0.1.0\" />\n  </ItemGroup>\n</Project>\n"))
+	output := filepath.Join(lib, "artifacts", "bin")
+	for _, p := range []settings.DevProject{{Dir: lib, Name: "Lib", Output: output}, {Dir: mod, Name: "Mod", Profile: prof.ID}} {
+		if err := svc.Settings.AddDevProject("lethal-company", p); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := svc.syncDependencies("lethal-company", settings.DevProject{Dir: mod, Name: "Mod", Profile: prof.ID}); err != nil {
+		t.Fatal(err)
+	}
+	project, _ := safefs.ReadFile(csproj)
+	props, _ := safefs.ReadFile(filepath.Join(mod, "Config.Build.user.props"))
+	if strings.Contains(string(project), "MortarDependency") || strings.Contains(string(props), "Evil") {
+		t.Fatalf("project:\n%s\nprops:\n%s", project, props)
+	}
+}

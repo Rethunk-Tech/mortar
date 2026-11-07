@@ -215,14 +215,22 @@ func packageOf(dir string) string {
 	if team == "" {
 		return ""
 	}
-	return team + "-" + cmpOr(msbuild.Property(string(project), "ThunderstoreName"), strings.TrimSuffix(filepath.Base(csproj), ".csproj"))
+	pkg := team + "-" + cmpOr(msbuild.Property(string(project), "ThunderstoreName"), strings.TrimSuffix(filepath.Base(csproj), ".csproj"))
+	if !thunderstorePackage.MatchString(pkg) {
+		return ""
+	}
+	return pkg
 }
 
-// projectDependencies reads a project file's dependencies by package: true for a soft one.
+// projectDependencies reads a project file's dependencies by package: true for a soft one. A name that is not a
+// package is dropped, since it becomes part of an MSBuild property name.
 func projectDependencies(project string) map[string]bool {
 	out := map[string]bool{}
 	items, _ := msbuild.Items(project, hardItem, softItem)
 	for _, it := range items {
+		if !thunderstorePackage.MatchString(it.Include) {
+			continue
+		}
 		out[it.Include] = it.Type == softItem
 	}
 	return out
