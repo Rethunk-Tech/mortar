@@ -115,6 +115,12 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
     skipPlayCheck: {
       label: i18n._(msg`Skip pre-Play check`),
     },
+    sandboxLaunch: {
+      label: i18n._(msg`Sandbox the game`),
+      description: i18n._(
+        msg`Starts the game directly, without the ${{ launcher: STEAM }} overlay or playtime, and hides your home folder from it and its mods. The game keeps its install, saves and this profile. Linux only; needs bubblewrap.`,
+      ),
+    },
     instances: {
       label: i18n._(msg`Instances`),
       description: i18n._(

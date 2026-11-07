@@ -1057,7 +1057,9 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	}
 	// A store's relay starts the client, so the server is always started directly.
 	server := !vanilla && s.serverMode(g.ID(), profileID)
-	direct = direct || server || !inst.StoreStarts()
+	sandboxed := runtime.GOOS == "linux" && settings.ResolveAt(s.settings.Get(), "sandboxLaunch", settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, ov) == "true"
+	// A store's relay runs the game under the store's own process tree, out of the sandbox's reach.
+	direct = direct || server || !inst.StoreStarts() || sandboxed
 	env := game.StartEnv{Direct: direct, HideWindow: !showConsole, Ready: s.seen(g)}
 	s.launchSettings(g, profileID, &env)
 	var sample bool
@@ -1074,6 +1076,11 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	}
 	if plan, err = s.planProfile(ctx, g, inst, profileID, mode, spec.Options, spec.Prefix, spec.Env); err != nil {
 		return err
+	}
+	if sandboxed {
+		if env.Sandbox, err = s.sandboxSpec(g.ID(), profileID, inst, plan); err != nil {
+			return err
+		}
 	}
 	// The server writes no client-main.log, so a launch of it is up when its process is.
 	if !server {

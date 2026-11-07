@@ -203,6 +203,7 @@ function GamePages({
                 ...(loader?.introSkip ? ['skipIntro'] : []),
                 'updateModsBeforePlayDefault',
                 'skipPlayCheck',
+                'sandboxLaunch',
                 'pauseDownloadsWhilePlaying',
               ]}
               game={game}

@@ -1208,6 +1208,10 @@ msgstr "Mortar"
 msgid "Focus the next mod"
 msgstr "Focus the next mod"
 
+#: src/settings/prefCopyGame.ts
+msgid "Starts the game directly, without the {launcher} overlay or playtime, and hides your home folder from it and its mods. The game keeps its install, saves and this profile. Linux only; needs bubblewrap."
+msgstr "Starts the game directly, without the {launcher} overlay or playtime, and hides your home folder from it and its mods. The game keeps its install, saves and this profile. Linux only; needs bubblewrap."
+
 #: src/settings/prefCopy.ts
 msgid "Offer new downloads"
 msgstr "Offer new downloads"
@@ -2423,6 +2427,10 @@ msgstr "Untrack the {game} mods none of your profiles use, out of {trackedCount}
 #: src/settings/prefCopyModsView.ts
 msgid "Show the author line on grid cards"
 msgstr "Show the author line on grid cards"
+
+#: src/settings/prefCopyGame.ts
+msgid "Sandbox the game"
+msgstr "Sandbox the game"
 
 #: src/settings/sections/TokenAccount.tsx
 msgid "Test"

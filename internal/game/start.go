@@ -24,6 +24,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	gameruntime "github.com/Rethunk-Tech/mortar/internal/runtime"
+	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -66,6 +67,9 @@ type StartEnv struct {
 	// ALVRProgram ALVR's dashboard; empty or off starts none.
 	StartFirst  string
 	ALVRProgram string
+	// Sandbox, when set, starts a direct Linux launch inside bubblewrap with only these folders (and the game's own,
+	// its Proton prefix and the Steam parts Proton reads) reachable. A start that cannot be sandboxed fails.
+	Sandbox *sandbox.Spec
 }
 
 // Starter starts launch plans the way the install's store requires: Steam installs through `steam -applaunch`, which
@@ -219,6 +223,11 @@ func (st Starter) startOne(ctx context.Context, inst Install, plan *launchplan.P
 	if err != nil {
 		return err
 	}
+	if env.Sandbox != nil && !cmd.Relay {
+		if err := sandboxed(&cmd, inst, env); err != nil {
+			return err
+		}
+	}
 	if flatpak.Inside() {
 		cmd = onHost(cmd)
 	}
@@ -248,6 +257,49 @@ func (st Starter) startOne(ctx context.Context, inst Install, plan *launchplan.P
 		}
 	}
 	return launch.Run(ctx, run, cmd, st.Timing, onLines)
+}
+
+// sandboxed rewrites cmd to run inside bubblewrap. The folders the start itself names are added to the caller's: the
+// install, the Proton prefix, the Proton build and the read-only parts of Steam.
+func sandboxed(cmd *launch.Command, inst Install, env StartEnv) error {
+	if runtime.GOOS != "linux" || flatpak.Inside() {
+		return errors.New("the game sandbox runs only from Mortar's own Linux build, not the Flatpak")
+	}
+	bwrap, err := sandbox.Bwrap()
+	if err != nil {
+		return err
+	}
+	spec := *env.Sandbox
+	spec.RW = append(slices.Clone(spec.RW), inst.Dir)
+	spec.RO = slices.Clone(spec.RO)
+	spec.Environ = os.Environ()
+	if compat := envValue(cmd.Env, "STEAM_COMPAT_DATA_PATH"); compat != "" {
+		spec.RW = append(spec.RW, compat)
+	}
+	if root := envValue(cmd.Env, "STEAM_COMPAT_CLIENT_INSTALL_PATH"); root != "" {
+		spec.RO = append(spec.RO, sandbox.SteamRO(root)...)
+	}
+	if env.Steam != nil {
+		spec.RO = append(spec.RO, sandbox.SteamRO(env.Steam.Root)...)
+	}
+	if filepath.Base(cmd.Name) == "proton" {
+		spec.RO = append(spec.RO, filepath.Dir(cmd.Name))
+	}
+	if lib, ok := steam.LibraryOf(inst.Dir); ok {
+		spec.RO = append(spec.RO, filepath.Join(lib, "common"))
+	}
+	spec.RO = append(spec.RO, envValue(cmd.Env, "DOTNET_ROOT"))
+	cmd.Name, cmd.Args = bwrap, sandbox.Argv(bwrap, spec, cmd.Name, cmd.Args)[1:]
+	return nil
+}
+
+func envValue(env []string, key string) string {
+	for _, kv := range slices.Backward(env) {
+		if v, ok := strings.CutPrefix(kv, key+"="); ok {
+			return v
+		}
+	}
+	return ""
 }
 
 // guarded runs name through wrapper when there is one: a server build's self-test sandbox names its launch guard

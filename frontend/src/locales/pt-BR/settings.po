@@ -1208,6 +1208,10 @@ msgstr ""
 msgid "Focus the next mod"
 msgstr ""
 
+#: src/settings/prefCopyGame.ts
+msgid "Starts the game directly, without the {launcher} overlay or playtime, and hides your home folder from it and its mods. The game keeps its install, saves and this profile. Linux only; needs bubblewrap."
+msgstr ""
+
 #: src/settings/prefCopy.ts
 msgid "Offer new downloads"
 msgstr ""
@@ -2422,6 +2426,10 @@ msgstr ""
 
 #: src/settings/prefCopyModsView.ts
 msgid "Show the author line on grid cards"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Sandbox the game"
 msgstr ""
 
 #: src/settings/sections/TokenAccount.tsx
