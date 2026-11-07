@@ -299,8 +299,12 @@ func (d Driver) Resolve(ctx context.Context, key, id, version string) (Resolved,
 		}
 		f = files[i]
 	}
-	if !f.Downloadable() || source.WebLink(f.Download.BinaryURL) == "" {
+	if !f.Downloadable() {
 		return Resolved{}, fmt.Errorf("mod.io mod %s has no file to download", id)
+	}
+	// The pinned go-modio accepts an http address and a missing digest, either of which would install unchecked.
+	if !strings.HasPrefix(strings.ToLower(f.Download.BinaryURL), "https://") || f.MD5() == "" {
+		return Resolved{}, fmt.Errorf("mod.io mod %s has no https download address and an MD5 for the file", id)
 	}
 	return Resolved{
 		ModID: id, Name: m.Name, Version: f.VersionName(), FileName: f.Filename, FileID: f.ID, Size: f.Filesize,

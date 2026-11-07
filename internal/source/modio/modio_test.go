@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -44,7 +45,9 @@ func fake(t *testing.T) Driver {
 			_, _ = w.Write([]byte(timberAPI))
 		case "/games/3659/mods/42/files":
 			_, _ = w.Write([]byte(`{"data":[{"id":9,"version":"0.8","changelog":" fixed ","download":{"binary_url":"https://x/9"}},
-				{"id":7,"version":"","filename":"old.zip","download":{"binary_url":"https://x/7"},"filehash":{"md5":"def"}}]}`))
+				{"id":7,"version":"","filename":"old.zip","download":{"binary_url":"https://x/7"},"filehash":{"md5":"def"}},
+				{"id":5,"version":"5","download":{"binary_url":"http://x/5"},"filehash":{"md5":"def"}},
+				{"id":6,"version":"6","download":{"binary_url":"https://x/6"}}]}`))
 		case "/games/3659/mods/42/dependencies":
 			_, _ = w.Write([]byte(`{"data":[{"id":5,"name":"Harmony"}]}`))
 		default:
@@ -81,7 +84,7 @@ func TestDetailsResolveAndLatest(t *testing.T) {
 	d := fake(t)
 	ctx := t.Context()
 	det, err := d.Details(ctx, "3659", "42", "")
-	if err != nil || det.Description != "Hello **you**" || det.Changelog != "fixed" || len(det.Versions) != 2 || det.Versions[1] != "7" ||
+	if err != nil || det.Description != "Hello **you**" || det.Changelog != "fixed" || len(det.Versions) != 4 || det.Versions[1] != "7" ||
 		len(det.Dependencies) != 1 || det.Dependencies[0] != "Harmony" || det.Categories[0] != "Mod" {
 		t.Fatalf("%+v %v", det, err)
 	}
@@ -92,6 +95,11 @@ func TestDetailsResolveAndLatest(t *testing.T) {
 	old, err := d.Resolve(ctx, "3659", "42", "7")
 	if err != nil || old.FileID != 7 || old.Version != "7" || old.MD5 != "def" {
 		t.Fatalf("%+v %v", old, err)
+	}
+	for _, version := range []string{"5", "6"} {
+		if r, err := d.Resolve(ctx, "3659", "42", version); err == nil || !strings.Contains(err.Error(), "https download address and an MD5") {
+			t.Errorf("file %s resolved to %+v (%v)", version, r, err)
+		}
 	}
 	if _, err := d.Resolve(ctx, "3659", "42", "nope"); err == nil {
 		t.Fatal("unknown file resolved")
