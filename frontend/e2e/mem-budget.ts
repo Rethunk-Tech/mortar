@@ -1,11 +1,11 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { chromium, type Page } from '@playwright/test'
 import { openProfile } from './app.ts'
 import { browserBreakdown, goBreakdown } from './mem-breakdown.ts'
 import { browserRoot, cpuSeconds, MIB, pssKiB, sample, serverPid, tree } from './mem-proc.ts'
-import { sandboxPort, selftest, serverEnv } from './sandbox.ts'
+import { removeSandbox, sandboxPort, selftest, serverEnv } from './sandbox.ts'
 
 // Measures the memory Mortar holds while it does its heaviest work: peak PSS of the Go server's process tree and of the
 // browser's, per scenario. The WebView exists only in the desktop build, so in server mode headless Chromium (Playwright)
@@ -470,7 +470,7 @@ async function main(): Promise<number> {
       // A start that failed before the marker leaves destroy nothing to delete.
     }
     if (dir === `${BASE}/mortar-mem-${process.pid}`) {
-      rmSync(dir, { recursive: true, force: true })
+      removeSandbox(dir)
     }
   }
   console.log(

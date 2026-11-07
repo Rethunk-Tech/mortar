@@ -5,6 +5,10 @@ import { fileURLToPath } from 'node:url'
 import { keepEvidence, type ServerState, shouldKeepEvidence } from './evidence.ts'
 
 const SCRIPT = fileURLToPath(new URL('../../scripts/selftest.sh', import.meta.url))
+const RM_SANDBOX = fileURLToPath(new URL('../../scripts/rm-sandbox.sh', import.meta.url))
+
+/** Deletes a sandbox folder without deleting the user's files through the desktop mounts its hidden display leaves there. */
+export const removeSandbox = (dir: string) => execFileSync(RM_SANDBOX, [dir], { stdio: 'inherit' })
 // The sandbox holds copies of the games (GBs), so it lives on disk: /tmp is a tmpfs.
 const BASE = '/var/tmp'
 /** Catalog ids the sandbox enables for itself (comma separated), as scripts/selftest.sh reads them. */
@@ -87,7 +91,7 @@ function reap(runner: number) {
   } catch {
     // A run that died before its first start has no marker for destroy to accept.
   }
-  rmSync(dir, { recursive: true, force: true })
+  removeSandbox(dir)
   rmSync(launchCounter(dir), { force: true })
   rmSync(`${launchCounter(dir)}.lock`, { force: true })
 }
@@ -171,7 +175,7 @@ function freshSandbox(): () => void {
     } catch {
       // A setup that failed before the sandbox was marked leaves destroy nothing it may delete.
     }
-    rmSync(dir, { recursive: true, force: true })
+    removeSandbox(dir)
     rmSync(launchCounter(dir), { force: true })
     rmSync(`${launchCounter(dir)}.lock`, { force: true })
   }

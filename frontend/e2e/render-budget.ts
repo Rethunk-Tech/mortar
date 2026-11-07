@@ -1,4 +1,4 @@
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { chromium, type Page } from '@playwright/test'
@@ -21,7 +21,7 @@ import { biggestProfile, rememberMainGame } from './renderProfile.ts'
 import { STAND_IN_GAMES, screenCases } from './renderScreens.ts'
 import { modsView } from './renderView.ts'
 import { PAGE } from './renderViewport.ts'
-import { keepServerLogs, sandboxPort, selftest } from './sandbox.ts'
+import { keepServerLogs, removeSandbox, sandboxPort, selftest } from './sandbox.ts'
 import { webkitWalk } from './webkit-walk.ts'
 
 // Render budget: walks every screen and the common interactions of a copied (or seeded) profile in headless Chromium and
@@ -479,7 +479,7 @@ async function main(): Promise<number> {
       } catch {
         // A start that failed before the marker leaves destroy nothing to delete.
       }
-      rmSync(dir, { recursive: true, force: true })
+      removeSandbox(dir)
     }
   }
   mkdirSync(out, { recursive: true })

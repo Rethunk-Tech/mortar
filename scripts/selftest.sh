@@ -242,6 +242,8 @@ display_down() {
     sleep 0.1
   done
   rm -f "$ROOT/display.hold"
+  # The daemons the display's bus started outlive it, holding the user's shared files mounted under the sandbox.
+  "$REPO/scripts/rm-sandbox.sh" --release "$ROOT/run"
 }
 
 # hidden runs a command on the hidden display, with the launch guard's settings for any game it starts.
@@ -671,9 +673,7 @@ release_sandbox() {
   if [ ${#left[@]} -gt 0 ]; then
     echo "sandbox kept, still running from it: pids ${left[*]} ($ROOT)" >&3
   elif [ "$verdict" = PASS ]; then
-    # A gvfsd-fuse killed with the sandbox leaves its mount dead, and rm cannot cross it.
-    fusermount3 -u -z "$ROOT/run/gvfs" 2>/dev/null || true
-    rm -rf "$ROOT"
+    "$REPO/scripts/rm-sandbox.sh" "$ROOT"
   else
     echo "sandbox kept for inspection: $ROOT" >&3
   fi
@@ -1883,7 +1883,7 @@ reap() {
     if [ -n "$yes" ]; then
       # Checked again right before the delete: the folder may have been reused since the scan above.
       if deletable "$dir" && [ -z "$(sandbox_pids)" ]; then
-        rm -rf -- "$dir"
+        "$REPO/scripts/rm-sandbox.sh" "$dir"
         echo "deleted  $dir"
       fi
     fi

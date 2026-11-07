@@ -372,3 +372,36 @@ test('the matrix reads the load order as plugin rows and checks it covers what l
     rmSync(dir, { recursive: true, force: true })
   }
 })
+
+test('rm-sandbox stops the runtime-dir daemons and unmounts before it deletes, so files mounted in survive', () => {
+  const root = mkdtempSync(join(tmpdir(), 'rm-sandbox-'))
+  try {
+    const outside = join(root, 'shared')
+    const box = join(root, 'box')
+    mkdirSync(outside)
+    writeFileSync(join(outside, 'canary'), 'keep')
+    mkdirSync(join(box, 'run', 'doc'), { recursive: true })
+    const rm = join(import.meta.dir, 'rm-sandbox.sh')
+    // A private mount namespace stands in for the document portal's mount of the user's shared files.
+    const removal = spawnSync(
+      'unshare',
+      [
+        '-rm',
+        'sh',
+        '-c',
+        `mount --bind "$1" "$2/run/doc" && XDG_RUNTIME_DIR="$2/run" sleep 30 & sleep 0.2; "$3" "$2"`,
+        'sh',
+        outside,
+        box,
+        rm,
+      ],
+      { encoding: 'utf8' },
+    )
+    expect(removal.status).toBe(0)
+    expect(readFileSync(join(outside, 'canary'), 'utf8')).toBe('keep')
+    expect(existsSync(box)).toBe(false)
+    expect(removal.stderr).toContain('stopped 1 processes, unmounted 1 mounts')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
