@@ -17,7 +17,7 @@ var (
 // Denials are the paths in logs that a sandboxed game most likely reached for and could not have: refused or missing,
 // in a folder the sandbox empties, outside writable. A missing path counts only under home, since the read-only
 // folders mounted elsewhere (a Steam library) legitimately lack files. Each path is listed once, in log order.
-func Denials(logs []string, writable []string, home string) []string {
+func Denials(logs, writable []string, home string) []string {
 	var out []string
 	seen := map[string]bool{}
 	for _, log := range logs {

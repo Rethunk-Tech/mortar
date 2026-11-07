@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -51,9 +52,7 @@ func relay(t *testing.T, target string, seen *relayed) string {
 		seen.mu.Lock()
 		seen.reqs = append(seen.reqs, relayedExchange{path: r.URL.Path, header: r.Header.Clone(), request: body, rsp: rb, status: resp.StatusCode})
 		seen.mu.Unlock()
-		for k, v := range resp.Header {
-			w.Header()[k] = v
-		}
+		maps.Copy(w.Header(), resp.Header)
 		w.Header().Del("Content-Length")
 		w.WriteHeader(resp.StatusCode)
 		_, _ = w.Write(rb)

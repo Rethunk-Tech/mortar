@@ -3,6 +3,7 @@ package sandbox
 import (
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -39,10 +40,8 @@ func Allowable(path, home string) string {
 	if p == filepath.Clean(home) || p == "/" || !strings.HasPrefix(p, "/") {
 		return ""
 	}
-	for _, h := range hidden {
-		if p == h {
-			return ""
-		}
+	if slices.Contains(hidden, p) {
+		return ""
 	}
 	return p
 }

@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -50,15 +51,17 @@ var hidden = []string{"/home", "/root", "/mnt", "/media", "/run/media"}
 // that hides its parent shows through it. The host's PID and network namespaces are kept: Mortar finds and stops the
 // game by process, and mods, multiplayer and the bridge need the network.
 func Argv(bwrap string, s Spec, name string, args []string) []string {
-	a := []string{bwrap, "--die-with-parent", "--new-session",
-		"--ro-bind", "/", "/", "--dev-bind", "/dev", "/dev", "--proc", "/proc", "--tmpfs", "/tmp"}
+	a := []string{
+		bwrap, "--die-with-parent", "--new-session",
+		"--ro-bind", "/", "/", "--dev-bind", "/dev", "/dev", "--proc", "/proc", "--tmpfs", "/tmp",
+	}
 	// The host's TMPDIR may sit outside the sandbox's writable folders; .NET fails to start when it cannot create its
 	// diagnostics socket and debug pipes there, which looks like a crash.
 	a = append(a, "--setenv", "TMPDIR", "/tmp")
 	if exists("/tmp/.X11-unix") {
 		a = append(a, "--bind", "/tmp/.X11-unix", "/tmp/.X11-unix")
 	}
-	for _, d := range append(hidden[:len(hidden):len(hidden)], s.Home) {
+	for _, d := range append(slices.Clip(hidden), s.Home) {
 		if d != "" && isDir(d) {
 			a = append(a, "--tmpfs", d)
 		}

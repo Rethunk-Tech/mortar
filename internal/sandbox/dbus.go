@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -59,8 +60,8 @@ func (b *Bus) Close() {
 
 // SessionAddress is the host session bus address from environ, or the default socket under runtime.
 func SessionAddress(environ []string, runtime string) string {
-	for i := len(environ) - 1; i >= 0; i-- {
-		if v, ok := strings.CutPrefix(environ[i], "DBUS_SESSION_BUS_ADDRESS="); ok && v != "" {
+	for _, e := range slices.Backward(environ) {
+		if v, ok := strings.CutPrefix(e, "DBUS_SESSION_BUS_ADDRESS="); ok && v != "" {
 			return v
 		}
 	}

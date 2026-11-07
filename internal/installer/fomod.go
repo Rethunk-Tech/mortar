@@ -51,8 +51,8 @@ const (
 func lastOfEach(ops []fomod.Op) []fomod.Op {
 	seen := make(map[string]bool, len(ops))
 	kept := make([]fomod.Op, 0, len(ops))
-	for i := len(ops) - 1; i >= 0; i-- {
-		op := ops[i]
+	for _, op := range slices.Backward(ops) {
+
 		dest := "\x00nil"
 		if op.Destination != nil {
 			dest = *op.Destination

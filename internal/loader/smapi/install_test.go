@@ -233,8 +233,10 @@ func fakeSMAPI(t *testing.T, script string) Loader {
 	})
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
-	return Loader{ReleasesURL: srv.URL + "/releases", DownloadBase: srv.URL + "/dl", AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir(), LogDir: t.TempDir(),
-		Components: pinning("9.9.9", fmt.Sprintf("%x", sum))}
+	return Loader{
+		ReleasesURL: srv.URL + "/releases", DownloadBase: srv.URL + "/dl", AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir(), LogDir: t.TempDir(),
+		Components: pinning("9.9.9", fmt.Sprintf("%x", sum)),
+	}
 }
 
 // pinning is a catalog client whose manifest pins SMAPI version to sum.
