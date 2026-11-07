@@ -1,12 +1,29 @@
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  rectSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonGroup, Menu, Typography } from '@mui/material'
 import { useStoredState } from '@rethunk/react-load-hooks'
 import {
+  ArrowDownAZ,
   ChevronDown,
   Code,
   FolderPlus,
   GitBranch,
+  GripVertical,
   Hammer,
   Plus,
   SearchX,
@@ -32,6 +49,7 @@ import { CardsView } from '../shell/CardsView.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
+import { MenuButton } from '../shell/MenuButton.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { useOnWindowFocus } from '../shell/useOnWindowFocus.ts'
 import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
@@ -50,6 +68,9 @@ import { GameCodeDialog } from './GameCodeDialog.tsx'
 import { useGameCode } from './kinds.ts'
 import { NewModDialog } from './NewModDialog.tsx'
 import { ProjectCard } from './ProjectCard.tsx'
+import { isProjectSort, movedDirs, type ProjectSort, sortProjects } from './projectOrder.ts'
+import { SortableCard } from './SortableCard.tsx'
+import { saveOrder } from './saveOrder.ts'
 import { TrustDialog } from './TrustDialog.tsx'
 import { installTestMods } from './testMods.ts'
 
@@ -175,20 +196,64 @@ function TestCopies({ game, profile, dirs }: { game: string; profile: string; di
 
 const NO_PROJECTS: DevProject[] = []
 
+function SortControl({
+  value,
+  onChange,
+}: {
+  value: ProjectSort
+  onChange: (v: ProjectSort) => void
+}) {
+  const { t } = useLingui()
+  const menu = usePopoverAnchor()
+  const options = [
+    { id: 'manual' as const, label: t`Manual`, Icon: GripVertical },
+    { id: 'name' as const, label: t`Name`, Icon: ArrowDownAZ },
+  ]
+  const current = options.find((o) => o.id === value) ?? options[0]
+  return (
+    <MenuButton
+      menu={menu}
+      icon={<ArrowDownAZ size={14} />}
+      label={t`Sort: ${{ by: current?.label ?? '' }}`}
+      ariaLabel={t`Sort projects`}
+    >
+      {options.map((o) => (
+        <MenuCheck
+          key={o.id}
+          radio={true}
+          checked={value === o.id}
+          icon={<o.Icon size={16} aria-hidden={true} />}
+          label={o.label}
+          onClick={() => {
+            onChange(o.id)
+            menu.hide()
+          }}
+        />
+      ))}
+    </MenuButton>
+  )
+}
+
 function ProjectGridView({
   game,
   projects,
   filtering,
   list,
+  draggable,
   onClear,
 }: {
   game: string
   projects: DevProject[]
   filtering: boolean
   list: boolean
+  draggable: boolean
   onClear: () => void
 }) {
   const { t } = useLingui()
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
   if (projects.length === 0 && filtering) {
     return (
       <EmptyState
@@ -200,12 +265,40 @@ function ProjectGridView({
       </EmptyState>
     )
   }
+  if (!draggable) {
+    return (
+      <CardsView list={list}>
+        {projects.map((p) => (
+          <ProjectCard key={p.dir} game={game} project={p} list={list} />
+        ))}
+      </CardsView>
+    )
+  }
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (over) {
+      saveOrder(
+        game,
+        movedDirs(
+          projects.map((p) => p.dir),
+          String(active.id),
+          String(over.id),
+        ),
+      )
+    }
+  }
   return (
-    <CardsView list={list}>
-      {projects.map((p) => (
-        <ProjectCard key={p.dir} game={game} project={p} list={list} />
-      ))}
-    </CardsView>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <SortableContext
+        items={projects.map((p) => p.dir)}
+        strategy={list ? verticalListSortingStrategy : rectSortingStrategy}
+      >
+        <CardsView list={list}>
+          {projects.map((p) => (
+            <SortableCard key={p.dir} game={game} project={p} list={list} />
+          ))}
+        </CardsView>
+      </SortableContext>
+    </DndContext>
   )
 }
 
@@ -239,6 +332,50 @@ function useAddFolder(game: string, openId: string) {
   }
 }
 
+// Files can change in an editor while Mortar is in the background; coming back rereads them.
+function useRereadOnFocus(game: string, projects: DevProject[]) {
+  const dirs = projects.map((p) => p.dir).join('\n')
+  const reread = useCallback(() => {
+    for (const dir of dirs.split('\n').filter(Boolean)) {
+      refreshInfo(game, dir, true).catch(() => undefined)
+    }
+  }, [game, dirs])
+  useOnWindowFocus(reread)
+}
+
+function ProjectControls({
+  count,
+  view,
+  onView,
+  sort,
+  onSort,
+  query,
+  onQuery,
+}: {
+  count: number
+  view: ViewMode
+  onView: (v: ViewMode) => void
+  sort: ProjectSort
+  onSort: (v: ProjectSort) => void
+  query: string
+  onQuery: (v: string) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <ControlsRow>
+      <ViewToggle value={view} onChange={onView} />
+      <SortControl value={sort} onChange={onSort} />
+      <SearchField
+        value={query}
+        onChange={onQuery}
+        label={t`Filter projects`}
+        placeholder={plural({ count }, { one: 'Filter # project', other: 'Filter # projects' })}
+        grow={true}
+      />
+    </ControlsRow>
+  )
+}
+
 /** The open profile's own mods in development: start one from the template, then build, test, pack and release it. */
 export function DevelopTab({ game }: { game: string }) {
   const { t } = useLingui()
@@ -251,23 +388,25 @@ export function DevelopTab({ game }: { game: string }) {
   const addFolder = useAddFolder(game, openId)
   const [query, setQuery] = useState('')
   const [view, setView] = useStoredState<ViewMode>(`mortar.developView.${game}`, 'list', isViewMode)
+  const [sort, setSort] = useStoredState<ProjectSort>(
+    `mortar.developSort.${game}`,
+    'manual',
+    isProjectSort,
+  )
   const here = useMemo(() => projects.filter((p) => p.profile === openId), [projects, openId])
   const code = useGameCode(game)
   const needle = query.trim().toLowerCase()
   const shown = useMemo(
-    () => here.filter((p) => p.name.toLowerCase().includes(needle)),
-    [here, needle],
+    () =>
+      sortProjects(
+        here.filter((p) => p.name.toLowerCase().includes(needle)),
+        sort,
+      ),
+    [here, needle, sort],
   )
   const clearQuery = useCallback(() => setQuery(''), [])
   const elsewhere = projects.filter((p) => p.profile !== openId)
-  // Files can change in an editor while Mortar is in the background; coming back rereads them.
-  const dirs = here.map((p) => p.dir).join('\n')
-  const reread = useCallback(() => {
-    for (const dir of dirs.split('\n').filter(Boolean)) {
-      refreshInfo(game, dir, true).catch(() => undefined)
-    }
-  }, [game, dirs])
-  useOnWindowFocus(reread)
+  useRereadOnFocus(game, here)
   return (
     <Box
       sx={{
@@ -343,25 +482,22 @@ export function DevelopTab({ game }: { game: string }) {
           {t`Start a mod from the template: Mortar sets up the project and installs each build into this profile.`}
         </EmptyState>
       ) : (
-        <ControlsRow>
-          <ViewToggle value={view} onChange={setView} />
-          <SearchField
-            value={query}
-            onChange={setQuery}
-            label={t`Filter projects`}
-            placeholder={plural(
-              { count: here.length },
-              { one: 'Filter # project', other: 'Filter # projects' },
-            )}
-            grow={true}
-          />
-        </ControlsRow>
+        <ProjectControls
+          count={here.length}
+          view={view}
+          onView={setView}
+          sort={sort}
+          onSort={setSort}
+          query={query}
+          onQuery={setQuery}
+        />
       )}
       <ProjectGrid
         game={game}
         projects={shown}
         filtering={needle !== ''}
         list={view === 'list'}
+        draggable={sort === 'manual' && needle === '' && here.length > 1}
         onClear={clearQuery}
       />
       {elsewhere.length > 0 ? (

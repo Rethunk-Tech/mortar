@@ -5,7 +5,8 @@ import { join, relative } from 'node:path'
 const SRC = join(import.meta.dir, '..')
 
 // Writes that mirror what the backend already holds (a read of the settings, or its change event), so they save nothing.
-const MIRRORS = new Set(['share/arrivals.ts', 'settings/store.ts'])
+// develop/saveOrder.ts writes the order before saving it and restores what the backend holds when the save fails.
+const MIRRORS = new Set(['share/arrivals.ts', 'settings/store.ts', 'develop/saveOrder.ts'])
 
 function sources(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {

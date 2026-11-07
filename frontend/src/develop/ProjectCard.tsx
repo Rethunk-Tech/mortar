@@ -14,7 +14,7 @@ import {
   SquareCode,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import type {
   GitState,
   ProjectInfo,
@@ -436,10 +436,12 @@ export function ProjectCard({
   game,
   project,
   list,
+  handle,
 }: {
   game: string
   project: DevProject
   list: boolean
+  handle?: ReactNode
 }) {
   const { t } = useLingui()
   const info = useInfo(game, project.dir)
@@ -467,6 +469,7 @@ export function ProjectCard({
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+        {handle}
         <LetterTile
           mod={{ id: name, name, ...(info?.icon ? { picture: info.icon } : {}) }}
           size={40}

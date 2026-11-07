@@ -238,6 +238,40 @@ func (s *Service) SetDevProjectWatch(game, dir string, on bool) error {
 	return s.editDevProject(game, dir, func(p *DevProject) { p.Watch = on })
 }
 
+// SetDevProjectOrder puts the listed projects in the given order, in the slots those projects already occupy, so
+// projects of other profiles keep their places. A dir that is no project is ignored; one listed twice is an error.
+func (s *Service) SetDevProjectOrder(game string, dirs []string) error {
+	seen := make(map[string]bool, len(dirs))
+	for _, d := range dirs {
+		if seen[d] {
+			return fmt.Errorf("project %s is listed twice", d)
+		}
+		seen[d] = true
+	}
+	return s.set(func(v *Settings) {
+		gp := v.GamePrefs(game)
+		byDir := make(map[string]DevProject, len(gp.DevProjects))
+		for _, p := range gp.DevProjects {
+			byDir[p.Dir] = p
+		}
+		ordered := make([]DevProject, 0, len(dirs))
+		for _, d := range dirs {
+			if p, ok := byDir[d]; ok {
+				ordered = append(ordered, p)
+			}
+		}
+		gp.DevProjects = slices.Clone(gp.DevProjects)
+		next := 0
+		for i, p := range gp.DevProjects {
+			if seen[p.Dir] && next < len(ordered) {
+				gp.DevProjects[i] = ordered[next]
+				next++
+			}
+		}
+		putGame(v, game, gp)
+	})
+}
+
 // IgnoreDevProjectDependency stops offering pkg as a dependency of the project in dir.
 func (s *Service) IgnoreDevProjectDependency(game, dir, pkg string) error {
 	return s.editDevProject(game, dir, func(p *DevProject) {
