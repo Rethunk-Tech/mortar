@@ -196,8 +196,8 @@ func (s *Service) emit(name string, data any) {
 // --- Share ---
 
 // Omitted is an enabled or switched-off mod a link cannot carry. Reason is "local", "off", "file" (its
-// page is known, the file on it is not), "option" (a dev helper, or a mod the share options leave to the
-// receiver's resolver) or "unknown". Count is how many of the profile's mods the entry holds, so the dialog
+// page is known, the file on it is not), "option" (a mod the share options leave to the receiver's resolver),
+// "dev" (a test helper Develop added, which never leaves this computer) or "unknown". Count is how many of the profile's mods the entry holds, so the dialog
 // can say how many it means.
 type Omitted struct {
 	Name   string `json:"name"`
@@ -293,8 +293,26 @@ func (s *Service) Share(game, profileID string, keys []string, include share.Inc
 	if err != nil {
 		return Info{}, err
 	}
+	dev := devLeftOut(p, keys)
 	p = withEntryKeys(p, keys)
-	return describe(game, p, s.d.Profiles.ShareFacts(game, p), include)
+	info, err := describe(game, p, s.d.Profiles.ShareFacts(game, p), include)
+	if err != nil {
+		return Info{}, err
+	}
+	info.LeftOut = append(info.LeftOut, dev...)
+	return info, nil
+}
+
+// devLeftOut names the test helpers among the shared entries (all of them when keys is empty): a share strips them,
+// yet the profile's own mod count holds them, so the dialog lists them as left out.
+func devLeftOut(p profile.Profile, keys []string) []Omitted {
+	var out []Omitted
+	for _, e := range p.Entries {
+		if e.DevOnly && !e.Source.Bundled() && (len(keys) == 0 || slices.Contains(keys, e.Key)) && len(e.Mods) > 0 {
+			out = append(out, Omitted{Name: strings.Join(entryNames(e, true), ", "), Reason: "dev", Count: len(e.Mods)})
+		}
+	}
+	return out
 }
 
 func describe(game string, p profile.Profile, facts profile.ShareFacts, include ...share.Include) (Info, error) {

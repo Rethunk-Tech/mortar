@@ -4228,6 +4228,10 @@ msgstr ""
 msgid "Adds the changelog and links the page."
 msgstr ""
 
+#: src/share/Included.tsx
+msgid "A test helper Develop added; it stays on this computer."
+msgstr ""
+
 #: src/share/useImportFlow.ts
 msgid "Imported, but could not show the profile"
 msgstr ""

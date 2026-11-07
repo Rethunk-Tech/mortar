@@ -129,6 +129,8 @@ export function Included({
         return t`Disabled in this profile`
       case 'option':
         return t`Left to the other person's Mortar to bring, with the options above.`
+      case 'dev':
+        return t`A test helper Develop added; it stays on this computer.`
       default:
         return t`Its source is not known.`
     }

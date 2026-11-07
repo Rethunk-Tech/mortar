@@ -521,3 +521,31 @@ func mineProfile(t *testing.T, s *Service) profile.Profile {
 	t.Helper()
 	return testenv.Profile(t, s.d.Profiles, "stardew", "Mine")
 }
+
+// A share strips Develop's test helpers, yet the profile counts them: Share lists them as left out, so a development
+// profile's dialog still adds up.
+func TestShareListsDevHelpersAsLeftOut(t *testing.T) {
+	t.Parallel()
+	p := profile.Profile{Name: "Dev", Entries: []profile.Entry{
+		{Key: "a", Source: profile.Source{Kind: profile.KindThunderstore, Name: "o-a"}, Mods: []profile.Component{{ID: "bepinex:a", Name: "A"}}},
+		{Key: "helper", DevOnly: true, Source: profile.Source{Kind: profile.KindLocal, Name: "helper.zip"}, Mods: []profile.Component{{ID: "bepinex:h", Name: "Helper"}}},
+	}}
+	info, err := describe("lethal-company", withEntryKeys(p, nil), profile.ShareFacts{}, share.Include{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	info.LeftOut = append(info.LeftOut, devLeftOut(p, nil)...)
+	left := 0
+	for _, o := range info.LeftOut {
+		left += o.Count
+	}
+	if info.Mods+left != 2 {
+		t.Fatalf("included %d + left out %d, want the profile's 2 mods (%+v)", info.Mods, left, info.LeftOut)
+	}
+	if !slices.ContainsFunc(info.LeftOut, func(o Omitted) bool { return o.Reason == "dev" && o.Name == "Helper" }) {
+		t.Fatalf("left out = %+v, want the helper as dev", info.LeftOut)
+	}
+	if got := devLeftOut(p, []string{"a"}); len(got) != 0 {
+		t.Fatalf("a share of only a: %+v", got)
+	}
+}
