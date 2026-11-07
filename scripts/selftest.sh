@@ -19,6 +19,7 @@
 #   scripts/selftest.sh regress --game sims4  stand-in The Sims 4 (see regress_sims4): per-profile Mods, saves and Options.ini; the player's files identical after
 #   scripts/selftest.sh regress [--game lethal-company|cat-mail-co]  one-shot regression run (Stardew, or a BepInEx game through Proton) in its own throwaway sandbox (see below)
 #   scripts/selftest.sh curseforge            CurseForge end to end in its own throwaway sandbox; needs MORTAR_CURSEFORGE_KEY, else skips
+#   scripts/selftest.sh live-lobby            a Lethal Company host and client in one sandbox, for mods that need a second player (see live_lobby)
 #   scripts/selftest.sh harness-check         prove the launch harness with a dummy window instead of a game
 #
 # Every game a sandbox starts, from the browser or from regress, runs on the sandbox's own headless display (mutter
@@ -1262,6 +1263,122 @@ PYEOF
   [ "$verdict" = PASS ]
 }
 
+# live_lobby runs a host and a client of Lethal Company in one sandbox network namespace, for mods that need a second
+# player (a LAN lobby on 127.0.0.1) rather than a mock. Each is its own copy of the game under $ROOT with its own Proton
+# prefix, BepInExPack and mods, started with DevLaunch's arguments (--lan --host --tile 1/2, --lan --join 127.0.0.1 --tile 2/2).
+# MORTAR_LIVE_HOST_PLUGINS and MORTAR_LIVE_CLIENT_PLUGINS list what each copy gets (space separated .dll files, copied to
+# BepInEx/plugins, or .zip packages, unpacked into BepInEx/plugins/<name>); DevLaunch belongs in both. The run waits for
+# a "LIVETEST summary" line in the host's BepInEx log (MORTAR_LIVE_TIMEOUT seconds, default 600), prints every LIVETEST
+# line of both logs, and passes when the summary has no FAIL. A failed run keeps its folder for the logs.
+live_lobby() {
+  regress_sandbox -live
+  verdict=FAIL
+  local proton=${MORTAR_REGRESS_PROTON:-$STEAM/steamapps/common/Proton - Experimental}
+  local src="$STEAM/steamapps/common/$LC_FOLDER" cache=${MORTAR_LIVE_CACHE:-/var/tmp/mortar-live-cache}
+  local pack=${MORTAR_LIVE_BEPINEX_PACK:-BepInEx/BepInExPack/5.4.2305} timeout=${MORTAR_LIVE_TIMEOUT:-600} t0=$SECONDS
+  local role game compat zip entry name list failures=() summary="" f
+  finish() {
+    for role in host client; do reap_prefix "$ROOT/compat-$role" >/dev/null 2>&1 || true; done
+    release_sandbox
+  }
+  regress_traps
+  need_launches 2
+  [ -d "$proton" ] || {
+    echo "no Proton at $proton (set MORTAR_REGRESS_PROTON)" >&2
+    exit 1
+  }
+  [ -d "$src" ] && [ -f "$STEAM/linux64/steamclient.so" ] || {
+    echo "no Lethal Company or steamclient.so under $STEAM" >&2
+    exit 1
+  }
+  mkdir -p "$cache" "$SANDBOX_STEAM/linux64" "$SANDBOX_STEAM/linux32" "$SANDBOX_HOME/.steam"
+  zip=$cache/$(basename "$pack").zip
+  [ -s "$zip" ] || curl -fsSL -o "$zip" "https://thunderstore.io/package/download/$pack/"
+  mkdir -p "$ROOT/pack" && unzip -q "$zip" -d "$ROOT/pack"
+  cp "$STEAM/linux64/steamclient.so" "$SANDBOX_STEAM/linux64/"
+  cp "$STEAM/linux32/steamclient.so" "$SANDBOX_STEAM/linux32/"
+  ln -sfn "$SANDBOX_STEAM" "$SANDBOX_HOME/.steam/steam"
+  ln -sfn "$SANDBOX_STEAM" "$SANDBOX_HOME/.steam/root"
+  ln -sfn "$SANDBOX_STEAM/linux64" "$SANDBOX_HOME/.steam/sdk64"
+  ln -sfn "$SANDBOX_STEAM/linux32" "$SANDBOX_HOME/.steam/sdk32"
+  display_up
+  for role in host client; do
+    game="$ROOT/$role/$LC_FOLDER"
+    compat=$ROOT/compat-$role
+    mkdir -p "$ROOT/$role" "$compat"
+    echo "copying the game for the $role"
+    cp -a --reflink=auto "$src" "$ROOT/$role/"
+    cp -a "$ROOT/pack/BepInExPack/." "$game/"
+    mkdir -p "$game/BepInEx/plugins"
+    printf '%s\n' "$LC_APP_ID" >"$game/steam_appid.txt"
+    list=MORTAR_LIVE_${role^^}_PLUGINS
+    for entry in ${!list:-}; do
+      name=$(basename "$entry")
+      case "$entry" in
+      *.zip)
+        { unzip -q -o "$entry" 'plugins/*' -d "$ROOT/unpack-$role-${name%.zip}" && mkdir -p "$game/BepInEx/plugins/${name%.zip}" &&
+          cp -a "$ROOT/unpack-$role-${name%.zip}/plugins/." "$game/BepInEx/plugins/${name%.zip}/"; } || failures+=("could not add $entry to the $role")
+        ;;
+      *) cp "$entry" "$game/BepInEx/plugins/" || failures+=("could not add $entry to the $role") ;;
+      esac
+    done
+    cat >"$ROOT/run-$role.sh" <<EOF
+#!/bin/bash
+export HOME='$SANDBOX_HOME' STEAM_COMPAT_DATA_PATH='$compat' STEAM_COMPAT_CLIENT_INSTALL_PATH='$SANDBOX_STEAM'
+export STEAM_COMPAT_APP_ID=$LC_APP_ID SteamAppId=$LC_APP_ID SteamGameId=$LC_APP_ID WINEDLLOVERRIDES="winhttp=n,b"
+exec '$proton/proton' run "\$@"
+EOF
+    chmod +x "$ROOT/run-$role.sh"
+    echo "creating the $role's Proton prefix"
+    (cd "$ROOT" && hidden timeout 300 "$ROOT/run-$role.sh" wineboot -u >"$ROOT/wineboot-$role.log" 2>&1) ||
+      failures+=("the $role's Proton prefix could not be created; see $ROOT/wineboot-$role.log")
+    reap_prefix "$compat" >/dev/null
+  done
+
+  # live_start ROLE ARGS...: starts that copy through the launch guard, which puts it in the session's shared network namespace.
+  live_start() {
+    local r=$1
+    shift
+    (cd "$ROOT/$r/$LC_FOLDER" && hidden nohup "$REPO/scripts/launch-guard.sh" "$ROOT/run-$r.sh" "$ROOT/$r/$LC_FOLDER/Lethal Company.exe" "$@" \
+      >"$ROOT/$r.out" 2>&1 &)
+  }
+  live_wait() {
+    local log=$1 pattern=$2 deadline=$((SECONDS + $3))
+    while [ "$SECONDS" -lt "$deadline" ]; do
+      grep -q "$pattern" "$log" 2>/dev/null && return 0
+      sleep 2
+    done
+    return 1
+  }
+  local hostlog="$ROOT/host/$LC_FOLDER/BepInEx/LogOutput.log" clientlog="$ROOT/client/$LC_FOLDER/BepInEx/LogOutput.log"
+  if [ ${#failures[@]} -eq 0 ]; then
+    echo "starting the host"
+    live_start host --lan --host --tile 1/2
+    live_wait "$hostlog" 'LIVETEST ready host' 300 || failures+=("the host never logged LIVETEST ready host; see $hostlog and $ROOT/host.out")
+  fi
+  if [ ${#failures[@]} -eq 0 ]; then
+    echo "starting the client"
+    live_start client --lan --join 127.0.0.1 --tile 2/2
+    live_wait "$clientlog" 'LIVETEST ready client' 300 || failures+=("the client never logged LIVETEST ready client; see $clientlog and $ROOT/client.out")
+  fi
+  if [ ${#failures[@]} -eq 0 ]; then
+    live_wait "$hostlog" 'LIVETEST summary' "$timeout" || failures+=("no LIVETEST summary within ${timeout}s")
+  fi
+  summary=$(grep -h 'LIVETEST summary' "$hostlog" 2>/dev/null | tail -1 || true)
+  if [ -n "$summary" ] && [ ${#failures[@]} -eq 0 ] && ! grep -q ' [1-9][0-9]* FAIL' <<<"$summary"; then verdict=PASS; fi
+  for f in "$hostlog" "$clientlog"; do
+    echo "---- $f"
+    grep -h 'LIVETEST\|Disconnected\|Turned away' "$f" 2>/dev/null || true
+  done
+  # A passing run deletes its sandbox, so the logs are copied out first.
+  mkdir -p "$cache/logs"
+  cp "$hostlog" "$cache/logs/host-LogOutput.log" 2>/dev/null || true
+  cp "$clientlog" "$cache/logs/client-LogOutput.log" 2>/dev/null || true
+  echo "---- live-lobby: $verdict ($((SECONDS - t0))s) ${summary:+$summary}"
+  for f in "${failures[@]}"; do echo "FAIL: $f"; done
+  [ "$verdict" = PASS ]
+}
+
 # fake_game ID prints "APP_ID|FOLDER|MARKER|BEPINEX" for a catalog game that has no install on this machine, so a
 # regress can run against a stand-in folder (see regress_fake).
 fake_game() {
@@ -1957,7 +2074,7 @@ if [ "${1:-}" = start ] && [ "${2:-}" = --fake ]; then
 fi
 
 case "${1:-}" in
-destroy | reap | harness-check) ;;
+destroy | reap | harness-check | live-lobby) ;;
 regress)
   case "${2:-}${3:-}" in
   "") regress ;;
@@ -2012,6 +2129,7 @@ reap)
   ;;
 regress | curseforge) ;;
 harness-check) harness_check ;;
+live-lobby) live_lobby ;;
 *)
   sed -n '2,24p' "$0"
   exit 2
