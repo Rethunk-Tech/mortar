@@ -1,6 +1,6 @@
 # Games
 
-Per game, the decisions and sources behind its catalog entry that the catalog cannot carry (`mortar games` lists what it does). Facts nobody has read from a real install: [design.md](design.md#lethal-company-facts-to-verify).
+Per game, the decisions and sources behind its catalog entry that the catalog cannot carry (`mortar games` lists what it does).
 
 ## Cat Mail Co.
 
