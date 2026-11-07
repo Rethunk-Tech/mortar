@@ -94,6 +94,12 @@ const tabs = (page: Page) => page.getByRole('tablist', { name: 'Profile sections
 /** Back to the profile's workspace from a full page (Settings, Profiles, Game select), reloading as a last resort. */
 async function toWorkspace(page: Page) {
   for (let i = 0; i < 2 && (await backable(page, tabs(page))); i++) {
+    // On a full page, Escape in a settings search clears the text first and leaves the page on the next press; a case that
+    // typed a search is cleared here instead of costing a lost press and a wait.
+    const search = page.getByRole('textbox', { name: /^Search/ }).first()
+    if ((await search.isVisible()) && (await search.inputValue()) !== '') {
+      await search.fill('')
+    }
     await page.keyboard.press('Escape')
     await tabs(page)
       .waitFor({ state: 'visible', timeout: 300 })
