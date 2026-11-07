@@ -49,9 +49,14 @@ type Manifest struct {
 var parsed struct {
 	sync.Mutex
 	m map[string]Manifest
+	// bytes is the total size of the keys, since a manifest may be megabytes and its bytes are what the map holds.
+	bytes int
 }
 
-const maxParsed = 8192
+const (
+	maxParsed      = 8192
+	maxParsedBytes = 8 << 20
+)
 
 // Parse reads a manifest as leniently as SMAPI does (smapi.Parse). A manifest without a UniqueID is an error, since
 // nothing can refer to that mod.
@@ -76,8 +81,11 @@ func Parse(b []byte) (Manifest, error) {
 		m.Dependencies = append(m.Dependencies, mod.Dependency{UniqueID: d.UniqueID, MinimumVersion: d.MinimumVersion, Required: d.IsRequired})
 	}
 	parsed.Lock()
-	if parsed.m == nil || len(parsed.m) >= maxParsed {
-		parsed.m = map[string]Manifest{}
+	if parsed.m == nil || len(parsed.m) >= maxParsed || parsed.bytes+len(b) > maxParsedBytes {
+		parsed.m, parsed.bytes = map[string]Manifest{}, 0
+	}
+	if _, dup := parsed.m[string(b)]; !dup {
+		parsed.bytes += len(b)
 	}
 	parsed.m[string(b)] = m.clone()
 	parsed.Unlock()

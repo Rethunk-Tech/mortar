@@ -1,6 +1,7 @@
 package smapimanifest
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -173,5 +174,19 @@ func TestScanInvalidReportsANestedFailure(t *testing.T) {
 	if err != nil || len(mods) != 1 || invalid == nil || invalid.Folder != "Wrapper/Inner" ||
 		!strings.HasPrefix(invalid.Error(), "Wrapper/Inner/manifest.json: invalid JSON at line 1") {
 		t.Fatalf("mods %v, invalid %+v, err %v", mods, invalid, err)
+	}
+}
+
+func TestParseCacheHoldsAtMostItsBytes(t *testing.T) {
+	big := strings.Repeat("x", 512<<10)
+	for i := range 2 * maxParsedBytes / len(big) {
+		if _, err := Parse([]byte(fmt.Sprintf(`{"UniqueID":"a.m%d","Description":%q}`, i, big))); err != nil {
+			t.Fatal(err)
+		}
+	}
+	parsed.Lock()
+	defer parsed.Unlock()
+	if parsed.bytes > maxParsedBytes {
+		t.Fatalf("the cache holds %d bytes, over its %d cap", parsed.bytes, maxParsedBytes)
 	}
 }
