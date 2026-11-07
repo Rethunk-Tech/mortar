@@ -172,9 +172,9 @@ const ModsBody = memo(function ModsBodyView({
     >
       <Box sx={{ minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {view === 'list' ? (
-          <ModList profile={profile} mods={shown} />
+          <ModList profile={profile} mods={shown} filtering={filtering} />
         ) : (
-          <Cards shown={shown} profile={profile} />
+          <Cards shown={shown} profile={profile} filtering={filtering} />
         )}
       </Box>
       <ModSidebar profile={profile} />

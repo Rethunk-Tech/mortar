@@ -20,6 +20,7 @@ import { compareListRows, sanitizeListSort } from './listColumns.ts'
 import { useProfileModFacts } from './listFigures.ts'
 import { toListRows, useEntrySizes, usePackageOverrides, useStartupCosts } from './listRows.ts'
 import { modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
+import { manualRank } from './manualOrderLogic.ts'
 import { foldLibraries, nestImplicit } from './nestImplicit.ts'
 import { primeDetails, useGameNexusDetails } from './nexusDetails.ts'
 import { useMods } from './store.ts'
@@ -38,6 +39,7 @@ export function buildModGroups(
   },
 ) {
   const names = installedNames(mods)
+  const rank = manualRank(profile.modOrder)
   return groupSorted(
     toListRows(mods, profile, data),
     view.groupBy,
@@ -48,7 +50,7 @@ export function buildModGroups(
         names,
         customById: data.customById,
       }),
-    (a, b) => compareListRows(a, b, view.sort),
+    (a, b) => compareListRows(a, b, view.sort, rank),
   )
 }
 

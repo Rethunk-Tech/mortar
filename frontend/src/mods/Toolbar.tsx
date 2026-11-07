@@ -3,11 +3,15 @@ import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, CircularProgress, useMediaQuery } from '@mui/material'
 import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   Ban,
   Download,
   Filter,
   Folder,
   FolderTree,
+  GripVertical,
   Layers,
   Library,
   Plus,
@@ -44,8 +48,12 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { AddMenu } from './AddMenu.tsx'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
 import { cmpText } from './cmpText.ts'
+import { columnLabel } from './columnLabel.ts'
+import { useColumnAvailable, useModIdName } from './contributedColumns.ts'
 import { onFilterFocus } from './filterFocus.ts'
 import type { GroupBy } from './group.ts'
+import { LIST_COLUMN_IDS, MANUAL_SORT, nextListSort, sanitizeListSort } from './listColumns.ts'
+import { persistSort } from './listPrefs.ts'
 import { lockedHint } from './lockedHint.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
@@ -262,6 +270,59 @@ export const GroupByControl = memo(function GroupByMenu() {
   )
 })
 
+// The same sort the list's headers set, so the cards can pick one too.
+const SortControl = memo(function SortMenu() {
+  const { t } = useLingui()
+  const column = useSettings((s) => s.listSortColumn)
+  const dir = useSettings((s) => s.listSortDir)
+  const sort = sanitizeListSort(column ?? '', dir ?? '')
+  const idName = useModIdName()
+  const available = useColumnAvailable()
+  const menu = usePopoverAnchor()
+  const columns = LIST_COLUMN_IDS.filter((id) => id !== 'on' && available(id))
+    .map((id) => ({ id, label: columnLabel(id, idName) }))
+    .sort((a, b) => cmpText(a.label, b.label))
+  const arrow = sort.dir === 'desc' ? <ArrowDown size={14} /> : <ArrowUp size={14} />
+  return (
+    <MenuButton
+      menu={menu}
+      icon={<ArrowUpDown size={14} />}
+      label={<span className="label">{t`Sort`}</span>}
+      ariaLabel={t`Sort`}
+      sx={iconWhenCompact}
+    >
+      {[
+        <MenuCheck
+          key={MANUAL_SORT}
+          radio={true}
+          checked={sort.column === MANUAL_SORT}
+          icon={<GripVertical size={16} aria-hidden={true} />}
+          label={t`Manual`}
+          hint={t`Drag mods into any order. New mods go to the bottom.`}
+          onClick={() => {
+            persistSort({ column: MANUAL_SORT, dir: 'asc' })
+            menu.hide()
+          }}
+        />,
+        <MenuRule key="manual-rule" />,
+        ...columns.map((item) => (
+          <MenuCheck
+            key={item.id}
+            radio={true}
+            checked={sort.column === item.id}
+            label={item.label}
+            detail={sort.column === item.id ? arrow : undefined}
+            onClick={() => {
+              persistSort(nextListSort(sort, item.id))
+              menu.hide()
+            }}
+          />
+        )),
+      ]}
+    </MenuButton>
+  )
+})
+
 // Only the empty list offers this; with mods present the Browse tab above the toolbar is the way in.
 function BrowseMods() {
   const { t } = useLingui()
@@ -362,6 +423,7 @@ export const Toolbar = memo(function ToolbarView({
     <ControlsRow>
       <ViewToggle value={view} onChange={setView} />
       <GroupByControl />
+      <SortControl />
       {fieldOpen ? (
         <SearchField
           value={query}

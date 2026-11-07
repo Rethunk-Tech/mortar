@@ -20,23 +20,22 @@ import { Box, Menu, TableCell, type TableCellProps } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { ArrowDown, ArrowUp, RotateCcw } from 'lucide-react'
 import { type MouseEvent, type ReactNode, useRef, useState } from 'react'
-import { SetListSort } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { useSettings } from '../settings/store.ts'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { visuallyHidden } from '../shell/visuallyHidden.ts'
 import { space } from '../theme/density.ts'
-import { reportUnexpected } from '../toasts/report.ts'
 import { columnLabel } from './columnLabel.ts'
 import { useColumnAvailable, useModIdName } from './contributedColumns.ts'
 import {
   LIST_COLUMN_GROUPS,
   type ListColumnId,
+  type ListColumnSort,
   LOCKED_LIST_COLUMNS,
   moveListColumn,
   nextListSort,
   type sanitizeListSort,
 } from './listColumns.ts'
+import { persistSort } from './listPrefs.ts'
 
 const DRAG_TINT = 0.16
 const ARIA_SORT = { asc: 'ascending', desc: 'descending' } as const
@@ -66,7 +65,7 @@ function HeaderCell({
 }: {
   id: ListColumnId
   label: string
-  sortColumn: ListColumnId
+  sortColumn: ListColumnSort['column']
   sortDir: 'asc' | 'desc'
   onSort: (id: ListColumnId) => void
   onMenu: (e: MouseEvent) => void
@@ -129,11 +128,6 @@ function HeaderGhost({ label }: { label: string }) {
   )
 }
 
-function persistSort(column: ListColumnId, dir: 'asc' | 'desc') {
-  useSettings.setState({ listSortColumn: column, listSortDir: dir })
-  SetListSort(column, dir).catch(reportUnexpected)
-}
-
 function HeaderCells({
   cols,
   sort,
@@ -163,7 +157,7 @@ function HeaderCells({
       return
     }
     const next = nextListSort(sort, col)
-    persistSort(next.column, next.dir)
+    persistSort(next)
   }
   const onDragOver = ({ active, over }: DragOverEvent) => {
     if (!over || active.id === over.id) {

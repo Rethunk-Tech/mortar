@@ -19,9 +19,10 @@ import { CardMeta } from './CardMeta.tsx'
 import { cardMarks } from './cardMarks.ts'
 import { showModId, useDetail } from './detail.ts'
 import { firstTag } from './group.ts'
-import type { ListRow } from './listColumns.ts'
+import { type ListRow, MANUAL_SORT } from './listColumns.ts'
 import { sameLibraries } from './listRows.ts'
 import { entryOf, modId, useLocalMark } from './lookup.ts'
+import { ManualHandle, ManualOrder } from './ManualOrder.tsx'
 import { GroupHeaderRow, StickyGroupSlot } from './ModsGroupHeader.tsx'
 import { useMarked, useRowFocus, useTabStop } from './marked.ts'
 import { contextMenuProps } from './menu.ts'
@@ -248,6 +249,7 @@ function GridWindow({
   orderedRef,
   profile,
   groups,
+  manual,
   onMove,
 }: {
   rows: readonly VirtualRow<ListRow>[]
@@ -264,6 +266,7 @@ function GridWindow({
   orderedRef: { readonly current: readonly string[] }
   profile: Profile
   groups: readonly { key: string; items: readonly ListRow[] }[]
+  manual: boolean
   onMove: (id: string, delta: number) => void
 }) {
   return (
@@ -305,18 +308,28 @@ function GridWindow({
         if (item.kind !== 'lane') {
           return []
         }
-        return item.items.map((r) => (
-          <ModCard
-            key={modId(r.mod)}
-            mod={r.mod}
-            row={r}
-            first={orderedIds[0] === modId(r.mod) ? orderedIds : null}
-            orderedRef={orderedRef}
-            profile={profile}
-            columnsRef={columnsRef}
-            onMove={onMove}
-          />
-        ))
+        return item.items.map((r) => {
+          const card = (
+            <ModCard
+              key={modId(r.mod)}
+              mod={r.mod}
+              row={r}
+              first={orderedIds[0] === modId(r.mod) ? orderedIds : null}
+              orderedRef={orderedRef}
+              profile={profile}
+              columnsRef={columnsRef}
+              onMove={onMove}
+            />
+          )
+          return manual ? (
+            <Box key={modId(r.mod)} sx={{ position: 'relative', minWidth: 0 }}>
+              {card}
+              <ManualHandle id={modId(r.mod)} name={r.mod.name} />
+            </Box>
+          ) : (
+            card
+          )
+        })
       })}
     </Box>
   )
@@ -332,6 +345,7 @@ function CardsPane({
   tagHint,
   orderedIds,
   profile,
+  manual,
 }: {
   groups: { key: string; items: ListRow[] }[]
   groupBy: string
@@ -342,6 +356,7 @@ function CardsPane({
   tagHint: string
   orderedIds: readonly string[]
   profile: Profile
+  manual: boolean
 }) {
   const compactCards = useMediaQuery(compactQuery)
   const cardSize = useSettings((s) => s.gridCardSize) || 'medium'
@@ -442,6 +457,7 @@ function CardsPane({
           orderedRef={orderedRef}
           profile={profile}
           groups={groups}
+          manual={manual}
           onMove={onMove}
         />
       </Box>
@@ -449,28 +465,40 @@ function CardsPane({
   )
 }
 
-export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
+export function Cards({
+  shown,
+  profile,
+  filtering,
+}: {
+  shown: Mod[]
+  profile: Profile
+  filtering: boolean
+}) {
   const { t } = useLingui()
   // A search asks for the implicit mods themselves, so they keep their own cards.
   const wanted = useMods((s) => (s.queries[profile.id] ?? '') !== '')
-  const { groupBy, gameId, collapsed, setCollapsed, groups, orderedIds } = useModGroups(
+  const { groupBy, sort, gameId, collapsed, setCollapsed, groups, orderedIds } = useModGroups(
     shown,
     profile,
     !wanted,
   )
   const tagHint = t`A mod with several tags appears under its first tag.`
   const heading = useListHeading(groupBy)
+  const manual = sort.column === MANUAL_SORT && !filtering
   return (
-    <CardsPane
-      groups={groups}
-      groupBy={groupBy}
-      collapsed={collapsed}
-      setCollapsed={setCollapsed}
-      gameId={gameId}
-      heading={heading}
-      tagHint={tagHint}
-      orderedIds={orderedIds}
-      profile={profile}
-    />
+    <ManualOrder enabled={manual} profile={profile} groups={groups}>
+      <CardsPane
+        manual={manual}
+        groups={groups}
+        groupBy={groupBy}
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+        gameId={gameId}
+        heading={heading}
+        tagHint={tagHint}
+        orderedIds={orderedIds}
+        profile={profile}
+      />
+    </ManualOrder>
   )
 }

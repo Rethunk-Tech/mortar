@@ -10,10 +10,10 @@ import {
   DEFAULT_VISIBLE_LIST_COLUMNS,
   type ListColumnId,
   type ListRow,
-  persistColumns,
   type sanitizeListSort,
   toggleListColumn,
 } from './listColumns.ts'
+import { persistColumns } from './listPrefs.ts'
 import { modId } from './lookup.ts'
 import { GroupHeaderRow, StickyGroupSlot } from './ModsGroupHeader.tsx'
 import { OverlayListRow } from './OverlayRow.tsx'

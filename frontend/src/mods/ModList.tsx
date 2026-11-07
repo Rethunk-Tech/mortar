@@ -41,12 +41,14 @@ import {
   type ListColumnId,
   type ListRow,
   listGridColumns,
-  persistColumns,
+  MANUAL_SORT,
   sanitizeListColumns,
   visibleListColumns,
 } from './listColumns.ts'
 import { figureNumber, figureText } from './listFigures.ts'
+import { persistColumns } from './listPrefs.ts'
 import { entryOf, modId, useLocalMark } from './lookup.ts'
+import { ManualHandle, ManualOrder } from './ManualOrder.tsx'
 import { ModListTable } from './ModListVirtual.tsx'
 import { useMarked, useRowFocus, useTabStop } from './marked.ts'
 import { contextMenuProps } from './menu.ts'
@@ -424,13 +426,22 @@ const RowCells = memo(RowCellsView, (a, b) => a.fresh === b.fresh && sameCells(a
 
 const ModRow = memo(ModRowView, sameRow)
 
-export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
+export function ModList({
+  profile,
+  mods,
+  filtering,
+}: {
+  profile: Profile
+  mods: Mod[]
+  filtering: boolean
+}) {
   const { t, i18n } = useLingui()
   const { groupBy, sort, gameId, collapsed, setCollapsed, groups, orderedIds } = useModGroups(
     mods,
     profile,
   )
   const { orderedRef } = useRowFocus(orderedIds)
+  const manual = sort.column === MANUAL_SORT && !filtering
   const narrow = useMediaQuery(compactQuery)
   const listColumns = useSavedColumns()
   const available = useColumnAvailable()
@@ -472,37 +483,42 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
 
   return (
     <Box ref={box} sx={{ minWidth: 0, minHeight: 0, height: '100%' }}>
-      <ModListTable
-        grid={grid}
-        cols={cols}
-        sort={sort}
-        onMenu={onMenu}
-        onPreview={setPreview}
-        onCommit={onCommit}
-        onCancel={() => setPreview(null)}
-        groups={groups}
-        items={items}
-        groupBy={groupBy}
-        headingFor={headingFor}
-        tagHint={tagHint}
-        collapsed={collapsed}
-        gameId={gameId}
-        setCollapsed={setCollapsed}
-        visible={visible}
-        menu={menu}
-        setMenu={setMenu}
-        renderRow={(row, onArrow) => (
-          <ModRow
-            row={row}
-            cols={cols}
-            locale={i18n.locale}
-            first={orderedIds[0] === modId(row.mod) ? orderedIds : null}
-            orderedRef={orderedRef}
-            profile={profile}
-            onArrow={onArrow}
-          />
-        )}
-      />
+      <ManualOrder enabled={manual} profile={profile} groups={groups}>
+        <ModListTable
+          grid={grid}
+          cols={cols}
+          sort={sort}
+          onMenu={onMenu}
+          onPreview={setPreview}
+          onCommit={onCommit}
+          onCancel={() => setPreview(null)}
+          groups={groups}
+          items={items}
+          groupBy={groupBy}
+          headingFor={headingFor}
+          tagHint={tagHint}
+          collapsed={collapsed}
+          gameId={gameId}
+          setCollapsed={setCollapsed}
+          visible={visible}
+          menu={menu}
+          setMenu={setMenu}
+          renderRow={(row, onArrow) => (
+            <>
+              <ModRow
+                row={row}
+                cols={cols}
+                locale={i18n.locale}
+                first={orderedIds[0] === modId(row.mod) ? orderedIds : null}
+                orderedRef={orderedRef}
+                profile={profile}
+                onArrow={onArrow}
+              />
+              {manual ? <ManualHandle id={modId(row.mod)} name={row.mod.name} /> : null}
+            </>
+          )}
+        />
+      </ManualOrder>
     </Box>
   )
 }

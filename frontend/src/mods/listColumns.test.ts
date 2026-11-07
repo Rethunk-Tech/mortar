@@ -17,6 +17,7 @@ import {
   visibleListColumns,
 } from './listColumns.ts'
 import { figureFields } from './listFigures.ts'
+import { displayedKeys, droppedOrder, manualRank, moveKey } from './manualOrderLogic.ts'
 
 const mod = (over: Partial<Mod> & Pick<Mod, 'name'>): Mod => ({
   key: over.key ?? over.name,
@@ -217,4 +218,38 @@ test('columns that would squeeze the name out are dropped, the least useful firs
   // 1280 wide with the profile sidebar and the details panel open leaves the list about 700px.
   const fitted = fitListColumns(all, 700)
   expect(fitted).toEqual(['on', 'name', 'version', 'author', 'status'])
+})
+
+test('the manual sort follows the saved order, then names, and ignores direction', () => {
+  const at = (name: string) => row({ name, mod: mod({ name, key: `k-${name}` }) })
+  const [a, b, c, d] = [at('Delta'), at('Alpha'), at('Charlie'), at('Bravo')] as [
+    ListRow,
+    ListRow,
+    ListRow,
+    ListRow,
+  ]
+  const rank = manualRank(['k-Charlie', 'k-Delta', 'k-gone'])
+  const sort = { column: 'manual', dir: 'desc' } as const
+  const sorted = [a, b, c, d]
+    .sort((x, y) => compareListRows(x, y, sort, rank))
+    .map((r) => r.mod.name)
+  expect(sorted).toEqual(['Charlie', 'Delta', 'Alpha', 'Bravo'])
+  expect([b, d].sort((x, y) => compareListRows(x, y, sort)).map((r) => r.mod.name)).toEqual([
+    'Alpha',
+    'Bravo',
+  ])
+  expect(sanitizeListSort('manual', 'desc').column).toBe('manual')
+  expect(nextListSort({ column: 'manual', dir: 'asc' }, 'name')).toEqual({
+    column: 'name',
+    dir: 'asc',
+  })
+})
+
+test('dropping one entry on another moves it there and keeps unshown saved keys last', () => {
+  expect(moveKey(['a', 'b', 'c', 'd'], 'a', 'c')).toEqual(['b', 'c', 'a', 'd'])
+  expect(moveKey(['a', 'b', 'c', 'd'], 'd', 'b')).toEqual(['a', 'd', 'b', 'c'])
+  expect(moveKey(['a', 'b'], 'a', 'x')).toEqual(['a', 'b'])
+  expect(droppedOrder(['a', 'b', 'c'], ['c', 'h', 'a'], 'a', 'b')).toEqual(['b', 'a', 'c', 'h'])
+  const rows = [{ mod: { key: 'a' } }, { mod: { key: 'a' } }, { mod: { key: 'b' } }]
+  expect(displayedKeys([{ items: rows as ListRow[] }])).toEqual(['a', 'b'])
 })

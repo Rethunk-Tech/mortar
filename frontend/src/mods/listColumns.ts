@@ -3,14 +3,10 @@ import type {
   Mod,
   ModFact,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import type { GameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
-import { SetListColumns } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { useProfiles } from '../profiles/store.ts'
-import { useSettings } from '../settings/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
 import { cmpText } from './cmpText.ts'
 import { lastRunOf } from './lastRun.ts'
 import { type Figures, figureNumber, figureText } from './listFigures.ts'
+import { compareManual } from './manualOrderLogic.ts'
 import { isNewer } from './nexusFormat.ts'
 
 // Columns in menu and table order, grouped: the mod itself, its versions, its health, its place in this profile, then
@@ -62,8 +58,11 @@ const NARROW_HIDE_LIST_COLUMNS: readonly ListColumnId[] = [
 
 type ListSortDir = 'asc' | 'desc'
 
+/** The sort the player drags into: the order of the profile's `modOrder`. It has no direction. */
+const MANUAL_SORT = 'manual'
+
 interface ListColumnSort {
-  column: ListColumnId
+  column: ListColumnId | typeof MANUAL_SORT
   dir: ListSortDir
 }
 
@@ -169,8 +168,8 @@ function sanitizeListColumns(ids: readonly string[] | null | undefined): ListCol
 
 function sanitizeListSort(column: string, dir: string): ListColumnSort {
   const sortCol =
-    known.has(column) && column !== 'on'
-      ? (column as ListColumnId)
+    column === MANUAL_SORT || (known.has(column) && column !== 'on')
+      ? (column as ListColumnSort['column'])
       : DEFAULT_LIST_COLUMN_SORT.column
   return { column: sortCol, dir: dir === 'desc' ? 'desc' : 'asc' }
 }
@@ -340,8 +339,16 @@ function measureOf(column: 'size' | 'startup' | 'order', row: ListRow): number |
   return column === 'size' ? row.size : row.startupMs
 }
 
-function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
+function compareListRows(
+  a: ListRow,
+  b: ListRow,
+  sort: ListColumnSort,
+  rank?: ReadonlyMap<string, number>,
+): number {
   const { column, dir } = sort
+  if (column === MANUAL_SORT) {
+    return (rank ? compareManual(a, b, rank) : 0) || cmpText(a.mod.name, b.mod.name)
+  }
   let primary = 0
   switch (column) {
     case 'on':
@@ -464,19 +471,7 @@ function columnMenuFromEvent(e: {
   return { top: e.clientY, left: e.clientX }
 }
 
-// The choice belongs to the open game; a game without one follows the global default.
-function persistColumns(ids: ListColumnId[]) {
-  const game = useProfiles.getState().game?.id
-  if (!game) {
-    return
-  }
-  useSettings.setState((s) => ({
-    games: { ...s.games, [game]: { ...s.games?.[game], listColumns: ids } as GameSettings },
-  }))
-  SetListColumns(game, ids).catch(reportUnexpected)
-}
-
-export type { ListColumnId, ListRow }
+export type { ListColumnId, ListColumnSort, ListRow }
 export {
   columnMenuFromEvent,
   compareListRows,
@@ -487,9 +482,9 @@ export {
   LIST_COLUMN_IDS,
   LOCKED_LIST_COLUMNS,
   listGridColumns,
+  MANUAL_SORT,
   moveListColumn,
   nextListSort,
-  persistColumns,
   sanitizeListColumns,
   sanitizeListSort,
   toggleListColumn,
