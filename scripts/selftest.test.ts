@@ -373,35 +373,59 @@ test('the matrix reads the load order as plugin rows and checks it covers what l
   }
 })
 
-test('rm-sandbox stops the runtime-dir daemons and unmounts before it deletes, so files mounted in survive', () => {
-  const root = mkdtempSync(join(tmpdir(), 'rm-sandbox-'))
-  try {
-    const outside = join(root, 'shared')
-    const box = join(root, 'box')
-    mkdirSync(outside)
-    writeFileSync(join(outside, 'canary'), 'keep')
-    mkdirSync(join(box, 'run', 'doc'), { recursive: true })
-    const rm = join(import.meta.dir, 'rm-sandbox.sh')
-    // A private mount namespace stands in for the document portal's mount of the user's shared files.
-    const removal = spawnSync(
-      'unshare',
-      [
-        '-rm',
-        'sh',
-        '-c',
-        `mount --bind "$1" "$2/run/doc" && XDG_RUNTIME_DIR="$2/run" sleep 30 & sleep 0.2; "$3" "$2"`,
-        'sh',
-        outside,
-        box,
-        rm,
-      ],
-      { encoding: 'utf8' },
-    )
-    expect(removal.status).toBe(0)
-    expect(readFileSync(join(outside, 'canary'), 'utf8')).toBe('keep')
-    expect(existsSync(box)).toBe(false)
-    expect(removal.stderr).toContain('stopped 1 processes, unmounted 1 mounts')
-  } finally {
-    rmSync(root, { recursive: true, force: true })
-  }
-})
+// A private mount namespace stands in for the document portal's mount of the user's shared files, so this probe makes
+// the same moves the test's shell does. Ubuntu 24.04's AppArmor restriction (kernel.apparmor_restrict_unprivileged_userns)
+// refuses an unprivileged namespace, as on GitHub's ubuntu runners: probe up front, so the run says the host cannot
+// mount instead of a mount deep inside the test failing as though rm-sandbox were at fault.
+const userMounts =
+  spawnSync(
+    'unshare',
+    [
+      '-rm',
+      'sh',
+      '-c',
+      'a=$(mktemp -d) && b=$(mktemp -d) && mount --bind "$a" "$b" && umount "$b" && rmdir "$a" "$b"',
+    ],
+    { encoding: 'utf8' },
+  ).status === 0
+if (!userMounts) {
+  console.warn(
+    'skipping rm-sandbox mount test: this host cannot bind-mount in an unprivileged namespace',
+  )
+}
+
+test.skipIf(!userMounts)(
+  'rm-sandbox stops the runtime-dir daemons and unmounts before it deletes, so files mounted in survive',
+  () => {
+    const root = mkdtempSync(join(tmpdir(), 'rm-sandbox-'))
+    try {
+      const outside = join(root, 'shared')
+      const box = join(root, 'box')
+      mkdirSync(outside)
+      writeFileSync(join(outside, 'canary'), 'keep')
+      mkdirSync(join(box, 'run', 'doc'), { recursive: true })
+      const rm = join(import.meta.dir, 'rm-sandbox.sh')
+      // A private mount namespace stands in for the document portal's mount of the user's shared files.
+      const removal = spawnSync(
+        'unshare',
+        [
+          '-rm',
+          'sh',
+          '-c',
+          `mount --bind "$1" "$2/run/doc" && XDG_RUNTIME_DIR="$2/run" sleep 30 & sleep 0.2; "$3" "$2"`,
+          'sh',
+          outside,
+          box,
+          rm,
+        ],
+        { encoding: 'utf8' },
+      )
+      expect(removal.status, `rm-sandbox stderr:\n${removal.stderr}`).toBe(0)
+      expect(readFileSync(join(outside, 'canary'), 'utf8')).toBe('keep')
+      expect(existsSync(box)).toBe(false)
+      expect(removal.stderr).toContain('stopped 1 processes, unmounted 1 mounts')
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  },
+)
