@@ -14,6 +14,8 @@ const LAUNCH_STATUS = 239_586_243
 const MEASURE_IN_GAME = 1_064_106_242
 const PEEK_IN_GAME = 512_110_599
 const SANDBOX_REPORT = 3_359_515_706
+const RUNS = 622_928_231
+const RUN_LINES = 2_449_284_789
 
 type Stub = (route: Route) => Promise<void>
 
@@ -240,19 +242,47 @@ function sandboxedRunCase(
   tabs: (p: Page) => ReturnType<Page['locator']>,
   tab: (p: Page, name: string) => Promise<void>,
 ): Case {
+  // The run itself is stubbed too: the copied render data may hold no stored run for the profile, and the note only
+  // shows under a run.
+  const writable = [
+    '/games/Stardew Valley',
+    '/data/profiles/stardew/main',
+    '/home/render/.config/StardewValley',
+  ]
   const stub = stubCalls({
+    [RUNS]: [
+      {
+        id: 'render-sandboxed',
+        started: '2026-11-07T19:00:00Z',
+        ended: '2026-11-07T19:05:00Z',
+        durationMs: 300_000,
+        loader: 'smapi',
+        loaderVersion: '4.3.2',
+        gameVersion: '1.6.15',
+        outcome: 'ran',
+        errors: 0,
+        warnings: 1,
+        sandbox: writable,
+      },
+    ],
+    [RUN_LINES]: [
+      {
+        seq: 1,
+        time: '19:00:01',
+        level: 'WARN',
+        mod: 'ExampleMod',
+        message: 'Could not read /home/render/.config/ExampleMod/settings.json: permission denied',
+        cont: false,
+      },
+    ],
     [SANDBOX_REPORT]: {
-      writable: [
-        '/games/Stardew Valley',
-        '/data/profiles/stardew/main',
-        '/home/render/.config/StardewValley',
-      ],
+      writable,
       denied: [
         {
           path: '/home/render/.config/ExampleMod/settings.json',
           folder: '/home/render/.config/ExampleMod',
         },
-        { path: '/home/render/.ssh/id_ed25519', folder: '/home/render/.ssh' },
+        { path: '/home/render/.ssh/id_ed25519', folder: '' },
         { path: '/home/render/x.json', folder: '' },
       ],
       extra: '',
