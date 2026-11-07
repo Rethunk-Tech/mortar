@@ -159,8 +159,40 @@ owned() {
   return 1
 }
 
+# BUS_SERVICES are the session services the hidden display's bus may start: settings, accessibility and the desktop
+# portal for the native file dialogs. The document portal, gvfs and the flatpak portal are left out, because they mount
+# the user's real shared files inside the sandbox.
+BUS_SERVICES="ca.desrt.dconf org.a11y.Bus org.freedesktop.portal.Desktop org.freedesktop.impl.portal.desktop.gnome org.freedesktop.impl.portal.desktop.gtk org.freedesktop.impl.portal.PermissionStore"
+
+# bus_config writes the hidden display's session bus configuration: its socket in the sandbox's run folder (not /tmp,
+# where a killed run leaves it behind) and only the BUS_SERVICES it may start.
+bus_config() {
+  local svc
+  mkdir -p "$ROOT/bus-services"
+  rm -f "$ROOT/bus-services"/*.service
+  for svc in $BUS_SERVICES; do
+    [ -e "/usr/share/dbus-1/services/$svc.service" ] && ln -s "/usr/share/dbus-1/services/$svc.service" "$ROOT/bus-services/$svc.service"
+  done
+  cat >"$ROOT/bus.conf" <<BUSCONF
+<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <type>session</type>
+  <keep_umask/>
+  <listen>unix:dir=$ROOT/run</listen>
+  <auth>EXTERNAL</auth>
+  <servicedir>$ROOT/bus-services</servicedir>
+  <policy context="default">
+    <allow send_destination="*" eavesdrop="true"/>
+    <allow eavesdrop="true"/>
+    <allow own="*"/>
+  </policy>
+</busconfig>
+BUSCONF
+}
+
 # display_up starts the sandbox's hidden display once: a headless mutter with a virtual monitor, its own Xwayland, a
-# D-Bus session of its own and a private runtime dir (no desktop socket, audio or portal in it). The desktop session's
+# D-Bus session of its own and a private runtime dir (no desktop socket or audio in it). The desktop session's
 # DISPLAY, WAYLAND_DISPLAY and bus are unset first, so nothing started on it can reach the desktop. mutter runs a
 # sleep that holds it up; display.hold records that sleep, whose exit ends mutter and its bus. The bus gets a keyring of
 # its own in the sandbox's home before anything asks for one: otherwise D-Bus starts one on the real home's login
@@ -194,6 +226,7 @@ wireplumber.profiles = {
   }
 }
 WPCONF
+  bus_config
   cat >"$ROOT/display-hold.sh" <<'HOLD'
 echo $$ >display.hold
 trap 'kill $(jobs -p) 2>/dev/null' TERM EXIT
@@ -221,7 +254,7 @@ sleep infinity &
 wait
 HOLD
   (cd "$ROOT" && env -u DISPLAY -u WAYLAND_DISPLAY -u XAUTHORITY -u DBUS_SESSION_BUS_ADDRESS -u XDG_SESSION_TYPE -u PULSE_SERVER -u PIPEWIRE_REMOTE -u PIPEWIRE_RUNTIME_DIR \
-    XDG_RUNTIME_DIR="$run" nohup dbus-run-session -- mutter --wayland --headless --virtual-monitor 1280x720 \
+    XDG_RUNTIME_DIR="$run" GIO_USE_VFS=local nohup dbus-run-session --config-file="$ROOT/bus.conf" -- mutter --wayland --headless --virtual-monitor 1280x720 \
     --wayland-display mortar-hidden -- sh "$ROOT/display-hold.sh" "$SANDBOX_HOME" "$ROOT" >"$ROOT/display.log" 2>&1 &)
   for _ in $(seq 1 100); do
     [ -s "$run/display.env" ] && return
