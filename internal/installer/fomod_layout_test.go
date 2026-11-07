@@ -6,7 +6,6 @@ import (
 	"runtime"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -106,13 +105,25 @@ func TestFomodRepeatedOperationsAreWalkedOnceAndTheirCountIsCapped(t *testing.T)
 	g := Game{Loaders: []string{"smapi"}, Targets: []Target{{ID: TargetMods}}}
 	a := Open(dir, "k")
 	i, _ := Pick(a, g)
-	start := time.Now()
+	before := fomodFolderWalks.Load()
 	l, err := i.Layout(a, g, nil)
 	if err != nil || len(l.Files) != 1 {
 		t.Fatalf("layout %+v, %v", l.Files, err)
 	}
-	if d := time.Since(start); d > 5*time.Second {
-		t.Fatalf("%d repeated operations took %v", maxFomodOps, d)
+	repeated := fomodFolderWalks.Load() - before
+	b.Reset()
+	b.WriteString(`<config><moduleName>M</moduleName><requiredInstallFiles>`)
+	b.WriteString(`<folder source="Data" destination=""/>`)
+	b.WriteString(`</requiredInstallFiles></config>`)
+	testfs.WriteAt(t, filepath.Join(dir, "fomod", "ModuleConfig.xml"), []byte(b.String()))
+	before = fomodFolderWalks.Load()
+	l, err = i.Layout(a, g, nil)
+	if err != nil || len(l.Files) != 1 {
+		t.Fatalf("layout %+v, %v", l.Files, err)
+	}
+	one := fomodFolderWalks.Load() - before
+	if one == 0 || repeated != one {
+		t.Fatalf("%d repeated operations walked %d times, one walked %d", maxFomodOps, repeated, one)
 	}
 	b.Reset()
 	b.WriteString(`<config><moduleName>M</moduleName><requiredInstallFiles>`)
