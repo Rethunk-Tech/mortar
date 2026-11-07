@@ -17,7 +17,7 @@ import { dialogCases } from './renderDialogs.ts'
 import { newRunDir, writeGallery } from './renderGallery.ts'
 import { printExtras, report, startupLine, watchLog, withoutSeededSkips } from './renderLog.ts'
 import { HOOK, mortarBoxes, mortarGaps, mortarMeter, quietToasts, saveShot } from './renderMeter.ts'
-import { biggestProfile, rememberMainGame, reopenMainProfile } from './renderProfile.ts'
+import { backable, biggestProfile, rememberMainGame, reopenMainProfile } from './renderProfile.ts'
 import { STAND_IN_GAMES, screenCases } from './renderScreens.ts'
 import { modsView, nthOrLast } from './renderView.ts'
 import { PAGE } from './renderViewport.ts'
@@ -93,7 +93,7 @@ const tabs = (page: Page) => page.getByRole('tablist', { name: 'Profile sections
 
 /** Back to the profile's workspace from a full page (Settings, Profiles, Game select), reloading as a last resort. */
 async function toWorkspace(page: Page) {
-  for (let i = 0; i < 2 && !(await tabs(page).isVisible()); i++) {
+  for (let i = 0; i < 2 && (await backable(page, tabs(page))); i++) {
     await page.keyboard.press('Escape')
     await tabs(page)
       .waitFor({ state: 'visible', timeout: 300 })

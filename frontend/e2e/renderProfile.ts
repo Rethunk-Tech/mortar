@@ -15,20 +15,56 @@ export async function closeAll(page: Page) {
     name: 'Discard',
   })
   for (let i = 0; i < CLOSE_TRIES && (await overlays(page).count()) > 0; i++) {
+    // `last()` would name the dialog under a stacked one once the top closes, so hold the top element itself.
+    const top = await overlays(page)
+      .last()
+      .elementHandle({ timeout: CLOSE_WAIT_MS })
+      .catch(() => null)
+    if (!top) {
+      continue
+    }
+    const text = await top.textContent()
+    // A step change drops focus to the page until the focus trap restores it, and Escape then never reaches the dialog.
+    await page
+      .waitForFunction(
+        (el) => {
+          const modal = el instanceof Element ? (el.closest('.MuiModal-root') ?? el) : null
+          return !modal?.isConnected || modal.contains(document.activeElement)
+        },
+        top,
+        { timeout: CLOSE_WAIT_MS },
+      )
+      .catch(() => undefined)
     await page.keyboard.press('Escape')
-    const settled = (wait: Promise<void>) =>
-      wait.then(
+    // A wizard dialog answers Escape by stepping back (its text changes) and only closes on the next one.
+    const gone = page
+      .waitForFunction(
+        ([el, was]) =>
+          !(el instanceof HTMLElement && el.isConnected) ||
+          el.getClientRects().length === 0 ||
+          getComputedStyle(el).visibility === 'hidden' ||
+          el.textContent !== was,
+        [top, text] as const,
+        { timeout: CLOSE_WAIT_MS },
+      )
+      .then(
         () => undefined,
         () => undefined,
       )
-    await Promise.race([
-      settled(overlays(page).last().waitFor({ state: 'detached', timeout: CLOSE_WAIT_MS })),
-      settled(discard.waitFor({ timeout: CLOSE_WAIT_MS })),
-    ])
+    await Promise.race([gone, discard.waitFor({ timeout: CLOSE_WAIT_MS }).catch(() => undefined)])
     if (await discard.isVisible()) {
       await discard.click()
     }
   }
+}
+
+/** Whether Escape could still lead to the workspace: not there yet, and a game is open to go back to. Closes dialogs first, as they hide the tabs. */
+export async function backable(page: Page, workspaceTabs: Locator) {
+  await closeAll(page)
+  return !(
+    (await workspaceTabs.isVisible()) ||
+    (await page.getByRole('button', { name: 'Choose a game' }).isVisible())
+  )
 }
 
 interface ProfileFacts {
