@@ -79,4 +79,4 @@ require (
 	modernc.org/memory v1.12.1 // indirect
 )
 
-replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.1.0-mortar.5
+replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.1.0-mortar.6
