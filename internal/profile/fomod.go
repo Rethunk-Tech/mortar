@@ -388,6 +388,9 @@ func (s *Store) applyFomod(game, id, key string, choices map[string]map[string][
 	})
 }
 
+// maxFomodImage bounds one preview image read from a mod's folder; a larger file is refused, not truncated.
+const maxFomodImage = 8 << 20
+
 // FomodImage returns a file from the store item; rel must stay inside it.
 func (s *Store) FomodImage(game, key, rel string) ([]byte, error) {
 	root, err := s.items.Path(game, key)
@@ -402,6 +405,9 @@ func (s *Store) FomodImage(game, key, rel string) ([]byte, error) {
 	info, err := safefs.Stat(p)
 	if err != nil || !info.Mode().IsRegular() {
 		return nil, store.ErrNotFound
+	}
+	if info.Size() > maxFomodImage {
+		return nil, fmt.Errorf("image is larger than %d bytes", maxFomodImage)
 	}
 	return safefs.ReadFile(p)
 }

@@ -141,3 +141,18 @@ func TestFomodUpdateReplaysOnlyUnchangedOptions(t *testing.T) {
 		})
 	}
 }
+
+func TestFomodImageRefusesAFileOverTheCap(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "local-img", map[string]string{
+		"small.png": "x",
+		"big.png":   strings.Repeat("x", maxFomodImage+1),
+	})
+	if b, err := e.FomodImage("stardew", "local-img", "small.png"); err != nil || string(b) != "x" {
+		t.Fatalf("small image = %q, %v", b, err)
+	}
+	if _, err := e.FomodImage("stardew", "local-img", "big.png"); err == nil {
+		t.Fatal("an image over the cap was read")
+	}
+}
