@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.6",
-    "knip": "^6.44.1",
+    "knip": "^6.44.2",
     "pagefind": "1.6.0"
   },
   "overrides": {
