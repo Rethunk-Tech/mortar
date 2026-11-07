@@ -1266,6 +1266,8 @@ PYEOF
 # live_lobby runs a host and a client of Lethal Company in one sandbox network namespace, for mods that need a second
 # player (a LAN lobby on 127.0.0.1) rather than a mock. Each is its own copy of the game under $ROOT with its own Proton
 # prefix, BepInExPack and mods, started with DevLaunch's arguments (--lan --host --tile 1/2, --lan --join 127.0.0.1 --tile 2/2).
+# MORTAR_LIVE_HOST_PATCHERS and MORTAR_LIVE_CLIENT_PATCHERS list preloader patcher .dll files (space separated) copied to
+# each copy's BepInEx/patchers, replacing a same-named file. The run installs no bridge patcher of its own.
 # MORTAR_LIVE_HOST_PLUGINS and MORTAR_LIVE_CLIENT_PLUGINS list what each copy gets (space separated .dll files, copied to
 # BepInEx/plugins, or .zip packages, unpacked into BepInEx/plugins/<name>); DevLaunch belongs in both. The run waits for
 # a "LIVETEST summary" line in the host's BepInEx log (MORTAR_LIVE_TIMEOUT seconds, default 600), prints every LIVETEST
@@ -1322,6 +1324,11 @@ live_lobby() {
         ;;
       *) cp "$entry" "$game/BepInEx/plugins/" || failures+=("could not add $entry to the $role") ;;
       esac
+    done
+    list=MORTAR_LIVE_${role^^}_PATCHERS
+    mkdir -p "$game/BepInEx/patchers"
+    for entry in ${!list:-}; do
+      cp "$entry" "$game/BepInEx/patchers/" || failures+=("could not add patcher $entry to the $role")
     done
     cat >"$ROOT/run-$role.sh" <<EOF
 #!/bin/bash
