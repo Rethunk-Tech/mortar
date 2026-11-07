@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io/fs"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/go-fomod"
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 var _ = Register(fomodInstaller{})
@@ -37,6 +39,34 @@ func destination(op fomod.Op, src string) string {
 	return "."
 }
 
+// The most operations a config may list and the most files its operations may place before the layout is refused: a
+// config is untrusted XML and every folder operation walks its source.
+const (
+	maxFomodOps   = 20000
+	maxFomodFiles = 200000
+)
+
+// lastOfEach keeps the final occurrence of each identical operation: a later copy of the same operation rewrites what
+// the earlier one wrote, so the result is the same with one walk instead of many.
+func lastOfEach(ops []fomod.Op) []fomod.Op {
+	seen := make(map[string]bool, len(ops))
+	kept := make([]fomod.Op, 0, len(ops))
+	for i := len(ops) - 1; i >= 0; i-- {
+		op := ops[i]
+		dest := "\x00nil"
+		if op.Destination != nil {
+			dest = *op.Destination
+		}
+		key := fmt.Sprintf("%q|%q|%t", op.Source, dest, op.Folder)
+		if !seen[key] {
+			seen[key] = true
+			kept = append(kept, op)
+		}
+	}
+	slices.Reverse(kept)
+	return kept
+}
+
 func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error) {
 	cfg, cfgPath, ok, err := fomod.Open(a.FS)
 	if err != nil || !ok {
@@ -57,7 +87,7 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 		f.Src = path.Join(wrap, f.Src)
 		// Later operations have the higher priority and overwrite earlier ones.
 		// Keyed folded: destinations differing only in case are one file on Windows.
-		key := strings.ToLower(f.Rel)
+		key := winname.Fold(f.Rel)
 		if i, seen := at[key]; seen {
 			l.Files[i] = f
 			return
@@ -65,7 +95,13 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 		at[key] = len(l.Files)
 		l.Files = append(l.Files, f)
 	}
-	for _, op := range fomod.Resolve(cfg, choices, a.Eval) {
+	ops := fomod.Resolve(cfg, choices, a.Eval)
+	if len(ops) > maxFomodOps {
+		return Layout{}, fmt.Errorf("%w: the installer lists %d file operations, more than the %d Mortar accepts", ErrUnsafe, len(ops), maxFomodOps)
+	}
+	listed := map[string][]string{}
+	placed := 0
+	for _, op := range lastOfEach(ops) {
 		src := slash(op.Source)
 		if !fs.ValidPath(src) {
 			return Layout{}, fmt.Errorf("%w: %q", ErrUnsafe, op.Source)
@@ -93,9 +129,15 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 			put(File{Src: src, Target: TargetMods, Rel: path.Join(a.Key, dest)})
 			continue
 		}
-		inside, err := files(base, src)
-		if err != nil {
-			return Layout{}, err
+		inside, ok := listed[src]
+		if !ok {
+			if inside, err = files(base, src); err != nil {
+				return Layout{}, err
+			}
+			listed[src] = inside
+		}
+		if placed += len(inside); placed > maxFomodFiles {
+			return Layout{}, fmt.Errorf("%w: the installer places more than %d files", ErrUnsafe, maxFomodFiles)
 		}
 		for _, f := range inside {
 			put(File{Src: path.Join(src, f), Target: TargetMods, Rel: path.Join(a.Key, dest, f)})

@@ -4,7 +4,9 @@ import (
 	"errors"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -86,5 +88,55 @@ func TestFomodRefusesSourceOrDestinationOutsideTheMod(t *testing.T) {
 				t.Fatalf("err = %v, want ErrUnsafe", err)
 			}
 		})
+	}
+}
+
+// A config that repeats one folder operation must cost one walk, and one that lists more operations than any real
+// installer is refused.
+func TestFomodRepeatedOperationsAreWalkedOnceAndTheirCountIsCapped(t *testing.T) {
+	dir := t.TempDir()
+	testfs.WriteAt(t, filepath.Join(dir, "Data", "a.txt"), []byte("x"))
+	var b strings.Builder
+	b.WriteString(`<config><moduleName>M</moduleName><requiredInstallFiles>`)
+	for range maxFomodOps {
+		b.WriteString(`<folder source="Data" destination=""/>`)
+	}
+	b.WriteString(`</requiredInstallFiles></config>`)
+	testfs.WriteAt(t, filepath.Join(dir, "fomod", "ModuleConfig.xml"), []byte(b.String()))
+	g := Game{Loaders: []string{"smapi"}, Targets: []Target{{ID: TargetMods}}}
+	a := Open(dir, "k")
+	i, _ := Pick(a, g)
+	start := time.Now()
+	l, err := i.Layout(a, g, nil)
+	if err != nil || len(l.Files) != 1 {
+		t.Fatalf("layout %+v, %v", l.Files, err)
+	}
+	if d := time.Since(start); d > 5*time.Second {
+		t.Fatalf("%d repeated operations took %v", maxFomodOps, d)
+	}
+	b.Reset()
+	b.WriteString(`<config><moduleName>M</moduleName><requiredInstallFiles>`)
+	for range maxFomodOps + 1 {
+		b.WriteString(`<folder source="Data" destination=""/>`)
+	}
+	b.WriteString(`</requiredInstallFiles></config>`)
+	testfs.WriteAt(t, filepath.Join(dir, "fomod", "ModuleConfig.xml"), []byte(b.String()))
+	if _, err := i.Layout(a, g, nil); !errors.Is(err, ErrUnsafe) {
+		t.Fatalf("an oversized operation list gave %v", err)
+	}
+}
+
+func TestFomodDestinationsDifferingByAFoldAreOneFile(t *testing.T) {
+	dir := t.TempDir()
+	testfs.WriteAt(t, filepath.Join(dir, "s.txt"), []byte("1"))
+	testfs.WriteAt(t, filepath.Join(dir, "t.txt"), []byte("2"))
+	cfg := `<config><moduleName>M</moduleName><requiredInstallFiles><file source="s.txt" destination="ς.txt"/><file source="t.txt" destination="σ.txt"/></requiredInstallFiles></config>`
+	testfs.WriteAt(t, filepath.Join(dir, "fomod", "ModuleConfig.xml"), []byte(cfg))
+	g := Game{Loaders: []string{"smapi"}, Targets: []Target{{ID: TargetMods}}}
+	a := Open(dir, "k")
+	i, _ := Pick(a, g)
+	l, err := i.Layout(a, g, nil)
+	if err != nil || len(l.Files) != 1 || l.Files[0].Src != "t.txt" {
+		t.Fatalf("layout %+v, %v", l.Files, err)
 	}
 }
