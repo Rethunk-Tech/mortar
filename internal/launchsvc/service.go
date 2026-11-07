@@ -393,13 +393,12 @@ func credited(owner loader.Owner, p gameproc.Process, modsDir, profileID, launch
 	return owner.Owns(loader.Process{PID: p.PID, Args: p.Args}, loader.ProfileView{Dir: filepath.Dir(modsDir)})
 }
 
-// Running reports whether the game is launching or running this profile, for locking its mods folder.
-func (s *Service) Running(gameID, profileID string) bool {
+// Starting reports whether a launch of this profile is being prepared or its game is still starting.
+func (s *Service) Starting(gameID, profileID string) bool {
 	g := game.Find(gameID)
 	if g == nil {
 		return false
 	}
-	dir, dirErr := s.profiles.ModsDir(gameID, profileID)
 	for _, sl := range s.slots(g) {
 		s.mu.Lock()
 		cur, prep := s.status[keyOf(sl)], s.preparing[keyOf(sl)]
@@ -407,6 +406,21 @@ func (s *Service) Running(gameID, profileID string) bool {
 		if (prep != "" && prep == profileID) || (cur.State == Launching && cur.Profile != "" && cur.Profile == profileID) {
 			return true
 		}
+	}
+	return false
+}
+
+// Running reports whether the game is launching or running this profile, for locking its mods folder.
+func (s *Service) Running(gameID, profileID string) bool {
+	g := game.Find(gameID)
+	if g == nil {
+		return false
+	}
+	if s.Starting(gameID, profileID) {
+		return true
+	}
+	dir, dirErr := s.profiles.ModsDir(gameID, profileID)
+	for _, sl := range s.slots(g) {
 		if dirErr != nil {
 			continue
 		}

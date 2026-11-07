@@ -211,6 +211,7 @@ export function stateCases(
         await reloadUnder(p, tabs)
       },
     },
+    configRunningCase(tabs, tab, running),
     sandboxedRunCase(tabs, tab),
     overlayFieldsCase(tabs, tab),
     {
@@ -235,6 +236,32 @@ export function stateCases(
       },
     },
   ]
+}
+
+/** The Config page while the game runs: the fields stay editable under a warning that a change may wait. */
+function configRunningCase(
+  tabs: (p: Page) => ReturnType<Page['locator']>,
+  tab: (p: Page, name: string) => Promise<void>,
+  running: Stub,
+): Case {
+  return {
+    name: 'config-game-running',
+    // The sidebar's running time ticks once a second.
+    budget: { idleUpdates: 40, idleCommits: 20 },
+    setup: async (p) => {
+      await p.route('**/wails/runtime', running)
+      await reloadUnder(p, tabs)
+      await openGame(p, tabs(p), 'Stardew Valley')
+    },
+    run: async (p) => {
+      await tab(p, 'Config')
+      await p.getByText(/^The game is running\. Most mods/).waitFor()
+    },
+    teardown: async (p) => {
+      await p.unroute('**/wails/runtime', running)
+      await reloadUnder(p, tabs)
+    },
+  }
 }
 
 /** A sandboxed run's Console note: the writable folders, and denied paths each with its Allow button. */

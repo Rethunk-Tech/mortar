@@ -25,9 +25,9 @@ import { PresetsButton } from '../ConfigPresets.tsx'
 import { localId } from '../dependents.ts'
 import { LockedReason } from '../LockedReason.tsx'
 import { lockedHint } from '../lockedHint.ts'
-import { useLocked } from '../useLocked.ts'
 import { configApi } from './api.ts'
 import { showsOneFile, useConfigList } from './configList.ts'
+import { useConfigGameRunning, useConfigLocked } from './configLocked.ts'
 import { formatValue } from './convert.ts'
 import { filterFile, humanizeKey, isModified, modifiedCount } from './entries.ts'
 import { useHostValues } from './hostValues.ts'
@@ -39,16 +39,6 @@ import type { ConfigEntry } from './types.ts'
 import { EntryWidget } from './Widgets.tsx'
 
 const FILE_PICKER_WIDTH_PX = 260
-// The game holds the files it is running with, so every write is refused; the in-game menu's edits wait for the next
-// start and stay open.
-function useConfigLocked(): boolean {
-  const locked = useLocked()
-  const inGameMenu = useTypedConfig(
-    (s) => s.files.find((f) => f.name === s.current)?.format === 'gmcm',
-  )
-  return locked && !inGameMenu
-}
-
 function EntryRow({
   section,
   entry,
@@ -407,6 +397,15 @@ function useTextDirty(file: string): [boolean, (dirty: boolean) => void] {
   return [dirty, onDirty]
 }
 
+function RunningWarning() {
+  const { t } = useLingui()
+  return useConfigGameRunning() ? (
+    <Alert variant="compact" severity="warning" sx={{ mx: space.gutter }}>
+      {t`The game is running. Most mods read their settings when the game starts, so a change here may wait for the next start, and a mod that saves its settings in the game can write over it.`}
+    </Alert>
+  ) : null
+}
+
 // The editor of one selection's config files, beside the Config page's list. A selection without a mod (the unowned
 // .cfg files) opens on `file` and offers no presets.
 export function ConfigPane({
@@ -495,6 +494,7 @@ export function ConfigPane({
           {loadError}
         </Alert>
       ) : null}
+      {file && file.format !== 'gmcm' ? <RunningWarning /> : null}
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
         {file?.format === 'text' ? (
           <TextFile key={file.name} target={target} name={file.name} onDirty={onDirty} />

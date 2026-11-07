@@ -61,8 +61,11 @@ type Service struct {
 	SetJSON func(game, profile string, uniqueID mod.ID, sets []profile.ConfigSet) error
 	// SetGmcm sets one option of a mod's in-game menu for the game's next start.
 	SetGmcm func(game, profile string, uniqueID mod.ID, page string, index int, value string) error
-	// Running reports whether the profile's game is running; writes to its files are refused then.
+	// Running reports whether the profile's game is launching or running.
 	Running func(game, profile string) bool
+	// Starting reports whether a launch of the profile is placing its files or waiting for the game to come up; edits
+	// are refused then.
+	Starting func(game, profile string) bool
 
 	changedMu sync.Mutex
 	changed   map[changedKey]bool
@@ -426,7 +429,7 @@ func (s *Service) Text(game, profileID, modID, file string) (string, error) {
 
 // SetText replaces one of a mod's text config files, atomically.
 func (s *Service) SetText(game, profileID, modID, file, text string) error {
-	if err := s.refuseRunning(game, profileID); err != nil {
+	if err := s.refuseEdit(game, profileID); err != nil {
 		return err
 	}
 	p, err := s.textFile(game, profileID, modID, file)
@@ -637,9 +640,22 @@ func (s *Service) refuseRunning(game, profileID string) error {
 	return nil
 }
 
+// refuseEdit lets a running game's config files change: the mod reads them again at its next start, or sooner if it
+// watches them. A launch still placing files refuses, and so does a running game whose mod config folder is swapped
+// in, since a copied swap goes back over the profile's folder when the game exits and would drop the edit.
+func (s *Service) refuseEdit(game, profileID string) error {
+	if s.Starting != nil && s.Starting(game, profileID) {
+		return &profile.RunningError{Game: game}
+	}
+	if gamepkg.HasPath(game, profile.ModConfigRole) {
+		return s.refuseRunning(game, profileID)
+	}
+	return nil
+}
+
 // Set changes one value. The file is written atomically with every other line, comment and key as it was.
 func (s *Service) Set(game, profileID, modID, file, section, key, value string) error {
-	if err := s.refuseRunning(game, profileID); err != nil {
+	if err := s.refuseEdit(game, profileID); err != nil {
 		return err
 	}
 	f, err := s.fileOf(game, profileID, modID, file)
@@ -665,7 +681,7 @@ func (s *Service) ResetAll(game, profileID, modID, file string) (int, error) {
 }
 
 func (s *Service) reset(game, profileID, modID, file string, pick func(section, key string) bool) (int, error) {
-	if err := s.refuseRunning(game, profileID); err != nil {
+	if err := s.refuseEdit(game, profileID); err != nil {
 		return 0, err
 	}
 	schema, err := s.Schema(game, profileID, modID, file)

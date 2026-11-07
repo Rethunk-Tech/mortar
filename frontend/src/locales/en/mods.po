@@ -2163,6 +2163,10 @@ msgstr "Notes and tags"
 msgid "This update's notes mention breaking changes or new requirements"
 msgstr "This update's notes mention breaking changes or new requirements"
 
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "The game is running. Most mods read their settings when the game starts, so a change here may wait for the next start, and a mod that saves its settings in the game can write over it."
+msgstr "The game is running. Most mods read their settings when the game starts, so a change here may wait for the next start, and a mod that saves its settings in the game can write over it."
+
 #: src/mods/problemText.ts
 msgid "{app} exception"
 msgstr "{app} exception"

@@ -8,13 +8,19 @@ import (
 
 // configs edits the typed config files (BepInEx .cfg, Vintage Story ModConfig) the way the window's editor does.
 func (s *Services) configs() *configsvc.Service {
-	return &configsvc.Service{
+	svc := &configsvc.Service{
 		Profiles: s.Store,
 		SetJSON: func(game, profileID string, uniqueID mod.ID, sets []profile.ConfigSet) error {
 			return s.Profiles.SetConfigValues(game, profileID, "", uniqueID, sets)
 		},
-		Running: s.Store.Running,
+		Running:  s.Store.Running,
+		Starting: s.Store.Running,
 	}
+	// Without the launch service a launch cannot be told from a running game, so both refuse edits.
+	if s.Launches != nil {
+		svc.Starting = s.Launches.Starting
+	}
+	return svc
 }
 
 // modConfigFields lists the mod's config.json fields followed by those of its typed config files.

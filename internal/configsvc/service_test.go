@@ -147,8 +147,12 @@ func TestJSONFileGoesThroughTheProfileSetter(t *testing.T) {
 		t.Fatalf("reset wrote %q=%q: %v", field, value, err)
 	}
 	s.Running = func(string, string) bool { return true }
-	if err := s.Set("stardew", "p", "Author.Mod", "config.json", "", "Speed", "3"); err == nil {
-		t.Fatal("a running game must block writes")
+	if err := s.Set("stardew", "p", "Author.Mod", "config.json", "", "Speed", "3"); err != nil || value != "3" {
+		t.Fatalf("a running game's config was not written: %v", err)
+	}
+	s.Starting = func(string, string) bool { return true }
+	if err := s.Set("stardew", "p", "Author.Mod", "config.json", "", "Speed", "4"); err == nil {
+		t.Fatal("a launch placing files must block writes")
 	}
 }
 
@@ -275,6 +279,12 @@ func TestModConfigJSONIsMatchedByModIDAndEditedInPlace(t *testing.T) {
 	if got, _ := os.ReadFile(filepath.Clean(filepath.Join(mc, "CarryOnConfig.json"))); !strings.Contains(string(got), `"InteractDistance": 3`) || strings.Index(string(got), "InteractDistance") > strings.Index(string(got), "Allowed") {
 		t.Fatalf("file = %s", got)
 	}
+	// A copied mod config swap goes back over the profile's folder when the game exits, so a running game refuses.
+	s.Running = func(string, string) bool { return true }
+	if err := s.Set("vintage-story", "p", "folder:carryon", "CarryOnConfig.json", "", "InteractDistance", "4"); err == nil {
+		t.Fatal("a swapped-in mod config folder was written while the game ran")
+	}
+	s.Running = nil
 	list, err := s.Mods("vintage-story", "p")
 	if err != nil || len(list.Mods) != 1 || len(list.Other) != 2 || !slices.ContainsFunc(list.Other, func(f ModFile) bool { return f.Name == "OtherMod.json" }) {
 		t.Fatalf("list = %+v, %v", list, err)
@@ -339,9 +349,9 @@ func TestTextFilesAreMatchedByPackageAndEditedWhole(t *testing.T) {
 	if err := s.SetText("g", "p", id, "../escape.yaml", "x"); err == nil {
 		t.Fatal("a name outside the config folder was written")
 	}
-	s.Running = func(string, string) bool { return true }
+	s.Starting = func(string, string) bool { return true }
 	if err := s.SetText("g", "p", id, "BetterStuff.toml", "x"); err == nil {
-		t.Fatal("a running game's file was written")
+		t.Fatal("a file was written while its game was starting")
 	}
 }
 

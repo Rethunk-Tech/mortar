@@ -7,8 +7,8 @@ import { space } from '../../theme/density.ts'
 import { MONO } from '../../theme/theme.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { LockedReason } from '../LockedReason.tsx'
-import { useLocked } from '../useLocked.ts'
 import { configApi } from './api.ts'
+import { useConfigLocked } from './configLocked.ts'
 import type { Target } from './store.ts'
 
 // A text file (YAML, TOML, XML, INI, JSON or plain text a mod keeps beside its .cfg) has no schema, so it is edited
@@ -23,7 +23,7 @@ export function TextFile({
   onDirty: (dirty: boolean) => void
 }) {
   const { t } = useLingui()
-  const locked = useLocked()
+  const locked = useConfigLocked()
   const [saved, setSaved] = useState<string | null>(null)
   const [text, setText] = useState('')
   const [error, setError] = useState<InlineError | null>(null)

@@ -967,7 +967,8 @@ func (c *boot) browseConfig() error {
 			_, err := c.profileSvc.SetGmcmOption(game, profileID, uniqueID, page, index, value)
 			return err
 		},
-		Running: c.profiles.Running,
+		Running:  c.profiles.Running,
+		Starting: c.launches.Starting,
 	}
 	// Host values the player kept are written into a config once its game has closed.
 	c.launches.Unlocked = func() {
