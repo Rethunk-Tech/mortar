@@ -316,7 +316,7 @@ func sandboxed(cmd *launch.Command, inst Install, env StartEnv) (*sandbox.Bus, e
 		}
 	}
 	var bus *sandbox.Bus
-	if addr := sandbox.SessionAddress(os.Environ(), spec.Runtime); addr != "" && spec.Runtime != "" {
+	if addr := sandbox.SessionAddress(append(os.Environ(), cmd.Env...), spec.Runtime); addr != "" && spec.Runtime != "" {
 		var err error
 		if bus, err = sandbox.StartProxy(addr, spec.Runtime); err != nil {
 			note("no session bus for the game (GameMode, screensaver inhibit and portals are off): " + err.Error())
