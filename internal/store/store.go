@@ -352,13 +352,18 @@ func (s *Store) AddArchiveKey(ctx context.Context, game, key, archivePath string
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	// One open file serves the hash that names the folder and the extraction, so a path swapped in between cannot put
-	// other bytes under that name.
-	f, err := safefs.Open(archivePath)
-	if err != nil {
-		return &Error{Game: game, Key: key, Err: err}
-	}
-	defer func() { _ = f.Close() }()
+	// other bytes under that name. It opens only once admit needs the bytes: a key already held needs no archive.
+	var f *os.File
+	defer func() {
+		if f != nil {
+			_ = f.Close()
+		}
+	}()
 	return s.admit(ctx, game, key, false, func() (string, error) {
+		var err error
+		if f, err = safefs.Open(archivePath); err != nil {
+			return "", err
+		}
 		h := sha256.New()
 		if _, err := io.Copy(h, io.NewSectionReader(f, 0, math.MaxInt64)); err != nil {
 			return "", err
