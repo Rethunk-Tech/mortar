@@ -3,17 +3,15 @@ package melonloader
 import (
 	"context"
 	"crypto/sha256"
-	"crypto/sha512"
 	"errors"
 	"fmt"
-	"net/http"
 	"regexp"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 const (
@@ -25,8 +23,6 @@ const (
 	listedReleases = 40
 	// maxPack bounds a release download.
 	maxPack = 256 << 20
-	// maxChecksum bounds a checksum file.
-	maxChecksum = 4 << 10
 )
 
 var versionPattern = regexp.MustCompile(`^\d+(\.\d+)*$`)
@@ -84,7 +80,7 @@ func (l Loader) Versions(ctx context.Context, _ components.GameInfo) ([]string, 
 	}
 	var out []string
 	for _, r := range all {
-		if v, ok := stable(r); ok {
+		if v, ok := stable(r); ok && l.hasPin(v) {
 			out = append(out, v)
 		}
 		if len(out) == listedReleases {
@@ -94,23 +90,40 @@ func (l Loader) Versions(ctx context.Context, _ components.GameInfo) ([]string, 
 	return out, nil
 }
 
-// Fetch downloads the Windows x64 loader of version to dst. The catalog's release is checked against the catalog's
-// hash; any other is checked against the digest GitHub computed for the asset, or the .sha512 file the release holds
-// beside it, and refused when it has neither.
+func (l Loader) client() *components.Client {
+	if l.Components != nil {
+		return l.Components
+	}
+	return components.Active()
+}
+
+func (l Loader) hasPin(version string) bool {
+	c := l.client()
+	if c == nil {
+		return false
+	}
+	_, ok := c.Pin(components.PinComponent, componentGame, componentName, version)
+	return ok
+}
+
+// Fetch downloads the Windows x64 loader of version to dst, checked against the SHA-256 the signed catalog pins for
+// that version. The loader is injected into the game, and GitHub's own digest for an asset says only that the file is
+// the one its publisher uploaded, so a version the catalog does not pin is not installed.
 func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dst string) error {
 	c, err := l.component()
 	if err != nil {
 		return err
 	}
+	client := l.client()
 	if c.Version == version {
-		client := l.Components
-		if client == nil {
-			client = components.Active()
-		}
 		if err := client.Download(ctx, c, dst); err != nil {
 			return fmt.Errorf("download MelonLoader %s: %w", version, err)
 		}
 		return nil
+	}
+	want, ok := client.Pin(components.PinComponent, componentGame, componentName, version)
+	if !ok {
+		return usererr.New(usererr.Invalid, fmt.Sprintf("MelonLoader %s is not in Mortar's signed catalog, so Mortar will not install it.", version))
 	}
 	all, err := l.releases(ctx, c)
 	if err != nil {
@@ -120,7 +133,7 @@ func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dst s
 		if v, ok := stable(r); !ok || v != version {
 			continue
 		}
-		if err := l.download(ctx, r, dst); err != nil {
+		if err := l.download(ctx, r, want, dst); err != nil {
 			return fmt.Errorf("download MelonLoader %s: %w", version, err)
 		}
 		return nil
@@ -128,70 +141,23 @@ func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dst s
 	return fmt.Errorf("GitHub lists no stable MelonLoader release %s", version)
 }
 
-func (l Loader) download(ctx context.Context, r github.Release, dst string) error {
+func (l Loader) download(ctx context.Context, r github.Release, want, dst string) error {
 	var pack github.Asset
-	var sum string
 	for _, a := range r.Assets {
-		switch a.Name {
-		case asset:
+		if a.Name == asset {
 			pack = a
-		case strings.TrimSuffix(asset, ".zip") + ".sha512":
-			sum = a.URL
 		}
-	}
-	if pack.Digest == "" && sum == "" {
-		return errors.New("the release carries no checksum to verify it by")
 	}
 	if err := github.Download(ctx, l.HTTP, pack.URL, dst, maxPack, nil); err != nil {
 		return err
 	}
-	if err := l.verify(ctx, pack, sum, dst); err != nil {
+	got, err := safefs.HashFile(dst, sha256.New())
+	if err == nil && !strings.EqualFold(got, want) {
+		err = errors.New("the download does not match the checksum in Mortar's signed catalog")
+	}
+	if err != nil {
 		_ = safefs.Remove(dst)
 		return err
 	}
 	return nil
-}
-
-func (l Loader) verify(ctx context.Context, pack github.Asset, sumURL, file string) error {
-	if want, ok := strings.CutPrefix(pack.Digest, "sha256:"); ok {
-		got, err := safefs.HashFile(file, sha256.New())
-		if err != nil {
-			return err
-		}
-		if !strings.EqualFold(got, want) {
-			return errors.New("the download does not match GitHub's SHA-256 for it")
-		}
-		return nil
-	}
-	if sumURL == "" {
-		return errors.New("GitHub's digest for the release is not a SHA-256")
-	}
-	want, err := l.checksum(ctx, sumURL)
-	if err != nil {
-		return err
-	}
-	got, err := safefs.HashFile(file, sha512.New())
-	if err != nil {
-		return err
-	}
-	if !strings.EqualFold(got, want) {
-		return errors.New("the download does not match the release's SHA-512 file")
-	}
-	return nil
-}
-
-// checksum is the hex digest a .sha512 file holds, which may be followed by the file's name.
-func (l Loader) checksum(ctx context.Context, url string) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return "", err
-	}
-	b, err := httpkit.DoCapped(l.HTTP, req, maxChecksum, nil)
-	if err != nil {
-		return "", fmt.Errorf("the checksum file: %w", err)
-	}
-	if fields := strings.Fields(string(b)); len(fields) > 0 {
-		return fields[0], nil
-	}
-	return "", errors.New("the checksum file is empty")
 }

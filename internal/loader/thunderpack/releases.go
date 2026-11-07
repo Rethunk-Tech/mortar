@@ -2,8 +2,10 @@ package thunderpack
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/host"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // lastReleases bounds the version list a picker shows.
@@ -27,6 +30,8 @@ type Releases struct {
 	Index *thunderstore.Driver
 	// HTTP downloads the pack.
 	HTTP *http.Client
+	// Components is the client whose catalog pins the packs; nil means the active one.
+	Components *components.Client
 	// Keep picks the releases offered; nil keeps every one.
 	Keep func(version string) bool
 }
@@ -108,7 +113,37 @@ func (r Releases) Fetch(ctx context.Context, g components.GameInfo, version, dst
 	if err != nil {
 		return fmt.Errorf("download %s %s: %w", r.Name, version, err)
 	}
+	if err := r.checkPin(namespace+"-"+name, version, got); err != nil {
+		return err
+	}
 	return safefs.Rename(got, dst)
+}
+
+// checkPin holds the downloaded pack to the SHA-256 the signed catalog pins for its version. Thunderstore publishes no
+// digest, so a version the catalog does not pin installs unverified, as it did before pins existed; a pinned version
+// whose bytes differ is refused.
+func (r Releases) checkPin(pack, version, file string) error {
+	client := r.Components
+	if client == nil {
+		client = components.Active()
+	}
+	if client == nil {
+		return nil
+	}
+	want, ok := client.Pin(components.PinPack, "", pack, version)
+	if !ok {
+		log.Printf("%s %s: the catalog pins no checksum for this version, so it is installed unverified", r.Name, version)
+		return nil
+	}
+	got, err := safefs.HashFile(file, sha256.New())
+	if err != nil {
+		return err
+	}
+	if !strings.EqualFold(got, want) {
+		_ = safefs.Remove(file)
+		return usererr.New(usererr.Damaged, fmt.Sprintf("%s %s does not match the checksum in Mortar's signed catalog, so it was not installed.", r.Name, version))
+	}
+	return nil
 }
 
 // Versions are the releases of the game's loader package in its community index, newest first.

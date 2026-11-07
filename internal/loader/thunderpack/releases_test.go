@@ -1,8 +1,12 @@
 package thunderpack
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -39,5 +43,37 @@ func TestReleasesNameTheLoaderWhenTheIndexIsUnreachable(t *testing.T) {
 	}
 	if err := r.Fetch(t.Context(), g, "5.4.2100", t.TempDir()+"/x.zip"); err == nil || !strings.Contains(err.Error(), "find BepInEx 5.4.2100") {
 		t.Errorf("Fetch: %v", err)
+	}
+}
+
+func TestAPackThatDiffersFromItsCatalogPinIsRefused(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "pack.zip")
+	if err := os.WriteFile(file, []byte("pack bytes"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256([]byte("pack bytes"))
+	client := components.NewClient(nil)
+	pin := func(sha string) {
+		client.SetManifest(components.Manifest{Pins: []components.Pin{{Kind: components.PinPack, Name: "BepInEx-BepInExPack", Version: "5.4.2100", SHA256: sha}}})
+	}
+	r := Releases{Name: "BepInEx", Components: client}
+
+	pin(strings.Repeat("0", 64))
+	if err := r.checkPin("BepInEx-BepInExPack", "5.4.2100", file); err == nil {
+		t.Fatal("a pack that differs from its pin was accepted")
+	}
+	if _, err := os.Stat(file); err == nil {
+		t.Fatal("the refused pack was left on disk")
+	}
+
+	if err := os.WriteFile(file, []byte("pack bytes"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	pin(hex.EncodeToString(sum[:]))
+	if err := r.checkPin("bepinex-bepinexpack", "5.4.2100", file); err != nil {
+		t.Fatalf("the pinned pack: %v", err)
+	}
+	if err := r.checkPin("BepInEx-BepInExPack", "5.4.2200", file); err != nil {
+		t.Fatalf("an unpinned version installs unverified: %v", err)
 	}
 }

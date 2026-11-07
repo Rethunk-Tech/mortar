@@ -233,7 +233,15 @@ func fakeSMAPI(t *testing.T, script string) Loader {
 	})
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
-	return Loader{ReleasesURL: srv.URL + "/releases", DownloadBase: srv.URL + "/dl", AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir(), LogDir: t.TempDir()}
+	return Loader{ReleasesURL: srv.URL + "/releases", DownloadBase: srv.URL + "/dl", AssetPattern: "SMAPI-{version}-installer.zip", CacheDir: t.TempDir(), LogDir: t.TempDir(),
+		Components: pinning("9.9.9", fmt.Sprintf("%x", sum))}
+}
+
+// pinning is a catalog client whose manifest pins SMAPI version to sum.
+func pinning(version, sum string) *components.Client {
+	c := components.NewClient(nil)
+	c.SetManifest(components.Manifest{Pins: []components.Pin{{Kind: components.PinComponent, Game: gameID, Name: "smapi", Version: version, SHA256: sum}}})
+	return c
 }
 
 const okScript = `#!/bin/sh
@@ -380,30 +388,33 @@ func TestLauncherReadIsSizedToTheFile(t *testing.T) {
 	}
 }
 
-func TestFetchRefusesUnverifiedInstaller(t *testing.T) {
+func TestFetchRefusesAnInstallerTheCatalogDoesNotPin(t *testing.T) {
 	g := fakeSMAPI(t, okScript)
-	for _, path := range []string{"/bad", "/none"} {
+	for name, client := range map[string]*components.Client{
+		"unpinned":       components.NewClient(nil),
+		"wrong checksum": pinning("9.9.9", strings.Repeat("00", 32)),
+	} {
 		l := g
-		l.ReleasesURL = strings.TrimSuffix(g.ReleasesURL, "/releases") + path
+		l.Components = client
 		dest := filepath.Join(t.TempDir(), "i.zip")
 		if err := l.Fetch(t.Context(), components.GameInfo{}, "9.9.9", dest); err == nil {
-			t.Fatalf("%s: unverified installer accepted", path)
+			t.Fatalf("%s: installer accepted", name)
 		}
 		if _, err := os.Stat(dest); err == nil {
-			t.Fatalf("%s: refused installer left on disk", path)
+			t.Fatalf("%s: refused installer left on disk", name)
 		}
 	}
 }
 
-// Versions offers only releases whose installer GitHub hashed, since Fetch refuses the rest.
-func TestVersionsLeaveOutReleasesWithoutADigest(t *testing.T) {
+// Versions offers only releases the catalog pins, since Fetch refuses the rest.
+func TestVersionsLeaveOutReleasesTheCatalogDoesNotPin(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = w.Write([]byte(`[{"tag_name":"4.5.2","assets":[{"name":"SMAPI-4.5.2-installer.zip","digest":"sha256:ab"}]},{"tag_name":"4.2.1","assets":[{"name":"SMAPI-4.2.1-installer.zip"}]}]`))
+		_, _ = w.Write([]byte(`[{"tag_name":"4.9.0","assets":[]},{"tag_name":"4.2.1","assets":[]}]`))
 	}))
 	t.Cleanup(srv.Close)
-	l := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip"}
+	l := Loader{ReleasesURL: srv.URL, AssetPattern: "SMAPI-{version}-installer.zip", Components: pinning("4.2.1", strings.Repeat("ab", 32))}
 	got, err := l.Versions(t.Context(), components.GameInfo{})
-	if err != nil || len(got) != 1 || got[0] != "4.5.2" {
+	if err != nil || len(got) != 1 || got[0] != "4.2.1" {
 		t.Fatalf("versions = %v, %v", got, err)
 	}
 }

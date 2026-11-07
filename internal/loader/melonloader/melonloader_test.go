@@ -4,10 +4,8 @@ import (
 	"archive/zip"
 	"bytes"
 	"crypto/sha256"
-	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -156,44 +154,37 @@ func TestInstallAndLaunch(t *testing.T) {
 	}
 }
 
-// A release other than the catalog's is trusted only through a checksum: GitHub's digest or the release's .sha512 file.
-// The fake releases carry versions no catalog pins.
-func TestFetchOtherReleaseVerifies(t *testing.T) {
+// A release other than the catalog's is installed only when the catalog pins it, and only if its bytes match the pin.
+func TestFetchOtherReleaseNeedsACatalogPin(t *testing.T) {
 	body := []byte("release zip")
 	s256 := sha256.Sum256(body)
-	s512 := sha512.Sum512(body)
 	var srv *httptest.Server
-	release := func(tag string, assets ...github.Asset) github.Release {
-		return github.Release{Tag: tag, Assets: assets}
-	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/repos/LavaGang/MelonLoader/releases", func(w http.ResponseWriter, _ *http.Request) {
-		zipAsset := func(digest string) github.Asset {
-			return github.Asset{Name: asset, URL: srv.URL + "/dl/zip", Digest: digest}
-		}
-		sumAsset := github.Asset{Name: "MelonLoader.x64.sha512", URL: srv.URL + "/dl/sum"}
+		zip := github.Asset{Name: asset, URL: srv.URL + "/dl/zip", Digest: "sha256:" + hex.EncodeToString(s256[:])}
 		_ = json.NewEncoder(w).Encode([]github.Release{
-			release("v0.0.9", zipAsset("sha256:"+hex.EncodeToString(s256[:]))),
-			release("v0.0.8", zipAsset(""), sumAsset),
-			release("v0.0.7", zipAsset("sha256:"+strings.Repeat("0", 64))),
-			release("v0.0.6", zipAsset("")),
-			{Tag: "v0.0.5", Prerelease: true, Assets: []github.Asset{zipAsset("")}},
+			{Tag: "v0.0.9", Assets: []github.Asset{zip}},
+			{Tag: "v0.0.8", Assets: []github.Asset{zip}},
+			{Tag: "v0.0.7", Assets: []github.Asset{zip}},
+			{Tag: "v0.0.5", Prerelease: true, Assets: []github.Asset{zip}},
 		})
 	})
 	mux.HandleFunc("/dl/zip", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write(body) })
-	mux.HandleFunc("/dl/sum", func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = fmt.Fprintf(w, "%s  MelonLoader.x64.zip\n", hex.EncodeToString(s512[:]))
-	})
 	srv = httptest.NewServer(mux)
 	defer srv.Close()
 
-	l := Loader{Components: components.NewClient(nil), APIBase: srv.URL, HTTP: srv.Client()}
+	client := components.NewClient(nil)
+	client.SetManifest(components.Manifest{Pins: []components.Pin{
+		{Kind: components.PinComponent, Game: componentGame, Name: componentName, Version: "0.0.9", SHA256: hex.EncodeToString(s256[:])},
+		{Kind: components.PinComponent, Game: componentGame, Name: componentName, Version: "0.0.8", SHA256: strings.Repeat("0", 64)},
+	}})
+	l := Loader{Components: client, APIBase: srv.URL, HTTP: srv.Client()}
 
 	versions, err := l.Versions(t.Context(), components.GameInfo{})
-	if err != nil || strings.Join(versions, " ") != "0.0.9 0.0.8 0.0.7 0.0.6" {
+	if err != nil || strings.Join(versions, " ") != "0.0.9 0.0.8" {
 		t.Fatalf("versions %v, %v", versions, err)
 	}
-	for version, ok := range map[string]bool{"0.0.9": true, "0.0.8": true, "0.0.7": false, "0.0.6": false, "0.0.5": false, "9.9": false} {
+	for version, ok := range map[string]bool{"0.0.9": true, "0.0.8": false, "0.0.7": false, "0.0.5": false, "9.9": false} {
 		dst := filepath.Join(t.TempDir(), "MelonLoader.x64.zip")
 		err := l.Fetch(t.Context(), components.GameInfo{}, version, dst)
 		if (err == nil) != ok {

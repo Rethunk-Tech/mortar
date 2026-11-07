@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"slices"
 	"strings"
 	"time"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 const (
@@ -96,7 +96,7 @@ func (l Loader) Versions(ctx context.Context, _ components.GameInfo) ([]string, 
 	var out []string
 	for _, r := range all {
 		v := strings.TrimPrefix(r.Tag, "v")
-		if r.Draft || !versionPattern.MatchString(v) || !hasDigest(r, l.installerAsset(v)) {
+		if r.Draft || !versionPattern.MatchString(v) || !l.hasPin(v) {
 			continue
 		}
 		out = append(out, v)
@@ -107,12 +107,21 @@ func (l Loader) Versions(ctx context.Context, _ components.GameInfo) ([]string, 
 	return out, nil
 }
 
-// hasDigest reports whether r lists asset with a SHA-256, which Fetch needs before it runs the installer. The older
-// releases GitHub never hashed are left out of the choices rather than offered and refused.
-func hasDigest(r github.Release, asset string) bool {
-	return slices.ContainsFunc(r.Assets, func(a github.Asset) bool {
-		return a.Name == asset && strings.HasPrefix(a.Digest, "sha256:") && len(a.Digest) > len("sha256:")
-	})
+func (l Loader) hasPin(version string) bool {
+	_, ok := l.pinned(version)
+	return ok
+}
+
+// pinned is the SHA-256 the signed catalog vouches for SMAPI version's installer.
+func (l Loader) pinned(version string) (string, bool) {
+	client := l.Components
+	if client == nil {
+		client = components.Active()
+	}
+	if client == nil {
+		return "", false
+	}
+	return client.Pin(components.PinComponent, gameID, "smapi", version)
 }
 
 // Fetch saves the release installer of version to dest.
@@ -140,9 +149,11 @@ func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dest 
 	if asset == "" {
 		return errors.New("SMAPI component asset pattern is not configured")
 	}
-	want, err := l.releaseDigest(ctx, version, asset)
-	if err != nil {
-		return fmt.Errorf("download SMAPI %s: %w", version, err)
+	// The installer runs natively, and GitHub's own digest for an asset says only that the file is the one its
+	// publisher uploaded, so a version the signed catalog does not pin is not installed.
+	want, ok := l.pinned(version)
+	if !ok {
+		return usererr.New(usererr.Invalid, fmt.Sprintf("SMAPI %s is not in Mortar's signed catalog, so Mortar will not run its installer.", version))
 	}
 	url := base + "/" + version + "/" + asset
 	if err := github.Download(ctx, l.Client, url, dest, maxInstaller, nil); err != nil {
@@ -150,37 +161,13 @@ func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dest 
 	}
 	got, err := safefs.HashFile(dest, sha256.New())
 	if err == nil && !strings.EqualFold(got, want) {
-		err = errors.New("the download does not match GitHub's SHA-256 for it")
+		err = errors.New("the download does not match the checksum in Mortar's signed catalog")
 	}
 	if err != nil {
 		_ = safefs.Remove(dest)
 		return fmt.Errorf("download SMAPI %s: %w", version, err)
 	}
 	return nil
-}
-
-// releaseDigest is the SHA-256 GitHub reports for version's installer asset. A release without one is refused,
-// since the installer runs natively.
-func (l Loader) releaseDigest(ctx context.Context, version, asset string) (string, error) {
-	all, err := l.releases(ctx)
-	if err != nil {
-		return "", err
-	}
-	for _, r := range all {
-		if r.Draft || strings.TrimPrefix(r.Tag, "v") != version {
-			continue
-		}
-		for _, a := range r.Assets {
-			if a.Name != asset {
-				continue
-			}
-			if want, ok := strings.CutPrefix(a.Digest, "sha256:"); ok && want != "" {
-				return want, nil
-			}
-			return "", errors.New("the release carries no SHA-256 to verify it by")
-		}
-	}
-	return "", fmt.Errorf("GitHub lists no SMAPI release %s with that installer", version)
 }
 
 // releases are SMAPI's GitHub releases.
