@@ -153,3 +153,45 @@ func FindSourceSites(g components.GameInfo) []string {
 	}
 	return out
 }
+
+// dataRoles are the catalog path roles a game writes while it runs, apart from mods: its saves, logs, screenshots
+// and startup preferences. Roles that name a file stand for the folder holding it.
+var dataRoles = map[string]bool{
+	PathSaves: true, "errorLogs": true, PathStartupPreferences: true, PathScreenshots: true,
+	PathLog: true, PathCrashLog: true, "unityLog": true, "userData": true,
+}
+
+var dataFileRoles = map[string]bool{PathStartupPreferences: true, PathLog: true, PathCrashLog: true, "unityLog": true}
+
+// DataDirs are the folders a native game of the pin writes outside its install, each role's folder merged into the
+// outermost one (Stardew's saves, error logs and startup preferences all sit under one config folder). Roles the
+// catalog has no path for on this platform are skipped.
+func DataDirs(home string, s settings.Settings, id, pin string) []string {
+	g, ok := components.Game(id)
+	if !ok {
+		return nil
+	}
+	var all []string
+	for role, t := range g.Paths {
+		if !dataRoles[role] {
+			continue
+		}
+		p, err := PathIn(home, s, id, pin, t)
+		if err != nil || p == "" {
+			continue
+		}
+		if dataFileRoles[role] {
+			p = filepath.Dir(p)
+		}
+		all = append(all, filepath.Clean(p))
+	}
+	slices.Sort(all)
+	var out []string
+	for _, p := range all {
+		if n := len(out); n > 0 && (p == out[n-1] || strings.HasPrefix(p, out[n-1]+string(filepath.Separator))) {
+			continue
+		}
+		out = append(out, p)
+	}
+	return out
+}

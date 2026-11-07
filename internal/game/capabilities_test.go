@@ -6,6 +6,8 @@ import (
 	"slices"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // The Sims 4 names its user folder after the game's language, and switching language starts a new one beside the old.
@@ -61,5 +63,14 @@ func TestManifestModsFolderBelongsToTheSMAPIGameOnly(t *testing.T) {
 		if got, ok := ManifestModsFolder(id); ok {
 			t.Errorf("%s = %q, want none", id, got)
 		}
+	}
+}
+
+// SMAPI writes ErrorLogs beside Saves in the config folder; a sandbox that binds only Saves loses the logs.
+func TestDataDirsMergesStardewsRolesIntoItsConfigFolder(t *testing.T) {
+	home := t.TempDir()
+	got := DataDirs(home, settings.Defaults(), "stardew", "")
+	if want := []string{filepath.Join(home, ".config", "StardewValley")}; !slices.Equal(got, want) {
+		t.Fatalf("DataDirs = %v, want %v", got, want)
 	}
 }
