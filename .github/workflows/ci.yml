@@ -50,6 +50,12 @@ jobs:
         if: ${{ !cancelled() && steps.changes.outputs.code != 'true' }}
         run: scripts/vulncheck.sh
 
+      # Ubuntu's AppArmor refuses unprivileged user namespaces, which the rm-sandbox test needs to prove a mounted-in
+      # file survives a sandbox's removal; without this the test skips on the runner.
+      - name: Allow unprivileged user namespaces
+        if: ${{ !cancelled() && steps.changes.outputs.code == 'true' }}
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Offline gate
         if: ${{ !cancelled() && steps.changes.outputs.code == 'true' }}
         # The step times show where a runner's few cores go; a fast workstation hides it.
