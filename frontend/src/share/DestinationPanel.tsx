@@ -9,11 +9,11 @@ import { FilePane, LinkPane, NearbyPane, NexusPane, ThunderstorePane } from './M
 import type { Destination } from './methods.ts'
 import type { useShareBuild } from './useShareBuild.ts'
 
-// The profile's own mod count, or the built list's while the profile is not loaded.
+// The profile's own mod count, or the share's while the profile is not loaded; both count mods, not entries.
 function useShareTotal({ profileId, info }: ReturnType<typeof useShareBuild>) {
   return useProfiles((s) => {
     const p = profileById(profileId)(s)
-    return p ? userModCount(p) : (info?.count ?? 0)
+    return p ? userModCount(p) : (info?.mods ?? 0)
   })
 }
 

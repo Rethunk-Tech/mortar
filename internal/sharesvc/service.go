@@ -196,10 +196,13 @@ func (s *Service) emit(name string, data any) {
 // --- Share ---
 
 // Omitted is an enabled or switched-off mod a link cannot carry. Reason is "local", "off", "file" (its
-// page is known, the file on it is not) or "unknown".
+// page is known, the file on it is not), "option" (a dev helper, or a mod the share options leave to the
+// receiver's resolver) or "unknown". Count is how many of the profile's mods the entry holds, so the dialog
+// can say how many it means.
 type Omitted struct {
 	Name   string `json:"name"`
 	Reason string `json:"reason"`
+	Count  int    `json:"count"`
 }
 
 // Group is the shared mods of one source: "nexus" or "github".
@@ -211,12 +214,16 @@ type Group struct {
 
 // Info is what the Share dialog shows. Web and App are empty when the profile is too large for a link.
 type Info struct {
-	Name     string    `json:"name"`
-	Web      string    `json:"web"`
-	App      string    `json:"app"`
-	Length   int       `json:"length"`
-	Limit    int       `json:"limit"`
-	Count    int       `json:"count"`
+	Name   string `json:"name"`
+	Web    string `json:"web"`
+	App    string `json:"app"`
+	Length int    `json:"length"`
+	Limit  int    `json:"limit"`
+	// Count is how many store items the share names.
+	Count int `json:"count"`
+	// Mods is how many of the profile's mods the share carries, counted as the profile's own mod count is; added to
+	// the Count of every LeftOut entry it is that count, so the dialog never leaves a mod unexplained.
+	Mods     int       `json:"mods"`
 	TooLarge bool      `json:"tooLarge"`
 	Groups   []Group   `json:"groups"`
 	LeftOut  []Omitted `json:"leftOut"`
@@ -306,25 +313,34 @@ func describe(game string, p profile.Profile, facts profile.ShareFacts, include 
 	default:
 		return Info{}, err
 	}
-	byKey := map[string]profile.Entry{}
+	byStore := map[string][]profile.Entry{}
 	for _, e := range p.Entries {
-		if _, ok := byKey[e.StoreKey()]; !ok {
-			byKey[e.StoreKey()] = e
+		if !e.Source.Bundled() {
+			byStore[e.StoreKey()] = append(byStore[e.StoreKey()], e)
 		}
 	}
 	leftKeys := map[string]bool{}
 	for _, l := range left {
 		leftKeys[l.Key] = true
-		e := byKey[l.Key]
-		info.LeftOut = append(info.LeftOut, Omitted{Name: strings.Join(entryNames(e, false), ", "), Reason: reasonOf(e)})
+		info.LeftOut = append(info.LeftOut, Omitted{Name: storeNames(byStore[l.Key]), Reason: reasonOfKey(byStore[l.Key]), Count: modsIn(byStore[l.Key])})
 	}
+	offKeys := map[string]bool{}
 	for _, key := range off {
-		info.LeftOut = append(info.LeftOut, Omitted{Name: strings.Join(entryNames(byKey[key], true), ", "), Reason: "off"})
+		offKeys[key] = true
+		info.LeftOut = append(info.LeftOut, Omitted{Name: storeNames(byStore[key]), Reason: "off", Count: modsIn(byStore[key])})
 	}
 	groupAt := map[string]int{}
 	counted := map[string]bool{}
+	optionKeys := map[string]bool{}
 	for _, e := range p.Entries {
-		if e.Source.Bundled() || leftKeys[e.StoreKey()] || slices.Contains(off, e.StoreKey()) {
+		key := e.StoreKey()
+		if e.Source.Bundled() || leftKeys[key] || offKeys[key] {
+			continue
+		}
+		// The link names the mods the player chose; a library only brought in to satisfy another travels when the
+		// receiver's resolver fetches it, and the option to include libraries names it instead.
+		if !inc.Libraries && !slices.ContainsFunc(byStore[key], func(o profile.Entry) bool { return !o.Implicit }) {
+			optionKeys[key] = true
 			continue
 		}
 		at, ok := groupAt[e.Source.Kind]
@@ -334,10 +350,11 @@ func describe(game string, p profile.Profile, facts profile.ShareFacts, include 
 			groupAt[e.Source.Kind] = at
 		}
 		g := &info.Groups[at]
-		if !counted[e.StoreKey()] {
-			counted[e.StoreKey()] = true
+		if !counted[key] {
+			counted[key] = true
 			g.Count++
 			info.Count++
+			info.Mods += modsIn(byStore[key])
 		}
 		for _, name := range entryNames(e, false) {
 			if !slices.Contains(g.Mods, name) {
@@ -345,7 +362,51 @@ func describe(game string, p profile.Profile, facts profile.ShareFacts, include 
 			}
 		}
 	}
+	// A mod left to the receiver's resolver is in no group, and a mod with no source reaches no group either: both
+	// are named under Which? so included plus left out is the profile's own mod count.
+	for _, e := range p.Entries {
+		key := e.StoreKey()
+		if e.Source.Bundled() || counted[key] || leftKeys[key] || offKeys[key] {
+			continue
+		}
+		leftKeys[key] = true
+		reason := "unknown"
+		if optionKeys[key] {
+			reason = "option"
+		}
+		info.LeftOut = append(info.LeftOut, Omitted{Name: storeNames(byStore[key]), Reason: reason, Count: modsIn(byStore[key])})
+	}
 	return info, nil
+}
+
+// modsIn counts the mods the entries cut from one store item hold, as the profile's own mod count does.
+func modsIn(entries []profile.Entry) int {
+	n := 0
+	for _, e := range entries {
+		n += len(e.Mods)
+	}
+	return n
+}
+
+// storeNames lists every name the entries cut from one store item hold, switched-off mods included.
+func storeNames(entries []profile.Entry) string {
+	var names []string
+	for _, e := range entries {
+		for _, name := range entryNames(e, true) {
+			if !slices.Contains(names, name) {
+				names = append(names, name)
+			}
+		}
+	}
+	return strings.Join(names, ", ")
+}
+
+// reasonOfKey says why the first entry cut from a store item cannot travel.
+func reasonOfKey(entries []profile.Entry) string {
+	if len(entries) == 0 {
+		return "unknown"
+	}
+	return reasonOf(entries[0])
 }
 
 // Saved is the outcome of SaveFile. Path is empty when the dialog was cancelled; Skipped lists the config files

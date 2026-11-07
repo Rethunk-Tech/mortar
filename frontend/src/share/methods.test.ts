@@ -88,10 +88,26 @@ test('a paired computer gets every setting, an unpaired one only what is safe to
 })
 
 test('leftOutCounts separates archive mods', () => {
-  expect(leftOutCounts([{ reason: 'local' }, { reason: 'off' }, { reason: 'local' }])).toEqual({
+  expect(
+    leftOutCounts([
+      { reason: 'local', count: 1 },
+      { reason: 'off', count: 1 },
+      { reason: 'local', count: 1 },
+    ]),
+  ).toEqual({
     local: 2,
     other: 1,
   })
+})
+
+test('leftOutCounts counts mods, not install entries', () => {
+  expect(
+    leftOutCounts([
+      { reason: 'local', count: 3 },
+      { reason: 'off', count: 1 },
+      { reason: 'unknown', count: 2 },
+    ]),
+  ).toEqual({ local: 3, other: 3 })
 })
 
 test('gridColumns never leaves an orphan tile', () => {

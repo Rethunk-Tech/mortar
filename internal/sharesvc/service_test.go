@@ -296,9 +296,12 @@ func TestDescribeGroupsAndLeftOut(t *testing.T) {
 	if !slices.EqualFunc(info.Groups, wantGroups, func(a, b Group) bool { return a.Source == b.Source && slices.Equal(a.Mods, b.Mods) }) {
 		t.Errorf("groups = %+v", info.Groups)
 	}
-	wantLeft := []Omitted{{Name: "mine.zip", Reason: "local"}, {Name: "Beta", Reason: "off"}}
+	wantLeft := []Omitted{{Name: "mine.zip", Reason: "local", Count: 0}, {Name: "Beta", Reason: "off", Count: 1}}
 	if !slices.Equal(info.LeftOut, wantLeft) {
 		t.Errorf("left out = %+v", info.LeftOut)
+	}
+	if info.Mods != 2 {
+		t.Errorf("mods carried = %d, want 2", info.Mods)
 	}
 	subset, err := describe("stardew", withEntryKeys(p, []string{"a"}), profile.ShareFacts{})
 	if err != nil || subset.Count != 1 {
@@ -306,6 +309,46 @@ func TestDescribeGroupsAndLeftOut(t *testing.T) {
 	}
 	if len(subset.Groups) != 1 || !slices.Equal(subset.Groups[0].Mods, []string{"Alpha"}) {
 		t.Errorf("subset groups = %+v", subset.Groups)
+	}
+}
+
+func TestDescribeAccountsForEveryMod(t *testing.T) {
+	t.Parallel()
+	// A bundled entry, a local archive holding two mods, an off mod, an implicit library the options leave out and a
+	// mod whose source is not known: included plus left out must still be the profile's own mod count.
+	p := profile.Profile{Name: "Farm", Entries: []profile.Entry{
+		{Key: "smapi-4", Source: profile.Source{Kind: profile.SourceSMAPI}, Mods: []profile.Component{{ID: "smapi:SMAPI", Name: "SMAPI"}}},
+		{Key: "a", Source: profile.Source{Kind: profile.KindNexus, ModID: 1, FileID: 1}, Mods: []profile.Component{{ID: "smapi:A", Name: "Alpha"}}},
+		{Key: "mine", Source: profile.Source{Kind: profile.KindLocal, Name: "mine.zip"}, Mods: []profile.Component{{ID: "smapi:Mine", Name: "Mine"}, {ID: "smapi:MineX", Name: "Mine Extra"}}},
+		{Key: "b", Source: profile.Source{Kind: profile.KindNexus, ModID: 2, FileID: 2}, Mods: []profile.Component{{ID: "smapi:B", Name: "Beta"}}, Disabled: []mod.ID{"smapi:B"}},
+		{Key: "lib", Implicit: true, Source: profile.Source{Kind: profile.KindNexus, ModID: 3, FileID: 3}, Mods: []profile.Component{{ID: "smapi:Lib", Name: "Lib"}}},
+		{Key: "ghost", Mods: []profile.Component{{ID: "smapi:Ghost", Name: "Ghost"}}},
+	}}
+	info, err := describe("stardew", p, profile.ShareFacts{}, share.Include{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	total := 0
+	for _, e := range p.Entries {
+		if !e.Source.Bundled() {
+			total += len(e.Mods)
+		}
+	}
+	left := 0
+	for _, o := range info.LeftOut {
+		left += o.Count
+	}
+	if info.Mods+left != total {
+		t.Fatalf("included %d + left out %d = %d, want the profile's %d mods (%+v)", info.Mods, left, info.Mods+left, total, info.LeftOut)
+	}
+	reasons := map[string]bool{}
+	for _, o := range info.LeftOut {
+		reasons[o.Reason] = true
+	}
+	for _, want := range []string{"local", "off", "option", "unknown"} {
+		if !reasons[want] {
+			t.Errorf("left out = %+v, want a %q entry", info.LeftOut, want)
+		}
 	}
 }
 

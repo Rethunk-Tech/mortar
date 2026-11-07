@@ -2916,6 +2916,10 @@ msgstr ""
 msgid "Broken for this version"
 msgstr ""
 
+#: src/share/Included.tsx
+msgid "Left to the other person's Mortar to bring, with the options above."
+msgstr ""
+
 #: src/share/ImportProblems.tsx
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr ""

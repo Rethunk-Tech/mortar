@@ -5,7 +5,6 @@ import {
   meter,
   missingModName,
   SUGGEST_FILE_AT,
-  sharedMods,
   shownInfo,
   shownPreview,
   suggestFile,
@@ -87,7 +86,7 @@ test('missing mods list a known name and keep the UniqueID for the title', () =>
   expect(missingModName('Unknown.Mod', mods)).toBeUndefined()
 })
 
-test('sharedMods adds the mod names of every group', () => {
+test('shownInfo keeps the mod count the service reports', () => {
   const info = shownInfo({
     name: 'p',
     web: '',
@@ -95,6 +94,7 @@ test('sharedMods adds the mod names of every group', () => {
     length: 0,
     limit: 0,
     count: 2,
+    mods: 3,
     tooLarge: false,
     groups: [
       { source: 'nexus', count: 1, mods: ['A', 'B'] },
@@ -102,7 +102,8 @@ test('sharedMods adds the mod names of every group', () => {
     ],
     leftOut: null,
   })
-  expect(sharedMods(info)).toBe(3)
+  expect(info.mods).toBe(3)
+  expect(info.leftOut).toEqual([])
 })
 
 test('a received share lists what it carries', () => {

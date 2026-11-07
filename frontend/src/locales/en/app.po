@@ -2922,6 +2922,10 @@ msgstr "Delete {name}?"
 msgid "Broken for this version"
 msgstr "Broken for this version"
 
+#: src/share/Included.tsx
+msgid "Left to the other person's Mortar to bring, with the options above."
+msgstr "Left to the other person's Mortar to bring, with the options above."
+
 #: src/share/ImportProblems.tsx
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"

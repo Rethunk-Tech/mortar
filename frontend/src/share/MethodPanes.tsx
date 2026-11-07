@@ -324,12 +324,11 @@ export function NearbyPane({
   const lanSharing = useSettings((s) => s.lanSharing)
   const [enabling, setEnabling] = useState(false)
   if (lanSharing) {
-    // A paired computer copies archives added from disk, so only the other mods the link cannot name are left out.
-    const shown = { ...info, leftOut: info.leftOut.filter((o) => o.reason !== 'local') }
+    // Included leaves the archives added from disk out of the warning for a paired computer, which copies them.
     return (
       <Pane>
         <Included
-          info={shown}
+          info={info}
           total={total}
           include={include}
           onInclude={onInclude}

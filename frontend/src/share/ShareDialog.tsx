@@ -9,13 +9,13 @@ import { useProfiles } from '../profiles/store.ts'
 import { AppDialog } from '../shell/dialog/AppDialog.tsx'
 import { DestinationGrid } from './DestinationGrid.tsx'
 import { DestinationPanel } from './DestinationPanel.tsx'
-import { type ShownInfo, sharedMods } from './logic.ts'
+import type { ShownInfo } from './logic.ts'
 import { shareDestinations } from './methods.ts'
 import { MortarFooter } from './ShareFooter.tsx'
 import { useShareBuild } from './useShareBuild.ts'
 
 function shareMessage(info: ShownInfo, gameName: string): string {
-  const count = sharedMods(info)
+  const count = info.mods
   return i18n._(
     msg`Try my Mortar profile "${{ name: info.name }}" for ${{ game: gameName }} (${plural({ count }, { one: '# mod', other: '# mods' })}): ${{ web: info.web }}`,
   )

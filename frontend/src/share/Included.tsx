@@ -8,7 +8,7 @@ import { modsLabel } from '../i18n/counts.ts'
 import { profileById, useProfiles } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
 import { IncludeOptions } from './IncludeOptions.tsx'
-import { type ShownInfo, sharedMods } from './logic.ts'
+import type { ShownInfo } from './logic.ts'
 import { type IncludeTarget, includedKeys, leftOutCounts } from './methods.ts'
 import { offersFomod, type ShareInclude } from './shareDefaults.ts'
 import { useShareDialog } from './store.ts'
@@ -97,7 +97,15 @@ export function Included({
     problemChoices: t`Problem choices`.toLocaleLowerCase(i18n.locale),
     libraries: '',
   }
-  const shared = sharedMods(info)
+  // A paired computer copies archives added from disk, so those travel with the share and are not left out there;
+  // every other target leaves them behind, and they are what Which? lists first.
+  const paired = target === 'paired'
+  const shownLeftOut = paired ? info.leftOut.filter((o) => o.reason !== 'local') : info.leftOut
+  const all = leftOutCounts(info.leftOut)
+  const { local, other } = paired ? { local: 0, other: all.other } : all
+  // The service counts carried mods as the profile's own mod count does, so included plus left out accounts for
+  // every mod the profile holds.
+  const shared = info.mods + (paired ? all.local : 0)
   const count = total
   const mods = shared < total ? t`${shared} of ${total} mods` : modsLabel(count)
   // Every share carries these with its mods, whatever the options.
@@ -111,7 +119,6 @@ export function Included({
     ...includedKeys(include, { target, fomod }).map((k) => labels[k]),
     ...carried,
   ].join(' · ')
-  const { local, other } = leftOutCounts(info.leftOut)
   const reason = (id: string) => {
     switch (id) {
       case 'local':
@@ -120,6 +127,8 @@ export function Included({
         return t`Its ${{ source: sourceLabel('nexus') }} file is not known. Group the Mods list by Source and choose Find on ${{ source: sourceLabel('nexus') }}.`
       case 'off':
         return t`Disabled in this profile`
+      case 'option':
+        return t`Left to the other person's Mortar to bring, with the options above.`
       default:
         return t`Its source is not known.`
     }
@@ -157,7 +166,7 @@ export function Included({
       </Box>
       {showMods ? <ModNames info={info} /> : null}
       {changing ? <IncludeOptions value={include} onChange={onInclude} target={target} /> : null}
-      {info.leftOut.length > 0 ? (
+      {shownLeftOut.length > 0 ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
           <Box sx={{ display: 'flex', color: 'warning.main' }}>
             <TriangleAlert size={16} />
@@ -170,7 +179,7 @@ export function Included({
       ) : null}
       {which ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-          {info.leftOut.map((o) => (
+          {shownLeftOut.map((o) => (
             <Box
               key={`${o.name}-${o.reason}`}
               sx={{

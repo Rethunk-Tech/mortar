@@ -96,11 +96,13 @@ export function includedKeys(
   return keys
 }
 
-// Mods the share leaves out, split into the ones the user added from archives and the rest.
-export function leftOutCounts(leftOut: readonly { reason: string }[]): {
+// Mods the share leaves out, split into the ones the user added from archives and the rest, counted as mods
+// rather than as install entries so the two counts add up to the profile's own mod count.
+export function leftOutCounts(leftOut: readonly { reason: string; count?: number | null }[]): {
   local: number
   other: number
 } {
-  const local = leftOut.filter((o) => o.reason === 'local').length
-  return { local, other: leftOut.length - local }
+  const mods = (o: { count?: number | null }) => o.count ?? 0
+  const local = leftOut.filter((o) => o.reason === 'local').reduce((n, o) => n + mods(o), 0)
+  return { local, other: leftOut.reduce((n, o) => n + mods(o), 0) - local }
 }
