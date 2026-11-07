@@ -52,6 +52,9 @@ var hidden = []string{"/home", "/root", "/mnt", "/media", "/run/media"}
 func Argv(bwrap string, s Spec, name string, args []string) []string {
 	a := []string{bwrap, "--die-with-parent", "--new-session",
 		"--ro-bind", "/", "/", "--dev-bind", "/dev", "/dev", "--proc", "/proc", "--tmpfs", "/tmp"}
+	// The host's TMPDIR may sit outside the sandbox's writable folders; .NET fails to start when it cannot create its
+	// diagnostics socket and debug pipes there, which looks like a crash.
+	a = append(a, "--setenv", "TMPDIR", "/tmp")
 	if exists("/tmp/.X11-unix") {
 		a = append(a, "--bind", "/tmp/.X11-unix", "/tmp/.X11-unix")
 	}

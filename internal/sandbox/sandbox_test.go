@@ -252,3 +252,10 @@ func TestStartProxyListensAndCloseRemovesIt(t *testing.T) {
 		t.Fatal("proxy socket left behind")
 	}
 }
+
+func TestArgvPointsTMPDIRAtTheSandboxsOwnTmp(t *testing.T) {
+	a := Argv("bwrap", Spec{Environ: []string{"TMPDIR=/var/tmp/elsewhere"}}, "g", nil)
+	if index(a, "--setenv", "TMPDIR", "/tmp") < 0 || index(a, "--tmpfs", "/tmp") < 0 {
+		t.Fatalf("TMPDIR not pinned to the sandbox's tmpfs: %v", a)
+	}
+}
