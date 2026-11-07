@@ -86,6 +86,9 @@ func ModPaths(modsDir, key, folder string) (plain, dotted string, err error) {
 
 // removeEntryFolders deletes both the enabled and disabled folder of a mod entry.
 func removeEntryFolders(modsDir, key string) error {
+	if !localName(key) || key == "" {
+		return fmt.Errorf("mod key %q leaves the mods folder", key)
+	}
 	for _, name := range []string{key, "." + key} {
 		if err := safefs.RemoveAll(filepath.Join(modsDir, name)); err != nil {
 			return err
@@ -156,6 +159,9 @@ const pendingPrefix = tempPrefix + "pending_"
 // placeStaged is place with the final rename aimed at stage(final) in mods/. It returns final, the folder name e belongs
 // under, or "" when e has no folder of its own.
 func (s *Store) placeStaged(game, modsDir string, e Entry, stage func(final string) string) (string, error) {
+	if !e.namesLocal() {
+		return "", fmt.Errorf("mod key %q leaves the mods folder", e.Key)
+	}
 	arch, l, driver, err := s.layoutOf(game, filepath.Base(filepath.Dir(modsDir)), e.StoreKey(), e.Fomod)
 	if err != nil || driver == driverThunderstore || driver == installer.DriverZipped {
 		return "", err

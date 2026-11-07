@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -259,6 +260,13 @@ func (s *Store) restoreChangedFiles(game, id, from string) error {
 // dirs are the backup's folders as BackupDirs names them, already unpacked: each store item is added to the store
 // first, so its entry is not missing, and the saves become the new profile's own.
 func (s *Store) RestoreBackup(ctx context.Context, game string, p Profile, files map[string][]byte, dirs map[string]string) (Profile, []Entry, error) {
+	// A backup is a file from anywhere and a bad key is never an honest one, so the whole restore is refused rather than
+	// the entry quietly dropped.
+	for _, e := range p.Entries {
+		if !e.namesLocal() {
+			return Profile{}, nil, usererr.Wrap(usererr.Invalid, fmt.Errorf("the backup holds a mod named %q, which leaves the mods folder", e.Key))
+		}
+	}
 	for rel := range files {
 		if !backupPath(rel, p) {
 			return Profile{}, nil, fmt.Errorf("the backup holds %q, which is not a profile file", rel)

@@ -690,6 +690,13 @@ func readAt(dir, id string) (Profile, error) {
 	if p.Entries == nil {
 		p.Entries = []Entry{}
 	}
+	p.Entries = slices.DeleteFunc(p.Entries, func(e Entry) bool {
+		if !e.namesLocal() {
+			log.Printf("profile %s: dropped entry %q, whose key or item leaves the mods folder", id, e.Key)
+			return true
+		}
+		return false
+	})
 	for i := range p.Entries {
 		if p.Entries[i].Mods == nil {
 			p.Entries[i].Mods = []Component{}
@@ -918,4 +925,15 @@ func (p Profile) WithoutDev() Profile {
 	}
 	p.Entries = slices.DeleteFunc(slices.Clone(p.Entries), func(e Entry) bool { return e.DevOnly })
 	return p
+}
+
+// localName reports a name that stays below the folder it is joined to; "" is allowed for the optional fields.
+func localName(name string) bool {
+	return name == "" || (filepath.IsLocal(filepath.FromSlash(name)) && !strings.Contains(name, `\`))
+}
+
+// namesLocal reports an entry whose key and the other names Mortar joins to a folder cannot leave it. Key is also a
+// folder name, so it must be set.
+func (e Entry) namesLocal() bool {
+	return e.Key != "" && localName(e.Key) && localName(e.Item) && localName(e.PreviousKey) && localName(e.OverlayOf)
 }
