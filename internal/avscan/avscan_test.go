@@ -1,9 +1,11 @@
 package avscan
 
 import (
+	"errors"
 	"net"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	goavscan "github.com/Rethunk-Tech/go-avscan"
@@ -83,5 +85,30 @@ func TestStatusSaysWhetherTheScannerCanRun(t *testing.T) {
 	}
 	if st := StatusOf(t.Context(), Config{Mode: ModeClamd, Socket: filepath.Join(t.TempDir(), "none.sock")}); st.Ready || st.Problem == "" {
 		t.Fatalf("clamd without a daemon is not ready: %+v", st)
+	}
+}
+
+func TestAScannerThePlayerSetUpThatCannotBeReachedIsReported(t *testing.T) {
+	t.Parallel()
+	for name, c := range map[string]struct {
+		cfg  Config
+		tell bool
+		want string
+	}{
+		"nothing set up": {Config{}, false, ""},
+		"automatic only": {Config{Mode: ModeAutomatic}, false, ""},
+		"clamd socket":   {Config{Mode: ModeClamd, Socket: "/run/clamd.sock"}, true, "/run/clamd.sock"},
+		"socket in auto": {Config{Socket: "/run/clamd.sock"}, true, "/run/clamd.sock"},
+		"custom command": {Config{Mode: ModeCommand, Command: "scan {path}"}, true, "scan {path}"},
+		"other failure":  {Config{}, true, "boom"},
+	} {
+		err := goavscan.ErrNoScanner
+		if name == "other failure" {
+			err = errors.New("boom")
+		}
+		got, tell := c.cfg.Notice(err)
+		if tell != c.tell || !strings.Contains(got, c.want) {
+			t.Errorf("%s: notice %q tell %v, want %q %v", name, got, tell, c.want, c.tell)
+		}
 	}
 }

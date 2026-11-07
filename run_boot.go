@@ -373,9 +373,14 @@ func (c *boot) openStores() error {
 			return avscan.New(avscan.Config{Mode: v.Antivirus, Socket: v.AntivirusSocket, Command: v.AntivirusCommand})
 		},
 		func(game, key string, err error) {
-			log.Printf("antivirus scan of %s/%s did not finish: %v", game, key, err)
+			v := c.store.Get()
+			why, tell := avscan.Config{Mode: v.Antivirus, Socket: v.AntivirusSocket, Command: v.AntivirusCommand}.Notice(err)
+			if !tell {
+				return
+			}
+			log.Printf("antivirus scan of %s/%s did not finish: %s", game, key, why)
 			if c.app != nil {
-				c.app.Event.Emit("avscan:failed", map[string]string{"game": game, "key": key, "error": err.Error()})
+				c.app.Event.Emit("avscan:failed", map[string]string{"game": game, "key": key, "error": why})
 			}
 		},
 	)

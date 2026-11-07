@@ -4,6 +4,8 @@ package avscan
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"runtime"
 
 	goavscan "github.com/Rethunk-Tech/go-avscan"
@@ -22,6 +24,28 @@ type Config struct {
 	Mode    string
 	Socket  string
 	Command string
+}
+
+// Configured reports whether the player pointed Mortar at a scanner: clamd or a command chosen, or a socket or command
+// written down. Without that, no scanner found is just a computer with no antivirus Mortar can talk to.
+func (c Config) Configured() bool {
+	return c.Mode == ModeClamd || c.Mode == ModeCommand || c.Socket != "" || c.Command != ""
+}
+
+// Notice is what to tell the player about a scan that did not finish, and whether to tell them: an installed mod went
+// unscanned. A missing scanner is news only when the player set one up, and then says which one could not be reached.
+func (c Config) Notice(err error) (string, bool) {
+	if !errors.Is(err, goavscan.ErrNoScanner) {
+		return err.Error(), true
+	}
+	switch {
+	case !c.Configured():
+		return "", false
+	case c.Mode == ModeCommand || (c.Mode != ModeClamd && c.Command != "" && c.Socket == ""):
+		return fmt.Sprintf("the scan command %q could not be run", c.Command), true
+	default:
+		return fmt.Sprintf("clamd did not answer on %q", c.Socket), true
+	}
 }
 
 // Chosen is the scanner the settings name: Windows' AMSI, a clamd daemon, the custom command, or none.

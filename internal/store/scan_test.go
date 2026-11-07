@@ -84,10 +84,10 @@ func TestAScannerErrorInstallsAndIsReported(t *testing.T) {
 	}
 }
 
-func TestNoScannerInstallsSilently(t *testing.T) {
+func TestNoScannerInstallsAndIsReported(t *testing.T) {
 	f := &fakeScanner{err: goavscan.ErrNoScanner}
 	s, failures := scanned(t, f)
-	if _, err := s.AddArchive(t.Context(), "stardew", buildZip(t, map[string]string{"a": "x"})); err != nil || len(*failures) != 0 {
+	if _, err := s.AddArchive(t.Context(), "stardew", buildZip(t, map[string]string{"a": "x"})); err != nil || len(*failures) != 1 {
 		t.Fatalf("err = %v, failures = %v", err, *failures)
 	}
 }

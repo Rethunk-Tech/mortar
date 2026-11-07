@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -54,7 +53,7 @@ type Override struct {
 }
 
 // SetScanner makes every item that enters the store pass through the scanner pick returns, which is asked each time so
-// a changed setting applies at once. failed hears about a scan that could not finish; the item installs anyway.
+// a changed setting applies at once. failed hears about a scan that could not run or finish, including one that found no scanner; the item installs anyway.
 func (s *Store) SetScanner(pick func() goavscan.Scanner, failed func(game, key string, err error)) {
 	s.scan.mu.Lock()
 	defer s.scan.mu.Unlock()
@@ -87,7 +86,7 @@ func (s *Store) dropOverride(game, key string) {
 }
 
 // checkExtracted scans the folder an item was extracted into. A detection is returned as a malware error; a scan that
-// fails or finds no scanner lets the item in. Loader bundles are Mortar's own downloads and are not scanned.
+// fails or finds no scanner lets the item in and is reported to the failed callback, which knows whether the player set a scanner up. Loader bundles are Mortar's own downloads and are not scanned.
 func (s *Store) checkExtracted(ctx context.Context, game, key, dir string) error {
 	s.scan.mu.Lock()
 	pick, failed := s.scan.scanner, s.scan.failed
@@ -116,12 +115,10 @@ func (s *Store) checkExtracted(ctx context.Context, game, key, dir string) error
 	case ctx.Err() != nil && parent.Err() != nil:
 		return parent.Err()
 	case err != nil:
-		if failed != nil && !isNoScanner(err) {
+		if failed != nil {
 			failed(game, key, err)
 		}
 		return nil
 	}
 	return usererr.Wrap(usererr.Malware, &DetectedError{Game: game, Key: key, Detection: hit})
 }
-
-func isNoScanner(err error) bool { return errors.Is(err, goavscan.ErrNoScanner) }
