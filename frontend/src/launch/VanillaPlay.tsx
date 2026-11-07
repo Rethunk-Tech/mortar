@@ -16,6 +16,8 @@ import { playVanillaOpen, rememberLinuxVanillaDirect, useVanillaPrompt } from '.
 import { SmapiWarnDialog } from './SmapiWarnDialog.tsx'
 import { useLaunch } from './store.ts'
 
+const PLAY_FONT_PX = 20
+
 // Play with its menu caret, or on the narrow rail Play alone as an icon (its menu then opens on right-click).
 function PlayButtons({
   rail,
@@ -73,7 +75,7 @@ function PlayButtons({
       <Button
         disabled={playDisabled}
         // A busy label (installing, updating) is longer than Play and is no invitation to play, so it drops the icon.
-        startIcon={busy ? undefined : <Play size={20} fill="currentColor" />}
+        startIcon={busy ? undefined : <Play size={PLAY_FONT_PX} fill="currentColor" />}
         title={busy ? label : undefined}
         onClick={onPlay}
         onContextMenu={onContext}
@@ -82,7 +84,7 @@ function PlayButtons({
           minWidth: 0,
           height: PLAY_HEIGHT_PX,
           borderRadius: 0,
-          fontSize: busy ? 'medium.fontSize' : 20,
+          fontSize: busy ? 'medium.fontSize' : PLAY_FONT_PX,
           fontWeight: 700,
           '& .MuiButton-startIcon': { mr: '10px' },
         }}

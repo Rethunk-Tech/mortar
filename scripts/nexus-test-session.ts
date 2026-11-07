@@ -19,8 +19,11 @@ const USERINFO_URL = 'https://users.nexusmods.com/oauth/userinfo'
 const SECRET_TOOL = '/usr/bin/secret-tool'
 const APP_ITEM = ['service', 'mortar', 'username', 'nexus-oauth']
 const TEST_ITEM = ['service', 'mortar-test', 'username', 'nexus-oauth']
-const REFRESH_MARGIN_MS = 30 * 60_000
-const STALE_LOCK_MS = 60_000
+const MS_PER_MINUTE = 60_000
+const MS_PER_SECOND = 1000
+const REFRESH_MARGIN_MINUTES = 30
+const REFRESH_MARGIN_MS = REFRESH_MARGIN_MINUTES * MS_PER_MINUTE
+const STALE_LOCK_MS = MS_PER_MINUTE
 const LOCK_WAIT_MS = 200
 
 interface Grant {
@@ -103,7 +106,7 @@ async function fresh(): Promise<Grant> {
     const next = {
       access: body.access_token,
       refresh: body.refresh_token || grant.refresh,
-      expires: new Date(Date.now() + body.expires_in * 1000).toISOString(),
+      expires: new Date(Date.now() + body.expires_in * MS_PER_SECOND).toISOString(),
     }
     write(TEST_ITEM, next)
     return next
