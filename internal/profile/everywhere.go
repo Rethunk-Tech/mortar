@@ -284,7 +284,7 @@ func (s *Store) latestStoreKey(game, oldKey, modKeyOrID string) (string, error) 
 		bestVer = heldVersion(oldMods, primary)
 	}
 	for _, key := range keys {
-		if key == oldKey {
+		if key == oldKey || s.items.Unverified(game, key) {
 			continue
 		}
 		switch {

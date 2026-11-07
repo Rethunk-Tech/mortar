@@ -115,7 +115,7 @@ func TestRestoreRequestPinsCurseForgeFile(t *testing.T) {
 	}
 }
 
-func TestRestoreNeverAddsABackupsItemForAModASourceDelivers(t *testing.T) {
+func TestBackupWithModsRestoresOffline(t *testing.T) {
 	dataHome(t)
 	items, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "stardew", "Farm")
@@ -130,24 +130,34 @@ func TestRestoreNeverAddsABackupsItemForAModASourceDelivers(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc := &Service{Profiles: profiles}
-	with := filepath.Join(t.TempDir(), "with.zip")
+	with, without := filepath.Join(t.TempDir(), "with.zip"), filepath.Join(t.TempDir(), "without.zip")
 	if err := svc.Backup("stardew", p.ID, with, true); err != nil {
 		t.Fatal(err)
 	}
-
-	dataHome(t)
-	freshItems, fresh := testenv.Stores(t)
-	q := &fakeQueue{}
-	res, err := (&Service{Profiles: fresh, Queue: q}).Restore(t.Context(), with, "")
-	if err != nil || res.Queued != 1 || len(res.Unavailable) != 0 {
-		t.Fatalf("%+v, %v", res, err)
+	if err := svc.Backup("stardew", p.ID, without, false); err != nil {
+		t.Fatal(err)
 	}
-	if _, err := freshItems.Path("stardew", "nexus-12-34"); err == nil {
-		t.Fatal("the backup's own bytes were added under a Nexus store key")
+	sizeWith, _ := svc.BackupSize("stardew", p.ID, true)
+	sizeWithout, _ := svc.BackupSize("stardew", p.ID, false)
+	if sizeWith <= sizeWithout {
+		t.Fatalf("size with mods %d, without %d", sizeWith, sizeWithout)
+	}
+
+	for path, queued := range map[string]int{with: 0, without: 1} {
+		dataHome(t)
+		freshItems, fresh := testenv.Stores(t)
+		q := &fakeQueue{}
+		res, err := (&Service{Profiles: fresh, Queue: q}).Restore(t.Context(), path, "")
+		if err != nil || res.Queued != queued || len(res.Unavailable) != 0 {
+			t.Fatalf("%s: %+v, %v", path, res, err)
+		}
+		if _, err := freshItems.Path("stardew", "nexus-12-34"); (err == nil) != (queued == 0) {
+			t.Fatalf("%s: store item present: %v", path, err == nil)
+		}
 	}
 }
 
-func TestBackupOfAFolderGameProfileRestoresItsEntriesAndQueuesTheArchive(t *testing.T) {
+func TestBackupOfAFolderGameProfileCarriesTheSplitArchiveOnceAndReplacesTray(t *testing.T) {
 	dataHome(t)
 	_, profiles := testenv.Stores(t)
 	tray := filepath.Join(t.TempDir(), "Tray")
@@ -178,11 +188,12 @@ func TestBackupOfAFolderGameProfileRestoresItsEntriesAndQueuesTheArchive(t *test
 	if err != nil || len(all) != 1 || len(all[0].Entries) != 3 {
 		t.Fatalf("restored profiles %+v, %v", all, err)
 	}
-	if res.Queued == 0 {
-		t.Fatal("the CurseForge archive must be downloaded again, not added from the backup")
+	owners, err := fresh.PackageFileOwners("sims4", res.Profile)
+	if err != nil || len(owners) != 2 {
+		t.Fatalf("owners = %v, %v", owners, err)
 	}
-	if _, err := os.Stat(freshTray); !os.IsNotExist(err) {
-		t.Fatalf("the tray is placed only once the archive is back: %v", err)
+	if b, err := safefs.ReadFile(filepath.Join(freshTray, "Smith.trayitem")); err != nil || string(b) != "t" {
+		t.Fatalf("tray file: %q, %v", b, err)
 	}
 }
 
@@ -248,4 +259,51 @@ func TestReadBackupRefusesCaseOnlyTwinsOnACaseInsensitiveHost(t *testing.T) {
 		}
 	}
 	caseInsensitive = runtime.GOOS == "windows" || runtime.GOOS == "darwin"
+}
+
+func TestABackupsItemServesItsProfileButNoOtherInstallTrustsIt(t *testing.T) {
+	dataHome(t)
+	items, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, "stardew", "Farm")
+	good := t.TempDir()
+	if err := os.WriteFile(filepath.Join(good, "manifest.json"), []byte(`{"Name":"X.A","Version":"1.0.0","UniqueID":"X.A"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := items.AddDir(t.Context(), "stardew", "nexus-12-34", good); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := profiles.AddEntry("stardew", p.ID, "nexus-12-34", profile.Source{Kind: profile.KindNexus, Name: "a.zip", ModID: 12, FileID: 34}); err != nil {
+		t.Fatal(err)
+	}
+	backup := filepath.Join(t.TempDir(), "with.zip")
+	if err := (&Service{Profiles: profiles}).Backup("stardew", p.ID, backup, true); err != nil {
+		t.Fatal(err)
+	}
+
+	dataHome(t)
+	freshItems, fresh := testenv.Stores(t)
+	res, err := (&Service{Profiles: fresh, Queue: &fakeQueue{}}).Restore(t.Context(), backup, "")
+	if err != nil || res.Queued != 0 {
+		t.Fatalf("offline restore: %+v, %v", res, err)
+	}
+	if !freshItems.Unverified("stardew", "nexus-12-34") || fresh.HasStoreItem("stardew", "nexus-12-34") {
+		t.Fatal("a backup's item must not count as the source's file")
+	}
+
+	// The same key arriving from its source replaces the backup's bytes.
+	fromSource := filepath.Join(t.TempDir(), "fromSource.zip")
+	testfs.WriteZip(t, fromSource, map[string]string{"manifest.json": `{"Name":"X.A","Version":"9.9.9","UniqueID":"X.A"}`})
+	if err := freshItems.AddArchiveKey(t.Context(), "stardew", "nexus-12-34", fromSource); err != nil {
+		t.Fatal(err)
+	}
+	dir, err := freshItems.Path("stardew", "nexus-12-34")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := safefs.ReadFile(filepath.Join(dir, "manifest.json")); !strings.Contains(string(b), "9.9.9") {
+		t.Fatalf("the backup's bytes survived a verified download: %s", b)
+	}
+	if freshItems.Unverified("stardew", "nexus-12-34") || !fresh.HasStoreItem("stardew", "nexus-12-34") {
+		t.Fatal("the replaced item is still marked")
+	}
 }

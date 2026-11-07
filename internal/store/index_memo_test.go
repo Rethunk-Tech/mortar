@@ -7,7 +7,7 @@ import (
 
 func TestSavedIndexStampIsTheWrittenFile(t *testing.T) {
 	s := newStore(t)
-	if err := s.bind("stardew", "local-a", "blob1"); err != nil {
+	if err := s.bind("stardew", "local-a", "blob1", false); err != nil {
 		t.Fatal(err)
 	}
 	fi, err := os.Stat(s.indexPath())
@@ -21,11 +21,11 @@ func TestSavedIndexStampIsTheWrittenFile(t *testing.T) {
 
 func TestMutationKeepsIndexMemo(t *testing.T) {
 	s := newStore(t)
-	if err := s.bind("stardew", "local-a", "blob1"); err != nil {
+	if err := s.bind("stardew", "local-a", "blob1", false); err != nil {
 		t.Fatal(err)
 	}
 	before := s.idxDecodes.Load()
-	if err := s.bind("stardew", "local-b", "blob2"); err != nil {
+	if err := s.bind("stardew", "local-b", "blob2", false); err != nil {
 		t.Fatal(err)
 	}
 	idx, err := s.viewIndex()
@@ -43,10 +43,10 @@ func TestMutationKeepsIndexMemo(t *testing.T) {
 func TestOtherStoreWriteInvalidatesMemo(t *testing.T) {
 	a := newStore(t)
 	b := &Store{root: a.root}
-	if err := a.bind("stardew", "local-a", "blob1"); err != nil {
+	if err := a.bind("stardew", "local-a", "blob1", false); err != nil {
 		t.Fatal(err)
 	}
-	if err := b.bind("stardew", "local-b", "blob2"); err != nil {
+	if err := b.bind("stardew", "local-b", "blob2", false); err != nil {
 		t.Fatal(err)
 	}
 	idx, err := a.viewIndex()

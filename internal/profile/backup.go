@@ -272,7 +272,7 @@ func (s *Store) RestoreBackup(ctx context.Context, game string, p Profile, files
 		if !ok || !slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.StoreKey() == key && !e.Source.Bundled() }) {
 			return Profile{}, nil, fmt.Errorf("the backup holds %q, which is no entry's store item", prefix)
 		}
-		if err := s.items.AddDir(ctx, game, key, dir); err != nil {
+		if err := s.items.AddBackupDir(ctx, game, key, dir); err != nil {
 			return Profile{}, nil, err
 		}
 	}

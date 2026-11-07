@@ -350,7 +350,7 @@ func (s *Store) AddArchiveKey(ctx context.Context, game, key, archivePath string
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.admit(ctx, game, key, func() (string, error) { return safefs.HashFile(archivePath, sha256.New()) }, func(tmp string) error {
+	return s.admit(ctx, game, key, false, func() (string, error) { return safefs.HashFile(archivePath, sha256.New()) }, func(tmp string) error {
 		return archive.Extract(archivePath, tmp)
 	}, func() int64 {
 		n, _ := archive.DeclaredSize(archivePath)
@@ -378,7 +378,25 @@ func (s *Store) AddDir(ctx context.Context, game, key, srcDir string) error {
 	if _, _, ok := LoaderOf(key); ok {
 		return fmt.Errorf("store key %q names a loader bundle", key)
 	}
-	return s.addDir(ctx, game, key, srcDir)
+	return s.addDir(ctx, game, key, srcDir, false)
+}
+
+// AddBackupDir is AddDir for an item a profile backup carries. Its hash is vouched for by the backup itself, so the
+// item is marked: it serves the restored profile, no other profile or update takes it as the source's file
+// (Unverified), and the next archive added under the key replaces it. A key already held is left as it is.
+func (s *Store) AddBackupDir(ctx context.Context, game, key, srcDir string) error {
+	if _, _, ok := LoaderOf(key); ok {
+		return fmt.Errorf("store key %q names a loader bundle", key)
+	}
+	return s.addDir(ctx, game, key, srcDir, true)
+}
+
+// Unverified reports whether key holds bytes only a backup vouched for.
+func (s *Store) Unverified(game, key string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	idx, err := s.loadIndex()
+	return err == nil && idx[game][key].FromBackup
 }
 
 // AddLoaderDir is AddDir for a loader bundle, which Mortar builds from a checked download or the installed game.
@@ -386,16 +404,16 @@ func (s *Store) AddLoaderDir(ctx context.Context, game, key, srcDir string) erro
 	if _, _, ok := LoaderOf(key); !ok {
 		return fmt.Errorf("store key %q is not a loader bundle", key)
 	}
-	return s.addDir(ctx, game, key, srcDir)
+	return s.addDir(ctx, game, key, srcDir, false)
 }
 
-func (s *Store) addDir(ctx context.Context, game, key, srcDir string) error {
+func (s *Store) addDir(ctx context.Context, game, key, srcDir string, fromBackup bool) error {
 	if err := checkKey(game, key); err != nil {
 		return err
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.admit(ctx, game, key, func() (string, error) {
+	return s.admit(ctx, game, key, fromBackup, func() (string, error) {
 		if _, _, ok := LoaderOf(key); ok {
 			return "", nil
 		}
@@ -410,14 +428,14 @@ func (s *Store) addDir(ctx context.Context, game, key, srcDir string) error {
 // admit makes key name a complete folder. A key already in the index is left as it is; otherwise the content hash
 // (empty for a loader bundle, which is named by loader and version) picks the folder, and fill extracts into it
 // unless another key already put the same content there.
-func (s *Store) admit(ctx context.Context, game, key string, hash func() (string, error), fill func(tmp string) error, need func() int64) error {
+func (s *Store) admit(ctx context.Context, game, key string, fromBackup bool, hash func() (string, error), fill func(tmp string) error, need func() int64) error {
 	idx, err := s.loadIndex()
 	if err != nil {
 		return err
 	}
 	if ok, err := s.ready(game, key, idx); err != nil {
 		return err
-	} else if ok {
+	} else if ok && (fromBackup || !idx[game][key].FromBackup) {
 		return s.touch(game, key)
 	}
 	blob, err := hash()
@@ -435,7 +453,7 @@ func (s *Store) admit(ctx context.Context, game, key string, hash func() (string
 			return err
 		}
 	}
-	return s.bind(game, key, blob)
+	return s.bind(game, key, blob, fromBackup)
 }
 
 // install fills a temp folder beside the final one and renames it into place,
@@ -654,6 +672,9 @@ type record struct {
 	// Asset is the release asset name of a GitHub item, which its key hashes.
 	Asset string    `json:"asset,omitempty"`
 	Used  time.Time `json:"used"`
+	// FromBackup marks an item a profile backup supplied: the hash that vouched for it came from the same file, so
+	// nothing else may rely on it, and the next verified add under the key replaces it.
+	FromBackup bool `json:"fromBackup,omitempty"`
 	// Size is the folder's size on disk, measured once: an item never changes after it is added.
 	Size int64 `json:"size,omitempty"`
 }
@@ -776,7 +797,7 @@ func (idx index) clone() index {
 
 // bind records that key's folder is blob and starts its clock now. What the key says about itself fills the source,
 // package and version unless Describe already set them.
-func (s *Store) bind(game, key, blob string) error {
+func (s *Store) bind(game, key, blob string, fromBackup bool) error {
 	idx, err := s.loadIndex()
 	if err != nil {
 		return err
@@ -785,7 +806,7 @@ func (s *Store) bind(game, key, blob string) error {
 		idx[game] = map[string]record{}
 	}
 	r := idx[game][key]
-	r.Blob, r.Used = blob, time.Now().UTC()
+	r.Blob, r.Used, r.FromBackup = blob, time.Now().UTC(), fromBackup
 	if dir, err := s.destOf(game, key, blob); err == nil {
 		r.Size, _ = safefs.Size(dir)
 	}
