@@ -160,3 +160,26 @@ func TestPreviewEverywhereReportsNoLaterVersionInTheStore(t *testing.T) {
 		t.Fatalf("preview %+v, want two affected and nothing later in the store", got)
 	}
 }
+
+// A backup vouches for its own bytes, so a later version it brought is not one the store can update a profile to.
+func TestLatestStoreKeySkipsAnItemOnlyABackupVouchedFor(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	man := func(v string) map[string]string {
+		return map[string]string{"A/manifest.json": `{"Name":"A","Author":"me","Version":"` + v + `","UniqueID":"me.a"}`}
+	}
+	e.item(t, "nexus-5-10", man("1.0.0"))
+	dir := t.TempDir()
+	for rel, body := range man("2.0.0") {
+		writeFile(t, dir, rel, body)
+	}
+	if err := e.items.AddBackupDir(t.Context(), "stardew", "nexus-5-12", dir); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := e.latestStoreKey("stardew", "nexus-5-10", "smapi:me.a"); err == nil {
+		t.Fatalf("latest = %q, want none: the only later item came from a backup", got)
+	}
+	if e.HasStoreItem("stardew", "nexus-5-12") {
+		t.Fatal("a backup's item counts as held for a template")
+	}
+}
