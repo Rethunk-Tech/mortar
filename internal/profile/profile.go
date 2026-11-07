@@ -15,6 +15,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/Rethunk-Tech/mortar/internal/ids"
@@ -476,7 +477,8 @@ func OpenIn(dir string, items *store.Store) *Store {
 	}
 }
 
-// CleanName trims the name of a profile or template (what), refusing an empty or overlong one.
+// CleanName trims the name of a profile or template (what), refusing an empty or overlong one, or one with a control
+// character: the name becomes a Steam shortcut title, and Steam's binary shortcut file ends a string at a NUL.
 func CleanName(what, name string) (string, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
@@ -484,6 +486,9 @@ func CleanName(what, name string) (string, error) {
 	}
 	if utf8.RuneCountInString(name) > maxName {
 		return "", fmt.Errorf("%s name is longer than %d characters", what, maxName)
+	}
+	if strings.ContainsFunc(name, unicode.IsControl) {
+		return "", errors.New(what + " name has a control character")
 	}
 	return name, nil
 }

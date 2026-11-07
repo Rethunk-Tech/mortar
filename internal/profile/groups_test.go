@@ -125,3 +125,15 @@ func TestNestedGroupsToggleRenameAndDeleteTogether(t *testing.T) {
 		t.Fatalf("delete tree: %+v %v", p.Groups, err)
 	}
 }
+
+func TestCleanNameRefusesControlCharacters(t *testing.T) {
+	t.Parallel()
+	for _, name := range []string{"a\x00b", "line\nbreak", "tab\there", "\x1b[0m"} {
+		if _, err := CleanName("profile", name); err == nil {
+			t.Errorf("%q was accepted", name)
+		}
+	}
+	if got, err := CleanName("profile", "  Ünïcode ✓  "); err != nil || got != "Ünïcode ✓" {
+		t.Errorf("plain name: %q, %v", got, err)
+	}
+}
