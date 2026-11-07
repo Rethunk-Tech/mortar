@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -610,8 +611,8 @@ type Resolved struct {
 	FileName  string
 	URL       string
 	Size      int64
-	// Digest is "sha1:<hex>", the only strong-enough hash the site publishes besides MD5. It names the file for update
-	// checks; Mortar does not verify it, since the linter bans the weak hash.
+	// Digest is "sha1:<hex>", the only hash the site publishes besides MD5. It names the file for update checks, and
+	// the queue checks the download against it.
 	Digest string
 	// Dependencies are the mods the file requires, by id; each resolves to its newest file.
 	Dependencies []string
@@ -647,6 +648,9 @@ func (d Driver) Resolve(ctx context.Context, id, version string) (Resolved, erro
 	if link == "" {
 		return Resolved{}, &NotDistributableError{Mod: m.Name, PageURL: page}
 	}
+	if !secure(link) {
+		return Resolved{}, fmt.Errorf("CurseForge mod %s has no https download address", id)
+	}
 	res := Resolved{
 		ModID: id, Name: m.Name, Version: fileVersion(f), VersionID: strconv.Itoa(f.ID), FileName: f.FileName,
 		URL: link, Size: f.FileLength, Dependencies: required(f),
@@ -655,6 +659,20 @@ func (d Driver) Resolve(ctx context.Context, id, version string) (Resolved, erro
 		res.Digest = "sha1:" + h
 	}
 	return res, nil
+}
+
+// secure reports whether a download address travels over TLS. A loopback address is exempt, since nothing leaves the
+// machine and a local test server has no certificate.
+func secure(link string) bool {
+	u, err := url.Parse(link)
+	if err != nil {
+		return false
+	}
+	if u.Scheme == "https" {
+		return true
+	}
+	host := u.Hostname()
+	return u.Scheme == "http" && (host == "localhost" || net.ParseIP(host).IsLoopback())
 }
 
 func (d Driver) pick(ctx context.Context, id int, version string) (cf.File, error) {

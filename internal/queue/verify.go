@@ -24,6 +24,9 @@ func verifyDigest(path, digest string) error {
 	if want, ok := strings.CutPrefix(digest, "md5:"); ok {
 		return compareMD5(path, want)
 	}
+	if want, ok := strings.CutPrefix(digest, "sha1:"); ok {
+		return compareSHA1(path, want)
+	}
 	want, ok := strings.CutPrefix(digest, "sha256:")
 	if !ok {
 		return nil
@@ -38,6 +41,18 @@ func compareSHA512(path, want string) error {
 	}
 	if got != want {
 		return usererr.New(usererr.Damaged, "download is damaged or changed: SHA-512 does not match the one the site published")
+	}
+	return nil
+}
+
+// compareSHA1 guards against a damaged download only: SHA-1 is all CurseForge publishes, and the file comes over HTTPS.
+func compareSHA1(path, want string) error {
+	got, err := datadir.SHA1(path)
+	if err != nil {
+		return err
+	}
+	if got != want {
+		return usererr.New(usererr.Damaged, "download is damaged or changed: SHA-1 does not match the one the site published")
 	}
 	return nil
 }

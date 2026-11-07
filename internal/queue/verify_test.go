@@ -29,6 +29,13 @@ func TestVerifyDigest(t *testing.T) {
 	if err := verifyDigest(p, "sha256:00"); err == nil {
 		t.Error("a wrong digest passed")
 	}
+	// SHA-1 of "abc".
+	if err := verifyDigest(p, "sha1:a9993e364706816aba3e25717850c26c9cd0d89d"); err != nil {
+		t.Errorf("matching sha1: %v", err)
+	}
+	if err := verifyDigest(p, "sha1:00"); err == nil {
+		t.Error("a wrong sha1 passed")
+	}
 	if err := verifyDigest(p, ""); err != nil {
 		t.Errorf("no digest: %v", err)
 	}

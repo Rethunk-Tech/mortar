@@ -59,6 +59,8 @@ func fake(t *testing.T) Driver {
 			_, _ = w.Write([]byte(`{"data":[{"id":201,"modId":20,"isAvailable":true,"displayName":"Shut","fileName":"s.zip","releaseType":1,"downloadUrl":null}]}`))
 		case "/mods/10/files/101":
 			_, _ = w.Write([]byte(`{"data":` + file1 + `}`))
+		case "/mods/10/files/104":
+			_, _ = w.Write([]byte(`{"data":{"id":104,"modId":10,"isAvailable":true,"displayName":"Plain","fileName":"p.zip","releaseType":1,"downloadUrl":"http://edge/p.zip"}}`))
 		case "/mods/10/files/101/download-url":
 			http.Error(w, "no", http.StatusForbidden)
 		case "/mods":
@@ -126,6 +128,13 @@ func TestResolvePicksStableAndFollowsRequiredOnly(t *testing.T) {
 	}
 	if _, err = d.Resolve(t.Context(), "10", "Nope"); err == nil {
 		t.Fatal("unknown version resolved")
+	}
+}
+
+func TestResolveRefusesAPlaintextDownload(t *testing.T) {
+	t.Parallel()
+	if r, err := fake(t).Resolve(t.Context(), "10", "104"); err == nil || !strings.Contains(err.Error(), "https") {
+		t.Fatalf("an http download address resolved: %+v %v", r, err)
 	}
 }
 
