@@ -8,6 +8,18 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 ## Ready to build
 
+### Signed catalog expiry and update version binding
+
+Two freshness gaps in what the signing pipeline signs ([security](security.md)). Both need the signing step, so neither is a client-only change.
+
+- **Catalog expiry.** `components.Load` (`internal/components/components.go:1742`) refuses a catalog older than the cached or bundled serial but accepts any age: an attacker who blocks github.com keeps a user on a stale catalog and stale known-broken lists (`internal/components/signedlist.go`) indefinitely.
+  - **Decided shape:** add `issuedAt` (RFC 3339, UTC) to `Manifest` (`components.go:1359`) and to the known-broken list header, written by `cmd/components` and covered by the existing Ed25519 signature (`Verify`, `components.go:1529`). `Load` and `UseCached` keep using a verified cached copy whatever its age (offline use stays working), but report `catalogStale` once `issuedAt` is more than 30 days old, which Settings and Problems show as "the catalog could not be refreshed since <date>". A build never refuses on age: the signed floor is the serial.
+  - **Why not refuse:** an offline laptop must still start and launch games. **Trap:** a manifest signed before the field existed has none; treat it as unknown, not stale, until the first release that writes it.
+  - **Done when:** a test serves a verified manifest with an `issuedAt` 31 days back and sees the stale flag, and one with no field and sees none.
+- **Update version binding.** Wails' updater verifies an Ed25519 signature over the artifact digest only (`Rethunk-AI/wails/v3/pkg/updater/verify.go:137`, `:175`); `Verification` carries no version or platform. Whoever controls `releases/latest/download/manifest.json` can serve an older signed build, or another platform's, under a higher version number. `TestUpdaterE2EDowngradeIgnored` covers only a lower version number.
+  - **Decided shape:** the release step signs `version|platform|digest` instead of the digest (`wails3 task release:manifest`, `docs/release.md`), the fork's verifier rebuilds that message from the release it checked, and `updatesvc.Check` (`internal/updatesvc/service.go:187`) keeps refusing a release without a signature. Mortar and the fork change together, and older builds must still read the new manifest, so the manifest carries both signatures for one release cycle.
+  - **Done when:** an e2e test installs nothing when a validly signed older artifact is relabelled with a higher version.
+
 ### From Later, picked 2026-11-01
 
 Each part goes in the repo that owns its concern; Mortar keeps the product side (wording, settings, findings, UI). A library change ships and is tagged before Mortar bumps to it.
