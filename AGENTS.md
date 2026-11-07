@@ -38,6 +38,7 @@ Mortar is a desktop mod manager for several games (`mortar games` lists the cata
 - AUR packages are prepared and checked locally (PKGBUILD, `.SRCINFO`, makepkg/namcap in an Arch container); each push to aur.archlinux.org needs the AUR account holder's permission, relayed by the maintainer.
 - The CLI exists for agents and automation; end users are GUI-only, so GUI work ranks above CLI parity.
 - Share links name their game ([form](docs/architecture.md#sharing)).
+- LAN sends need both computers on the same LAN protocol: a newer Mortar refuses an older peer, code-only sends included, with "update Mortar on both computers", never falling back to an unencrypted transfer.
 - Store or launcher behaviour the maintainers cannot test (EA/Origin, Epic, Xbox, a game they do not own) follows the source of r2modman (ebkr/r2modmanPlus), Gale (Kesomannen/gale) or another established manager, cited by file.
 - Mortar never re-hosts mod files; downloads come from each mod's own source. Exception: a profile sent between the user's own computers over the LAN, paired with a code, carries its mod files from every source.
 - Nexus downloads start only from Nexus's own Mod Manager Download button (or a Premium API download the user asked for in Mortar). The browser extension reads and marks Nexus pages and relays those clicks; it never starts downloads or opens Nexus pages itself.
