@@ -206,6 +206,8 @@ function problemsSectionsCase({ tab }: Helpers): Case {
     ...patched,
     teardown: async (p) => {
       await patched.teardown?.(p)
+      // The unpatched rescan rewrites every row of the open Problems tab; leaving the tab first keeps that off the next case's count.
+      await tab(p, 'Home')
       await rescan(p)
     },
   }
