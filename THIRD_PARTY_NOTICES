@@ -6021,7 +6021,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-modernc.org/sqlite@v1.61.1
+modernc.org/sqlite@v1.62.0
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/sqlite
 
