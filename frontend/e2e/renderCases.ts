@@ -149,16 +149,25 @@ export async function clickIfPresent(
 }
 
 /** Browse hides one result so the settings list has something; the section is absent while nothing is hidden. */
-function hiddenModsCase({ tab, typeInto, settleMs }: Helpers): Case {
+function hiddenModsCase({ tab, settleMs }: Helpers): Case {
   let hidden = false
   return {
     name: 'hidden-mods',
     setup: async (p) => {
       await tab(p, 'Browse')
-      await typeInto(p, /^Search/, 'farm')
-      await p.waitForTimeout(settleMs)
+      await p
+        .getByRole('textbox', { name: /^Search/ })
+        .first()
+        .fill('farm')
       // Browse results come from the network, so the case skips itself when none arrived.
-      hidden = (await p.locator('[data-hit]').count()) > 0
+      hidden = await p
+        .locator('[data-hit]')
+        .first()
+        .waitFor({ timeout: settleMs })
+        .then(
+          () => true,
+          () => false,
+        )
       if (hidden) {
         await p.locator('[data-hit]').first().click({ button: 'right' })
         await p.getByRole('menuitem', { name: /^Hide from Browse/ }).click()

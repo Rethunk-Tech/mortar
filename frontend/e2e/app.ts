@@ -38,7 +38,7 @@ export async function openSeedFarm(page: Page) {
   }
 }
 
-const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+export const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /** Opens the named profile of whichever game holds it, past the welcome screen and the first-run tour. */
 export async function openProfile(page: Page, name: string) {

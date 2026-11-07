@@ -8,14 +8,12 @@ import { menuCases } from './menuCases.ts'
 import { noProjectCodeCases } from './noProjectCodeCases.ts'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
-import { openGame, thunderstoreVisit } from './renderProfile.ts'
+import { closeAll, openGame, thunderstoreVisit } from './renderProfile.ts'
 import { stubbedCases } from './renderStubbed.ts'
 import { stateCases } from './stateCases.ts'
 import { refreshFailedCases, swrCases } from './swrCases.ts'
 import { uploadDialogCases } from './uploadDialogCase.ts'
 
-const CLOSE_TRIES = 4
-const CLOSE_WAIT_MS = 1000
 const ADOPT_PARENT = '/var/tmp/render-adopt'
 const WIZARD_BUDGET = { updates: 3000 }
 const TYPING_BUDGET = { updates: 2000 }
@@ -27,18 +25,6 @@ const TYPING_BUDGET = { updates: 2000 }
 export function dialogKit(h: Helpers) {
   const { toWorkspace, tab } = h
 
-  // An open select or menu hides the dialogs under it from the accessibility tree, so it counts as open too.
-  const overlays = (page: Page) =>
-    page.getByRole('dialog').or(page.getByRole('listbox')).or(page.getByRole('menu'))
-  async function closeAll(page: Page) {
-    for (let i = 0; i < CLOSE_TRIES && (await overlays(page).count()) > 0; i++) {
-      await page.keyboard.press('Escape')
-      await overlays(page)
-        .last()
-        .waitFor({ state: 'detached', timeout: CLOSE_WAIT_MS })
-        .catch(() => undefined)
-    }
-  }
   // The report pictures each case after it ends, so a case closes the dialog the one before it left open.
   async function ready(page: Page) {
     await closeAll(page)

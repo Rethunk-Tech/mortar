@@ -17,7 +17,7 @@ import { dialogCases } from './renderDialogs.ts'
 import { newRunDir, writeGallery } from './renderGallery.ts'
 import { printExtras, report, startupLine, watchLog, withoutSeededSkips } from './renderLog.ts'
 import { HOOK, mortarBoxes, mortarGaps, mortarMeter, quietToasts, saveShot } from './renderMeter.ts'
-import { biggestProfile, rememberMainGame } from './renderProfile.ts'
+import { biggestProfile, rememberMainGame, reopenMainProfile } from './renderProfile.ts'
 import { STAND_IN_GAMES, screenCases } from './renderScreens.ts'
 import { modsView, nthOrLast } from './renderView.ts'
 import { PAGE } from './renderViewport.ts'
@@ -99,7 +99,7 @@ async function toWorkspace(page: Page) {
       .waitFor({ state: 'visible', timeout: 300 })
       .catch(() => undefined)
   }
-  if (!(await tabs(page).isVisible())) {
+  if (!((await tabs(page).isVisible()) || (await reopenMainProfile(page, tabs(page))))) {
     await land(page)
   }
 }
@@ -113,11 +113,10 @@ async function tab(page: Page, name: string) {
 
 const row = (page: Page, n: number) => nthOrLast(page.locator('[data-mod-id]'), n)
 const view = modsView(tab, tabs, row)
-
-async function typeInto(page: Page, label: RegExp | string, text: string) {
+async function typeInto(page: Page, label: RegExp | string, text: string, delay = TYPE_DELAY_MS) {
   const field = page.getByRole('textbox', { name: label }).first()
   await field.fill('')
-  await field.pressSequentially(text, { delay: TYPE_DELAY_MS })
+  await field.pressSequentially(text, { delay })
 }
 
 /** Opens a profile section from Home, so the figure is that section's own and not what the last case left open. */
@@ -179,7 +178,7 @@ const cases: Case[] = [
     setup: async (p) => {
       await view(p, 'List view')
       if (switched !== null) {
-        await typeInto(p, /^Filter/, switched)
+        await typeInto(p, /^Filter/, switched, 0)
       }
     },
     run: (p) =>
@@ -256,12 +255,12 @@ async function land(page: Page): Promise<number | null> {
   const named = process.env.MORTAR_RENDER_PROFILE
   if (named) {
     await openProfile(page, named)
-    await rememberMainGame(page)
+    await rememberMainGame(page, named)
     return null
   }
   if (process.env.MORTAR_RENDER_SEEDED) {
     await openSeedFarm(page)
-    await rememberMainGame(page)
+    await rememberMainGame(page, 'Seed Farm')
     return null
   }
   const start = Date.now()
@@ -283,7 +282,7 @@ async function land(page: Page): Promise<number | null> {
   if (biggest) {
     await openProfile(page, biggest)
   }
-  await rememberMainGame(page)
+  await rememberMainGame(page, biggest)
   await waitForQuietNotices(page)
   return shownMs
 }

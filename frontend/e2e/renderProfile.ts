@@ -1,6 +1,35 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Locator, Page } from '@playwright/test'
+import { escapeRegExp } from './app.ts'
+
+const CLOSE_TRIES = 4
+const CLOSE_WAIT_MS = 1000
+
+// An open select or menu hides the dialogs under it from the accessibility tree, so it counts as open too.
+const overlays = (page: Page) =>
+  page.getByRole('dialog').or(page.getByRole('listbox')).or(page.getByRole('menu'))
+// A form dialog with edits answers Escape with "Discard changes?", which Escape only dismisses again.
+export async function closeAll(page: Page) {
+  const discard = page.getByRole('dialog', { name: 'Discard changes?' }).getByRole('button', {
+    name: 'Discard',
+  })
+  for (let i = 0; i < CLOSE_TRIES && (await overlays(page).count()) > 0; i++) {
+    await page.keyboard.press('Escape')
+    const settled = (wait: Promise<void>) =>
+      wait.then(
+        () => undefined,
+        () => undefined,
+      )
+    await Promise.race([
+      settled(overlays(page).last().waitFor({ state: 'detached', timeout: CLOSE_WAIT_MS })),
+      settled(discard.waitFor({ timeout: CLOSE_WAIT_MS })),
+    ])
+    if (await discard.isVisible()) {
+      await discard.click()
+    }
+  }
+}
 
 interface ProfileFacts {
   game: string
@@ -113,10 +142,37 @@ export async function openGame(page: Page, workspaceTabs: Locator, name: string)
 }
 
 let mainGame = ''
+let mainProfile = ''
 
-/** Notes the game the run landed in, which holds the profile with the most mods. */
-export async function rememberMainGame(page: Page) {
+/** Notes the game the run landed in and the profile it opened, which holds the most mods. */
+export async function rememberMainGame(page: Page, profile: string) {
   mainGame = await currentGame(page)
+  mainProfile = profile
+}
+
+/**
+ * Closes what a case left open and, from the game select page, opens the run's profile, without the reload that
+ * lands the run again; false when neither shows the workspace.
+ */
+export async function reopenMainProfile(page: Page, workspaceTabs: Locator) {
+  await closeAll(page)
+  if (await workspaceTabs.isVisible()) {
+    return true
+  }
+  if (mainProfile === '') {
+    return false
+  }
+  const card = page
+    .getByRole('button', { name: new RegExp(`^(Open )?${escapeRegExp(mainProfile)}`) })
+    .first()
+  if (!(await card.isVisible())) {
+    return false
+  }
+  await card.click()
+  return workspaceTabs
+    .waitFor({ timeout: 5000 })
+    .then(() => true)
+    .catch(() => false)
 }
 
 /** Reopens the run's game when `rows` finds none in the open profile; false when nothing changed. */
