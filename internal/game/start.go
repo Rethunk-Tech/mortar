@@ -329,7 +329,11 @@ func sandboxed(ctx context.Context, cmd *launch.Command, inst Install, env Start
 	} else {
 		note("no session bus for the game: none to proxy")
 	}
-	argv := sandbox.Argv(bwrap, spec, cmd.Name, cmd.Args)
+	argv, err := sandbox.Argv(bwrap, spec, cmd.Name, cmd.Args)
+	if err != nil {
+		bus.Close()
+		return nil, err
+	}
 	if prefix, why := sandbox.TaskCap(ctx, sandbox.TasksMax); why != "" {
 		note(why)
 	} else {

@@ -26,7 +26,7 @@ func TestArgvHidesHomeThenBindsWhatTheGameNeeds(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	a := Argv("/usr/bin/bwrap", Spec{Home: home, RW: []string{game, saves}, RO: []string{ro, filepath.Join(root, "absent")}}, "/g/run", []string{"-x"})
+	a, _ := Argv("/usr/bin/bwrap", Spec{Home: home, RW: []string{game, saves}, RO: []string{ro, filepath.Join(root, "absent")}}, "/g/run", []string{"-x"})
 
 	hide := index(a, "--tmpfs", home)
 	if hide < 0 {
@@ -57,7 +57,7 @@ func TestArgvKeepsOnlyNamedSocketsInTheRuntimeDir(t *testing.T) {
 	if err := os.WriteFile(wl, nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	a := Argv("bwrap", Spec{Runtime: run, Sockets: []string{wl, filepath.Join(run, "pipewire-0")}}, "g", nil)
+	a, _ := Argv("bwrap", Spec{Runtime: run, Sockets: []string{wl, filepath.Join(run, "pipewire-0")}}, "g", nil)
 	if i, j := index(a, "--tmpfs", run), index(a, "--bind", wl, wl); i < 0 || j < i {
 		t.Fatalf("runtime dir must be emptied before the socket is bound: %v", a)
 	}
@@ -68,7 +68,7 @@ func TestArgvKeepsOnlyNamedSocketsInTheRuntimeDir(t *testing.T) {
 
 func TestArgvCacheAndCredentials(t *testing.T) {
 	cache := t.TempDir()
-	a := Argv("bwrap", Spec{CacheDir: cache, Environ: []string{"HOME=/h", "GITHUB_TOKEN=x", "SSH_AUTH_SOCK=/s", "PATH=/bin"}}, "g", nil)
+	a, _ := Argv("bwrap", Spec{CacheDir: cache, Environ: []string{"HOME=/h", "GITHUB_TOKEN=x", "SSH_AUTH_SOCK=/s", "PATH=/bin"}}, "g", nil)
 	if index(a, "--setenv", "MESA_SHADER_CACHE_DIR", cache) < 0 || index(a, "--bind", cache, cache) < 0 {
 		t.Fatalf("cache not bound: %v", a)
 	}
@@ -91,7 +91,7 @@ func TestSteamROLeavesOutLoginAndConfig(t *testing.T) {
 }
 
 func TestArgvKeepsMissingRWStrict(t *testing.T) {
-	a := Argv("bwrap", Spec{RW: []string{"/definitely/not/here"}}, "g", nil)
+	a, _ := Argv("bwrap", Spec{RW: []string{"/definitely/not/here"}}, "g", nil)
 	if index(a, "--bind", "/definitely/not/here", "/definitely/not/here") < 0 {
 		t.Fatalf("a missing writable folder must reach bwrap, which fails the launch: %v", a)
 	}
@@ -171,7 +171,7 @@ func TestArgvAlwaysSetsASessionBusAddress(t *testing.T) {
 		"proxy":         {Runtime: run, Bus: filepath.Join(run, "proxy", "bus")},
 		"proxy, no dir": {Runtime: filepath.Join(run, "absent"), Bus: "/x/bus"},
 	} {
-		a := Argv("bwrap", s, "g", nil)
+		a, _ := Argv("bwrap", s, "g", nil)
 		i := index(a, "--setenv", "DBUS_SESSION_BUS_ADDRESS")
 		if i < 0 {
 			t.Fatalf("%s: no session bus address set: %v", name, a)
@@ -254,7 +254,7 @@ func TestStartProxyListensAndCloseRemovesIt(t *testing.T) {
 }
 
 func TestArgvPointsTMPDIRAtTheSandboxsOwnTmp(t *testing.T) {
-	a := Argv("bwrap", Spec{Environ: []string{"TMPDIR=/var/tmp/elsewhere"}}, "g", nil)
+	a, _ := Argv("bwrap", Spec{Environ: []string{"TMPDIR=/var/tmp/elsewhere"}}, "g", nil)
 	if index(a, "--setenv", "TMPDIR", "/tmp") < 0 || index(a, "--tmpfs", "/tmp") < 0 {
 		t.Fatalf("TMPDIR not pinned to the sandbox's tmpfs: %v", a)
 	}
@@ -271,7 +271,7 @@ func TestAFileWrittenInsideAnRWFolderLandsOnTheHost(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(data, "ErrorLogs"), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	a := Argv(bw, Spec{Home: home, RW: []string{data}}, "sh", []string{"-c", "echo log > " + data + "/ErrorLogs/SMAPI-latest.txt; echo save > " + data + "/Saves-x"})
+	a, _ := Argv(bw, Spec{Home: home, RW: []string{data}}, "sh", []string{"-c", "echo log > " + data + "/ErrorLogs/SMAPI-latest.txt; echo save > " + data + "/Saves-x"})
 	if out, err := exec.CommandContext(t.Context(), a[0], a[1:]...).CombinedOutput(); err != nil { //nolint:gosec // G204: bwrap found on PATH, arguments built by Argv
 		t.Skipf("bwrap cannot run here: %v %s", err, out)
 	}
@@ -279,5 +279,21 @@ func TestAFileWrittenInsideAnRWFolderLandsOnTheHost(t *testing.T) {
 		if _, err := os.Stat(filepath.Join(data, f)); err != nil {
 			t.Fatalf("%s did not reach the host: %v", f, err)
 		}
+	}
+}
+
+func TestArgvRefusesEmptyRWAndSkipsEmptyOptionalPaths(t *testing.T) {
+	if _, err := Argv("bwrap", Spec{RW: []string{"/tmp", ""}}, "g", nil); err == nil {
+		t.Fatal("an empty writable folder must fail before bwrap sees it")
+	}
+	a, err := Argv("bwrap", Spec{RO: []string{""}, Sockets: []string{""}}, "g", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if i := index(a, "--ro-bind", "", ""); i >= 0 {
+		t.Fatalf("empty read-only path bound: %v", a)
+	}
+	if i := index(a, "--bind", "", ""); i >= 0 {
+		t.Fatalf("empty socket path bound: %v", a)
 	}
 }

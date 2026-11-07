@@ -54,7 +54,10 @@ var hidden = []string{"/home", "/root", "/mnt", "/media", "/run/media"}
 // Argv is the bwrap command line that runs name with args. Binds apply in order, so a folder bound after the tmpfs
 // that hides its parent shows through it. The host's PID and network namespaces are kept: Mortar finds and stops the
 // game by process, and mods, multiplayer and the bridge need the network.
-func Argv(bwrap string, s Spec, name string, args []string) []string {
+func Argv(bwrap string, s Spec, name string, args []string) ([]string, error) {
+	if slices.Contains(s.RW, "") {
+		return nil, errors.New("the sandbox was given an empty writable folder")
+	}
 	a := []string{
 		bwrap, "--die-with-parent", "--new-session",
 		"--ro-bind", "/", "/", "--dev-bind", "/dev", "/dev", "--proc", "/proc", "--tmpfs", "/tmp",
@@ -96,7 +99,7 @@ func Argv(bwrap string, s Spec, name string, args []string) []string {
 	for _, k := range Credentials(s.Environ) {
 		a = append(a, "--unsetenv", k)
 	}
-	return append(append(a, "--", name), args...)
+	return append(append(a, "--", name), args...), nil
 }
 
 // credentialMarks are fragments of variable names that carry a secret or a route to one.
@@ -128,7 +131,11 @@ func SteamRO(root string) []string {
 	return out
 }
 
+// exists is false for "": safefs.Stat resolves it to a real entry, and a bind with an empty source fails the launch.
 func exists(p string) bool {
+	if p == "" {
+		return false
+	}
 	_, err := safefs.Stat(p)
 	return err == nil
 }
