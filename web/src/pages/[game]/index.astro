@@ -1,6 +1,7 @@
 ---
 import FactIcon from '../../components/FactIcon.astro'
 import GameCard from '../../components/GameCard.astro'
+import TopMods from '../../components/TopMods.astro'
 import Base from '../../layouts/Base.astro'
 import { steamArt } from '../../lib/art.ts'
 import {
@@ -16,6 +17,7 @@ import {
   sourceURL,
   steamAppId,
 } from '../../lib/games.ts'
+import { gameNote, topMods } from '../../lib/topmods.ts'
 import '../../styles/page.css'
 import '../../styles/page-lists.css'
 
@@ -35,6 +37,8 @@ const more = neighbours(game, games)
 const install = f.loader
   ? `Pick ${game.name}. Mortar installs ${f.loader} and makes your first profile.`
   : `Pick ${game.name}. Mortar makes your first profile and keeps its mods apart from every other profile's.`
+const lists = topMods()[game.id] ?? {}
+const note = gameNote(game.id)
 const loaderText = f.loader ? `installs ${f.loader}, ` : ''
 ---
 
@@ -76,6 +80,11 @@ const loaderText = f.loader ? `installs ${f.loader}, ` : ''
         <li>{install}</li>
         <li>Open Browse, add the mods you want, and press Play. Each profile keeps its own mods and settings.</li>
       </ol>
+      {note && <Fragment set:html={note} />}
+      {Object.keys(lists).length > 0 && <h2>Popular {game.name} mods</h2>}
+    </div>
+    <TopMods lists={lists} />
+    <div class="prose">
       <h2>Share a profile</h2>
       <p>A shared {game.name} profile is a link to <code>mortar.rethunk.tech/{game.id}/p</code>. Whoever opens it sees the mod list and imports it in one click. The profile lives inside the link, so nothing is uploaded.</p>
     </div>

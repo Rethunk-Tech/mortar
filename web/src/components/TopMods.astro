@@ -1,0 +1,96 @@
+---
+import { SOURCE_NAMES } from '../lib/games.ts'
+import type { TopMod } from '../lib/topmods.ts'
+
+interface Props {
+  /** The game's top mods by source id. */
+  lists: Record<string, TopMod[]>
+}
+
+const { lists } = Astro.props
+const count = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 })
+---
+
+{
+  Object.entries(lists).map(([source, mods]) => (
+    <section class="top-mods" aria-labelledby={`top-${source}`}>
+      <h3 id={`top-${source}`}>Most downloaded on {SOURCE_NAMES[source] ?? source}</h3>
+      <ol class="mod-list">
+        {mods.map((m) => (
+          <li>
+            <a class="mod-row" href={m.url} rel="noopener">
+              {m.icon ? <img class="mod-icon" src={m.icon} width="48" height="48" alt="" loading="lazy" referrerpolicy="no-referrer" /> : <span class="mod-icon" aria-hidden="true" />}
+              <span class="mod-text">
+                <b>{m.name}</b> <span class="mod-by">by {m.author}</span>
+                <span class="mod-summary">{m.summary}</span>
+              </span>
+              <span class="mod-count">{count.format(m.downloads)} downloads</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+  ))
+}
+
+<style>
+  .top-mods {
+    margin: 24px 0;
+  }
+  .top-mods h3 {
+    font-size: 20px;
+    margin: 0 0 12px;
+  }
+  .mod-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mod-row {
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--raised);
+    transition: border-color 0.2s;
+  }
+  .mod-row:hover {
+    border-color: var(--sand);
+  }
+  .mod-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--line);
+  }
+  .mod-text {
+    min-width: 0;
+  }
+  .mod-by,
+  .mod-summary,
+  .mod-count {
+    color: var(--dim);
+    font-size: 14px;
+  }
+  .mod-summary {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+  .mod-count {
+    white-space: nowrap;
+  }
+  @media (max-width: 560px) {
+    .mod-row {
+      grid-template-columns: 48px 1fr;
+    }
+    .mod-count {
+      grid-column: 2;
+    }
+  }
+</style>
