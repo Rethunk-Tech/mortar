@@ -470,7 +470,7 @@ export function ProfilesPage() {
             display: 'flex',
             flexDirection: 'column',
             gap: space.pad,
-            width: 320,
+            width: 340,
             flexShrink: 0,
           }}
         >
