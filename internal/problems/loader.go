@@ -260,30 +260,24 @@ const KindGameVersion = "game-version"
 const KindRunFailed = "run-failed"
 
 // startFailure is the row for a newest run that never started. Plugin carries the run id, which is what makes the row
-// go away: the next recorded run replaces it.
+// go away: the next recorded run replaces it. The cause is the launch's own words, so Code and Params let the window
+// word the row in the user's language, as it does every failure Mortar wrote.
 func startFailure(runID string, summary launch.Summary) []LoadFailure {
 	if summary.StartFailure == "" {
 		return nil
 	}
-	return []LoadFailure{{Plugin: runID, Kind: KindRunFailed, Message: summary.StartFailure}}
+	return []LoadFailure{{
+		Plugin: runID, Kind: KindRunFailed, Message: summary.StartFailure,
+		Code: "runFailed", Params: map[string]string{"reason": summary.StartFailure},
+	}}
 }
 
-// pluginOwners maps every way a log names a plugin (see plugins.Owners) to the enabled package whose plugin DLLs
-// declare it. A package is the identity; the GUIDs are read from its files, since a package may hold several plugins or
-// none and can change a GUID between versions.
+// pluginOwners maps every way a log names a plugin (see loader.PluginOwners) to the enabled package whose plugin DLLs
+// declare it.
 func pluginOwners(mods []framework.Mod) map[string]framework.Mod {
-	var with []framework.Mod
-	var dirs []string
-	for _, m := range mods {
-		if m.Enabled && m.Folder != "" {
-			with, dirs = append(with, m), append(dirs, m.Folder)
-		}
-	}
-	owners := map[string]framework.Mod{}
-	for name, i := range plugins.Owners(dirs) {
-		owners[name] = with[i]
-	}
-	return owners
+	return loader.PluginOwners(mods,
+		func(m framework.Mod) string { return m.Folder },
+		func(m framework.Mod) bool { return m.Enabled })
 }
 
 // gameLogFailures reads the game's own log, for a game whose mods have no loader log: Vintage Story's mod loader writes

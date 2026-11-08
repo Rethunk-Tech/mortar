@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/go-bepinex/plugins"
-
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -140,7 +138,8 @@ func (s *Service) modIDOwners(gameID, profileID string) map[string]profile.Insta
 	return owners
 }
 
-// pluginOwners maps every name a loader log gives a plugin (see plugins.Owners) to the profile mod whose DLLs declare it.
+// pluginOwners maps every name a loader log gives a plugin (see loader.PluginOwners) to the profile mod whose DLLs
+// declare it.
 func (s *Service) pluginOwners(gameID, profileID string) map[string]profile.Installed {
 	if s.profiles == nil || profileID == "" {
 		return nil
@@ -155,18 +154,9 @@ func (s *Service) pluginOwners(gameID, profileID string) map[string]profile.Inst
 	if err != nil {
 		return nil
 	}
-	var with []profile.Installed
-	var dirs []string
-	for _, im := range installed {
-		if im.Folder != "" {
-			with, dirs = append(with, im), append(dirs, im.Folder)
-		}
-	}
-	owners := map[string]profile.Installed{}
-	for name, i := range plugins.Owners(dirs) {
-		owners[name] = with[i]
-	}
-	return owners
+	return loader.PluginOwners(installed,
+		func(im profile.Installed) string { return im.Folder },
+		func(im profile.Installed) bool { return im.Enabled })
 }
 
 // modRefs names the profile's installed mods, or only its enabled ones.
