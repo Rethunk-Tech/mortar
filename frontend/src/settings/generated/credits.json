@@ -175,6 +175,11 @@
     "url": "https://github.com/Rethunk-Tech/go-cfgedit"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-contentpatcher",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-contentpatcher"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-curseforge",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-curseforge"
@@ -278,11 +283,6 @@
     "name": "github.com/Rethunk-Tech/go-thunderstore",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-thunderstore"
-  },
-  {
-    "name": "github.com/Rethunk-Tech/go-tilemask",
-    "licence": "MIT",
-    "url": "https://github.com/Rethunk-Tech/go-tilemask"
   },
   {
     "name": "github.com/Rethunk-Tech/go-winsym",
