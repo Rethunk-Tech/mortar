@@ -445,7 +445,7 @@ func (s *Store) placeOverlayLocked(game, id, key string, source Source) (Profile
 	}
 	for _, e := range cur.Entries {
 		if e.Key == key {
-			return Profile{}, &DuplicateError{Key: key, Label: e.Label()}
+			return Profile{}, &DuplicateError{Key: key, Label: entryLabel(e)}
 		}
 	}
 	replaced := func(e Entry) bool {

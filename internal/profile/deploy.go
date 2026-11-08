@@ -53,7 +53,7 @@ func (s *Store) packageFilesWith(gameID, id string, withDev bool) (files map[str
 		}
 		arch, l, _, err := s.layoutOf(gameID, id, e.StoreKey(), e.Fomod)
 		if err != nil {
-			return nil, nil, fmt.Errorf("%s: %w", e.Label(), err)
+			return nil, nil, fmt.Errorf("%s: %w", entryLabel(e), err)
 		}
 		for _, f := range l.Files {
 			if (e.File != "" && f.Rel != e.File) || ginfo.IsShared(f.Target) {
@@ -61,7 +61,7 @@ func (s *Store) packageFilesWith(gameID, id string, withDev bool) (files map[str
 			}
 			rel := path.Join(targetPrefix(info, f.Target), path.Clean(f.Rel))
 			if !filepath.IsLocal(filepath.FromSlash(rel)) {
-				return nil, nil, fmt.Errorf("%s: %s leaves the profile", e.Label(), f.Rel)
+				return nil, nil, fmt.Errorf("%s: %s leaves the profile", entryLabel(e), f.Rel)
 			}
 			// A later entry's file replaces an earlier one that differs only in case: both are one file on Windows.
 			fold := safefs.FoldCase(rel)
@@ -75,7 +75,7 @@ func (s *Store) packageFilesWith(gameID, id string, withDev bool) (files map[str
 			src := filepath.Join(arch.Dir, filepath.FromSlash(f.Src))
 			if f.Zip {
 				if src, err = zipCached(dir, e.StoreKey(), src); err != nil {
-					return nil, nil, fmt.Errorf("%s: %w", e.Label(), err)
+					return nil, nil, fmt.Errorf("%s: %w", entryLabel(e), err)
 				}
 			}
 			files[rel] = packageFile{src: src, key: e.Key, beaten: beaten}

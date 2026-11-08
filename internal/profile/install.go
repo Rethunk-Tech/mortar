@@ -230,7 +230,7 @@ func addedNames(p Profile, key string) []string {
 				names = append(names, m.Name)
 			}
 			if e.IsOverlay() {
-				names = append(names, e.Label())
+				names = append(names, entryLabel(e))
 			}
 		}
 	}
@@ -325,7 +325,7 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 	}
 	labels := make([]string, len(held))
 	for i, e := range held {
-		labels[i] = e.Label()
+		labels[i] = entryLabel(e)
 	}
 	return Profile{}, false, false, &SpansEntriesError{Labels: labels}
 }
@@ -372,7 +372,7 @@ func (s *Store) holding(game, id, key string, choices map[string]map[string][]st
 	var held []Entry
 	for _, e := range p.Entries {
 		if e.Key == key {
-			return nil, &DuplicateError{Key: key, Label: e.Label()}
+			return nil, &DuplicateError{Key: key, Label: entryLabel(e)}
 		}
 		if holdsAny(e, found) {
 			held = append(held, e)

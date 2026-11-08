@@ -201,7 +201,7 @@ func (s *Store) missingFindings(game string, p Profile) ([]HealthFinding, error)
 			continue
 		}
 		f := HealthFinding{
-			ID: HealthMissing + ":" + e.Key, Kind: HealthMissing, Items: []string{e.Label()},
+			ID: HealthMissing + ":" + e.Key, Kind: HealthMissing, Items: []string{entryLabel(e)},
 			Entries: []Entry{e},
 		}
 		if fetchable(e.Source) {

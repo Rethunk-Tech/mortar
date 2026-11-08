@@ -466,7 +466,7 @@ func namesForStoreKeys(entries []Entry, keys []string) []string {
 		if !entryUsesKey(e, want) {
 			continue
 		}
-		add(e.Label())
+		add(entryLabel(e))
 		for _, key := range entryStoreKeys(e) {
 			used[key] = struct{}{}
 		}

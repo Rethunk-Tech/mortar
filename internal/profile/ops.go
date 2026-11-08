@@ -268,7 +268,7 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 func (s *Store) addToStaged(game string, p *Profile, dir, key string, source Source, disabled []mod.ID, staged bool) (placed, final string, err error) {
 	for _, e := range p.Entries {
 		if e.Key == key {
-			return "", "", &DuplicateError{Key: key, Label: e.Label()}
+			return "", "", &DuplicateError{Key: key, Label: entryLabel(e)}
 		}
 	}
 	mods, isPackage, err := s.packageMods(game, key, source.ModName)
@@ -1083,4 +1083,18 @@ func (s *Store) restorePlain(game string, p *Profile, dir string, want Entry) er
 		break
 	}
 	return nil
+}
+
+// entryLabel names an entry in dialogs and errors: every mod name it holds, else what Entry.Label falls back to.
+func entryLabel(e Entry) string {
+	names := make([]string, 0, len(e.Mods))
+	for _, m := range e.Mods {
+		if m.Name != "" {
+			names = append(names, m.Name)
+		}
+	}
+	if len(names) > 0 {
+		return strings.Join(names, ", ")
+	}
+	return e.Label()
 }
