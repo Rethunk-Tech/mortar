@@ -14,20 +14,7 @@ func PickerPattern() string {
 	for i, ext := range exts {
 		globs[i] = "*" + ext
 	}
-	return CaseGlobs(strings.Join(globs, ";"))
-}
-
-// CaseGlobs adds an upper-case variant of each glob in a semicolon-separated list: GTK file filters match case
-// sensitively, so "*.png" alone hides "A.PNG".
-func CaseGlobs(pattern string) string {
-	var out []string
-	for g := range strings.SplitSeq(pattern, ";") {
-		out = append(out, g)
-		if up := strings.ToUpper(g); up != g {
-			out = append(out, up)
-		}
-	}
-	return strings.Join(out, ";")
+	return strings.Join(globs, ";")
 }
 
 // nameSep splits a saved download's file name into the queue id before it and the file's original name after it.
