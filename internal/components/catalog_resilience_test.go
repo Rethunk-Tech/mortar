@@ -1,6 +1,7 @@
 package components
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -41,6 +43,45 @@ func releasesServer(t *testing.T, files map[string][2][]byte, order ...string) *
 	client := NewClient(server.Client())
 	client.ReleasesURL = server.URL + "/releases"
 	return client
+}
+
+func TestManifestURLsReadsTheGitHubReleaseList(t *testing.T) {
+	var accept string
+	var server *httptest.Server
+	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		accept = r.Header.Get("Accept")
+		_, _ = fmt.Fprintf(w, `[{"tag_name":"v1","assets":[{"name":"components.json","browser_download_url":"%s/skip"}]},{"tag_name":"components-v2-1","draft":true,"assets":[{"name":"components.json","browser_download_url":"%s/draft"}]},{"tag_name":"components-v2-2","assets":[{"name":"other.json","browser_download_url":"%s/other"},{"name":"components.json","browser_download_url":"%s/good"}]}]`, server.URL, server.URL, server.URL, server.URL)
+	}))
+	t.Cleanup(server.Close)
+	client := NewClient(server.Client())
+	client.ReleasesURL = server.URL
+	urls, err := client.manifestURLs(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if accept != "application/vnd.github+json" {
+		t.Fatalf("Accept = %q", accept)
+	}
+	if len(urls) != 1 || urls[0] != server.URL+"/good" {
+		t.Fatalf("urls = %v", urls)
+	}
+}
+
+func TestManifestURLsKeepsComponentManifestResponseWording(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, "x", http.StatusBadGateway)
+	}))
+	t.Cleanup(server.Close)
+	client := NewClient(server.Client())
+	client.ReleasesURL = server.URL
+	_, err := client.manifestURLs(t.Context())
+	if err == nil || err.Error() != "component manifest response: server answered 502 Bad Gateway" {
+		t.Fatalf("got %v", err)
+	}
+	var se *httpkit.StatusError
+	if !errors.As(err, &se) || se.Code != http.StatusBadGateway {
+		t.Fatalf("type %v", err)
+	}
 }
 
 func TestLoadSkipsANewerReleaseThatDoesNotVerify(t *testing.T) {

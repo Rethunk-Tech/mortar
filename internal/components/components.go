@@ -32,6 +32,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-bepinex"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-httpkit/download"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -1777,20 +1778,9 @@ func (c *Client) manifestURLs(ctx context.Context) ([]string, error) {
 	if c.ManifestURL != "" {
 		return []string{c.ManifestURL}, nil
 	}
-	body, err := c.get(ctx, cmp.Or(c.ReleasesURL, ReleasesURL), maxManifest)
+	releases, err := gh.FetchReleases(ctx, c.httpClient(), cmp.Or(c.ReleasesURL, ReleasesURL))
 	if err != nil {
-		return nil, err
-	}
-	var releases []struct {
-		Tag    string `json:"tag_name"`
-		Draft  bool   `json:"draft"`
-		Assets []struct {
-			Name string `json:"name"`
-			URL  string `json:"browser_download_url"`
-		} `json:"assets"`
-	}
-	if err := json.Unmarshal(body, &releases); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("component manifest response: %w", err)
 	}
 	var urls []string
 	for _, r := range releases {
