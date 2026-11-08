@@ -23,7 +23,7 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { space } from '../theme/density.ts'
 import { Elapsed } from './Elapsed.tsx'
-import { formatTiming } from './formatTiming.ts'
+import { formatTiming, percentLabel } from './formatTiming.ts'
 import { CompareTable, ReportSelect } from './PerformanceComparison.tsx'
 import type { PanelBusy, SortColumn, SortDirection } from './usePerformancePanel.ts'
 
@@ -34,12 +34,7 @@ function callsLabel(value: number, locale: string) {
   return Number.isInteger(value) ? formatNumber(value, locale) : formatTiming(value, locale)
 }
 
-const PERCENT = 100
 const SEPARATOR = ' · '
-
-function percentLabel(share: number, locale: string) {
-  return `${formatNumber(share * PERCENT, locale, { maximumFractionDigits: 1 })}%`
-}
 
 interface HeaderProps {
   running: boolean

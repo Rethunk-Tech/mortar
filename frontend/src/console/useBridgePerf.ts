@@ -11,11 +11,9 @@ import {
   StopInGame,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { reportError } from '../toasts/report.ts'
-import { formatTiming } from './formatTiming.ts'
+import { formatTiming, percentLabel } from './formatTiming.ts'
 import { usePerfLive } from './perfLive.ts'
 import type { PanelBusy } from './usePerformancePanel.ts'
-
-const PERCENT = 100
 
 const MAX_SAVED_REPORTS = 20
 // How often a running measurement is read for the live table.
@@ -166,7 +164,7 @@ export function useBridgePerf(opts: {
               r.averageMs,
               r.p95Ms ?? 0,
               r.peakMs,
-              `${((r.share ?? 0) * PERCENT).toFixed(1)}%`,
+              percentLabel(r.share ?? 0, i18n.locale),
               r.calls,
             ]
               .map((v) => (typeof v === 'number' ? formatTiming(v, i18n.locale) : v))
