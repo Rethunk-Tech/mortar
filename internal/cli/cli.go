@@ -18,6 +18,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
@@ -40,7 +41,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/savessvc"
-	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/tools"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -640,7 +640,7 @@ func open(target string) error {
 	if !strings.Contains(target, "://") {
 		target = absPath(target)
 	}
-	exe = selfexe.Launchable(exe)
+	exe = hostenv.Launchable(exe)
 	proc, err := os.StartProcess(exe, []string{exe, target}, &os.ProcAttr{Files: []*os.File{nil, nil, nil}})
 	if err != nil {
 		return err

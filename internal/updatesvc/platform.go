@@ -4,7 +4,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/Rethunk-Tech/mortar/internal/selfexe"
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 )
 
 // PortablePlatform is the manifest platform of the bare Linux program. The "linux" artifacts are the AppImages, so
@@ -12,7 +12,7 @@ import (
 const PortablePlatform = "linux-portable"
 
 // updatePlatform is the manifest platform to update from: PortablePlatform for a Linux exe that is not running from an
-// AppImage (launchable is the path selfexe.Launchable gives for exe), else "" for the updater's runtime.GOOS default.
+// AppImage (launchable is the path hostenv.Launchable gives for exe), else "" for the updater's runtime.GOOS default.
 func updatePlatform(goos, exe, launchable string) string {
 	if goos == "linux" && launchable == exe {
 		return PortablePlatform
@@ -25,5 +25,5 @@ func runningPlatform() string {
 	if err != nil {
 		return ""
 	}
-	return updatePlatform(runtime.GOOS, exe, selfexe.Launchable(exe))
+	return updatePlatform(runtime.GOOS, exe, hostenv.Launchable(exe))
 }

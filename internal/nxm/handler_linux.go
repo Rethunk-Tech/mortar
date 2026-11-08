@@ -17,7 +17,6 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
-	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -40,7 +39,7 @@ func skipUserDesktop() bool { return packaged != "" }
 func New(exe string) (*System, error) { return newSystem(exe, execRun) }
 
 func newSystem(exe string, run Runner) (*System, error) {
-	exe = selfexe.Launchable(exe)
+	exe = hostenv.Launchable(exe)
 	h, err := schemehandler.New(schemehandler.Config{
 		Exe:       exe,
 		Schemes:   source.Schemes(),

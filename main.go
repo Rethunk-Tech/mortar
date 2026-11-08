@@ -14,6 +14,7 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/cli"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -33,7 +34,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/picker"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
-	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/shortcut"
@@ -307,7 +307,7 @@ func serveNativeHost() error {
 	if err != nil {
 		return err
 	}
-	exe = selfexe.Launchable(exe)
+	exe = hostenv.Launchable(exe)
 	return nativehost.ServeFrom(os.Args[1:], os.Stdin, os.Stdout, func(link string) error {
 		if !source.IsLink(link) && !sharesvc.IsCollectionURL(link) {
 			return fmt.Errorf("not an nxm or collection link: %q", link)

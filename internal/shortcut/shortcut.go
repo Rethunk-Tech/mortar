@@ -16,9 +16,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/go-gameproc"
-	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 )
 
 const playFlag = "--play="
@@ -134,7 +134,7 @@ func (s *Service) Create(game, gameName, profile, profileName string) (string, e
 	if err != nil {
 		return "", err
 	}
-	return create(selfexe.Launchable(exe), Arg(game, profile), profileName+" ("+gameName+")")
+	return create(hostenv.Launchable(exe), Arg(game, profile), profileName+" ("+gameName+")")
 }
 
 // Exists reports whether a desktop or Start-menu shortcut plays the profile.
@@ -194,7 +194,7 @@ func (s *Service) AddToSteam(game, gameName, profile, profileName string) (steam
 	if err != nil {
 		return "", err
 	}
-	exe = selfexe.Launchable(exe)
+	exe = hostenv.Launchable(exe)
 	cover := ""
 	if s.Covers != nil {
 		if paths, err := s.Covers(game, profile); err == nil {

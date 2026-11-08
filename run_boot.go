@@ -29,6 +29,7 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 
 	goavscan "github.com/Rethunk-Tech/go-avscan"
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-safefs"
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
@@ -71,7 +72,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/savessvc"
 	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
-	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
@@ -543,7 +543,7 @@ func (c *boot) nxmSetup() error {
 	if err := nxmHandler.Refresh(); err != nil {
 		log.Printf("desktop entry: %v", err)
 	}
-	if err := shortcut.Repoint(selfexe.Launchable(exe)); err != nil {
+	if err := shortcut.Repoint(hostenv.Launchable(exe)); err != nil {
 		log.Printf("profile shortcuts: %v", err)
 	}
 	if h, ok := any(nxmHandler).(interface{ WriteNativeHosts() error }); ok && c.store.Get().NxmHandled {

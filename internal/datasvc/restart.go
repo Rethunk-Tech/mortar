@@ -10,7 +10,6 @@ import (
 	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 )
 
 // RestartSelf starts this executable again, without the old arguments (a fresh start is what a data move needs, and
@@ -22,7 +21,7 @@ func RestartSelf() error {
 	}
 	// Before the new process starts, which reads the record when it sets the log aside.
 	logCleanShutdown()
-	cmd := exec.CommandContext(context.Background(), selfexe.Launchable(exe)) //nolint:gosec // G204: exe is Mortar's own binary
+	cmd := exec.CommandContext(context.Background(), hostenv.Launchable(exe)) //nolint:gosec // G204: exe is Mortar's own binary
 	cmd.Env = hostenv.Environ()
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 	if err := cmd.Start(); err != nil {

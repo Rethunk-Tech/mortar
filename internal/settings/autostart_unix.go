@@ -10,9 +10,9 @@ import (
 
 	"github.com/Rethunk-Tech/go-desktopenv/desktopentry"
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-desktopenv/portal"
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
-	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 )
 
 // portalAutostart asks the Background portal, bounded because it waits on a dialog the user answers; tests replace it.
@@ -63,7 +63,7 @@ func applyAutostart(enable bool) error {
 		if err != nil {
 			return err
 		}
-		body := autostartEntry(selfexe.Launchable(exe))
+		body := autostartEntry(hostenv.Launchable(exe))
 		return sub.WriteFile("mortar.desktop", []byte(body), 0o600)
 	}
 	sub, err := root.OpenRoot("autostart")

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -21,7 +21,7 @@ func (c *cmd) uninstallCleanup() error {
 	if err != nil {
 		return err
 	}
-	exe = selfexe.Launchable(exe)
+	exe = hostenv.Launchable(exe)
 	errs := []error{removePlatformLeftovers()}
 	if home, err := os.UserHomeDir(); err == nil {
 		errs = append(errs, c.removeSteamShortcuts(home, exe, settings.Peek().LauncherRoots[game.LauncherSteam]))
