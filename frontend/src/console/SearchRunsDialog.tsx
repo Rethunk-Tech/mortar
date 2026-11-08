@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from 'react'
 import type { RunHit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { SearchRuns } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { escapeRegExp } from '../shell/escapeRegExp.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
@@ -21,7 +22,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
   if (!query) {
     return <>{text}</>
   }
-  const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'ig'))
+  const parts = text.split(new RegExp(`(${escapeRegExp(query)})`, 'ig'))
   // A match is keyed by where it starts: a line can hold the same match more than once.
   let at = 0
   return (

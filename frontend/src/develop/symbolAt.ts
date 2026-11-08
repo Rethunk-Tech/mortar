@@ -1,3 +1,5 @@
+import { escapeRegExp } from '../shell/escapeRegExp.ts'
+
 const IDENTIFIER = /[A-Za-z_][A-Za-z0-9_]*/g
 
 // The identifier in text that spans offset, or '' when offset sits on punctuation or space. An offset just past a
@@ -21,14 +23,12 @@ export function symbolAt(x: number, y: number): string {
   return identifierAt(node.textContent ?? '', range.startOffset)
 }
 
-export const ESCAPE = /[.*+?^${}()|[\]\\]/g
-
 // The type an IL line names as the owner of name ("Namespace.Outer+Inner", as the member search names types), or ''.
 // A call, field load or store writes its target as [Assembly]Namespace.Type::Member, a nested type with '/' and a
 // generic one with its arguments in angle brackets.
 export function ilOwner(line: string, name: string): string {
   const m = line.match(
-    new RegExp(`([A-Za-z_][\\w.\`/]*)(?:<[^\\s]*>)?::${name.replace(ESCAPE, '\\$&')}\\b`),
+    new RegExp(`([A-Za-z_][\\w.\`/]*)(?:<[^\\s]*>)?::${escapeRegExp(name)}\\b`),
   )
   return m?.[1]?.replaceAll('/', '+') ?? ''
 }
@@ -46,14 +46,14 @@ export interface SymbolClick {
 // How many arguments an IL call to name passes, read from its parameter list (commas outside generic arguments), or -1
 // when the line is no call to it (a field access, say).
 export function ilArity(line: string, name: string): number {
-  return arityAt(line, line.search(new RegExp(`::${name.replace(ESCAPE, '\\$&')}\\b`)))
+  return arityAt(line, line.search(new RegExp(`::${escapeRegExp(name)}\\b`)))
 }
 
 // How many parameters a C# declaration of name lists, or -1 when the line declares no method called name.
 export function csArity(line: string, name: string): number {
   return arityAt(
     line,
-    line.search(new RegExp(`\\b${name.replace(ESCAPE, '\\$&')}\\s*(?:<[^>()]*>)?\\s*\\(`)),
+    line.search(new RegExp(`\\b${escapeRegExp(name)}\\s*(?:<[^>()]*>)?\\s*\\(`)),
   )
 }
 

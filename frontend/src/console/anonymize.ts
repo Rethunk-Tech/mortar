@@ -1,8 +1,6 @@
-const homePath = /\/home\/([^/\\\s]+)/
+import { escapeRegExp } from '../shell/escapeRegExp.ts'
 
-function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
+const homePath = /\/home\/([^/\\\s]+)/
 
 // Hides the OS user name found in a /home/<user> path: the path becomes ~ and any other mention becomes <user>.
 export function anonymize(log: string): string {
