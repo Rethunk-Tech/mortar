@@ -7,17 +7,20 @@ import (
 	"crypto/ed25519"
 	"crypto/sha256"
 	"crypto/x509"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path"
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -197,22 +200,9 @@ func resolve(ctx context.Context, client *github.Client, source components.Sourc
 	if err != nil {
 		return components.Component{}, fmt.Errorf("resolve %s: %w", source.Name, err)
 	}
-	temp, err := os.CreateTemp("", "mortar-component-source-*")
+	sum, err := hashURL(ctx, client.HTTP, downloadURL(client, source, asset))
 	if err != nil {
-		return components.Component{}, err
-	}
-	tempPath := temp.Name()
-	if err := temp.Close(); err != nil {
-		_ = safefs.Remove(tempPath)
-		return components.Component{}, err
-	}
-	defer func() { _ = safefs.Remove(tempPath) }()
-	if err := github.Download(ctx, client.HTTP, downloadURL(client, source, asset), tempPath, maxAsset, "", nil); err != nil {
 		return components.Component{}, fmt.Errorf("download %s: %w", asset.Name, err)
-	}
-	sum, err := safefs.HashFile(tempPath, sha256.New())
-	if err != nil {
-		return components.Component{}, err
 	}
 	version := strings.TrimPrefix(release.Tag, "v")
 	return components.Component{
@@ -227,6 +217,30 @@ func downloadURL(client *github.Client, source components.SourceComponent, asset
 		return fmt.Sprintf("%s/repos/%s/%s/releases/assets/%d", base, source.Source.Owner, source.Source.Repo, asset.ID)
 	}
 	return asset.URL
+}
+
+func hashURL(ctx context.Context, client *http.Client, rawURL string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Accept", "application/octet-stream")
+	if client == nil {
+		client = http.DefaultClient
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", &httpkit.StatusError{Code: resp.StatusCode}
+	}
+	sum := sha256.New()
+	if _, err := io.Copy(sum, safefs.CapReader(resp.Body, maxAsset)); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(sum.Sum(nil)), nil
 }
 
 func selectAsset(releases []github.Release, repo, version, pattern string) (github.Release, github.Asset, error) {
