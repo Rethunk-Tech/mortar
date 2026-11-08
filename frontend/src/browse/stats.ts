@@ -1,5 +1,5 @@
 import { i18n } from '@lingui/core'
-import { plural } from '@lingui/core/macro'
+import { plural, t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { formatBytes } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
@@ -13,6 +13,7 @@ const MODRINTH = 'modrinth'
 const VSMODDB = 'vsmoddb'
 const PARADOX = 'paradox'
 const MODIO = 'modio'
+const CURSEFORGE = 'curseforge'
 const leadingV = /^v(?=\d)/i
 
 /** The stats a Browse card can show under its summary, in the order it shows them (the browseCardStats setting). */
@@ -30,26 +31,71 @@ function formatCardStats(stats: readonly CardStat[]): string {
   return ordered.length === 0 ? 'none' : ordered.join(',')
 }
 
-/** A hit's popularity, which each site counts differently: Nexus endorsements, Thunderstore and Paradox Mods likes,
- * Modrinth and Mod DB follows, and mod.io positive ratings all land in endorsements, and only GitHub has stars. */
-function usePopularity(item: BrowseItem): string {
-  const { endorsements, stars } = item
-  switch (item.source) {
-    case NEXUS:
-      return plural({ count: endorsements }, { one: '# endorsement', other: '# endorsements' })
-    case GITHUB:
-      return plural({ count: stars }, { one: '# star', other: '# stars' })
-    case THUNDERSTORE:
-    case PARADOX:
-      return plural({ count: endorsements }, { one: '# like', other: '# likes' })
-    case MODRINTH:
-    case VSMODDB:
-      return plural({ count: endorsements }, { one: '# follower', other: '# followers' })
-    case MODIO:
-      return plural(endorsements, { one: '# positive rating', other: '# positive ratings' })
+/** Which mark a stat shows; popularity's depends on what the hit's site counts. */
+type StatIcon =
+  | 'like'
+  | 'endorsement'
+  | 'star'
+  | 'follower'
+  | 'download'
+  | 'size'
+  | 'version'
+  | 'updated'
+
+/** How a source counts popularity: card icon, count copy, and the endorsements-sort label. */
+type PopularityKind = 'endorsement' | 'like' | 'star' | 'follower' | 'rating' | 'popular'
+
+const POPULARITY: Record<string, { icon: StatIcon; kind: PopularityKind }> = {
+  [NEXUS]: { icon: 'endorsement', kind: 'endorsement' },
+  [GITHUB]: { icon: 'star', kind: 'star' },
+  [THUNDERSTORE]: { icon: 'like', kind: 'like' },
+  [PARADOX]: { icon: 'like', kind: 'like' },
+  [MODRINTH]: { icon: 'follower', kind: 'follower' },
+  [VSMODDB]: { icon: 'follower', kind: 'follower' },
+  [MODIO]: { icon: 'like', kind: 'rating' },
+  [CURSEFORGE]: { icon: 'like', kind: 'popular' },
+}
+
+function popularityIcon(source: string): StatIcon {
+  return POPULARITY[source]?.icon ?? 'like'
+}
+
+function popularityWording(source: string, count: number): string {
+  switch (POPULARITY[source]?.kind) {
+    case 'endorsement':
+      return plural({ count }, { one: '# endorsement', other: '# endorsements' })
+    case 'like':
+      return plural({ count }, { one: '# like', other: '# likes' })
+    case 'star':
+      return plural({ count }, { one: '# star', other: '# stars' })
+    case 'follower':
+      return plural({ count }, { one: '# follower', other: '# followers' })
+    case 'rating':
+      return plural(count, { one: '# positive rating', other: '# positive ratings' })
     default:
       return ''
   }
+}
+
+function popularitySortLabel(source: string): string {
+  switch (POPULARITY[source]?.kind) {
+    case 'follower':
+      return t`Sort: most followed`
+    case 'like':
+    case 'rating':
+      return t`Sort: top rated`
+    case 'popular':
+      return t`Sort: most popular`
+    default:
+      return t`Sort: most endorsed`
+  }
+}
+
+/** A hit's popularity, which each site counts differently: Nexus endorsements, Thunderstore and Paradox Mods likes,
+ * Modrinth and Mod DB follows, and mod.io positive ratings all land in endorsements, and only GitHub has stars. */
+function usePopularity(item: BrowseItem): string {
+  const count = item.source === GITHUB ? item.stars : item.endorsements
+  return popularityWording(item.source, count)
 }
 
 /** A hit's popularity line for its details: popularity and downloads (GitHub counts no downloads). */
@@ -68,26 +114,6 @@ interface CardStatPart {
   icon: StatIcon
   short: string
   full: string
-}
-
-/** Which mark a stat shows; popularity's depends on what the hit's site counts. */
-type StatIcon =
-  | 'like'
-  | 'endorsement'
-  | 'star'
-  | 'follower'
-  | 'download'
-  | 'size'
-  | 'version'
-  | 'updated'
-
-const POPULARITY_ICON: Record<string, StatIcon> = {
-  [NEXUS]: 'endorsement',
-  [GITHUB]: 'star',
-  [THUNDERSTORE]: 'like',
-  [PARADOX]: 'like',
-  [MODRINTH]: 'follower',
-  [VSMODDB]: 'follower',
 }
 
 const compact = (n: number) => formatCount(n, i18n.locale || 'en')
@@ -124,7 +150,7 @@ function useCardStats(item: BrowseItem, stats: readonly CardStat[]): CardStatPar
         ? null
         : {
             id: 'popularity',
-            icon: POPULARITY_ICON[item.source] ?? 'like',
+            icon: popularityIcon(item.source),
             short: compact(item.source === GITHUB ? item.stars : item.endorsements),
             full: popularity,
           },
@@ -150,25 +176,23 @@ function useCardStats(item: BrowseItem, stats: readonly CardStat[]): CardStatPar
 /** An installed mod's card line for the same chosen stats: its Nexus page's figures and its size on disk. The card
  * already shows the installed version. */
 function useModCardStats(
-  { mod, size, details }: Pick<ListRow, 'mod' | 'size' | 'details'>,
+  { mod, size, details, source }: Pick<ListRow, 'mod' | 'size' | 'details'> & { source: string },
   stats: readonly CardStat[],
 ): CardStatPart[] {
   const updatedPart = useUpdatedPart()
   const page = details?.page
   const endorsements = page?.endorsements ?? mod.endorsements
+  const popularity = popularityWording(source, endorsements)
   const updated = page?.updated ? formatWhen(page.updated) : ''
   const sized = size !== undefined && size > 0 ? formatBytes(size) : ''
   const parts: Record<CardStat, CardStatPart | null> = {
     popularity:
-      endorsements > 0
+      endorsements > 0 && popularity !== ''
         ? {
             id: 'popularity',
-            icon: 'endorsement',
+            icon: popularityIcon(source),
             short: compact(endorsements),
-            full: plural(
-              { count: endorsements },
-              { one: '# endorsement', other: '# endorsements' },
-            ),
+            full: popularity,
           }
         : null,
     downloads: page
@@ -192,6 +216,7 @@ export {
   CARD_STATS,
   formatCardStats,
   parseCardStats,
+  popularitySortLabel,
   useCardStats,
   useModCardStats,
   useStats,

@@ -9,6 +9,7 @@ import { BrowseShow } from './BrowseShow.tsx'
 import type { BrowseModes } from './browseModes.ts'
 import type { BrowseFilter } from './browseTypes.ts'
 import { fitChips } from './fitChips.ts'
+import { popularitySortLabel } from './stats.ts'
 
 const MIN_PICKER_PX = 180
 const CHIP_GAP_PX = 4
@@ -190,16 +191,7 @@ const BrowseFilters = memo(function BrowseFiltersView({
   // The metric is named per source, since "most endorsed" on Nexus is "most followed" on Modrinth.
   const labels: Record<string, string> = {
     downloads: t`Sort: most downloaded`,
-    endorsements:
-      {
-        nexus: t`Sort: most endorsed`,
-        thunderstore: t`Sort: top rated`,
-        modrinth: t`Sort: most followed`,
-        vsmoddb: t`Sort: most followed`,
-        paradox: t`Sort: top rated`,
-        curseforge: t`Sort: most popular`,
-        modio: t`Sort: top rated`,
-      }[source] ?? t`Sort: most endorsed`,
+    endorsements: popularitySortLabel(source),
     stars: t`Sort: most stars`,
     forks: t`Sort: most forks`,
     updated: t`Sort: recently updated`,

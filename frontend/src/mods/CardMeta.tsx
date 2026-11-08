@@ -10,7 +10,7 @@ import { useSettings } from '../settings/store.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { formatAuthors } from './authorNormalize.ts'
 import { useEntrySize } from './listRows.ts'
-import { nexusIdOf } from './lookup.ts'
+import { nexusIdOf, sourceKind } from './lookup.ts'
 import { nexusEntryOf, useNexusDetails } from './nexusDetails.ts'
 
 const META_FONT_PX = 12
@@ -33,7 +33,12 @@ export function CardMeta({
     (s) => nexusEntryOf(s.byKey, game, nexusIdOf(profile, m))?.details,
   )
   const cardStats = useModCardStats(
-    { mod: m, ...(size === undefined ? {} : { size }), ...(details ? { details } : {}) },
+    {
+      mod: m,
+      source: sourceKind(profile, m),
+      ...(size === undefined ? {} : { size }),
+      ...(details ? { details } : {}),
+    },
     parseCardStats(useSettings((s) => s.browseCardStats)),
   )
   const byline = [formatAuthors(m.author), m.version].filter(Boolean).join(' · ')
