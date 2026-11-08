@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -226,8 +227,13 @@ func TestInstalledGameVersionWithAndWithoutAVersionFile(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("USERPROFILE", home)
+	// Where SMAPI writes its log: {appData} on Windows, {xdgConfig} elsewhere.
 	xdg := filepath.Join(home, ".config")
 	t.Setenv("XDG_CONFIG_HOME", xdg)
+	if runtime.GOOS == "windows" {
+		xdg = filepath.Join(home, "AppData", "Roaming")
+		t.Setenv("APPDATA", xdg)
+	}
 	install := t.TempDir()
 	writeFile(t, install, "Stardew Valley.dll", "x")
 	// Status only reads SMAPI-latest.txt when the loader looks installed or broken.
