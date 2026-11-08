@@ -85,7 +85,7 @@ func replacementFromSummary(ctx context.Context, m Meta, domain string, dependen
 	}
 	if g := githubLinkRepo(summary); g != "" {
 		repo := strings.TrimSuffix(g, ".git")
-		return &Ref{Site: "GitHub", GitHub: repo, URL: "https://github.com/" + repo}
+		return &Ref{Site: "GitHub", GitHub: repo, URL: githubPage(repo)}
 	}
 	for _, id := range uniqueID.FindAllString(summary, -1) {
 		if ref, ok := Locate(ctx, m, domain, mod.SMAPI(id), "", dependentKeys); ok && ref != nil && ref.URL != "" {

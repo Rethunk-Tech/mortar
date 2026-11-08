@@ -1006,7 +1006,7 @@ func Locate(ctx context.Context, m Meta, domain string, uniqueID mod.ID, minimum
 	}
 	if len(nexus) == 0 {
 		if repo := githubRepo(ctx, m, uniqueID); repo != "" {
-			return &Ref{Site: "GitHub", GitHub: repo, URL: "https://github.com/" + repo}, true
+			return &Ref{Site: "GitHub", GitHub: repo, URL: githubPage(repo)}, true
 		}
 		if len(other) == 0 {
 			return nil, true
