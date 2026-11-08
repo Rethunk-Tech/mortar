@@ -183,7 +183,7 @@ function TestCopies({ game, profile, dirs }: { game: string; profile: string; di
                 .getState()
                 .setTestCopies(profile, n)
                 .catch(reportError(t`Could not save the number of copies`))
-              start(n)
+              return start(n)
             }}
           />
         ))}
