@@ -22,7 +22,7 @@ func TestStandingsFlagsArchivedRepositories(t *testing.T) {
 		}
 	}))
 	t.Cleanup(srv.Close)
-	got, err := (&Driver{URL: srv.URL}).Standings(t.Context(), "1", []string{"me/old", "me/live", "me/gone", "bad"})
+	got, err := (&Driver{URL: srv.URL}).Standings(t.Context(), "1", []string{"me/old", "me/live", "me/gone", "bad", "me/."})
 	if err != nil || len(got) != 1 || got["me/old"].State != "archived" {
 		t.Fatalf("%+v %v", got, err)
 	}

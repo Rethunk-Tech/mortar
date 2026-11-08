@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	gogithub "github.com/Rethunk-Tech/go-github"
 	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -18,8 +19,13 @@ func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { retu
 // Browse search and details carry the gh token too, or anonymous search's ten requests a minute fail the GitHub chip.
 func TestRequestsCarryGhToken(t *testing.T) {
 	old := ghauth.DefaultAuth
-	ghauth.DefaultAuth = &ghauth.Auth{Run: func(context.Context) ([]byte, error) { return []byte("tok\n"), nil }}
-	t.Cleanup(func() { ghauth.DefaultAuth = old })
+	a := &ghauth.Auth{Run: func(context.Context) ([]byte, error) { return []byte("tok\n"), nil }}
+	ghauth.DefaultAuth = a
+	gogithub.DefaultAuth = a
+	t.Cleanup(func() {
+		ghauth.DefaultAuth = old
+		gogithub.DefaultAuth = old
+	})
 	var paths []string
 	d := &Driver{HTTP: &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
 		if got := r.Header.Get("Authorization"); got != "Bearer tok" {

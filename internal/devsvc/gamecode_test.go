@@ -16,6 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
@@ -85,14 +86,17 @@ func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 func TestLicenseAndSDKNeed(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/apache-2.0" {
+		switch r.URL.Path {
+		case "/licenses/apache-2.0":
+			_, _ = w.Write([]byte(`{"key":"apache-2.0","body":"Apache License\nVersion 2.0"}`))
+		case "/licenses/mpl-2.0":
+			_, _ = w.Write([]byte(`{"body":""}`))
+		default:
 			http.NotFound(w, r)
-			return
 		}
-		_, _ = w.Write([]byte(`{"key":"apache-2.0","body":"Apache License\nVersion 2.0"}`))
 	}))
 	defer srv.Close()
-	svc.LicensesURL = srv.URL + "/"
+	svc.LicensesURL = srv.URL
 	dir := t.TempDir()
 	if err := svc.applyLicense(t.Context(), dir, "apache-2.0"); err != nil {
 		t.Fatal(err)
@@ -102,6 +106,12 @@ func TestLicenseAndSDKNeed(t *testing.T) {
 	}
 	if err := svc.applyLicense(t.Context(), dir, "../x"); err == nil {
 		t.Fatal("wrote a license New mod does not offer")
+	}
+	if err := svc.applyLicense(t.Context(), dir, "gpl-3.0"); err == nil || usererr.KindOf(err) != usererr.Network || !strings.Contains(err.Error(), "gpl-3.0") {
+		t.Fatalf("missing license = %v", err)
+	}
+	if err := svc.applyLicense(t.Context(), dir, "mpl-2.0"); err == nil || usererr.KindOf(err) != usererr.Network || !strings.Contains(err.Error(), "the license text could not be read") {
+		t.Fatalf("empty license = %v", err)
 	}
 	if err := safefs.WriteFile(filepath.Join(dir, "global.json"), []byte(`{"sdk":{"version":"10.0.100","rollForward":"latestMajor"}}`), 0o600); err != nil {
 		t.Fatal(err)

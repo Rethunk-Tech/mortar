@@ -24,6 +24,9 @@ func TestDetailsReadsTheRawReadme(t *testing.T) {
 	if got, err = d.Details(t.Context(), "", "o/none", "1"); err != nil || got.Description != "" {
 		t.Fatalf("no readme = %+v, %v", got, err)
 	}
+	if got, err = d.Details(t.Context(), "", "o/.", "1"); err != nil || got.Description != "" {
+		t.Fatalf("dot repo = %+v, %v", got, err)
+	}
 	if _, err = d.Details(t.Context(), "", "o/r/../x", "1"); err == nil {
 		t.Fatal("a path was accepted as a repo")
 	}

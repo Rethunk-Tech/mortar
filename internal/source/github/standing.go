@@ -1,14 +1,12 @@
 package github
 
 import (
-	"cmp"
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
-	"net/url"
 	"strings"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -33,24 +31,29 @@ func (d *Driver) Standings(ctx context.Context, version string, ids []string) (m
 	return out, nil
 }
 
-func (d *Driver) archived(ctx context.Context, version, repo string) (bool, error) {
+func (d *Driver) archived(ctx context.Context, _, repo string) (bool, error) {
 	owner, name, ok := strings.Cut(repo, "/")
 	if !ok || owner == "" || name == "" || strings.Contains(name, "/") {
 		return false, nil
 	}
-	u := strings.TrimRight(cmp.Or(d.URL, apiURL), "/") + "/repos/" + url.PathEscape(owner) + "/" + url.PathEscape(name)
-	body, _, err := d.do(ctx, call{Method: http.MethodGet, URL: u, Version: version, Accept: "application/vnd.github+json", Auth: true})
-	if errors.Is(err, httpkit.ErrNotFound) {
+	archived, err := (&gh.Client{HTTP: d.HTTP, APIBase: d.URL}).Archived(ctx, owner, name)
+	if errors.Is(err, httpkit.ErrNotFound) || errors.Is(err, gh.ErrInvalidRepo) {
 		return false, nil
 	}
 	if err != nil {
-		return false, answered("github", err)
+		return false, githubErr(err)
 	}
-	var repoInfo struct {
-		Archived bool `json:"archived"`
+	return archived, nil
+}
+
+func githubErr(err error) error {
+	if se, ok := errors.AsType[*httpkit.StatusError](err); ok {
+		if se.Code == http.StatusForbidden || se.Code == http.StatusTooManyRequests {
+			return &source.BusyError{Source: "GitHub"}
+		}
 	}
-	if err := json.Unmarshal(body, &repoInfo); err != nil {
-		return false, err
+	if rl, ok := errors.AsType[*httpkit.RateLimitError](err); ok {
+		return &source.BusyError{Source: "GitHub", Reset: rl.Reset}
 	}
-	return repoInfo.Archived, nil
+	return answered("github", err)
 }

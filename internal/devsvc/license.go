@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
+	"net/url"
 	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
 
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -18,8 +19,6 @@ import (
 
 // Licenses are the licenses New mod offers besides the template's own; none of their texts names a holder or year.
 var Licenses = []string{"apache-2.0", "gpl-3.0", "mpl-2.0", "unlicense"}
-
-const licensesAPI = "https://api.github.com/licenses/"
 
 // applyLicense writes the chosen license's text over the template's LICENSE, from GitHub's licenses API.
 func (s *Service) applyLicense(ctx context.Context, dir, key string) error {
@@ -29,26 +28,28 @@ func (s *Service) applyLicense(ctx context.Context, dir, key string) error {
 	if !slices.Contains(Licenses, key) {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a license New mod offers", key))
 	}
-	base := licensesAPI
-	if s.LicensesURL != "" {
-		base = s.LicensesURL
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, base+key, nil)
+	body, err := (&gh.Client{HTTP: s.httpClient(), APIBase: strings.TrimRight(s.LicensesURL, "/")}).LicenseText(ctx, key)
 	if err != nil {
-		return err
+		return licenseTextErr(key, err)
 	}
-	req.Header.Set("Accept", "application/vnd.github+json")
-	b, err := httpkit.DoCapped(s.httpClient(), req, 1<<20, nil)
-	if err != nil {
+	return safefs.WriteFile(filepath.Join(dir, "LICENSE"), []byte(body), 0o644)
+}
+
+func licenseTextErr(key string, err error) error {
+	if errors.Is(err, httpkit.ErrNotFound) {
 		return usererr.Wrap(usererr.Network, fmt.Errorf("the %s license text: %w", key, err))
 	}
-	var license struct {
-		Body string `json:"body"`
+	if _, ok := errors.AsType[*httpkit.StatusError](err); ok {
+		return usererr.Wrap(usererr.Network, fmt.Errorf("the %s license text: %w", key, err))
 	}
-	if err := json.Unmarshal(b, &license); err != nil || license.Body == "" {
-		return usererr.Wrap(usererr.Network, errors.New("the license text could not be read"))
+	if _, ok := errors.AsType[*httpkit.RateLimitError](err); ok {
+		return usererr.Wrap(usererr.Network, fmt.Errorf("the %s license text: %w", key, err))
 	}
-	return safefs.WriteFile(filepath.Join(dir, "LICENSE"), []byte(license.Body), 0o644)
+	var ue *url.Error
+	if errors.As(err, &ue) || errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+		return usererr.Wrap(usererr.Network, fmt.Errorf("the %s license text: %w", key, err))
+	}
+	return usererr.Wrap(usererr.Network, errors.New("the license text could not be read"))
 }
 
 // SDKNeed is the SDK a template's global.json pins and how far .NET may roll forward from it.
