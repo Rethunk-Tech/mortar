@@ -569,13 +569,18 @@ func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) (wa
 				}
 				for _, it := range items {
 					if it.Name == "" {
-						go s.describe(ctx, it.ID, it.Game, it.ModID)
+						// In wait too: describe publishes, which writes queue.json, and wait promises no write after it.
+						wg.Go(func() { s.describe(ctx, it.ID, it.Game, it.ModID) })
 					}
 				}
 			}
 		}
 	})
-	return wg.Wait
+	return func() {
+		wg.Wait()
+		// recordHistory waits out historyFlushDelay before writing, so its own timer would write after wait returns.
+		s.FlushHistory()
+	}
 }
 
 // reject shows a link that could not be queued as a failed entry, since there is no item to blame. It keeps the

@@ -365,6 +365,8 @@ func TestSkipAndRetryReturnHowManyChanged(t *testing.T) {
 		kick:    make(chan struct{}, 1),
 		cancels: map[string]context.CancelFunc{},
 	}
+	// Skip records history, whose write waits out historyFlushDelay: flush it before the TempDir goes.
+	t.Cleanup(s.FlushHistory)
 	s.items = []*Item{
 		{ID: "paused", State: StatePaused},
 		{ID: "dl", State: StateDownloading},

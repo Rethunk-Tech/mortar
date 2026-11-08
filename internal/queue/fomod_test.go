@@ -73,6 +73,8 @@ func TestSkipAllLeavesDownloadsAndRetryFailedRequeues(t *testing.T) {
 		kick:    make(chan struct{}, 1),
 		cancels: map[string]context.CancelFunc{},
 	}
+	// SkipAll records history, whose write waits out historyFlushDelay: flush it before the TempDir goes.
+	t.Cleanup(s.FlushHistory)
 	s.items = []*Item{
 		{ID: "dl", State: StateDownloading},
 		{ID: "q", State: StateQueued},

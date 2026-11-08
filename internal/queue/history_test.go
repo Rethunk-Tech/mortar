@@ -2,6 +2,7 @@ package queue
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -204,5 +206,24 @@ func TestHistoryIsWrittenOnItsOwnAfterTheDelay(t *testing.T) {
 			t.Fatal("the history was never written")
 		}
 		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+// Run's wait promises nothing writes the queue's files after it returns, and the history's delayed write is one of
+// them: a caller whose TempDir goes on return must not have that timer fire into it afterwards.
+func TestRunWaitsForTheHistoriesDelayedWrite(t *testing.T) {
+	t.Parallel()
+	s, err := New(Deps{Dir: t.TempDir(), Now: func() time.Time { return time.Unix(1, 0).UTC() }})
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.histDelay = time.Hour
+	s.recordHistory(&Item{Name: "m", started: s.d.Now()}, StateDone)
+	ctx, cancel := context.WithCancel(t.Context())
+	wait := Run(ctx, s, make(chan nxmsvc.Assignment))
+	cancel()
+	wait()
+	if _, err := os.Stat(s.historyPath()); err != nil {
+		t.Fatalf("wait returned with the history still pending: %v", err)
 	}
 }

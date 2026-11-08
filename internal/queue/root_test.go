@@ -52,6 +52,8 @@ func TestInstallStagedHonoursChosenRootAndSource(t *testing.T) {
 		kick:    make(chan struct{}, 1),
 		cancels: map[string]context.CancelFunc{},
 	}
+	// The installs record history, whose write waits out historyFlushDelay: flush it before the TempDir goes.
+	t.Cleanup(s.FlushHistory)
 	s.items = []*Item{{ID: "a", ModID: 1, FileID: 2}, {ID: "b", ModID: 7, FileID: 8}, {ID: "c", Package: "A-B", Source: profile.KindVSModDB}}
 	nx := Item{ID: "a", Game: "stardew", ModID: 1, FileID: 2, staged: "k", readyZip: true, chosenRoot: "Mods"}
 	if err := s.installStaged(t.Context(), nx); err != nil || remapKey != "k" {
