@@ -69,7 +69,7 @@ func TestAPluginTheGameHasNotRunShowsItsSettingsAndTheFirstEditWritesItsFile(t *
 	if mode := entry(t, sc, "Shared", "Mode"); mode.Type != TypeEnum || mode.Value != "Wild" || mode.Sync != "hostEnforced" {
 		t.Fatalf("Mode = %+v, want the shared enum at Wild", mode)
 	}
-	if err := s.Set("lc", "p", "thunderstore:Ex-Fixture", files[0].Name, "Numbers", "Count", "20"); err != nil {
+	if err := s.Set(t.Context(), "lc", "p", "thunderstore:Ex-Fixture", files[0].Name, "Numbers", "Count", "20"); err != nil {
 		t.Fatal(err)
 	}
 	raw, err := safefs.ReadFile(path)
@@ -103,7 +103,7 @@ func TestTheDLLGivesTheDefaultsAndSettingsOverAnOlderBuildsCfg(t *testing.T) {
 	if speed := entry(t, sc, "Numbers", "Speed"); speed.Value != "1.5" {
 		t.Fatalf("Speed = %+v, want the setting the file lacks at its default", speed)
 	}
-	if err := s.Set("lc", "p", "thunderstore:Ex-Fixture", boundGUID+".cfg", "Numbers", "Speed", "2"); err != nil {
+	if err := s.Set(t.Context(), "lc", "p", "thunderstore:Ex-Fixture", boundGUID+".cfg", "Numbers", "Speed", "2"); err != nil {
 		t.Fatal(err)
 	}
 	raw, _ := safefs.ReadFile(path)

@@ -130,3 +130,32 @@ func TestMissingSettingIsNotFound(t *testing.T) {
 		t.Fatalf("a missing setting: %v", err)
 	}
 }
+
+// An edit while the game runs asks the game to re-read the file, so BepInEx applies it and a later in-game save keeps it.
+func TestRunningEditAsksTheGameToReloadTheFile(t *testing.T) {
+	s, _ := newService(t)
+	dir, err := s.Profiles.ProfileDir("lc", "p")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sent := fakeBridge(t, dir, "ok reloaded 1")
+	files, err := s.Files("lc", "p", "com.example.betterstuff")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Set(t.Context(), "lc", "p", "com.example.betterstuff", files[0].Name, "General", "LeaveDelay", "60"); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case got := <-sent:
+		t.Fatalf("a closed game was asked to reload: %q", got)
+	default:
+	}
+	s.Running = func(string, string) bool { return true }
+	if err := s.Set(t.Context(), "lc", "p", "com.example.betterstuff", files[0].Name, "General", "LeaveDelay", "90"); err != nil {
+		t.Fatal(err)
+	}
+	if got := <-sent; got != "config reload "+files[0].Name {
+		t.Fatalf("sent %q", got)
+	}
+}

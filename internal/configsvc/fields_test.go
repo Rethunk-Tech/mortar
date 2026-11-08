@@ -23,16 +23,16 @@ func TestFieldsAndSetFieldReachABepInExFile(t *testing.T) {
 	if delay != "120" {
 		t.Fatalf("LeaveDelay = %q in %+v", delay, fields)
 	}
-	if ok, err := s.SetField("lc", "p", id, "com.example.betterstuff.cfg/General/LeaveDelay", "60"); !ok || err != nil {
+	if ok, err := s.SetField(t.Context(), "lc", "p", id, "com.example.betterstuff.cfg/General/LeaveDelay", "60"); !ok || err != nil {
 		t.Fatalf("set: %v %v", ok, err)
 	}
 	if raw, _ := os.ReadFile(filepath.Clean(path)); !strings.Contains(string(raw), "LeaveDelay = 60") {
 		t.Fatalf("not written:\n%s", raw)
 	}
-	if ok, err := s.SetField("lc", "p", id, "com.example.betterstuff.cfg/General/LeaveDelay", "9999"); !ok || err == nil {
+	if ok, err := s.SetField(t.Context(), "lc", "p", id, "com.example.betterstuff.cfg/General/LeaveDelay", "9999"); !ok || err == nil {
 		t.Fatalf("out of range must be refused: %v %v", ok, err)
 	}
-	if ok, _ := s.SetField("lc", "p", id, "nested.foo", "2"); ok {
+	if ok, _ := s.SetField(t.Context(), "lc", "p", id, "nested.foo", "2"); ok {
 		t.Fatal("a content pack path is not a typed file")
 	}
 }

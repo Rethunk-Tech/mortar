@@ -149,6 +149,28 @@ func (s *Service) HostValues(game, profileID, file string) ([]HostValue, error) 
 	return hostValuesOf(raw, strings.TrimSuffix(filepath.Base(file), filepath.Ext(file)))
 }
 
+// reloadWait bounds the wait for the game to re-read a file: the bridge gives the game's main thread five seconds.
+const reloadWait = 6 * time.Second
+
+// reloadInGame has the running game re-read a .cfg Mortar just wrote: BepInEx then fires each changed setting's
+// SettingChanged, and a later in-game save writes the edit back instead of over it. With no bridge up, or one too old
+// to know the command, the edit waits for the next start.
+func (s *Service) reloadInGame(ctx context.Context, game, profileID string, f ConfigFile) {
+	if f.Format != FormatBepInEx || s.Running == nil || !s.Running(game, profileID) {
+		return
+	}
+	dir, err := s.Profiles.ProfileDir(game, profileID)
+	if err != nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, reloadWait)
+	defer cancel()
+	err = bridge.Send(ctx, bridge.BepInEx.StatePath(dir), "config reload "+f.Name)
+	if err != nil && !errors.Is(err, bridge.ErrNotRunning) && !errors.Is(err, bridge.ErrNotReady) {
+		log.Printf("config: the game did not reload %s: %v", f.Name, err)
+	}
+}
+
 // hostValuesOf picks the bridge's rows for one plugin: a BepInEx config file is named after its plugin's GUID.
 func hostValuesOf(raw json.RawMessage, guid string) ([]HostValue, error) {
 	var rows []struct {
@@ -168,7 +190,7 @@ func hostValuesOf(raw json.RawMessage, guid string) ([]HostValue, error) {
 }
 
 // SaveHostValues keeps the host's current values of the settings the file's mod shares, to write into the player's own
-// .cfg once the game is closed: Mortar writes no config while the game runs, which may rewrite it. It returns how many.
+// .cfg once the game is closed, since ConfigSync holds the host's values for the session. It returns how many.
 func (s *Service) SaveHostValues(game, profileID, modID, file string) (int, error) {
 	values, err := s.HostValues(game, profileID, file)
 	if err != nil || len(values) == 0 {

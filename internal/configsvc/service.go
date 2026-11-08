@@ -3,6 +3,7 @@ package configsvc
 import (
 	"bytes"
 	"cmp"
+	"context"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -654,7 +655,7 @@ func (s *Service) refuseEdit(game, profileID string) error {
 }
 
 // Set changes one value. The file is written atomically with every other line, comment and key as it was.
-func (s *Service) Set(game, profileID, modID, file, section, key, value string) error {
+func (s *Service) Set(ctx context.Context, game, profileID, modID, file, section, key, value string) error {
 	if err := s.refuseEdit(game, profileID); err != nil {
 		return err
 	}
@@ -662,12 +663,16 @@ func (s *Service) Set(game, profileID, modID, file, section, key, value string) 
 	if err != nil {
 		return err
 	}
-	return s.write(game, profileID, modID, f, []edit{{section, key, value}})
+	if err := s.write(game, profileID, modID, f, []edit{{section, key, value}}); err != nil {
+		return err
+	}
+	s.reloadInGame(ctx, game, profileID, f)
+	return nil
 }
 
 // Reset puts one setting back to its default.
-func (s *Service) Reset(game, profileID, modID, file, section, key string) error {
-	skipped, err := s.reset(game, profileID, modID, file, func(sec, k string) bool { return sec == section && k == key })
+func (s *Service) Reset(ctx context.Context, game, profileID, modID, file, section, key string) error {
+	skipped, err := s.reset(ctx, game, profileID, modID, file, func(sec, k string) bool { return sec == section && k == key })
 	if err == nil && skipped > 0 {
 		return fmt.Errorf("%s has no default to go back to", key)
 	}
@@ -676,11 +681,11 @@ func (s *Service) Reset(game, profileID, modID, file, section, key string) error
 
 // ResetAll puts every setting that has a default back to it and leaves the others as they are; it returns how many
 // settings have no default.
-func (s *Service) ResetAll(game, profileID, modID, file string) (int, error) {
-	return s.reset(game, profileID, modID, file, func(string, string) bool { return true })
+func (s *Service) ResetAll(ctx context.Context, game, profileID, modID, file string) (int, error) {
+	return s.reset(ctx, game, profileID, modID, file, func(string, string) bool { return true })
 }
 
-func (s *Service) reset(game, profileID, modID, file string, pick func(section, key string) bool) (int, error) {
+func (s *Service) reset(ctx context.Context, game, profileID, modID, file string, pick func(section, key string) bool) (int, error) {
 	if err := s.refuseEdit(game, profileID); err != nil {
 		return 0, err
 	}
@@ -707,7 +712,11 @@ func (s *Service) reset(game, profileID, modID, file string, pick func(section, 
 	if len(edits) == 0 {
 		return skipped, nil
 	}
-	return skipped, s.write(game, profileID, modID, schema.File, edits)
+	if err := s.write(game, profileID, modID, schema.File, edits); err != nil {
+		return skipped, err
+	}
+	s.reloadInGame(ctx, game, profileID, schema.File)
+	return skipped, nil
 }
 
 type edit struct{ section, key, value string }

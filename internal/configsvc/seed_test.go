@@ -24,7 +24,7 @@ func TestAPackagesShippedConfigIsEditableBeforeTheFirstLaunch(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := &configsvc.Service{Profiles: ps}
-	if err := s.Set(lc, p.ID, "", "ns.a.plugin.cfg", "General", "Value", "edited"); err != nil {
+	if err := s.Set(t.Context(), lc, p.ID, "", "ns.a.plugin.cfg", "General", "Value", "edited"); err != nil {
 		t.Fatal(err)
 	}
 	if err := ps.SyncPackages(lc, p.ID); err != nil {
@@ -54,7 +54,7 @@ func TestASwitchedOffModsConfigStaysListedAndEditable(t *testing.T) {
 	}
 	e := res.Profile.Entries[0]
 	s := &configsvc.Service{Profiles: ps}
-	if err := s.Set(lc, p.ID, "", "A.cfg", "General", "Value", "mine"); err != nil {
+	if err := s.Set(t.Context(), lc, p.ID, "", "A.cfg", "General", "Value", "mine"); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := ps.SetModEnabled(lc, p.ID, e.Key, e.Mods[0].ID, false); err != nil {
@@ -74,7 +74,7 @@ func TestASwitchedOffModsConfigStaysListedAndEditable(t *testing.T) {
 	if err != nil || list.Without != 0 || len(list.Mods) != 1 || len(list.Mods[0].Files) != 1 {
 		t.Fatalf("Mods = %+v, %v; want the switched-off mod listed with its set-aside file", list, err)
 	}
-	if err := s.Set(lc, p.ID, "", "A.cfg", "General", "Value", "edited off"); err != nil {
+	if err := s.Set(t.Context(), lc, p.ID, "", "A.cfg", "General", "Value", "edited off"); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := ps.SetModEnabled(lc, p.ID, e.Key, e.Mods[0].ID, true); err != nil {

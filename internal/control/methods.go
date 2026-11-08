@@ -1018,7 +1018,7 @@ func (s *Services) dispatchProfile5(ctx context.Context, method string, p Params
 		cfg := s.configs()
 		if p.Key != "" {
 			return s.changed(p.Game, func() (any, error) {
-				if ok, err := cfg.SetField(p.Game, id, string(ref.ID), p.Key, p.Value); ok || err != nil {
+				if ok, err := cfg.SetField(ctx, p.Game, id, string(ref.ID), p.Key, p.Value); ok || err != nil {
 					if err != nil {
 						return nil, err
 					}

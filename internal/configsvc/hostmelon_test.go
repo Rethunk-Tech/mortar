@@ -15,11 +15,13 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
-// fakeBridge answers every query with reply on loopback and writes the state file naming it into dir; "" writes none.
-func fakeBridge(t *testing.T, dir, reply string) {
+// fakeBridge answers every command with reply on loopback and writes the state file naming it into dir; "" writes
+// none. The commands it was sent arrive on the returned channel.
+func fakeBridge(t *testing.T, dir, reply string) <-chan string {
 	t.Helper()
+	got := make(chan string, 8)
 	if reply == "" {
-		return
+		return got
 	}
 	port := 1
 	if !strings.HasPrefix(reply, "gone") {
@@ -41,7 +43,8 @@ func fakeBridge(t *testing.T, dir, reply string) {
 				}
 				r := bufio.NewReader(c)
 				_, _ = r.ReadString('\n')
-				_, _ = r.ReadString('\n')
+				command, _ := r.ReadString('\n')
+				got <- strings.TrimSpace(command)
 				_, _ = fmt.Fprintln(c, reply)
 				_ = c.Close()
 			}
@@ -55,6 +58,7 @@ func fakeBridge(t *testing.T, dir, reply string) {
 	if err := os.WriteFile(path, []byte(state), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	return got
 }
 
 func TestHostValuesAnswerEmptyUnlessTheBridgeAnswers(t *testing.T) {

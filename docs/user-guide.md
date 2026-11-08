@@ -123,7 +123,7 @@ Mortar edits a mod's config as a form, and the other files a BepInEx mod keeps (
 
 1. In the **Mods** tab, select a mod and choose **Edit config** under **Config** (or right-click it, or use its **⋯** menu).
 2. Pick a config file (`config.json` for a SMAPI mod, each BepInEx `.cfg` for a Lethal Company plugin).
-3. Change a value. Each change saves as you make it, except while the game is starting. While it runs, most mods read a change only at their next start, and a mod that saves its settings in the game can write over it; Vintage Story's mod configs wait until the game closes. A value that differs from the mod's default shows **Reset to default**; **Reset all** restores the file. **Search entries** filters long files.
+3. Change a value. Each change saves as you make it, except while the game is starting. While it runs, most mods read a change only at their next start, and a mod that saves its settings in the game can write over it. In a BepInEx game Mortar has the game re-read the file at once, so mods that react to setting changes apply it straight away and an in-game save keeps it; Vintage Story's mod configs wait until the game closes. A value that differs from the mod's default shows **Reset to default**; **Reset all** restores the file. **Search entries** filters long files.
 4. **Presets** saves the file's values under a name and applies them to any profile's copy.
 
 The **Config** tab (Ctrl+6) lists every mod with settings and searches every config file in the profile. A change under **In-game menu** (Generic Mod Config Menu) says **Applied when the game next starts**. **Delete file** removes a config file no mod owns. **Centre config controls** (**Settings › Appearance**) puts each control nearer its name on a wide window.

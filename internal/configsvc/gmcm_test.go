@@ -66,7 +66,7 @@ func TestTheInGameMenuIsAFileWhoseEditsWaitForTheNextStart(t *testing.T) {
 		t.Fatalf("a colour picker is the game's to change: %+v", tint)
 	}
 
-	if err := s.Set("stardew", "p", "Author.Mod", files[1].Name, "", "/2", "5"); err != nil {
+	if err := s.Set(t.Context(), "stardew", "p", "Author.Mod", files[1].Name, "", "/2", "5"); err != nil {
 		t.Fatal(err)
 	}
 	if len(sets) != 1 || sets[0] != (set{"", 2, "5"}) {
@@ -76,7 +76,7 @@ func TestTheInGameMenuIsAFileWhoseEditsWaitForTheNextStart(t *testing.T) {
 	if e := schema.Sections[0].Entries[2]; e.Key != "/2" || e.Value != "5" || !e.Pending {
 		t.Fatalf("pending count = %+v", e)
 	}
-	if err := s.Reset("stardew", "p", "Author.Mod", files[1].Name, "", "/2"); err != nil {
+	if err := s.Reset(t.Context(), "stardew", "p", "Author.Mod", files[1].Name, "", "/2"); err != nil {
 		t.Fatal(err)
 	}
 	if sets[len(sets)-1] != (set{"", 2, "3"}) {

@@ -110,13 +110,13 @@ func TestFilesSetResetOnABepInExFile(t *testing.T) {
 	if err != nil || len(files) != 1 || files[0].Format != FormatBepInEx || files[0].Label != "LC Better Stuff" {
 		t.Fatalf("files %+v %v", files, err)
 	}
-	if err := s.Set("lc", "p", "com.example.betterstuff", files[0].Name, "General", "LeaveDelay", "60"); err != nil {
+	if err := s.Set(t.Context(), "lc", "p", "com.example.betterstuff", files[0].Name, "General", "LeaveDelay", "60"); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.Set("lc", "p", "com.example.betterstuff", files[0].Name, "General", "LeaveDelay", "9999"); err == nil {
+	if err := s.Set(t.Context(), "lc", "p", "com.example.betterstuff", files[0].Name, "General", "LeaveDelay", "9999"); err == nil {
 		t.Fatal("out of range must be refused")
 	}
-	if n, err := s.ResetAll("lc", "p", "com.example.betterstuff", files[0].Name); err != nil || n != 0 {
+	if n, err := s.ResetAll(t.Context(), "lc", "p", "com.example.betterstuff", files[0].Name); err != nil || n != 0 {
 		t.Fatalf("reset all: %d %v", n, err)
 	}
 	got, _ := os.ReadFile(filepath.Clean(path))
@@ -143,15 +143,15 @@ func TestJSONFileGoesThroughTheProfileSetter(t *testing.T) {
 	if len(files) != 1 || files[0].Format != FormatSMAPI {
 		t.Fatalf("files %+v", files)
 	}
-	if err := s.Reset("stardew", "p", "Author.Mod", "config.json", "", "Speed"); err != nil || field != "Speed" || value != "1" {
+	if err := s.Reset(t.Context(), "stardew", "p", "Author.Mod", "config.json", "", "Speed"); err != nil || field != "Speed" || value != "1" {
 		t.Fatalf("reset wrote %q=%q: %v", field, value, err)
 	}
 	s.Running = func(string, string) bool { return true }
-	if err := s.Set("stardew", "p", "Author.Mod", "config.json", "", "Speed", "3"); err != nil || value != "3" {
+	if err := s.Set(t.Context(), "stardew", "p", "Author.Mod", "config.json", "", "Speed", "3"); err != nil || value != "3" {
 		t.Fatalf("a running game's config was not written: %v", err)
 	}
 	s.Starting = func(string, string) bool { return true }
-	if err := s.Set("stardew", "p", "Author.Mod", "config.json", "", "Speed", "4"); err == nil {
+	if err := s.Set(t.Context(), "stardew", "p", "Author.Mod", "config.json", "", "Speed", "4"); err == nil {
 		t.Fatal("a launch placing files must block writes")
 	}
 }
@@ -167,7 +167,7 @@ func TestResetAllLeavesEntriesWithoutADefaultAndCountsThem(t *testing.T) {
 		}
 		return nil
 	}
-	n, err := s.ResetAll("stardew", "p", "Author.Mod", "config.json")
+	n, err := s.ResetAll(t.Context(), "stardew", "p", "Author.Mod", "config.json")
 	if err != nil || n != 1 || len(wrote) != 1 || wrote[0] != "Speed=1" {
 		t.Fatalf("skipped %d wrote %v err %v", n, wrote, err)
 	}
@@ -273,7 +273,7 @@ func TestModConfigJSONIsMatchedByModIDAndEditedInPlace(t *testing.T) {
 	if err != nil || len(files) != 1 || files[0].Name != "CarryOnConfig.json" || files[0].Format != FormatJSON {
 		t.Fatalf("files = %+v, %v", files, err)
 	}
-	if err := s.Set("vintage-story", "p", "folder:carryon", "CarryOnConfig.json", "", "InteractDistance", "3"); err != nil {
+	if err := s.Set(t.Context(), "vintage-story", "p", "folder:carryon", "CarryOnConfig.json", "", "InteractDistance", "3"); err != nil {
 		t.Fatal(err)
 	}
 	if got, _ := os.ReadFile(filepath.Clean(filepath.Join(mc, "CarryOnConfig.json"))); !strings.Contains(string(got), `"InteractDistance": 3`) || strings.Index(string(got), "InteractDistance") > strings.Index(string(got), "Allowed") {
@@ -281,7 +281,7 @@ func TestModConfigJSONIsMatchedByModIDAndEditedInPlace(t *testing.T) {
 	}
 	// A copied mod config swap goes back over the profile's folder when the game exits, so a running game refuses.
 	s.Running = func(string, string) bool { return true }
-	if err := s.Set("vintage-story", "p", "folder:carryon", "CarryOnConfig.json", "", "InteractDistance", "4"); err == nil {
+	if err := s.Set(t.Context(), "vintage-story", "p", "folder:carryon", "CarryOnConfig.json", "", "InteractDistance", "4"); err == nil {
 		t.Fatal("a swapped-in mod config folder was written while the game ran")
 	}
 	s.Running = nil

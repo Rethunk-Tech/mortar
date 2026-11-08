@@ -1,6 +1,7 @@
 package configsvc
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -46,7 +47,7 @@ func (s *Service) Fields(game, profileID, modID string) ([]profile.ConfigField, 
 
 // SetField sets the setting a Fields path names. ok is false when the path names no typed file of the mod, so the
 // caller can try another kind of config.
-func (s *Service) SetField(game, profileID, modID, fieldPath, value string) (ok bool, err error) {
+func (s *Service) SetField(ctx context.Context, game, profileID, modID, fieldPath, value string) (ok bool, err error) {
 	file, rest, found := strings.Cut(fieldPath, "/")
 	path, key, nested := strings.CutLast(rest, "/")
 	if !found || !nested {
@@ -58,7 +59,7 @@ func (s *Service) SetField(game, profileID, modID, fieldPath, value string) (ok 
 	}
 	for _, f := range files {
 		if f.Name == file && typedFile(f) {
-			if err := s.Set(game, profileID, modID, file, path, key, value); err != nil {
+			if err := s.Set(ctx, game, profileID, modID, file, path, key, value); err != nil {
 				return true, fmt.Errorf("%s: %w", fieldPath, err)
 			}
 			return true, nil
