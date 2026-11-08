@@ -1,5 +1,7 @@
 # CodeQL advanced setup: every language in this repository with the security-and-quality suite, re-runnable
-# from the Actions tab. Go is built (autobuild); every other language is extracted without a build.
+# from the Actions tab. Go is built (autobuild); every other language is extracted without a build. C# is left out:
+# its only sources are test fixtures that compile against a game's own Managed/ assemblies, which CI does not have, so
+# CodeQL could resolve under a third of their calls.
 name: CodeQL
 
 on:
@@ -27,8 +29,6 @@ jobs:
       matrix:
         include:
           - language: actions
-            build-mode: none
-          - language: csharp
             build-mode: none
           - language: go
             build-mode: autobuild
