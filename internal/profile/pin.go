@@ -1,7 +1,6 @@
 package profile
 
 import (
-	"errors"
 	"slices"
 )
 
@@ -19,9 +18,9 @@ func (e Entry) SkipsSource(source string) bool {
 
 func (s *Store) patchEntry(game, id, key string, fn func(*Entry) error) (Profile, error) {
 	return s.update(game, id, func(p *Profile, _ string) error {
-		i := EntryIndex(p.Entries, key)
-		if i < 0 {
-			return errors.New("no such mod in this profile")
+		i, err := requireEntry(p.Entries, key)
+		if err != nil {
+			return err
 		}
 		return fn(&p.Entries[i])
 	})
@@ -34,13 +33,7 @@ func (s *Store) SetPinned(game, id, key string, pinned bool, pinReason string) (
 		return Profile{}, err
 	}
 	return s.patchEntry(game, id, key, func(e *Entry) error {
-		e.Pinned = pinned
-		if pinned {
-			e.SkipVersion = ""
-			e.PinReason = reason
-		} else {
-			e.PinReason = ""
-		}
+		applyPin(e, pinned, reason)
 		return nil
 	})
 }
@@ -82,7 +75,7 @@ const FrozenPinReason = "Frozen with the profile"
 func frozen(entries []Entry) bool {
 	held, made := 0, false
 	for _, e := range entries {
-		if e.OverlayOf != "" {
+		if e.IsOverlay() {
 			continue
 		}
 		if !e.Pinned {

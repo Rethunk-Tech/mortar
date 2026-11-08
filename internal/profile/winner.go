@@ -21,9 +21,9 @@ func (s *Store) SetWinner(game, profileID, winnerKey string, winner, loser mod.I
 		return Profile{}, fmt.Errorf("loser unique ID is empty")
 	}
 	p, err := s.updateMods(game, profileID, func(p *Profile, dir string) error {
-		i := EntryIndex(p.Entries, winnerKey)
-		if i < 0 {
-			return fmt.Errorf("mod %q is not in this profile", winnerKey)
+		i, err := requireEntry(p.Entries, winnerKey)
+		if err != nil {
+			return err
 		}
 		e := p.Entries[i]
 		ci := slices.IndexFunc(e.Mods, func(c Component) bool { return mod.Equal(c.ID, winner) })

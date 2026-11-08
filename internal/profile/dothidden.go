@@ -99,9 +99,9 @@ func (s *Store) hiddenModPath(game, id, key, folder string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	ei := EntryIndex(p.Entries, key)
-	if ei < 0 {
-		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("no entry %s", key))
+	ei, err := requireEntry(p.Entries, key)
+	if err != nil {
+		return "", usererr.Wrap(usererr.NotFound, err)
 	}
 	root := liveEntryDir(datadir.ModsDirOf(dir), key)
 	if _, err := findHidden(root, p.Entries[ei], folder); err != nil {
@@ -126,9 +126,9 @@ func findHidden(root string, e Entry, folder string) (HiddenMod, error) {
 // mod id is already loaded elsewhere in the profile or a folder with the undotted name exists.
 func (s *Store) UnhideMod(game, id, key, folder string) (Profile, error) {
 	return s.updateMods(game, id, func(p *Profile, dir string) error {
-		ei := EntryIndex(p.Entries, key)
-		if ei < 0 {
-			return usererr.Wrap(usererr.NotFound, fmt.Errorf("no entry %s", key))
+		ei, err := requireEntry(p.Entries, key)
+		if err != nil {
+			return usererr.Wrap(usererr.NotFound, err)
 		}
 		e := &p.Entries[ei]
 		root := liveEntryDir(datadir.ModsDirOf(dir), key)

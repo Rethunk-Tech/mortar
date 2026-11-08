@@ -2,7 +2,6 @@ package profile
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -31,9 +30,9 @@ func (s *Store) FixStaleManifest(game, id, key string, uniqueID mod.ID, version 
 	// profile that installs it starts right.
 	storeRoot, storeErr := s.items.Path(game, key)
 	_, err = s.update(game, id, func(p *Profile, _ string) error {
-		ei := EntryIndex(p.Entries, key)
-		if ei < 0 {
-			return fmt.Errorf("no entry %s", key)
+		ei, err := requireEntry(p.Entries, key)
+		if err != nil {
+			return err
 		}
 		e := &p.Entries[ei]
 		if len(e.Fomod) > 0 {

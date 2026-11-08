@@ -30,9 +30,9 @@ func (s *Store) updateEntriesAs(game, id, kind string, note HistoryEvent, keys [
 				continue
 			}
 			seen[key] = true
-			i := EntryIndex(p.Entries, key)
-			if i < 0 {
-				return fmt.Errorf("unknown profile entry %q", key)
+			i, err := requireEntry(p.Entries, key)
+			if err != nil {
+				return err
 			}
 			if err := fn(&p.Entries[i], key); err != nil {
 				return err
@@ -42,6 +42,18 @@ func (s *Store) updateEntriesAs(game, id, kind string, note HistoryEvent, keys [
 	})
 }
 
+// applyPin records whether an entry stays on its current version: pinning clears a skipped update and sets the reason,
+// unpinning drops the reason.
+func applyPin(e *Entry, pinned bool, reason string) {
+	e.Pinned = pinned
+	if pinned {
+		e.SkipVersion = ""
+		e.PinReason = reason
+	} else {
+		e.PinReason = ""
+	}
+}
+
 // SetPinnedMany changes the pinned state of each named entry in one profile write.
 func (s *Store) SetPinnedMany(game, id string, keys []string, pinned bool, pinReason string) (Profile, error) {
 	reason, err := cleanPinReason(pinReason)
@@ -49,13 +61,7 @@ func (s *Store) SetPinnedMany(game, id string, keys []string, pinned bool, pinRe
 		return Profile{}, err
 	}
 	return s.updateEntries(game, id, keys, func(e *Entry, _ string) error {
-		e.Pinned = pinned
-		if pinned {
-			e.SkipVersion = ""
-			e.PinReason = reason
-		} else {
-			e.PinReason = ""
-		}
+		applyPin(e, pinned, reason)
 		return nil
 	})
 }
@@ -90,13 +96,7 @@ func (s *Store) SetEntryTagsMany(game, id string, keys []string, tag string, add
 			}
 			e.Tags = append(e.Tags, tag)
 		} else {
-			filtered := e.Tags[:0]
-			for _, existing := range e.Tags {
-				if existing != tag {
-					filtered = append(filtered, existing)
-				}
-			}
-			e.Tags = filtered
+			e.Tags = slices.DeleteFunc(e.Tags, func(existing string) bool { return existing == tag })
 		}
 		_, e.Tags, err = CleanEntryNoteTags(e.Note, e.Tags)
 		return err
@@ -107,9 +107,9 @@ func (s *Store) SetEntryTagsMany(game, id string, keys []string, tag string, add
 func (s *Store) SetSkipVersionMany(game, id string, refs []SkipVersionRef) (Profile, error) {
 	return s.updateMods(game, id, func(p *Profile, _ string) error {
 		for _, ref := range refs {
-			i := EntryIndex(p.Entries, ref.Key)
-			if i < 0 {
-				return fmt.Errorf("unknown profile entry %q", ref.Key)
+			i, err := requireEntry(p.Entries, ref.Key)
+			if err != nil {
+				return err
 			}
 			p.Entries[i].SkipVersion = ref.Version
 		}
@@ -135,27 +135,21 @@ func (s *Store) RestoreEntryFields(game, id string, fields []EntryFields) (Profi
 	}
 	return s.updateMods(game, id, func(p *Profile, _ string) error {
 		for _, field := range fields {
-			found := false
-			for i := range p.Entries {
-				if p.Entries[i].Key != field.Key {
-					continue
-				}
-				p.Entries[i].Pinned = field.Pinned
-				p.Entries[i].SkipVersion = field.SkipVersion
-				_, tags, err := CleanEntryNoteTags(p.Entries[i].Note, field.Tags)
-				if err != nil {
-					return err
-				}
-				p.Entries[i].Tags = tags
-				p.Entries[i].CategoryOverride = field.CategoryOverride
-				if !p.Entries[i].Source.Bundled() {
-					p.Entries[i].Implicit = field.Implicit
-				}
-				found = true
-				break
+			i, err := requireEntry(p.Entries, field.Key)
+			if err != nil {
+				return err
 			}
-			if !found {
-				return fmt.Errorf("unknown profile entry %q", field.Key)
+			e := &p.Entries[i]
+			e.Pinned = field.Pinned
+			e.SkipVersion = field.SkipVersion
+			_, tags, err := CleanEntryNoteTags(e.Note, field.Tags)
+			if err != nil {
+				return err
+			}
+			e.Tags = tags
+			e.CategoryOverride = field.CategoryOverride
+			if !e.Source.Bundled() {
+				e.Implicit = field.Implicit
 			}
 		}
 		return nil

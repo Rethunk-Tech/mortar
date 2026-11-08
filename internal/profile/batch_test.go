@@ -1,6 +1,10 @@
 package profile
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
+)
 
 func TestBatchEntryOperationsWriteAllSelectedEntries(t *testing.T) {
 	t.Parallel()
@@ -44,6 +48,45 @@ func TestBatchEntryOperationsWriteAllSelectedEntries(t *testing.T) {
 	for _, entry := range p.Entries {
 		if len(entry.Tags) != 0 {
 			t.Fatalf("tag was not removed: %+v", entry)
+		}
+	}
+}
+
+// Every API that names one entry reports a key it cannot find with the same words, through requireEntry.
+func TestAMissingEntryIsReportedTheSameWay(t *testing.T) {
+	t.Parallel()
+	s := newEnv(t)
+	p := mustCreate(t, s, "Missing")
+	s.item(t, "a-1", map[string]string{"manifest.json": manifestJSON("a-1")})
+	if _, err := s.AddEntry("stardew", p.ID, "a-1", Source{}); err != nil {
+		t.Fatal(err)
+	}
+	const want = `"gone" is not in this profile`
+	cases := map[string]func() error{
+		"SetPinned": func() error { _, err := s.SetPinned("stardew", p.ID, "gone", true, ""); return err },
+		"SetPinnedMany": func() error {
+			_, err := s.SetPinnedMany("stardew", p.ID, []string{"a-1", "gone"}, true, "")
+			return err
+		},
+		"SetSkipVersionMany": func() error {
+			_, err := s.SetSkipVersionMany("stardew", p.ID, []SkipVersionRef{{Key: "gone"}})
+			return err
+		},
+		"RestoreEntryFields": func() error {
+			_, err := s.RestoreEntryFields("stardew", p.ID, []EntryFields{{Key: "gone"}})
+			return err
+		},
+		"SetWinner":  func() error { _, err := s.SetWinner("stardew", p.ID, "gone", "a", "b", true); return err },
+		"AddToGroup": func() error { _, err := s.AddToGroup("stardew", p.ID, "G", "gone"); return err },
+	}
+	for name, call := range cases {
+		err := call()
+		if err == nil {
+			t.Errorf("%s: a missing entry was accepted", name)
+			continue
+		}
+		if _, msg := usererr.Parse(err.Error()); msg != want {
+			t.Errorf("%s: err = %q, want %q", name, msg, want)
 		}
 	}
 }

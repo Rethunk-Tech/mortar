@@ -206,8 +206,8 @@ func (s *Store) AddToGroup(game, id, name, key string) (Profile, error) {
 		return Profile{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("entry key is empty"))
 	}
 	return s.updateMods(game, id, func(p *Profile, _ string) error {
-		if EntryIndex(p.Entries, key) < 0 {
-			return usererr.Wrap(usererr.NotFound, fmt.Errorf("entry %q not found", key))
+		if _, err := requireEntry(p.Entries, key); err != nil {
+			return usererr.Wrap(usererr.NotFound, err)
 		}
 		idx := p.groupIndex(name)
 		if idx < 0 {
