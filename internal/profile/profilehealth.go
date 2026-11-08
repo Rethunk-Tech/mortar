@@ -201,7 +201,7 @@ func (s *Store) missingFindings(game string, p Profile) ([]HealthFinding, error)
 			continue
 		}
 		f := HealthFinding{
-			ID: HealthMissing + ":" + e.Key, Kind: HealthMissing, Items: []string{entryLabel(e)},
+			ID: HealthMissing + ":" + e.Key, Kind: HealthMissing, Items: []string{e.Label()},
 			Entries: []Entry{e},
 		}
 		if fetchable(e.Source) {
@@ -233,7 +233,7 @@ func driftFindings(p Profile, drift []Drift) []HealthFinding {
 		}
 		out = append(out, HealthFinding{
 			ID: HealthDrift + ":" + d.Key, Kind: HealthDrift, Cause: string(d.Kind),
-			Items: []string{entryLabel(p.Entries[i])}, Repair: repair,
+			Items: []string{p.Entries[i].Label()}, Repair: repair,
 		})
 	}
 	return out

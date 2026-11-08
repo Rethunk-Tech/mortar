@@ -82,7 +82,7 @@ func TestRestoreEntryFieldsWritesPreviousValues(t *testing.T) {
 	if a == nil || b == nil || a.Pinned || b.CategoryOverride != "Crops" || len(b.Tags) != 0 {
 		t.Fatalf("fields = %+v", got.Entries)
 	}
-	if !reflect.DeepEqual(namesForStoreKeys([]Entry{*a}, []string{"local-a"}), []string{entryLabel(*a)}) {
+	if !reflect.DeepEqual(namesForStoreKeys([]Entry{*a}, []string{"local-a"}), []string{a.Label()}) {
 		t.Fatalf("names = %v", namesForStoreKeys([]Entry{*a}, []string{"local-a"}))
 	}
 }

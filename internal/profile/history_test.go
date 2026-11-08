@@ -845,3 +845,40 @@ func TestHistorySkipsSameVersionFolderRebuilds(t *testing.T) {
 		t.Fatalf("a rebuild recorded event %q, %v", id, err)
 	}
 }
+
+func TestLabelFallsBackForUnnamedMod(t *testing.T) {
+	t.Parallel()
+	e := Entry{
+		Key:  "store-key",
+		Mods: []Component{{ID: mod.SMAPI("Pathoschild.ContentPatcher")}},
+	}
+	if got := e.Label(); got != "Pathoschild.ContentPatcher" {
+		t.Fatalf("Label() = %q, want the local id", got)
+	}
+	got := namesForStoreKeys([]Entry{e}, []string{"store-key"})
+	if !reflect.DeepEqual(got, []string{"Pathoschild.ContentPatcher"}) {
+		t.Fatalf("namesForStoreKeys = %v, want the local id", got)
+	}
+}
+
+func TestNamesForStoreKeysUsesItemAndReplaced(t *testing.T) {
+	t.Parallel()
+	e := Entry{
+		Key:      "current#file",
+		Item:     "current-item",
+		Mods:     []Component{{Name: "Current Mod"}},
+		Replaced: `[{"key":"old-item","mods":[{"name":"Replaced Mod"}]}]`,
+	}
+	if !entryUsesKey(e, map[string]struct{}{"current-item": {}}) {
+		t.Fatal("entryUsesKey missed the item store key")
+	}
+	if !entryUsesKey(e, map[string]struct{}{"old-item": {}}) {
+		t.Fatal("entryUsesKey missed the replaced store key")
+	}
+	if got := namesForStoreKeys([]Entry{e}, []string{"current-item"}); !reflect.DeepEqual(got, []string{"Current Mod"}) {
+		t.Fatalf("item names = %v, want [Current Mod]", got)
+	}
+	if got := namesForStoreKeys([]Entry{e}, []string{"old-item"}); !reflect.DeepEqual(got, []string{"Current Mod"}) {
+		t.Fatalf("replaced names = %v, want [Current Mod]", got)
+	}
+}

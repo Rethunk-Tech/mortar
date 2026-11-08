@@ -409,7 +409,7 @@ func overlayAsk(key string, source Source, base Entry, itemDir, baseSrc string) 
 		return RemapAsk{}, err
 	}
 	return RemapAsk{Key: key, Source: source, Tree: tree, Overlay: &OverlayAsk{
-		BaseKey: base.Key, BaseLabel: entryLabel(base), Targets: foldersOnly(targets),
+		BaseKey: base.Key, BaseLabel: base.Label(), Targets: foldersOnly(targets),
 	}}, nil
 }
 
@@ -445,7 +445,7 @@ func (s *Store) placeOverlayLocked(game, id, key string, source Source) (Profile
 	}
 	for _, e := range cur.Entries {
 		if e.Key == key {
-			return Profile{}, &DuplicateError{Key: key, Label: entryLabel(e)}
+			return Profile{}, &DuplicateError{Key: key, Label: e.Label()}
 		}
 	}
 	replaced := func(e Entry) bool {
@@ -578,7 +578,7 @@ func isOverlayKey(p *Profile, key string) bool {
 // restoreOverlay puts a removed optional file back as it was, once its main entry is in the profile again.
 func (s *Store) restoreOverlay(game string, p *Profile, dir string, want Entry) error {
 	if !slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == want.OverlayOf && !e.IsOverlay() }) {
-		return fmt.Errorf("%s needs its main file in the profile", entryLabel(want))
+		return fmt.Errorf("%s needs its main file in the profile", want.Label())
 	}
 	if _, err := s.items.Path(game, want.Key); err != nil {
 		return err

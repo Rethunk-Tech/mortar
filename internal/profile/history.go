@@ -438,23 +438,10 @@ func restoreModsOld(dir string) {
 }
 
 func entryUsesKey(e Entry, want map[string]struct{}) bool {
-	if _, ok := want[e.Key]; ok {
-		return true
-	}
-	if _, ok := want[e.PreviousKey]; ok {
-		return true
-	}
-	for _, key := range e.ExtraStoreKeys {
-		if _, ok := want[key]; ok {
-			return true
-		}
-	}
-	for _, key := range e.PreviousExtraStoreKeys {
-		if _, ok := want[key]; ok {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(entryStoreKeys(e), func(k string) bool {
+		_, ok := want[k]
+		return ok
+	})
 }
 
 func namesForStoreKeys(entries []Entry, keys []string) []string {
@@ -479,13 +466,8 @@ func namesForStoreKeys(entries []Entry, keys []string) []string {
 		if !entryUsesKey(e, want) {
 			continue
 		}
-		add(entryLabel(e))
-		used[e.Key] = struct{}{}
-		used[e.PreviousKey] = struct{}{}
-		for _, key := range e.ExtraStoreKeys {
-			used[key] = struct{}{}
-		}
-		for _, key := range e.PreviousExtraStoreKeys {
+		add(e.Label())
+		for _, key := range entryStoreKeys(e) {
 			used[key] = struct{}{}
 		}
 	}

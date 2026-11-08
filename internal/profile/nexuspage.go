@@ -62,10 +62,10 @@ func (s *Store) SetNexusFile(game, id, key string, f NexusFile) (Profile, error)
 	if err != nil {
 		return Profile{}, err
 	}
-	note := HistoryEvent{Change: ChangeSourced, Name: entryLabel(p.Entries[i])}
+	note := HistoryEvent{Change: ChangeSourced, Name: p.Entries[i].Label()}
 	return s.updateEntriesAs(game, id, historyBulk, note, []string{key}, func(e *Entry, _ string) error {
 		if e.Source.Kind != KindLocal && e.Source.Kind != KindNexus {
-			return fmt.Errorf("%s comes from another site", entryLabel(*e))
+			return fmt.Errorf("%s comes from another site", e.Label())
 		}
 		e.Source.Kind, e.Source.ModID, e.Source.FileID, e.Source.Digest = KindNexus, f.ModID, f.FileID, ""
 		if len(e.Mods) > 0 {

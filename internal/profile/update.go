@@ -65,7 +65,7 @@ func (s *Store) UpdateEntries(game, id string, moves []EntryMove) (Profile, erro
 			}
 			for _, e := range p.Entries {
 				if e.Key == m.NewKey {
-					return &DuplicateError{Key: m.NewKey, Label: entryLabel(e)}
+					return &DuplicateError{Key: m.NewKey, Label: e.Label()}
 				}
 			}
 			ne, w, err := s.swapTo(game, p, dir, ei, m.NewKey, nil)
@@ -161,7 +161,7 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 		}
 		for _, e := range p.Entries {
 			if e.Key == newKey {
-				return &DuplicateError{Key: newKey, Label: entryLabel(e)}
+				return &DuplicateError{Key: newKey, Label: e.Label()}
 			}
 		}
 		ne, w, err := s.swapTo(game, p, dir, ei, newKey, source)
@@ -218,7 +218,7 @@ func (s *Store) movePackage(game, id string, e Entry, newKey string) (Entry, err
 		return Entry{}, err
 	}
 	if !ok || len(e.Mods) != 1 || !mod.Equal(mods[0].ID, e.Mods[0].ID) {
-		return Entry{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a version of %s", newKey, entryLabel(e)))
+		return Entry{}, usererr.Wrap(usererr.Invalid, fmt.Errorf("%q is not a version of %s", newKey, e.Label()))
 	}
 	if mods[0].Version == "" {
 		_, _, mods[0].Version, _ = s.items.Meta(game, newKey)

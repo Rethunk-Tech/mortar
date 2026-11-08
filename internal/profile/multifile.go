@@ -78,7 +78,7 @@ func SamePageAsk(p Profile, in IncomingFile) (ask MergeAsk, updates int, ok bool
 	if i := slices.IndexFunc(page, func(e Entry) bool { return sharesMods(e, in.ModIDs) }); i >= 0 {
 		target = page[i]
 	}
-	return MergeAsk{EntryKey: target.Key, Label: entryLabel(target), DefaultAdd: DefaultMerge(in.Category)}, 0, true
+	return MergeAsk{EntryKey: target.Key, Label: target.Label(), DefaultAdd: DefaultMerge(in.Category)}, 0, true
 }
 
 // updatedEntry finds the entry in is a newer version of. The author's file_updates chain from an entry's file to in
@@ -292,7 +292,7 @@ func (s *Store) addExtraLocked(game string, p *Profile, dir, entryKey, extraKey 
 		return fmt.Errorf("%q is an optional file and holds no mod of its own", entryKey)
 	}
 	if extraKey == "" || extraKey == e.Key || slices.Contains(e.ExtraStoreKeys, extraKey) {
-		return &DuplicateError{Key: extraKey, Label: entryLabel(*e)}
+		return &DuplicateError{Key: extraKey, Label: e.Label()}
 	}
 	entryDir := liveEntryDir(datadir.ModsDirOf(dir), e.Key)
 	if err := s.copyExtraInto(game, p.ID, entryDir, extraKey, source.fomodMap()); err != nil {

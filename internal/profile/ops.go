@@ -268,7 +268,7 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 func (s *Store) addToStaged(game string, p *Profile, dir, key string, source Source, disabled []mod.ID, staged bool) (placed, final string, err error) {
 	for _, e := range p.Entries {
 		if e.Key == key {
-			return "", "", &DuplicateError{Key: key, Label: entryLabel(e)}
+			return "", "", &DuplicateError{Key: key, Label: e.Label()}
 		}
 	}
 	mods, isPackage, err := s.packageMods(game, key, source.ModName)
@@ -417,20 +417,6 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 		errs = append(errs, err)
 	}
 	return errors.Join(errs...)
-}
-
-func entryLabel(e Entry) string {
-	names := make([]string, len(e.Mods))
-	for i, m := range e.Mods {
-		names[i] = m.Name
-	}
-	if len(names) == 0 && e.Source.Name != "" {
-		return e.Source.Name
-	}
-	if len(names) == 0 {
-		return e.Key
-	}
-	return strings.Join(names, ", ")
 }
 
 // removeFrom deletes the entry's folder and drops it from the profile, with the optional files laid over it.

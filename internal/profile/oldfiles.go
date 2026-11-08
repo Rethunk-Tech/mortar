@@ -77,7 +77,7 @@ func (s *Store) PendingOldFiles(game, id string) ([]OldFiles, error) {
 			}
 			continue
 		}
-		set := OldFiles{Key: k.Name(), Label: entryLabel(p.Entries[i]), Files: []OldFile{}}
+		set := OldFiles{Key: k.Name(), Label: p.Entries[i].Label(), Files: []OldFile{}}
 		mods, err := os.ReadDir(filepath.Join(root, k.Name()))
 		if err != nil {
 			return nil, err

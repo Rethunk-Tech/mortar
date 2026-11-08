@@ -138,7 +138,7 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 func duplicatePackage(entries []Entry, key string) error {
 	for _, e := range entries {
 		if e.StoreKey() == key && e.Package && !e.IsOverlay() {
-			return &DuplicateError{Key: e.Key, Label: entryLabel(e)}
+			return &DuplicateError{Key: e.Key, Label: e.Label()}
 		}
 	}
 	return nil
