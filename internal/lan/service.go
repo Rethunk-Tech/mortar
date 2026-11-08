@@ -925,7 +925,10 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	log.Printf("lan: received %q from %s, paired %t, %d files", shared.Name, request.Sender, paired, len(items))
+	log.Printf("lan: received %q from %q, paired %t, %d files",
+		strings.ReplaceAll(strings.ReplaceAll(shared.Name, "\n", ""), "\r", ""),
+		strings.ReplaceAll(strings.ReplaceAll(request.Sender, "\n", ""), "\r", ""),
+		paired, len(items))
 	response := shareResponse{Paired: paired}
 	var arrivalTransfer incomingTransfer
 	if paired {
