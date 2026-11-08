@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 
 	"github.com/Rethunk-Tech/go-safefs"
 )
@@ -154,5 +155,98 @@ func TestFomodImageRefusesAFileOverTheCap(t *testing.T) {
 	}
 	if _, err := e.FomodImage("stardew", "local-img", "big.png"); err == nil {
 		t.Fatal("an image over the cap was read")
+	}
+}
+
+const requiredAndOptionalFomod = `<config><moduleName>Pack</moduleName>` +
+	`<requiredInstallFiles><file source="required/manifest.json" destination="required/manifest.json"/></requiredInstallFiles>` +
+	`<installSteps><installStep name="Setup"><optionalFileGroups>` +
+	`<group name="Extras" type="SelectAny"><plugins><plugin name="Extra"><description/><files>` +
+	`<file source="extra/manifest.json" destination="extra/manifest.json"/></files>` +
+	`<typeDescriptor><type name="Optional"/></typeDescriptor></plugin></plugins></group>` +
+	`</optionalFileGroups></installStep></installSteps></config>`
+
+func TestInstallFomodLaysOutRequiredAndChosenFiles(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "A")
+	e.item(t, "local-fomod", map[string]string{
+		"fomod/ModuleConfig.xml": requiredAndOptionalFomod,
+		"required/manifest.json": manifestJSON("A.Required"),
+		"extra/manifest.json":    manifestJSON("A.Extra"),
+	})
+	ask, err := e.FomodPreview("stardew", p.ID, "local-fomod", nil)
+	if err != nil || ask.ModuleName != "Pack" || len(ask.Steps) != 1 || ask.Steps[0].Name != "Setup" ||
+		len(ask.Steps[0].Groups) != 1 || ask.Steps[0].Groups[0].Name != "Extras" ||
+		ask.Steps[0].Groups[0].Type != "SelectAny" || len(ask.Steps[0].Groups[0].Plugins) != 1 ||
+		ask.Steps[0].Groups[0].Plugins[0].Name != "Extra" {
+		t.Fatalf("preview = %+v, %v", ask, err)
+	}
+	choices := map[string]map[string][]string{"Setup": {"Extras": {"Extra"}}}
+	res, err := e.InstallFomod("stardew", p.ID, "local-fomod", Source{Kind: KindLocal, Name: "x"}, choices)
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := filepath.Join(e.mods(p.ID), res.Profile.Entries[0].Key)
+	req, err := os.ReadFile(filepath.Join(root, "required", "manifest.json"))
+	if err != nil || string(req) != manifestJSON("A.Required") {
+		t.Fatalf("required layout %q %v", req, err)
+	}
+	extra, err := os.ReadFile(filepath.Join(root, "extra", "manifest.json"))
+	if err != nil || string(extra) != manifestJSON("A.Extra") {
+		t.Fatalf("extra layout %q %v", extra, err)
+	}
+	got := res.Profile.Entries[0].Fomod
+	if got["Setup"]["Extras"][0] != "Extra" {
+		t.Fatalf("stored choices: %+v", got)
+	}
+	ask, err = e.FomodPreview("stardew", p.ID, "local-fomod", nil)
+	if err != nil || ask.Choices["Setup"]["Extras"][0] != "Extra" {
+		t.Fatalf("preview after install = %+v, %v", ask, err)
+	}
+	res, err = e.InstallFomod("stardew", p.ID, "local-fomod", Source{Kind: KindLocal, Name: "x"}, map[string]map[string][]string{
+		"Setup": {"Extras": {}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	root = filepath.Join(e.mods(p.ID), res.Profile.Entries[0].Key)
+	if _, err := os.Stat(filepath.Join(root, "required", "manifest.json")); err != nil {
+		t.Fatalf("required file dropped: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(root, "extra", "manifest.json")); !os.IsNotExist(err) {
+		t.Fatalf("extra file still laid out: %v", err)
+	}
+	if extras := res.Profile.Entries[0].Fomod["Setup"]["Extras"]; len(extras) != 0 {
+		t.Fatalf("stored choices after reinstall: %+v", res.Profile.Entries[0].Fomod)
+	}
+}
+
+func TestInstalledGameVersionWithAndWithoutAVersionFile(t *testing.T) {
+	e := newEnv(t)
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	xdg := filepath.Join(home, ".config")
+	t.Setenv("XDG_CONFIG_HOME", xdg)
+	install := t.TempDir()
+	writeFile(t, install, "Stardew Valley.dll", "x")
+	// Status only reads SMAPI-latest.txt when the loader looks installed or broken.
+	writeFile(t, install, "StardewModdingAPI.dll", "x")
+	set, err := settings.OpenIn(e.dataDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := set.Update(func(v *settings.Settings) { v.GameFolders["stardew"] = install }); err != nil {
+		t.Fatal(err)
+	}
+	e.settings = set
+	if got := e.installedGameVersion("stardew"); got != "" {
+		t.Fatalf("without version file: %q", got)
+	}
+	writeFile(t, xdg, "StardewValley/ErrorLogs/SMAPI-latest.txt",
+		"[14:00:00 INFO SMAPI] SMAPI 4.1.10 with Stardew Valley 1.6.15\n")
+	if got := e.installedGameVersion("stardew"); got != "1.6.15" {
+		t.Fatalf("with version file: %q", got)
 	}
 }
