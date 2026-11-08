@@ -1,10 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { PickExecutable } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
-import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ALVR } from '../../brand/productNames.ts'
 import { space } from '../../theme/density.ts'
-import { saveSetting } from '../persist.ts'
+import { pickSetting } from '../persist.ts'
 import { prefCopy } from '../prefCopy.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -15,12 +14,7 @@ export function ALVRProgram() {
   const program = useSettings((s) => s.alvrProgram ?? '')
   const copy = prefCopy(i18n, 'alvrProgram')
   const choose = () =>
-    saveSetting(async () => {
-      const path = await PickExecutable(t`Choose the ${{ alvr: ALVR }} dashboard`)
-      if (path) {
-        await SetByKey('alvrProgram', path, '')
-      }
-    })
+    pickSetting(() => PickExecutable(t`Choose the ${{ alvr: ALVR }} dashboard`), 'alvrProgram', '')
   return (
     <SettingRow label={copy.label} description={copy.description ?? ''}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minWidth: 0 }}>

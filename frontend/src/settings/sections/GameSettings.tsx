@@ -366,8 +366,7 @@ function BackupsPage() {
   const game = useCurrentGame()
   const gameHours = useSettings((s) => String(s.games?.[game]?.saveBackupHours ?? 0))
   const scheduleOff = Number(useScopedKey('saveBackupHours', game, gameHours).value) === 0
-  const chooseBackupLocation = () =>
-    pickFolderSetting(t`Backup location`, 'backupLocation', game, t`Could not save that setting`)
+  const chooseBackupLocation = () => pickFolderSetting(t`Backup location`, 'backupLocation', game)
   return (
     <SettingsSection title={t`Save backups`}>
       <PrefKeys keys={['backupBeforePlay', 'saveBackupsKept', 'saveBackupHours']} game={game} />

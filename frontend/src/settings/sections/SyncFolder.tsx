@@ -22,9 +22,7 @@ export function SyncFolder() {
         </Typography>
         <Button
           variant="outlined"
-          onClick={() =>
-            pickFolderSetting(t`Sync folder`, 'syncFolder', '', t`Could not save that setting`)
-          }
+          onClick={() => pickFolderSetting(t`Sync folder`, 'syncFolder', '')}
         >
           {t`Choose…`}
         </Button>

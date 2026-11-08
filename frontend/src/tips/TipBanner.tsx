@@ -3,10 +3,10 @@ import { Box, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import { memo, type ReactNode } from 'react'
 import { SetTipsSeen } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { settingSaveFailed } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
-import { reportError } from '../toasts/report.ts'
 import { type TipId, tipVisible } from './visible.ts'
 
 // Memoised: its text is a stable string, so the page it sits on re-rendering leaves it alone.
@@ -48,7 +48,7 @@ export const TipBanner = memo(function TipBannerView({
       <TipIconButton
         label={t`Dismiss`}
         onClick={() => {
-          SetTipsSeen([...(seen ?? []), tip]).catch(reportError(t`Could not save that setting`))
+          SetTipsSeen([...(seen ?? []), tip]).catch(settingSaveFailed)
         }}
         sx={{ whiteSpace: 'nowrap' }}
       >

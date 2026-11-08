@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import { SetTipsSeen } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { settingSaveFailed } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
-import { reportError } from '../toasts/report.ts'
 import { useTourReplay } from './replay.ts'
 import { tourClearSeen } from './seen.ts'
 
@@ -13,7 +13,7 @@ function TourAgainButton() {
       variant="outlined"
       onClick={() => {
         const seen = useSettings.getState().tipsSeen
-        SetTipsSeen(tourClearSeen(seen)).catch(reportError(t`Could not save that setting`))
+        SetTipsSeen(tourClearSeen(seen)).catch(settingSaveFailed)
         useTourReplay.getState().request()
       }}
     >

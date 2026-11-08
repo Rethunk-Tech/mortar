@@ -11,13 +11,12 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { OBS } from '../../brand/productNames.ts'
 import { copyText } from '../../share/copyText.ts'
-import { blurOnEnter } from '../../shell/blurOnEnter.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { TipIconButton } from '../../shell/TipIconButton.tsx'
 import { space } from '../../theme/density.ts'
 import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
-import { PrefSwitch } from '../PrefControls.tsx'
+import { PrefNumber, PrefSwitch } from '../PrefControls.tsx'
 import { saveSetting } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -285,45 +284,20 @@ function OverlayRegenDialog({
 function OverlayConnection({ port, token, push }: { port: number; token: string; push: Push }) {
   const { t } = useLingui()
   const copied = t`Copied`
-  const [draft, setDraft] = useState(String(port))
-  const [portError, setPortError] = useState(false)
   const [shown, setShown] = useState(false)
   const [confirm, setConfirm] = useState(false)
-  useEffect(() => {
-    setDraft(String(port))
-    setPortError(false)
-  }, [port])
-  const portRange = t`Enter a number from ${{ min: MIN_PORT }} to ${{ max: MAX_PORT }}`
-  const commitPort = () => {
-    const n = Number(draft)
-    if (!Number.isInteger(n) || n < MIN_PORT || n > MAX_PORT) {
-      setPortError(true)
-      return
-    }
-    setPortError(false)
-    if (n !== port) {
-      saveSetting(() => SetOverlayPort(n))
-    }
-  }
   return (
     <>
       <SettingRow
         label={t`Port`}
         description={t`The local port ${{ app: OBS }} reads the overlay from`}
       >
-        <TextField
-          type="number"
-          size="small"
-          value={draft}
-          error={portError}
-          helperText={portError ? portRange : undefined}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commitPort}
-          onKeyDown={blurOnEnter}
-          slotProps={{
-            htmlInput: { min: MIN_PORT, max: MAX_PORT, step: 1, 'aria-label': t`Port` },
-          }}
-          sx={{ width: 120 }}
+        <PrefNumber
+          value={port}
+          min={MIN_PORT}
+          max={MAX_PORT}
+          onCommit={SetOverlayPort}
+          label={t`Port`}
         />
       </SettingRow>
       <SettingRow

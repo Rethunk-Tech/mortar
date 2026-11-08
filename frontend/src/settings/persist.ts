@@ -8,16 +8,25 @@ export function persist(run: () => Promise<void>, title: string) {
   run().catch(reportError(title))
 }
 
-export function saveSetting(run: () => Promise<void>) {
-  persist(run, i18n._(msg`Could not save that setting`))
+// The one reporter for a failed settings write, read per failure so it follows a language change.
+export function settingSaveFailed(e: unknown) {
+  reportError(i18n._(msg`Could not save that setting`))(e)
 }
 
-// Asks for a folder and stores the choice under a setting key; cancelling changes nothing.
-export function pickFolderSetting(prompt: string, key: string, game: string, title: string) {
-  persist(async () => {
-    const dir = await PickFolder(prompt)
-    if (dir) {
-      await SetByKey(key, dir, game)
+export function saveSetting(run: () => Promise<void>) {
+  run().catch(settingSaveFailed)
+}
+
+// Asks for a path, a folder or a program, and stores it under a setting key; cancelling changes nothing.
+export function pickSetting(pick: () => Promise<string>, key: string, game: string) {
+  saveSetting(async () => {
+    const path = await pick()
+    if (path) {
+      await SetByKey(key, path, game)
     }
-  }, title)
+  })
+}
+
+export function pickFolderSetting(prompt: string, key: string, game: string) {
+  pickSetting(() => PickFolder(prompt), key, game)
 }

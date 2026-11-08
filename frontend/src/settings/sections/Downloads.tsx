@@ -285,8 +285,7 @@ function PreferredServer() {
 
 export function Downloads() {
   const { t } = useLingui()
-  const chooseFolder = () =>
-    pickFolderSetting(t`Download folder`, 'downloadFolder', '', t`Could not save that setting`)
+  const chooseFolder = () => pickFolderSetting(t`Download folder`, 'downloadFolder', '')
   return (
     <>
       <SettingsSection title={t`Links`}>

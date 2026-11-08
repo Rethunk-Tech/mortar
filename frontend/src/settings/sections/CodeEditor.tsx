@@ -4,7 +4,7 @@ import { useLoaded } from '@rethunk/react-load-hooks'
 import { Editors } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import { PickExecutable } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { saveSetting } from '../persist.ts'
+import { pickSetting, saveSetting } from '../persist.ts'
 import { prefCopy } from '../prefCopy.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -26,13 +26,7 @@ export function CodeEditor() {
   const known = chosen === '' || chosen === SYSTEM || editors.some((e) => e.path === chosen)
   const listed = known ? editors : [...editors, { name: fileName(chosen), path: chosen }]
   const set = (value: string) => saveSetting(() => SetByKey('codeEditor', value, ''))
-  const pick = () =>
-    saveSetting(async () => {
-      const path = await PickExecutable(t`Choose a code editor`)
-      if (path) {
-        await SetByKey('codeEditor', path, '')
-      }
-    })
+  const pick = () => pickSetting(() => PickExecutable(t`Choose a code editor`), 'codeEditor', '')
   const automatic = t`Automatic`
   const system = t`Default app for the project`
   const nameOf = (value: unknown) => {

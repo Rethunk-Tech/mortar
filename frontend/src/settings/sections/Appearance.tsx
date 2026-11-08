@@ -29,10 +29,10 @@ import { visuallyHidden } from '../../shell/visuallyHidden.ts'
 import { space } from '../../theme/density.ts'
 import { useReducedMotion } from '../../theme/reducedMotion.ts'
 import { PAD_FOCUS } from '../../theme/theme.ts'
-import { reportError, reportUnexpected } from '../../toasts/report.ts'
+import { reportUnexpected } from '../../toasts/report.ts'
 import { PrefSegmented, PrefSelect } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
-import { saveSetting } from '../persist.ts'
+import { saveSetting, settingSaveFailed } from '../persist.ts'
 import { usePrefValue } from '../prefValue.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -170,7 +170,6 @@ function FontPicker() {
 function AccentPicker() {
   const { t } = useLingui()
   const accent = useSettings((s) => s.accent)
-  const reportFailure = reportError(t`Could not save that setting`)
   const systemAccent = useSystemAccent()
   const cards: { name: string; label: string; note: string }[] = [
     { name: 'sand', label: t`Sand`, note: t`Default` },
@@ -190,7 +189,7 @@ function AccentPicker() {
           aria-label={t`Accent colour`}
           value={isAccent(accent) || accent === SYSTEM_ACCENT ? accent : ''}
           onChange={(_, name) => {
-            SetAccent(name).catch(reportFailure)
+            SetAccent(name).catch(settingSaveFailed)
           }}
           sx={{
             display: 'grid',
@@ -256,7 +255,6 @@ export function Appearance() {
   const reducedMotion = useReducedMotion()
   const background = useSettings((s) => s.background)
   const backgroundImage = useSettings((s) => s.backgroundImage)
-  const reportFailure = reportError(t`Could not save that setting`)
   // A width makes the server send a JPEG it can shrink, never the system's JPEG XL copy the webview may not draw.
   const backdropSrc = `backdrop?mode=image&w=${PREVIEW_REQUEST_PX}&v=${encodeURIComponent(backgroundImage)}`
   return (
@@ -276,7 +274,7 @@ export function Appearance() {
             value={background}
             label={t`Background`}
             onChange={(next) => {
-              SetBackground(next).catch(reportFailure)
+              SetBackground(next).catch(settingSaveFailed)
             }}
             options={[
               { value: 'image', label: t`Image` },
@@ -305,7 +303,7 @@ export function Appearance() {
                   variant="outlined"
                   startIcon={<ImagePlus size={16} />}
                   onClick={() => {
-                    ChooseBackgroundImage().catch(reportFailure)
+                    ChooseBackgroundImage().catch(settingSaveFailed)
                   }}
                 >
                   {t`Choose image…`}
@@ -315,7 +313,7 @@ export function Appearance() {
                   startIcon={<RotateCcw size={16} />}
                   disabled={backgroundImage === ''}
                   onClick={() => {
-                    SetBackgroundImage('').catch(reportFailure)
+                    SetBackgroundImage('').catch(settingSaveFailed)
                   }}
                 >
                   {t`Use default`}

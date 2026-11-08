@@ -23,14 +23,7 @@ function GameSync() {
             </Typography>
             <Button
               variant="outlined"
-              onClick={() =>
-                pickFolderSetting(
-                  t`Sync folder for this game`,
-                  'syncOwnFolder',
-                  game,
-                  t`Could not save that setting`,
-                )
-              }
+              onClick={() => pickFolderSetting(t`Sync folder for this game`, 'syncOwnFolder', game)}
             >
               {t`Choose…`}
             </Button>

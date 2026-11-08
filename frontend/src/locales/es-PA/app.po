@@ -2673,10 +2673,6 @@ msgid "Installed"
 msgstr ""
 
 #: src/browse/BrowsePage.tsx
-#: src/firstrunTour/TourAgainButton.tsx
-#: src/firstrunTour/useFirstRunTour.ts
-#: src/games/GameRowMenu.tsx
-#: src/tips/TipBanner.tsx
 msgid "Could not save that setting"
 msgstr ""
 

@@ -2,9 +2,9 @@ import { useLingui } from '@lingui/react/macro'
 import { Menu } from '@mui/material'
 import { Eye, EyeOff } from 'lucide-react'
 import { SetGameHidden } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { settingSaveFailed } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { reportError } from '../toasts/report.ts'
 import type { GameMenuAt } from './gameMenuAt.ts'
 
 export function GameRowMenu({ at, onClose }: { at: GameMenuAt | null; onClose: () => void }) {
@@ -12,7 +12,7 @@ export function GameRowMenu({ at, onClose }: { at: GameMenuAt | null; onClose: (
   const hidden = useSettings((s) => (at ? (s.hiddenGames?.includes(at.id) ?? false) : false))
   const toggle = () => {
     if (at) {
-      SetGameHidden(at.id, !hidden).catch(reportError(t`Could not save that setting`))
+      SetGameHidden(at.id, !hidden).catch(settingSaveFailed)
     }
     onClose()
   }

@@ -15,7 +15,7 @@ import {
 import { useEffect, useState } from 'react'
 import { blurOnEnter } from '../shell/blurOnEnter.ts'
 import { space } from '../theme/density.ts'
-import { reportError } from '../toasts/report.ts'
+import { settingSaveFailed } from './persist.ts'
 
 export function PrefSelect({
   value,
@@ -190,7 +190,6 @@ export function PrefText({
   label: string
   disabled?: boolean
 }) {
-  const { t } = useLingui()
   const [draft, setDraft] = useState(value)
   useEffect(() => setDraft(value), [value])
   const commit = () => {
@@ -198,7 +197,7 @@ export function PrefText({
       return
     }
     onCommit(draft).catch((err: unknown) => {
-      reportError(t`Could not save that setting`)(err)
+      settingSaveFailed(err)
       setDraft(value)
     })
   }
@@ -251,7 +250,7 @@ export function PrefNumber({
     setInvalid(false)
     if (n !== value) {
       onCommit(n).catch((err: unknown) => {
-        reportError(t`Could not save that setting`)(err)
+        settingSaveFailed(err)
         setDraft(String(value))
       })
     }

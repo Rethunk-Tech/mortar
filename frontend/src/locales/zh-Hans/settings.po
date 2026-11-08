@@ -1292,13 +1292,6 @@ msgid "{name} version"
 msgstr ""
 
 #: src/settings/persist.ts
-#: src/settings/PrefControls.tsx
-#: src/settings/sections/Appearance.tsx
-#: src/settings/sections/Downloads.tsx
-#: src/settings/sections/GameSettings.tsx
-#: src/settings/sections/GameSync.tsx
-#: src/settings/sections/General.tsx
-#: src/settings/sections/SyncFolder.tsx
 msgid "Could not save that setting"
 msgstr ""
 
@@ -2946,8 +2939,6 @@ msgid "Mortar has not asked {source} this session."
 msgstr ""
 
 #: src/settings/PrefControls.tsx
-#: src/settings/sections/General.tsx
-#: src/settings/sections/StreamOverlay.tsx
 msgid "Enter a number from {min} to {max}"
 msgstr ""
 

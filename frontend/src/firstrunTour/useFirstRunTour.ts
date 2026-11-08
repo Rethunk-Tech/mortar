@@ -1,10 +1,9 @@
-import { useLingui } from '@lingui/react/macro'
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { SetTipsSeen } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { settingSaveFailed } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
-import { reportError } from '../toasts/report.ts'
 import { anyModalOpen, resolveTourAnchor } from './anchors.ts'
 import { sameRectOr, type TourRect, tourEligible } from './logic.ts'
 import { useTourReplay } from './replay.ts'
@@ -13,7 +12,6 @@ import { tourMarkSeen, tourShouldRun } from './seen.ts'
 const ANCHOR_POLL_MS = 250
 
 function useFirstRunTour() {
-  const { t } = useLingui()
   const seen = useSettings((s) => s.tipsSeen)
   const route = useNav((s) => s.route)
   const loaded = useProfiles((s) => s.loaded)
@@ -57,8 +55,8 @@ function useFirstRunTour() {
     setDismissed(true)
     clearReplay()
     setOpen(false)
-    SetTipsSeen(tourMarkSeen(seen)).catch(reportError(t`Could not save that setting`))
-  }, [clearReplay, seen, t])
+    SetTipsSeen(tourMarkSeen(seen)).catch(settingSaveFailed)
+  }, [clearReplay, seen])
 
   useEffect(() => {
     if (!eligible || open) {

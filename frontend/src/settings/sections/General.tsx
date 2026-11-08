@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, MenuItem, Select, TextField, Typography } from '@mui/material'
+import { Box, Button, MenuItem, Select, Typography } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
 import { Download, Upload } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -28,10 +28,11 @@ import { useReasonText } from '../../i18n/reasonText.ts'
 import { PairedComputers } from '../../lan/PairedComputers.tsx'
 import { openPage } from '../../mods/menu.ts'
 import { space } from '../../theme/density.ts'
-import { reportError, reportUnexpected } from '../../toasts/report.ts'
+import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
-import { PrefSwitch } from '../PrefControls.tsx'
+import { PrefNumber, PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
+import { settingSaveFailed } from '../persist.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
@@ -41,14 +42,8 @@ import { ImportSettingsDialog } from './DataImport.tsx'
 const maxLanPort = 65_535
 const defaultLanPort = 8080
 
-function useReportFailure() {
-  const { t } = useLingui()
-  return useCallback(reportError(t`Could not save that setting`), [])
-}
-
 function StartupAndWindow() {
   const { t } = useLingui()
-  const reportFailure = useReportFailure()
   return (
     <SettingsSection title={t`Startup and window`}>
       <PrefKeys
@@ -60,7 +55,7 @@ function StartupAndWindow() {
       >
         <PrefSwitch
           checked={useSettings((s) => s.keepInTray)}
-          onChange={(on) => SetKeepInTray(on).catch(reportFailure)}
+          onChange={(on) => SetKeepInTray(on).catch(settingSaveFailed)}
           label={t`Keep Mortar in the tray`}
         />
       </SettingRow>
@@ -104,7 +99,6 @@ function Antivirus() {
 
 function Language() {
   const { t } = useLingui()
-  const reportFailure = useReportFailure()
   const language = useSettings((s) => s.language)
   return (
     <SettingsSection title={t`Language`}>
@@ -118,7 +112,7 @@ function Language() {
           displayEmpty={true}
           slotProps={{ input: { 'aria-label': t`Language` } }}
           onChange={(event) => {
-            SetLanguage(event.target.value).catch(reportFailure)
+            SetLanguage(event.target.value).catch(settingSaveFailed)
           }}
           sx={{ minWidth: 180 }}
         >
@@ -168,19 +162,16 @@ function SharingPrefs({ on }: { on: boolean }) {
 
 function Sharing() {
   const { t } = useLingui()
-  const reportFailure = useReportFailure()
   const [firewallBlocked, setFirewallBlocked] = useState(false)
   const [fixingFirewall, setFixingFirewall] = useState(false)
   const [networkPublic, setNetworkPublic] = useState(false)
   const allowAny = useSettings((s) => s.lanAllowAnyAddress)
   const lanSharing = useSettings((s) => s.lanSharing)
   const lanPort = useSettings((s) => s.lanPort)
-  const [portText, setPortText] = useState(String(lanPort))
-  const [portError, setPortError] = useState(false)
   const loadStatus = useCallback(() => {
-    FirewallBlocked().then(setFirewallBlocked).catch(reportFailure)
-    NetworkIsPublic().then(setNetworkPublic).catch(reportFailure)
-  }, [reportFailure])
+    FirewallBlocked().then(setFirewallBlocked).catch(reportUnexpected)
+    NetworkIsPublic().then(setNetworkPublic).catch(reportUnexpected)
+  }, [])
   // The firewall rules depend on both settings, so a change to either rereads the status; with sharing off, or a search
   // these rows do not match, there is nothing to show.
   const publicLabel = t`This network is set to Public in ${{ os: WINDOWS }}`
@@ -197,24 +188,6 @@ function Sharing() {
     }
     loadStatus()
   }, [statusKey, loadStatus])
-  useEffect(() => {
-    setPortText(String(lanPort))
-    setPortError(false)
-  }, [lanPort])
-  const portRange = t`Enter a number from ${{ min: 1 }} to ${{ max: maxLanPort }}`
-  const savePort = () => {
-    if (portText.trim() === '') {
-      setPortError(true)
-      return
-    }
-    const port = Number(portText)
-    if (Number.isInteger(port) && port >= 1 && port <= maxLanPort) {
-      setPortError(false)
-      SetLanPort(port).catch(reportFailure)
-    } else {
-      setPortError(true)
-    }
-  }
   return (
     <SettingsSection title={t`Sharing`}>
       <SettingRow
@@ -223,7 +196,7 @@ function Sharing() {
       >
         <PrefSwitch
           checked={lanSharing}
-          onChange={(on) => SetLanSharing(on).catch(reportFailure)}
+          onChange={(on) => SetLanSharing(on).catch(settingSaveFailed)}
           label={t`Share profiles on the local network`}
         />
       </SettingRow>
@@ -236,30 +209,20 @@ function Sharing() {
         >
           <PrefSwitch
             checked={lanPort === 0}
-            onChange={(on) => SetLanPort(on ? 0 : defaultLanPort).catch(reportFailure)}
+            onChange={(on) => SetLanPort(on ? 0 : defaultLanPort).catch(settingSaveFailed)}
             label={t`Automatic port`}
           />
         </SettingRow>
       ) : null}
       {lanSharing && lanPort !== 0 ? (
         <SettingRow label={t`LAN port`} description={t`The port Mortar uses for local sharing`}>
-          <TextField
-            type="number"
-            size="small"
-            value={portText}
-            error={portError}
-            helperText={portError ? portRange : undefined}
-            slotProps={{
-              htmlInput: { min: 1, max: maxLanPort, step: 1, 'aria-label': t`LAN port` },
-            }}
-            onChange={(event) => setPortText(event.target.value)}
-            onBlur={savePort}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                savePort()
-              }
-            }}
-            sx={{ width: 140 }}
+          <PrefNumber
+            value={lanPort}
+            min={1}
+            max={maxLanPort}
+            onCommit={SetLanPort}
+            label={t`LAN port`}
+            width={140}
           />
         </SettingRow>
       ) : null}
@@ -277,7 +240,7 @@ function Sharing() {
               setFixingFirewall(true)
               FixFirewall()
                 .then(loadStatus)
-                .catch(reportFailure)
+                .catch(reportUnexpected)
                 .finally(() => setFixingFirewall(false))
             }}
           >
@@ -291,7 +254,6 @@ function Sharing() {
 
 function Help() {
   const { t } = useLingui()
-  const reportFailure = useReportFailure()
   const push = useToasts((s) => s.push)
   return (
     <SettingsSection title={t`Help`}>
@@ -301,7 +263,7 @@ function Help() {
           onClick={() =>
             SetTipsSeen([])
               .then(() => push({ kind: 'success', title: t`Tips will show again` }))
-              .catch(reportFailure)
+              .catch(settingSaveFailed)
           }
         >{t`Show again`}</Button>
       </SettingRow>
