@@ -72,7 +72,8 @@ const counts = (p: Problem): boolean =>
   (p.kind !== 'loadFailure' || !p.loadFailure.ran) &&
   (p.kind !== 'runError' || p.runError.severe)
 const mustFix = (p: Problem): boolean =>
-  counts(p) && (p.kind === 'missing' || p.kind === 'asset' || !isInfoRow(p))
+  p.kind === 'fileConflict' ||
+  (counts(p) && (p.kind === 'missing' || p.kind === 'asset' || !isInfoRow(p)))
 
 export const siblingsOf = (mods: Mod[], mod: Mod) =>
   mods.filter((m) => m.key === mod.key && m.id !== mod.id)
@@ -161,16 +162,23 @@ export type Problem =
   | { kind: 'pluginClash'; pluginClash: PluginClash }
   | { kind: 'deprecated'; deprecated: DeprecatedPackage }
 
-export const problemsOf = (result: Result | null): Problem[] => {
+const fileConflictProblems = (groups: readonly ConflictGroup[]): Problem[] =>
+  groups.map((fileConflict) => ({ kind: 'fileConflict' as const, fileConflict }))
+
+export const problemsOf = (
+  result: Result | null,
+  fileConflicts: readonly ConflictGroup[] = [],
+): Problem[] => {
+  const extra = fileConflictProblems(fileConflicts)
   if (!result) {
-    return []
+    return extra
   }
   let problems = problemsCache.get(result)
   if (!problems) {
     problems = buildProblems(result)
     problemsCache.set(result, problems)
   }
-  return problems
+  return extra.length === 0 ? problems : [...problems, ...extra]
 }
 
 export const entryHasDrift = (result: Result | null, key: string): boolean =>
@@ -270,8 +278,11 @@ export const missingCount = (result: Result | null): number =>
 // The one count the Problems chip, the sidebar badge, Home and the badges share: only what the player has to fix. Not
 // counted: the FOOTER_SECTIONS kinds, cosmetic asset conflicts, info rows (advice, a listed or
 // deprecated note, but a non-cosmetic file conflict always counts), drift, and SMAPI compatibility advice other than a mod marked broken.
-export const problemCount = (result: Result | null): number =>
-  problemsOf(result).filter(mustFix).length +
+export const problemCount = (
+  result: Result | null,
+  fileConflicts: readonly ConflictGroup[] = [],
+): number =>
+  problemsOf(result, fileConflicts).filter(mustFix).length +
   (result?.compat ?? []).filter((c) => MUST_FIX_COMPAT.has(c.status)).length
 
 export const offersUpdate = (

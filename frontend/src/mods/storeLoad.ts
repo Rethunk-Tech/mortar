@@ -7,7 +7,10 @@ import {
   ProblemsNoWait,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { Mods } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import {
+  FileConflicts,
+  Mods,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { SetListGroupBy } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -15,6 +18,7 @@ import { useSettings } from '../settings/store.ts'
 import { getLast, peekLast, putLast } from '../shell/lastGood.ts'
 import { type InlineError, inlineError, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useBadges } from './badges.ts'
+import { groupConflicts } from './fileConflicts.ts'
 import { loadCollapsed, persistCollapsed } from './group.ts'
 import { missingCount, modId, problemCount } from './lookup.ts'
 import { openTarget } from './storeView.ts'
@@ -89,7 +93,10 @@ async function scanProblems(
     }
   }
   try {
-    const problems = await ProblemsNoWait(target.game, target.id)
+    const [problems, conflicts] = await Promise.all([
+      ProblemsNoWait(target.game, target.id),
+      FileConflicts(target.game, target.id),
+    ])
     if (openTarget()?.id === target.id) {
       const was = get().problemsFor === target.id ? get().problems : null
       const shown = putLast(problemsKey(target.id), problems)
@@ -103,7 +110,7 @@ async function scanProblems(
     const missing = missingCount(problems)
     useBadges.getState().patch(target.id, {
       missing,
-      problems: problemCount(problems) - missing,
+      problems: problemCount(problems, groupConflicts(conflicts ?? [])) - missing,
     })
   } catch (e) {
     reportError(i18n._(msg`Could not check the mods for problems`))(e)

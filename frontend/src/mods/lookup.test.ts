@@ -309,6 +309,24 @@ test('optional and outside requirements are not counted as missing or as problem
   )
 })
 
+test('a file conflict increments the problem count', () => {
+  const result: Result = {
+    missing: [],
+    duplicates: [],
+    broken: [],
+    assetConflicts: [],
+    settings: [],
+    runErrors: [],
+    drift: [],
+    dismissed: [],
+    unknown: false,
+  }
+  expect(problemCount(result)).toBe(0)
+  expect(
+    problemCount(result, [{ winner: 'keep', beaten: ['lose'], paths: ['BepInEx/plugins/x.dll'] }]),
+  ).toBe(1)
+})
+
 test('a direct source shows its brand name, not its id', () => {
   const labels = {
     archive: 'Archive',

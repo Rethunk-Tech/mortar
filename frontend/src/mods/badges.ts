@@ -5,8 +5,10 @@ import {
   Updates,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { FileConflicts } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { runBackgroundBadgeChecks } from './badgeDisplay.ts'
+import { groupConflicts } from './fileConflicts.ts'
 import { missingCount, problemCount, updateCount } from './lookup.ts'
 import { detailsFor, useNexusDetails } from './nexusDetails.ts'
 
@@ -40,14 +42,18 @@ export const useBadges = create<{
     // own check should not have to share it.
     for (const p of profiles.filter((q) => q.id !== skip)) {
       try {
-        const [problems, updates] = await Promise.all([Problems(game, p.id), Updates(game, p.id)])
+        const [problems, updates, conflicts] = await Promise.all([
+          Problems(game, p.id),
+          Updates(game, p.id),
+          FileConflicts(game, p.id),
+        ])
         const missing = missingCount(problems)
         set((s) => ({
           byProfile: {
             ...s.byProfile,
             [p.id]: {
               missing,
-              problems: problemCount(problems) - missing,
+              problems: problemCount(problems, groupConflicts(conflicts ?? [])) - missing,
               updates: updateCount(updates, p, detailsFor(useNexusDetails.getState().byKey, game)),
             },
           },
