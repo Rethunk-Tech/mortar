@@ -1,6 +1,16 @@
+import { isTypingTarget } from '@rethunk/dom-input-nav'
 import { create } from 'zustand'
 import type { MenuAnchor } from '../mods/menu.ts'
+import { dialogOpen } from '../settings/shortcuts.ts'
 import type { BrowseItem } from './browseTypes.ts'
+
+export function browseKeysOwned(target: EventTarget | null): boolean {
+  return (
+    isTypingTarget(target instanceof HTMLElement ? target : null, { ancestors: true }) ||
+    dialogOpen() ||
+    !!(target instanceof Element && target.closest('[role="menu"]'))
+  )
+}
 
 const hitKey = (item: Pick<BrowseItem, 'source' | 'id'>) => `${item.source}:${item.id}`
 

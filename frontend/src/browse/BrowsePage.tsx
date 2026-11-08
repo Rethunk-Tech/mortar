@@ -18,7 +18,7 @@ import { type BrowseModes, formatModes } from './browseModes.ts'
 import { savePicks } from './browsePicks.ts'
 import { PAGE_SIZE, rowHeight, screenSize } from './browseState.ts'
 import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
-import { hitKey, stepSelection, useBrowseSelection } from './selection.ts'
+import { browseKeysOwned, hitKey, stepSelection, useBrowseSelection } from './selection.ts'
 import { pagedTotal, useBrowseQuery } from './useBrowseQuery.ts'
 import { useCategoryNames } from './useCategoryNames.ts'
 import { useBrowseView } from './view.ts'
@@ -27,11 +27,7 @@ import { useBrowseView } from './view.ts'
 function useSelectionKeys(items: BrowseItem[]) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const owned =
-        e.target instanceof Element &&
-        e.target.closest(
-          'input, textarea, select, [role="dialog"], [role="menu"], [contenteditable]',
-        )
+      const owned = browseKeysOwned(e.target)
       const { selected, select } = useBrowseSelection.getState()
       if (owned || e.defaultPrevented) {
         return
