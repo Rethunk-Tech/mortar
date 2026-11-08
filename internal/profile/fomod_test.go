@@ -236,8 +236,10 @@ func TestInstalledGameVersionWithAndWithoutAVersionFile(t *testing.T) {
 	}
 	install := t.TempDir()
 	writeFile(t, install, "Stardew Valley.dll", "x")
-	// Status only reads SMAPI-latest.txt when the loader looks installed or broken.
+	// Status only reads SMAPI-latest.txt when the loader looks installed or broken: the .dll marks it on Linux and
+	// macOS, the .exe on Windows.
 	writeFile(t, install, "StardewModdingAPI.dll", "x")
+	writeFile(t, install, "StardewModdingAPI.exe", "x")
 	set, err := settings.OpenIn(e.dataDir)
 	if err != nil {
 		t.Fatal(err)
