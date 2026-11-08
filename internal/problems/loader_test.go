@@ -162,6 +162,9 @@ func TestStartFailureIsALoadFailureOnlyForARunThatNeverStarted(t *testing.T) {
 	if len(got) != 1 || got[0].Kind != KindRunFailed || got[0].Plugin != "run-1" || got[0].Message != "the game did not start in time" {
 		t.Fatalf("failures = %+v", got)
 	}
+	if got[0].Code != "runFailed" || got[0].Params["reason"] != "the game did not start in time" {
+		t.Fatalf("a start failure the window cannot word: %+v", got[0])
+	}
 	if got := startFailure("run-2", launch.Summary{Errors: 3}); len(got) != 0 {
 		t.Fatalf("a run that started is not a start failure: %+v", got)
 	}
