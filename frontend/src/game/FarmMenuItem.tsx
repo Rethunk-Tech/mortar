@@ -11,6 +11,7 @@ import {
 import { ReadTextFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { listNames } from '../i18n/list.ts'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
@@ -33,7 +34,7 @@ export function FarmDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  const game = useProfiles((s) => s.game?.id ?? '')
+  const game = useCurrentGame()
   const [text, setText] = useState('')
   const [host, setHost] = useState('')
   const [rows, setRows] = useState<FarmRow[] | null>(null)

@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { savedGroupApplied } from '../groups/applied.ts'
 import { ApplySavedGroupDialog } from '../groups/dialogs.tsx'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { CompareDialog } from '../profiles/CompareDialog.tsx'
 import { EditProfileDialog } from '../profiles/EditProfileDialog.tsx'
 import { HealthDialog } from '../profiles/HealthDialog.tsx'
@@ -135,7 +136,7 @@ export function ProfileDialogHost() {
   const seq = useProfileDialog((s) => s.seq)
   const profileId = useProfileDialog((s) => s.profileId)
   const profile = useProfiles(profileById(profileId))
-  const game = useProfiles((s) => s.game?.id ?? '')
+  const game = useCurrentGame()
   if (kind === null || profile === undefined) {
     return null
   }

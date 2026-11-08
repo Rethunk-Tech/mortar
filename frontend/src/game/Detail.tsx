@@ -1,6 +1,8 @@
 import { useEffect, useMemo } from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { useGameName } from '../games/info.ts'
 import { useMods } from '../mods/store.ts'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useSaves } from '../saves/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -34,8 +36,8 @@ function SavesFollower({ game }: { game: string }) {
 export function Detail() {
   const loaded = useProfiles((s) => s.loaded)
   const failed = useProfiles((s) => s.failed)
-  const game = useProfiles((s) => s.game?.id ?? '')
-  const gameName = useProfiles((s) => s.game?.name ?? '')
+  const game = useCurrentGame()
+  const gameName = useGameName()
   // Whether one is open, not the profile: a save of it re-renders only what reads the fields that changed.
   const open = useProfiles((s) => openProfileOf(s) !== undefined)
   if (!loaded) {

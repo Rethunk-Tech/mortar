@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { LayoutTemplate } from 'lucide-react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { useTemplates } from '../templates/useTemplates.ts'
@@ -32,7 +33,7 @@ function TemplateAction({
 }
 
 function useHasTemplates() {
-  const game = useProfiles((s) => s.game?.id ?? '')
+  const game = useCurrentGame()
   return useTemplates(game, true).templates.length > 0
 }
 

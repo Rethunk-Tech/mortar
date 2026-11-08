@@ -2,6 +2,7 @@ import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { useGameName } from '../games/info.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { i18n } from '../i18n/index.ts'
 import { userModCount } from '../profiles/count.ts'
@@ -23,7 +24,7 @@ function shareMessage(info: ShownInfo, gameName: string): string {
 
 export function ShareDialog() {
   const { t } = useLingui()
-  const gameName = useProfiles((s) => s.game?.name ?? '')
+  const gameName = useGameName()
   const built = useShareBuild()
   const { profileId, close, destination, setDestination, choose, lastUsed, thunderstore, info } =
     built

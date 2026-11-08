@@ -25,6 +25,7 @@ import { nexusEntryOf, useNexusDetails } from '../mods/nexusDetails.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
+import { currentGame } from '../nav/currentGame.ts'
 import { openSettings } from '../nav/store.ts'
 import { getProfile, useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
@@ -279,8 +280,8 @@ function debounceProfileRefresh(done: Item[], shown: Item[]) {
   refreshTimer = setTimeout(async () => {
     refreshTimer = undefined
     const landed = landedItems
-    const open = useProfiles.getState().game?.id
-    const refreshing = open !== undefined && refreshGames.has(open)
+    const open = currentGame()
+    const refreshing = open !== '' && refreshGames.has(open)
     refreshGames.clear()
     landedItems = { done: [], shown: [] }
     if (refreshing) {

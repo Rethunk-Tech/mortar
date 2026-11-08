@@ -7,6 +7,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { SetNotes } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { MarkdownView } from '../mods/MarkdownView.tsx'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
@@ -27,7 +28,7 @@ type Status = 'idle' | 'saving' | 'saved' | { error: unknown }
 
 function NotesEditor({ profile, onDone }: { profile: Profile; onDone: () => void }) {
   const { t } = useLingui()
-  const game = useProfiles((s) => s.game?.id ?? '')
+  const game = useCurrentGame()
   const replace = useProfiles((s) => s.replace)
   const [text, setText] = useState(profile.notes)
   const [status, setStatus] = useState<Status>('idle')

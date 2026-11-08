@@ -21,6 +21,7 @@ import { gameName } from '../games/info.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
 import { showInProfile } from '../mods/revealMod.ts'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -139,7 +140,7 @@ export function HistoryList({
   const failColor = useTheme().palette.error.light
   const [confirmClear, setConfirmClear] = useState(false)
   const profiles = useProfiles((s) => s.profiles)
-  const game = useProfiles((s) => s.game?.id ?? '')
+  const game = useCurrentGame()
   const list = entries ?? []
   const nameOf = (id: string) => {
     const name = historyProfileName(id, list, game, profiles)

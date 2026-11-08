@@ -21,6 +21,7 @@ import {
 import { savedGroupApplied } from '../groups/applied.ts'
 import { savedGroupWants } from '../groups/missingWants.ts'
 import { listNames } from '../i18n/list.ts'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { FormDialog, SelectField, TextInput } from '../shell/dialog/FormDialog.tsx'
@@ -309,7 +310,7 @@ function StartFromField({
 
 export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
-  const game = useProfiles((s) => s.game?.id ?? '')
+  const game = useCurrentGame()
   const { templates, reload } = useTemplates(game, open)
   const { busy, submit } = useCreate(game, onClose)
   const picked = useRef<Picked>({})

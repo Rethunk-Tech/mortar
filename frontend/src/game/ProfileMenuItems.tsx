@@ -32,6 +32,7 @@ import {
 import { STEAM } from '../brand/productNames.ts'
 import { setFrozen } from '../mods/freeze.ts'
 import { isFrozen } from '../mods/frozen.ts'
+import { currentGame as currentGameId, useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
@@ -220,7 +221,7 @@ function ReviewItems({ profile, close }: Item) {
 // Offered only for a game whose profiles can run its dedicated server.
 function MakeServerItem({ profile, close }: Item) {
   const { t } = useLingui()
-  const gameId = useProfiles((s) => s.game?.id ?? '')
+  const gameId = useCurrentGame()
   const makeServer = useProfiles((s) => s.makeServer)
   const { data: offered } = useLoaded(
     gameId ? () => HasServer(gameId) : null,
@@ -292,7 +293,7 @@ function MoreMenuItems({ profile, close }: Item) {
       label={profile.favourite ? t`Remove from favourites` : t`Add to favourites`}
       onClick={() => {
         close()
-        const game = useProfiles.getState().game?.id
+        const game = currentGameId()
         if (game) {
           SetFavourite(game, profile.id, !profile.favourite)
             .then((next) => useProfiles.getState().replace(next))

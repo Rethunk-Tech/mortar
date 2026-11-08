@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import { Logo } from '../brand/Logo.tsx'
+import { useGameName } from '../games/info.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { heading } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -15,7 +16,7 @@ const PAGE_HOST = 'mortar.rethunk.tech'
 function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }) {
   const { t } = useLingui()
   const art = useProfiles((s) => s.game?.artUrl)
-  const gameName = useProfiles((s) => s.game?.name ?? '')
+  const gameName = useGameName()
   const { count } = info
   const button = {
     display: 'grid',

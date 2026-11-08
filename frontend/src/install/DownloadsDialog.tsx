@@ -12,6 +12,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { listNames } from '../i18n/list.ts'
+import { useCurrentGame } from '../nav/currentGame.ts'
 import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
@@ -211,7 +212,7 @@ export function DownloadsDialog() {
   const { t } = useLingui()
   const open = useDownloadsDialog((s) => s.open)
   const close = () => useDownloadsDialog.getState().setOpen(false)
-  const game = useProfiles((s) => s.game?.id ?? '')
+  const game = useCurrentGame()
   const hasProfile = useProfiles((s) => s.openId !== '')
   const { archives, error, stale, at, reload } = useArchives(open, game)
   const [query, setQuery] = useState('')
