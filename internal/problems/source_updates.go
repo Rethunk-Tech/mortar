@@ -79,7 +79,7 @@ func (s *Service) githubUpdates(ctx context.Context, mods []framework.Mod, have 
 		}
 		out = append(out, Update{
 			Key: x.Key, ID: x.ModID(), Name: x.Name, Installed: installed, Version: version,
-			URL: "https://github.com/" + x.SourceRepo + "/releases/tag/" + r.Tag, GitHubRepo: x.SourceRepo, Source: "GitHub",
+			URL: cmp.Or(r.HTMLURL, "https://github.com/"+x.SourceRepo+"/releases/tag/"+r.Tag), GitHubRepo: x.SourceRepo, Source: "GitHub",
 		})
 	}
 	return out

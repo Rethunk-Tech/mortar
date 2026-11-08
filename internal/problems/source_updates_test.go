@@ -221,7 +221,7 @@ func TestGitHubInstalledModsGetTheirRepositorysNewerRelease(t *testing.T) {
 		}
 		_, _ = w.Write([]byte(`[
 			{"tag_name":"3.8.0-beta","prerelease":true,"assets":[{"name":"github_release.zip"}]},
-			{"tag_name":"3.7.0","assets":[{"name":"github_release.zip"}]},
+			{"tag_name":"3.7.0","html_url":"https://github.com/TheAnsuz/Lethal-Company-Configurable-Company-API/releases/tag/3.7.0","assets":[{"name":"github_release.zip"}]},
 			{"tag_name":"3.6.0","assets":[{"name":"github_release.zip"}]}]`))
 	}))
 	t.Cleanup(srv.Close)
@@ -233,7 +233,7 @@ func TestGitHubInstalledModsGetTheirRepositorysNewerRelease(t *testing.T) {
 	cc := framework.Mod{Key: "gh", SourceKind: profile.KindGitHub, SourceRepo: "TheAnsuz/Lethal-Company-Configurable-Company-API", SourceVersion: "3.6.0"}
 	cc.Name, cc.Version = "Amrv.ConfigurableCompany", "3.6.0"
 	got := s.githubUpdates(t.Context(), []framework.Mod{cc}, nil)
-	if len(got) != 1 || got[0].Version != "3.7.0" || got[0].GitHubRepo != cc.SourceRepo || got[0].Source != "GitHub" || turns != 1 {
+	if len(got) != 1 || got[0].Version != "3.7.0" || got[0].URL != "https://github.com/TheAnsuz/Lethal-Company-Configurable-Company-API/releases/tag/3.7.0" || got[0].GitHubRepo != cc.SourceRepo || got[0].Source != "GitHub" || turns != 1 {
 		t.Fatalf("updates = %+v, turns %d", got, turns)
 	}
 	if again := s.githubUpdates(t.Context(), []framework.Mod{cc}, got); len(again) != 0 {
