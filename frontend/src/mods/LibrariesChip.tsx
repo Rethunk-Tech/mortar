@@ -1,7 +1,7 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Chip, Popover, Typography } from '@mui/material'
-import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
+import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { space } from '../theme/density.ts'
 import { useDetail } from './detail.ts'
 import type { ListRow } from './listColumns.ts'

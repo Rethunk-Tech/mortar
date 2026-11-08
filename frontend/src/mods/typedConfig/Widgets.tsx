@@ -17,7 +17,7 @@ import { useState } from 'react'
 import { HexColorPicker } from 'react-colorful'
 import { blurOnEnter } from '../../shell/blurOnEnter.ts'
 import { labelledInput } from '../../shell/labelledInput.tsx'
-import { usePopoverAnchor } from '../../shell/usePopoverAnchor.ts'
+import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { space } from '../../theme/density.ts'
 import {
   commaListKind,

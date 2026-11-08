@@ -10,7 +10,7 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
-import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
+import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 
 // The chevron of the Add split button: archives from the downloads folder, and whole sets of mods (a template, a saved
 // group). The archive pick is the button beside it, so the menu does not repeat it.

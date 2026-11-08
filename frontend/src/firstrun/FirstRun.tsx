@@ -12,7 +12,7 @@ import { openPage } from '../mods/menu.ts'
 import { useNav } from '../nav/store.ts'
 import { GO } from '../shell/destination.ts'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
-import { useOnWindowFocus } from '../shell/useOnWindowFocus.ts'
+import { useOnWindowFocus } from '@rethunk/react-load-hooks'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 

@@ -9,7 +9,7 @@ import {
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { listNames } from '../../i18n/list.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
-import { useOnWindowFocus } from '../../shell/useOnWindowFocus.ts'
+import { useOnWindowFocus } from '@rethunk/react-load-hooks'
 import { toastError } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'
 

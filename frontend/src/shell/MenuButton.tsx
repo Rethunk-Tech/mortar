@@ -2,7 +2,7 @@ import { Button, type ButtonProps, Menu, type SxProps, type Theme } from '@mui/m
 import { ChevronDown } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Tooltip } from './Tooltip.tsx'
-import type { usePopoverAnchor } from './usePopoverAnchor.ts'
+import type { usePopoverAnchor } from '@rethunk/react-load-hooks'
 
 /** An outlined button that drops a menu down from itself. The caller holds the anchor so its items can close it. */
 export function MenuButton({

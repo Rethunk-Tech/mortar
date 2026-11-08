@@ -17,7 +17,7 @@ import {
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonGroup, Menu, Typography } from '@mui/material'
-import { useStoredState } from '@rethunk/react-load-hooks'
+import { useOnWindowFocus, usePopoverAnchor, useStoredState } from '@rethunk/react-load-hooks'
 import {
   ArrowDownAZ,
   ArrowUpDown,
@@ -54,8 +54,6 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { MenuButton } from '../shell/MenuButton.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
-import { useOnWindowFocus } from '../shell/useOnWindowFocus.ts'
-import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { isViewMode, type ViewMode } from '../shell/viewMode.ts'
 import { space } from '../theme/density.ts'

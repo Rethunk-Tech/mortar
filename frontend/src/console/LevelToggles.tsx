@@ -8,7 +8,7 @@ import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/la
 import { formatCount } from '../mods/nexusFormat.ts'
 import { MenuCheck } from '../shell/MenuAction.tsx'
 import { pillButtonSx, pillGroupSx } from '../shell/pillToggle.ts'
-import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
+import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { space } from '../theme/density.ts'
 import { countByLevel, LEVELS } from './filter.ts'
 import { levelSwatch } from './levelPalette.ts'

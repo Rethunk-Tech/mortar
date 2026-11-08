@@ -15,7 +15,7 @@ import { GameSettings as FetchGameSettings } from '../../bindings/github.com/Ret
 import { cmpText } from '../mods/cmpText.ts'
 import { SelectField } from '../shell/dialog/FormDialog.tsx'
 import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
-import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
+import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { reportUnexpected } from '../toasts/report.ts'
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { ProfileDot } from './ProfileDot.tsx'
