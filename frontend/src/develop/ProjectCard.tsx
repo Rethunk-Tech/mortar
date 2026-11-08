@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, Chip, CircularProgress, Typography } from '@mui/material'
-import { relativeWhen, useNowValue } from '@rethunk/react-load-hooks'
+import { useNowValue } from '@rethunk/react-load-hooks'
 import { FolderPlus, Hammer, PackagePlus } from 'lucide-react'
 import { type ReactNode, useEffect } from 'react'
 import type { ProjectInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
@@ -40,12 +40,12 @@ function Status({ project }: { project: DevProject }) {
   const dir = project.dir
   const asset = useIsAsset(dir)
   const inProfile = useInProfile(project)
-  const { t, i18n } = useLingui()
+  const { t } = useLingui()
   const run = useDevRuns((s) => runOf(s.byDir, dir))
   // The files remember a build from before Mortar started; this session's result adds its errors.
   const disk = useProjectInfo((s) => s.byDir[dir])
   const builtAt = Math.max(run.builtAt, disk?.builtAt ?? 0)
-  const when = useNowValue((now) => relativeWhen(builtAt, { now, locale: i18n.locale }))
+  const when = useNowValue(() => formatWhen(builtAt))
   if (run.running) {
     return (
       <Chip
