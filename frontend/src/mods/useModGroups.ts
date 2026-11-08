@@ -1,4 +1,4 @@
-import { keepUnchanged } from '@rethunk/react-load-hooks'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type {
   Mod,
@@ -133,9 +133,11 @@ export function useModGroups(mods: Mod[], profile: Profile, fold = false) {
             !(groupBy === 'group' && hiddenByAncestor(collapsed, g.key))),
       )
       .flatMap((g) => g.items.map((r) => modId(r.mod)))
-    const kept = keepUnchanged(lastIds.current, next)
-    lastIds.current = kept
-    return kept
+    if (sameValue(next, lastIds.current)) {
+      return lastIds.current
+    }
+    lastIds.current = next
+    return next
   }, [groups, groupBy, collapsed])
   return { groupBy, sort, gameId, collapsed, setCollapsed, groups, orderedIds }
 }

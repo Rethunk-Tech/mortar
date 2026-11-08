@@ -1,5 +1,5 @@
 import { msg } from '@lingui/core/macro'
-import { keepFields, keepUnchanged, sameValue } from '@rethunk/react-load-hooks'
+import { keepFields, sameValue } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
@@ -105,7 +105,7 @@ function keepSaved(prev: Profile[], next: Profile[]): Profile[] {
     }
     return sameValue(withoutChange(was), withoutChange(p)) ? was : keepFields(was, p)
   })
-  return keepUnchanged(prev, kept)
+  return sameValue(prev, kept) ? prev : kept
 }
 
 async function refreshList(
