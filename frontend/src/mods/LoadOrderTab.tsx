@@ -203,6 +203,8 @@ function useOrderNote() {
   }
 }
 
+// The tab's own chrome, with the rows below it in a component of their own: the list redraws on every row it
+// measures, and the buttons and the filter field above it stay as they are.
 function OrderList({
   rows,
   names,
@@ -215,7 +217,6 @@ function OrderList({
   move: Move | null
 }) {
   const { t } = useLingui()
-  const errorColor = useTheme().palette.error.main
   const [query, setQuery] = useState('')
   const needle = query.trim().toLowerCase()
   const shown =
@@ -226,16 +227,50 @@ function OrderList({
             row.name.toLowerCase().includes(needle) ||
             localId(row.id).toLowerCase().includes(needle),
         )
+  return (
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <PageActions>
+        <Button
+          variant="outlined"
+          color="inherit"
+          startIcon={<Copy size={16} />}
+          onClick={() => {
+            copyText(formatLoadOrderCopy(rows), t`Load order copied`)
+          }}
+        >
+          {t`Copy load order`}
+        </Button>
+      </PageActions>
+      <ControlsRow>
+        <SearchField value={query} onChange={setQuery} label={t`Filter load order`} grow={true} />
+      </ControlsRow>
+      <OrderScroller rows={shown} names={names} scrollRef={scrollRef} move={move} />
+    </Box>
+  )
+}
+
+function OrderScroller({
+  rows,
+  names,
+  scrollRef,
+  move,
+}: {
+  rows: Row[]
+  names: Map<string, string>
+  scrollRef: RefObject<(id: string) => boolean>
+  move: Move | null
+}) {
+  const errorColor = useTheme().palette.error.main
   const parentRef = useRef<HTMLDivElement>(null)
   const virtualizer = useVirtualizer({
-    count: shown.length,
+    count: rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_ESTIMATE_PX,
     overscan: 8,
-    getItemKey: (index) => shown[index]?.id ?? index,
+    getItemKey: (index) => rows[index]?.id ?? index,
   })
   const onScroll = (id: string): boolean => {
-    const index = shown.findIndex((row) => sameId(row.id, id))
+    const index = rows.findIndex((row) => sameId(row.id, id))
     if (index < 0) {
       return false
     }
@@ -254,56 +289,39 @@ function OrderList({
   }
   const scrollTo = useCallback((id: string) => scrollRef.current(id), [scrollRef])
   return (
-    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <PageActions>
-        <Button
-          variant="outlined"
-          color="inherit"
-          startIcon={<Copy size={16} />}
-          onClick={() => {
-            copyText(formatLoadOrderCopy(rows), t`Load order copied`)
-          }}
-        >
-          {t`Copy load order`}
-        </Button>
-      </PageActions>
-      <ControlsRow>
-        <SearchField value={query} onChange={setQuery} label={t`Filter load order`} grow={true} />
-      </ControlsRow>
-      <Box
-        ref={parentRef}
-        sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: space.gutter, pb: space.gutter }}
-      >
-        <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 1.5 }}>
-          {orderNote(rows)}
-        </Typography>
-        <Box sx={{ position: 'relative', height: virtualizer.getTotalSize() }}>
-          {virtualizer.getVirtualItems().map((item) => {
-            const row = shown[item.index]
-            return row ? (
-              // A plain element: the list redraws on every row it measures, and a styled Box would redraw each row's
-              // styling components with it.
-              <div
-                key={item.key}
-                data-index={item.index}
-                ref={virtualizer.measureElement}
-                style={{
-                  ...ROW_STYLE,
-                  transform: `translateY(${item.start}px)`,
-                  ...(row.cycle ? { outline: `1px solid ${errorColor}`, outlineOffset: -1 } : {}),
-                }}
-              >
-                <OrderRowBody
-                  row={row}
-                  names={names}
-                  onScroll={scrollTo}
-                  moveUp={mover(row, -1)}
-                  moveDown={mover(row, 1)}
-                />
-              </div>
-            ) : null
-          })}
-        </Box>
+    <Box
+      ref={parentRef}
+      sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: space.gutter, pb: space.gutter }}
+    >
+      <Typography sx={{ fontSize: 'base.fontSize', color: 'text.secondary', mb: 1.5 }}>
+        {orderNote(rows)}
+      </Typography>
+      <Box sx={{ position: 'relative', height: virtualizer.getTotalSize() }}>
+        {virtualizer.getVirtualItems().map((item) => {
+          const row = rows[item.index]
+          return row ? (
+            // A plain element: the list redraws on every row it measures, and a styled Box would redraw each row's
+            // styling components with it.
+            <div
+              key={item.key}
+              data-index={item.index}
+              ref={virtualizer.measureElement}
+              style={{
+                ...ROW_STYLE,
+                transform: `translateY(${item.start}px)`,
+                ...(row.cycle ? { outline: `1px solid ${errorColor}`, outlineOffset: -1 } : {}),
+              }}
+            >
+              <OrderRowBody
+                row={row}
+                names={names}
+                onScroll={scrollTo}
+                moveUp={mover(row, -1)}
+                moveDown={mover(row, 1)}
+              />
+            </div>
+          ) : null
+        })}
       </Box>
     </Box>
   )
@@ -370,14 +388,17 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
       keep: (prev, next) => keepUnchanged(prev, next, (r) => String(r.id)),
     },
   )
-  const move: Move = (entry, delta) => {
-    MovePackage(game, profile.id, entry, delta)
-      .then((next) => {
-        useProfiles.getState().replace(next)
-        return reload()
-      })
-      .catch(reportUnexpected)
-  }
+  const move = useCallback<Move>(
+    (entry, delta) => {
+      MovePackage(game, profile.id, entry, delta)
+        .then((next) => {
+          useProfiles.getState().replace(next)
+          return reload()
+        })
+        .catch(reportUnexpected)
+    },
+    [game, profile.id, reload],
+  )
   const failed = loadedRows === null && error !== null
   const rows = failed ? [] : loadedRows
 
