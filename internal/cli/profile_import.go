@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
@@ -26,9 +25,7 @@ func (c *cmd) profileImport() error {
 	in := strings.Join(a, " ")
 	p := control.Params{Game: c.game, Profile: c.profileFlag, Name: c.nameFlag, Preview: c.previewFlag, Value: in}
 	if _, err := os.Stat(in); err == nil {
-		if p.Path, err = filepath.Abs(in); err != nil {
-			return err
-		}
+		p.Path = absPath(in)
 		p.Value = ""
 	}
 	if c.previewFlag {
@@ -61,10 +58,7 @@ func (c *cmd) profileExport() error {
 	if err != nil {
 		return err
 	}
-	dest, err := filepath.Abs(a[2])
-	if err != nil {
-		return err
-	}
+	dest := absPath(a[2])
 	p := control.Params{Game: a[0], Profile: a[1], Path: dest, All: !c.noConfigs}
 	switch c.format {
 	case "modpack":
@@ -98,10 +92,7 @@ func (c *cmd) profileBackup() error {
 	if err != nil {
 		return err
 	}
-	dest, err := filepath.Abs(a[2])
-	if err != nil {
-		return err
-	}
+	dest := absPath(a[2])
 	return show(c, "profile.backup", control.Params{Game: a[0], Profile: a[1], Path: dest, All: !c.noMods}, func(r map[string]string) {
 		fmt.Fprintf(c.out, "Backed up to %s.\n", r["path"])
 	})
@@ -113,10 +104,7 @@ func (c *cmd) profileRestore() error {
 	if err != nil {
 		return err
 	}
-	path, err := filepath.Abs(a[0])
-	if err != nil {
-		return err
-	}
+	path := absPath(a[0])
 	var res packsvc.RestoreResult
 	if err := c.call("profile.restore", control.Params{Game: c.game, Path: path}, &res, installTimeout); err != nil {
 		return err

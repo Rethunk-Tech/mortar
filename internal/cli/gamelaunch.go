@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
 )
@@ -12,10 +11,7 @@ func (c *cmd) gameFolder() error {
 	if err != nil {
 		return err
 	}
-	dir, err := filepath.Abs(a[1])
-	if err != nil {
-		return err
-	}
+	dir := absPath(a[1])
 	return show(c, "game.folder", control.Params{Game: a[0], Path: dir}, func(res control.GameFolderResult) {
 		fmt.Fprintf(c.out, "%s now uses the folder %s.\n", res.Game, res.Folder)
 	})

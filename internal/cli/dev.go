@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -27,10 +26,7 @@ func (c *cmd) dev() error {
 		if err != nil {
 			return err
 		}
-		dir, err := filepath.Abs(a[1])
-		if err != nil {
-			return err
-		}
+		dir := absPath(a[1])
 		method, p = "dev.add", control.Params{Game: a[0], Path: dir}
 	case "clone":
 		a, err := c.need(2, "a game", "a repository")
@@ -43,9 +39,7 @@ func (c *cmd) dev() error {
 				return err
 			}
 		}
-		if parent, err = filepath.Abs(parent); err != nil {
-			return err
-		}
+		parent = absPath(parent)
 		method, p = "dev.clone", control.Params{Game: a[0], ID: a[1], Path: parent}
 	default:
 		return usageError{"dev needs add, clone, list or remove"}
@@ -82,10 +76,7 @@ func (c *cmd) devRemove() error {
 	if err != nil {
 		return err
 	}
-	dir, err := filepath.Abs(a[1])
-	if err != nil {
-		return err
-	}
+	dir := absPath(a[1])
 	var project settings.DevProject
 	if err := c.call("dev.remove", control.Params{Game: a[0], Path: dir, ID: a[1]}, &project, readTimeout); err != nil {
 		return err
