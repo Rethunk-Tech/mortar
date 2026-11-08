@@ -1,12 +1,11 @@
 package launch
 
 import (
-	"regexp"
 	"slices"
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-smapi/logline"
 )
 
 // Level is a console log level: SMAPI's own, which BepInEx's levels map onto.
@@ -47,51 +46,21 @@ type Entry struct {
 	Object string `json:"object,omitempty"`
 }
 
-// SMAPI writes `[HH:MM:SS LEVEL  Mod] message`, padding the level to five characters.
-var header = regexp.MustCompile(`^\[(\d\d:\d\d:\d\d) (TRACE|DEBUG|INFO|WARN|ERROR|ALERT) *([^\]]*)\] ?(.*)$`)
-
-var loadedSaveRe = regexp.MustCompile(`(?i)(?:Context:\s*)?loaded save '([^']+)'`)
-
 // LoadedSave returns the save folder SMAPI loaded, from the last matching SMAPI line in log.
 func LoadedSave(log string) (string, bool) {
-	folder := ""
-	for _, e := range ParseLog(log) {
-		if e.Mod != "SMAPI" {
-			continue
-		}
-		if m := loadedSaveRe.FindStringSubmatch(e.Message); m != nil {
-			folder = m[1]
-		}
-	}
-	return folder, folder != ""
+	return logline.LoadedSave(log)
 }
 
 // ModsPath returns the mods folder SMAPI's log says it loaded, as SMAPI wrote it, and false when the log does not
 // say. SMAPI writes the home folder as ~ (`PathUtilities.AnonymizePathForDisplay`).
 func ModsPath(log string) (string, bool) {
-	for l := range strings.Lines(log) {
-		m := header.FindStringSubmatch(strings.TrimRight(l, "\r\n"))
-		if m == nil || strings.TrimSpace(m[3]) != "SMAPI" {
-			continue
-		}
-		if path, ok := strings.CutPrefix(m[4], "Mods go here: "); ok {
-			return path, true
-		}
-	}
-	return "", false
+	return logline.ModsPath(log)
 }
 
 // LogOwnedBy reports whether log was written by SMAPI loading modsDir. home is the folder SMAPI shortened to ~.
 // A log that does not name its mods folder belongs to no one.
 func LogOwnedBy(log, home, modsDir string) bool {
-	path, ok := ModsPath(log)
-	if !ok {
-		return false
-	}
-	if rest, ok := strings.CutPrefix(path, "~"); ok && (rest == "" || rest[0] == '/' || rest[0] == '\\') {
-		path = home + rest
-	}
-	return safefs.SamePath(path, modsDir)
+	return logline.LogOwnedBy(log, home, modsDir)
 }
 
 // Parser turns log lines into entries, remembering the last header so continuation lines can inherit it.
@@ -122,9 +91,18 @@ func smapiModsLoadedEnd(log string) int {
 
 // Parse returns the entry for one SMAPI or BepInEx line, and false when the line belongs to a hidden message (SetHiddenMessages). A line that is not
 // a header continues the previous entry; with none yet it stands alone as an INFO line.
+func smapiHeader(line string) (Entry, bool) {
+	var p logline.Parser
+	e := p.Parse(line)
+	if e.Time == "" || e.Cont {
+		return Entry{}, false
+	}
+	return Entry{Time: e.Time, Level: Level(e.Level), Mod: e.Mod, Message: e.Message}, true
+}
+
 func (p *Parser) Parse(line string) (Entry, bool) {
-	if m := header.FindStringSubmatch(line); m != nil {
-		p.last = Entry{Time: m[1], Level: Level(m[2]), Mod: strings.TrimSpace(m[3]), Message: m[4]}
+	if e, ok := smapiHeader(line); ok {
+		p.last = e
 		p.seen = true
 		p.hidden = isHidden(p.last.Mod, p.last.Message)
 		return p.last, !p.hidden

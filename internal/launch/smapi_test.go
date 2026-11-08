@@ -30,6 +30,17 @@ func TestParserLevelsModsAndContinuations(t *testing.T) {
 	}
 }
 
+func TestParserPrefersBepInExOverSMAPIContinuation(t *testing.T) {
+	var p Parser
+	if _, shown := p.Parse("[19:43:46 INFO  SMAPI] hello"); !shown {
+		t.Fatal("SMAPI header hidden")
+	}
+	got, shown := p.Parse("[Info   :   BepInEx] Loading [CullFactory 2.0.11]")
+	if !shown || got.Cont || got.Mod != "BepInEx" || got.Message != "Loading [CullFactory 2.0.11]" {
+		t.Fatalf("got %+v shown=%v", got, shown)
+	}
+}
+
 func TestParserHeaderlessFirstLine(t *testing.T) {
 	var p Parser
 	got, _ := p.Parse("SMAPI 4.5.2 with Stardew Valley 1.6.15")
