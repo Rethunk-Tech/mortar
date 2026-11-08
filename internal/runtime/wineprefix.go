@@ -3,13 +3,10 @@ package runtime
 import (
 	"context"
 	"errors"
-	"os"
 	"path/filepath"
-	"regexp"
-	"strings"
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-gamelocator/bottles"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
 
@@ -35,7 +32,7 @@ func (w winePrefix) Resolve(inst Install, t components.PathTemplate) (string, er
 }
 
 func prefixTokens(inst Install) map[string]string {
-	return userTokens(prefixUser(inst.Prefix), inst.Dir)
+	return userTokens(bottles.UserDir(inst.Prefix), inst.Dir)
 }
 
 // userTokens are the Windows known folders of the profile folder user, for a game installed in dir.
@@ -50,53 +47,12 @@ func userTokens(user, dir string) map[string]string {
 	}
 }
 
-// prefixUser is the Windows profile folder inside a bottle: its one real user, else Wine's default steamuser.
-func prefixUser(bottle string) string {
-	users := filepath.Join(bottle, "drive_c", "users")
-	if entries, err := os.ReadDir(users); err == nil {
-		for _, e := range entries {
-			if e.IsDir() && e.Name() != "Public" {
-				return filepath.Join(users, e.Name())
-			}
-		}
-	}
-	return filepath.Join(users, "steamuser")
-}
-
-var reBottleName = regexp.MustCompile(`(?m)^Name:\s*(.+?)\s*$`)
-
-// bottleName is the name bottles-cli knows the bottle by: bottle.yml's Name, else its folder's name.
-func bottleName(bottle string) string {
-	if b, err := safefs.ReadFile(filepath.Join(bottle, "bottle.yml")); err == nil {
-		if m := reBottleName.FindSubmatch(b); m != nil {
-			if n := strings.Trim(string(m[1]), `"'`); n != "" {
-				return n
-			}
-		}
-	}
-	return filepath.Base(bottle)
-}
-
-// flatpakBottles reports whether the bottle belongs to Flatpak Bottles, whose CLI is not on the host's PATH.
-func flatpakBottles(bottle string) bool {
-	return strings.Contains(filepath.ToSlash(bottle), "/.var/app/com.usebottles.bottles/")
-}
-
 // Command is the argv that runs exe with args inside inst's bottle.
 func Command(inst Install, exe string, args ...string) ([]string, error) {
 	if !(winePrefix{}).Detect(inst) {
 		return nil, errors.New("install does not run in a Bottles bottle")
 	}
-	argv := []string{"bottles-cli"}
-	if flatpakBottles(inst.Prefix) {
-		argv = []string{"flatpak", "run", "--command=bottles-cli", "com.usebottles.bottles"}
-	}
-	argv = append(argv, "run", "-b", bottleName(inst.Prefix), "-e", exe)
-	if len(args) > 0 {
-		argv = append(argv, "--")
-		argv = append(argv, args...)
-	}
-	return argv, nil
+	return bottles.RunArgv(inst.Prefix, exe, args...), nil
 }
 
 // Runner starts argv and waits for it.
