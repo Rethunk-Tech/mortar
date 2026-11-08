@@ -1,14 +1,69 @@
 package cli
 
 import (
+	"bytes"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 )
+
+func TestDoctorExitsOneOnFindings(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", home)
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	// No nxm handler is a warning, so the report has a finding.
+	r := invoke(t, map[string]any{"doctor": control.Doctor{DataDir: "/data/mortar"}}, "doctor")
+	if r.code != 1 || !strings.Contains(r.out, "nxm:// links: off") {
+		t.Fatalf("live doctor with a finding: code %d out %q", r.code, r.out)
+	}
+}
+
+func TestOfflineDoctorExitsOnFindings(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", home)
+	data := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", data)
+	dir := filepath.Join(data, "mortar")
+	for _, p := range []string{"settings.json", "store/index.json"} {
+		if err := os.MkdirAll(filepath.Dir(filepath.Join(dir, p)), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, p), []byte("{}"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	offline := func(method string, _ control.Params, _ any, _ time.Duration) error {
+		if method == "doctor" {
+			return controlwire.ErrNotRunning
+		}
+		return nil
+	}
+	doctorRun := func() (int, string) {
+		var o, e bytes.Buffer
+		code := run("9.9.9", offline, []string{"doctor"}, &o, &e)
+		return code, o.String()
+	}
+	// The app is not running, so doctor scans the folder itself: a healthy one exits 0.
+	if code, out := doctorRun(); code != 0 || !strings.Contains(out, "Offline doctor: 0 findings.") {
+		t.Fatalf("healthy offline doctor: code %d out %q", code, out)
+	}
+	if err := os.Remove(filepath.Join(dir, "settings.json")); err != nil {
+		t.Fatal(err)
+	}
+	if code, out := doctorRun(); code != 1 || !strings.Contains(out, "settings.json is unreadable or missing") {
+		t.Fatalf("offline doctor with a finding: code %d out %q", code, out)
+	}
+}
 
 func TestDoctorPrintsSharedChecks(t *testing.T) {
 	// The report also lists the browsers found on this machine: none under an empty home on Linux, whatever the
