@@ -27,9 +27,9 @@ import { MenuButton } from '../shell/MenuButton.tsx'
 import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
 import { BisectConfirm } from './BisectConfirm.tsx'
 import { BisectDialog } from './BisectDialog.tsx'
+import { disableWithUndo } from './disableWithUndo.ts'
 import { useConsole } from './store.ts'
 
 type Crash = NonNullable<ReturnType<typeof useLaunch.getState>['crash']>
@@ -44,22 +44,7 @@ function SwitchOffButton({ mod, primary = false }: { mod: Mod; primary?: boolean
       disabled={switching}
       onClick={() => {
         setSwitching(true)
-        useMods
-          .getState()
-          .setEnabled(mod, false)
-          .then((off) => {
-            if (off.length === 0) {
-              return
-            }
-            useToasts.getState().push({
-              kind: 'success',
-              title: t`Disabled ${{ names: mod.name }}`,
-              action: {
-                label: t`Undo`,
-                run: () => useMods.getState().setEnabledMany(off, true),
-              },
-            })
-          })
+        disableWithUndo(i18n, mod)
           .catch(reportUnexpected)
           .finally(() => setSwitching(false))
       }}

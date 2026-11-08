@@ -254,8 +254,7 @@ msgid "Calls"
 msgstr ""
 
 #: src/console/BisectDialog.tsx
-#: src/console/CrashDialog.tsx
-#: src/console/RunProblems.tsx
+#: src/console/disableWithUndo.ts
 msgid "Undo"
 msgstr ""
 
@@ -973,8 +972,7 @@ msgid "Searching…"
 msgstr ""
 
 #: src/console/BisectDialog.tsx
-#: src/console/CrashDialog.tsx
-#: src/console/RunProblems.tsx
+#: src/console/disableWithUndo.ts
 msgid "Disabled {names}"
 msgstr ""
 

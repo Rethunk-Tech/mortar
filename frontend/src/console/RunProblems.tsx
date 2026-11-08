@@ -29,6 +29,7 @@ import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { disableWithUndo } from './disableWithUndo.ts'
 import { matchMod, stillApplies } from './runProblemsLive.ts'
 import { runProblemMod, runProblemToken } from './runProblemToken.ts'
 
@@ -84,21 +85,9 @@ async function applyFix(i18n: I18n, problem: SMAPIProblem, game: string) {
       return
     case 'disable': {
       const mod = findMod(problem)
-      if (!mod) {
-        return
+      if (mod) {
+        await disableWithUndo(i18n, mod)
       }
-      const off = await useMods.getState().setEnabled(mod, false)
-      if (off.length === 0) {
-        return
-      }
-      useToasts.getState().push({
-        kind: 'success',
-        title: i18n._(msg`Disabled ${{ names: mod.name }}`),
-        action: {
-          label: i18n._(msg`Undo`),
-          run: () => useMods.getState().setEnabledMany(off, true),
-        },
-      })
       return
     }
     case 'removeDuplicate': {
