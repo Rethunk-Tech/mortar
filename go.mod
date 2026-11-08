@@ -3,7 +3,7 @@ module github.com/Rethunk-Tech/mortar
 go 1.27.3
 
 require (
-	github.com/Rethunk-Tech/go-archive v0.2.2
+	github.com/Rethunk-Tech/go-archive v0.3.0
 	github.com/Rethunk-Tech/go-avscan v0.2.2
 	github.com/Rethunk-Tech/go-bannerlord v0.1.2
 	github.com/Rethunk-Tech/go-bepinex v0.2.2
@@ -15,7 +15,7 @@ require (
 	github.com/Rethunk-Tech/go-gamelocator v0.4.0
 	github.com/Rethunk-Tech/go-gameproc v0.1.2
 	github.com/Rethunk-Tech/go-github v0.3.0
-	github.com/Rethunk-Tech/go-httpkit v0.2.0
+	github.com/Rethunk-Tech/go-httpkit v0.3.0
 	github.com/Rethunk-Tech/go-keyring v0.2.0
 	github.com/Rethunk-Tech/go-larian v0.1.2
 	github.com/Rethunk-Tech/go-lenientjson v0.1.1
@@ -23,7 +23,7 @@ require (
 	github.com/Rethunk-Tech/go-modmanagers v0.3.0
 	github.com/Rethunk-Tech/go-nettrace v0.2.0
 	github.com/Rethunk-Tech/go-nexusmods v0.6.0
-	github.com/Rethunk-Tech/go-safefs v0.8.0
+	github.com/Rethunk-Tech/go-safefs v0.9.0
 	github.com/Rethunk-Tech/go-semverish v0.3.0
 	github.com/Rethunk-Tech/go-smapi v0.3.0
 	github.com/Rethunk-Tech/go-smapiweb v0.1.1

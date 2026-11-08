@@ -2905,7 +2905,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-archive@v0.2.2
+github.com/Rethunk-Tech/go-archive@v0.3.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-archive
 
@@ -3270,7 +3270,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-httpkit@v0.2.0
+github.com/Rethunk-Tech/go-httpkit@v0.3.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-httpkit
 
@@ -3494,7 +3494,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-safefs@v0.8.0
+github.com/Rethunk-Tech/go-safefs@v0.9.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-safefs
 
