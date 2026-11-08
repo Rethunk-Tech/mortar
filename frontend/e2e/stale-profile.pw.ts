@@ -1,17 +1,18 @@
-import { execFileSync } from 'node:child_process'
 import process from 'node:process'
 import { expect, test } from '@playwright/test'
 import { dwell, openGameSelect, openSeedFarm } from './app.ts'
-import { serverEnv } from './sandbox.ts'
+import { createProfile, sandboxCli, serverEnv } from './sandbox.ts'
 
 const dir = process.env.MORTAR_E2E_DIR ?? ''
-const cli = (...args: string[]) =>
-  execFileSync(`${dir}/mortar-server`, args, { env: serverEnv(dir), encoding: 'utf8' }).trim()
+const cli = sandboxCli(
+  () => dir,
+  () => serverEnv(dir),
+)
 
 test('a remembered profile deleted behind the app falls back without an error', async ({
   page,
 }) => {
-  const id = cli('profile', 'create', 'lethal-company', 'Stale Lobby').split('\t')[0] ?? ''
+  const id = createProfile(cli, 'lethal-company', 'Stale Lobby')
   await openSeedFarm(page)
   await openGameSelect(page)
   await page.getByRole('button', { name: /^Stale Lobby/ }).click()

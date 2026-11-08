@@ -1,9 +1,8 @@
-import { execFileSync } from 'node:child_process'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
 import { openSeedFarm, showProblemSection, switchProfile } from './app.ts'
-import { serverEnv } from './sandbox.ts'
+import { createProfile, dataDirOf, sandboxCli, serverEnv } from './sandbox.ts'
 import { zipPaths } from './zip.ts'
 
 // One profile of small generated content packs, each pair shaped to give one of the Problems tab's explained rows,
@@ -14,8 +13,10 @@ const PROFILE = 'Problem Texts'
 const SAVE = 'Texts_1'
 let env: Record<string, string> = {}
 let profileId = ''
-const cli = (...args: string[]) =>
-  execFileSync(`${dir}/mortar-server`, args, { env, encoding: 'utf8' }).trim()
+const cli = sandboxCli(
+  () => dir,
+  () => env,
+)
 
 interface Pack {
   author?: string
@@ -149,7 +150,7 @@ function writePacks(root: string): string[] {
   })
 }
 
-const dataDir = () => `${env.XDG_DATA_HOME || `${env.HOME}/.local/share`}/mortar`
+const dataDir = () => dataDirOf(env)
 const savesDir = () => `${env.HOME}/.config/StardewValley/Saves`
 
 test.beforeAll(() => {
@@ -157,7 +158,7 @@ test.beforeAll(() => {
   const root = `${dir}/problem-texts`
   rmSync(root, { recursive: true, force: true })
   const zips = writePacks(root)
-  profileId = cli('profile', 'create', 'stardew', PROFILE).split('\t')[0] ?? ''
+  profileId = createProfile(cli, 'stardew', PROFILE)
   for (const zip of zips) {
     cli('install', 'stardew', PROFILE, zip)
   }

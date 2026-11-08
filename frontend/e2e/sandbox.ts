@@ -30,6 +30,12 @@ function sandboxPort(): string {
 const launchSession = (dir: string) => `e2e-${dir.slice(dir.lastIndexOf('-') + 1)}`
 const launchCounter = (dir: string) => `${BASE}/mortar-launch-cap/${launchSession(dir)}`
 
+/** Forgets the game launches a removed sandbox spent, so its session key starts clean. */
+function dropLaunchCounter(dir: string) {
+  rmSync(launchCounter(dir), { force: true })
+  rmSync(`${launchCounter(dir)}.lock`, { force: true })
+}
+
 /** A sandbox folder is only ever named from a run's pid, so a path to delete is never read from anywhere. */
 const sandboxDir = (runner: number, prefix = PREFIX) => `${BASE}/${prefix}${runner}`
 
@@ -86,14 +92,8 @@ function reap(runner: number, prefix: string) {
     }
   }
   // Its hidden display and any game it recorded outlive the server; destroy stops them with the folder.
-  try {
-    selftest(dir, 'destroy')
-  } catch {
-    // A run that died before its first start has no marker for destroy to accept.
-  }
-  removeSandbox(dir)
-  rmSync(launchCounter(dir), { force: true })
-  rmSync(`${launchCounter(dir)}.lock`, { force: true })
+  destroySandbox(dir)
+  dropLaunchCounter(dir)
 }
 
 /** Sandboxes named `prefix` + a run's pid, left by runs that died before their teardown; a folder named for this
@@ -186,14 +186,8 @@ function freshSandbox(): () => void {
     }
     tornDown = true
     keepServerEvidence(dir)
-    try {
-      selftest(dir, 'destroy')
-    } catch {
-      // A setup that failed before the sandbox was marked leaves destroy nothing it may delete.
-    }
-    removeSandbox(dir)
-    rmSync(launchCounter(dir), { force: true })
-    rmSync(`${launchCounter(dir)}.lock`, { force: true })
+    destroySandbox(dir)
+    dropLaunchCounter(dir)
   }
   // A run stopped by a signal (a timeout, Ctrl+C, a closed terminal) removes its sandbox, which stops the server and the
   // hidden display recorded in it, then lets the signal take its course so Playwright still stops its workers.
@@ -232,11 +226,28 @@ function serverEnv(dir: string): Record<string, string> {
   return env
 }
 
+/** A runner for the sandbox's own binary, trimmed. Both are read per call: a spec's env fills once its server runs. */
+function sandboxCli(dir: () => string, env: () => Record<string, string>) {
+  return (...args: string[]): string =>
+    execFileSync(`${dir()}/mortar-server`, args, { env: env(), encoding: 'utf8' }).trim()
+}
+
+/** Creates a profile through the CLI and answers its id, the first column of the row `profile create` prints. */
+const createProfile = (cli: (...args: string[]) => string, game: string, name: string) =>
+  cli('profile', 'create', game, name).split('\t')[0] ?? ''
+
+/** Mortar's data folder, as the sandbox server's environment places it. */
+const dataDirOf = (env: Record<string, string | undefined>) =>
+  `${env.XDG_DATA_HOME || `${env.HOME ?? ''}/.local/share`}/mortar`
+
 export {
+  createProfile,
+  dataDirOf,
   destroySandbox,
   freshSandbox,
   keepServerLogs,
   prepareRunSandbox,
+  sandboxCli,
   sandboxPort,
   selftest,
   serverEnv,

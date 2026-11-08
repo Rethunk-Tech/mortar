@@ -1,11 +1,10 @@
-import { execFileSync } from 'node:child_process'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { expect, type Page, test } from '@playwright/test'
 import { openGameSelect, openSeedFarm, showProblemSection, switchProfile } from './app.ts'
-import { serverEnv } from './sandbox.ts'
+import { createProfile, sandboxCli, serverEnv } from './sandbox.ts'
 import { zipPaths } from './zip.ts'
 
 // The Problems sentences that need compiled assemblies (internal/dotnet/testdata/src/E2E, rebuilt by build.sh): a
@@ -19,8 +18,10 @@ const LOBBY = 'Plugin Texts'
 const FILLERS = 19
 let env: Record<string, string> = {}
 const ids: Record<string, string> = {}
-const cli = (...args: string[]) =>
-  execFileSync(`${dir}/mortar-server`, args, { env, encoding: 'utf8' }).trim()
+const cli = sandboxCli(
+  () => dir,
+  () => env,
+)
 
 function zip(root: string, name: string, folder: string, files: Record<string, string | Buffer>) {
   const at = `${root}/${name}/${folder}`
@@ -68,7 +69,7 @@ test.beforeAll(() => {
   const root = `${dir}/problem-assemblies`
   rmSync(root, { recursive: true, force: true })
   mkdirSync(root, { recursive: true })
-  ids.farm = cli('profile', 'create', 'stardew', FARM).split('\t')[0] ?? ''
+  ids.farm = createProfile(cli, 'stardew', FARM)
   const mods = [
     smapiMod(root, 'Small', 'Asm Small', 'Small'),
     smapiMod(root, 'Large', 'Asm Large', 'Large'),
@@ -79,7 +80,7 @@ test.beforeAll(() => {
   for (const z of mods) {
     cli('install', 'stardew', FARM, z)
   }
-  ids.lobby = cli('profile', 'create', 'lethal-company', LOBBY).split('\t')[0] ?? ''
+  ids.lobby = createProfile(cli, 'lethal-company', LOBBY)
   for (const z of [plugin(root, 'E2EAlpha', 'Alpha'), plugin(root, 'E2EBeta', 'Beta')]) {
     cli('install', 'lethal-company', LOBBY, z)
   }

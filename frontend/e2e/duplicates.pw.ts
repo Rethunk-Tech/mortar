@@ -1,9 +1,8 @@
-import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, test } from '@playwright/test'
 import { openSeedFarm, showProblemSection, switchProfile } from './app.ts'
-import { serverEnv } from './sandbox.ts'
+import { createProfile, dataDirOf, sandboxCli, serverEnv } from './sandbox.ts'
 import { zipPaths } from './zip.ts'
 
 // A profile holding one mod id twice: Resolve on its Problems row must open the dialog without a visit to Mods.
@@ -13,8 +12,10 @@ const PROFILE = 'Duplicate Dialog'
 const NAME = 'Twin Pack'
 let env: Record<string, string> = {}
 let profileId = ''
-const cli = (...args: string[]) =>
-  execFileSync(`${dir}/mortar-server`, args, { env, encoding: 'utf8' }).trim()
+const cli = sandboxCli(
+  () => dir,
+  () => env,
+)
 
 function pack(root: string, id: string, version: string) {
   const folder = `${root}/${id}/${id}`
@@ -35,13 +36,13 @@ function pack(root: string, id: string, version: string) {
   return zip
 }
 
-const dataDir = () => `${env.XDG_DATA_HOME || `${env.HOME}/.local/share`}/mortar`
+const dataDir = () => dataDirOf(env)
 
 test.beforeAll(() => {
   env = serverEnv(dir)
   const root = `${dir}/duplicates`
   rmSync(root, { recursive: true, force: true })
-  profileId = cli('profile', 'create', 'stardew', PROFILE).split('\t')[0] ?? ''
+  profileId = createProfile(cli, 'stardew', PROFILE)
   cli('install', 'stardew', PROFILE, pack(root, 'Twin.One', '1.0.0'))
   cli('install', 'stardew', PROFILE, pack(root, 'Twin.Two', '2.0.0'))
   // Install replaces a mod by id, so the second copy is made by renaming its id in the profile's record.

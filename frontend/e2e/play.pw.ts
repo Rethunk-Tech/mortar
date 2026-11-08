@@ -3,7 +3,7 @@ import { chmodSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
 import { dwell, openSeedFarm } from './app.ts'
-import { selftest, serverEnv } from './sandbox.ts'
+import { createProfile, sandboxCli, selftest, serverEnv } from './sandbox.ts'
 
 // A --play start runs its own server on the sandbox's port, so each test stops the shared one and starts its binary again
 // after, with the environment it ran with (read from /proc), without the rebuild `selftest.sh start` does.
@@ -23,8 +23,10 @@ printf '[00:00:00 INFO  SMAPI] SMAPI 4.1.10 with Stardew Valley 1.6.15 on Unix\\
 exec -a StardewModdingAPI bash -c 'sleep "$0"; :' 1 "$@"
 `
 
-const cli = (...args: string[]) =>
-  execFileSync(`${dir}/mortar-server`, args, { env, encoding: 'utf8' }).trim()
+const cli = sandboxCli(
+  () => dir,
+  () => env,
+)
 
 const profileId = (name: string) =>
   (
@@ -98,8 +100,7 @@ test.beforeAll(async ({ browser }) => {
   const fake = `${dir}/fake-game.sh`
   writeFileSync(fake, FAKE_GAME)
   chmodSync(fake, 0o755)
-  fine =
-    profileId('Deck Play') || cli('profile', 'create', 'stardew', 'Deck Play').split('\t')[0] || ''
+  fine = profileId('Deck Play') || createProfile(cli, 'stardew', 'Deck Play') || ''
   blocked = profileId('Seed Farm')
   cli('profile', 'set', 'stardew', fine, 'launchPrefix', fake)
   cli('profile', 'set', 'stardew', fine, 'skipPlayCheck', 'true')

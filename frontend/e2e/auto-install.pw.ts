@@ -1,9 +1,8 @@
-import { execFileSync } from 'node:child_process'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, test } from '@playwright/test'
 import { openSeedFarm, switchProfile } from './app.ts'
-import { serverEnv } from './sandbox.ts'
+import { createProfile, sandboxCli, serverEnv } from './sandbox.ts'
 
 // An extra mods folder's mod lands in the open profile when its files change, and a rebuild replaces it.
 
@@ -12,8 +11,10 @@ const PROFILE = 'Build Output'
 let env: Record<string, string> = {}
 let profileId = ''
 const folder = () => `${dir}/auto-install/Author.BuildPack`
-const cli = (...args: string[]) =>
-  execFileSync(`${dir}/mortar-server`, args, { env, encoding: 'utf8' }).trim()
+const cli = sandboxCli(
+  () => dir,
+  () => env,
+)
 
 function write(version: string, build = version) {
   writeFileSync(
@@ -34,7 +35,7 @@ test.beforeAll(() => {
   env = serverEnv(dir)
   rmSync(`${dir}/auto-install`, { recursive: true, force: true })
   mkdirSync(folder(), { recursive: true })
-  profileId = cli('profile', 'create', 'stardew', PROFILE).split('\t')[0] ?? ''
+  profileId = createProfile(cli, 'stardew', PROFILE)
   cli('settings', 'set', '--game', 'stardew', 'extraModsFolder', folder())
 })
 

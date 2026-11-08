@@ -1,9 +1,8 @@
-import { execFileSync } from 'node:child_process'
 import { chmodSync, mkdirSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, test } from '@playwright/test'
 import { openSeedFarm } from './app.ts'
-import { serverEnv } from './sandbox.ts'
+import { sandboxCli, serverEnv } from './sandbox.ts'
 import { zipPaths } from './zip.ts'
 
 // The Custom command scanner stands in for a real antivirus: a script that flags any file holding a marker, so the whole
@@ -13,8 +12,10 @@ const dir = process.env.MORTAR_E2E_DIR ?? ''
 const MARKER = ['MORTAR', 'TEST', 'THREAT'].join('-')
 const DETECTION = 'Test.Marker.Threat'
 let env: Record<string, string> = {}
-const cli = (...args: string[]) =>
-  execFileSync(`${dir}/mortar-server`, args, { env, encoding: 'utf8' }).trim()
+const cli = sandboxCli(
+  () => dir,
+  () => env,
+)
 
 test.beforeAll(() => {
   env = serverEnv(dir)

@@ -1,7 +1,6 @@
 // The website demo's Lethal Company profiles, seeded into the recorder's sandbox through the commands an agent uses.
-import { execFileSync } from 'node:child_process'
 import { chmodSync, mkdirSync, writeFileSync } from 'node:fs'
-import { serverEnv } from './sandbox.ts'
+import { sandboxCli, serverEnv } from './sandbox.ts'
 
 const GAME = 'lethal-company'
 export const CREW = 'Friday Crew'
@@ -39,8 +38,7 @@ const PLUGINS: Record<string, { guid: string; name: string }> = {
 
 let env: Record<string, string> = {}
 const dir = () => process.env.MORTAR_E2E_DIR ?? ''
-const cli = (...args: string[]) =>
-  execFileSync(`${dir()}/mortar-server`, args, { env, encoding: 'utf8' }).trim()
+const cli = sandboxCli(dir, () => env)
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 

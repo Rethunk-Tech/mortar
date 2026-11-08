@@ -1,9 +1,8 @@
-import { execFileSync } from 'node:child_process'
 import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
 import { openGameSelect } from './app.ts'
-import { serverEnv } from './sandbox.ts'
+import { createProfile, sandboxCli, serverEnv } from './sandbox.ts'
 
 // The sandbox holds a stand-in PEAK (selftest.sh fake-install), so nothing here downloads a loader: the profile gets
 // the few files Mortar checks for, and a launch prefix stands in for the game, recording what it was started with.
@@ -11,8 +10,10 @@ import { serverEnv } from './sandbox.ts'
 const dir = process.env.MORTAR_E2E_DIR ?? ''
 let env: Record<string, string> = {}
 
-const cli = (...args: string[]) =>
-  execFileSync(`${dir}/mortar-server`, args, { env, encoding: 'utf8' }).trim()
+const cli = sandboxCli(
+  () => dir,
+  () => env,
+)
 
 const FAKE_GAME = `#!/bin/bash
 printf '%s\\n' "$@" >'${dir}/peak-args.txt'
@@ -28,7 +29,7 @@ const graphicsSetting = () =>
 
 test.beforeAll(() => {
   env = serverEnv(dir)
-  profile = cli('profile', 'create', 'peak', 'Graphics').split('\t')[0] ?? ''
+  profile = createProfile(cli, 'peak', 'Graphics')
   const root = `${env.HOME}/.local/share/mortar/profiles/peak/${profile}`
   mkdirSync(`${root}/BepInEx/core`, { recursive: true })
   writeFileSync(`${root}/BepInEx/core/BepInEx.Preloader.dll`, 'stub')
