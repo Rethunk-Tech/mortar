@@ -170,7 +170,13 @@ export function FindStep({
   const { t } = useLingui()
   const { success, warning } = useTheme().palette
   const found = game.installed
-  const smapi = useLoader((s) => s.status)
+  // This game's readings, not whichever game the loader store last reported: the store keeps the previous game's status
+  // until this one's check lands, and showing its version here would be another game's loader.
+  const loaderInstalled = useLoader((s) => s.game === game.id && s.status?.installed === true)
+  const loaderVersion = useLoader((s) => (s.game === game.id ? (s.status?.version ?? '') : ''))
+  const loaderGameVersion = useLoader((s) =>
+    s.game === game.id ? (s.status?.gameVersion ?? '') : '',
+  )
   const check = useLoader((s) => s.check)
   const [error, setError] = useState<InlineError | null>(null)
   const [editing, setEditing] = useState(false)
@@ -207,11 +213,11 @@ export function FindStep({
     if (!game.loader) {
       return ''
     }
-    return smapi?.installed
-      ? t`${{ loader: game.loader }} ${{ version: smapi.version }} installed`
+    return loaderInstalled
+      ? t`${{ loader: game.loader }} ${{ version: loaderVersion }} installed`
       : t`${{ loader: game.loader }} not installed yet`
   }
-  const details = [smapi?.gameVersion ? `${game.name} ${smapi.gameVersion}` : '', loaderLine()]
+  const details = [loaderGameVersion ? `${game.name} ${loaderGameVersion}` : '', loaderLine()]
     .filter(Boolean)
     .join(' · ')
 
