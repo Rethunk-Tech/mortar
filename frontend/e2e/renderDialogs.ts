@@ -387,8 +387,10 @@ export function dialogCases(h: Helpers): Case[] {
     dialog('import-link', (p) => importStep(p, /^Link or code/)),
     dialog('import-manager', (p) => importStep(p, /^Another mod manager/)),
     {
-      // Picking another game in the title bar's switcher.
+      // Picking another game in the title bar's switcher. The route and every view's game change, so the routes, Home, the
+      // title bar and the sidebar redraw for the new game (~1,500); the menu's own open and close is ~150.
       name: 'game-switch',
+      budget: { updates: 2000 },
       setup: async (p) => {
         await closeAll(p)
         await openGame(p, h.tabs(p), 'Stardew Valley')
