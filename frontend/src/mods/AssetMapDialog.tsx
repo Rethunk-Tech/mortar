@@ -15,7 +15,7 @@ import { useState } from 'react'
 import type {
   AssetTarget,
   AssetTouch,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp/models.ts'
+} from '../../bindings/github.com/Rethunk-Tech/go-contentpatcher/models.ts'
 import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
