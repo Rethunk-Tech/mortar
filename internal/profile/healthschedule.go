@@ -2,14 +2,12 @@ package profile
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"log"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -48,12 +46,9 @@ func healthCheckPath(dir string) string { return filepath.Join(dir, healthCheckF
 // readHealthCheck reads the last check, as never made when another build made it: that build's logic may have found
 // what this one does not, so its count is neither shown nor trusted to postpone the next check.
 func readHealthCheck(dir string) (healthCheck, bool) {
-	b, err := safefs.ReadFile(healthCheckPath(dir))
-	if err != nil {
-		return healthCheck{}, false
-	}
 	var c healthCheck
-	if json.Unmarshal(b, &c) != nil || c.Build != appversion.Build() {
+	found, err := datadir.ReadJSON(healthCheckPath(dir), &c)
+	if err != nil || !found || c.Build != appversion.Build() {
 		return healthCheck{}, false
 	}
 	return c, true
