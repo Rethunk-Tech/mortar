@@ -5,7 +5,6 @@ import { Copy, Map as MapIcon, Plus, ShieldCheck } from 'lucide-react'
 import { memo, useMemo, useState } from 'react'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { findCrashCause, useBisectBlockText } from '../commandPalette/crashBisect.ts'
-import { formatDuration } from '../console/startupView.ts'
 import { PageActions } from '../game/PageActions.tsx'
 import { useReasonText } from '../i18n/reasonText.ts'
 import { useOpenOverride } from '../profiles/openOverrides.ts'
@@ -26,13 +25,12 @@ import { usePending } from '../toasts/usePending.ts'
 import { AssetMapDialog } from './AssetMapDialog.tsx'
 import { CleanupSection } from './CleanupSection.tsx'
 import { CompatSection } from './CompatSection.tsx'
-import { compatReportChunks } from './compatChip.ts'
 import { useFileConflicts } from './fileConflicts.ts'
 import { LockedNote } from './LockedNote.tsx'
 import { FooterLinks, ProblemGroup, type ProblemTab, type SectionAction } from './ProblemGroup.tsx'
 import { ProblemRows } from './ProblemRows.tsx'
 import { problemSections, type Row } from './problemGroups.ts'
-import { formatProblemReport, whyKeysOf } from './problemReport.ts'
+import { formatOpenCopy } from './problemReport.ts'
 import { FOOTER_SECTIONS, useProblemFooter } from './problemSection.ts'
 import { ERROR_SECTIONS, isDismissedRow, useRowText, useSectionTitle } from './problemText.ts'
 import { ReplacedSection } from './ReplacedSection.tsx'
@@ -383,94 +381,24 @@ const ProblemActions = memo(function ProblemActionsView() {
             ),
           )
             .then((rows) => {
-              const evidenceOf = new Map(assets.map((asset, i) => [asset, rows[i]]))
-              const text = formatProblemReport(
-                [
-                  ...sections.map((section) => ({
-                    title: sectionTitle(section.id),
-                    count: section.rows.length,
-                    whyKeys: section.rows.flatMap((entry) => {
-                      const row = isDismissedRow(entry) ? entry.row : entry
-                      return row.kind === 'asset' ? whyKeysOf(evidenceOf.get(row.asset)) : []
-                    }),
-                    lines: section.rows.map((entry) => {
-                      const row = isDismissedRow(entry) ? entry.row : entry
-                      const { text: sentence, note } = rowText(row)
-                      return note === '' ? sentence : `${sentence} ${note}`
-                    }),
-                  })),
-                  ...(cleanup.length === 0
-                    ? []
-                    : [
-                        {
-                          title: t`Cleanup`,
-                          count: cleanup.length,
-                          lines: cleanup.map((item) => {
-                            const who = item.name.trim() === '' ? t`Unknown mod` : item.name
-                            const reason = reasonText(
-                              item.code,
-                              item.params,
-                              item.reason || t`Not needed by any enabled mod`,
-                            )
-                            return `${who}: ${reason}`
-                          }),
-                        },
-                      ]),
-                  ...(redundant.length === 0
-                    ? []
-                    : [
-                        {
-                          title: t`Redundant`,
-                          count: redundant.length,
-                          lines: redundant.map(
-                            (item) => item.text ?? `${item.name}: ${item.reason}`,
-                          ),
-                        },
-                      ]),
-                  ...compatReportChunks(compat, t`Compatibility`),
-                  ...(slowRows.length === 0
-                    ? []
-                    : [
-                        {
-                          title: t`Slow startup`,
-                          count: slowRows.length,
-                          lines: slowRows.map((row) => {
-                            const time = formatDuration(row.ms, i18n.locale)
-                            return row.kind === 'pack'
-                              ? t`${{ name: row.name }} adds ${time} to startup (through ${{ framework: row.framework }})`
-                              : t`${{ name: row.name }} adds ${time} to startup`
-                          }),
-                        },
-                      ]),
-                  ...(fileConflicts.length === 0
-                    ? []
-                    : [
-                        {
-                          title: t`File conflicts`,
-                          count: fileConflicts.length,
-                          lines: fileConflicts.map((fileConflict) => {
-                            const { text: sentence, note } = rowText({
-                              kind: 'fileConflict',
-                              fileConflict,
-                            })
-                            return note === '' ? sentence : `${sentence} ${note}`
-                          }),
-                        },
-                      ]),
-                  ...(replaced.length === 0
-                    ? []
-                    : [
-                        {
-                          title: t`Replaced`,
-                          count: replaced.length,
-                          lines: replaced.map((file) => file.path),
-                        },
-                      ]),
-                ],
-                t`Harmless`,
-                harmlessCount,
+              copyText(
+                formatOpenCopy({
+                  locale: i18n.locale,
+                  sectionTitle,
+                  rowText,
+                  reasonText,
+                  sections,
+                  cleanup,
+                  redundant,
+                  compat,
+                  slowRows,
+                  fileConflicts,
+                  replaced,
+                  harmlessCount,
+                  evidenceOf: new Map(assets.map((asset, i) => [asset, rows[i]])),
+                }),
+                t`Report copied`,
               )
-              copyText(text, t`Report copied`)
             })
             .catch(reportUnexpected)
         }}
