@@ -12,6 +12,7 @@ require (
 	github.com/Rethunk-Tech/go-curseforge v0.4.0
 	github.com/Rethunk-Tech/go-desktopenv v0.9.0
 	github.com/Rethunk-Tech/go-dotnet v0.3.0
+	github.com/Rethunk-Tech/go-editorlocator v0.1.0
 	github.com/Rethunk-Tech/go-folderwatch v0.1.0
 	github.com/Rethunk-Tech/go-fomod v0.1.2
 	github.com/Rethunk-Tech/go-gamelocator v0.4.0

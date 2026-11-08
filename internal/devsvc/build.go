@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"slices"
 	"sync"
 	"time"
@@ -17,6 +16,7 @@ import (
 	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-desktopenv/nowindow"
 	"github.com/Rethunk-Tech/go-dotnet"
+	"github.com/Rethunk-Tech/go-editorlocator"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -233,7 +233,7 @@ func (s *Service) OpenAt(gameID, dir, file string, line, column int) error {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("%s is not in the project", file))
 	}
 	return s.openIn(file, file, func(program string) []string {
-		return fileArgs(program, file, max(line, 1), max(column, 1))
+		return editorlocator.FileArgs(program, file, max(line, 1), max(column, 1))
 	})
 }
 
@@ -243,22 +243,19 @@ func (s *Service) OpenEditor(gameID, dir string) error {
 	if err != nil {
 		return err
 	}
-	solution := solutionIn(p.Dir)
+	solution := editorlocator.SolutionIn(p.Dir)
 	target := p.Dir
 	if solution != "" {
 		target = solution
 	}
-	return s.openIn(target, p.Dir, func(program string) []string { return projectArgs(program, p.Dir, solution) })
+	return s.openIn(target, p.Dir, func(program string) []string {
+		return editorlocator.ProjectArgs(program, p.Dir, solution)
+	})
 }
 
 // Editors lists the code editors installed on this computer, each version on its own.
 func (s *Service) Editors() []Editor {
-	host := editorHost{windows: runtime.GOOS == "windows", getenv: os.Getenv, lookPath: exec.LookPath}
-	out := host.find()
-	for _, e := range platformEditors() {
-		out = host.add(out, e)
-	}
-	return out
+	return asEditors(editorlocator.Find())
 }
 
 // openIn follows the codeEditor setting: the system's default app for target, the program chosen, or the first editor
