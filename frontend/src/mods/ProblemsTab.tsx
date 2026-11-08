@@ -121,6 +121,22 @@ function RedundantSection({
   )
 }
 
+function installableMissing(sections: ReturnType<typeof problemSections>) {
+  return (
+    sections
+      .find((section) => section.id === 'missing')
+      ?.rows.filter(
+        (row): row is Extract<Row, { kind: 'missing' }> =>
+          !isDismissedRow(row) &&
+          row.kind === 'missing' &&
+          row.missing.listed &&
+          row.missing.reason !== 'disabled' &&
+          !row.missing.optional &&
+          row.missing.where !== null,
+      ) ?? []
+  )
+}
+
 // The tabs of the section switcher: a segment for each section that has anything in it.
 function useProblemTabs(
   result: NonNullable<ReturnType<typeof useOpenProblems>>,
@@ -137,18 +153,7 @@ function useProblemTabs(
   const redundantRows = useRedundantRows()
   // Same section objects across renders, so the memoised ProblemRows of an unchanged section skips rendering.
   const sections = useMemo(() => problemSections(result), [result])
-  const installable =
-    sections
-      .find((section) => section.id === 'missing')
-      ?.rows.filter(
-        (row): row is Extract<Row, { kind: 'missing' }> =>
-          !isDismissedRow(row) &&
-          row.kind === 'missing' &&
-          row.missing.listed &&
-          row.missing.reason !== 'disabled' &&
-          !row.missing.optional &&
-          row.missing.where !== null,
-      ) ?? []
+  const installable = installableMissing(sections)
   const cleanup = result.cleanup ?? []
   const replaced = result.replaced ?? []
   const compat = result.compat ?? []
