@@ -1,3 +1,4 @@
+import { sameValue } from '@rethunk/react-load-hooks'
 import { create } from 'zustand'
 
 function clickRow(id: string): SelectionState {
@@ -79,11 +80,7 @@ export const useSelection = create<
     const { ids: current, anchor } = get()
     const ids = current.filter((id) => allowed.has(id))
     const nextAnchor = anchor !== null && allowed.has(anchor) ? anchor : (ids[0] ?? null)
-    if (
-      ids.length === current.length &&
-      ids.every((id, i) => id === current[i]) &&
-      nextAnchor === anchor
-    ) {
+    if (sameValue(ids, current) && nextAnchor === anchor) {
       return
     }
     set({ ids, anchor: nextAnchor })

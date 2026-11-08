@@ -1,3 +1,4 @@
+import { sameValue } from '@rethunk/react-load-hooks'
 import { looksLikeKeybind } from './keybind.ts'
 import type { ConfigEntry, ConfigFile, ConfigValue } from './types.ts'
 
@@ -5,11 +6,6 @@ import type { ConfigEntry, ConfigFile, ConfigValue } from './types.ts'
 const SLIDER_MAX_SPAN = 100
 const RGB_LENGTH = 6
 const RGBA_LENGTH = 8
-
-const sameValue = (a: ConfigValue, b: ConfigValue): boolean =>
-  Array.isArray(a) && Array.isArray(b)
-    ? a.length === b.length && a.every((v, i) => v === b[i])
-    : a === b
 
 const isModified = (e: ConfigEntry): boolean => !sameValue(e.value, e.default)
 

@@ -1,3 +1,4 @@
+import { keepUnchanged } from '@rethunk/react-load-hooks'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type {
   Mod,
@@ -132,12 +133,9 @@ export function useModGroups(mods: Mod[], profile: Profile, fold = false) {
             !(groupBy === 'group' && hiddenByAncestor(collapsed, g.key))),
       )
       .flatMap((g) => g.items.map((r) => modId(r.mod)))
-    const last = lastIds.current
-    if (next.length === last.length && next.every((id, i) => id === last[i])) {
-      return last
-    }
-    lastIds.current = next
-    return next
+    const kept = keepUnchanged(lastIds.current, next)
+    lastIds.current = kept
+    return kept
   }, [groups, groupBy, collapsed])
   return { groupBy, sort, gameId, collapsed, setCollapsed, groups, orderedIds }
 }
