@@ -14,12 +14,11 @@ import { openPage } from '../mods/menu.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { nowrap } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useSaves } from './store.ts'
 import { wantFor } from './wantFor.ts'
-
-const nowrap = { whiteSpace: 'nowrap' } as const
 
 export function LackChipActions(p: {
   fit: Fit

@@ -36,3 +36,5 @@ export const space = {
   // A navigation item, such as a Settings page link: taller than a list row, since it is a larger click target.
   nav: 'var(--m-nav)',
 } as const
+
+export const nowrap = { whiteSpace: 'nowrap' } as const

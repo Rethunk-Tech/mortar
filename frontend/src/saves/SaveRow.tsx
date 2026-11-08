@@ -26,7 +26,7 @@ import { useLocked } from '../mods/useLocked.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
-import { space } from '../theme/density.ts'
+import { nowrap, space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -38,7 +38,6 @@ import { SaveGapLine } from './SaveGapLine.tsx'
 import { playStyleName, saveKind, saveName } from './saveName.ts'
 import { useSaves } from './store.ts'
 
-const nowrap = { whiteSpace: 'nowrap' } as const
 
 const SEASON_STYLE = [
   { color: 'success.main', Icon: Flower2 },

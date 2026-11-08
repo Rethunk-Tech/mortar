@@ -35,18 +35,21 @@ export function SaveWarnDialog() {
           : t`${{ name: save ? saveName(save) : '' }} (${{ path: save?.folder ?? '' }}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save.`}
       </Typography>
       <List dense={true} sx={{ mt: space.gap }}>
-        {missing.map((m) => (
-          <ListItem key={m.id} disableGutters={true}>
-            <ListItemText
-              primary={
-                <span title={(m.name ?? '').trim() === '' ? localId(m.id) : undefined}>
-                  {(m.name ?? '').trim() === '' ? t`Unknown mod` : m.name}
-                </span>
-              }
-              secondary={m.disabled ? t`Disabled in this profile` : t`Not in this profile`}
-            />
-          </ListItem>
-        ))}
+        {missing.map((m) => {
+          const unnamed = (m.name ?? '').trim() === ''
+          return (
+            <ListItem key={m.id} disableGutters={true}>
+              <ListItemText
+                primary={
+                  <span title={unnamed ? localId(m.id) : undefined}>
+                    {unnamed ? t`Unknown mod` : m.name}
+                  </span>
+                }
+                secondary={m.disabled ? t`Disabled in this profile` : t`Not in this profile`}
+              />
+            </ListItem>
+          )
+        })}
       </List>
     </AppDialog>
   )

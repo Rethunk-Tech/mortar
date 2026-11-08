@@ -16,14 +16,12 @@ import { useProfileLoader } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { space } from '../theme/density.ts'
+import { nowrap, space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportError } from '../toasts/report.ts'
 import { anonymize } from './anonymize.ts'
 import { pasteLogConfirm, shareLogConfirm, shareLogText } from './shareLog.ts'
 import { useConsole } from './store.ts'
-
-const button = { whiteSpace: 'nowrap' } as const
 
 function LinkRow({ link, onCopy }: { link: string; onCopy: () => void }) {
   const { t } = useLingui()
@@ -41,14 +39,14 @@ function LinkRow({ link, onCopy }: { link: string; onCopy: () => void }) {
           },
         }}
       />
-      <Button variant="outlined" startIcon={<Copy size={16} />} onClick={onCopy} sx={button}>
+      <Button variant="outlined" startIcon={<Copy size={16} />} onClick={onCopy} sx={nowrap}>
         {t`Copy`}
       </Button>
       <Button
         variant="outlined"
         startIcon={<ExternalLink size={16} />}
         onClick={() => openPage(link)}
-        sx={button}
+        sx={nowrap}
       >
         {t`Open`}
       </Button>
@@ -219,16 +217,16 @@ export function HelpDialog({ game }: { game: string }) {
       title={t`Share log`}
       footer={
         <DialogFooter>
-          <Button disabled={uploading} onClick={close} sx={button}>
+          <Button disabled={uploading} onClick={close} sx={nowrap}>
             {link || !log ? t`Close` : t`Cancel`}
           </Button>
           {log && paste ? (
-            <Button variant="contained" onClick={copyAndOpen} sx={button}>
+            <Button variant="contained" onClick={copyAndOpen} sx={nowrap}>
               {t`Copy log and open ${pasteHost}`}
             </Button>
           ) : null}
           {log && !link && !paste ? (
-            <Button variant="contained" disabled={uploading} onClick={upload} sx={button}>
+            <Button variant="contained" disabled={uploading} onClick={upload} sx={nowrap}>
               {uploading ? t`Uploading…` : t`Upload log`}
             </Button>
           ) : null}
