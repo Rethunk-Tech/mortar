@@ -1,15 +1,11 @@
 package launchsvc
 
 import (
-	"bufio"
 	"encoding/json"
-	"fmt"
-	"net"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/bridge/bridgetest"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -87,41 +83,12 @@ func TestStopInGameNeedsALoaderWhoseCompanionCanStop(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = ln.Close() })
-	asked := make(chan string, 1)
-	go func() {
-		c, err := ln.Accept()
-		if err != nil {
-			return
-		}
-		defer func() { _ = c.Close() }()
-		r := bufio.NewReader(c)
-		_, _ = r.ReadString('\n')
-		cmd, _ := r.ReadString('\n')
-		asked <- cmd
-		_, _ = fmt.Fprintln(c, `ok {"measured":true}`)
-	}()
-	stateFile := filepath.Join(dir, filepath.FromSlash(bridge.BepInEx.StateFile))
-	if err := os.MkdirAll(filepath.Dir(stateFile), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	addr, ok := ln.Addr().(*net.TCPAddr)
-	if !ok {
-		t.Fatalf("listener address %v", ln.Addr())
-	}
-	state := fmt.Appendf(nil, `{"port":%d,"token":"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}`, addr.Port)
-	if err := os.WriteFile(stateFile, state, 0o600); err != nil {
-		t.Fatal(err)
-	}
+	asked := bridgetest.FakeBridge(t, bridge.BepInEx, dir, `ok {"measured":true}`)
 	measured, err := svc.StopInGame(lc, p.ID)
 	if err != nil || !measured {
 		t.Fatalf("StopInGame = %v, %v", measured, err)
 	}
-	if cmd := <-asked; cmd != "perf stop\n" {
+	if cmd := <-asked; cmd != "perf stop" {
 		t.Fatalf("the game was sent %q", cmd)
 	}
 }

@@ -3,16 +3,14 @@
 package launchsvc
 
 import (
-	"bufio"
 	"context"
-	"fmt"
-	"net"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/bridge/bridgetest"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -42,38 +40,10 @@ func TestABepInExGameReportsItsSceneOwnVersionAndWhichPackagesLoaded(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = ln.Close() })
-	replies := make(chan string, 2)
-	replies <- `ok {"gameVersion":"0.1","gameVersionSource":"unity","scene":"InitScene","plugins":[{"guid":"someone.else","version":"1.0.0"}]}`
-	replies <- `ok {"gameVersion":"v73","gameVersionSource":"game","scene":"MainMenu","plugins":[{"guid":"COM.FIXTURE.PLUGIN","version":"1.2.3"}]}`
-	go func() {
-		for {
-			c, err := ln.Accept()
-			if err != nil {
-				return
-			}
-			r := bufio.NewReader(c)
-			_, _ = r.ReadString('\n')
-			_, _ = r.ReadString('\n')
-			_, _ = fmt.Fprintln(c, <-replies)
-			_ = c.Close()
-		}
-	}()
-	stateFile := filepath.Join(dir, filepath.FromSlash(bridge.BepInEx.StateFile))
-	if err := os.MkdirAll(filepath.Dir(stateFile), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	addr, ok := ln.Addr().(*net.TCPAddr)
-	if !ok {
-		t.Fatalf("listener address %v", ln.Addr())
-	}
-	if err := os.WriteFile(stateFile, fmt.Appendf(nil, `{"port":%d,"token":"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}`, addr.Port), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	bridgetest.FakeBridge(t, bridge.BepInEx, dir,
+		`ok {"gameVersion":"0.1","gameVersionSource":"unity","scene":"InitScene","plugins":[{"guid":"someone.else","version":"1.0.0"}]}`,
+		`ok {"gameVersion":"v73","gameVersionSource":"game","scene":"MainMenu","plugins":[{"guid":"COM.FIXTURE.PLUGIN","version":"1.2.3"}]}`,
+	)
 
 	svc := NewService(t.TempDir(), set, ps)
 	g := game.Find(lc)
@@ -153,35 +123,7 @@ func followFixture(t *testing.T, reply string) (svc *Service, g game.Game, cance
 		if err != nil {
 			t.Fatal(err)
 		}
-		ln, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0")
-		if err != nil {
-			t.Fatal(err)
-		}
-		t.Cleanup(func() { _ = ln.Close() })
-		go func() {
-			for {
-				c, err := ln.Accept()
-				if err != nil {
-					return
-				}
-				r := bufio.NewReader(c)
-				_, _ = r.ReadString('\n')
-				_, _ = r.ReadString('\n')
-				_, _ = fmt.Fprintln(c, reply)
-				_ = c.Close()
-			}
-		}()
-		stateFile := filepath.Join(dir, filepath.FromSlash(bridge.BepInEx.StateFile))
-		if err := os.MkdirAll(filepath.Dir(stateFile), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		addr, ok := ln.Addr().(*net.TCPAddr)
-		if !ok {
-			t.Fatalf("listener address %v", ln.Addr())
-		}
-		if err := os.WriteFile(stateFile, fmt.Appendf(nil, `{"port":%d,"token":"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}`, addr.Port), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		bridgetest.FakeBridge(t, bridge.BepInEx, dir, reply)
 	}
 	svc = NewService(t.TempDir(), set, ps)
 	events = make(chan LiveRun, 16)

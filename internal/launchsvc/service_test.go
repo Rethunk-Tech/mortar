@@ -3,11 +3,8 @@
 package launchsvc
 
 import (
-	"bufio"
 	"context"
 	"errors"
-	"fmt"
-	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,6 +14,8 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-gameproc"
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/bridge/bridgetest"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -233,28 +232,6 @@ func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
 	if err := svc.Send(t.Context(), "stardew", "help"); err == nil {
 		t.Fatal("Send while idle must fail")
 	}
-	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	addr, ok := ln.Addr().(*net.TCPAddr)
-	if !ok {
-		t.Fatalf("listener address is %T", ln.Addr())
-	}
-	defer func() { _ = ln.Close() }()
-	got := make(chan string, 1)
-	go func() {
-		c, err := ln.Accept()
-		if err != nil {
-			return
-		}
-		defer func() { _ = c.Close() }()
-		r := bufio.NewReader(c)
-		token, _ := r.ReadString('\n')
-		cmd, _ := r.ReadString('\n')
-		got <- token + cmd
-		_, _ = c.Write([]byte("ok\n"))
-	}()
 	// The running profile holds an older bridge than the one this build bundles.
 	src := filepath.Join(t.TempDir(), "MortarSmapiBridge")
 	if err := os.MkdirAll(src, 0o700); err != nil {
@@ -272,17 +249,14 @@ func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
 	}
 	modsDir, _ := profiles.ModsDir("stardew", p.ID)
 	dir := filepath.Join(modsDir, "bridge-0.9.0", "MortarSmapiBridge")
-	state := fmt.Sprintf(`{"port":%d,"token":"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef","pid":%d}`, addr.Port, os.Getpid())
-	if err := os.WriteFile(filepath.Join(dir, "mortar-smapi-bridge.json"), []byte(state), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	got := bridgetest.FakeBridge(t, bridge.SMAPI, dir, "ok")
 	buf := &launch.Buffer{}
 	svc.logs["stardew/"] = session{buf: buf, profile: p.ID}
 	svc.status["stardew/"] = Status{Game: "stardew", State: Running, Profile: p.ID}
 	if err := svc.Send(t.Context(), "stardew", "  help  "); err != nil {
 		t.Fatal(err)
 	}
-	if line := <-got; line != "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\nhelp\n" {
+	if line := <-got; line != "help" {
 		t.Fatalf("bridge saw %q", line)
 	}
 	lines := buf.Lines()
