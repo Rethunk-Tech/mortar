@@ -1,7 +1,6 @@
 package control
 
 import (
-	"context"
 	"strings"
 	"testing"
 )
@@ -52,7 +51,7 @@ func TestGameNameUnknownReturnsID(t *testing.T) {
 
 func TestUnknownMethodError(t *testing.T) {
 	s := services(t)
-	_, err := s.Handle(context.Background(), "not.a.method", Params{})
+	_, err := s.Handle(t.Context(), "not.a.method", Params{})
 	if err == nil || !strings.HasPrefix(err.Error(), "unknown method") {
 		t.Fatalf("got %v, want unknown method", err)
 	}

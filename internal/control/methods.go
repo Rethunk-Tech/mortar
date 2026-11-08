@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -388,9 +389,7 @@ func mergeGlobal(tables ...map[string]globalMethod) map[string]globalMethod {
 	}
 	out := make(map[string]globalMethod, n)
 	for _, t := range tables {
-		for k, v := range t {
-			out[k] = v
-		}
+		maps.Copy(out, t)
 	}
 	return out
 }
@@ -402,9 +401,7 @@ func mergeProfile(tables ...map[string]profileMethod) map[string]profileMethod {
 	}
 	out := make(map[string]profileMethod, n)
 	for _, t := range tables {
-		for k, v := range t {
-			out[k] = v
-		}
+		maps.Copy(out, t)
 	}
 	return out
 }
