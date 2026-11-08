@@ -50,6 +50,9 @@ require (
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
+	github.com/Rethunk-Tech/go-codepair v0.1.0 // indirect
+	github.com/Rethunk-Tech/go-itchio v0.1.0 // indirect
+	github.com/Rethunk-Tech/go-paradoxmods v0.1.0 // indirect
 	github.com/Rethunk-Tech/go-tilemask v0.1.1 // indirect
 	github.com/Rethunk-Tech/vdf/v2 v2.1.0 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect

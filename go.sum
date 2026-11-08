@@ -14,6 +14,8 @@ github.com/Rethunk-Tech/go-bepinex v0.2.2 h1:ehZfxOWmIS2FtCZDYmY7F6gd2chTcKr1LJb
 github.com/Rethunk-Tech/go-bepinex v0.2.2/go.mod h1:CVyX5x266PIuT5FooacfUhTXC66XYXQNaCPu6KZ+3q8=
 github.com/Rethunk-Tech/go-cfgedit v0.4.0 h1:Y8S+zB1DRGrxA7fOVLlZmiqxooEZ1b+K+YLuI4fl74Q=
 github.com/Rethunk-Tech/go-cfgedit v0.4.0/go.mod h1:pPv6PyPFiTvhobszdYkfTnJL34YmngEhno7wrFp357s=
+github.com/Rethunk-Tech/go-codepair v0.1.0 h1:6Th5vfhK2SPojk46hjiMXs6ncFlorPw84yimstknDWc=
+github.com/Rethunk-Tech/go-codepair v0.1.0/go.mod h1:zHP4MLMnuevbOqK5zrewNXxyvLN1Ly99bKau19y67I4=
 github.com/Rethunk-Tech/go-contentpatcher v0.1.0 h1:27sOlKxEw1cVwUd0NgJ1VDVBvVm1TW4QzBRs3Uls5Xk=
 github.com/Rethunk-Tech/go-contentpatcher v0.1.0/go.mod h1:RSpiDkNgq+IwA2CRUHrwMBZDfhp0MbTcTTdKiVSoPsI=
 github.com/Rethunk-Tech/go-curseforge v0.4.0 h1:Nr9pRINnAK/yqhMlBOJul8Etc35UiYp7MvBiGMGusO8=
@@ -36,6 +38,8 @@ github.com/Rethunk-Tech/go-github v0.3.0 h1:NtD3gOa8pEepXmZXBhn4WC0Rdh8moDNeGcQq
 github.com/Rethunk-Tech/go-github v0.3.0/go.mod h1:pmxPJZQR+Tp0Cy9j3HoHYRst/mmrsF7WRu5G6XSFz+g=
 github.com/Rethunk-Tech/go-httpkit v0.3.0 h1:WifczPJg6anrZ+LTr0UwqnxihJnZIdgm6A+n6d6Uj54=
 github.com/Rethunk-Tech/go-httpkit v0.3.0/go.mod h1:qJZZfD+ejjWm6LwjEXGAUOKEjak1Nx6W3vuZloeZBLM=
+github.com/Rethunk-Tech/go-itchio v0.1.0 h1:y1moDIdbJayUUZpT2AP5xZwiW1sh1W0Ix5WZjECQuOA=
+github.com/Rethunk-Tech/go-itchio v0.1.0/go.mod h1:inpbu+BuRRIsh0i3RFZxSH1ITmY8Tzv8VxkEnO7mdm8=
 github.com/Rethunk-Tech/go-keyring v0.2.0 h1:8g03JoWs5/Ja4DTQgyJJ7fW5+fH2HZKQDDBjBWoa8jE=
 github.com/Rethunk-Tech/go-keyring v0.2.0/go.mod h1:tKXnfpXNrHBBDokHCl5bXtf9N+bjc3YkkMqXZI8MQx0=
 github.com/Rethunk-Tech/go-larian v0.1.2 h1:8rJoRsscDIOsySjdfoe8XqLJ0TPfX89T68bm2xBOH/g=
@@ -50,6 +54,8 @@ github.com/Rethunk-Tech/go-nettrace v0.2.0 h1:Z+QVfIk/iGxzOPfIkMBHW5lC7Iy7vQcDF3
 github.com/Rethunk-Tech/go-nettrace v0.2.0/go.mod h1:2BSLvrB14EerP512jURvKa04ietvdCHMY8DjnA43in8=
 github.com/Rethunk-Tech/go-nexusmods v0.6.0 h1:SPNw2giQ2JMY8XHxU6GNfRM7U4RAdMTwzWKLeuLxHuY=
 github.com/Rethunk-Tech/go-nexusmods v0.6.0/go.mod h1:8S5a+8arC1HRtmdyQUXenD+gSwqTazO/jPzlyistJFI=
+github.com/Rethunk-Tech/go-paradoxmods v0.1.0 h1:46wwBe4oVFEGc3uZ6lNbT8kPc29CHEN80c1iJaWD93k=
+github.com/Rethunk-Tech/go-paradoxmods v0.1.0/go.mod h1:dWKCZ2dLeN7ck7/AOBHBDdHIApjOcefj35KiSVae1bM=
 github.com/Rethunk-Tech/go-safefs v0.9.0 h1:8N3h1QCeRDL/xK4ZjG11Fj/rr0KL5eKS0D+KKTaTNkA=
 github.com/Rethunk-Tech/go-safefs v0.9.0/go.mod h1:au7iteKy+uWtmmbGw58R46RJ6tVmcTMeKFLSDyhFZdw=
 github.com/Rethunk-Tech/go-semverish v0.3.0 h1:9jo7H1hygsn73axSLqBzaqEOFwUIy2jsEzPQbASmVQg=
