@@ -141,7 +141,7 @@ func (s *Service) loaderLog(logs loader.WithLogs, gameID, profileID string) (str
 		return "", false
 	}
 	raw, err := safefs.ReadFile(path)
-	return string(raw), err == nil
+	return strings.ToValidUTF8(string(raw), ""), err == nil
 }
 
 // stackBlames reads the exception stacks of the run's logs that run through a mod: the loader's log and Unity's

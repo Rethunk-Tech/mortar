@@ -40,6 +40,28 @@ func TestPerfRowsNameAndAddUpEachPackagesPlugins(t *testing.T) {
 	}
 }
 
+// Two packages can share a display name; their plugins must still add up as two rows, as the startup report's own
+// package rows do.
+func TestPerfRowsKeepTwoPackagesWithTheSameNameApart(t *testing.T) {
+	var got bridgePerf
+	fixture := `{"measured":true,"plugins":[` +
+		`{"guid":"com.one.plugin","msPerFrame":1,"callsPerFrame":1},` +
+		`{"guid":"com.two.plugin","msPerFrame":2,"callsPerFrame":2}]}`
+	if err := json.Unmarshal([]byte(fixture), &got); err != nil {
+		t.Fatal(err)
+	}
+	owners := func() map[string]startupOwner {
+		return map[string]startupOwner{
+			"com.one.plugin": {ID: "thunderstore:Author-One", Name: "Same"},
+			"com.two.plugin": {ID: "thunderstore:Author-Two", Name: "Same"},
+		}
+	}
+	rows := perfRows(got, owners)
+	if len(rows) != 2 || rows[0].AverageMs != 2 || rows[1].AverageMs != 1 {
+		t.Fatalf("%+v", rows)
+	}
+}
+
 func TestPerfReplySaysWhetherTheCompanionCanStop(t *testing.T) {
 	for raw, want := range map[string]bool{
 		`{"stoppable":true,"measured":true}`: true,

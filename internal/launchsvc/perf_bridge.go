@@ -181,29 +181,27 @@ func smapiOwners(installed func() ([]profile.Installed, error)) func() map[strin
 
 // perfRows turns the companion's plugin rows into one row per package, its plugins' times and calls added (a peak
 // or 95th percentile is the sum of the plugins', an upper bound since they need not fall in one frame). A plugin no package
-// declares keeps its GUID; a plugin that cost nothing is left out.
+// declares keeps its GUID; a plugin that cost nothing is left out. Rows are keyed by package id, since two packages can
+// share a display name.
 func perfRows(got bridgePerf, owners func() map[string]startupOwner) []PerformanceRow {
-	rows := []PerformanceRow{}
-	at := map[string]int{}
+	rows := []foldRow[string, PerformanceRow]{}
 	for _, p := range got.Plugins {
 		if p.MsPerFrame == 0 && p.CallsPerFrame == 0 {
 			continue
 		}
-		name := p.GUID
+		key, name := p.GUID, p.GUID
 		if o, ok := owners()[strings.ToLower(p.GUID)]; ok {
-			name = o.Name
+			key, name = string(o.ID), o.Name
 		}
-		if i, seen := at[name]; seen {
-			rows[i].AverageMs += p.MsPerFrame
-			rows[i].PeakMs += p.PeakMs
-			rows[i].P95Ms += p.P95Ms
-			rows[i].Share += p.Share
-			rows[i].Calls += p.CallsPerFrame
-			continue
-		}
-		at[name] = len(rows)
-		rows = append(rows, PerformanceRow{Name: name, AverageMs: p.MsPerFrame, PeakMs: p.PeakMs, P95Ms: p.P95Ms, Share: p.Share, Calls: p.CallsPerFrame})
+		rows = append(rows, foldRow[string, PerformanceRow]{key, PerformanceRow{Name: name, AverageMs: p.MsPerFrame, PeakMs: p.PeakMs, P95Ms: p.P95Ms, Share: p.Share, Calls: p.CallsPerFrame}})
 	}
-	slices.SortStableFunc(rows, func(a, b PerformanceRow) int { return cmp.Compare(b.AverageMs, a.AverageMs) })
-	return rows
+	out := foldRows(rows, func(dst, src *PerformanceRow) {
+		dst.AverageMs += src.AverageMs
+		dst.PeakMs += src.PeakMs
+		dst.P95Ms += src.P95Ms
+		dst.Share += src.Share
+		dst.Calls += src.Calls
+	})
+	slices.SortStableFunc(out, func(a, b PerformanceRow) int { return cmp.Compare(b.AverageMs, a.AverageMs) })
+	return out
 }

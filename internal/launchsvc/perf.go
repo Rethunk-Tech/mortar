@@ -154,5 +154,5 @@ func (s *Service) activeRunID(gameID, profileID string) string {
 	if !ok || session.profile != profileID || session.started.IsZero() {
 		return ""
 	}
-	return fmt.Sprintf("%s-%d", session.started.UTC().Format("20060102T150405"), session.started.UnixNano())
+	return runID(session.started)
 }

@@ -106,6 +106,11 @@ type runIndex struct {
 	Runs []Run `json:"runs"`
 }
 
+// runID names a recorded run by its start time, unique per launch even within one second.
+func runID(started time.Time) string {
+	return fmt.Sprintf("%s-%d", started.UTC().Format("20060102T150405"), started.UnixNano())
+}
+
 func runsDir(modsDir string) string {
 	return filepath.Join(filepath.Dir(modsDir), "runs")
 }
@@ -436,7 +441,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		s.noteGraphicsExit(g, profileID, ended.Sub(started))
 	}
 	outcome := launch.OutcomeOf(failed, stats.Crashed)
-	id := fmt.Sprintf("%s-%d", started.UTC().Format("20060102T150405"), started.UnixNano())
+	id := runID(started)
 	dir := runsDir(modsDir)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return

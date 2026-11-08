@@ -221,27 +221,44 @@ func ownersBy(installed func() ([]profile.Installed, error), add func(profile.In
 	})
 }
 
+// foldRow is one row of a report, named by the key it folds under.
+type foldRow[K comparable, V any] struct {
+	key K
+	v   V
+}
+
+// foldRows merges rows that share a key into the first row seen under it, add summing what they hold.
+func foldRows[K comparable, V any](rows []foldRow[K, V], add func(dst, src *V)) []V {
+	out := make([]V, 0, len(rows))
+	at := map[K]int{}
+	for _, r := range rows {
+		if i, seen := at[r.key]; seen {
+			add(&out[i], &r.v)
+			continue
+		}
+		at[r.key] = len(out)
+		out = append(out, r.v)
+	}
+	return out
+}
+
 // pluginsToPackages turns a BepInEx report's plugin rows, which the bridge names by GUID, into rows for the
 // packages that hold them, the way the rest of Mortar names mods: a package's plugins add up to one row, and a
 // plugin no package declares keeps its own row under a BepInEx id.
 func pluginsToPackages(r *StartupReport, owners func() map[string]startupOwner) {
-	out := make([]StartupMod, 0, len(r.Mods))
-	at := map[mod.ID]int{}
+	rows := make([]foldRow[mod.ID, StartupMod], 0, len(r.Mods))
 	for _, m := range r.Mods {
 		row := StartupMod{ID: mod.NewID(mod.FormatBepInEx, string(m.ID)), Name: m.Name, Version: m.Version, EntryMs: m.EntryMs, PatchMs: m.PatchMs, SampleMs: m.SampleMs}
 		if o, ok := owners()[strings.ToLower(string(m.ID))]; ok {
 			row.ID, row.Name, row.Version = o.ID, o.Name, o.Version
 		}
-		if i, seen := at[row.ID]; seen {
-			out[i].EntryMs += row.EntryMs
-			out[i].PatchMs += row.PatchMs
-			out[i].SampleMs += row.SampleMs
-			continue
-		}
-		at[row.ID] = len(out)
-		out = append(out, row)
+		rows = append(rows, foldRow[mod.ID, StartupMod]{row.ID, row})
 	}
-	r.Mods = out
+	r.Mods = foldRows(rows, func(dst, src *StartupMod) {
+		dst.EntryMs += src.EntryMs
+		dst.PatchMs += src.PatchMs
+		dst.SampleMs += src.SampleMs
+	})
 }
 
 // reportFileName is a bridge report's file: the UTC time of the launch. Other files in the folder (the samples next to
