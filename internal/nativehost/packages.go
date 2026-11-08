@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
+	gomodrinth "github.com/Rethunk-Tech/go-modrinth"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
-	"github.com/Rethunk-Tech/mortar/internal/source/modrinth"
 	"github.com/Rethunk-Tech/mortar/internal/source/paradox"
 )
 
@@ -76,7 +76,7 @@ func (h handlers) answerInstallProject(req request) reply {
 	case "paradox":
 		valid = paradox.ValidID(req.Project)
 	case "modrinth":
-		valid = modrinth.ValidID(req.Project)
+		valid = gomodrinth.ValidID(req.Project)
 	default:
 		return reply{Error: "Mortar does not install from " + req.Source + " pages"}
 	}

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestPageURLNamesTheSlugAndValidIDRefusesPathTricks(t *testing.T) {
+func TestPageURLNamesTheSlug(t *testing.T) {
 	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/project/AANobbMI" {
@@ -18,10 +18,5 @@ func TestPageURLNamesTheSlugAndValidIDRefusesPathTricks(t *testing.T) {
 	got, err := Driver{URL: srv.URL, HTTP: srv.Client()}.PageURL(t.Context(), "AANobbMI")
 	if err != nil || got != "https://modrinth.com/project/sodium" {
 		t.Fatalf("%q %v", got, err)
-	}
-	for id, want := range map[string]bool{"AANobbMI": true, "my-mod_2.0": true, "": false, "../x": false, "a/b": false, "a b": false} {
-		if ValidID(id) != want {
-			t.Errorf("ValidID(%q) = %v", id, !want)
-		}
 	}
 }

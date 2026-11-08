@@ -48,6 +48,8 @@ github.com/Rethunk-Tech/go-modio v0.1.1 h1:48lNfUHzlKysrn3V9cgobeMT/Bq6WI/ksrUme
 github.com/Rethunk-Tech/go-modio v0.1.1/go.mod h1:8n6kxu9slfoWdqJ8kaCdNSe+HI9ZpL99YoA2MmD/hAc=
 github.com/Rethunk-Tech/go-modmanagers v0.3.0 h1:TDavxTXvFEfDbediZAgDTHvORtEALs4Zb0ff5fjwb2M=
 github.com/Rethunk-Tech/go-modmanagers v0.3.0/go.mod h1:4RZBJqhi/2mq2Mn/+fxnDJ6oWPzbvPC5iUESAZ404Pg=
+github.com/Rethunk-Tech/go-modrinth v0.1.0 h1:pJEdaqGFbokhqCLFMvayXIewozSsc/4zQFU7ZwDAOGY=
+github.com/Rethunk-Tech/go-modrinth v0.1.0/go.mod h1:uvpa+ZC7C/oSHNW9W3Vuf0xvLfKEvVhdq87hzFNFCqI=
 github.com/Rethunk-Tech/go-nettrace v0.2.0 h1:Z+QVfIk/iGxzOPfIkMBHW5lC7Iy7vQcDF3jpDvRDIx4=
 github.com/Rethunk-Tech/go-nettrace v0.2.0/go.mod h1:2BSLvrB14EerP512jURvKa04ietvdCHMY8DjnA43in8=
 github.com/Rethunk-Tech/go-nexusmods v0.6.0 h1:SPNw2giQ2JMY8XHxU6GNfRM7U4RAdMTwzWKLeuLxHuY=

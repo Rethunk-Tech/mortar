@@ -25,6 +25,7 @@ require (
 	github.com/Rethunk-Tech/go-lenientjson v0.1.1
 	github.com/Rethunk-Tech/go-modio v0.1.1
 	github.com/Rethunk-Tech/go-modmanagers v0.3.0
+	github.com/Rethunk-Tech/go-modrinth v0.1.0
 	github.com/Rethunk-Tech/go-nettrace v0.2.0
 	github.com/Rethunk-Tech/go-nexusmods v0.6.0
 	github.com/Rethunk-Tech/go-paradoxmods v0.1.0
