@@ -11,11 +11,15 @@ import {
   Typography,
 } from '@mui/material'
 import { usePopoverAnchor } from '@rethunk/react-load-hooks'
-import { type MouseEvent, memo, type ReactNode, useCallback, useState } from 'react'
-import { GameSettings as FetchGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { type MouseEvent, memo, type ReactNode } from 'react'
+import {
+  GameSettings as FetchGameSettings,
+  ProfilesWithGameSettings,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { cmpText } from '../mods/cmpText.ts'
 import { SelectField } from '../shell/dialog/FormDialog.tsx'
 import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
+import { useLastGood } from '../shell/useLastGood.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { ProfileDot } from './ProfileDot.tsx'
@@ -46,37 +50,26 @@ function CopyFromProfileMenu({ gameId, profileId, onCopy }: CopyFromProfileProps
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
   const { anchor, show, hide } = usePopoverAnchor()
-  const [sources, setSources] = useState<CopySource[]>([])
-  const [loading, setLoading] = useState(false)
-
-  const loadSources = useCallback(async () => {
-    if (!gameId) {
-      setSources([])
-      return
-    }
-    setLoading(true)
-    const candidates = profiles.filter((p) => p.id !== profileId)
-    const found: CopySource[] = []
-    await Promise.all(
-      candidates.map(async (profile) => {
-        try {
-          const raw = await FetchGameSettings(gameId, profile.id)
-          if (formSettingsFromBackend(raw) !== null) {
-            found.push({ id: profile.id, name: profile.name })
-          }
-        } catch (error) {
-          reportUnexpected(error)
-        }
-      }),
-    )
-    found.sort((a, b) => cmpText(a.name, b.name))
-    setSources(found)
-    setLoading(false)
-  }, [gameId, profileId, profiles])
+  const sourceKey = gameId ? `game-settings-sources:${gameId}` : null
+  const profileKey = profiles.map((p) => p.id).join('\0')
+  const { data: sourceIds } = useLastGood(
+    sourceKey,
+    gameId ? () => ProfilesWithGameSettings(gameId).then((ids) => ids ?? []) : null,
+    [gameId, profileKey],
+    { onError: reportUnexpected },
+  )
+  const sources: CopySource[] = (sourceIds ?? [])
+    .flatMap((id) => {
+      const profile = profiles.find((p) => p.id === id)
+      if (profile === undefined || profile.id === profileId) {
+        return []
+      }
+      return [{ id: profile.id, name: profile.name }]
+    })
+    .sort((a, b) => cmpText(a.name, b.name))
 
   const openMenu = (event: MouseEvent<HTMLButtonElement>) => {
     show(event)
-    loadSources().catch(reportUnexpected)
   }
 
   const closeMenu = () => {
@@ -96,7 +89,7 @@ function CopyFromProfileMenu({ gameId, profileId, onCopy }: CopyFromProfileProps
   }
 
   let menuBody: ReactNode = null
-  if (loading) {
+  if (sourceIds === null) {
     menuBody = <MenuNote>{t`Loading…`}</MenuNote>
   } else if (sources.length === 0) {
     menuBody = <MenuNote>{t`No other profiles with overrides`}</MenuNote>

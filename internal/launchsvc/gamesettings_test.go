@@ -37,6 +37,22 @@ func newGameSettingsService(t *testing.T) (*Service, profile.Profile, string) {
 	return NewService(home, set, profiles), p, config
 }
 
+func TestProfilesWithGameSettings(t *testing.T) {
+	svc, withOverrides, _ := newGameSettingsService(t)
+	without := testenv.Profile(t, svc.profiles, "stardew", "Plain")
+	mode := "windowed"
+	if err := svc.SetGameSettings("stardew", withOverrides.ID, gamesettings.Settings{WindowMode: &mode}); err != nil {
+		t.Fatal(err)
+	}
+	ids, err := svc.ProfilesWithGameSettings("stardew")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(ids) != 1 || ids[0] != withOverrides.ID {
+		t.Fatalf("got %v, want [%s] (without=%s)", ids, withOverrides.ID, without.ID)
+	}
+}
+
 func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 	svc, p, config := newGameSettingsService(t)
 	startup := filepath.Join(config, "StardewValley", "startup_preferences")

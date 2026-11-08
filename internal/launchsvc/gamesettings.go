@@ -60,6 +60,28 @@ func (s *Service) SetGameSettings(game, id string, value gamesettings.Settings) 
 	return gamesettings.Save(path, value)
 }
 
+// ProfilesWithGameSettings returns the ids of profiles that have launch game-settings overrides.
+func (s *Service) ProfilesWithGameSettings(game string) ([]string, error) {
+	profiles, err := s.profiles.List(game)
+	if err != nil {
+		return nil, err
+	}
+	ids := []string{}
+	for _, p := range profiles {
+		if p.Error != "" {
+			continue
+		}
+		value, err := s.GameSettings(game, p.ID)
+		if err != nil {
+			continue
+		}
+		if !emptySettings(value) {
+			ids = append(ids, p.ID)
+		}
+	}
+	return ids, nil
+}
+
 func (s *Service) profileSettingsPath(game, id string) (string, error) {
 	modsDir, err := s.profiles.ModsDir(game, id)
 	if err != nil {
