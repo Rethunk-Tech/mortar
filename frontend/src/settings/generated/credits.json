@@ -190,6 +190,11 @@
     "url": "https://github.com/Rethunk-Tech/go-dotnet"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-folderwatch",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-folderwatch"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-fomod",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-fomod"
@@ -288,11 +293,6 @@
     "name": "github.com/andybalholm/brotli",
     "licence": "MIT",
     "url": "https://github.com/andybalholm/brotli"
-  },
-  {
-    "name": "github.com/fsnotify/fsnotify",
-    "licence": "BSD-3-Clause",
-    "url": "https://github.com/fsnotify/fsnotify"
   },
   {
     "name": "github.com/godbus/dbus/v5",
