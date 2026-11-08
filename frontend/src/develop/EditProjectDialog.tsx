@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Alert } from '@mui/material'
 import { sameValue } from '@rethunk/react-load-hooks'
 import { Hammer } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
+import { memo, useCallback, useEffect, useId, useMemo, useState } from 'react'
 import type {
   Choice,
   ProjectEdit,
@@ -69,13 +69,20 @@ function useEditChoices(game: string, dir: string, current: string[]) {
       .catch(reportUnexpected)
   }, [game, dir])
   const known = new Set(read.choices.map((c) => c.value))
-  return {
-    sites: read.sites,
-    categories: [
+  const currentKey = current.filter((c) => !known.has(c)).join('\n')
+  // Stable while the read and the project's own categories are, so the panel drawing them skips a redraw when a
+  // dependency read lands.
+  const categories = useMemo(() => {
+    const knownNow = new Set(read.choices.map((c) => c.value))
+    return [
       ...read.choices,
-      ...current.filter((c) => !known.has(c)).map((c) => ({ value: c, label: c })),
-    ],
-  }
+      ...currentKey
+        .split('\n')
+        .filter((c) => c !== '' && !knownNow.has(c))
+        .map((c) => ({ value: c, label: c })),
+    ]
+  }, [read.choices, currentKey])
+  return { sites: read.sites, categories }
 }
 
 // Thunderstore needs no ids, so Sites shows only when another site takes uploads.
@@ -100,6 +107,90 @@ const editOf = (info: ProjectInfo): ProjectEdit => ({
   curseforge: info.curseforge,
 })
 
+// The Details tab's fields: their own component, so a dependency read landing after the dialog opens redraws the tab
+// bar and the Mods panel and not these.
+const DetailsPanel = memo(function DetailsPanelView({
+  edit,
+  set,
+  files,
+  renames,
+  released,
+  categories,
+}: {
+  edit: ProjectEdit
+  set: (next: Partial<ProjectEdit>) => void
+  files: boolean
+  renames: boolean
+  released: string
+  categories: Choice[]
+}) {
+  const { t } = useLingui()
+  const thunderstore = sourceLabel('thunderstore')
+  return (
+    <>
+      {files ? null : (
+        <FormSection
+          title={t`Identity`}
+          description={t`Renaming moves the project's folder, files and namespace.`}
+        >
+          {renames && released ? (
+            <Alert severity="warning">
+              {t`Players already have ${{ version: released }}: a new name or id makes their game see a different mod, with fresh settings.`}
+            </Alert>
+          ) : null}
+          <FieldRow>
+            <TextInput label={t`Mod name`} value={edit.name} onChange={(name) => set({ name })} />
+            <TextInput
+              label={t`Id prefix`}
+              value={edit.idPrefix}
+              onChange={(idPrefix) => set({ idPrefix })}
+            />
+          </FieldRow>
+          <DerivedValue
+            label={t`Plugin id`}
+            value={`${edit.idPrefix}.${edit.name}`}
+            hint={t`Other mods know it by this.`}
+          />
+        </FormSection>
+      )}
+      <FormSection
+        title={t`Listing`}
+        description={t`What players see on ${{ source: thunderstore }}.`}
+      >
+        <TextInput
+          label={t`Description`}
+          value={edit.description}
+          onChange={(description) => set({ description })}
+          maxLength={MAX_DESCRIPTION}
+          multiline={true}
+        />
+        <ChoicePicker
+          label={t`Categories`}
+          choices={categories}
+          value={edit.categories ?? []}
+          onChange={(next) => set({ categories: next })}
+        />
+      </FormSection>
+      <FormSection title={t`Credits`}>
+        <FieldRow>
+          {files ? null : (
+            <TextInput
+              label={t`Author`}
+              value={edit.author}
+              onChange={(author) => set({ author })}
+            />
+          )}
+          <TextInput
+            label={t`Team on ${{ source: thunderstore }}`}
+            value={edit.team}
+            onChange={(team) => set({ team })}
+          />
+        </FieldRow>
+      </FormSection>
+    </>
+  )
+})
+
 /** Edits the details the project's files hold; a new name renames the project's folder, files and namespace. */
 export function EditProjectDialog({
   game,
@@ -119,7 +210,7 @@ export function EditProjectDialog({
   const details = !sameValue(edit, editOf(info))
   const deps = useDependencyRows(game, dir)
   const dirty = details || deps.dirty
-  const set = (next: Partial<ProjectEdit>) => setEdit((e) => ({ ...e, ...next }))
+  const set = useCallback((next: Partial<ProjectEdit>) => setEdit((e) => ({ ...e, ...next })), [])
   // A mod of files has no project file to rename or build: only its listing, credits and dependencies change.
   const files = Boolean(info.kind)
   const renames = !files && (edit.name !== info.name || edit.idPrefix !== info.idPrefix)
@@ -141,7 +232,6 @@ export function EditProjectDialog({
       },
       { errorTitle: t`Could not save the mod's details` },
     )
-  const thunderstore = sourceLabel('thunderstore')
   const ids = useId()
   const [tab, setTab] = useState<EditTab>('details')
   const tabs = useEditTabs(sites)
@@ -164,65 +254,14 @@ export function EditProjectDialog({
       tabs={<DialogTabs ids={ids} tab={tab} onTab={setTab} tabs={tabs} label={t`Mod details`} />}
     >
       <DialogPanel ids={ids} panel="details" open={tab === 'details'}>
-        {files ? null : (
-          <FormSection
-            title={t`Identity`}
-            description={t`Renaming moves the project's folder, files and namespace.`}
-          >
-            {renames && info.released ? (
-              <Alert severity="warning">
-                {t`Players already have ${{ version: info.released }}: a new name or id makes their game see a different mod, with fresh settings.`}
-              </Alert>
-            ) : null}
-            <FieldRow>
-              <TextInput label={t`Mod name`} value={edit.name} onChange={(name) => set({ name })} />
-              <TextInput
-                label={t`Id prefix`}
-                value={edit.idPrefix}
-                onChange={(idPrefix) => set({ idPrefix })}
-              />
-            </FieldRow>
-            <DerivedValue
-              label={t`Plugin id`}
-              value={`${edit.idPrefix}.${edit.name}`}
-              hint={t`Other mods know it by this.`}
-            />
-          </FormSection>
-        )}
-        <FormSection
-          title={t`Listing`}
-          description={t`What players see on ${{ source: thunderstore }}.`}
-        >
-          <TextInput
-            label={t`Description`}
-            value={edit.description}
-            onChange={(description) => set({ description })}
-            maxLength={MAX_DESCRIPTION}
-            multiline={true}
-          />
-          <ChoicePicker
-            label={t`Categories`}
-            choices={categories}
-            value={edit.categories ?? []}
-            onChange={(next) => set({ categories: next })}
-          />
-        </FormSection>
-        <FormSection title={t`Credits`}>
-          <FieldRow>
-            {files ? null : (
-              <TextInput
-                label={t`Author`}
-                value={edit.author}
-                onChange={(author) => set({ author })}
-              />
-            )}
-            <TextInput
-              label={t`Team on ${{ source: thunderstore }}`}
-              value={edit.team}
-              onChange={(team) => set({ team })}
-            />
-          </FieldRow>
-        </FormSection>
+        <DetailsPanel
+          edit={edit}
+          set={set}
+          files={files}
+          renames={renames}
+          released={info.released}
+          categories={categories}
+        />
       </DialogPanel>
       <DialogPanel ids={ids} panel="mods" open={tab === 'mods'}>
         <DependencySync game={game} dir={dir} onChanged={deps.retry} />
