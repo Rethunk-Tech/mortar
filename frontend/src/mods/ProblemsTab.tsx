@@ -2,7 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress, Typography } from '@mui/material'
 import { Copy, Map as MapIcon, Plus, ShieldCheck } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { findCrashCause, useBisectBlockText } from '../commandPalette/crashBisect.ts'
@@ -336,8 +336,9 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
   )
 }
 
-// ProblemActions fills the tab header's action slot.
-function ProblemActions() {
+// ProblemActions fills the tab header's action slot. Memoised with no props: it reads every store it needs itself, so a
+// redraw of the problem list under it (each check landing) leaves the header alone.
+const ProblemActions = memo(function ProblemActionsView() {
   const { t } = useLingui()
   const result = useOpenProblems()
   const [mapOpen, setMapOpen] = useState(false)
@@ -462,7 +463,7 @@ function ProblemActions() {
       />
     </PageActions>
   )
-}
+})
 
 // The first check of a profile can wait on smapi.io and Nexus, so the empty tab says what it is doing as it waits.
 function CheckingLine() {
