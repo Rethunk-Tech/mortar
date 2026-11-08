@@ -10,6 +10,11 @@ const PROFILE_LIST = 3_126_696_187
 const SAVED_AT = '2026-11-01T09:30:00Z'
 const SITE_TAGS = ['Tools', 'Mods', 'Libraries']
 
+/** A saved profile, as the list's answer carries the entries whose game the case measures. */
+interface StubbedProfile {
+  entries?: { key: string; source: Record<string, unknown>; mods?: { id: string }[] }[]
+}
+
 const savedPage = (modId: number) => ({
   page: {
     modId,
@@ -65,9 +70,6 @@ export function detailsCases(
   const panel = (p: Page) => p.getByRole('complementary', { name: 'Selected mod' })
   // A profile whose entries are Thunderstore packages, and every package's facts carrying the three site categories: a
   // seeded sandbox installs only local archives, which no site lists categories for.
-  type StubbedProfile = {
-    entries?: { key: string; source: Record<string, unknown>; mods?: { id: string }[] }[]
-  }
   const packageIds: string[] = []
   const thunderstoreProfile = patchCalls<StubbedProfile[]>([PROFILE_LIST], (profiles) => {
     for (const p of profiles) {

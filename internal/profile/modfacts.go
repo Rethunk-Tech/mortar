@@ -15,7 +15,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/source"
-	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
 // What a BepInEx package ships, as ModFact.Kind says it.
@@ -246,15 +245,22 @@ func (s *Store) ModFacts(game, id string) (map[string]ModFact, error) {
 		}
 	}
 	// A package the cached listing lacks keeps the one category its entry recorded at install.
+	withStoredCategory(p, out)
+	return out, nil
+}
+
+// withStoredCategory gives each Thunderstore mod whose facts carry no categories the one category its entry recorded at
+// install, which is all a package the cached listing lacks can say.
+func withStoredCategory(p Profile, out map[string]ModFact) {
 	for _, e := range p.Entries {
-		if e.Source.Kind != KindThunderstore {
+		if e.Source.Kind != KindThunderstore || e.Source.Category == "" {
 			continue
 		}
 		for _, c := range e.Mods {
-			m := out[string(c.ID)]
-			m.Categories = thunderstore.SiteCategories(m.Categories, e.Source.Category)
-			out[string(c.ID)] = m
+			if m := out[string(c.ID)]; len(m.Categories) == 0 {
+				m.Categories = []string{e.Source.Category}
+				out[string(c.ID)] = m
+			}
 		}
 	}
-	return out, nil
 }

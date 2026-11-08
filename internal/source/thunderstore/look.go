@@ -28,18 +28,6 @@ func lookOf(p *tstore.Package) Look {
 	return Look{Icon: p.Icon, Category: Category(p.Categories), Categories: slices.Clone(p.Categories)}
 }
 
-// SiteCategories is a package's site categories as a list shows them: every one the cached listing gives, in the site's
-// order, else the one category recorded when it was installed, which is all a listing that lacks the package can say.
-func SiteCategories(listed []string, stored string) []string {
-	if len(listed) > 0 {
-		return slices.Clone(listed)
-	}
-	if stored == "" {
-		return nil
-	}
-	return []string{stored}
-}
-
 // broadCategories fit nearly every package of a community, or say where it runs rather than what it is.
 var broadCategories = []string{"mods", "bepinex", "melonloader", "client-side", "server-side", "ai generated"}
 

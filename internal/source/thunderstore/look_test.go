@@ -22,21 +22,20 @@ func TestCategoryPrefersWhatThePackageIs(t *testing.T) {
 	}
 }
 
-// A site's categories come back in the site's order; a listing that lacks the package leaves the one recorded at install.
-func TestSiteCategoriesKeepTheSitesOrderAndFallBackToTheStoredOne(t *testing.T) {
-	for _, tc := range []struct {
-		listed []string
-		stored string
-		want   []string
-	}{
-		{[]string{"Tools", "Mods", "Libraries"}, "Mods", []string{"Tools", "Mods", "Libraries"}},
-		{nil, "Tools", []string{"Tools"}},
-		{[]string{}, "Tools", []string{"Tools"}},
-		{nil, "", nil},
-	} {
-		if got := SiteCategories(tc.listed, tc.stored); !slices.Equal(got, tc.want) {
-			t.Errorf("SiteCategories(%v, %q) = %v, want %v", tc.listed, tc.stored, got, tc.want)
-		}
+// A site's categories come back in the site's order, and a package its listing lacks keeps none.
+func TestCachedLooksCarryEveryCategoryInTheSitesOrder(t *testing.T) {
+	f := newFake(t)
+	l := custom("Ns", "Gen", ver{VersionNumber: "1.0.0"})
+	l["categories"] = []string{"Tools", "Mods", "Libraries"}
+	f.chunk0 = append(f.chunk0, l)
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	if _, err := d.Closure(t.Context(), "lethal-company", []tstore.Ref{{Namespace: "Ns", Name: "Gen", Version: ""}}, "1.2.3", DepsNewest); err != nil {
+		t.Fatal(err)
+	}
+	f.srv.Close()
+	looks, err := d.CachedLooks("lethal-company", []string{"NS-GEN", "Ns-Missing"})
+	if err != nil || len(looks) != 1 || !slices.Equal(looks["ns-gen"].Categories, []string{"Tools", "Mods", "Libraries"}) {
+		t.Fatalf("cached looks %+v, %v", looks, err)
 	}
 }
 
@@ -48,8 +47,8 @@ func TestLooksComeFromTheIndexAndTheCacheAlone(t *testing.T) {
 	f.chunk0 = append(f.chunk0, l)
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
 	got, err := d.Closure(t.Context(), "lethal-company", []tstore.Ref{{Namespace: "Ns", Name: "Gen", Version: ""}}, "1.2.3", DepsNewest)
-	if err != nil || len(got) != 1 || got[0].Look.Category != "Tools" || got[0].Look.Icon != icon ||
-		!slices.Equal(got[0].Look.Categories, []string{"Mods", "Tools"}) {
+	if err != nil || len(got) != 1 || got[0].Category != "Tools" || got[0].Icon != icon ||
+		!slices.Equal(got[0].Categories, []string{"Mods", "Tools"}) {
 		t.Fatalf("closure %+v %v", got, err)
 	}
 	f.srv.Close()
