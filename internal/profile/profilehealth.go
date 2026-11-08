@@ -233,7 +233,7 @@ func driftFindings(p Profile, drift []Drift) []HealthFinding {
 		}
 		out = append(out, HealthFinding{
 			ID: HealthDrift + ":" + d.Key, Kind: HealthDrift, Cause: string(d.Kind),
-			Items: []string{p.Entries[i].Label()}, Repair: repair,
+			Items: []string{entryLabel(p.Entries[i])}, Repair: repair,
 		})
 	}
 	return out

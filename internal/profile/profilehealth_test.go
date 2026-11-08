@@ -240,3 +240,48 @@ func TestHealthListsFilesLeftInTheSharedFolder(t *testing.T) {
 		t.Fatal("a finding with nothing to report")
 	}
 }
+
+// A multi-mod pack names the same entry one way in every finding, so the Health dialog does not call one entry two
+// names.
+func TestHealthFindingNamesAMultiModEntryOnce(t *testing.T) {
+	t.Parallel()
+	p := Profile{Entries: []Entry{{Key: "pack", Mods: []Component{{Name: "A"}, {Name: "B"}}}}}
+	got := driftFindings(p, []Drift{{Kind: DriftDeleted, Key: "pack"}})
+	if len(got) != 1 || len(got[0].Items) != 1 || got[0].Items[0] != "A, B" {
+		t.Fatalf("drift finding = %#v", got)
+	}
+}
+
+// Only a source Mortar can fetch again offers a download repair; a local archive has nothing to download.
+func TestHealthMissingStoreItemOffersADownloadOnlyFromASiteSource(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "Farm")
+	src := Source{Kind: KindNexus, Name: "A.zip", ModID: 7, FileID: 1, Version: "1.0.0"}
+	res, err := e.InstallSource(t.Context(), "stardew", p.ID, buildZip(t, "a.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")}), src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc := &Service{store: e.Store}
+	if got := findingsOf(t, svc, p.ID, HealthMissing); len(got) != 0 {
+		t.Fatalf("healthy profile: %#v", got)
+	}
+	path, err := e.items.Path("stardew", res.Profile.Entries[0].Key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.RemoveAll(path); err != nil {
+		t.Fatal(err)
+	}
+	got := findingsOf(t, svc, p.ID, HealthMissing)
+	if len(got) != 1 || got[0].Repair != RepairDownload {
+		t.Fatalf("missing = %#v", got)
+	}
+	// A GitHub release and a Nexus page with no file id are the other two answers: the first is fetchable, the second
+	// names nothing to download.
+	if !fetchable(Source{Kind: KindGitHub, Repo: "me/b"}) || fetchable(Source{Kind: KindGitHub}) ||
+		fetchable(Source{Kind: KindNexus, ModID: 7}) || fetchable(Source{Kind: KindThunderstore, Name: "Ns-Mod"}) ||
+		fetchable(Source{Kind: KindLocal, Name: "a.zip"}) {
+		t.Fatal("fetchable disagrees with the app's download wants")
+	}
+}
