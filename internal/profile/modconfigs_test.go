@@ -146,7 +146,7 @@ func TestSeedConfigsSkipsAConfigSetAside(t *testing.T) {
 		t.Fatal(err)
 	}
 	writeFile(t, dir, ConfigAsideDir+"/Mod.cfg", "mine")
-	if err := seedConfigs(dir, map[string]packageFile{"BepInEx/config/Mod.cfg": {src: src}}); err != nil {
+	if err := seedConfigs(dir, Profile{}, map[string]packageFile{"BepInEx/config/Mod.cfg": {src: src}}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Lstat(filepath.Join(dir, "BepInEx", "config", "Mod.cfg")); err == nil {
@@ -190,5 +190,77 @@ func TestModConfigAsideCopyIsReplacedByTheLiveOne(t *testing.T) {
 	toggle(true)
 	if got := read("BepInEx/config/Mod.cfg"); got != "new" {
 		t.Fatalf("live holds %q", got)
+	}
+}
+
+// A package's config file is taken when the package brings it, over another mod's own copy (a theme pack's settings for
+// the mod it themes), and again when an update changes it; the player's edits in between stay, and removing the
+// package and adding it back applies it again.
+func TestAPackagesConfigIsTakenOnArrivalAndKeepsLaterEdits(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	cfg := filepath.Join(dir, "BepInEx", "config", "Emblem.cfg")
+	read := func() string {
+		t.Helper()
+		b, err := os.ReadFile(filepath.Clean(cfg))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(b)
+	}
+	src := filepath.Join(t.TempDir(), "Emblem.cfg")
+	ship := func(text string) map[string]packageFile {
+		t.Helper()
+		if err := os.WriteFile(src, []byte(text), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return map[string]packageFile{"BepInEx/config/Emblem.cfg": {src: src, key: "theme"}}
+	}
+	withTheme := Profile{Entries: []Entry{{Key: "theme"}}}
+	// The profile's first seed with this record adopts what it has: nothing is overwritten.
+	writeFile(t, dir, "BepInEx/config/Emblem.cfg", "emblem's own")
+	if err := seedConfigs(dir, Profile{}, nil); err != nil {
+		t.Fatal(err)
+	}
+	if err := seedConfigs(dir, withTheme, ship("theme v1")); err != nil {
+		t.Fatal(err)
+	}
+	if read() != "theme v1" {
+		t.Fatalf("the theme's config was not taken: %q", read())
+	}
+	if b, err := os.ReadFile(filepath.Clean(filepath.Join(dir, replacedDir, "BepInEx", "config", "Emblem.cfg"))); err != nil || string(b) != "emblem's own" {
+		t.Fatalf("the replaced copy was not kept: %q, %v", b, err)
+	}
+	writeFile(t, dir, "BepInEx/config/Emblem.cfg", "player's edit")
+	if err := seedConfigs(dir, withTheme, ship("theme v1")); err != nil || read() != "player's edit" {
+		t.Fatalf("a later sync overwrote the player's edit: %q, %v", read(), err)
+	}
+	if err := seedConfigs(dir, withTheme, ship("theme v2")); err != nil || read() != "theme v2" {
+		t.Fatalf("an update's changed config was not taken: %q, %v", read(), err)
+	}
+	writeFile(t, dir, "BepInEx/config/Emblem.cfg", "player's edit")
+	if err := seedConfigs(dir, Profile{}, nil); err != nil {
+		t.Fatal(err)
+	}
+	if err := seedConfigs(dir, withTheme, ship("theme v2")); err != nil || read() != "theme v2" {
+		t.Fatalf("adding the package again did not apply its config: %q, %v", read(), err)
+	}
+}
+
+// A profile that has no record yet keeps every config it already has, so an upgrade overwrites no player's settings.
+func TestAProfileWithoutARecordKeepsItsConfigs(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	src := filepath.Join(t.TempDir(), "Mod.cfg")
+	if err := os.WriteFile(src, []byte("default"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, dir, "BepInEx/config/Mod.cfg", "mine")
+	files := map[string]packageFile{"BepInEx/config/Mod.cfg": {src: src, key: "mod"}}
+	if err := seedConfigs(dir, Profile{Entries: []Entry{{Key: "mod"}}}, files); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(filepath.Clean(filepath.Join(dir, "BepInEx", "config", "Mod.cfg"))); string(b) != "mine" {
+		t.Fatalf("an existing config was overwritten on the first seed: %q", b)
 	}
 }

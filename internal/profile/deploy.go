@@ -246,8 +246,8 @@ func recordOf(hash, dst string) (placedRec, error) {
 }
 
 // syncPackages lays the enabled packages' files out in the profile, where the loader reads them, and takes away the
-// files of packages no longer enabled. A package's config file only seeds the profile: once it is there the player's
-// edits stay. So does any other file a mod or the player changed since it was laid out (a script mod's saved
+// files of packages no longer enabled. A package's config file is taken when the package brings or changes it
+// (seedConfigs), and the player's later edits stay. So does any other file a mod or the player changed since it was laid out (a script mod's saved
 // settings): it is never overwritten from the store, and when its package goes away it is held under `changed/` and
 // comes back with the package. A file with no record that differs from the package's is an older install's leftover: the
 // package's file replaces it and the old bytes are kept under `replaced/`. A game that is redirected has nothing to sync.
@@ -292,7 +292,7 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 			return err
 		}
 	}
-	if err := seedConfigs(dir, files); err != nil {
+	if err := seedConfigs(dir, p, files); err != nil {
 		return err
 	}
 	stampOwners(run.next, files)
@@ -627,8 +627,8 @@ func restoreChanged(dir, rel string) (bool, error) {
 	return true, markHeld(dir, rel, time.Time{}, false)
 }
 
-// SeedConfigs copies the config files the enabled packages ship into the profile where it has none yet, so a
-// package's settings can be edited before the first launch lays the rest of it out.
+// SeedConfigs copies the config files the enabled packages ship into the profile (seedConfigs), so a package's
+// settings can be edited before the first launch lays the rest of it out.
 //
 // Laying out every package is the cost, and the config page asks for it on every read, so a profile whose packages and
 // their switched-off mods have not changed since the last seed is not seeded again.
@@ -648,7 +648,7 @@ func (s *Store) SeedConfigs(gameID, id string) error {
 	if err != nil || files == nil {
 		return err
 	}
-	if err := seedConfigs(dir, files); err != nil {
+	if err := seedConfigs(dir, p, files); err != nil {
 		return err
 	}
 	s.seededMu.Lock()
@@ -671,27 +671,70 @@ func seedSignature(p Profile) string {
 
 func isConfig(rel string) bool { return strings.HasPrefix(rel, "BepInEx/config/") }
 
-func seedConfigs(dir string, files map[string]packageFile) error {
+// takenFile records, by slash path, the hash of each package config file the profile has taken, and the entry that
+// shipped it.
+const takenFile = ".mortar-configs.json"
+
+type takenRec struct {
+	Hash string `json:"h"`
+	Key  string `json:"k"`
+}
+
+// seedConfigs copies the config files the enabled packages ship into the profile. A package's file is taken once,
+// when the package brings it or an update changes it, the way r2modman and Gale install a package's config folder: a
+// theme pack's file for another mod overrides that mod's settings, and the player's later edits stay. The copy it
+// replaces is kept under `replaced/`. A profile seeded before this record existed takes nothing over files it already
+// has. Removing an entry forgets what it shipped, so adding it again applies its files again.
+func seedConfigs(dir string, p Profile, files map[string]packageFile) error {
+	path := filepath.Join(dir, takenFile)
+	taken := map[string]takenRec{}
+	raw, err := safefs.ReadFile(path)
+	adopting := errors.Is(err, fs.ErrNotExist)
+	if err == nil && json.Unmarshal(raw, &taken) != nil {
+		taken = map[string]takenRec{}
+	}
+	present := map[string]bool{}
+	for _, e := range p.Entries {
+		present[e.Key] = true
+	}
+	maps.DeleteFunc(taken, func(_ string, r takenRec) bool { return r.Key != "" && !present[r.Key] })
 	for _, rel := range slices.Sorted(maps.Keys(files)) {
 		if !isConfig(rel) {
 			continue
 		}
-		dst := filepath.Join(dir, filepath.FromSlash(rel))
-		if _, err := os.Lstat(dst); err == nil {
-			continue
-		}
-		// A copy set aside is the player's; switching the mod on brings it back.
-		if _, err := os.Lstat(filepath.Join(dir, ConfigAsideDir, filepath.Base(dst))); err == nil {
-			continue
-		}
-		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
-			return err
-		}
-		if err := datadir.CopyFile(files[rel].src, dst); err != nil {
+		if err := takeConfig(dir, rel, files[rel], taken, adopting); err != nil {
 			return err
 		}
 	}
-	return nil
+	return datadir.WriteJSON(path, taken)
+}
+
+func takeConfig(dir, rel string, f packageFile, taken map[string]takenRec, adopting bool) error {
+	hash, err := safefs.HashFile(f.src, sha256.New())
+	if err != nil {
+		return err
+	}
+	dst := filepath.Join(dir, filepath.FromSlash(rel))
+	had, seen := taken[rel]
+	taken[rel] = takenRec{Hash: hash, Key: f.key}
+	if _, err := os.Lstat(dst); err == nil {
+		if adopting || (seen && had.Hash == hash) {
+			return nil
+		}
+		if cur, err := safefs.HashFile(dst, sha256.New()); err == nil && cur == hash {
+			return nil
+		}
+		if err := holdReplaced(dir, rel); err != nil {
+			return err
+		}
+	} else if _, err := os.Lstat(filepath.Join(dir, ConfigAsideDir, filepath.Base(dst))); err == nil {
+		// A copy set aside is the player's; switching the mod on brings it back.
+		return nil
+	}
+	if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
+		return err
+	}
+	return datadir.CopyFile(f.src, dst)
 }
 
 func writePlaced(dir string, rec map[string]placedRec) error {
