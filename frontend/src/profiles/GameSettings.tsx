@@ -13,7 +13,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { type MouseEvent, type ReactNode, useCallback, useId, useState } from 'react'
+import { type MouseEvent, memo, type ReactNode, useCallback, useId, useState } from 'react'
 import { GameSettings as FetchGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { cmpText } from '../mods/cmpText.ts'
 import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
@@ -239,7 +239,13 @@ interface ProfileGameSettingsFieldsProps {
   onChange: (value: GameSettingsValues | null) => void
 }
 
-function ProfileGameSettingsFields({ disabled, value, onChange }: ProfileGameSettingsFieldsProps) {
+// Memoised: a read landing on the row above, or the page's own state, redraws no field while the profile's values
+// and the change handler stay the same.
+const ProfileGameSettingsFields = memo(function ProfileGameSettingsFieldsView({
+  disabled,
+  value,
+  onChange,
+}: ProfileGameSettingsFieldsProps) {
   const { t } = useLingui()
 
   function updateField<K extends keyof GameSettingsValues>(
@@ -369,7 +375,7 @@ function ProfileGameSettingsFields({ disabled, value, onChange }: ProfileGameSet
       />
     </>
   )
-}
+})
 
 type WindowMode = 'windowed' | 'fullscreen' | 'borderless'
 

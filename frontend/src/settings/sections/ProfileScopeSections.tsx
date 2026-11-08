@@ -3,7 +3,7 @@ import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   GameSettings as GetGameSettings,
   SetGameSettings,
@@ -123,16 +123,19 @@ export function ProfileGameOptions({ game, profileId }: { game: string; profileI
     },
     [],
   )
-  const change = (next: GameSettingsValues | null) => {
-    setValue(next)
-    clearTimeout(timer.current)
-    const save = () => {
-      pending.current = undefined
-      SetGameSettings(game, profileId, next ?? {}).catch(reportUnexpected)
-    }
-    pending.current = save
-    timer.current = setTimeout(save, SAVE_PAUSE_MS)
-  }
+  const change = useCallback(
+    (next: GameSettingsValues | null) => {
+      setValue(next)
+      clearTimeout(timer.current)
+      const save = () => {
+        pending.current = undefined
+        SetGameSettings(game, profileId, next ?? {}).catch(reportUnexpected)
+      }
+      pending.current = save
+      timer.current = setTimeout(save, SAVE_PAUSE_MS)
+    },
+    [game, profileId],
+  )
   if (!(startup && profileId)) {
     return null
   }
