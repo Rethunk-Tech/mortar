@@ -730,12 +730,7 @@ func (s *Store) historyAt(game, id string) (Profile, string, historyFileData, er
 var onHistoryDecode func()
 
 func peekHistory(dir string) (historyFileData, error) {
-	data, err := readHistory(dir)
-	if err != nil {
-		return historyFileData{}, err
-	}
-	data.dir = dir
-	return data, nil
+	return readHistory(dir)
 }
 
 func latestSnapshotAt(dir string) ([]Entry, bool) {
@@ -748,48 +743,35 @@ func latestSnapshotAt(dir string) ([]Entry, bool) {
 
 // loadHistory reads the history of a profile that must exist; callers hold s.mu.
 func (s *Store) loadHistory(game, id string) (historyFileData, error) {
-	if _, err := s.read(game, id); err != nil {
-		return historyFileData{}, err
-	}
-	dir, err := s.profileDir(game, id)
-	if err != nil {
-		return historyFileData{}, err
-	}
-	return readHistory(dir)
+	_, _, data, err := s.historyAt(game, id)
+	return data, err
 }
 
 func readHistory(dir string) (historyFileData, error) {
-	path := filepath.Join(dir, historyFile)
-	b, found, err := safefs.ReadFileIfExists(path)
+	var data historyFileData
+	found, err := datadir.ReadJSONOrQuarantine(filepath.Join(dir, historyFile), &data)
 	if err != nil {
-		return historyFileData{}, err
+		return historyFileData{}, fmt.Errorf("read history: %w", err)
 	}
 	if !found {
 		return emptyHistoryAt(dir), nil
 	}
-	data, err := historyFromBytes(b)
-	if err != nil {
-		return quarantineHistory(path, err)
+	if onHistoryDecode != nil {
+		onHistoryDecode()
 	}
+	historyDefaults(&data)
 	data.dir = dir
 	return data, nil
 }
 
-func historyFromBytes(b []byte) (historyFileData, error) {
-	if onHistoryDecode != nil {
-		onHistoryDecode()
-	}
-	var data historyFileData
-	if err := json.Unmarshal(b, &data); err != nil {
-		return historyFileData{}, err
-	}
+// historyDefaults fills the two collections a history file may leave out.
+func historyDefaults(data *historyFileData) {
 	if data.Events == nil {
 		data.Events = []HistoryEvent{}
 	}
 	if data.Snapshots == nil {
 		data.Snapshots = map[string][]Entry{}
 	}
-	return data, nil
 }
 
 // collapseHistory drops the second of two events a bad writer recorded twice for one change, which reads as two
@@ -817,20 +799,8 @@ func exactDuplicate(a, b HistoryEvent) bool {
 		a.Added == b.Added && a.Removed == b.Removed && a.Updated == b.Updated && a.SnapshotID == b.SnapshotID
 }
 
-func emptyHistory() historyFileData {
-	return emptyHistoryAt("")
-}
-
 func emptyHistoryAt(dir string) historyFileData {
 	return historyFileData{Events: []HistoryEvent{}, Snapshots: map[string][]Entry{}, dir: dir}
-}
-
-func quarantineHistory(path string, cause error) (historyFileData, error) {
-	corrupt := fmt.Sprintf("%s.corrupt-%d", path, time.Now().UnixNano())
-	if err := safefs.Rename(path, corrupt); err != nil {
-		return historyFileData{}, errors.Join(fmt.Errorf("read history: %w", cause), fmt.Errorf("quarantine history: %w", err))
-	}
-	return emptyHistory(), nil
 }
 
 func writeHistory(dir string, data historyFileData, keep int) error {

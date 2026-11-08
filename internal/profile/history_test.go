@@ -343,6 +343,49 @@ func TestHistoryBatchClosedRecordsNothing(t *testing.T) {
 }
 
 // A history written by a build that recorded one change twice reads as the one change it was.
+func TestHistoryCollapsesOnlyAnExactDuplicateBulkChange(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	p := addFarmMod(t, e)
+	dir, err := e.profileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	head := e.mustHistory(t, p.ID)[0]
+	at := time.Date(2026, 11, 7, 12, 0, 0, 0, time.UTC)
+	bulk := func(id string, change HistoryChange, count int) HistoryEvent {
+		return HistoryEvent{ID: id, Kind: historyBulk, Change: change, Count: count, At: at, SnapshotID: head.SnapshotID}
+	}
+	data := emptyHistoryAt(dir)
+	data.Counted = true
+	data.Events = []HistoryEvent{
+		head,
+		bulk("a", ChangeMods, 2), bulk("b", ChangeMods, 2),
+		bulk("c", ChangeMods, 3),
+		bulk("d", ChangeEnabled, 2),
+		{ID: "e", Kind: "mod", Change: ChangeMods, Count: 2, At: at, SnapshotID: head.SnapshotID},
+	}
+	if err := writeHistory(dir, data, 0); err != nil {
+		t.Fatal(err)
+	}
+	events, err := e.History("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var ids []string
+	for _, ev := range events {
+		if ev.ID == "b" || ev.ID == head.ID {
+			continue
+		}
+		ids = append(ids, ev.ID)
+	}
+	want := []string{"e", "d", "c", "a"}
+	if !slices.Equal(ids, want) {
+		t.Fatalf("history = %+v, want %v", ids, want)
+	}
+}
+
 func TestHistoryReadCollapsesAnEventRecordedTwice(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
