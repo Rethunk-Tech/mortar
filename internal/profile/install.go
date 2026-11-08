@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -15,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -447,28 +447,13 @@ func holdsAny(e Entry, found []smapimanifest.Mod) bool {
 
 // copyWithout copies the regular files and folders under src to dst, leaving out the named top-level entries.
 func copyWithout(src, dst string, skip ...string) error {
-	return filepath.WalkDir(src, func(p string, d fs.DirEntry, err error) error {
-		if err != nil {
+	if err := datadir.CopyTree(src, dst); err != nil {
+		return err
+	}
+	for _, name := range skip {
+		if err := safefs.RemoveAll(filepath.Join(dst, name)); err != nil {
 			return err
 		}
-		rel, err := filepath.Rel(src, p)
-		if err != nil {
-			return err
-		}
-		if slices.Contains(skip, rel) {
-			return filepath.SkipDir
-		}
-		to := filepath.Join(dst, rel)
-		if d.IsDir() {
-			return os.MkdirAll(to, 0o700)
-		}
-		if !d.Type().IsRegular() {
-			return nil
-		}
-		b, err := safefs.ReadFile(p)
-		if err != nil {
-			return err
-		}
-		return safefs.WriteFile(to, b, 0o600)
-	})
+	}
+	return nil
 }

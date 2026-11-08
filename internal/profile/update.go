@@ -63,10 +63,8 @@ func (s *Store) UpdateEntries(game, id string, moves []EntryMove) (Profile, erro
 			if err != nil {
 				return err
 			}
-			for _, e := range p.Entries {
-				if e.Key == m.NewKey {
-					return &DuplicateError{Key: m.NewKey, Label: entryLabel(e)}
-				}
+			if err := checkNotHeld(p.Entries, m.NewKey); err != nil {
+				return err
 			}
 			ne, w, err := s.swapTo(game, p, dir, ei, m.NewKey, nil)
 			swaps = append(swaps, w)
@@ -189,14 +187,7 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 	if err := s.RecordModsSnapshot(game, id); err != nil {
 		return Profile{}, err
 	}
-	keys := []string{oldKey, newKey}
-	for _, e := range p.Entries {
-		if e.Key == newKey {
-			keys = append(keys, entryStoreKeys(e)...)
-			break
-		}
-	}
-	return p, s.items.Touch(game, keys...)
+	return p, s.items.Touch(game, movedKeys([]EntryMove{{OldKey: oldKey, NewKey: newKey}}, p.Entries)...)
 }
 
 // swapTo switches entry ei of p to newKey: a package entry is repointed, any other gets its folder rebuilt.
@@ -488,17 +479,10 @@ func sameFile(a, b string) (bool, error) {
 }
 
 func copyOver(src, dst string) error {
-	b, err := safefs.ReadFile(src)
-	if err != nil {
-		return err
-	}
 	if err := datadir.MkdirParent(dst); err != nil {
 		return err
 	}
-	if err := safefs.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return err
-	}
-	return safefs.WriteFile(dst, b, 0o600)
+	return datadir.CopyFile(src, dst)
 }
 
 func deleteOldVersion(found []smapimanifest.Mod, uniqueID mod.ID) bool {
