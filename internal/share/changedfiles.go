@@ -40,6 +40,7 @@ func validChangedLocation(game, p string) bool {
 	if len(p) > maxRelPath || path.Clean(p) != p || !utf8.ValidString(p) || !profile.ValidChangedLocation(game, p) {
 		return false
 	}
+	// A mod writes these names inside its own content folder, so they may be longer than one Mortar names itself.
 	for seg := range strings.SplitSeq(p, "/") {
 		if len(seg) > 2*maxSegment || unsafeName.MatchString(seg) || strings.HasSuffix(seg, ".") || strings.HasSuffix(seg, " ") {
 			return false

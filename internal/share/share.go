@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"path"
 	"regexp"
 	"slices"
 	"strconv"
@@ -465,15 +466,9 @@ func validOverlayPath(p string) bool {
 	if p == "" {
 		return true
 	}
-	if len(p) > maxRelPath || strings.ContainsFunc(p, unicode.IsControl) || strings.Contains(p, `\`) || strings.Contains(p, ":") {
-		return false
-	}
-	for seg := range strings.SplitSeq(p, "/") {
-		if seg == "" || seg == "." || seg == ".." {
-			return false
-		}
-	}
-	return true
+	return len(p) <= maxRelPath && path.Clean(p) == p && !path.IsAbs(p) && p != "." && p != ".." &&
+		!strings.HasPrefix(p, "../") && !strings.ContainsFunc(p, unicode.IsControl) &&
+		!strings.Contains(p, `\`) && !strings.Contains(p, ":")
 }
 
 func validEntryNote(note string) bool {

@@ -3,6 +3,7 @@ package profile
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -40,13 +41,8 @@ func ValidChangedPath(game, rel string) bool {
 
 // ValidChangedLocation is ValidChangedPath without the file type check.
 func ValidChangedLocation(game, rel string) bool {
-	if rel == "" || strings.Contains(rel, `\`) || !filepath.IsLocal(filepath.FromSlash(rel)) {
+	if rel == "" || path.Clean(rel) != rel || strings.Contains(rel, `\`) || !filepath.IsLocal(filepath.FromSlash(rel)) {
 		return false
-	}
-	for seg := range strings.SplitSeq(rel, "/") {
-		if seg == "" || seg == "." || seg == ".." {
-			return false
-		}
 	}
 	for _, root := range changedRoots(game) {
 		if strings.HasPrefix(strings.ToLower(rel), strings.ToLower(strings.TrimSuffix(root, "/")+"/")) {
