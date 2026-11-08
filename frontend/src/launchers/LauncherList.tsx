@@ -10,7 +10,7 @@ import {
 import { useTheme } from '@mui/material/styles'
 import { useWidth } from '@rethunk/react-load-hooks'
 import { ChevronDown, CircleCheck, CircleX, Folder, FolderPlus, RefreshCw, X } from 'lucide-react'
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import type { StoreApp } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import {
@@ -280,7 +280,7 @@ function LauncherRow({
 // first-run welcome screen.
 type Heading = 'h2' | 'h3'
 
-export function LauncherList({
+export const LauncherList = memo(function LauncherListView({
   launchers,
   refresh,
   heading = 'h3',
@@ -327,4 +327,4 @@ export function LauncherList({
       </Box>
     </Box>
   )
-}
+})
