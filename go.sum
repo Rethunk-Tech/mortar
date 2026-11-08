@@ -48,8 +48,8 @@ github.com/Rethunk-Tech/go-modio v0.1.1 h1:48lNfUHzlKysrn3V9cgobeMT/Bq6WI/ksrUme
 github.com/Rethunk-Tech/go-modio v0.1.1/go.mod h1:8n6kxu9slfoWdqJ8kaCdNSe+HI9ZpL99YoA2MmD/hAc=
 github.com/Rethunk-Tech/go-modmanagers v0.3.0 h1:TDavxTXvFEfDbediZAgDTHvORtEALs4Zb0ff5fjwb2M=
 github.com/Rethunk-Tech/go-modmanagers v0.3.0/go.mod h1:4RZBJqhi/2mq2Mn/+fxnDJ6oWPzbvPC5iUESAZ404Pg=
-github.com/Rethunk-Tech/go-modrinth v0.1.0 h1:pJEdaqGFbokhqCLFMvayXIewozSsc/4zQFU7ZwDAOGY=
-github.com/Rethunk-Tech/go-modrinth v0.1.0/go.mod h1:uvpa+ZC7C/oSHNW9W3Vuf0xvLfKEvVhdq87hzFNFCqI=
+github.com/Rethunk-Tech/go-modrinth v0.2.0 h1:pUCWoSNMgnx1VN/sfqNRvpRhkZPhCuHYPHTWV8lHTjE=
+github.com/Rethunk-Tech/go-modrinth v0.2.0/go.mod h1:uvpa+ZC7C/oSHNW9W3Vuf0xvLfKEvVhdq87hzFNFCqI=
 github.com/Rethunk-Tech/go-nettrace v0.2.0 h1:Z+QVfIk/iGxzOPfIkMBHW5lC7Iy7vQcDF3jpDvRDIx4=
 github.com/Rethunk-Tech/go-nettrace v0.2.0/go.mod h1:2BSLvrB14EerP512jURvKa04ietvdCHMY8DjnA43in8=
 github.com/Rethunk-Tech/go-nexusmods v0.6.0 h1:SPNw2giQ2JMY8XHxU6GNfRM7U4RAdMTwzWKLeuLxHuY=
@@ -105,8 +105,8 @@ github.com/go-ole/go-ole v1.3.0/go.mod h1:5LS6F96DhAwUc7C+1HLexzMXY1xGRSryjyPPKW
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg7847qk6SyHyPtNmDHnmrv/HOrqktSC+C9fM+CJOE=
 github.com/godbus/dbus/v5 v5.2.4 h1:F2gUCy++NMIxGmo9J+z5le/+ZC8W1OgeR51P4i9ZB/U=
 github.com/godbus/dbus/v5 v5.2.4/go.mod h1:3AAv2+hPq5rdnr5txxxRwiGjPXamgoIHgz9FPBfOp3c=
-github.com/gofrs/flock v0.13.1 h1:jjREztyBeSKBZYAC+mgc1laB+xsgy4kYMf3FbKF2UBo=
-github.com/gofrs/flock v0.13.1/go.mod h1:sf4BFiHwnvgxa25DlQoDqXQnwRMEOwqxRq37P6MzzmE=
+github.com/gofrs/flock v0.13.2 h1:9o62TArG4T0f8L46kSf8sLtNUGvJEfiCK9md7/ilko0=
+github.com/gofrs/flock v0.13.2/go.mod h1:OEjpF6MC2Plt1fLXTTgXwnZohWbs/Alxf2i1qTne/Vg=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.4.0-rc.1/go.mod h1:ceaxUfeHdC40wWswd/P6IGgMaK3YpKi5j83Wpe3EHw8=
 github.com/golang/protobuf v1.4.0-rc.1.0.20200221234624-67d41d38c208/go.mod h1:xKAWHe0F5eneWXFV3EuXVDTCmh+JuBKY0li0aMyXATA=

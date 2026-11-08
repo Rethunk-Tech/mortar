@@ -1739,7 +1739,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/gofrs/flock@v0.13.1
+github.com/gofrs/flock@v0.13.2
 licence: BSD-3-Clause
 https://github.com/gofrs/flock
 
@@ -3550,7 +3550,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-modrinth@v0.1.0
+github.com/Rethunk-Tech/go-modrinth@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-modrinth
 
@@ -6762,7 +6762,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-simple-icons@16.36.0
+simple-icons@16.37.0
 licence: CC0-1.0
 https://simpleicons.org
 

@@ -25,7 +25,7 @@ require (
 	github.com/Rethunk-Tech/go-lenientjson v0.1.1
 	github.com/Rethunk-Tech/go-modio v0.1.1
 	github.com/Rethunk-Tech/go-modmanagers v0.3.0
-	github.com/Rethunk-Tech/go-modrinth v0.1.0
+	github.com/Rethunk-Tech/go-modrinth v0.2.0
 	github.com/Rethunk-Tech/go-nettrace v0.2.0
 	github.com/Rethunk-Tech/go-nexusmods v0.6.0
 	github.com/Rethunk-Tech/go-paradoxmods v0.1.0
@@ -64,7 +64,7 @@ require (
 	github.com/ebitengine/purego v0.11.3 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
-	github.com/gofrs/flock v0.13.1 // indirect
+	github.com/gofrs/flock v0.13.2 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect

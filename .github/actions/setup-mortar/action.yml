@@ -66,7 +66,7 @@ runs:
 
     - name: Setup Go
       if: inputs.native == 'true'
-      uses: Rethunk-Tech/gh-actions/setup-go@0fd53b2e66ac157aab89e4dc0ebbf4627969acef # v1.23
+      uses: Rethunk-Tech/gh-actions/setup-go@4163d2a5a37b1538dd45926e264b3c4027b5cbaa # v1.24
       with:
         go-version-file: go.mod
         cache-key-suffix: ${{ github.ref == 'refs/heads/main' && steps.day.outputs.date || '' }}
@@ -74,7 +74,7 @@ runs:
     # Without the app's compile there is no build cache worth restoring (1.4 GB), so only the module cache is kept.
     - name: Setup Go (no build cache)
       if: inputs.native != 'true'
-      uses: Rethunk-Tech/gh-actions/setup-go@0fd53b2e66ac157aab89e4dc0ebbf4627969acef # v1.23
+      uses: Rethunk-Tech/gh-actions/setup-go@4163d2a5a37b1538dd45926e264b3c4027b5cbaa # v1.24
       with:
         go-version-file: go.mod
         cache-build: "false"
@@ -137,7 +137,7 @@ runs:
 
     - name: Setup Bun
       if: inputs.frontend == 'true'
-      uses: Rethunk-Tech/gh-actions/setup-bun@0fd53b2e66ac157aab89e4dc0ebbf4627969acef # v1.23
+      uses: Rethunk-Tech/gh-actions/setup-bun@4163d2a5a37b1538dd45926e264b3c4027b5cbaa # v1.24
 
     # Astro runs under Node, and the runner image's Node can trail the version it requires.
     - name: Setup Node
