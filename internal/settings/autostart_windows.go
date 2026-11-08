@@ -3,31 +3,25 @@
 package settings
 
 import (
-	"errors"
+	"context"
 	"os"
 
-	winreg "golang.org/x/sys/windows/registry"
+	"github.com/Rethunk-Tech/go-desktopenv/autostart"
 )
 
-func applyAutostart(enable bool) error {
-	key, _, err := winreg.CreateKey(winreg.CURRENT_USER, `Software\Microsoft\Windows\CurrentVersion\Run`, winreg.SET_VALUE)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = key.Close() }()
+// systemAutostart writes or removes the HKCU Run value; tests replace it.
+var systemAutostart = func(enable bool) error {
 	if !enable {
-		err := key.DeleteValue("Mortar")
-		if err != nil && !errors.Is(err, winreg.ErrNotExist) {
-			return err
-		}
-		return nil
+		return autostart.Disable(context.Background(), "Mortar")
 	}
 	exe, err := os.Executable()
 	if err != nil {
 		return err
 	}
-	return key.SetStringValue("Mortar", `"`+exe+`"`)
+	return autostart.Enable(context.Background(), autostart.Entry{ID: "Mortar", Argv: []string{exe}})
 }
+
+func applyAutostart(enable bool) error { return systemAutostart(enable) }
 
 // RemoveAutostart deletes the Run value that starts Mortar at sign-in.
 func RemoveAutostart() error { return applyAutostart(false) }

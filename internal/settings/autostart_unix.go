@@ -8,80 +8,44 @@ import (
 	"os"
 	"time"
 
-	"github.com/Rethunk-Tech/go-desktopenv/desktopentry"
+	"github.com/Rethunk-Tech/go-desktopenv/autostart"
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
 	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-desktopenv/portal"
-	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 )
 
-// portalAutostart asks the Background portal, bounded because it waits on a dialog the user answers; tests replace it.
-var portalAutostart = func(enable bool) error {
+// autostartID is the autostart file's stem; earlier releases wrote mortar.desktop, so it stays.
+const autostartID = "mortar"
+
+// systemAutostart writes or removes the entry, through the Background portal inside a Flatpak, bounded because the
+// portal waits on a dialog the user answers; tests replace it.
+var systemAutostart = func(enable bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
-	return portal.SetAutostart(ctx, portal.Autostart{Enable: enable, Command: []string{"mortar"}, Reason: "Start Mortar when you sign in"})
+	if !enable {
+		return autostart.Disable(ctx, autostartID)
+	}
+	argv := []string{"mortar"}
+	if !flatpak.Inside() {
+		exe, err := os.Executable()
+		if err != nil {
+			return err
+		}
+		argv = []string{hostenv.Launchable(exe)}
+	}
+	return autostart.Enable(ctx, autostart.Entry{ID: autostartID, Name: "Mortar", Reason: "Start Mortar when you sign in", Argv: argv})
 }
 
 // RemoveAutostart deletes the autostart entry that starts Mortar at sign-in.
 func RemoveAutostart() error { return applyAutostart(false) }
 
 func applyAutostart(enable bool) error {
-	if flatpak.Inside() {
-		// The sandbox cannot write the host's autostart folder; the Background portal writes the entry for it.
-		err := portalAutostart(enable)
-		switch {
-		case errors.Is(err, portal.ErrCancelled):
-			return errors.New("cancelled in the system dialog")
-		case errors.Is(err, portal.ErrNotAllowed):
-			return errors.New("starting at sign-in was not allowed")
-		}
-		return err
+	err := systemAutostart(enable)
+	switch {
+	case errors.Is(err, portal.ErrCancelled):
+		return errors.New("cancelled in the system dialog")
+	case errors.Is(err, portal.ErrNotAllowed):
+		return errors.New("starting at sign-in was not allowed")
 	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-	cfg := userdirs.ConfigHome(home)
-	if err := os.MkdirAll(cfg, 0o700); err != nil {
-		return err
-	}
-	root, err := os.OpenRoot(cfg)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = root.Close() }()
-	if enable {
-		if err := root.Mkdir("autostart", 0o700); err != nil && !os.IsExist(err) {
-			return err
-		}
-		sub, err := root.OpenRoot("autostart")
-		if err != nil {
-			return err
-		}
-		defer func() { _ = sub.Close() }()
-		exe, err := os.Executable()
-		if err != nil {
-			return err
-		}
-		body := autostartEntry(hostenv.Launchable(exe))
-		return sub.WriteFile("mortar.desktop", []byte(body), 0o600)
-	}
-	sub, err := root.OpenRoot("autostart")
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		return err
-	}
-	defer func() { _ = sub.Close() }()
-	err = sub.Remove("mortar.desktop")
-	if err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	return nil
-}
-
-// autostartEntry is the autostart desktop entry for exe.
-func autostartEntry(exe string) string {
-	return "[Desktop Entry]\nType=Application\nName=Mortar\nExec=" + desktopentry.Exec(exe) + "\nX-GNOME-Autostart-enabled=true\n"
+	return err
 }
