@@ -31,6 +31,7 @@ require (
 	github.com/Rethunk-Tech/go-smapi v0.3.0
 	github.com/Rethunk-Tech/go-smapiweb v0.1.1
 	github.com/Rethunk-Tech/go-thunderstore v0.4.1
+	github.com/Rethunk-Tech/go-vintagestory v0.1.0
 	github.com/Rethunk-Tech/go-winsym v0.2.1
 	github.com/andybalholm/brotli v1.2.8
 	github.com/godbus/dbus/v5 v5.2.4

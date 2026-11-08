@@ -13,11 +13,11 @@ import (
 
 	"github.com/Rethunk-Tech/go-fomod"
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-vintagestory/modinfo"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
-	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modname"
 	"github.com/Rethunk-Tech/mortar/internal/scratch"
@@ -177,7 +177,7 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 		c := Component{ID: mod.NewID(mod.FormatFolder, key), Name: cmp.Or(title, key), Folder: "."}
 		if file, ok := installer.ModRootFile(arch, g); ok {
 			if b, rerr := safefs.ReadFile(filepath.Join(arch.Dir, filepath.FromSlash(file))); rerr == nil {
-				if info, perr := smapimanifest.ParseModInfo(b); perr == nil {
+				if info, perr := modinfo.Parse(b); perr == nil {
 					c.Name, c.Version, c.Author = cmp.Or(info.Name, info.ModID, title, key), info.Version, strings.Join(info.Authors, ", ")
 					c.ModID, c.Requires, c.MinGame = strings.ToLower(info.ModID), info.Dependencies, info.GameVersion
 				}

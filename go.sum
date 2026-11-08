@@ -62,6 +62,8 @@ github.com/Rethunk-Tech/go-thunderstore v0.4.1 h1:JCVUdyf9h0k6AuxaBr1vD9BviiX7Uc
 github.com/Rethunk-Tech/go-thunderstore v0.4.1/go.mod h1:LcbmGdtyHGbMFNdgCxGC6qOjukDExaq59x++wGzmdjA=
 github.com/Rethunk-Tech/go-tilemask v0.1.1 h1:tY+P58WMPi8Wke543lYPX8xsFNrXAI1lgQcYSaHqznQ=
 github.com/Rethunk-Tech/go-tilemask v0.1.1/go.mod h1:u+IicOcKEmiKBaLRulWdByhGPYKLuUh2GYARBbPfeTk=
+github.com/Rethunk-Tech/go-vintagestory v0.1.0 h1:3/lDfIEfigA+SG6EcUMxylS2H9oLCsm/QCo12q3I1k4=
+github.com/Rethunk-Tech/go-vintagestory v0.1.0/go.mod h1:PWTqS5xf4z3QUhrUbWQZY8xB1+4aQhoSDwOKK31CnEA=
 github.com/Rethunk-Tech/go-winsym v0.2.1 h1:GhPRtj4602P+1CR2tpG8JE1cmXOYiN9S8WwMrlLUbOw=
 github.com/Rethunk-Tech/go-winsym v0.2.1/go.mod h1:p2ESUadHTo8S/hVCs/XEWSNz5JAV3EvDHdxx1stEK1I=
 github.com/Rethunk-Tech/vdf/v2 v2.1.0 h1:/7OQ4yK8FD4VTxd1ICFYt0S2M2LM5KeEBNyfFOG2xQw=
