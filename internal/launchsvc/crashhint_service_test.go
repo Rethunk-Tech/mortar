@@ -21,7 +21,11 @@ func TestCrashHintPrecedence(t *testing.T) {
 	_, ps := testenv.Stores(t)
 	const lc = "lethal-company"
 	p := testenv.Profile(t, ps, lc, "A")
-	zip := tsPackage(t, "Fixture", map[string]string{"plugins/Mod.dll": "x"})
+	dll, err := os.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := tsPackage(t, "Fixture", map[string]string{"plugins/Mod.dll": string(dll)})
 	res, err := ps.InstallSource(t.Context(), lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-Fixture", Version: "1.0.0"})
 	if err != nil {
 		t.Fatal(err)
@@ -48,10 +52,12 @@ func TestCrashHintPrecedence(t *testing.T) {
 	}
 	setLog := func(body string) {
 		t.Helper()
-		writeBepInExLog(t, dir, body)
+		if err := os.WriteFile(filepath.Join(dir, "runs", "r1.txt"), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
 	}
 	const header = "[Info   :   BepInEx] BepInEx 5.4.22 - Lethal Company\n"
-	blamesFixture := header + "[Error  :   BepInEx] Could not load [Fixture 1.0.0] because it has missing dependencies: Lib\n"
+	blamesFixture := header + "[Error  :   BepInEx] Could not load [Fixture Plugin 1.2.3] because it has missing dependencies: Lib\n"
 	blamesStranger := header + "[Error  :   BepInEx] Could not load [Stranger 1.0.0] because it has missing dependencies: Alpha\n"
 	crashed := Run{ID: "r1", Outcome: launch.OutcomeCrashed}
 

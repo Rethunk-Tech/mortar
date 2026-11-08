@@ -3,16 +3,13 @@ package launchsvc
 import (
 	"errors"
 	"strings"
-	"unicode"
 
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/dotnetstack"
 	"github.com/Rethunk-Tech/mortar/internal/loader/gamelog"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -51,20 +48,21 @@ func (s *Service) CrashHint(gameID, profileID string) (*CrashHint, error) {
 		hint.Code, hint.Params = run.Cause.Reason, run.Cause.Params
 		return hint, nil
 	}
-	found := s.loaderFindings(gameID, profileID)
+	// The run's own logs, never the live ones: a later launch rewrites those, and the hint names this run.
+	text, player, err := s.storedRunLogs(gameID, profileID, run.ID)
+	if err != nil {
+		return nil, err
+	}
+	found, owners := s.runFindings(gameID, profileID, text, player)
 	if len(found) > 0 {
-		mods, err := s.profiles.UserMods(gameID, profileID)
-		if err != nil {
-			return nil, err
-		}
-		if m, f, ok := pickCulprit(found, mods); ok {
+		if m, f, ok := pickCulprit(found, owners); ok {
 			hint.ModKey, hint.ModName, hint.Reason = m.Key, m.Name, f.Message
 			hint.Code, hint.Params = f.Code, f.Params
 			return hint, nil
 		}
 	}
 	if installed, err := s.profiles.Installed(gameID, profileID); err == nil {
-		if m, b, ok := blamedMod(s.stackBlames(gameID, profileID), installed); ok {
+		if m, b, ok := blamedMod(s.stackBlames(gameID, profileID, text, player), installed); ok {
 			hint.ModKey, hint.ModName, hint.Reason, hint.Evidence = m.Key, m.Name, b.Exception, b.Frame
 			return hint, nil
 		}
@@ -99,144 +97,85 @@ func (s *Service) OpenCrashReport(gameID, profileID string) error {
 	return datadir.Open(hint.ReportDir)
 }
 
-// loaderFindings runs the profile loader's log analyzers over its logs; nil when it has none.
-func (s *Service) loaderFindings(gameID, profileID string) []loader.Finding {
-	l, ok := s.loaderOf(gameID, profileID)
-	if !ok {
-		return nil
-	}
-	logs, ok := l.(loader.WithLogs)
-	if !ok && game.HasPath(gameID, game.PathLog) {
-		return gamelog.Analyze(s.gamePathText(gameID, game.PathLog) + "\n" + s.gamePathText(gameID, game.PathCrashLog))
-	}
-	if !ok || len(logs.Analyzers()) == 0 {
-		return nil
-	}
-	raw, ok := s.loaderLog(logs, gameID, profileID)
-	if !ok {
-		return nil
-	}
-	in := loader.Logs{Loader: raw}
-	if w, ok := l.(loader.WithPlayerLog); ok && s.settings != nil {
-		if p, err := game.PathFor(s.home, s.settings.Get(), gameID, "", w.PlayerLogRole()); err == nil {
-			b, _ := safefs.ReadFile(p)
-			in.Player = string(b)
+// runFindings runs the profile loader's analyzers over a run's logs, or the game's own log analyzers for a game whose
+// mods have no loader log, and maps every way such a log names a mod to the enabled installed mod that owns it: the
+// same attribution the Problems tab makes. Nil when the game keeps no log of its own.
+func (s *Service) runFindings(gameID, profileID, text, player string) ([]loader.Finding, map[string]profile.Installed) {
+	if logs, ok := s.loaderOf(gameID, profileID); ok {
+		if w, isLogs := logs.(loader.WithLogs); isLogs {
+			if len(w.Analyzers()) == 0 {
+				return nil, nil
+			}
+			var found []loader.Finding
+			for _, a := range w.Analyzers() {
+				found = append(found, a.Analyze(loader.Logs{Loader: text, Player: player})...)
+			}
+			return found, s.pluginOwners(gameID, profileID)
 		}
 	}
-	var out []loader.Finding
-	for _, a := range logs.Analyzers() {
-		out = append(out, a.Analyze(in)...)
+	if !game.HasPath(gameID, game.PathLog) {
+		return nil, nil
 	}
-	return out
-}
-
-// loaderLog reads the profile loader's log.
-func (s *Service) loaderLog(logs loader.WithLogs, gameID, profileID string) (string, bool) {
-	dir, err := s.profiles.ProfileDir(gameID, profileID)
-	if err != nil {
-		return "", false
-	}
-	path, err := logs.Path(loader.ProfileView{Game: gameID, Dir: dir})
-	if err != nil {
-		return "", false
-	}
-	raw, err := safefs.ReadFile(path)
-	return strings.ToValidUTF8(string(raw), ""), err == nil
+	return gamelog.Analyze(text), s.modIDOwners(gameID, profileID)
 }
 
 // stackBlames reads the exception stacks of the run's logs that run through a mod: the loader's log and Unity's
 // player log for a loader that parses stacks, else the game's own crash report and log. Nil when the game keeps none.
-func (s *Service) stackBlames(gameID, profileID string) []loader.Blame {
+func (s *Service) stackBlames(gameID, profileID, text, player string) []loader.Blame {
 	l, ok := s.loaderOf(gameID, profileID)
 	if !ok {
 		return nil
 	}
 	if stacks, has := l.(loader.WithStackBlame); has {
-		var text string
-		if logs, isLogs := l.(loader.WithLogs); isLogs {
-			text, _ = s.loaderLog(logs, gameID, profileID)
-		}
-		if w, has := l.(loader.WithPlayerLog); has {
-			text += "\n" + s.gamePathText(gameID, w.PlayerLogRole())
-		}
-		return stacks.StackBlame(text)
+		return stacks.StackBlame(text + "\n" + player)
 	}
-	// Vintage Story's mods are .NET code in the game's own process, and its logs are the crash report and main log.
+	// Vintage Story's mods are .NET code in the game's own process, and its logs are the crash report and main log:
+	// the run kept the main log, and the crash report is the live file the game rewrites each launch.
 	if game.HasPath(gameID, game.PathCrashLog) {
-		return dotnetstack.Blames(s.gamePathText(gameID, game.PathLog)+"\n"+s.gamePathText(gameID, game.PathCrashLog), dotnetstack.VintageStory)
+		return dotnetstack.Blames(text+"\n"+s.gameLogText(gameID, profileID, game.PathCrashLog), dotnetstack.VintageStory)
 	}
 	return nil
 }
 
-// gamePathText is the text of the file the catalog places under role, empty when the game keeps none.
-func (s *Service) gamePathText(gameID, role string) string {
-	if s.settings == nil || !game.HasPath(gameID, role) {
+// gameLogText is the text of the game's own log roles, empty when it keeps none of them or another profile ran after
+// this one: the game writes those files for whichever profile ran last.
+func (s *Service) gameLogText(gameID, profileID string, roles ...string) string {
+	if s.settings == nil || !s.ranLastHere(gameID, profileID) {
 		return ""
 	}
-	path, err := game.PathFor(s.home, s.settings.Get(), gameID, "", role)
-	if err != nil {
-		return ""
-	}
-	b, _ := safefs.ReadFile(path)
-	return strings.ToValidUTF8(string(b), "")
+	return game.GameLogText(s.home, s.settings.Get(), gameID, roles...)
 }
 
-// pickCulprit is the first finding, in log order, whose plugin is an enabled installed mod. A log names a plugin by
-// its display name, GUID or root namespace: names match when equal once case and punctuation are dropped, or when
-// one is a whole dot or space separated run of the other's segments (a GUID's namespace prefix is noise). A shorter
-// name inside a longer one matches only when it covers at least half of it, so plugin "Lib" never blames "LethalLib".
-func pickCulprit(found []loader.Finding, mods []profile.Mod) (profile.Mod, loader.Finding, bool) {
-	for _, f := range found {
-		plugin := mod.LooseName(f.Plugin)
-		if len(plugin) < 3 {
+// ranLastHere is true when no other profile of the game has a run newer than this one's.
+func (s *Service) ranLastHere(gameID, profileID string) bool {
+	mine, err := s.LastRunID(gameID, profileID)
+	if err != nil || mine == "" || s.profiles == nil {
+		return false
+	}
+	all, err := s.profiles.List(gameID)
+	if err != nil {
+		return false
+	}
+	for _, p := range all {
+		if p.ID == profileID {
 			continue
 		}
-		for _, m := range mods {
-			if !m.Enabled {
-				continue
-			}
-			for _, name := range []string{m.Name, string(m.ID), m.Key} {
-				if namesMatch(f.Plugin, name) {
-					return m, f, true
-				}
-			}
+		if theirs, err := s.LastRunID(gameID, p.ID); err == nil && theirs > mine {
+			return false
 		}
 	}
-	return profile.Mod{}, loader.Finding{}, false
+	return true
 }
 
-func namesMatch(plugin, name string) bool {
-	p, n := mod.LooseName(plugin), mod.LooseName(name)
-	if len(n) < 3 || len(p) < 3 {
-		return false
-	}
-	if n == p {
-		return true
-	}
-	// The mod's name inside the plugin's GUID: any whole segment run counts.
-	if hasSegmentRun(plugin, n, false) {
-		return true
-	}
-	return hasSegmentRun(name, p, true)
-}
-
-// hasSegmentRun reports whether some run of whole segments of s, split at non-alphanumerics, loosely equals want.
-// With half set, want must also cover at least half of s.
-func hasSegmentRun(s, want string, half bool) bool {
-	segs := strings.FieldsFunc(s, func(r rune) bool { return !unicode.IsLetter(r) && !unicode.IsDigit(r) })
-	if half && len(want)*2 < len(mod.LooseName(s)) {
-		return false
-	}
-	for i := range segs {
-		joined := ""
-		for j := i; j < len(segs) && len(joined) < len(want); j++ {
-			joined += mod.LooseName(segs[j])
-		}
-		if joined == want {
-			return true
+// pickCulprit is the first finding, in log order, whose plugin an installed enabled mod's own DLLs declare: the exact,
+// lower-cased ownership lookup Problems attributes a loader log by, so both name the same mod for one log line.
+func pickCulprit(found []loader.Finding, owners map[string]profile.Installed) (profile.Installed, loader.Finding, bool) {
+	for _, f := range found {
+		if m, ok := owners[strings.ToLower(f.Plugin)]; ok {
+			return m, f, true
 		}
 	}
-	return false
+	return profile.Installed{}, loader.Finding{}, false
 }
 
 func firstLine(s string) string {
