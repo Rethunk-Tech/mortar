@@ -62,7 +62,7 @@ function once(items: BrowseItem[]): BrowseItem[] {
   const seen = new Set<string>()
   return items.filter((i) => {
     const key = hitKey(i)
-    return !seen.has(key) && Boolean(seen.add(key))
+    return seen.has(key) ? false : (seen.add(key), true)
   })
 }
 
@@ -102,7 +102,6 @@ interface Screen {
   whole: boolean
 }
 
-// The screen from source pages that have already answered, or null while one of them is still to fetch.
 /** next, keeping prev's object when nothing changed and each card's object when that card did not, so a refresh redraws
  * only the cards whose numbers moved. */
 function keptResult(prev: BrowseResult, next: BrowseResult): BrowseResult {
@@ -112,6 +111,7 @@ function keptResult(prev: BrowseResult, next: BrowseResult): BrowseResult {
   return { ...next, items: keepUnchanged(prev.items, next.items, hitKey) }
 }
 
+// The screen from source pages that have already answered, or null while one of them is still to fetch.
 function cachedScreen(done: Map<number, BrowseResult>, page: number, size: number): Screen | null {
   const { first, last, skip } = screenSpan(page, size)
   const head = done.get(first)
@@ -280,11 +280,11 @@ function useBrowseQuery({
   useEffect(() => () => useBrowseView.getState().setDraft(''), [])
 
   useEffect(() => {
-    if (waiting && source !== '') {
+    if (waiting) {
       setStatus('loading')
       return
     }
-    if (source === '' || retry + hides < 0) {
+    if (source === '') {
       setResult(EMPTY_RESULT)
       setStatus('idle')
       return
