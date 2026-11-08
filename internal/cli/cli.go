@@ -1,5 +1,6 @@
 // Package cli is Mortar's command line: `mortar <verb> ...` asks the running app over internal/control and prints
-// the answer as a table, or as JSON with --json. It never opens a window or touches the data folder itself.
+// the answer as a table, or as JSON with --json. It never opens a window. Offline verbs (doctor, backups) read the
+// data folder themselves; everything else goes through the running app.
 package cli
 
 import (

@@ -100,9 +100,11 @@ func TestVerbWrappersSendTheirArgumentsOrRefuse(t *testing.T) {
 			out:     []string{"Debug"},
 		},
 		{
-			name:  "mods preset save needs a name",
-			args:  []string{"mods", "preset", "stardew", "Farm", "A.Mod", "save"},
-			usage: "mods preset save needs a name",
+			name:    "mods preset save sends without a name",
+			args:    []string{"mods", "preset", "stardew", "Farm", "A.Mod", "save"},
+			results: map[string]any{"mods.preset": []string{}},
+			method:  "mods.preset",
+			params:  func(p control.Params) bool { return p.Sub == "save" && p.Name == "" },
 		},
 		{
 			name:    "mods preset apply sends its name",
@@ -112,9 +114,11 @@ func TestVerbWrappersSendTheirArgumentsOrRefuse(t *testing.T) {
 			params:  func(p control.Params) bool { return p.Sub == "apply" && p.Name == "Debug" },
 		},
 		{
-			name:  "mods preset unknown subcommand",
-			args:  []string{"mods", "preset", "stardew", "Farm", "A.Mod", "drop"},
-			usage: "mods preset needs list, save, apply, or delete",
+			name:    "mods preset unknown subcommand",
+			args:    []string{"mods", "preset", "stardew", "Farm", "A.Mod", "drop"},
+			results: map[string]any{"mods.preset": []string{}},
+			method:  "mods.preset",
+			params:  func(p control.Params) bool { return p.Sub == "drop" },
 		},
 		{
 			name:    "profile set joins the value",

@@ -13,7 +13,7 @@ func TestModsPresetSendsActionAndName(t *testing.T) {
 		t.Fatalf("save: %+v", r)
 	}
 	r = invoke(t, results, "mods", "preset", "stardew", "Farm", "A.Mod", "apply")
-	if r.code != 2 {
+	if r.code != 0 || r.calls[0].params.Sub != "apply" || r.calls[0].params.Name != "" {
 		t.Fatalf("apply without name: %+v", r)
 	}
 }
