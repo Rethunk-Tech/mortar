@@ -40,6 +40,16 @@ func TestEveryMethodTheCLISendsIsDispatched(t *testing.T) {
 	}
 }
 
+func TestGameNameUnknownReturnsID(t *testing.T) {
+	name, ok := gameName("not-a-game")
+	if ok {
+		t.Fatal("unknown game reported as found")
+	}
+	if name != "not-a-game" {
+		t.Fatalf("got %q, want the id", name)
+	}
+}
+
 func TestUnknownMethodError(t *testing.T) {
 	s := services(t)
 	_, err := s.Handle(context.Background(), "not.a.method", Params{})

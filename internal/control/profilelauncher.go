@@ -18,19 +18,6 @@ type SteamShortcutResult struct {
 	Result steam.AddResult `json:"result"`
 }
 
-func (s *Services) gameName(id string) (string, error) {
-	list, err := s.Games.List()
-	if err != nil {
-		return "", err
-	}
-	for _, g := range list {
-		if g.ID == id {
-			return g.Name, nil
-		}
-	}
-	return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", id))
-}
-
 func (s *Services) profileShortcut(gameID, profileID string, remove bool) (ShortcutResult, error) {
 	if s.Plays == nil {
 		return ShortcutResult{}, fmt.Errorf("shortcuts are unavailable")
@@ -39,9 +26,9 @@ func (s *Services) profileShortcut(gameID, profileID string, remove bool) (Short
 	if err != nil {
 		return ShortcutResult{}, err
 	}
-	gameName, err := s.gameName(gameID)
-	if err != nil {
-		return ShortcutResult{}, err
+	gameName, ok := gameName(gameID)
+	if !ok {
+		return ShortcutResult{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", gameID))
 	}
 	if remove {
 		if err := s.Plays.Remove(gameID, prof.ID); err != nil {
@@ -64,9 +51,9 @@ func (s *Services) profileSteam(gameID, profileID string) (SteamShortcutResult, 
 	if err != nil {
 		return SteamShortcutResult{}, err
 	}
-	gameName, err := s.gameName(gameID)
-	if err != nil {
-		return SteamShortcutResult{}, err
+	gameName, ok := gameName(gameID)
+	if !ok {
+		return SteamShortcutResult{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", gameID))
 	}
 	res, err := s.Plays.AddToSteam(gameID, gameName, prof.ID, prof.Name)
 	if err != nil {

@@ -1782,8 +1782,11 @@ func (s *Services) shareLog(ctx context.Context, gameID, id, run string) (map[st
 // launchWait bounds how long launch waits for the game to leave Launching.
 var launchWait = 3 * time.Minute
 
-func gameName(id string) string {
-	return game.NameOf(id)
+// gameName is the catalog display name. Launch warnings keep the id when the
+// game is unknown so the player still sees which game failed; shortcut and
+// Steam need a real name, so those callers treat ok=false as NotFound.
+func gameName(id string) (string, bool) {
+	return game.NameOf(id), game.Find(id) != nil
 }
 
 type launchWarningError struct {
@@ -2027,7 +2030,8 @@ func (s *Services) launch(ctx context.Context, gameID, id, installID, preset str
 			return launchsvc.Status{}, err
 		}
 		if save, gap := adviceOnly(s.Saves.LastSaveGap(ctx, gameID, id)); update.Changed || gap {
-			return launchsvc.Status{}, launchWarningError{game: gameName(gameID), update: update, save: save, gap: gap}
+			name, _ := gameName(gameID)
+			return launchsvc.Status{}, launchWarningError{game: name, update: update, save: save, gap: gap}
 		}
 	}
 	if err := s.Launches.StartPreset(ctx, gameID, id, installID, preset, s.Launches.LaunchesDirect(gameID, id)); err != nil {
