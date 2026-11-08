@@ -159,8 +159,8 @@ export function QueueSheet() {
   const [history, setHistory] = useState<HistoryEntry[] | null>(null)
   const [filters, setFilters] = useState<HistoryFilters>(emptyFilters)
   const gen = useRef(makeGen())
-  // History gains a row whenever a download settles.
-  const settled = items.filter((i) => i.state === 'failed' || isClearableFinished(i.state)).length
+  // The settled count of the last read, so a progress tick does not read History again.
+  const lastSettled = useRef<number | null>(null)
   const close = () => {
     setView('queue')
     setOpen(false)
@@ -173,9 +173,16 @@ export function QueueSheet() {
     }
   }, [open, historyBatchId])
   useEffect(() => {
-    if (!open || view !== 'history' || settled < 0) {
+    if (!open || view !== 'history') {
+      lastSettled.current = null
       return
     }
+    // History gains a row whenever a download settles, so that count is what re-reads it; progress alone reads nothing.
+    const settled = items.filter((i) => i.state === 'failed' || isClearableFinished(i.state)).length
+    if (lastSettled.current === settled) {
+      return
+    }
+    lastSettled.current = settled
     const id = gen.current.stamp()
     loadHistory()
       .then((rows) => {
@@ -187,7 +194,7 @@ export function QueueSheet() {
     return () => {
       gen.current.drop()
     }
-  }, [open, view, settled])
+  }, [open, view, items])
   return (
     <Drawer
       anchor="right"
