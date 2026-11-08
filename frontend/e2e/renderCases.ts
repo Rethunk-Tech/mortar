@@ -88,9 +88,9 @@ export function newCases(h: Helpers): Case[] {
     },
     {
       name: 'mods-sort-manual',
-      // Two keyboard drags (there and back): dnd-kit redraws every mounted grip on each pick, move and drop (~3,800),
-      // and each drop re-sorts the list (~1,400).
-      budget: { updates: 6500 },
+      // Two keyboard drags (there and back): dnd-kit redraws every mounted grip on each pick, move and drop (~3,800 to
+      // ~4,700 as the copied data puts more rows on screen), and each drop re-sorts the list (~1,400).
+      budget: { updates: 8000 },
       setup: (p) => view(p, 'List view'),
       run: async (p) => {
         await sortBy(p, /^Manual/)

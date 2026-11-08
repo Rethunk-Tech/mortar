@@ -265,10 +265,14 @@ function configRunningCase(
     name: 'config-game-running',
     // The sidebar's running time ticks once a second.
     budget: { idleUpdates: 40, idleCommits: 20 },
+    // Setup opens the page once, so the run measures the running state's page rather than a cold load after the reload.
     setup: async (p) => {
       await p.route('**/wails/runtime', running)
       await reloadUnder(p, tabs)
       await openGame(p, tabs(p), 'Stardew Valley')
+      await tab(p, 'Config')
+      await p.getByText(/^The game is running\. Most mods/).waitFor()
+      await tab(p, 'Home')
     },
     run: async (p) => {
       await tab(p, 'Config')

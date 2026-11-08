@@ -63,12 +63,10 @@ export function detailsCases(
   const openUpdated = async (p: Page) => {
     await openGame(p, tabs(p), 'Stardew Valley')
     await tab(p, 'Mods')
-    // Earlier cases leave the list view or a collapsed group behind.
+    // Earlier cases leave the list view behind, and the copied settings may group, sort or collapse the list any way:
+    // the filter brings the mod up wherever it sits.
     await p.getByRole('button', { name: 'Grid view' }).click()
-    const collapsed = p.getByRole('button', { name: /^Update available/, expanded: false })
-    if ((await collapsed.count()) > 0) {
-      await collapsed.first().click()
-    }
+    await p.getByRole('textbox', { name: /^Filter/ }).fill('Cornucopia')
     await p
       .getByRole('button', { name: /^Details of Cornucopia/ })
       .first()
