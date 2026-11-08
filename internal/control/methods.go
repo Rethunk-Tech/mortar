@@ -591,19 +591,25 @@ func (s *Services) dispatchGlobal6(ctx context.Context, method string, p Params)
 	case "queue":
 		return s.Queue.State(), nil
 	case "queue.retry":
+		var n int
 		if p.Name == "" {
-			s.Queue.RetryFailed()
+			n = s.Queue.RetryFailed()
 		} else {
-			s.Queue.Retry(p.Name)
+			n = s.Queue.Retry(p.Name)
 		}
-		return s.Queue.State(), nil
+		st := s.Queue.State()
+		st.Changed = n
+		return st, nil
 	case "queue.skip":
+		var n int
 		if p.Name == "" {
-			s.Queue.SkipAll()
+			n = s.Queue.SkipAll()
 		} else {
-			s.Queue.Skip(p.Name)
+			n = s.Queue.Skip(p.Name)
 		}
-		return s.Queue.State(), nil
+		st := s.Queue.State()
+		st.Changed = n
+		return st, nil
 	case "queue.add":
 		return s.queueAdd(ctx, p)
 	}

@@ -256,6 +256,7 @@ type State struct {
 	Items        []Item `json:"items"`
 	Paused       bool   `json:"paused"`
 	LimitedUntil int64  `json:"limitedUntil"`
+	Changed      int    `json:"changed,omitempty"`
 }
 
 // Request asks for one file. FileID may be 0 to have Mortar choose by Version. CurrentKey is the store key of the
@@ -680,6 +681,20 @@ func finished(state string) bool {
 	return state == StateDone || state == StateSkipped || state == StateCancelled
 }
 
+// NeedsPlayer reports a state that is waiting on the player.
+func NeedsPlayer(state string) bool {
+	switch state {
+	case StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge:
+		return true
+	}
+	return false
+}
+
+// Startable reports a state that has not started transferring.
+func Startable(state string) bool {
+	return state == StateQueued || state == StatePaused || NeedsPlayer(state)
+}
+
 // sameDownload is an in-flight queue item for the same file. GitHub items match on repo, tag and asset; an
 // unresolved empty asset is not the same as a chosen one.
 func sameDownload(it *Item, r Request) bool {
@@ -978,21 +993,24 @@ func (s *Service) InstallAnyway(id string) error {
 }
 
 // Retry queues a failed item again.
-func (s *Service) Retry(id string) { s.retry(func(it *Item) bool { return it.ID == id }) }
+func (s *Service) Retry(id string) int { return s.retry(func(it *Item) bool { return it.ID == id }) }
 
 // RetryFailed queues every failed item again.
-func (s *Service) RetryFailed() { s.retry(func(*Item) bool { return true }) }
+func (s *Service) RetryFailed() int { return s.retry(func(*Item) bool { return true }) }
 
-func (s *Service) retry(match func(*Item) bool) {
+func (s *Service) retry(match func(*Item) bool) int {
+	n := 0
 	s.mu.Lock()
 	for _, it := range s.items {
 		if (it.State == StateFailed || it.State == StateSkipped) && match(it) {
 			it.State, it.Error, it.ErrorKind, it.busy = StateQueued, "", "", 0
+			n++
 		}
 	}
 	s.mu.Unlock()
 	s.publish(true)
 	s.poke()
+	return n
 }
 
 func dismissable(state string) bool {
@@ -1019,31 +1037,34 @@ func (s *Service) drop(match func(*Item) bool) {
 }
 
 // Skip drops an item that has not started, that failed, or that waits for the user.
-func (s *Service) Skip(id string) {
-	s.end(id, StateSkipped, StateFailed, StateQueued, StatePaused, StateWaitingClick, StateDownloading, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge)
+func (s *Service) Skip(id string) int {
+	return s.endMatch(id, StateSkipped, "", func(state string) bool {
+		return Startable(state) || state == StateDownloading || state == StateFailed
+	})
 }
 
 // SkipAll skips every item that has not started.
-func (s *Service) SkipAll() {
+func (s *Service) SkipAll() int {
 	s.mu.Lock()
 	var ids []string
 	for _, it := range s.items {
-		if slices.Contains([]string{StateQueued, StatePaused, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge}, it.State) {
+		if Startable(it.State) {
 			ids = append(ids, it.ID)
 		}
 	}
 	s.mu.Unlock()
+	n := 0
 	for _, id := range ids {
-		s.Skip(id)
+		n += s.Skip(id)
 	}
+	return n
 }
 
 // SkipProfile skips every not-yet-started item for a profile.
 func (s *Service) SkipProfile(game, profileID string) {
 	s.mu.Lock()
 	for _, it := range s.items {
-		if it.Game == game && it.Profile == profileID &&
-			slices.Contains([]string{StateQueued, StatePaused, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge}, it.State) {
+		if it.Game == game && it.Profile == profileID && Startable(it.State) {
 			it.State, it.Progress, it.Speed, it.key, it.staged, it.Error = StateSkipped, 0, 0, "", "", "profile deleted"
 		}
 	}
@@ -1151,13 +1172,19 @@ func (s *Service) Cancel(id string) {
 	s.end(id, StateCancelled, StateQueued, StatePaused, StateWaitingClick, StateDownloading, StateConfirmLarge)
 }
 
-func (s *Service) end(id, to string, from ...string) { s.endWith(id, to, "", from...) }
+func (s *Service) end(id, to string, from ...string) int {
+	return s.endWith(id, to, "", from...)
+}
 
 // endWith is end that also leaves msg as the item's reason when it is not empty.
-func (s *Service) endWith(id, to, msg string, from ...string) {
+func (s *Service) endWith(id, to, msg string, from ...string) int {
+	return s.endMatch(id, to, msg, func(state string) bool { return slices.Contains(from, state) })
+}
+
+func (s *Service) endMatch(id, to, msg string, match func(string) bool) int {
 	var rec *Item
 	s.mu.Lock()
-	if it := s.find(id); it != nil && slices.Contains(from, it.State) {
+	if it := s.find(id); it != nil && match(it.State) {
 		snap := *it
 		rec = &snap
 		it.State, it.Progress, it.Speed, it.key, it.staged = to, 0, 0, "", ""
@@ -1170,13 +1197,16 @@ func (s *Service) endWith(id, to, msg string, from ...string) {
 	}
 	s.mu.Unlock()
 	s.publish(true)
+	n := 0
 	if rec != nil {
 		if to == StateCancelled || to == StateSkipped {
 			download.Remove(s.dest(rec.ID, rec.FileName))
 		}
 		s.recordHistory(rec, to)
+		n = 1
 	}
 	s.poke()
+	return n
 }
 
 // Pause stops new downloads from starting, and Resume lets them go on.

@@ -2119,21 +2119,16 @@ func (c *cmd) queueRetrySkip(sub string) error {
 	if len(c.args) > 2 {
 		id = c.args[2]
 	}
-	var before queue.State
-	if err := c.call("queue", control.Params{}, &before, readTimeout); err != nil {
-		return err
-	}
-	n := queueActionCount(before, sub, id)
 	var st queue.State
 	if err := c.call(method, control.Params{Name: id}, &st, readTimeout); err != nil {
 		return err
 	}
 	return c.emit(st, func() {
 		if sub == "retry" {
-			fmt.Fprintf(c.out, "Retried %d failed downloads.\n", n)
+			fmt.Fprintf(c.out, "Retried %d failed downloads.\n", st.Changed)
 			return
 		}
-		fmt.Fprintf(c.out, "Skipped %d downloads.\n", n)
+		fmt.Fprintf(c.out, "Skipped %d downloads.\n", st.Changed)
 	})
 }
 

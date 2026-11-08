@@ -323,6 +323,63 @@ func TestSkipCancelsAFetch(t *testing.T) {
 	}
 }
 
+func TestNeedsPlayerAndStartable(t *testing.T) {
+	t.Parallel()
+	for _, state := range []string{
+		StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge,
+	} {
+		if !NeedsPlayer(state) || !Startable(state) {
+			t.Errorf("%s: NeedsPlayer=%v Startable=%v", state, NeedsPlayer(state), Startable(state))
+		}
+	}
+	if NeedsPlayer(StateQueued) || NeedsPlayer(StatePaused) || !Startable(StateQueued) || !Startable(StatePaused) {
+		t.Fatal("queued and paused are startable only")
+	}
+	for _, state := range []string{StateDownloading, StateFailed, StateDone, StateSkipped} {
+		if NeedsPlayer(state) || Startable(state) {
+			t.Errorf("%s should be neither", state)
+		}
+	}
+}
+
+func TestSkipAndRetryReturnHowManyChanged(t *testing.T) {
+	t.Parallel()
+	s := &Service{
+		d:       Deps{Dir: t.TempDir(), Now: func() time.Time { return time.Unix(1, 0).UTC() }},
+		kick:    make(chan struct{}, 1),
+		cancels: map[string]context.CancelFunc{},
+	}
+	s.items = []*Item{
+		{ID: "paused", State: StatePaused},
+		{ID: "dl", State: StateDownloading},
+		{ID: "done", State: StateDone},
+		{ID: "failed", State: StateFailed},
+	}
+	if n := s.Skip("paused"); n != 1 || s.find("paused").State != StateSkipped {
+		t.Errorf("skip paused = %d %s", n, s.find("paused").State)
+	}
+	if n := s.Skip("dl"); n != 1 || s.find("dl").State != StateSkipped {
+		t.Errorf("skip downloading = %d %s", n, s.find("dl").State)
+	}
+	if n := s.Skip("done"); n != 0 || s.find("done").State != StateDone {
+		t.Errorf("skip done = %d %s", n, s.find("done").State)
+	}
+	if n := s.Retry("failed"); n != 1 || s.find("failed").State != StateQueued {
+		t.Errorf("retry failed = %d %s", n, s.find("failed").State)
+	}
+	if n := s.Retry("done"); n != 0 {
+		t.Errorf("retry done = %d", n)
+	}
+	s.items = []*Item{
+		{ID: "q", State: StateQueued},
+		{ID: "click", State: StateWaitingClick},
+		{ID: "dl2", State: StateDownloading},
+	}
+	if n := s.SkipAll(); n != 2 {
+		t.Errorf("SkipAll = %d, want 2", n)
+	}
+}
+
 // Not parallel: its subtests share one fixture's premium flag.
 func TestFetchSlotsCapPremiumAndFreeSources(t *testing.T) {
 	f := newFixture(t)

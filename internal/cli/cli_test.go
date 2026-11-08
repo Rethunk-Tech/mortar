@@ -727,7 +727,11 @@ func TestQueueRetrySkipAndHumanStates(t *testing.T) {
 			{"id": "3", "name": "Gamma", "version": "1", "state": "waiting-click", "error": ""},
 		},
 	}
-	results := map[string]any{"queue": st, "queue.retry": st, "queue.skip": st}
+	results := map[string]any{
+		"queue":       st,
+		"queue.retry": map[string]any{"items": st["items"], "changed": 1},
+		"queue.skip":  map[string]any{"items": st["items"], "changed": 2},
+	}
 	r := invoke(t, results, "queue")
 	if r.code != 0 || !strings.Contains(r.out, "waiting") || !strings.Contains(r.out, "failed") || !strings.Contains(r.out, "needs a click") {
 		t.Fatalf("queue table: %q", r.out)
@@ -742,6 +746,19 @@ func TestQueueRetrySkipAndHumanStates(t *testing.T) {
 	r = invoke(t, results, "queue", "skip")
 	if r.code != 0 || !strings.Contains(r.out, "Skipped 2 downloads.") {
 		t.Fatalf("skip: %q", r.out)
+	}
+}
+
+func TestQueueSkipPrintsTheServiceCount(t *testing.T) {
+	paused := map[string]any{
+		"items": []map[string]any{
+			{"id": "1", "name": "Alpha", "version": "1", "state": "paused", "error": ""},
+		},
+		"changed": 1,
+	}
+	r := invoke(t, map[string]any{"queue": paused, "queue.skip": paused}, "queue", "skip", "1")
+	if r.code != 0 || !strings.Contains(r.out, "Skipped 1 downloads.") {
+		t.Fatalf("skip paused: code %d %q", r.code, r.out)
 	}
 }
 
