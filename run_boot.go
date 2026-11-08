@@ -213,7 +213,8 @@ func (c *boot) serveHandoffs() {
 
 func (c *boot) showForHandoff(d application.SecondInstanceData) {
 	nxmLink := c.nxmSvc.Receive(d.Args)
-	closed, visible := c.windowClosed(), !c.windowClosed() && c.window.IsVisible()
+	closed := c.windowClosed()
+	visible := !closed && c.window.IsVisible()
 	if !c.shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) && !c.plays.Receive(d.Args) && nxmLink && !closed && visible {
 		return
 	}
