@@ -783,6 +783,10 @@ msgstr ""
 msgid "The folder of {name} was deleted outside Mortar"
 msgstr ""
 
+#: src/profiles/historyRevert.test.ts
+msgid "This is no longer the latest change to that mod."
+msgstr ""
+
 #: src/profiles/CompareDialog.tsx
 msgid "Nothing selected would change {name}."
 msgstr ""
@@ -1585,10 +1589,6 @@ msgstr ""
 
 #: src/profiles/historyDiff.ts
 msgid "Changed {fileName} of {name}"
-msgstr ""
-
-#: src/profiles/historyRevert.ts
-msgid "This is no longer the latest change."
 msgstr ""
 
 #: src/profiles/historyLabel.ts

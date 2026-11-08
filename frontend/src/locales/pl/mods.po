@@ -893,6 +893,7 @@ msgstr ""
 msgid "No enabled mods"
 msgstr ""
 
+#: src/mods/problemReport.ts
 #: src/mods/ProblemsTab.tsx
 msgid "Cleanup"
 msgstr ""
@@ -1331,7 +1332,7 @@ msgid "Remove {name} from other profiles"
 msgstr ""
 
 #: src/mods/CleanupSection.tsx
-#: src/mods/ProblemsTab.tsx
+#: src/mods/problemReport.ts
 msgid "Not needed by any enabled mod"
 msgstr ""
 
@@ -1501,7 +1502,7 @@ msgstr ""
 msgid "Library"
 msgstr ""
 
-#: src/mods/ProblemsTab.tsx
+#: src/mods/problemReport.ts
 msgid "Harmless"
 msgstr ""
 
@@ -1721,6 +1722,7 @@ msgstr ""
 msgid "Uploading…"
 msgstr ""
 
+#: src/mods/problemReport.ts
 #: src/mods/ProblemsTab.tsx
 msgid "Redundant"
 msgstr ""
@@ -1786,12 +1788,17 @@ msgstr ""
 msgid "Import a shared profile…"
 msgstr ""
 
+#: src/mods/problemReport.ts
 #: src/mods/ProblemsTab.tsx
 msgid "Replaced"
 msgstr ""
 
 #: src/mods/SlowStartupSection.tsx
 msgid "{app} packs"
+msgstr ""
+
+#: src/mods/storeEntries.test.ts
+msgid "This is no longer the latest change to that mod."
 msgstr ""
 
 #: src/mods/describe.ts
@@ -1819,6 +1826,7 @@ msgstr ""
 msgid "Optional files"
 msgstr ""
 
+#: src/mods/problemReport.ts
 #: src/mods/SlowStartupSection.tsx
 msgid "{name} adds {time} to startup (through {framework})"
 msgstr ""
@@ -1913,6 +1921,7 @@ msgstr ""
 msgid "Checking {count, plural, one {# mod} other {# mods}} for conflicts, missing requirements and compatibility…"
 msgstr ""
 
+#: src/mods/problemReport.ts
 #: src/mods/ProblemsTab.tsx
 msgid "Slow startup"
 msgstr ""
@@ -2594,6 +2603,7 @@ msgid "Main only"
 msgstr ""
 
 #: src/mods/CompatChip.tsx
+#: src/mods/problemReport.ts
 #: src/mods/ProblemsTab.tsx
 msgid "Compatibility"
 msgstr ""
@@ -3195,6 +3205,7 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
+#: src/mods/problemReport.ts
 #: src/mods/SlowStartupSection.tsx
 msgid "{name} adds {time} to startup"
 msgstr ""
@@ -3499,7 +3510,7 @@ msgstr ""
 
 #: src/mods/CleanupSection.tsx
 #: src/mods/LoadOrderRowParts.tsx
-#: src/mods/ProblemsTab.tsx
+#: src/mods/problemReport.ts
 msgid "Unknown mod"
 msgstr ""
 
@@ -3947,6 +3958,7 @@ msgstr ""
 msgid "{count, plural, one {Removed # mod} other {Removed # mods}}"
 msgstr ""
 
+#: src/mods/problemReport.ts
 #: src/mods/ProblemsTab.tsx
 msgid "File conflicts"
 msgstr ""
