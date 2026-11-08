@@ -111,14 +111,11 @@ func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
 	testfs.WriteFile(t, install, "Lethal Company_Data/new.assets", "added")
 	dep.unwind(t.Context())
 	got := testfs.Tree(t, install)
-	if got["Lethal Company.exe"] != "patched" || got["Lethal Company_Data/new.assets"] != "added" || got["winhttp.dll"] != "the player's own" {
+	if got["Lethal Company.exe"] != "patched" || got["Lethal Company_Data/new.assets"] != "added" {
 		t.Errorf("install after the launch: %v", got)
 	}
-	if _, ok := got["doorstop_config.ini"]; ok {
-		t.Error("doorstop_config.ini outlives the launch")
-	}
-	if len(got) != len(before)+2 { // plus the added folder and file
-		t.Errorf("install after the launch: %v, before %v", got, before)
+	if got["winhttp.dll"] != "proxy" || got["doorstop_config.ini"] != "ini" {
+		t.Errorf("kept placed files after the launch: %v", got)
 	}
 
 	if dep, err := svc.deployProfile(t.Context(), "stardew", inst, p.ID, launchplan.New(launchplan.ModeProfile)); err != nil || dep.d != nil {

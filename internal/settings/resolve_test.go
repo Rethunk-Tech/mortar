@@ -34,11 +34,27 @@ func TestResolveSkipPlayCheck(t *testing.T) {
 	}
 }
 
+func TestKeepPlacedFilesDefaultsOnAndAProfileMayOverrideIt(t *testing.T) {
+	t.Parallel()
+	var empty Settings
+	if got := ResolveAt(empty, "keepPlacedFiles", Scope{Game: "sims4"}, nil); got != "true" {
+		t.Fatalf("default keep = %q", got)
+	}
+	game := Settings{}
+	putGame(&game, "sims4", GameSettings{KeepPlacedFiles: false})
+	if got := ResolveAt(game, "keepPlacedFiles", Scope{Game: "sims4"}, nil); got != "false" {
+		t.Fatalf("game keep = %q", got)
+	}
+	if got := ResolveAt(game, "keepPlacedFiles", Scope{Game: "sims4"}, map[string]string{"keepPlacedFiles": "true"}); got != "true" {
+		t.Fatalf("profile keep = %q", got)
+	}
+}
+
 func TestProfileOverridableKeys(t *testing.T) {
 	t.Parallel()
 	for _, key := range []string{
 		"defaultLaunchMethod", "instances", "delaySeconds", "showSmapiConsole", "backupBeforePlay",
-		"saveBackupsKept", "updateModsBeforePlayDefault", "skipPlayCheck", "skipIntro",
+		"saveBackupsKept", "updateModsBeforePlayDefault", "skipPlayCheck", "keepPlacedFiles", "skipIntro",
 		"saveBackupHours", "saveBackupKeep", "runsKept", "consoleLogCap", "consoleLevel", "consoleTimestamps",
 		"consoleFollow", "cosmeticConflicts", "conflictScanDepth", "enableRequirements", "disableDependencies", "missingRequirements",
 	} {

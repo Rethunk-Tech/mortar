@@ -42,3 +42,15 @@ func TestLoadLineCountsModsUntilTheLoaderIsReady(t *testing.T) {
 		t.Fatalf("%+v", p)
 	}
 }
+
+func TestThrottleProgressReportsTheFirstAndLastAndSkipsTheMiddle(t *testing.T) {
+	var got [][2]int
+	fn := throttleProgress(func(done, total int) { got = append(got, [2]int{done, total}) }, time.Hour)
+	fn(0, 3)
+	fn(1, 3)
+	fn(2, 3)
+	fn(3, 3)
+	if len(got) != 2 || got[0] != [2]int{0, 3} || got[1] != [2]int{3, 3} {
+		t.Fatalf("reports = %v, want the first and the last", got)
+	}
+}

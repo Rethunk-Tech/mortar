@@ -366,7 +366,19 @@ func (s *Service) deployProfile(ctx context.Context, gameID string, inst game.In
 	if err != nil {
 		return nil, err
 	}
-	return startDeploy(ctx, inst, plan, roots)
+	mode := deploy.Mode{Progress: s.placeProgress(gameID)}
+	if s.keepPlaced(gameID, profileID) {
+		mode.Reuse = deploy.ReuseStat
+	}
+	return startDeploy(ctx, inst, plan, roots, mode)
+}
+
+func (s *Service) keepPlaced(gameID, profileID string) bool {
+	cur := settings.Defaults()
+	if s.settings != nil {
+		cur = s.settings.Get()
+	}
+	return settings.ResolveAt(cur, "keepPlacedFiles", settings.Scope{Game: gameID, Profile: profileID}, launchOverrides(s.profiles, gameID, profileID)) == "true"
 }
 
 // planRoots resolves the catalog path roles the plan's files are placed under (a mods folder outside the install).
@@ -412,11 +424,17 @@ func (s *Service) prelaunch(gameID, profileID, installDir string) error {
 
 // startDeploy places plan's install-side files into inst, journaled before the first file moves. A launch with none
 // returns a deployment that has nothing to take back.
-func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan, roots map[string]string) (*deployment, error) {
+func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan, roots map[string]string, mode deploy.Mode) (*deployment, error) {
+	d := &deploy.Place{Mode: mode}
 	if plan.Mode == launchplan.ModeVanilla || len(plan.Files) == 0 {
+		dir, err := journalDir(inst.ID)
+		if err == nil {
+			if err := d.DiscardKept(ctx, dir); err != nil {
+				return nil, err
+			}
+		}
 		return &deployment{}, nil
 	}
-	d := &deploy.Place{}
 	dir, err := journalDir(inst.ID)
 	if err != nil {
 		return nil, err
@@ -510,7 +528,7 @@ func (s *Service) RecoverGameDeploys(ctx context.Context, id string) (found bool
 			continue
 		}
 		alive := func() bool { return s.slotInUse(sl) }
-		if deploy.HasJournal(dir) {
+		if deploy.HasJournal(dir) && !deploy.Kept(dir) {
 			found = true
 		}
 		if err := d.Recover(ctx, dir, alive); err != nil {
@@ -575,7 +593,7 @@ func (s *Service) LeftoverJournals(gameID string) []string {
 		if s.slotInUse(sl) {
 			continue
 		}
-		if dir, err := journalDir(sl.inst); err == nil && deploy.HasJournal(dir) {
+		if dir, err := journalDir(sl.inst); err == nil && deploy.HasJournal(dir) && !deploy.Kept(dir) {
 			out = append(out, dir)
 		}
 		for _, k := range swapJournals {

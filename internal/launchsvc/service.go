@@ -1129,6 +1129,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		env.LogFile = s.followLog(g.ID(), profileID)
 	}
 	// The install is locked from the preparing claim until the waiter has unwound: a second launch finds the game busy.
+	s.emitPlaceProgress(g, profileID, vanilla)
 	dep, err := s.deployProfile(ctx, g.ID(), inst, profileID, plan)
 	if err != nil {
 		return err
@@ -1163,7 +1164,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	if env.Direct {
 		copies = min(max(env.Instances, 1), 8)
 	}
-	progress := s.newProgress(g, profileID, copies, vanilla)
+	progress := s.placedProgress(g, copies, profileID, vanilla)
 	s.hookEnv(g, buf, &env)
 	s.mu.Lock()
 	s.logs[keyOf(g)], s.stop[keyOf(g)] = session{

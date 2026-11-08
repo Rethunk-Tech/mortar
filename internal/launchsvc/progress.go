@@ -35,6 +35,10 @@ type Progress struct {
 	Total  int    `json:"total"`
 	Mod    string `json:"mod"`
 	Ready  bool   `json:"ready"`
+	// Placed is how many of the profile's files this Play has copied into the game folder, PlaceTotal the number this
+	// Play still has to copy (files the last Play left standing are not counted).
+	Placed     int `json:"placed,omitempty"`
+	PlaceTotal int `json:"placeTotal,omitempty"`
 	// UsualMs is how long this profile's recent launches took to be ready, zero without any.
 	UsualMs int64 `json:"usualMs"`
 }
@@ -72,6 +76,27 @@ func slowAt(started time.Time, usualMs int64) time.Time {
 	return started.Add(max(2*time.Duration(usualMs)*time.Millisecond, 30*time.Second))
 }
 
+// emitPlaceProgress puts a launch's progress on the launch screen before files are copied, so the placing stage has
+// something to show.
+func (s *Service) emitPlaceProgress(g game.Game, profileID string, vanilla bool) {
+	progress := s.newProgress(g, profileID, 1, vanilla)
+	s.mu.Lock()
+	s.logs[keyOf(g)] = session{progress: progress, profile: profileID, vanilla: vanilla, started: time.Now()}
+	s.mu.Unlock()
+	s.emit(ProgressEvent, progress)
+}
+
+// placedProgress is the launch's progress with the copy counts the placing stage already reported.
+func (s *Service) placedProgress(g game.Game, copies int, profileID string, vanilla bool) Progress {
+	progress := s.newProgress(g, profileID, copies, vanilla)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if sess, ok := s.logs[keyOf(g)]; ok {
+		progress.Placed, progress.PlaceTotal = sess.progress.Placed, sess.progress.PlaceTotal
+	}
+	return progress
+}
+
 // newProgress is the progress of a launch that is about to start.
 func (s *Service) newProgress(g game.Game, profileID string, copies int, vanilla bool) Progress {
 	p := Progress{Game: g.ID(), Profile: profileID, Copies: max(copies, 1)}
@@ -98,7 +123,7 @@ func (s *Service) newProgress(g game.Game, profileID string, copies int, vanilla
 func (s *Service) updateProgress(g game.Game, buf *launch.Buffer, change func(*Progress)) {
 	s.mu.Lock()
 	sess, ok := s.logs[keyOf(g)]
-	if !ok || sess.buf != buf {
+	if !ok || (buf != nil && sess.buf != buf) {
 		s.mu.Unlock()
 		return
 	}
@@ -150,6 +175,34 @@ func loadLine(l loader.Loader, line string, p *Progress) bool {
 	p.Loaded++
 	p.Mod = mod
 	return true
+}
+
+// placeProgress reports how many files this Play has copied, at most about ten times a second.
+func (s *Service) placeProgress(gameID string) func(done, total int) {
+	g := game.Find(gameID)
+	if g == nil {
+		return nil
+	}
+	return throttleProgress(func(done, total int) {
+		s.updateProgress(g, nil, func(p *Progress) {
+			p.Placed, p.PlaceTotal = done, total
+		})
+	}, 100*time.Millisecond)
+}
+
+func throttleProgress(fn func(int, int), d time.Duration) func(int, int) {
+	if fn == nil {
+		return nil
+	}
+	var last time.Time
+	return func(done, total int) {
+		now := time.Now()
+		if done != 0 && done != total && !last.IsZero() && now.Sub(last) < d {
+			return
+		}
+		last = now
+		fn(done, total)
+	}
 }
 
 // LaunchProgress is the progress of the game's current or last launch.

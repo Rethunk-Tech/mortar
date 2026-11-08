@@ -916,6 +916,10 @@ msgstr ""
 msgid "Downloaded mods no profile uses"
 msgstr ""
 
+#: src/settings/prefCopyGame.ts
+msgid "Keep mods in the game folder"
+msgstr ""
+
 #: src/settings/sections/General.tsx
 msgid "Help"
 msgstr ""
@@ -2999,6 +3003,10 @@ msgstr ""
 
 #: src/settings/sections/Storage.tsx
 msgid "Could not inspect the destination folder"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "With this on, the profile's mods stay in the game's folder after the game exits, so starting the game outside Mortar loads them too. Turn it off to have Mortar remove them each time."
 msgstr ""
 
 #: src/settings/prefCopy.ts

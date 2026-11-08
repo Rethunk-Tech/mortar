@@ -23,7 +23,9 @@ const journalFile = "deploy.json"
 
 // Place copies a loader's install-side files into the game folder. The game and its anti-cheat may write to the placed
 // files, so they are copies, never links into the store.
-type Place struct{}
+type Place struct {
+	Mode Mode
+}
 
 // Plan resolves the loaders' install-side plan files, whose Dst is relative to dir, the install folder.
 func (Place) Plan(view View, dir string, files []launchplan.PlanFile) (Plan, error) {
@@ -66,10 +68,23 @@ func ownedOf(base string, f launchplan.PlanFile) (Owned, bool) {
 
 func journalPath(dir string) string { return filepath.Join(dir, journalFile) }
 
+// displacedPath is where the file an op set aside is kept. The Play's generation keeps a later Play's backup from landing
+// on an earlier one at the same index.
+func displacedPath(dir string, gen, i int) string {
+	return filepath.Join(dir, "displaced", fmt.Sprint(gen), fmt.Sprint(i))
+}
+
 // HasJournal reports whether dir holds the record of a deploy not yet undone.
 func HasJournal(dir string) bool {
 	_, err := os.Stat(journalPath(dir))
 	return err == nil
+}
+
+// Kept reports whether dir holds a journal a Play left in place on purpose.
+func Kept(dir string) bool {
+	var m Manifest
+	found, err := datadir.ReadJournal(journalPath(dir), nil, &m)
+	return err == nil && found && m.Keep
 }
 
 func persist(m Manifest) error {
@@ -81,51 +96,54 @@ func persist(m Manifest) error {
 var ErrUnrecovered = errors.New("an earlier deploy has not been taken back")
 
 // Apply persists the manifest, then places the files.
-func (Place) Apply(ctx context.Context, p Plan) (Manifest, error) {
-	if _, err := os.Lstat(journalPath(p.View.JournalDir)); err == nil {
-		return Manifest{}, fmt.Errorf("%w: recover %s first", ErrUnrecovered, p.View.JournalDir)
+func (p Place) Apply(ctx context.Context, q Plan) (Manifest, error) {
+	prev, prevDst, reuse, err := p.carryover(q.View.JournalDir)
+	if err != nil {
+		return Manifest{}, err
+	}
+	if _, err := os.Lstat(journalPath(q.View.JournalDir)); err == nil && !reuse {
+		if !prev.Keep {
+			return Manifest{}, fmt.Errorf("%w: recover %s first", ErrUnrecovered, q.View.JournalDir)
+		}
+		// A Play that kept its files left this journal on purpose; this Play places everything, so it goes first.
+		prev.Keep = false
+		if err := p.Purge(ctx, prev); err != nil {
+			return Manifest{}, err
+		}
+		prev, prevDst = Manifest{}, nil
 	}
 	// A plan that places only into a folder outside the install (a mods folder in Documents) needs no write access to it.
-	if slices.ContainsFunc(p.Ops, func(o Op) bool { return safefs.UnderRoot(p.Dir, o.Dst) }) {
-		if err := datadir.CheckWritable(p.Dir); err != nil {
+	if slices.ContainsFunc(q.Ops, func(o Op) bool { return safefs.UnderRoot(q.Dir, o.Dst) }) {
+		if err := datadir.CheckWritable(q.Dir); err != nil {
 			return Manifest{}, err
 		}
 	}
-	m := Manifest{Dir: p.Dir, View: p.View, Owned: p.Owned, Existing: listOwned(p.Owned)}
-	for i, op := range p.Ops {
-		hash, err := safefs.HashFile(op.Src, sha256.New())
-		if err != nil {
+	m := Manifest{Dir: q.Dir, View: q.View, Owned: q.Owned, Existing: listOwned(q.Owned), Keep: p.Mode.Reuse != ReuseNone}
+	var kept, carried []bool
+	if reuse {
+		// The player's own files are the ones the first Play found; the kept copies in the owned folders are Mortar's.
+		m.Existing, m.Gen = prev.Existing, prev.Gen+1
+		// A file the previous Play placed that this plan no longer wants leaves now; the record naming it survives the
+		// removals, so a crash in between is recovered by the previous journal as it always was.
+		if err := p.drop(prev, q); err != nil {
 			return Manifest{}, err
 		}
-		pl := Placed{Dst: op.Dst, Src: op.Src, Hash: hash, WriteBack: op.WriteBack}
-		if _, err := os.Lstat(op.Dst); err == nil {
-			pl.Displaced = filepath.Join(p.View.JournalDir, "displaced", fmt.Sprint(i))
-		}
-		m.Ops = append(m.Ops, pl)
+	}
+	m.Ops, kept, carried, err = p.record(q, prev, prevDst)
+	if err != nil {
+		return Manifest{}, err
 	}
 	// The record comes first: from here a crash is recoverable.
-	_ = safefs.Remove(logPath(p.View.JournalDir))
+	_ = safefs.Remove(logPath(q.View.JournalDir))
 	if err := persist(m); err != nil {
 		return Manifest{}, err
 	}
 	at("record")
-	log, err := openLog(p.View.JournalDir)
+	log, err := openLog(q.View.JournalDir)
 	if err != nil {
 		return Manifest{}, err
 	}
-	// Files are copied unsynced and made durable together by one flush; only then are they logged done, so a done op is
-	// always whole on disk and one not yet logged is taken back by recovery, whatever its bytes.
-	var placed []int
-	var runErr error
-	for i := range m.Ops {
-		if runErr = ctx.Err(); runErr != nil {
-			break
-		}
-		if runErr = put(&m, i, log); runErr != nil {
-			break
-		}
-		placed = append(placed, i)
-	}
+	placed, runErr := p.placeAll(ctx, &m, log, kept, carried)
 	commitErr := commitPlaced(&m, placed, log)
 	if runErr != nil || commitErr != nil {
 		return m, errors.Join(runErr, commitErr, log.close())
@@ -133,7 +151,84 @@ func (Place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 	return m, errors.Join(log.close(), persist(m))
 }
 
-// commitPlaced flushes the files put copied, once per file system they landed on, then marks each done in the log. A
+// record is the manifest's files: a file the previous Play left standing as it is, or one this Play puts down, with the
+// source hash and sizes a later Play judges it unchanged by.
+func (p Place) record(q Plan, prev Manifest, prevDst map[string]int) (ops []Placed, kept, carried []bool, err error) {
+	kept = make([]bool, len(q.Ops))
+	carried = make([]bool, len(q.Ops))
+	for i, op := range q.Ops {
+		prevOp, hadPrev := Placed{}, false
+		if j, ok := prevDst[safefs.FoldCase(op.Dst)]; ok {
+			prevOp, hadPrev = prev.Ops[j], true
+		}
+		if hadPrev && op.Src == prevOp.Src && p.Mode.Reuse.stands(prevOp) {
+			prevOp.WriteBack = op.WriteBack
+			ops = append(ops, prevOp)
+			kept[i] = true
+			continue
+		}
+		hash, size, mtime, err := sourceHash(op.Src, prevOp, hadPrev)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		pl := Placed{Dst: op.Dst, Src: op.Src, Hash: hash, WriteBack: op.WriteBack, SrcSize: size, SrcMTime: mtime}
+		if hadPrev {
+			// The bytes at Dst are the previous Play's copy, taken back before this one's goes down; the player's own
+			// file, if one was set aside at the first Play, stays where it is.
+			pl.Displaced, carried[i] = prevOp.Displaced, true
+		} else if _, err := os.Lstat(op.Dst); err == nil {
+			pl.Displaced = displacedPath(q.View.JournalDir, prev.Gen+1, i)
+		}
+		ops = append(ops, pl)
+	}
+	return ops, kept, carried, nil
+}
+
+// placeAll writes the files the record says this Play puts down, reporting progress once per file.
+func (p Place) placeAll(ctx context.Context, m *Manifest, log *opLog, kept, carried []bool) ([]int, error) {
+	var placed []int
+	total := len(m.Ops)
+	for i := range m.Ops {
+		if kept[i] {
+			total--
+		}
+	}
+	if p.Mode.Progress != nil {
+		p.Mode.Progress(0, total)
+	}
+	for i := range m.Ops {
+		if err := ctx.Err(); err != nil {
+			return placed, err
+		}
+		if kept[i] {
+			continue
+		}
+		if err := p.put(m, i, log, carried[i]); err != nil {
+			return placed, err
+		}
+		placed = append(placed, i)
+		if p.Mode.Progress != nil {
+			p.Mode.Progress(len(placed), total)
+		}
+	}
+	return placed, nil
+}
+
+// carryover is the previous Play's record when this Play may build on it: the files it left in place, by folded
+// destination, and whether the journal stays for the files this Play keeps. A journal that does not keep its files is
+// returned too, for the Play that has to take it back before placing anything.
+func (p Place) carryover(dir string) (Manifest, map[string]int, bool, error) {
+	prev, byDst, found, err := previous(dir)
+	if err != nil || !found {
+		return Manifest{}, nil, false, err
+	}
+	if p.Mode.Reuse == ReuseNone || !prev.Keep {
+		return prev, nil, false, nil
+	}
+	return prev, byDst, true, nil
+}
+
+// commitPlaced flushes the files p.put copied, once per file system they landed on, then marks each done in the log. A
 // failed flush marks none.
 func commitPlaced(m *Manifest, placed []int, log *opLog) error {
 	type group struct{ files, dirs []string }
@@ -166,6 +261,7 @@ func commitPlaced(m *Manifest, placed []int, log *opLog) error {
 	at("flushed")
 	for _, i := range placed {
 		m.Ops[i].Done = true
+		recordPlaced(&m.Ops[i])
 		if err := log.add(step{P: &i}, false); err != nil {
 			return err
 		}
@@ -174,17 +270,44 @@ func commitPlaced(m *Manifest, placed []int, log *opLog) error {
 	return nil
 }
 
-func put(m *Manifest, i int, log *opLog) error {
+// recordPlaced fills in the size and time the placed file now has, which the next Play judges "unchanged" by. A file
+// that is not a regular one (a symlink, a clone that some file system reports oddly) records none, so it is placed again.
+func recordPlaced(pl *Placed) {
+	st, err := os.Lstat(pl.Dst)
+	if err != nil {
+		return
+	}
+	if !st.Mode().IsRegular() {
+		pl.Size, pl.MTime = -1, 0
+		return
+	}
+	pl.Size, pl.MTime = st.Size(), st.ModTime().UnixNano()
+}
+
+func (p Place) put(m *Manifest, i int, log *opLog, carry bool) error {
 	pl := &m.Ops[i]
 	n := fmt.Sprint(i)
-	if pl.Displaced != "" {
-		if err := os.MkdirAll(filepath.Dir(pl.Displaced), 0o700); err != nil {
+	switch {
+	case carry:
+		// The previous Play's copy goes before this one's arrives; a backup the first Play took stays where it is.
+		if err := os.MkdirAll(filepath.Dir(pl.Dst), 0o700); err != nil {
 			return err
 		}
-		if err := move(pl.Dst, pl.Displaced); err != nil {
+		if err := safefs.Remove(pl.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
-		at("displaced:" + n)
+		at("replaced:" + n)
+	case pl.Displaced != "":
+		if _, err := os.Lstat(pl.Dst); err == nil {
+			if err := os.MkdirAll(filepath.Dir(pl.Displaced), 0o700); err != nil {
+				return err
+			}
+			// Over a backup an earlier Play left: what stands at Dst now is newer than it, and is what a Purge gives back.
+			if err := move(pl.Dst, pl.Displaced); err != nil {
+				return err
+			}
+			at("displaced:" + n)
+		}
 	}
 	if err := mkdirTracked(m, filepath.Dir(pl.Dst), log, n); err != nil {
 		return err
@@ -236,13 +359,16 @@ func move(src, dst string) error {
 }
 
 // Purge removes the placed files and restores what they displaced, then drops the journal.
-func (Place) Purge(ctx context.Context, m Manifest) error {
+func (p Place) Purge(ctx context.Context, m Manifest) error {
 	var log *opLog
 	if m.View.JournalDir != "" {
 		var err error
 		if log, err = openLog(m.View.JournalDir); err != nil {
 			return err
 		}
+	}
+	if m.Keep {
+		return p.keep(ctx, &m, log)
 	}
 	if err := undoOps(ctx, &m, log); err != nil {
 		return errors.Join(err, log.close())
@@ -260,6 +386,77 @@ func (Place) Purge(ctx context.Context, m Manifest) error {
 	err := log.close()
 	at("journal")
 	return errors.Join(err, saveNotes(m.View.JournalDir, m.notes), safefs.RemoveAll(m.View.JournalDir))
+}
+
+// drop takes back the files the previous Play placed that this plan no longer wants, before this Play's record replaces
+// the previous one.
+func (p Place) drop(prev Manifest, q Plan) error {
+	wanted := make(map[string]bool, len(q.Ops))
+	for _, op := range q.Ops {
+		wanted[safefs.FoldCase(op.Dst)] = true
+	}
+	for i, o := range prev.Ops {
+		if o.Undone || wanted[safefs.FoldCase(o.Dst)] {
+			continue
+		}
+		if err := undoDst(&prev, o, i, nil); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// keep is Purge for a Play that leaves its files in place: a file that still holds our bytes stays for the next Play,
+// and one the game or a mod rewrote is taken back as always and dropped from the record. A journal with nothing left to
+// keep goes, so the next Play starts clean.
+func (p Place) keep(ctx context.Context, m *Manifest, log *opLog) error {
+	var kept []Placed
+	var errs []error
+	for i, o := range m.Ops {
+		if err := ctx.Err(); err != nil {
+			return errors.Join(err, log.close())
+		}
+		if o.Undone {
+			continue
+		}
+		if holdsOurBytes(o) {
+			kept = append(kept, o)
+			continue
+		}
+		if err := undoDst(m, o, i, log); err != nil {
+			return errors.Join(err, log.close())
+		}
+		m.Ops[i].Undone = true
+		errs = append(errs, log.add(step{U: &i}, false))
+	}
+	if len(kept) == 0 {
+		// Nothing left to keep: the journal goes with the last file, and the next Play starts clean.
+		errs = append(errs, log.close())
+		at("journal")
+		return errors.Join(errors.Join(errs...), saveNotes(m.View.JournalDir, m.notes), safefs.RemoveAll(m.View.JournalDir))
+	}
+	m.Ops = kept
+	if err := adopt(m, log); err != nil {
+		return errors.Join(errors.Join(errs...), err, log.close())
+	}
+	errs = append(errs, log.close())
+	// The keep log's indices name the pre-shortened ops; leaving it would mark the wrong files undone on the next Play.
+	_ = safefs.Remove(logPath(m.View.JournalDir))
+	errs = append(errs, persist(*m))
+	at("kept")
+	return errors.Join(errs...)
+}
+
+// holdsOurBytes reports whether the file at Dst is still the one the record placed, which the next Play may keep.
+func holdsOurBytes(o Placed) bool {
+	if !o.Done {
+		return false
+	}
+	st, err := os.Lstat(o.Dst)
+	if err != nil || !st.Mode().IsRegular() || st.Size() != o.Size || st.ModTime().UnixNano() != o.MTime {
+		return false
+	}
+	return true
 }
 
 func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
@@ -430,5 +627,34 @@ func (p Place) Recover(ctx context.Context, journalDir string, alive func() bool
 	if err := replay(&m); err != nil {
 		return fmt.Errorf("read the deploy log: %w", err)
 	}
+	if m.Keep {
+		return nil
+	}
+	return p.Purge(ctx, m)
+}
+
+// DiscardKept takes back a journal a Play left in place, so a vanilla Play or a Play that places everything starts
+// from the tree the first Play found.
+func (p Place) DiscardKept(ctx context.Context, journalDir string) error {
+	var m Manifest
+	found, err := datadir.ReadJournal(journalPath(journalDir), nil, &m)
+	if err != nil {
+		return fmt.Errorf("read the deploy journal: %w", err)
+	}
+	if !found || !m.Keep {
+		return nil
+	}
+	if old := m.View.JournalDir; old != journalDir {
+		for i := range m.Ops {
+			if rel, err := filepath.Rel(old, m.Ops[i].Displaced); old != "" && m.Ops[i].Displaced != "" && err == nil && filepath.IsLocal(rel) {
+				m.Ops[i].Displaced = filepath.Join(journalDir, rel)
+			}
+		}
+		m.View.JournalDir = journalDir
+	}
+	if err := replay(&m); err != nil {
+		return fmt.Errorf("read the deploy log: %w", err)
+	}
+	m.Keep = false
 	return p.Purge(ctx, m)
 }

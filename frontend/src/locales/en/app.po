@@ -1596,6 +1596,10 @@ msgstr "This file is from the same {source} page as {name}. Install it with that
 msgid "Add files"
 msgstr "Add files"
 
+#: src/launch/LaunchScreen.tsx
+msgid "Placing mods: {placed} of {total}"
+msgstr "Placing mods: {placed} of {total}"
+
 #: src/groups/applied.ts
 msgid "Not downloaded yet: {names}"
 msgstr "Not downloaded yet: {names}"

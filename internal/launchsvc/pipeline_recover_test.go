@@ -56,6 +56,73 @@ func leaveCrashedLaunch(t *testing.T, svc *Service) crashedLaunch {
 	return c
 }
 
+func keepPlacedLaunch(t *testing.T, svc *Service) (install, dll, journal string) {
+	t.Helper()
+	sl := svc.selectedSlot(game.Find("stardew"))
+	root := t.TempDir()
+	install = filepath.Join(root, "game")
+	dll = filepath.Join(install, "winhttp.dll")
+	src := filepath.Join(root, "store", "winhttp.dll")
+	testfs.WriteAt(t, dll, []byte("the player's own"))
+	testfs.WriteAt(t, src, []byte("proxy"))
+	var err error
+	if journal, err = journalDir(sl.inst); err != nil {
+		t.Fatal(err)
+	}
+	d := deploy.Place{Mode: deploy.Mode{Reuse: deploy.ReuseStat}}
+	plan, err := d.Plan(deploy.View{JournalDir: journal}, install, []launchplan.PlanFile{{Src: src, Dst: "winhttp.dll"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	m, err := d.Apply(t.Context(), plan)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Purge(t.Context(), m); err != nil {
+		t.Fatal(err)
+	}
+	return install, dll, journal
+}
+
+func TestRecoverGameDeploysLeavesAKeptJournal(t *testing.T) {
+	svc, _ := startEnv(t)
+	_, dll, journal := keepPlacedLaunch(t, svc)
+	found, err := svc.RecoverGameDeploys(t.Context(), "stardew")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if found {
+		t.Fatal("startup recovery treated a kept journal as leftover")
+	}
+	if !deploy.HasJournal(journal) {
+		t.Fatal("startup recovery purged a kept journal")
+	}
+	if left := svc.LeftoverJournals("stardew"); len(left) != 0 {
+		t.Fatalf("a kept journal is listed as leftover: %v", left)
+	}
+	if b, _ := safefs.ReadFile(dll); string(b) != "proxy" {
+		t.Fatalf("the placed file = %q, want it still there", b)
+	}
+}
+
+func TestStartDeployVanillaTakesBackKeptFiles(t *testing.T) {
+	svc, _ := startEnv(t)
+	install, dll, journal := keepPlacedLaunch(t, svc)
+	plan := launchplan.New(launchplan.ModeVanilla)
+	plan.AddFile(launchplan.PlanFile{Src: dll, Dst: "winhttp.dll"})
+	inst := game.Install{ID: svc.selectedSlot(game.Find("stardew")).inst, Dir: install}
+	dep, err := startDeploy(t.Context(), inst, plan, nil, deploy.Mode{})
+	if err != nil || dep.d != nil {
+		t.Fatalf("vanilla: %v %v", dep, err)
+	}
+	if deploy.HasJournal(journal) {
+		t.Fatal("a vanilla Play left the kept journal")
+	}
+	if b, _ := safefs.ReadFile(dll); string(b) != "the player's own" {
+		t.Fatalf("winhttp.dll = %q, want the player's own file back", b)
+	}
+}
+
 func TestRecoverGameDeploysPutsBackWhatACrashedLaunchChanged(t *testing.T) {
 	svc, _ := startEnv(t)
 	svc.procDir = t.TempDir()
@@ -194,14 +261,14 @@ func TestAFailedDeployTakesBackWhatItPlaced(t *testing.T) {
 	// Canceled once the journal is written: the deploy fails with its record on disk and nothing placed yet.
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
-	if _, err := startDeploy(ctx, inst, plan, nil); err == nil {
+	if _, err := startDeploy(ctx, inst, plan, nil, deploy.Mode{}); err == nil {
 		t.Fatal("a canceled deploy succeeded")
 	}
 	if dir, _ := journalDir(inst.ID); deploy.HasJournal(dir) {
 		t.Fatal("the canceled deploy left its journal")
 	}
 	missingPlan := &launchplan.Plan{Files: []launchplan.PlanFile{{Src: missing, Dst: "b.dll"}}}
-	if _, err := startDeploy(t.Context(), inst, missingPlan, nil); err == nil {
+	if _, err := startDeploy(t.Context(), inst, missingPlan, nil, deploy.Mode{}); err == nil {
 		t.Fatal("a deploy with a missing source succeeded")
 	}
 	if b, _ := safefs.ReadFile(filepath.Join(inst.Dir, "a.dll")); string(b) != "the player's own" {

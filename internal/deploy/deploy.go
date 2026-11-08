@@ -49,6 +49,12 @@ type Placed struct {
 	Done bool `json:"done,omitempty"`
 	// Undone is set once Purge has taken the file back, so a Purge run again after a failure leaves it alone.
 	Undone bool `json:"undone,omitempty"`
+	// SrcSize and SrcMTime are the source's size and modification time when its Hash was taken, and Size and MTime the
+	// placed file's; a later Play that kept its files judges "unchanged" from these before reading anything.
+	SrcSize  int64 `json:"srcSize,omitempty"`
+	SrcMTime int64 `json:"srcMTime,omitempty"`
+	Size     int64 `json:"size,omitempty"`
+	MTime    int64 `json:"mTime,omitempty"`
 }
 
 // Manifest is the persisted record of a deploy.
@@ -64,4 +70,10 @@ type Manifest struct {
 	notes []Note
 	// Created are the folders Apply made, removed again by Purge when empty.
 	Created []string `json:"created,omitempty"`
+	// Keep is set when this Play left the files it placed in place for the next one: Purge then takes back only the
+	// files something changed, and the record stays for the next Apply to build on.
+	Keep bool `json:"keep,omitempty"`
+	// Gen counts the Plays that built on this journal, so a later Play's displaced files never land on an earlier one's
+	// backup at the same index.
+	Gen int `json:"gen,omitempty"`
 }

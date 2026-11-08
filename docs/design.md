@@ -58,10 +58,6 @@ The BepInEx companion keeps its channel and query, perf (needs Harmony's patch r
 - **Mortar:** the catalog keeps `"bridge"` pinned at 0.5.x for old Mortars (they install only that name, `internal/loadersvc/service.go:154`); new component names point at the split builds. A profile holds a second hidden Mortar bundle: `applyBundledTo` replaces only the same component (`internal/profile/ops.go:1043`), `bridgeFolder` matches the bridge entry (`internal/launchsvc/service.go:1857`). The overlay mod is added while the overlay setting is on and removed when it is off; the overlay settings show only for games that have an overlay component. A profile upgraded with the setting on keeps its overlay in the same sync. The 0.5.x companion and an overlay mod never load together (both bind the overlay port).
 - **Acceptance:** `/state` matches 0.5.0 for LC and Stardew fixtures; the companion DLL has no `Overlay` namespace; one build and test run in the companion's `verify.sh`; old-tag `components.Decode` reads the new catalog; bisect, perf stop, console and configsync pass the sandbox regress.
 
-### The Sims 4 placement speed
-
-- Decide how placement copes with large profiles on Windows: every Play places every file again (`internal/deploy/place.go`), several times slower than on Linux (`MORTAR_SCALE=1 go test ./internal/loader/folder -run TestPlaceAndPurgeAThreeThousandFileProfile -v`). Options: show progress; leave files unchanged since the last Play in place; link files where the volume allows (needs an answer for a mod that rewrites its own file).
-
 ### Lethal Company content packs under `mortar/<kind>/`
 
 Mortar's side is built (`internal/devsvc/content.go`, the catalog's `devTemplate.content`). Left:

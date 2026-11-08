@@ -56,8 +56,11 @@ func TestAModsSettingsFileAcrossLaunches(t *testing.T) {
 		writeFile(t, state, "created during play")
 		writeFile(t, rootFile, "root file")
 	})
-	if fileExists(cfg) || fileExists(state) || fileExists(filepath.Join(w.docs, "Mods", "mc", "mc.ts4script")) {
-		t.Fatal("a file of the mod is left in the shared folder after launch 1")
+	if fileExists(cfg) || fileExists(state) {
+		t.Fatal("a rewritten or created file of the mod is left in the shared folder after launch 1")
+	}
+	if !fileExists(filepath.Join(w.docs, "Mods", "mc", "mc.ts4script")) {
+		t.Fatal("an unchanged placed file was taken back")
 	}
 	if got := testfs.Read(t, ownCfg); got != "player=2" {
 		t.Fatalf("the profile's copy after launch 1 = %q", got)

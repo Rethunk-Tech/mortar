@@ -4,6 +4,17 @@ import { GALE, LINUX, STEAM } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import type { PrefCopy } from './prefCopyAntivirus.ts'
 
+function keepPlacedCopy(i18n: I18n): Record<string, PrefCopy> {
+  return {
+    keepPlacedFiles: {
+      label: i18n._(msg`Keep mods in the game folder`),
+      description: i18n._(
+        msg`With this on, the profile's mods stay in the game's folder after the game exits, so starting the game outside Mortar loads them too. Turn it off to have Mortar remove them each time.`,
+      ),
+    },
+  }
+}
+
 export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
   return {
     gameSettingsMode: {
@@ -115,6 +126,7 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
     skipPlayCheck: {
       label: i18n._(msg`Skip pre-Play check`),
     },
+    ...keepPlacedCopy(i18n),
     sandboxLaunch: {
       label: i18n._(msg`Sandbox the game`),
       description: i18n._(

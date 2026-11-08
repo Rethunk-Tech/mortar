@@ -211,8 +211,10 @@ func TestSims4LaunchPlacesOnlyEnabledFilesSwapsOptionsAndSavesAndGivesTheTreeBac
 			t.Errorf("%s after the launch = %q, want %q", rel, after[rel], body)
 		}
 	}
-	if len(after) != len(before) {
-		t.Errorf("the tree after the launch has %d files, before %d: %v", len(after), len(before), after)
+	for _, rel := range []string{"A/one.package", "two.package", "m.ts4script", "m.package"} {
+		if !fileExists(filepath.Join(mods, filepath.FromSlash(rel))) {
+			t.Errorf("%s was taken back while keepPlacedFiles is on", rel)
+		}
 	}
 	if !fileExists(filepath.Join(tray, "House.trayitem")) {
 		t.Error("the Tray files, shared by every profile, were taken back")

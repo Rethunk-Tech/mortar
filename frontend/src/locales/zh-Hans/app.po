@@ -1590,6 +1590,10 @@ msgstr ""
 msgid "Add files"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Placing mods: {placed} of {total}"
+msgstr ""
+
 #: src/groups/applied.ts
 msgid "Not downloaded yet: {names}"
 msgstr ""
