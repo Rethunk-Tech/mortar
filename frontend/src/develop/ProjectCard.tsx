@@ -14,7 +14,7 @@ import { errorsLabel } from '../i18n/counts.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { formatNumber } from '../i18n/numberFormat.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
-import { useProfiles } from '../profiles/store.ts'
+import { profileById, useProfiles } from '../profiles/store.ts'
 import { persist } from '../settings/persist.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
@@ -31,9 +31,8 @@ import { gitSummary } from './projectSummary.ts'
 function useInProfile(project: DevProject) {
   return useProfiles(
     (s) =>
-      s.profiles
-        .find((p) => p.id === project.profile)
-        ?.entries?.some((e) => e.source.folder === project.output) ?? true,
+      profileById(project.profile)(s)?.entries?.some((e) => e.source.folder === project.output) ??
+      true,
   )
 }
 

@@ -44,7 +44,7 @@ import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/i
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { installExtraFolder } from '../downloads/autoInstall.ts'
 import { PageActions } from '../game/PageActions.tsx'
-import { useProfiles } from '../profiles/store.ts'
+import { profileById, profileByIdIncludingDamaged, useProfiles } from '../profiles/store.ts'
 import { persist } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
 import { CardsView } from '../shell/CardsView.tsx'
@@ -77,9 +77,6 @@ import { saveOrder } from './saveOrder.ts'
 import { TrustDialog } from './TrustDialog.tsx'
 import { installTestMods } from './testMods.ts'
 
-const profileNameOf = (list: { id: string; name: string }[], id: string) =>
-  list.find((p) => p.id === id)?.name ?? ''
-
 // Builds the profile's trusted projects, all at once save for waiting on their dependencies: a content pack's build
 // puts its folder in the profile, and an untrusted project asks first, from its own card. Shown only when there is more
 // than one to build.
@@ -104,9 +101,7 @@ function BuildAll({ game, projects }: { game: string; projects: DevProject[] }) 
 function ElsewhereRow({ game, project }: { game: string; project: DevProject }) {
   const { t } = useLingui()
   const openId = useProfiles((s) => s.openId)
-  const profileName = useProfiles(
-    (s) => profileNameOf(s.profiles, project.profile) || profileNameOf(s.damaged, project.profile),
-  )
+  const profileName = useProfiles(profileByIdIncludingDamaged(project.profile))?.name ?? ''
   const gone = useProfiles((s) => s.profiles.length > 0 && profileName === '')
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
@@ -148,7 +143,7 @@ const MAX_TEST_COPIES = 4
 function TestCopies({ game, profile, dirs }: { game: string; profile: string; dirs: string[] }) {
   const { t } = useLingui()
   const { anchor: menu, show: showMenu, hide: hideMenu } = usePopoverAnchor()
-  const saved = useProfiles((s) => s.profiles.find((p) => p.id === profile)?.testCopies ?? 0)
+  const saved = useProfiles(profileById(profile))?.testCopies ?? 0
   const clientOnly = useProjectInfo((s) => dirs.every((d) => s.byDir[d]?.clientOnly === true))
   const count = saved || (clientOnly ? 1 : 2)
   const start = (n: number) =>

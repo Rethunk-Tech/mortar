@@ -9,6 +9,7 @@ import { setupNeeded } from '../firstrun/needed.ts'
 import { useLoader } from '../loader/store.ts'
 import { isGameId } from '../nav/store.ts'
 import { listProfiles } from '../profiles/listProfiles.ts'
+import { profileById } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { profileCounts } from '../shell/sharedReads.ts'
 import { useOnWindowFocus } from '../shell/useOnWindowFocus.ts'
@@ -103,7 +104,7 @@ function useGameTiles() {
       setupNeeded: g.available && (!st || st.setupNeeded),
       note: noteFor(g),
       loader: loaderCaption(g.loader, g.id === loaderGame ? loaderVersion : ''),
-      lastPlayedName: st?.profiles.find((p) => p.id === lastId)?.name ?? '',
+      lastPlayedName: st ? (profileById(lastId)(st)?.name ?? '') : '',
       lastPlayedAt: st?.lastPlayedAt ?? '',
       lastPlayedId: st?.setupNeeded ? '' : lastId,
       playtimeMs: st?.playtimeMs ?? 0,

@@ -482,6 +482,10 @@ export const openProfileOf = (s: { profiles: Profile[]; openId: string }) =>
 export const profileById = (id: string | undefined) => (s: { profiles: Profile[] }) =>
   s.profiles.find((p) => p.id === id)
 
+export const profileByIdIncludingDamaged =
+  (id: string | undefined) => (s: { profiles: Profile[]; damaged: Profile[] }) =>
+    profileById(id)(s) ?? s.damaged.find((p) => p.id === id)
+
 export const getProfile = (id: string | undefined) => profileById(id)(useProfiles.getState())
 
 // useProfileLoader is the loader of the profile with this id (the open one by default), whose flags say which tabs

@@ -16,7 +16,7 @@ import { i18n } from '../i18n/index.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useLoader } from '../loader/store.ts'
 import { BASE_PRESET, playPresets } from '../profiles/profilePresets.ts'
-import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { openProfileOf, profileById, useProfiles } from '../profiles/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
@@ -112,7 +112,7 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
   const running = state === State.Running
   const since = status?.since ?? 0
   // Fields, not the profiles: a save of the open profile re-renders this only when what it shows changed.
-  const runningName = useProfiles((s) => s.profiles.find((p) => p.id === status?.profile)?.name)
+  const runningName = useProfiles(profileById(status?.profile))?.name
   const presets = useOpenPresets()
   const direct = usePlayDirect()
 

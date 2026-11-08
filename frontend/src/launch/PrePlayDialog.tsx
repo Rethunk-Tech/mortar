@@ -14,7 +14,7 @@ import { LastSaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { WINDOWS } from '../brand/productNames.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { profileById, useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { addRecordedMods, enableRecordedMods } from '../saves/recordedActions.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
@@ -109,9 +109,7 @@ export function PrePlayDialog() {
   const lastProfile = (check?.groups ?? []).find((g) => g.kind === 'lastProfile')
   const saveMods = (check?.groups ?? []).find((g) => g.kind === 'saveMods')
   const saveModsOff = (check?.groups ?? []).find((g) => g.kind === 'saveModsOff')
-  const switchName = useProfiles(
-    (s) => s.profiles.find((p) => p.id === lastProfile?.switchProfileId)?.name ?? '',
-  )
+  const switchName = useProfiles(profileById(lastProfile?.switchProfileId))?.name ?? ''
   const [adding, runAdding] = usePending()
   const persistThen = (fn: () => void) => {
     // The dialog only opens with the check on, so a true value is the box ticked here.
