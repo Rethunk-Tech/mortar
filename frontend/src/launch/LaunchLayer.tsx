@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { CircleAlert } from 'lucide-react'
-import { useEffect } from 'react'
+import { memo, useEffect } from 'react'
 import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { STEAM } from '../brand/productNames.ts'
 import { CrashDialog, SwitchOffButton } from '../console/CrashDialog.tsx'
@@ -155,7 +155,9 @@ const CLOSED_DIALOGS = (
   </>
 )
 
-export function LaunchLayer({ game }: { game: string }) {
+// Memoised: every route change redraws App's overlay, and the launch layer and its dialogs are the same for the same
+// game whatever page it changes to.
+export const LaunchLayer = memo(function LaunchLayerView({ game }: { game: string }) {
   const refresh = useLaunch((s) => s.refresh)
   useEffect(() => {
     if (game) {
@@ -169,4 +171,4 @@ export function LaunchLayer({ game }: { game: string }) {
       {CLOSED_DIALOGS}
     </>
   )
-}
+})
