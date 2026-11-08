@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
+import { useOnWindowFocus } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import { CloudOff } from 'lucide-react'
 import { useEffect } from 'react'
@@ -15,7 +16,6 @@ import {
   useOffline,
 } from './offline.ts'
 import { offlineMessage } from './offlineText.ts'
-import { useOnWindowFocus } from './useOnWindowFocus.ts'
 
 // Runs only while the window is focused: a source that answered costs nothing, an unreachable one gets one probe
 // every five minutes.

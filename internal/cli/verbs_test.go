@@ -402,10 +402,10 @@ func TestVerbWrappersSendTheirArgumentsOrRefuse(t *testing.T) {
 
 func assetTargets() []contentpatcher.AssetTarget {
 	return []contentpatcher.AssetTarget{{
-		Target: "Data/Objects", Key: "k", Winner: mod.ID("smapi:Alpha"),
+		Target: "Data/Objects", Key: "k", Winner: contentpatcher.ModID("smapi:Alpha"),
 		Mods: []contentpatcher.AssetTouch{
 			{ModName: "Alpha", Action: "Edit", Winner: true},
-			{ModID: mod.ID("smapi:B"), Action: "Replace"},
+			{ModID: contentpatcher.ModID("smapi:B"), Action: "Replace"},
 		},
 	}}
 }
