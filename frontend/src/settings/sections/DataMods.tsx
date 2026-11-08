@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import Box from '@mui/material/Box'
-import { useEffect, useState } from 'react'
+import { useLoaded } from '@rethunk/react-load-hooks'
 import type { CacheInfo as CacheInfoValue } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
 import {
   CacheInfo,
@@ -24,13 +24,12 @@ function CacheClearDialog({
   onCleared: () => void
 }) {
   const { t } = useLingui()
-  const [info, setInfo] = useState<CacheInfoValue | null>(null)
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-    CacheInfo().then(setInfo).catch(reportUnexpected)
-  }, [open])
+  const { data: info } = useLoaded<CacheInfoValue | null>(
+    open ? () => CacheInfo() : null,
+    [open],
+    null,
+    reportUnexpected,
+  )
   const size = info === null ? '' : formatBytes(info.size)
   const path = info?.path ?? ''
   return (

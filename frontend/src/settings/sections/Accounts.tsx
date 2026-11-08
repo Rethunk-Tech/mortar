@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useLoaded } from '@rethunk/react-load-hooks'
+import { useEffect } from 'react'
 import { KeysUnencrypted } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { refresh } from '../../shell/offline.ts'
@@ -20,17 +21,17 @@ const NO_ACCOUNT = ['thunderstore', 'modrinth', 'curseforge', 'vsmoddb', 'parado
 // The login answer lands on the block alone, not the page around it.
 function GitHubAccount() {
   const { t } = useLingui()
-  const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
   const relevant = useSettingsRelevant(
     sourceLabel('github'),
     `${t`Your gh login`} · ${t`higher rate limit`}`,
     t`Requests`,
   )
-  useEffect(() => {
-    if (relevant) {
-      githubLoggedIn().then(setLoggedIn).catch(reportUnexpected)
-    }
-  }, [relevant])
+  const { data: loggedIn } = useLoaded(
+    relevant ? () => githubLoggedIn() : null,
+    [relevant],
+    null,
+    reportUnexpected,
+  )
   let status = ''
   if (loggedIn) {
     status = `${t`Your gh login`} · ${t`higher rate limit`}`
@@ -50,10 +51,7 @@ function GitHubAccount() {
 
 function UnencryptedKeys() {
   const { t } = useLingui()
-  const [plain, setPlain] = useState(false)
-  useEffect(() => {
-    KeysUnencrypted().then(setPlain).catch(reportUnexpected)
-  }, [])
+  const { data: plain } = useLoaded(() => KeysUnencrypted(), [], false, reportUnexpected)
   if (!plain) {
     return null
   }

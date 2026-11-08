@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip } from '@mui/material'
-import { type ReactElement, type ReactNode, useEffect, useState } from 'react'
+import { useLoaded } from '@rethunk/react-load-hooks'
+import type { ReactElement, ReactNode } from 'react'
 import { Retry } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/service.ts'
 import { GitHubRate } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
@@ -87,14 +88,14 @@ export function Connection({ source }: { source: string }) {
 
 function GitHubQuota() {
   const { t } = useLingui()
-  const [rate, setRate] = useState<Awaited<ReturnType<typeof GitHubRate>> | null>(null)
   const unknown = t`Request counts appear after Mortar talks to ${{ source: sourceLabel('github') }}.`
   const relevant = useSettingsRelevant(t`Requests`, unknown)
-  useEffect(() => {
-    if (relevant) {
-      GitHubRate().then(setRate).catch(reportUnexpected)
-    }
-  }, [relevant])
+  const { data: rate } = useLoaded<Awaited<ReturnType<typeof GitHubRate>> | null>(
+    relevant ? () => GitHubRate() : null,
+    [relevant],
+    null,
+    reportUnexpected,
+  )
   const detail = rate?.known
     ? [
         t`${{ remaining: rate.remaining }} of ${{ limit: rate.limit }} requests left`,
