@@ -23,6 +23,25 @@ func buildZip(t *testing.T, name string, files map[string]string) string {
 	return testfs.WriteZip(t, filepath.Join(t.TempDir(), name), files)
 }
 
+func TestInstallLocalFolderDisabledArrivesSwitchedOff(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "P")
+	src := t.TempDir()
+	writeFile(t, src, "Pack/manifest.json", manifestJSON("Me.Off"))
+	writeFile(t, src, "Pack/config.json", "{}")
+	res, err := e.InstallLocalFolder(t.Context(), "stardew", p.ID, src, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Profile.Entries) != 1 || res.Profile.Entries[0].Enabled("smapi:Me.Off") {
+		t.Fatalf("disabled install arrived on: %+v", res.Profile.Entries)
+	}
+	if got := names(t, filepath.Join(e.mods(p.ID), res.Profile.Entries[0].Key)); len(got) != 1 || !strings.HasPrefix(got[0], ".") {
+		t.Fatalf("entry folder = %v, want the mod's folder dotted", got)
+	}
+}
+
 func TestInstallArchive(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)

@@ -63,6 +63,32 @@ func TestUpdateDeleteOldVersionCarriesConfigOnly(t *testing.T) {
 	}
 }
 
+func TestUpdateKeepsTheExecutableBitOnCarriedFiles(t *testing.T) {
+	t.Parallel()
+	m := manifestJSON("me.a")
+	e, p := updEnv(t,
+		map[string]string{"A/manifest.json": m, "A/tool.sh": "shipped"},
+		map[string]string{"A/manifest.json": m})
+	cur := filepath.Join(e.mods(p.ID), "a-1", "A", "tool.sh")
+	if err := os.Chmod(cur, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, e.mods(p.ID), "a-1/A/tool.sh", "mine")
+	if err := os.Chmod(cur, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.UpdateEntry("stardew", p.ID, "a-1", "a-2"); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(filepath.Join(e.mods(p.ID), "a-2", "A", "tool.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm()&0o100 == 0 {
+		t.Fatalf("carried file lost its executable bit: %v", info.Mode())
+	}
+}
+
 func TestCarryOverMatrix(t *testing.T) {
 	t.Parallel()
 	m := manifestJSON("me.a")
