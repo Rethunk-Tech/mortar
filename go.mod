@@ -10,7 +10,7 @@ require (
 	github.com/Rethunk-Tech/go-cfgedit v0.3.0
 	github.com/Rethunk-Tech/go-curseforge v0.4.0
 	github.com/Rethunk-Tech/go-desktopenv v0.7.0
-	github.com/Rethunk-Tech/go-dotnet v0.2.2
+	github.com/Rethunk-Tech/go-dotnet v0.3.0
 	github.com/Rethunk-Tech/go-fomod v0.1.2
 	github.com/Rethunk-Tech/go-gamelocator v0.4.0
 	github.com/Rethunk-Tech/go-gameproc v0.1.2
@@ -20,14 +20,14 @@ require (
 	github.com/Rethunk-Tech/go-larian v0.1.2
 	github.com/Rethunk-Tech/go-lenientjson v0.1.1
 	github.com/Rethunk-Tech/go-modio v0.1.1
-	github.com/Rethunk-Tech/go-modmanagers v0.2.1
+	github.com/Rethunk-Tech/go-modmanagers v0.3.0
 	github.com/Rethunk-Tech/go-nettrace v0.2.0
 	github.com/Rethunk-Tech/go-nexusmods v0.6.0
 	github.com/Rethunk-Tech/go-safefs v0.8.0
 	github.com/Rethunk-Tech/go-semverish v0.3.0
-	github.com/Rethunk-Tech/go-smapi v0.2.1
+	github.com/Rethunk-Tech/go-smapi v0.3.0
 	github.com/Rethunk-Tech/go-smapiweb v0.1.1
-	github.com/Rethunk-Tech/go-thunderstore v0.4.0
+	github.com/Rethunk-Tech/go-thunderstore v0.4.1
 	github.com/Rethunk-Tech/go-tilemask v0.1.1
 	github.com/Rethunk-Tech/go-winsym v0.2.1
 	github.com/andybalholm/brotli v1.2.8
