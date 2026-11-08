@@ -1,5 +1,5 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-22 10:43-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: es\nPO-Revision-Date: 2026-11-07 20:22+0000\nLast-Translator: Damon Blais <albinogeek@users.noreply.hosted.weblate.org>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/mortar/app/es/>\nPlural-Forms: nplurals=2; plural=n != 1;\n"
+msgstr "POT-Creation-Date: 2026-10-22 10:43-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: es\nPO-Revision-Date: 2026-11-08 20:26+0000\nLast-Translator: Skript <skriptty@users.noreply.hosted.weblate.org>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/mortar/app/es/>\nPlural-Forms: nplurals=2; plural=n != 1;\n"
 
 #: src/saves/SavesTab.tsx
 msgid "No saves match"
@@ -783,15 +783,15 @@ msgstr ""
 
 #: src/toasts/report.ts
 msgid "Save diagnostics…"
-msgstr ""
+msgstr "Guardar diagnosticos…"
 
 #: src/firstrun/ProfileStep.tsx
 msgid "From a shared link"
-msgstr ""
+msgstr "Desde un link compartido"
 
 #: src/develop/ProjectMenu.tsx
 msgid "Also move its folder to the trash"
-msgstr ""
+msgstr "Tambien move su carpeta a la basura"
 
 #: src/firstrun/LoaderStep.tsx
 msgid "Install {loader} {latest}"
@@ -799,7 +799,7 @@ msgstr ""
 
 #: src/develop/GameCodeDialog.tsx
 msgid "Search the game's types and methods, then pick one to read its type's code."
-msgstr ""
+msgstr "Busca por los types y metodos del juego, despues elige un type para leer su codigo."
 
 #: src/share/ListFormat.tsx
 msgid "Message {count} of {total} copied"
@@ -807,7 +807,7 @@ msgstr ""
 
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: best match"
-msgstr ""
+msgstr "Ordenar por: mejor coincidencia"
 
 #: src/share/ImportInput.tsx
 msgid "Open a .mortar file, an {manager} or {otherManager} .r2z, or a {source} modpack. You see what it holds before anything downloads."
@@ -815,15 +815,15 @@ msgstr ""
 
 #: src/firstrun/LoaderStep.tsx
 msgid "{loader} is the loader every {game} mod needs. Mortar puts it in each profile; the game folder stays as it is."
-msgstr ""
+msgstr "{loader} es el cargador de cada {game} que el mod necesita. Mortar lo pone en cada perfil; la carpeta del juego se queda como es."
 
 #: src/launch/PrePlayDialog.tsx
 msgid "Pending updates ({count})"
-msgstr ""
+msgstr "Actualizaciones pendientes ({count})"
 
 #: src/shell/checkForUpdates.ts
 msgid "Update check skipped"
-msgstr ""
+msgstr "Comprobacion de actualizacion salteado"
 
 #: src/develop/UploadDialog.tsx
 msgid "{site} as {team}"
@@ -831,15 +831,15 @@ msgstr ""
 
 #: src/sync/store.ts
 msgid "{name} was changed on {machine} and here"
-msgstr ""
+msgstr "{name} fue cambiado en {machine} y aca"
 
 #: src/develop/draft.ts
 msgid "{name} needs {other}: {choice}."
-msgstr ""
+msgstr "{name} necesita {other}: {choice}."
 
 #: src/lan/IncomingPrompt.tsx
 msgid "The mod files can be copied directly from this Mortar."
-msgstr ""
+msgstr "Los archivos del mod pueden ser copiados directamente desde este Mortar."
 
 #: src/i18n/reasonText.ts
 msgid "The game crashed inside this mod's code."
