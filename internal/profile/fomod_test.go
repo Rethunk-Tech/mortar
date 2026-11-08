@@ -10,6 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/go-safefs"
 )
@@ -188,13 +189,11 @@ func TestInstallFomodLaysOutRequiredAndChosenFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	root := filepath.Join(e.mods(p.ID), res.Profile.Entries[0].Key)
-	req, err := os.ReadFile(filepath.Join(root, "required", "manifest.json"))
-	if err != nil || string(req) != manifestJSON("A.Required") {
-		t.Fatalf("required layout %q %v", req, err)
+	if got := testfs.Read(t, filepath.Join(root, "required", "manifest.json")); got != manifestJSON("A.Required") {
+		t.Fatalf("required layout %q", got)
 	}
-	extra, err := os.ReadFile(filepath.Join(root, "extra", "manifest.json"))
-	if err != nil || string(extra) != manifestJSON("A.Extra") {
-		t.Fatalf("extra layout %q %v", extra, err)
+	if got := testfs.Read(t, filepath.Join(root, "extra", "manifest.json")); got != manifestJSON("A.Extra") {
+		t.Fatalf("extra layout %q", got)
 	}
 	got := res.Profile.Entries[0].Fomod
 	if got["Setup"]["Extras"][0] != "Extra" {
