@@ -230,6 +230,11 @@
     "url": "https://github.com/Rethunk-Tech/go-httpkit"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-itchio",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-itchio"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-keyring",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-keyring"
