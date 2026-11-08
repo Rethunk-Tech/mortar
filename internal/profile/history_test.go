@@ -462,6 +462,38 @@ func TestHistoryIncludesModDiffCounts(t *testing.T) {
 	}
 }
 
+func TestClassifyHistoryTreatsDisabledAsASet(t *testing.T) {
+	t.Parallel()
+	base := Entry{Key: "pack", Mods: []Component{
+		{ID: "smapi:A.One", Name: "One"},
+		{ID: "smapi:B.Two", Name: "Two"},
+	}}
+	base.Disabled = []mod.ID{"smapi:A.One", "smapi:B.Two"}
+	reordered := base
+	reordered.Disabled = []mod.ID{"smapi:B.Two", "smapi:A.One"}
+	got := classifyHistory([]Entry{base}, []Entry{reordered})
+	if got.Kind == historyEnabled || got.Change == ChangeEnabled {
+		t.Fatalf("reordered Disabled recorded enable: %+v", got)
+	}
+	cased := base
+	cased.Disabled = []mod.ID{"smapi:a.one", "smapi:B.Two"}
+	got = classifyHistory([]Entry{base}, []Entry{cased})
+	if got.Kind == historyEnabled || got.Change == ChangeEnabled {
+		t.Fatalf("case-only Disabled recorded enable: %+v", got)
+	}
+	if !rebuildsOnly([]Entry{{
+		Key: "k1", Source: Source{Kind: KindLocal, Folder: "/dev/out"},
+		Mods:     []Component{{ID: "smapi:A.One", Name: "One", Version: "1", Folder: "."}},
+		Disabled: []mod.ID{"smapi:A.One", "smapi:B.Two"},
+	}}, []Entry{{
+		Key: "k2", Source: Source{Kind: KindLocal, Folder: "/dev/out"},
+		Mods:     []Component{{ID: "smapi:A.One", Name: "One", Version: "1", Folder: "."}},
+		Disabled: []mod.ID{"smapi:B.Two", "smapi:a.one"},
+	}}) {
+		t.Fatal("a rebuild that only reordered Disabled was recorded")
+	}
+}
+
 func TestClassifyHistoryNamesTheEntryThatChanged(t *testing.T) {
 	t.Parallel()
 	a := Entry{Key: "gmcm", Mods: []Component{{ID: "smapi:spacechase0.GenericModConfigMenu", Name: "Generic Mod Config Menu"}}}

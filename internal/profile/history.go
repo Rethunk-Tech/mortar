@@ -430,7 +430,7 @@ func (s *Store) applyEntrySnapshot(game string, p *Profile, dir string, entries 
 func restoreModsOld(dir string) {
 	modsDir := datadir.ModsDirOf(dir)
 	old := modsDir + ".old"
-	if _, err := os.Stat(old); err != nil {
+	if !datadir.Present(old) {
 		return
 	}
 	_ = safefs.RemoveAll(modsDir)
@@ -955,7 +955,7 @@ func writeSnapshotFile(dir, id string, entries []Entry) error {
 	if !ok {
 		return fmt.Errorf("history snapshot %s not writable", id)
 	}
-	if _, err := os.Stat(path); err == nil {
+	if datadir.Present(path) {
 		return nil
 	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
@@ -1140,7 +1140,7 @@ func classifyHistory(before, after []Entry) HistoryEvent {
 			from = entryVersion(be)
 			to = entryVersion(ae)
 			name = ae.Label()
-		case !slices.Equal(be.Disabled, ae.Disabled):
+		case !sameIDs(be.Disabled, ae.Disabled):
 			if len(ae.Disabled) > len(be.Disabled) {
 				disabled++
 			} else {
@@ -1222,7 +1222,7 @@ func rebuildsOnly(before, after []Entry) bool {
 		case reflect.DeepEqual(be, ae):
 			continue
 		case ae.Source.Kind != KindLocal || ae.Source.Folder == "" || be.Source.Folder != ae.Source.Folder ||
-			entryVersion(be) != entryVersion(ae) || !slices.Equal(be.Disabled, ae.Disabled) ||
+			entryVersion(be) != entryVersion(ae) || !sameIDs(be.Disabled, ae.Disabled) ||
 			be.OverlayOff != ae.OverlayOff || be.Pinned != ae.Pinned || !slices.Equal(be.Tags, ae.Tags) || be.Note != ae.Note:
 			return false
 		}
