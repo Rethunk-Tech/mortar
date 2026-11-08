@@ -12,27 +12,48 @@ const outside = Object.fromEntries(
   Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_')),
 )
 
+// Merged last, so neither the machine's global and system git config nor a caller's env can put signing, hooks or
+// fsmonitor back on the throwaway repo.
+const isolated = {
+  GIT_CONFIG_GLOBAL: '/dev/null',
+  GIT_CONFIG_NOSYSTEM: '1',
+}
+
 function run(cmd: string[], env: Record<string, string> = {}): string {
-  const p = Bun.spawnSync(cmd, { cwd: repo, env: { ...outside, ...env } })
+  const p = Bun.spawnSync(cmd, { cwd: repo, env: { ...outside, ...env, ...isolated } })
   if (p.exitCode !== 0) {
     throw new Error(`${cmd.join(' ')}: ${p.stderr.toString()}`)
   }
   return p.stdout.toString()
 }
 
+// Identity rides on -c, so the fixture needs no `git config` runs, and the switches keep a stray hook or signer
+// from turning each of the fifteen spawns into seconds under gate load.
+function git(...args: string[]): string {
+  return run([
+    'git',
+    '-c', 'core.hooksPath=/dev/null',
+    '-c', 'core.fsmonitor=false',
+    '-c', 'commit.gpgsign=false',
+    '-c', 'tag.gpgSign=false',
+    '-c', 'gc.auto=0',
+    '-c', 'user.email=notes@test.invalid',
+    '-c', 'user.name=notes test',
+    ...args,
+  ])
+}
+
 function commit(subject: string): void {
-  run(['git', 'commit', '-q', '--allow-empty', '-m', subject])
+  git('commit', '-q', '--allow-empty', '-m', subject)
 }
 
 beforeAll(() => {
   repo = mkdtempSync(join(tmpdir(), 'mortar-notes-'))
-  run(['git', 'init', '-q'])
-  run(['git', 'config', 'user.email', 'notes@test.invalid'])
-  run(['git', 'config', 'user.name', 'notes test'])
+  git('init', '-q')
   commit('feat(mods): before the previous release')
-  run(['git', 'tag', 'v0.1.0'])
+  git('tag', 'v0.1.0')
   commit('feat(mods): search matches category names')
-  run(['git', 'tag', 'components'])
+  git('tag', 'components')
   commit('fix: a crash on start.')
   commit('perf(profiles): faster profile switch')
   commit('feat(launchsvc): internal service change')
@@ -116,6 +137,22 @@ describe('notes.sh', () => {
     expect(out).toContain(
       '## Fixed\n\n### Saves\n\n- Slots list once\n\n### Games\n\n- Profiles start\n',
     )
+  })
+
+  test('a repo hook and local signing config cannot break the fixture', () => {
+    const hooks = mkdtempSync(join(tmpdir(), 'mortar-notes-hooks-'))
+    writeFileSync(join(hooks, 'pre-commit'), '#!/bin/sh\nexit 1\n', { mode: 0o755 })
+    try {
+      git('config', 'core.hooksPath', hooks)
+      git('config', 'commit.gpgsign', 'true')
+      // A docs subject keeps the cap counts in the other tests unchanged whatever order this runs in.
+      commit('docs: hostile local config')
+    } finally {
+      git('config', '--unset', 'core.hooksPath')
+      git('config', '--unset', 'commit.gpgsign')
+      rmSync(hooks, { recursive: true, force: true })
+    }
+    expect(git('log', '-1', '--format=%s')).toBe('docs: hostile local config\n')
   })
 
   test('writes an escaped AppStream description into the release element', () => {
