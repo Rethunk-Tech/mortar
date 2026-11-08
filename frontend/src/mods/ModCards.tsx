@@ -246,7 +246,6 @@ function GridWindow({
   top,
   heading,
   group,
-  groups,
   columns,
   columnsRef,
   orderedIds,
@@ -259,7 +258,6 @@ function GridWindow({
   top: number
   heading: (key: string) => string
   group: ModGroupChrome
-  groups: readonly { key: string; items: readonly ListRow[] }[]
   columns: number
   columnsRef: { readonly current: number }
   orderedIds: readonly string[]
@@ -295,7 +293,6 @@ function GridWindow({
                 count={item.count}
                 label={heading(item.groupKey)}
                 {...group}
-                groups={groups}
               />
             </Box>
           )
@@ -332,20 +329,18 @@ function GridWindow({
 
 function CardsPane({
   group,
-  groups,
   heading,
   orderedIds,
   profile,
   manual,
 }: {
   group: ModGroupChrome
-  groups: readonly { key: string; items: readonly ListRow[] }[]
   heading: (key: string) => string
   orderedIds: readonly string[]
   profile: Profile
   manual: boolean
 }) {
-  const { groupBy, collapsed, setCollapsed, gameId } = group
+  const { groups, groupBy, collapsed, setCollapsed, gameId } = group
   const compactCards = useMediaQuery(compactQuery)
   const cardSize = useSettings((s) => s.gridCardSize) || 'medium'
   const laneCompact = compactCards || cardSize === 'small'
@@ -410,7 +405,6 @@ function CardsPane({
             count={stuck.row.count}
             label={heading(stuck.row.groupKey)}
             {...group}
-            groups={groups}
           />
         </StickyGroupSlot>
       ) : null}
@@ -420,7 +414,6 @@ function CardsPane({
           top={visibleStart}
           heading={heading}
           group={group}
-          groups={groups}
           columns={columns}
           columnsRef={columnsRef}
           orderedIds={orderedIds}
@@ -452,13 +445,12 @@ export function Cards({
   )
   const heading = useListHeading(groupBy)
   const manual = sort.column === MANUAL_SORT && !filtering
-  const group: ModGroupChrome = { collapsed, gameId, setCollapsed, groupBy }
+  const group: ModGroupChrome = { collapsed, gameId, setCollapsed, groupBy, groups }
   return (
     <ManualOrder enabled={manual} profile={profile} groups={groups}>
       <CardsPane
         manual={manual}
         group={group}
-        groups={groups}
         heading={heading}
         orderedIds={orderedIds}
         profile={profile}

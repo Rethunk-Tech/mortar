@@ -380,6 +380,7 @@ export interface ModGroupChrome {
   gameId: string
   setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
   groupBy: string
+  groups: readonly { key: string; items: readonly ListRow[] }[]
 }
 
 // Stable, so memoised cards and rows keep their props across renders while still stepping through the current items.

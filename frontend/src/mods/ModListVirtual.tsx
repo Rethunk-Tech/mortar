@@ -171,14 +171,12 @@ function ListSlot({
   item,
   headingFor,
   group,
-  groups,
   renderRow,
   onArrow,
 }: {
   item: VirtualRow<ListRow>
   headingFor: (key: string) => string
   group: ModGroupChrome
-  groups: readonly { key: string; items: readonly ListRow[] }[]
   renderRow: (row: ListRow, onArrow: (id: string, dir: -1 | 1) => void) => ReactNode
   onArrow: (id: string, dir: -1 | 1) => void
 }) {
@@ -191,7 +189,6 @@ function ListSlot({
             count={item.count}
             label={headingFor(item.groupKey)}
             {...group}
-            groups={groups}
           />
         </Box>
       </Box>
@@ -248,7 +245,7 @@ export function ModListTable({
     parentRef,
   })
   const onArrow = useModStep(items, virtualizer, parentRef)
-  const group: ModGroupChrome = { collapsed, gameId, setCollapsed, groupBy }
+  const group: ModGroupChrome = { collapsed, gameId, setCollapsed, groupBy, groups }
   const stuck = stuckHeader(items, virtualizer.measurementsCache, virtualizer.scrollOffset ?? 0)
   return (
     <>
@@ -283,7 +280,6 @@ export function ModListTable({
                 count={stuck.row.count}
                 label={headingFor(stuck.row.groupKey)}
                 {...group}
-                groups={groups}
               />
             </StickyGroupSlot>
           ) : null
@@ -313,7 +309,6 @@ export function ModListTable({
                 item={item}
                 headingFor={headingFor}
                 group={group}
-                groups={groups}
                 renderRow={renderRow}
                 onArrow={onArrow}
               />
