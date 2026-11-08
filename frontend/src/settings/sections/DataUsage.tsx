@@ -5,6 +5,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 import type { Usage as DiskUse } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
 import { DataLocation } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import { OpenDataFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { percentLabel } from '../../console/formatTiming.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { formatWhen } from '../../i18n/formatWhen.ts'
 import { cmpText } from '../../mods/cmpText.ts'
@@ -42,7 +43,6 @@ const BAR_HEIGHT = 12
 const BAR_GAP = 2
 const END_RADIUS = 4
 const MIN_SEGMENT = 4
-const PERCENT = 100
 const SKELETON_WIDTH = 64
 const LEGEND_SKELETON = 40
 const SEGMENT_ORDER: SegmentId[] = ['profiles', 'store', 'cache', 'backups', 'trash', 'other']
@@ -156,7 +156,7 @@ function StorageBar({
   labels: Record<SegmentId, string>
   actions: ReactNode
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const colors = useSegmentColors()
   const segs = usage ? storageSegments(usage).filter((s) => s.size > 0) : []
   const sizes = usage
@@ -190,7 +190,7 @@ function StorageBar({
               key={s.id}
               // The bar's own label names every segment; the tooltip only describes, so a bare div carries no label.
               describeChild={true}
-              title={`${labels[s.id]} · ${formatBytes(s.size)} · ${Math.round((s.size / total) * PERCENT)}%`}
+              title={`${labels[s.id]} · ${formatBytes(s.size)} · ${percentLabel(s.size / total, i18n.locale)}`}
             >
               <Box
                 sx={{
