@@ -66,6 +66,27 @@ function modsPrefKeys(
   ]
 }
 
+function playPrefKeys(
+  loader: { id: string; introSkip?: boolean } | undefined,
+  launchDirect: boolean,
+): string[] {
+  return [
+    'defaultLaunchMethod',
+    'startFirst',
+    ...(launchDirect ? ['instances', 'delaySeconds'] : []),
+    ...(loader?.id === 'smapi' ? ['showSmapiConsole'] : []),
+    ...(loader?.introSkip ? ['skipIntro'] : []),
+    'updateModsBeforePlayDefault',
+    'skipPlayCheck',
+    // Only the folder loader keeps its files: a proxy DLL left in a game's folder would load mods for a start outside
+    // Mortar.
+    ...(loader?.id === 'folder' ? ['keepPlacedFiles'] : []),
+    'sandboxLaunch',
+    'sandboxExtraFolders',
+    'pauseDownloadsWhilePlaying',
+  ]
+}
+
 function useGameInstall(game: string) {
   const [folder, setFolder] = useState('')
   const [store, setStore] = useState('')
@@ -194,22 +215,7 @@ function GamePages({
       case 'play':
         return (
           <SettingsSection title={t`Play`}>
-            <PrefKeys
-              keys={[
-                'defaultLaunchMethod',
-                'startFirst',
-                ...(launchDirect ? ['instances', 'delaySeconds'] : []),
-                ...(loader?.id === 'smapi' ? ['showSmapiConsole'] : []),
-                ...(loader?.introSkip ? ['skipIntro'] : []),
-                'updateModsBeforePlayDefault',
-                'skipPlayCheck',
-                'keepPlacedFiles',
-                'sandboxLaunch',
-                'sandboxExtraFolders',
-                'pauseDownloadsWhilePlaying',
-              ]}
-              game={game}
-            />
+            <PrefKeys keys={playPrefKeys(loader, launchDirect)} game={game} />
             {startsALVR ? (
               <SharedOnProfile>
                 <ALVRProgram />

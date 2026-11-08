@@ -373,7 +373,12 @@ func (s *Service) deployProfile(ctx context.Context, gameID string, inst game.In
 	return startDeploy(ctx, inst, plan, roots, mode)
 }
 
+// keepPlaced is whether this Play keeps its files for the next one. Only the folder loader does: the others place a
+// proxy library that would load mods for a start outside Mortar.
 func (s *Service) keepPlaced(gameID, profileID string) bool {
+	if s.profileLoader(gameID, profileID) != folder.ID {
+		return false
+	}
 	cur := settings.Defaults()
 	if s.settings != nil {
 		cur = s.settings.Get()
