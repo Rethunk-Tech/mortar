@@ -85,8 +85,11 @@ func (s *Service) OlderVersionDepots(gameID string) (OlderVersion, error) {
 
 // DownloadDepotCommand is the Steam console line that downloads the manifest of a depot.
 func (s *Service) DownloadDepotCommand(gameID, depotID, manifest string) (string, error) {
-	info, _ := components.Game(gameID)
-	return downloadDepotCommand(info.SteamAppID(), depotID, manifest)
+	appID, _, _, err := s.steamInstall(gameID)
+	if err != nil {
+		return "", err
+	}
+	return downloadDepotCommand(appID, depotID, manifest)
 }
 
 // OlderVersionState reports whether Steam's console has finished the depot download, which is when the folder holds the game.

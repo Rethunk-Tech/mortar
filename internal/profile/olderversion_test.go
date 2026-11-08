@@ -63,6 +63,9 @@ func TestOlderVersionFlow(t *testing.T) {
 	if !svc.CanGetOlderVersion("stardew") || svc.CanGetOlderVersion("no-such-game") {
 		t.Fatal("CanGetOlderVersion")
 	}
+	if _, err := svc.DownloadDepotCommand("no-such-game", "413151", "99"); err == nil {
+		t.Fatal("an unknown game got a depot command")
+	}
 	depots, err := svc.OlderVersionDepots("stardew")
 	if err != nil || len(depots.Depots) != 1 || depots.Depots[0].Manifest != "99" {
 		t.Fatalf("depots = %+v, %v", depots, err)
