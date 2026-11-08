@@ -41,14 +41,14 @@ const ROOT = rootFrom(process.cwd())
 export const repo = (path: string) => join(ROOT, path)
 
 const CONFIG_VERSION = /^\s+version: "([^"]+)"/m
-let version: string | undefined
+let cached: string | undefined
 
 /** The version build/config.yml names, which chrome and download links share. */
 export function currentVersion(): string {
-  if (version === undefined) {
-    version = CONFIG_VERSION.exec(readFileSync(repo('build/config.yml'), 'utf8'))?.[1] ?? ''
+  if (cached === undefined) {
+    cached = CONFIG_VERSION.exec(readFileSync(repo('build/config.yml'), 'utf8'))?.[1] ?? ''
   }
-  return version
+  return cached
 }
 
 export function escapeHTML(raw: string): string {

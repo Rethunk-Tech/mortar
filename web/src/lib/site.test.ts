@@ -1,9 +1,9 @@
-import { readFileSync } from 'node:fs'
 import { expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
 import { steamArt } from './art.ts'
 import { releases } from './changelog.ts'
 import { rivalFacts } from './faq.ts'
-import { REPO, currentVersion, releaseBase, repo } from './site.ts'
+import { currentVersion, REPO, releaseBase, repo } from './site.ts'
 import { topMods } from './topmods.ts'
 
 test('currentVersion is build/config.yml, which chrome and downloads share', () => {

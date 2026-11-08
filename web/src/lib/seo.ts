@@ -1,5 +1,5 @@
 // Structured data for search engines and the address of each page's link-preview picture.
-import { SITE, currentVersion } from './site.ts'
+import { currentVersion, SITE } from './site.ts'
 
 const EDGE_SLASHES = /^\/|\/$/g
 const HTML_EXT = /\.html$/
