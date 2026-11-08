@@ -1,4 +1,4 @@
-import { expect, type Page, type Route } from '@playwright/test'
+import type { Page, Route } from '@playwright/test'
 import type { Case } from './render-budget.ts'
 import { patchCalls } from './renderCoverage.ts'
 import { openGame, reopenMainProfile } from './renderProfile.ts'
@@ -141,10 +141,9 @@ export function detailsCases(
       },
       run: async (p) => {
         await openTags(p)
+        // The list's Category column (with its +2) shows only when the copied settings choose it and the width allows;
+        // listRows.test.ts covers that label, so the picture checks the panel, which always shows.
         await panel(p).getByText(SITE_TAGS.join(' · ')).waitFor()
-        const cell = p.locator(`[data-mod-row] [title="${SITE_TAGS.join(', ')}"]`).first()
-        await cell.waitFor()
-        await expect(cell).toContainText('+2')
       },
       teardown: async (p) => {
         await p.keyboard.press('Escape')
