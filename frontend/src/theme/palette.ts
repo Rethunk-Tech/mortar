@@ -2,8 +2,8 @@ import {
   decomposeColor,
   getContrastRatio,
   getLuminance,
-  rgbToHex,
   type PaletteOptions,
+  rgbToHex,
 } from '@mui/material/styles'
 
 type ThemeMode = 'light' | 'dark'
@@ -346,8 +346,8 @@ function honourTheme(setting: string, osLight: boolean): ThemeMode {
 export type { ThemeMode }
 export {
   composite,
-  getContrastRatio as contrastRatio,
   contrastText,
+  getContrastRatio as contrastRatio,
   honourTheme,
   mortarPalette,
   paperForContrast,
