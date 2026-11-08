@@ -78,16 +78,11 @@ function ResetInstallDialog({
   )
 }
 
-async function offerLaunchOptionRemoval(
-  push: ReturnType<typeof useToasts.getState>['push'],
-  title: string,
-  label: string,
-  errorTitle: string,
-) {
+async function offerLaunchOptionRemoval(title: string, label: string, errorTitle: string) {
   try {
     const options = await LaunchOptions(currentGame())
     if (await LaunchOptionsStartLoader(currentGame(), options)) {
-      push({
+      useToasts.getState().push({
         kind: 'success',
         title,
         action: {
@@ -307,7 +302,6 @@ function GameFolder({
               await ResetInstall(game)
               if (System.IsWindows()) {
                 await offerLaunchOptionRemoval(
-                  useToasts.getState().push,
                   t`Game install deleted`,
                   t`Remove ${{ loader: SMAPI }} from ${{ launcher: STEAM }}'s launch options`,
                   t`Could not update ${{ launcher: STEAM }}'s launch options`,

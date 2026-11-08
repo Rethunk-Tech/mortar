@@ -34,7 +34,11 @@ const MAX_PORT = 65_535
 const POLL_MS = 2000
 const COPIED_MS = 1500
 
-type Push = ReturnType<typeof useToasts.getState>['push']
+function flashCopied<T>(set: (update: (cur: T) => T) => void, on: T, off: T) {
+  set(() => on)
+  globalThis.setTimeout(() => set((cur) => (cur === on ? off : cur)), COPIED_MS)
+}
+
 type Snapshot = { ok: true; body: Record<string, unknown> } | { ok: false } | null
 
 function previewLine(kind: OverlayPreview['kind'], value: string, idle: string, wait: string) {
@@ -125,41 +129,37 @@ function OverlayFieldLabel({ field }: { field: string }) {
   }
 }
 
+// OverlayValues holds the poll: a new snapshot redraws these rows, not the token and port fields under them.
 function OverlayValues({
   game,
-  snapshot,
-  labels,
+  enabled,
+  port,
   token,
-  idle,
-  wait,
-  copied,
-  failCopy,
+  labels,
 }: {
   game: string
-  snapshot: Snapshot
-  labels: boolean
+  enabled: boolean
+  port: number
   token: string
-  idle: string
-  wait: string
-  copied: string
-  failCopy: string
+  labels: boolean
 }) {
   const { t } = useLingui()
+  const snapshot = useOverlaySnapshot(enabled, port, token)
+  const idle = t`Load a save to see values`
+  const wait = t`Start the game to see values`
+  const copied = t`Copied`
+  const failCopy = t`Could not copy`
   const [copiedKey, setCopiedKey] = useState('')
   const copy = (text: string, key: string) => {
-    copyText(text, copied, () => {
-      setCopiedKey(key)
-      globalThis.setTimeout(() => setCopiedKey((cur) => (cur === key ? '' : cur)), COPIED_MS)
-    })
+    copyText(text, copied, () => flashCopied(setCopiedKey, key, ''))
   }
   const copyRow = (field: string | undefined, key: string) => {
     OverlayURL()
       .then((base) => copy(overlayPageUrl(base, field, labels), key))
       .catch(reportError(failCopy))
   }
-  type Field = string
   const fields = overlayFields(game)
-  const groups: { title: string; fields: Field[] }[] =
+  const groups: { title: string; fields: string[] }[] =
     fields === STARDEW_FIELDS
       ? [
           { title: t`World`, fields: fields.filter((f) => WORLD_FIELDS.has(f)) },
@@ -175,7 +175,7 @@ function OverlayValues({
         ]
   const overall = overlayPreview(snapshot, undefined).kind
   const status = overall === 'value' ? '' : previewLine(overall, '', idle, wait)
-  const row = (key: string, label: ReactNode, field?: Field) => {
+  const row = (key: string, label: ReactNode, field?: string) => {
     const preview = overlayPreview(snapshot, field)
     return (
       <Box
@@ -234,8 +234,9 @@ function OverlayValues({
   )
 }
 
-function OverlayHowTo({ copied }: { copied: string }) {
+function OverlayHowTo() {
   const { t } = useLingui()
+  const copied = t`Copied`
   const [done, setDone] = useState(false)
   return (
     <Box sx={{ fontSize: 'base.fontSize', color: 'var(--mortar-ink-sec)' }}>
@@ -245,10 +246,7 @@ function OverlayHowTo({ copied }: { copied: string }) {
         size="small"
         startIcon={<Copy size={14} />}
         onClick={() => {
-          copyText(OVERLAY_EXAMPLE_CSS, copied, () => {
-            setDone(true)
-            globalThis.setTimeout(() => setDone(false), COPIED_MS)
-          })
+          copyText(OVERLAY_EXAMPLE_CSS, copied, () => flashCopied(setDone, true, false))
         }}
         sx={{ ml: 1 }}
       >
@@ -258,30 +256,7 @@ function OverlayHowTo({ copied }: { copied: string }) {
   )
 }
 
-function OverlayRegenDialog({
-  open,
-  onClose,
-  onConfirm,
-}: {
-  open: boolean
-  onClose: () => void
-  onConfirm: () => void
-}) {
-  const { t } = useLingui()
-  return (
-    <ConfirmationDialog
-      open={open}
-      title={t`Regenerate token?`}
-      body={t`Existing ${{ app: OBS }} sources stop working until their URLs are copied again.`}
-      confirmLabel={t`Regenerate token`}
-      tone="danger"
-      onCancel={onClose}
-      onConfirm={onConfirm}
-    />
-  )
-}
-
-function OverlayConnection({ port, token, push }: { port: number; token: string; push: Push }) {
+function OverlayConnection({ port, token }: { port: number; token: string }) {
   const { t } = useLingui()
   const copied = t`Copied`
   const [shown, setShown] = useState(false)
@@ -340,14 +315,18 @@ function OverlayConnection({ port, token, push }: { port: number; token: string;
           </Button>
         </Box>
       </SettingRow>
-      <OverlayRegenDialog
+      <ConfirmationDialog
         open={confirm}
-        onClose={() => setConfirm(false)}
+        title={t`Regenerate token?`}
+        body={t`Existing ${{ app: OBS }} sources stop working until their URLs are copied again.`}
+        confirmLabel={t`Regenerate token`}
+        tone="danger"
+        onCancel={() => setConfirm(false)}
         onConfirm={() => {
           setConfirm(false)
           saveSetting(() =>
             RegenerateOverlayToken().then(() => {
-              push({ kind: 'success', title: t`Token regenerated` })
+              useToasts.getState().push({ kind: 'success', title: t`Token regenerated` })
             }),
           )
         }}
@@ -396,54 +375,11 @@ function useOverlaySnapshot(enabled: boolean, port: number, token: string): Snap
   return snapshot
 }
 
-// The values list, alone with the poll that fills it: a poll's answer redraws these rows and not the token and port
-// fields under them, which share nothing with it.
-function OverlayValuesLive({
-  game,
-  enabled,
-  port,
-  token,
-  labels,
-  idle,
-  wait,
-  copied,
-  failCopy,
-}: {
-  game: string
-  enabled: boolean
-  port: number
-  token: string
-  labels: boolean
-  idle: string
-  wait: string
-  copied: string
-  failCopy: string
-}) {
-  const snapshot = useOverlaySnapshot(enabled, port, token)
-  return (
-    <OverlayValues
-      game={game}
-      snapshot={snapshot}
-      labels={labels}
-      token={token}
-      idle={idle}
-      wait={wait}
-      copied={copied}
-      failCopy={failCopy}
-    />
-  )
-}
-
 export function StreamOverlay({ game }: { game: string }) {
   const { t } = useLingui()
   const enabled = useSettings((s) => s.overlayEnabled)
   const port = useSettings((s) => s.overlayPort)
   const token = useSettings((s) => s.overlayToken)
-  const push = useToasts((s) => s.push)
-  const idle = t`Load a save to see values`
-  const wait = t`Start the game to see values`
-  const copied = t`Copied`
-  const failCopy = t`Could not copy`
   const [labels, setLabels] = useState(false)
   return (
     <SettingsSection title={t`Stream overlay`}>
@@ -465,21 +401,17 @@ export function StreamOverlay({ game }: { game: string }) {
       ) : null}
       {enabled ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, p: space.pad }}>
-          <OverlayValuesLive
+          <OverlayValues
             game={game}
             enabled={enabled}
             port={port}
             token={token}
             labels={labels}
-            idle={idle}
-            wait={wait}
-            copied={copied}
-            failCopy={failCopy}
           />
-          <OverlayHowTo copied={copied} />
+          <OverlayHowTo />
         </Box>
       ) : null}
-      {enabled ? <OverlayConnection port={port} token={token} push={push} /> : null}
+      {enabled ? <OverlayConnection port={port} token={token} /> : null}
     </SettingsSection>
   )
 }
