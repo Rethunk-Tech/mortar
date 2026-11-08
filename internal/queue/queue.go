@@ -666,6 +666,21 @@ func (s *Service) Busy() bool {
 	return slices.ContainsFunc(s.items, func(it *Item) bool { return !finished(it.State) })
 }
 
+// Left is how many items are still unfinished.
+//
+//wails:ignore
+func (s *Service) Left() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	n := 0
+	for _, it := range s.items {
+		if !finished(it.State) {
+			n++
+		}
+	}
+	return n
+}
+
 // InstallingInto reports whether the queue still has work, or waits on a decision, for the profile.
 //
 //wails:ignore

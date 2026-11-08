@@ -255,6 +255,22 @@ func bothDone(st State) bool {
 	return len(st.Items) == 2 && st.Items[0].State == StateDone && st.Items[1].State == StateDone
 }
 
+func TestLeft(t *testing.T) {
+	s := &Service{items: []*Item{
+		{State: StateDone},
+		{State: StateSkipped},
+		{State: StateCancelled},
+		{State: "queued"},
+		{State: "downloading"},
+	}}
+	if s.Left() != 2 {
+		t.Fatalf("Left = %d", s.Left())
+	}
+	if !s.Busy() {
+		t.Fatal("Busy")
+	}
+}
+
 func req(fileID int) Request {
 	return Request{Kind: KindInstall, Game: "stardew", Profile: "p1", ModID: 1, FileID: fileID}
 }
