@@ -60,7 +60,9 @@ const PICTURE_WORDS = [
   'banner',
 ]
 const PICTURE_KEY = (key: string) =>
-  PICTURE_WORDS.some((w) => key.startsWith(w) || key.includes(w[0].toUpperCase() + w.slice(1)))
+  PICTURE_WORDS.some(
+    (w) => key.startsWith(w) || key.includes(w.charAt(0).toUpperCase() + w.slice(1)),
+  )
 
 // The backend's own art route serves Steam's art, which the demo leaves out too.
 const STEAM_ART = '/steam-art/'
