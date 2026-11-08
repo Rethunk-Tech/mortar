@@ -249,6 +249,10 @@ const ProfileGameSettingsFields = memo(function ProfileGameSettingsFieldsView({
   onChange,
 }: ProfileGameSettingsFieldsProps) {
   const { t } = useLingui()
+  const zoomLevel = value?.zoomLevel ?? PERCENT_DEFAULT
+  const uiScale = value?.uiScale ?? PERCENT_DEFAULT
+  const musicVolumeLevel = value?.musicVolumeLevel ?? PERCENT_DEFAULT
+  const soundVolumeLevel = value?.soundVolumeLevel ?? PERCENT_DEFAULT
 
   function updateField<K extends keyof GameSettingsValues>(
     field: K,
@@ -326,14 +330,14 @@ const ProfileGameSettingsFields = memo(function ProfileGameSettingsFieldsView({
       <PercentageField
         disabled={disabled}
         field="zoomLevel"
-        label={t`Zoom (${value?.zoomLevel ?? PERCENT_DEFAULT}%)`}
+        label={t`Zoom (${zoomLevel}%)`}
         value={value}
         onChange={onChange}
       />
       <PercentageField
         disabled={disabled}
         field="uiScale"
-        label={t`UI scale (${value?.uiScale ?? PERCENT_DEFAULT}%)`}
+        label={t`UI scale (${uiScale}%)`}
         value={value}
         onChange={onChange}
       />
@@ -350,14 +354,14 @@ const ProfileGameSettingsFields = memo(function ProfileGameSettingsFieldsView({
       <PercentageField
         disabled={disabled}
         field="musicVolumeLevel"
-        label={t`Music volume (${value?.musicVolumeLevel ?? PERCENT_DEFAULT}%)`}
+        label={t`Music volume (${musicVolumeLevel}%)`}
         value={value}
         onChange={onChange}
       />
       <PercentageField
         disabled={disabled}
         field="soundVolumeLevel"
-        label={t`Sound volume (${value?.soundVolumeLevel ?? PERCENT_DEFAULT}%)`}
+        label={t`Sound volume (${soundVolumeLevel}%)`}
         value={value}
         onChange={onChange}
       />

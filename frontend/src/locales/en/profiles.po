@@ -11,6 +11,10 @@ msgstr ""
 msgid "This profile runs the game from this folder, an older copy, instead of the selected install."
 msgstr "This profile runs the game from this folder, an older copy, instead of the selected install."
 
+#: src/profiles/GameSettings.tsx
+msgid "UI scale ({uiScale}%)"
+msgstr "UI scale ({uiScale}%)"
+
 #: src/profiles/CompareDialog.tsx
 msgid "{count, plural, one {Copied # mod to {name}} other {Copied # mods to {name}}}"
 msgstr "{count, plural, one {Copied # mod to {name}} other {Copied # mods to {name}}}"
@@ -421,6 +425,10 @@ msgstr "Launch prefix"
 msgid "Left in the shared folder"
 msgstr "Left in the shared folder"
 
+#: src/profiles/GameSettings.tsx
+msgid "Music volume ({musicVolumeLevel}%)"
+msgstr "Music volume ({musicVolumeLevel}%)"
+
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Could not open the file dialog"
 msgstr "Could not open the file dialog"
@@ -780,10 +788,6 @@ msgstr "These profiles have the same mods"
 #: src/profiles/HealthDialog.tsx
 msgid "The folder of {name} was deleted outside Mortar"
 msgstr "The folder of {name} was deleted outside Mortar"
-
-#: src/profiles/GameSettings.tsx
-msgid "Zoom ({value}%)"
-msgstr "Zoom ({value}%)"
 
 #: src/profiles/CompareDialog.tsx
 msgid "Nothing selected would change {name}."
@@ -1206,8 +1210,8 @@ msgid "{identical} identical"
 msgstr "{identical} identical"
 
 #: src/profiles/GameSettings.tsx
-msgid "Music volume ({value}%)"
-msgstr "Music volume ({value}%)"
+msgid "Zoom ({zoomLevel}%)"
+msgstr "Zoom ({zoomLevel}%)"
 
 #: src/profiles/ServerSettings.tsx
 msgid "Queues the mods of a {clientName} profile into this server profile."
@@ -1650,10 +1654,6 @@ msgstr "imported from a .mortar file"
 msgid "Compare"
 msgstr "Compare"
 
-#: src/profiles/GameSettings.tsx
-msgid "UI scale ({value}%)"
-msgstr "UI scale ({value}%)"
-
 #: src/profiles/SinceLastRun.tsx
 msgid "Changes since last run"
 msgstr "Changes since last run"
@@ -1699,6 +1699,10 @@ msgstr "Install by hand: {names}"
 msgid "{count, plural, one {Removed # mod} other {Removed # mods}}"
 msgstr "{count, plural, one {Removed # mod} other {Removed # mods}}"
 
+#: src/profiles/GameSettings.tsx
+msgid "Sound volume ({soundVolumeLevel}%)"
+msgstr "Sound volume ({soundVolumeLevel}%)"
+
 #: src/profiles/ProfileRow.tsx
 msgid "Share"
 msgstr "Share"
@@ -1735,10 +1739,6 @@ msgstr "Removed {name}"
 #: src/profiles/MergeDialog.tsx
 msgid "Could not add the mods to {name}"
 msgstr "Could not add the mods to {name}"
-
-#: src/profiles/GameSettings.tsx
-msgid "Sound volume ({value}%)"
-msgstr "Sound volume ({value}%)"
 
 #: src/profiles/ProfileMenu.tsx
 msgid "Switch profile"

@@ -11,6 +11,10 @@ msgstr ""
 msgid "This profile runs the game from this folder, an older copy, instead of the selected install."
 msgstr ""
 
+#: src/profiles/GameSettings.tsx
+msgid "UI scale ({uiScale}%)"
+msgstr ""
+
 #: src/profiles/CompareDialog.tsx
 msgid "{count, plural, one {Copied # mod to {name}} other {Copied # mods to {name}}}"
 msgstr ""
@@ -421,6 +425,10 @@ msgstr ""
 msgid "Left in the shared folder"
 msgstr ""
 
+#: src/profiles/GameSettings.tsx
+msgid "Music volume ({musicVolumeLevel}%)"
+msgstr ""
+
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Could not open the file dialog"
 msgstr ""
@@ -779,10 +787,6 @@ msgstr ""
 
 #: src/profiles/HealthDialog.tsx
 msgid "The folder of {name} was deleted outside Mortar"
-msgstr ""
-
-#: src/profiles/GameSettings.tsx
-msgid "Zoom ({value}%)"
 msgstr ""
 
 #: src/profiles/CompareDialog.tsx
@@ -1206,7 +1210,7 @@ msgid "{identical} identical"
 msgstr ""
 
 #: src/profiles/GameSettings.tsx
-msgid "Music volume ({value}%)"
+msgid "Zoom ({zoomLevel}%)"
 msgstr ""
 
 #: src/profiles/ServerSettings.tsx
@@ -1650,10 +1654,6 @@ msgstr ""
 msgid "Compare"
 msgstr ""
 
-#: src/profiles/GameSettings.tsx
-msgid "UI scale ({value}%)"
-msgstr ""
-
 #: src/profiles/SinceLastRun.tsx
 msgid "Changes since last run"
 msgstr ""
@@ -1699,6 +1699,10 @@ msgstr ""
 msgid "{count, plural, one {Removed # mod} other {Removed # mods}}"
 msgstr ""
 
+#: src/profiles/GameSettings.tsx
+msgid "Sound volume ({soundVolumeLevel}%)"
+msgstr ""
+
 #: src/profiles/ProfileRow.tsx
 msgid "Share"
 msgstr ""
@@ -1734,10 +1738,6 @@ msgstr ""
 
 #: src/profiles/MergeDialog.tsx
 msgid "Could not add the mods to {name}"
-msgstr ""
-
-#: src/profiles/GameSettings.tsx
-msgid "Sound volume ({value}%)"
 msgstr ""
 
 #: src/profiles/ProfileMenu.tsx
