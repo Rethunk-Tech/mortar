@@ -3,6 +3,7 @@ import { useTab } from '../game/tab.ts'
 import { localId } from '../mods/dependents.ts'
 import { useDetail } from '../mods/detail.ts'
 import { sameId } from '../mods/lookup.ts'
+import { matchesQuery } from '../mods/modSearch.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from './store.ts'
 
@@ -29,7 +30,7 @@ export function findModInProfiles(profiles: Profile[], query: string): ModHit[] 
   for (const p of profiles) {
     for (const e of p.entries ?? []) {
       for (const m of e.mods ?? []) {
-        if (m.name.toLowerCase().includes(q) || localId(m.id).toLowerCase().includes(q)) {
+        if (matchesQuery(q, [m.name, localId(m.id)])) {
           out.push({
             profileId: p.id,
             profileName: p.name,

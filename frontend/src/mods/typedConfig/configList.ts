@@ -10,6 +10,8 @@ import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/i
 import { useTab } from '../../game/tab.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
+import { localId } from '../dependents.ts'
+import { matchesQuery } from '../modSearch.ts'
 
 type ConfigShow = 'all' | 'changed' | 'menu' | 'waiting'
 
@@ -44,13 +46,7 @@ const matchesShow = (m: ModConfig, show: ConfigShow): boolean => {
 // The mods the Config list shows: those matching the Show choice, then those whose name or id holds the query.
 function filterConfigMods(mods: ModConfig[], query: string, show: ConfigShow): ModConfig[] {
   const needle = query.trim().toLowerCase()
-  return mods.filter(
-    (m) =>
-      matchesShow(m, show) &&
-      (needle === '' ||
-        m.name.toLowerCase().includes(needle) ||
-        m.id.toLowerCase().includes(needle)),
-  )
+  return mods.filter((m) => matchesShow(m, show) && matchesQuery(needle, [m.name, localId(m.id)]))
 }
 
 // A selection is a mod by its id, or a .cfg file nobody owns by its name.

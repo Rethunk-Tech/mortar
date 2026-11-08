@@ -40,6 +40,20 @@ test('the list filter takes the Show choice and a name or id fragment', () => {
   expect(names('menu', 'patcher')).toEqual([])
 })
 
+test('the list filter matches name or local id, not a source prefix', () => {
+  const prefixed = [
+    mod('nexus:Pathoschild.ContentPatcher', 'Content Patcher'),
+    mod('thunderstore:esca-farmtypemanager', 'Farm Type Manager'),
+  ]
+  expect(filterConfigMods(prefixed, 'nexus', 'all').map((m) => m.name)).toEqual([])
+  expect(filterConfigMods(prefixed, 'pathoschild', 'all').map((m) => m.name)).toEqual([
+    'Content Patcher',
+  ])
+  expect(filterConfigMods(prefixed, 'farm', 'all').map((m) => m.name)).toEqual([
+    'Farm Type Manager',
+  ])
+})
+
 test('the remembered selection holds while its mod is listed, else the first mod is chosen', () => {
   const list = {
     mods,

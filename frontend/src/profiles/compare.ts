@@ -6,6 +6,7 @@ import type {
 import { cmpText } from '../mods/cmpText.ts'
 import { idKey, localId } from '../mods/dependents.ts'
 import { sameId } from '../mods/lookup.ts'
+import { matchesQuery } from '../mods/modSearch.ts'
 import { userModEntries } from './count.ts'
 
 interface CompareSide {
@@ -171,9 +172,7 @@ interface CompareView {
 }
 
 function matchesNeedle(name: string, id: string, needle: string): boolean {
-  return (
-    !needle || name.toLowerCase().includes(needle) || localId(id).toLowerCase().includes(needle)
-  )
+  return matchesQuery(needle, [name, localId(id)])
 }
 
 function pairRows(pairs: ComparePair[], kind: GroupKind): CompareRow[] {

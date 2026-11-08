@@ -39,6 +39,7 @@ import { idKey, localId } from './dependents.ts'
 import { DepChips, RowName } from './LoadOrderRowParts.tsx'
 import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
 import { sameId } from './lookup.ts'
+import { matchesQuery } from './modSearch.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -219,14 +220,7 @@ function OrderList({
   const { t } = useLingui()
   const [query, setQuery] = useState('')
   const needle = query.trim().toLowerCase()
-  const shown =
-    needle === ''
-      ? rows
-      : rows.filter(
-          (row) =>
-            row.name.toLowerCase().includes(needle) ||
-            localId(row.id).toLowerCase().includes(needle),
-        )
+  const shown = rows.filter((row) => matchesQuery(needle, [row.name, localId(row.id)]))
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <PageActions>
