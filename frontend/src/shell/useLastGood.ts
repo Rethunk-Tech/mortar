@@ -51,7 +51,10 @@ export function useLastGood<T>(
           latest.current.options?.onError?.(e)
         },
         loading: (on) => {
-          setRefreshing(on)
+          // Nothing shown yet means refreshing reads false whatever this says, so starting a read redraws nothing.
+          const { key: now } = latest.current
+          const visible = on && now !== null && peekLast(now) !== undefined
+          setRefreshing((prev) => (prev === visible ? prev : visible))
           if (on) {
             setError(null)
           }
