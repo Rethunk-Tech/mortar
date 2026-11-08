@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { useOnWindowFocus } from '../../shell/useOnWindowFocus.ts'
@@ -177,7 +177,7 @@ function useOutsideChange(
 ) {
   const [outside, setOutside] = useState<string | null>(null)
   const { game, profile, key, id } = target
-  const live = useRef(true)
+  const live = useRef<boolean>(true)
   const settle = useEffectEvent((onDisk: string) => {
     if (!live.current) {
       return
@@ -192,12 +192,12 @@ function useOutsideChange(
       setOutside(onDisk)
     }
   })
-  const look = useEffectEvent(() => {
+  const look = useCallback(() => {
     configApi
       .text({ game, profile, key, id }, name)
       .then(settle)
       .catch(() => undefined)
-  })
+  }, [game, profile, key, id, name])
   const updated = useProfiles((s) => s.profiles.find((p) => p.id === profile)?.updated)
   useEffect(() => {
     live.current = true
@@ -208,7 +208,7 @@ function useOutsideChange(
     return () => {
       live.current = false
     }
-  }, [game, profile, key, id, name, updated])
+  }, [look, updated])
   useOnWindowFocus(look)
   return [outside, setOutside] as const
 }

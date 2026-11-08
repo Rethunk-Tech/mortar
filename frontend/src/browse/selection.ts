@@ -8,7 +8,7 @@ export function browseKeysOwned(target: EventTarget | null): boolean {
   return (
     isTypingTarget(target instanceof HTMLElement ? target : null, { ancestors: true }) ||
     dialogOpen() ||
-    !!(target instanceof Element && target.closest('[role="menu"]'))
+    Boolean(target instanceof Element && target.closest('[role="menu"]'))
   )
 }
 
