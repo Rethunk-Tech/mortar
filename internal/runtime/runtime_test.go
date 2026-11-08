@@ -116,6 +116,43 @@ func TestProtonResolvesInsideThePrefix(t *testing.T) {
 	}
 }
 
+func TestCompatDataDirFindsOtherSteamLibrary(t *testing.T) {
+	gameLib := t.TempDir()
+	dir := filepath.Join(gameLib, "steamapps", "common", "Lethal Company")
+	other := t.TempDir()
+	compat := filepath.Join(other, "steamapps", "compatdata", "1966720")
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(compat, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	inst := Install{Store: "steam", Dir: dir, AppID: "1966720", Platform: "windows", Home: t.TempDir(), GOOS: "linux", SteamRoots: []string{other}}
+	got, ok := CompatDataDir(inst)
+	if !ok || got != compat {
+		t.Fatalf("CompatDataDir = %q, %v; want %q", got, ok, compat)
+	}
+}
+
+// go-gamelocator refuses to search other libraries when appID is not filepath.IsLocal; Mortar used to walk them.
+func TestCompatDataDirNonLocalAppIDStaysInGameLibrary(t *testing.T) {
+	gameLib := t.TempDir()
+	dir := filepath.Join(gameLib, "steamapps", "common", "Game")
+	other := t.TempDir()
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(other, "steamapps", "escaped"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	inst := Install{Store: "steam", Dir: dir, AppID: "../escaped", Platform: "windows", Home: t.TempDir(), GOOS: "linux", SteamRoots: []string{other}}
+	got, ok := CompatDataDir(inst)
+	want := filepath.Join(gameLib, "steamapps", "escaped")
+	if !ok || got != want {
+		t.Fatalf("CompatDataDir = %q, %v; want %q", got, ok, want)
+	}
+}
+
 func TestNativeRefusesForeignBuildAndMissingPath(t *testing.T) {
 	inst := Install{Store: "gog", Platform: "windows", Home: t.TempDir(), GOOS: "linux"}
 	if _, err := Resolve(inst, stardewSaves); err == nil {
