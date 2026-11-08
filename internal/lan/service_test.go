@@ -575,19 +575,6 @@ func TestPendingKeepsSharesUntilDismissed(t *testing.T) {
 	}
 }
 
-func TestPairTranscriptBindsBothNames(t *testing.T) {
-	t.Parallel()
-	base := pairTranscript([]byte("a"), []byte("b"), "j", "Joiner", "h", "Host")
-	for _, other := range [][]byte{
-		pairTranscript([]byte("a"), []byte("b"), "j", "Eve", "h", "Host"),
-		pairTranscript([]byte("a"), []byte("b"), "j", "Joiner", "h", "Eve"),
-	} {
-		if bytes.Equal(base, other) {
-			t.Fatal("a device name is outside the transcript")
-		}
-	}
-}
-
 func TestEntryMACBindsHashGameAndKey(t *testing.T) {
 	t.Parallel()
 	key := []byte("pair key")
@@ -717,23 +704,6 @@ func TestListenerRefusesNonJSONPostsAndCapsHandshakes(t *testing.T) {
 	handler.ServeHTTP(response, httptest.NewRequestWithContext(t.Context(), "GET", "http://mortar.test/hello", nil))
 	if response.Code != 429 {
 		t.Errorf("/hello over the nonce cap = %d, want 429", response.Code)
-	}
-}
-
-func TestPairFailedForgetsPeersLongQuiet(t *testing.T) {
-	t.Parallel()
-	service := NewService(Deps{Dir: t.TempDir()})
-	now := time.Now()
-	for _, c := range []struct {
-		peer string
-		at   time.Time
-	}{{"old", now.Add(-2 * lockout)}, {"new", now}} {
-		service.pairing.mu.Lock()
-		service.pairChargeLocked(c.peer, c.at)
-		service.pairing.mu.Unlock()
-	}
-	if _, kept := service.pairing.locks["old"]; kept || len(service.pairing.locks) != 1 {
-		t.Errorf("locks = %v", service.pairing.locks)
 	}
 }
 

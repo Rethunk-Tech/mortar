@@ -3,17 +3,12 @@ package lan
 import (
 	"context"
 	"crypto/ecdh"
-	"crypto/hkdf"
-	"crypto/hmac"
-	"crypto/pbkdf2"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"math/big"
 	"net/http"
 	"path/filepath"
 	"slices"
@@ -21,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-codepair"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
@@ -58,6 +54,24 @@ const (
 
 // pairIterations is a var so tests can run the handshake without paying for a production-strength key.
 var pairIterations = 200_000
+
+func pairConfig() codepair.Config {
+	return codepair.Config{
+		Protocol:    pairProtocolInfo,
+		PeerKeyInfo: "mortar-lan-peer-key",
+		Iterations:  pairIterations,
+		CodeLength:  codeLength,
+		Alphabet:    codeAlphabet,
+	}
+}
+
+// pairLibErr maps a library error to the message a player used to see: the wrapped cause, when the library added one.
+func pairLibErr(err error) error {
+	if inner := errors.Unwrap(err); inner != nil {
+		return inner
+	}
+	return err
+}
 
 // PairedPeer is a computer this one trusts.
 type PairedPeer struct {
@@ -186,15 +200,8 @@ type pairHost struct {
 	mu       sync.Mutex
 	code     string
 	expires  time.Time
-	failures int
 	sessions map[string]pairSession
-	locks    map[string]peerLock
-}
-
-type peerLock struct {
-	failures int
-	until    time.Time
-	last     time.Time
+	limiter  *codepair.Limiter
 }
 
 type pairBeginRequest struct {
@@ -219,61 +226,20 @@ type pairFinishResponse struct {
 	Proof string `json:"proof"`
 }
 
-func randomCode() (string, error) {
-	limit := big.NewInt(int64(len(codeAlphabet)))
-	out := make([]byte, codeLength)
-	for i := range out {
-		n, err := rand.Int(rand.Reader, limit)
-		if err != nil {
-			return "", err
-		}
-		out[i] = codeAlphabet[n.Int64()]
-	}
-	return string(out), nil
-}
-
-func normalizeCode(code string) string {
-	return strings.ToUpper(strings.NewReplacer("-", "", " ", "").Replace(code))
-}
-
-// pairKeys derives the code-keyed proof key and the long-term peer key from the X25519 secret and the transcript.
-func pairKeys(code string, shared, transcript []byte) (authKey, peerKey []byte, err error) {
-	authKey, err = pbkdf2.Key(sha256.New, normalizeCode(code), []byte(pairProtocolInfo), pairIterations, 32)
-	if err != nil {
-		return nil, nil, err
-	}
-	digest := sha256.Sum256(transcript)
-	peerKey, err = hkdf.Key(sha256.New, shared, digest[:], "mortar-lan-peer-key", 32)
-	return authKey, peerKey, err
-}
-
-// pairTranscript binds both public keys, ids and display names, so a relay cannot change the name a computer is
-// stored under without failing the proofs.
-func pairTranscript(a, b []byte, joinerID, joinerName, hostID, hostName string) []byte {
-	return slices.Concat([]byte(pairProtocolInfo), []byte{0}, a, b, []byte(joinerID), []byte{0}, []byte(joinerName), []byte{0}, []byte(hostID), []byte{0}, []byte(hostName))
-}
-
-func pairProof(authKey []byte, role string, transcript, shared []byte) []byte {
-	mac := hmac.New(sha256.New, authKey)
-	_, _ = mac.Write([]byte(role))
-	_, _ = mac.Write(transcript)
-	_, _ = mac.Write(shared)
-	return mac.Sum(nil)
-}
-
 // PairCode opens pairing: it returns a fresh single-use code, shown as two groups of four, that the other computer
 // must enter within five minutes. A new call replaces the previous code.
 func (s *Service) PairCode(ctx context.Context) (string, error) {
 	if err := s.ensureStarted(ctx); err != nil {
 		return "", fmt.Errorf("turn on sharing nearby to pair a computer: %w", err)
 	}
-	code, err := randomCode()
+	code, err := pairConfig().NewCode()
 	if err != nil {
-		return "", err
+		return "", pairLibErr(err)
 	}
 	s.pairing.mu.Lock()
-	s.pairing.code, s.pairing.expires, s.pairing.failures = code, time.Now().Add(codeTTL), 0
+	s.pairing.code, s.pairing.expires = code, time.Now().Add(codeTTL)
 	s.pairing.sessions = map[string]pairSession{}
+	s.pairing.limiter = codepair.NewLimiter(maxFailures, burnFailures, lockout)
 	s.pairing.mu.Unlock()
 	return code[:4] + "-" + code[4:], nil
 }
@@ -295,7 +261,7 @@ func (s *Service) pairOpen(remote string, now time.Time) error {
 	if h.code == "" || now.After(h.expires) {
 		return errors.New("pairing is not open")
 	}
-	if lock := h.locks[remote]; now.Before(lock.until) {
+	if h.limiter != nil && h.limiter.Locked(remote, now) {
 		return errors.New("too many wrong codes from this computer; try again later")
 	}
 	return nil
@@ -389,14 +355,15 @@ func (s *Service) handlePairFinish(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid pairing request", http.StatusBadRequest)
 		return
 	}
-	transcript := pairTranscript(sess.a, sess.b.PublicKey().Bytes(), sess.peerID, sess.name, hostID, cleanName(s.deviceName()))
-	authKey, peerKey, err := pairKeys(code, shared, transcript)
+	cfg := pairConfig()
+	transcript := cfg.Transcript(sess.a, sess.b.PublicKey().Bytes(), sess.peerID, sess.name, hostID, cleanName(s.deviceName()))
+	authKey, peerKey, err := cfg.Keys(code, shared, transcript)
 	if err != nil {
 		http.Error(w, "could not finish pairing", http.StatusInternalServerError)
 		return
 	}
 	got, _ := base64.RawStdEncoding.DecodeString(req.Proof)
-	if !hmac.Equal(got, pairProof(authKey, "J", transcript, shared)) {
+	if !codepair.Verify(got, codepair.Proof(authKey, "J", transcript, shared)) {
 		http.Error(w, "wrong code", http.StatusForbidden)
 		return
 	}
@@ -417,40 +384,25 @@ func (s *Service) handlePairFinish(w http.ResponseWriter, r *http.Request) {
 	if s.deps.Emit != nil {
 		s.deps.Emit(PairedEvent, peer)
 	}
-	writeJSON(w, pairFinishResponse{Proof: base64.RawStdEncoding.EncodeToString(pairProof(authKey, "H", transcript, shared))})
+	writeJSON(w, pairFinishResponse{Proof: base64.RawStdEncoding.EncodeToString(codepair.Proof(authKey, "H", transcript, shared))})
 }
 
-// pairChargeLocked counts one guess from remote and locks it out after maxFailures; the caller holds h.mu.
+// pairChargeLocked counts one guess from remote and burns the code once the limiter says so; the caller holds h.mu.
 func (s *Service) pairChargeLocked(remote string, now time.Time) {
 	h := &s.pairing
-	if h.locks == nil {
-		h.locks = map[string]peerLock{}
+	if h.limiter == nil {
+		h.limiter = codepair.NewLimiter(maxFailures, burnFailures, lockout)
 	}
-	for peer, l := range h.locks {
-		if now.Sub(l.last) > lockout {
-			delete(h.locks, peer)
-		}
-	}
-	lock := h.locks[remote]
-	lock.failures++
-	lock.last = now
-	if lock.failures >= maxFailures {
-		lock = peerLock{until: now.Add(lockout), last: now, failures: maxFailures}
-	}
-	h.locks[remote] = lock
-	if h.failures++; h.failures >= burnFailures {
+	if h.limiter.Charge(remote, now) {
 		h.code = ""
 	}
 }
 
 // pairRefundLocked gives back the guess a correct code spent.
 func (s *Service) pairRefundLocked(remote string) {
-	h := &s.pairing
-	if lock, ok := h.locks[remote]; ok && lock.failures > 0 && !time.Now().Before(lock.until) {
-		lock.failures--
-		h.locks[remote] = lock
+	if s.pairing.limiter != nil {
+		s.pairing.limiter.Refund(remote, time.Now())
 	}
-	h.failures = max(0, h.failures-1)
 }
 
 // Pair enters the code shown by the computer at peerID (host:port) and stores the key both sides derive.
@@ -483,18 +435,19 @@ func (s *Service) Pair(ctx context.Context, peerID, code string) error {
 	if err != nil {
 		return errors.New("the other computer sent an invalid pairing reply")
 	}
-	transcript := pairTranscript(aPub, bPub, selfID, cleanName(s.deviceName()), begin.ID, cleanName(begin.Name))
-	authKey, peerKey, err := pairKeys(code, shared, transcript)
+	cfg := pairConfig()
+	transcript := cfg.Transcript(aPub, bPub, selfID, cleanName(s.deviceName()), begin.ID, cleanName(begin.Name))
+	authKey, peerKey, err := cfg.Keys(code, shared, transcript)
 	if err != nil {
-		return err
+		return pairLibErr(err)
 	}
 	var finish pairFinishResponse
-	proof := base64.RawStdEncoding.EncodeToString(pairProof(authKey, "J", transcript, shared))
+	proof := base64.RawStdEncoding.EncodeToString(codepair.Proof(authKey, "J", transcript, shared))
 	if err := s.postJSON(ctx, peerID, "/pair/finish", pairFinishRequest{Session: begin.Session, Proof: proof}, &finish); err != nil {
 		return err
 	}
 	got, _ := base64.RawStdEncoding.DecodeString(finish.Proof)
-	if !hmac.Equal(got, pairProof(authKey, "H", transcript, shared)) {
+	if !codepair.Verify(got, codepair.Proof(authKey, "H", transcript, shared)) {
 		return errors.New("the other computer did not prove it knew the code")
 	}
 	return s.book.add(PairedPeer{ID: begin.ID, Name: cleanName(begin.Name)}, peerKey)
