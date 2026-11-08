@@ -21,7 +21,6 @@ import { usePending } from '../toasts/usePending.ts'
 import { LackChipActions } from './lackChipActions.tsx'
 import { wantFor } from './wantFor.ts'
 
-
 function LackChip({
   fit,
   lack,

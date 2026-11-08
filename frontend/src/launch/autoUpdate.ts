@@ -17,7 +17,6 @@ import {
   State as QueueState,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
-import { delay } from './delay.ts'
 import { installableUpdate, visibleUpdates } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { installedCaution, updateWant, withOptionalLoaded } from '../mods/updateReview/wants.ts'
@@ -29,6 +28,7 @@ import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { useSettings } from '../settings/store.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
+import { delay } from './delay.ts'
 
 interface AutoUpdatePlan {
   updates: Update[]

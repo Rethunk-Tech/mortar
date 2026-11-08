@@ -38,7 +38,6 @@ import { SaveGapLine } from './SaveGapLine.tsx'
 import { playStyleName, saveKind, saveName } from './saveName.ts'
 import { useSaves } from './store.ts'
 
-
 const SEASON_STYLE = [
   { color: 'success.main', Icon: Flower2 },
   { color: 'warning.main', Icon: Sun },

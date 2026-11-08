@@ -73,11 +73,7 @@ function RowMenu({
       }}
     >
       <MenuHeading>{t`This profile`}</MenuHeading>
-      <MenuAction
-        icon={<Pencil size={16} />}
-        label={t`Rename`}
-        onClick={choose(onRename, false)}
-      />
+      <MenuAction icon={<Pencil size={16} />} label={t`Rename`} onClick={choose(onRename, false)} />
       <MenuAction
         icon={<Palette size={16} />}
         label={t`Edit profile…`}

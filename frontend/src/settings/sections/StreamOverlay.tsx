@@ -401,13 +401,7 @@ export function StreamOverlay({ game }: { game: string }) {
       ) : null}
       {enabled ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, p: space.pad }}>
-          <OverlayValues
-            game={game}
-            enabled={enabled}
-            port={port}
-            token={token}
-            labels={labels}
-          />
+          <OverlayValues game={game} enabled={enabled} port={port} token={token} labels={labels} />
           <OverlayHowTo />
         </Box>
       ) : null}
