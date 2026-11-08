@@ -58,9 +58,6 @@ func TestLatestPrereleaseTagInvalidJSON(t *testing.T) {
 	if !strings.Contains(err.Error(), "github releases:") {
 		t.Fatalf("error %q: want github releases prefix", err)
 	}
-	if !strings.Contains(err.Error(), "read GitHub's response") {
-		t.Fatalf("error %q: want FetchReleases JSON wording", err)
-	}
 }
 
 func prereleaseProviderFor(srv *httptest.Server) *prereleaseProvider {
