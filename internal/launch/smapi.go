@@ -89,8 +89,7 @@ func smapiModsLoadedEnd(log string) int {
 	return 0
 }
 
-// Parse returns the entry for one SMAPI or BepInEx line, and false when the line belongs to a hidden message (SetHiddenMessages). A line that is not
-// a header continues the previous entry; with none yet it stands alone as an INFO line.
+// smapiHeader reads line as a SMAPI header, and false for a continuation or a line that is not one.
 func smapiHeader(line string) (Entry, bool) {
 	var p logline.Parser
 	e := p.Parse(line)
@@ -100,6 +99,8 @@ func smapiHeader(line string) (Entry, bool) {
 	return Entry{Time: e.Time, Level: Level(e.Level), Mod: e.Mod, Message: e.Message}, true
 }
 
+// Parse returns the entry for one SMAPI or BepInEx line, and false when the line belongs to a hidden message (SetHiddenMessages). A line that is not
+// a header continues the previous entry; with none yet it stands alone as an INFO line.
 func (p *Parser) Parse(line string) (Entry, bool) {
 	if e, ok := smapiHeader(line); ok {
 		p.last = e
