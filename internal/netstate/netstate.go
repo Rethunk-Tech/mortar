@@ -5,13 +5,13 @@ package netstate
 import (
 	"context"
 	"errors"
-	"net"
 	"net/http"
 	"slices"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -54,20 +54,6 @@ const (
 	ReasonRefused = "refused"
 	ReasonOther   = "other"
 )
-
-func reasonOf(err error) string {
-	if _, ok := errors.AsType[*net.DNSError](err); ok {
-		return ReasonDNS
-	}
-	if errors.Is(err, refusedErrno) {
-		return ReasonRefused
-	}
-	ne, ok := errors.AsType[net.Error](err)
-	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, timedOutErrno) || (ok && ne.Timeout()) {
-		return ReasonTimeout
-	}
-	return ReasonOther
-}
 
 // OnChange is called, when set, after a source flips between reachable and unreachable, so the window need not poll.
 var OnChange func()
@@ -113,7 +99,7 @@ func record(id string, err error) {
 	if err == nil {
 		st.Unreachable, st.LastOK, st.LastError, st.LastReason = false, time.Now(), "", ""
 	} else {
-		st.Unreachable, st.LastFail, st.LastError, st.LastReason = true, time.Now(), err.Error(), reasonOf(err)
+		st.Unreachable, st.LastFail, st.LastError, st.LastReason = true, time.Now(), err.Error(), string(httpkit.NetReason(err))
 	}
 	states[id] = st
 	mu.Unlock()
