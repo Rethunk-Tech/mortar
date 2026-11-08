@@ -265,6 +265,7 @@ func TestASizedDefaultBackdropIsTheBundledJPEG(t *testing.T) {
 
 // The real converter, when ImageMagick is installed, shrinks a JPEG XL file to the width asked for.
 func TestImageMagickShrinksJXL(t *testing.T) {
+	jxlServed(t)
 	magick, err := exec.LookPath("magick")
 	if err != nil {
 		t.Skip("ImageMagick is not on PATH")
@@ -292,6 +293,7 @@ func TestImageMagickShrinksJXL(t *testing.T) {
 
 // A converter that fails leaves the JPEG XL file served whole, as before.
 func TestAFailingConverterServesTheJXLWhole(t *testing.T) {
+	jxlServed(t)
 	was := convertJXL
 	convertJXL = func(context.Context, string, int) ([]byte, error) { return nil, errors.New("no") }
 	t.Cleanup(func() { convertJXL = was })
@@ -304,6 +306,14 @@ func TestAFailingConverterServesTheJXLWhole(t *testing.T) {
 	h.ServeHTTP(rec, req)
 	if got := rec.Header().Get("Content-Type"); got != "image/jxl" || rec.Body.String() != "jxl" {
 		t.Fatalf("type %q, body %q", got, rec.Body.String())
+	}
+}
+
+// jxlServed skips a test of JPEG XL serving where Mortar does not serve it: WebView2 cannot decode it.
+func jxlServed(t *testing.T) {
+	t.Helper()
+	if runtime.GOOS != "linux" {
+		t.Skip("JPEG XL is served on Linux only")
 	}
 }
 
@@ -330,6 +340,7 @@ func fakeConverter(t *testing.T, body string) *int {
 
 // A JPEG XL wallpaper asked for at a width is shrunk to a JPEG, kept, and served from the kept copy next time.
 func TestJXLServedAtAWidthIsShrunkToJPEG(t *testing.T) {
+	jxlServed(t)
 	var thumb bytes.Buffer
 	if err := jpeg.Encode(&thumb, image.NewNRGBA(image.Rect(0, 0, 1600, 4)), nil); err != nil {
 		t.Fatal(err)
