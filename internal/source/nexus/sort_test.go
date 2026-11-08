@@ -1,20 +1,24 @@
 package nexus
 
 import (
-	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 func TestEverySortTheDriverListsReachesTheAPI(t *testing.T) {
-	want := map[string]string{
-		source.SortDownloads: "downloads:", source.SortEndorsements: "endorsements:", source.SortUpdated: "updatedAt:",
-		source.SortNewest: "createdAt:", source.SortName: "name:",
+	want := map[string]nexusmods.ModSort{
+		source.SortDownloads:    nexusmods.SortDownloads,
+		source.SortEndorsements: nexusmods.SortEndorsements,
+		source.SortUpdated:      nexusmods.SortUpdated,
+		source.SortNewest:       nexusmods.SortCreated,
+		source.SortName:         nexusmods.SortName,
 	}
 	for _, s := range (Driver{}).Sorts() {
-		if got := sortClause(s); !strings.HasPrefix(got, want[s]) {
-			t.Errorf("sortClause(%q) = %q, want prefix %q", s, got, want[s])
+		if got := modSort(s); got != want[s] {
+			t.Errorf("modSort(%q) = %q, want %q", s, got, want[s])
 		}
 	}
 }

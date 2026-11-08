@@ -2,27 +2,19 @@
 package nexus
 
 import (
-	"cmp"
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
+	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
-
-const graphQL = "/v2/graphql"
-
-// SetAppHeaders names Mortar to Nexus Mods, which asks every client for its application name and version.
-func SetAppHeaders(h http.Header, version string) {
-	h.Set("Application-Name", "Mortar")
-	h.Set("Application-Version", version)
-}
 
 // Driver searches Nexus Mods. The zero value talks to the real site.
 type Driver struct {
@@ -53,113 +45,32 @@ func (Driver) ModPageURL(gameKey, id string) string {
 	return nexusmods.ModURL(gameKey, modID)
 }
 
-type searchBody struct {
-	Query string `json:"query"`
-}
-
-type searchResp struct {
-	Data struct {
-		Mods struct {
-			TotalCount int `json:"totalCount"`
-			Nodes      []struct {
-				ModID        int    `json:"modId"`
-				Name         string `json:"name"`
-				Summary      string `json:"summary"`
-				Author       string `json:"author"`
-				Version      string `json:"version"`
-				Endorsements int    `json:"endorsements"`
-				Downloads    int    `json:"downloads"`
-				PictureURL   string `json:"pictureUrl"`
-				UpdatedAt    string `json:"updatedAt"`
-				AdultContent bool   `json:"adultContent"`
-				FileSizeKB   int64  `json:"fileSize"`
-				ModCategory  struct {
-					Name string `json:"name"`
-				} `json:"modCategory"`
-			} `json:"nodes"`
-		} `json:"mods"`
-	} `json:"data"`
-}
-
 // MaxPageSize is the most mods one GraphQL mods query returns: asking for more still answers 80.
-func (Driver) MaxPageSize() int { return 80 }
+func (Driver) MaxPageSize() int { return nexusmods.MaxSearchCount }
 
 // Search lists mods of the game, most endorsed first.
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	if q.Key == "" {
 		return source.Page{}, fmt.Errorf("game %q has no Nexus domain", q.Game)
 	}
-	base := cmp.Or(d.URL, nexusmods.BaseURL)
-	client := cmp.Or(d.HTTP, http.DefaultClient)
-	offset := (q.Page - source.FirstPage) * q.Len()
-	// A JSON string is a valid GraphQL string, so no input can end the literal or inject a field.
-	key, err := json.Marshal(q.Key)
+	c := nexusmods.New("Mortar", q.Version)
+	c.BaseURL = d.URL
+	if d.HTTP != nil {
+		c.HTTP = d.HTTP
+	} else {
+		c.HTTP = &http.Client{Transport: &httpkit.Transport{UserAgent: appversion.UserAgent(q.Version)}}
+	}
+	res, err := c.Search(ctx, nexusmods.SearchQuery{
+		Domain: q.Key, Text: q.Text, Sort: modSort(q.Sort),
+		Categories: q.Categories, ExcludeCategories: q.ExcludeCategories,
+		Count: q.Len(), Offset: (q.Page - source.FirstPage) * q.Len(),
+	})
 	if err != nil {
-		return source.Page{}, err
+		return source.Page{}, d.searchErr(err)
 	}
-	text, err := json.Marshal(q.Text)
-	if err != nil {
-		return source.Page{}, err
-	}
-	// An empty text lists the game's top mods, so no name filter. A filter's category list is an AND, and branches
-	// joined by OR give "any included category": one branch per included category, each also excluding the others.
-	scope := fmt.Sprintf(`gameDomainName:[{value:%s}]`, key)
-	if strings.TrimSpace(q.Text) != "" {
-		scope += fmt.Sprintf(`, name:[{value:%s, op:WILDCARD}]`, text)
-	}
-	cats := func(include string) (string, error) {
-		var vals []string
-		if include != "" {
-			name, err := json.Marshal(include)
-			if err != nil {
-				return "", err
-			}
-			vals = append(vals, fmt.Sprintf(`{value:%s}`, name))
-		}
-		for _, c := range q.ExcludeCategories {
-			name, err := json.Marshal(c)
-			if err != nil {
-				return "", err
-			}
-			vals = append(vals, fmt.Sprintf(`{value:%s, op:NOT_EQUALS}`, name))
-		}
-		if len(vals) == 0 {
-			return scope, nil
-		}
-		return scope + ", categoryName:[" + strings.Join(vals, ", ") + "]", nil
-	}
-	filter, err := cats("")
-	if err != nil {
-		return source.Page{}, err
-	}
-	if len(q.Categories) > 0 {
-		branches := make([]string, 0, len(q.Categories))
-		for _, c := range q.Categories {
-			br, err := cats(c)
-			if err != nil {
-				return source.Page{}, err
-			}
-			branches = append(branches, "{"+br+"}")
-		}
-		filter = "op:OR, filter:[" + strings.Join(branches, ", ") + "]"
-	}
-	query := fmt.Sprintf(
-		`{ mods(filter:{%s}, sort:[{%s}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt adultContent fileSize modCategory { name } } } }`,
-		filter, sortClause(q.Sort), q.Len(), offset,
-	)
-	var parsed searchResp
-	err = source.DoJSON(ctx, source.Request{
-		Service: d.Name(), Client: client, Method: http.MethodPost, URL: strings.TrimRight(base, "/") + graphQL,
-		Body: searchBody{Query: query}, UserAgent: appversion.UserAgent(q.Version),
-		Header: func(h http.Header) { SetAppHeaders(h, q.Version) },
-	}, &parsed)
-	if err != nil {
-		return source.Page{}, err
-	}
-	nodes := parsed.Data.Mods.Nodes
-	items := make([]source.Item, 0, len(nodes))
-	for _, n := range nodes {
-		items = append(items, source.Item{
+	items := make([]source.Item, 0, len(res.Mods))
+	for _, n := range res.Mods {
+		it := source.Item{
 			Source:       d.ID(),
 			ID:           strconv.Itoa(n.ModID),
 			Name:         n.Name,
@@ -169,14 +80,31 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 			Picture:      n.PictureURL,
 			Endorsements: n.Endorsements,
 			Downloads:    n.Downloads,
-			Size:         n.FileSizeKB * 1024,
-			Updated:      n.UpdatedAt,
-			Adult:        n.AdultContent,
-			Category:     n.ModCategory.Name,
+			Size:         n.SizeKB * 1024,
+			Adult:        n.Adult,
+			Category:     n.Category,
 			URL:          nexusmods.ModURL(q.Key, n.ModID),
-		})
+		}
+		if !n.Updated.IsZero() {
+			it.Updated = n.Updated.Format(time.RFC3339)
+		}
+		items = append(items, it)
 	}
-	return source.Page{Total: parsed.Data.Mods.TotalCount, Items: items}, nil
+	return source.Page{Total: res.Total, Items: items}, nil
+}
+
+// searchErr keeps Browse's *BusyError and *StatusError; the library reports those as httpkit types.
+func (d Driver) searchErr(err error) error {
+	if errors.Is(err, nexusmods.ErrUnauthorized) {
+		return &source.StatusError{Service: d.Name(), Code: http.StatusUnauthorized, Status: "401 Unauthorized"}
+	}
+	if rl, ok := errors.AsType[*httpkit.RateLimitError](err); ok {
+		return &source.BusyError{Source: d.Name(), Reset: rl.Reset}
+	}
+	if se, ok := errors.AsType[*httpkit.StatusError](err); ok {
+		return &source.StatusError{Service: d.Name(), Code: se.Code, Status: se.Status}
+	}
+	return err
 }
 
 // Sorts are the values of Nexus's ModsSort the driver offers (checked against the v2 schema's introspection).
@@ -184,18 +112,18 @@ func (Driver) Sorts() []string {
 	return []string{source.SortEndorsements, source.SortDownloads, source.SortUpdated, source.SortNewest, source.SortName}
 }
 
-func sortClause(sort string) string {
+func modSort(sort string) nexusmods.ModSort {
 	switch sort {
 	case source.SortDownloads:
-		return "downloads:{direction:DESC}"
+		return nexusmods.SortDownloads
 	case source.SortUpdated:
-		return "updatedAt:{direction:DESC}"
+		return nexusmods.SortUpdated
 	case source.SortNewest:
-		return "createdAt:{direction:DESC}"
+		return nexusmods.SortCreated
 	case source.SortName:
-		return "name:{direction:ASC}"
+		return nexusmods.SortName
 	}
-	return "endorsements:{direction:DESC}"
+	return nexusmods.SortEndorsements
 }
 
 // CategoryNames lists a game's mod category names. Nexus serves them only to a signed-in account, so Mortar's
