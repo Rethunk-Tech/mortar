@@ -5,6 +5,8 @@ import (
 	"io"
 	"runtime"
 
+	"github.com/Rethunk-Tech/go-safefs"
+
 	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -38,7 +40,7 @@ func failureKind(err error) string {
 	// already turned its explicit virus errors into a detection.
 	case runtime.GOOS == "windows" && usererr.KindOf(err) == usererr.Permission:
 		return FailBlocked
-	case errors.As(err, &full), errors.As(err, new(*NoSpaceError)), usererr.IsDiskFull(err):
+	case errors.As(err, &full), errors.As(err, new(*NoSpaceError)), safefs.IsDiskFull(err):
 		return FailDisk
 	case errors.As(err, new(*profile.NoBaseError)):
 		return FailNoBase

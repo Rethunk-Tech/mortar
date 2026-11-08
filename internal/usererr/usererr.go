@@ -10,6 +10,8 @@ import (
 	"os"
 	"syscall"
 
+	"github.com/Rethunk-Tech/go-safefs"
+
 	"github.com/Rethunk-Tech/go-httpkit"
 )
 
@@ -116,7 +118,7 @@ func classify(err error) Kind {
 	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, os.ErrDeadlineExceeded) {
 		return Network
 	}
-	if IsDiskFull(err) {
+	if safefs.IsDiskFull(err) {
 		return DiskFull
 	}
 	switch status, ok := errors.AsType[*httpkit.StatusError](err); {
@@ -149,11 +151,6 @@ func IsNet(err error) bool {
 	}
 	_, ok := errors.AsType[net.Error](err)
 	return ok
-}
-
-// IsDiskFull reports whether err is a write that ran out of space, on any platform.
-func IsDiskFull(err error) bool {
-	return errors.Is(err, syscall.ENOSPC) || platformDiskFull(err)
 }
 
 // Parse splits Error()'s "[kind] rest" form used on the Wails wire. Unknown if absent.

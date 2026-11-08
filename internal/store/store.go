@@ -518,7 +518,7 @@ func (s *Store) install(ctx context.Context, game, key, final string, fill func(
 		s.dropOverride(game, key)
 	}
 	if err != nil {
-		if usererr.IsDiskFull(err) {
+		if safefs.IsDiskFull(err) {
 			err = usererr.Wrap(usererr.DiskFull, &DiskFullError{NeedMB: need()>>20 + 1, Err: err})
 		}
 		return &Error{Game: game, Key: key, Err: err}

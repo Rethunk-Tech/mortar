@@ -250,7 +250,7 @@ func modName(item transferItem) string { return cmp.Or(item.Package, "a file") }
 func installError(step string, item transferItem, sender string, err error) error {
 	kind := usererr.Damaged
 	switch {
-	case usererr.IsDiskFull(err):
+	case safefs.IsDiskFull(err):
 		kind = usererr.DiskFull
 	case errors.Is(err, fs.ErrPermission):
 		kind = usererr.Permission
@@ -379,7 +379,7 @@ func receiveError(sender string, err error) error {
 	switch {
 	case errors.Is(err, context.Canceled):
 		return err
-	case usererr.IsDiskFull(err):
+	case safefs.IsDiskFull(err):
 		return usererr.Wrap(usererr.DiskFull, fmt.Errorf("there is no room left to copy files from %s: %w", sender, err))
 	case errors.Is(err, io.ErrUnexpectedEOF), errors.Is(err, io.EOF), usererr.KindOf(err) == usererr.Network:
 		return usererr.Wrap(usererr.Network, fmt.Errorf("%s went away while sending files: %w", sender, err))

@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
+
 	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/go-httpkit"
@@ -852,7 +854,7 @@ func (s *Service) batchFinished(rec *Item) bool {
 }
 
 func (s *Service) diskError(err error, total int64) error {
-	if err != nil && usererr.IsDiskFull(err) {
+	if err != nil && safefs.IsDiskFull(err) {
 		return usererr.Wrap(usererr.DiskFull, &store.DiskFullError{NeedMB: total>>20 + 1, Err: err})
 	}
 	return err
