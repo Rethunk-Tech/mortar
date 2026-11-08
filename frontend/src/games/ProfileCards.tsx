@@ -2,31 +2,27 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import type { MouseEvent } from 'react'
+import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
-import {
-  SetLastGame,
-  SetLastProfile,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { SetLastProfile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { orderProfiles } from '../game/profileOrder.ts'
 import { When } from '../i18n/When.tsx'
-import { type GameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { profileCardLastPlayedIso } from './profileCardLastPlayed.ts'
 import { profileCardsSlice } from './profileCardsSlice.ts'
+import { useOpenGame } from './useOpenGame.ts'
 import { useProfileCardsMeta } from './useProfileCardsMeta.ts'
 
 function ProfileCards({
-  gameId,
-  gameName,
+  game,
   profiles,
   lastPlayed,
 }: {
-  gameId: GameId
-  gameName: string
+  game: GameInfo
   profiles: Profile[]
   lastPlayed: Played | undefined
 }) {
@@ -34,29 +30,19 @@ function ProfileCards({
   const profileOrder = useSettings((s) => s.profileOrder)
   const ordered = orderProfiles(profiles, profileOrder, lastPlayed?.profile ?? '')
   const { visible, more } = profileCardsSlice(ordered)
-  const runStarted = useProfileCardsMeta(gameId, visible, lastPlayed)
-
-  const fail = (title: string, err: unknown) => {
-    reportError(title)(err)
-  }
+  const runStarted = useProfileCardsMeta(game.id, visible, lastPlayed)
+  const open = useOpenGame()
 
   const openProfile = (ev: MouseEvent, profileId: string) => {
     ev.stopPropagation()
-    SetLastGame(gameId).catch((err: unknown) => fail(t`Could not save the last game`, err))
-    SetLastProfile(gameId, profileId).catch((err: unknown) =>
-      fail(t`Could not save the open profile`, err),
-    )
-    useNav.getState().openGame(gameId)
-    useProfiles
-      .getState()
-      .load(gameId, profileId)
-      .catch((err: unknown) => fail(t`Could not read profiles`, err))
+    SetLastProfile(game.id, profileId).catch(reportError(t`Could not save the open profile`))
+    open(game)
+    useProfiles.getState().load(game.id, profileId).catch(reportError(t`Could not read profiles`))
   }
 
-  const openGame = (ev: MouseEvent) => {
+  const onOpenGame = (ev: MouseEvent) => {
     ev.stopPropagation()
-    SetLastGame(gameId).catch((err: unknown) => fail(t`Could not save the last game`, err))
-    useNav.getState().openGame(gameId)
+    open(game)
   }
 
   if (visible.length === 0) {
@@ -86,8 +72,8 @@ function ProfileCards({
       ))}
       {more > 0 ? (
         <ButtonBase
-          aria-label={t`Open ${{ game: gameName }} (${plural({ count: more }, { one: '# more profile', other: '# more profiles' })})`}
-          onClick={openGame}
+          aria-label={t`Open ${{ game: game.name }} (${plural({ count: more }, { one: '# more profile', other: '# more profiles' })})`}
+          onClick={onOpenGame}
           sx={{
             flexShrink: 0,
             maxHeight: 28,

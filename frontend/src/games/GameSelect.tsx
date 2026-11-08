@@ -8,10 +8,7 @@ import { type MouseEvent, memo, useCallback, useRef, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
-import {
-  SetLastGame,
-  SetLastProfile,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { SetLastProfile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { hasSourceLogo } from '../brand/sources/sourceIcons.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
@@ -19,7 +16,7 @@ import { orderProfiles } from '../game/profileOrder.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
-import { type GameId, useNav } from '../nav/store.ts'
+import type { GameId } from '../nav/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
@@ -56,10 +53,6 @@ const actionSx = {
   fontSize: 'large.fontSize',
   fontWeight: 700,
 } as const
-
-function fail(title: string, err: unknown) {
-  reportError(title)(err)
-}
 
 // The row opens its game from a button laid under the content, so the Play button and profile cards on top are
 // separate controls rather than controls nested inside another.
@@ -171,16 +164,14 @@ function useLoaderLine({
 function usePlayLast(game: Game, lastPlayedId: string) {
   const { t } = useLingui()
   const start = useLaunch((s) => s.start)
+  const open = useOpenGame()
   return (ev: MouseEvent) => {
     ev.stopPropagation()
     if (!lastPlayedId) {
       return
     }
-    SetLastGame(game.id).catch((err: unknown) => fail(t`Could not save the last game`, err))
-    SetLastProfile(game.id, lastPlayedId).catch((err: unknown) =>
-      fail(t`Could not save the open profile`, err),
-    )
-    useNav.getState().openGame(game.id)
+    SetLastProfile(game.id, lastPlayedId).catch(reportError(t`Could not save the open profile`))
+    open(game)
     start(game.id, lastPlayedId, playDirect()).then(() => undefined)
   }
 }
@@ -250,12 +241,7 @@ function RowView({
           {[loaderLine, note].filter(Boolean).join(' · ')}
         </Typography>
         {cards ? (
-          <ProfileCards
-            gameId={cards.gameId}
-            gameName={game.name}
-            profiles={cards.profiles}
-            lastPlayed={cards.lastPlayed}
-          />
+          <ProfileCards game={game} profiles={cards.profiles} lastPlayed={cards.lastPlayed} />
         ) : null}
       </Box>
       <Box
