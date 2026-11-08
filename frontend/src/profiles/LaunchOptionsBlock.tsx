@@ -8,7 +8,8 @@ import { useGameBusy } from '../launch/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { TextInput } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { errorMessage } from '../toasts/report.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { LaunchPreview } from './LaunchPreview.tsx'
 
 type LaunchError = { field: 'options' | 'settings'; message: string } | null
@@ -28,7 +29,7 @@ function TestLaunchRow({
 }) {
   const { t } = useLingui()
   const playing = useGameBusy()
-  const [busy, setBusy] = useState(false)
+  const [busy, run] = usePending()
   const [result, setResult] = useState('')
   return (
     <Box
@@ -45,9 +46,8 @@ function TestLaunchRow({
         <Button
           disabled={!(gameId && !playing && !busy)}
           onClick={() => {
-            setBusy(true)
             setResult('')
-            const run = async () => {
+            run(async () => {
               try {
                 const outcome = await TestLaunchWith(
                   gameId,
@@ -64,10 +64,7 @@ function TestLaunchRow({
               } catch (error) {
                 setResult(errorMessage(error))
               }
-            }
-            run()
-              .catch(reportUnexpected)
-              .finally(() => setBusy(false))
+            })
           }}
         >{t`Test launch`}</Button>
       </DisabledReason>
