@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // A switched-off mod's config is set aside and comes back when it is switched on; removing the mod sets it aside, so Undo and adding it again bring it back.
@@ -262,5 +263,57 @@ func TestAProfileWithoutARecordKeepsItsConfigs(t *testing.T) {
 	}
 	if b, _ := os.ReadFile(filepath.Clean(filepath.Join(dir, "BepInEx", "config", "Mod.cfg"))); string(b) != "mine" {
 		t.Fatalf("an existing config was overwritten on the first seed: %q", b)
+	}
+}
+
+// Issue #23: a theme pack (Wallet-OuterWildsMenu) ships config/Darkbrewery.Emblem.cfg to set up Emblem, the mod it
+// themes. Installed after Emblem has written its own config, the pack's copy takes over at the next sync, the replaced
+// one is kept, and an edit after that survives later syncs.
+func TestAThemePacksConfigForAnotherModAppliesOnInstall(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sync := func() {
+		t.Helper()
+		if err := e.SyncPackages("lethal-company", p.ID); err != nil {
+			t.Fatal(err)
+		}
+	}
+	emblem := testfs.WriteZip(t, filepath.Join(t.TempDir(), "Emblem.zip"), map[string]string{
+		"manifest.json": `{"name":"Emblem","version_number":"1.0.0"}`, "plugins/Emblem.dll": "MZ",
+	})
+	if _, err := e.InstallSource(t.Context(), "lethal-company", p.ID, emblem, Source{Kind: KindThunderstore, Name: "Darkbrewery-Emblem", Version: "1.0.0"}); err != nil {
+		t.Fatal(err)
+	}
+	sync()
+	dir, _ := e.ProfileDir("lethal-company", p.ID)
+	// Emblem's first run writes its own config.
+	writeFile(t, dir, "BepInEx/config/Darkbrewery.Emblem.cfg", "emblem defaults")
+	theme := testfs.WriteZip(t, filepath.Join(t.TempDir(), "OuterWildsMenu.zip"), map[string]string{
+		"manifest.json":                                 `{"name":"OuterWildsMenu","version_number":"1.0.1"}`,
+		"config/Darkbrewery.Emblem.cfg":                 "outer wilds theme",
+		"plugins/Emblem/Wallet_OuterWildsMenu/logo.png": "png",
+	})
+	if _, err := e.InstallSource(t.Context(), "lethal-company", p.ID, theme, Source{Kind: KindThunderstore, Name: "Wallet-OuterWildsMenu", Version: "1.0.1"}); err != nil {
+		t.Fatal(err)
+	}
+	sync()
+	read := func(rel string) string {
+		b, _ := safefs.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
+		return string(b)
+	}
+	if got := read("BepInEx/config/Darkbrewery.Emblem.cfg"); got != "outer wilds theme" {
+		t.Fatalf("the theme's config was not applied: %q", got)
+	}
+	if got := read(replacedDir + "/BepInEx/config/Darkbrewery.Emblem.cfg"); got != "emblem defaults" {
+		t.Fatalf("the replaced config was not kept: %q", got)
+	}
+	writeFile(t, dir, "BepInEx/config/Darkbrewery.Emblem.cfg", "tweaked")
+	sync()
+	if got := read("BepInEx/config/Darkbrewery.Emblem.cfg"); got != "tweaked" {
+		t.Fatalf("a later sync overwrote the player's edit: %q", got)
 	}
 }
