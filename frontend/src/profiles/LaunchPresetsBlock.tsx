@@ -63,8 +63,9 @@ function PresetRow({
 function usePresetActions(gameId: string, profileId: string) {
   const { t } = useLingui()
   const replace = useProfiles((s) => s.replace)
-  const apply = (call: Promise<Profile>, title: string) =>
+  const apply = (call: Promise<Profile>, title: string) => {
     call.then(replace).catch(reportError(title))
+  }
   const save = (next: LaunchPreset[], nextDefault: string) =>
     apply(
       SetLaunchPresets(gameId, profileId, next, nextDefault),
@@ -183,7 +184,7 @@ function LaunchPresetsBlock({
         onClose={() => setTemplates(false)}
         onAdd={(tpl) => {
           setTemplates(false)
-          return addFromTemplate(tpl)
+          addFromTemplate(tpl)
         }}
       />
       <LaunchPresetDialog
@@ -203,7 +204,7 @@ function LaunchPresetsBlock({
           const gone = removing
           setRemoving(null)
           if (gone) {
-            return save(
+            save(
               presets.filter((p) => p.id !== gone.id),
               defaultId === gone.id ? '' : defaultId,
             )
