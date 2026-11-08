@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/shots"
 )
@@ -29,7 +30,7 @@ func (c *cmd) screenshots() error {
 	return show(c, "screenshots", control.Params{Game: a[0]}, func(g shots.Gallery) {
 		rows := [][]string{}
 		for _, s := range g.Shots {
-			rows = append(rows, []string{s.Source, s.Name, fmt.Sprint(s.Size)})
+			rows = append(rows, []string{s.Source, s.Name, bytefmt.Format(s.Size)})
 		}
 		c.table("SOURCE\tNAME\tBYTES", rows)
 	})

@@ -370,7 +370,7 @@ func TestVerbWrappersSendTheirArgumentsOrRefuse(t *testing.T) {
 			results: map[string]any{"screenshots": shots.Gallery{Shots: []shots.Shot{{Source: "steam", Name: "a.png", Size: 10}}}},
 			method:  "screenshots",
 			params:  func(p control.Params) bool { return p.Game == "stardew" },
-			out:     []string{"SOURCE", "steam", "a.png", "10"},
+			out:     []string{"SOURCE", "steam", "a.png", "10 B"},
 		},
 		{
 			name:  "screenshots without a game",
