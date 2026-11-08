@@ -5,38 +5,34 @@
 package itch
 
 import (
-	"cmp"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
-	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/Rethunk-Tech/go-httpkit"
+	"github.com/Rethunk-Tech/go-itchio"
 
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
-
-// BaseURL is the server-side API root (itch.io/docs/api/serverside). Only this host reads the key from the
-// Authorization header; itch.io/api/1 wants it in the address, where an error quoting the address would leak it.
-const BaseURL = "https://api.itch.io"
 
 const (
 	keyName = "itch"
 	siteURL = "https://itch.io"
 )
 
+// BaseURL is the server-side API root.
+const BaseURL = itchio.BaseURL
+
 // ErrNeedsKey means no itch.io API key is stored.
-var ErrNeedsKey = errors.New("needs an itch.io API key")
+var ErrNeedsKey = itchio.ErrNeedsKey
 
 // ErrBadKey means itch.io rejected the key.
-var ErrBadKey = errors.New("itch.io rejected the API key")
+var ErrBadKey = itchio.ErrBadKey
 
 // Driver searches itch.io. HTTP, URL and Key are for tests; the zero value talks to the real API with the
 // keyring's key.
@@ -86,6 +82,18 @@ func (d Driver) key() (string, error) {
 	return strings.TrimSpace(k), err
 }
 
+func (d Driver) client(key string) *itchio.Client {
+	return itchio.New(itchio.Config{Key: key, BaseURL: d.URL, HTTP: d.HTTP})
+}
+
+// mapErr keeps HTTP failures in Mortar's source.StatusError so the player still sees "itch.io" on the message.
+func mapErr(err error) error {
+	if se, ok := errors.AsType[*httpkit.StatusError](err); ok {
+		return &source.StatusError{Service: "itch.io", Code: se.Code, Status: se.Status}
+	}
+	return err
+}
+
 // Unavailable says why browse cannot use the source now, or "" when it can.
 func (d Driver) Unavailable() string {
 	if _, err := d.key(); errors.Is(err, ErrNeedsKey) {
@@ -94,80 +102,8 @@ func (d Driver) Unavailable() string {
 	return ""
 }
 
-// call GETs an API path with the key, which itch.io may answer with HTTP 200 and an errors list.
-func (d Driver) call(ctx context.Context, key, path string, params url.Values, out any) error {
-	var body json.RawMessage
-	err := source.DoJSON(ctx, source.Request{
-		Service: "itch.io", Client: d.HTTP, URL: strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + path, Params: params,
-		Header: func(h http.Header) { h.Set("Authorization", "Bearer "+key) },
-	}, &body)
-	if se, ok := errors.AsType[*source.StatusError](err); ok && se.Auth() {
-		return ErrBadKey
-	}
-	if err != nil {
-		return err
-	}
-	var env struct {
-		Errors []string `json:"errors"`
-	}
-	if json.Unmarshal(body, &env) == nil && len(env.Errors) > 0 {
-		if slices.Contains(env.Errors, "invalid key") {
-			return ErrBadKey
-		}
-		return fmt.Errorf("itch.io: %s", strings.Join(env.Errors, "; "))
-	}
-	return json.Unmarshal(body, out)
-}
-
-// downloadURL asks for an upload's file. The API answers with a redirect to a short-lived signed address rather than
-// JSON, so the redirect is read, not followed.
-func (d Driver) downloadURL(ctx context.Context, key, uploadID string) (string, error) {
-	client := httpkit.WithRedirect(d.HTTP, httpkit.NoFollow)
-	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
-	defer cancel()
-	u := strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + "/uploads/" + url.PathEscape(uploadID) + "/download"
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Authorization", "Bearer "+key)
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	switch {
-	case resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden:
-		return "", ErrBadKey
-	case resp.StatusCode >= 300 && resp.StatusCode < 400 && resp.Header.Get("Location") != "":
-		return resp.Header.Get("Location"), nil
-	}
-	var env struct {
-		Errors []string `json:"errors"`
-	}
-	if json.NewDecoder(safefs.CapReader(resp.Body, source.MaxBody)).Decode(&env) == nil && len(env.Errors) > 0 {
-		if slices.Contains(env.Errors, "invalid key") {
-			return "", ErrBadKey
-		}
-		return "", fmt.Errorf("itch.io: %s", strings.Join(env.Errors, "; "))
-	}
-	return "", &source.StatusError{Service: "itch.io", Code: resp.StatusCode, Status: resp.Status}
-}
-
-type game struct {
-	ID          int    `json:"id"`
-	Title       string `json:"title"`
-	ShortText   string `json:"short_text"`
-	URL         string `json:"url"`
-	CoverURL    string `json:"cover_url"`
-	PublishedAt string `json:"published_at"`
-	User        struct {
-		Username string `json:"username"`
-	} `json:"user"`
-}
-
-// Search lists games matching the key and text. The API answers every hit at once, ignoring a page number (measured:
-// 23 games for "mod" on page 1, none on page 2), and has no sort, so Sort is ignored and a later page is empty.
+// Search lists games matching the key and text. The API answers every hit at once, ignoring a page number, and has
+// no sort, so Sort is ignored and a later page is empty.
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	// A game that lists itch.io with no key is there for pasted page links only, so there is nothing to search.
 	if q.Key == "" || q.Page > source.FirstPage {
@@ -177,16 +113,12 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	if err != nil {
 		return source.Page{}, err
 	}
-	params := url.Values{}
-	params.Set("query", strings.TrimSpace(q.Key+" "+q.Text))
-	var parsed struct {
-		Games []game `json:"games"`
+	games, err := d.client(key).SearchGames(ctx, q.Key+" "+q.Text, q.Page)
+	if err != nil {
+		return source.Page{}, mapErr(err)
 	}
-	if err := d.call(ctx, key, "/search/games", params, &parsed); err != nil {
-		return source.Page{}, err
-	}
-	items := make([]source.Item, 0, len(parsed.Games))
-	for _, g := range parsed.Games {
+	items := make([]source.Item, 0, len(games))
+	for _, g := range games {
 		items = append(items, source.Item{
 			Source: d.ID(), ID: strconv.Itoa(g.ID), Name: g.Title, Summary: g.ShortText, Author: g.User.Username,
 			Picture: g.CoverURL, Updated: g.PublishedAt, URL: g.URL,
@@ -212,19 +144,12 @@ func (d Driver) Resolve(ctx context.Context, gameID, upload string) (Resolved, e
 	if err != nil {
 		return Resolved{}, err
 	}
-	var ups struct {
-		Uploads []struct {
-			ID       int    `json:"id"`
-			Filename string `json:"filename"`
-			Size     int64  `json:"size"`
-			Type     string `json:"type"`
-			Demo     bool   `json:"demo"`
-		} `json:"uploads"`
+	c := d.client(key)
+	uploads, err := c.Uploads(ctx, gameID)
+	if err != nil {
+		return Resolved{}, mapErr(err)
 	}
-	if err := d.call(ctx, key, "/games/"+url.PathEscape(gameID)+"/uploads", nil, &ups); err != nil {
-		return Resolved{}, err
-	}
-	for _, u := range ups.Uploads {
+	for _, u := range uploads {
 		id := strconv.Itoa(u.ID)
 		switch {
 		case upload != "":
@@ -234,9 +159,9 @@ func (d Driver) Resolve(ctx context.Context, gameID, upload string) (Resolved, e
 		case u.Demo || u.Type == "soundtrack":
 			continue
 		}
-		link, err := d.downloadURL(ctx, key, id)
+		link, err := c.DownloadURL(ctx, id)
 		if err != nil {
-			return Resolved{}, err
+			return Resolved{}, mapErr(err)
 		}
 		return Resolved{GameID: gameID, UploadID: id, FileName: u.Filename, Size: u.Size, URL: link}, nil
 	}
@@ -245,16 +170,16 @@ func (d Driver) Resolve(ctx context.Context, gameID, upload string) (Resolved, e
 
 // Validate checks key against the API and returns the account's username.
 func (d Driver) Validate(ctx context.Context, key string) (string, error) {
-	var me struct {
-		User struct {
-			Username string `json:"username"`
-		} `json:"user"`
+	key = strings.TrimSpace(key)
+	if key == "" {
+		return "", ErrBadKey
 	}
-	if err := d.call(ctx, strings.TrimSpace(key), "/profile", nil, &me); err != nil {
-		return "", err
+	me, err := d.client(key).Me(ctx)
+	if err != nil {
+		return "", mapErr(err)
 	}
-	if me.User.Username == "" {
+	if me.Username == "" {
 		return "itch.io", nil
 	}
-	return me.User.Username, nil
+	return me.Username, nil
 }
