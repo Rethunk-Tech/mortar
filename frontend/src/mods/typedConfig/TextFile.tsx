@@ -1,8 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
-import { useEffect, useEffectEvent, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { useOnWindowFocus } from '../../shell/useOnWindowFocus.ts'
 import { space } from '../../theme/density.ts'
 import { MONO } from '../../theme/theme.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
@@ -176,7 +177,11 @@ function useOutsideChange(
 ) {
   const [outside, setOutside] = useState<string | null>(null)
   const { game, profile, key, id } = target
+  const live = useRef(true)
   const settle = useEffectEvent((onDisk: string) => {
+    if (!live.current) {
+      return
+    }
     if (shown.saved === null || onDisk === shown.saved) {
       return
     }
@@ -187,30 +192,24 @@ function useOutsideChange(
       setOutside(onDisk)
     }
   })
+  const look = useEffectEvent(() => {
+    configApi
+      .text({ game, profile, key, id }, name)
+      .then(settle)
+      .catch(() => undefined)
+  })
   const updated = useProfiles((s) => s.profiles.find((p) => p.id === profile)?.updated)
   useEffect(() => {
-    const at = { game, profile, key, id }
-    let live = true
+    live.current = true
     setOutside(null)
-    const look = () => {
-      configApi
-        .text(at, name)
-        .then((onDisk) => {
-          if (live) {
-            settle(onDisk)
-          }
-        })
-        .catch(() => undefined)
-    }
     if (updated !== undefined) {
       look()
     }
-    window.addEventListener('focus', look)
     return () => {
-      live = false
-      window.removeEventListener('focus', look)
+      live.current = false
     }
   }, [game, profile, key, id, name, updated])
+  useOnWindowFocus(look)
   return [outside, setOutside] as const
 }
 
