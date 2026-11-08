@@ -110,22 +110,41 @@ func TestCheckUpdatesTrustsSMAPIOverAStaleDatasetPage(t *testing.T) {
 	}
 }
 
-func TestLiveFileIsCurrentSeesANewerFileInTheGroup(t *testing.T) {
+func TestLiveNexusFileSeesANewerFileInTheGroup(t *testing.T) {
 	files := []nexusmods.BatchFile{
 		{FileID: 179112, Name: "Machine Control Panel", Version: "2.4.1", Category: "OLD_VERSION"},
 		{FileID: 185367, Name: "Machine Control Panel", Version: "2.5.0", Category: "MAIN"},
 	}
 	installed := inst("nexus-28261-179112", "x", "2.4.1", true)
-	if cur, known := liveFileIsCurrent(files, installed, "2.5.0"); cur || !known {
-		t.Fatalf("current %v known %v, want an update", cur, known)
+	s := liveNexusFile(files, installed, 28261, "2.5.0")
+	if !s.Listed || s.Current || s.File.FileID != 185367 {
+		t.Fatalf("state %+v, want the newer file of the group", s)
 	}
 }
 
-func TestLiveFileIsCurrentAcceptsAnUnbumpedManifest(t *testing.T) {
+func TestLiveNexusFileAcceptsAnUnbumpedManifest(t *testing.T) {
 	files := []nexusmods.BatchFile{{FileID: 82663, Name: "Aspen", Version: "0.0.53", Category: "MAIN"}}
 	installed := inst("nexus-6754-82663", "invatorzen.AspenCP", "0.0.52", true)
-	if cur, known := liveFileIsCurrent(files, installed, "0.0.53"); !cur || !known {
-		t.Fatalf("current %v known %v, want current", cur, known)
+	s := liveNexusFile(files, installed, 6754, "0.0.53")
+	if !s.Listed || !s.Current || s.File.FileID != 0 {
+		t.Fatalf("state %+v, want current", s)
+	}
+}
+
+// SMAPI's unofficial build is a hold like any other, so the Console can say why the row is missing.
+func TestCheckUpdatesHoldsAnUnofficialBuildAlreadyInstalled(t *testing.T) {
+	const id = "Example.Unofficial"
+	rm := fakeMeta{compat: map[string]smapiweb.UpdateResult{
+		id: {Known: true, Unofficial: &smapiweb.Update{Version: "1.2", URL: "https://www.nexusmods.com/stardewvalley/mods/77"}},
+	}}
+	installed := inst("nexus-77-900", id, "1.0", true)
+	installed.UpdateKeys = []string{"Nexus:77"}
+	filesOf := func(context.Context, nexusmods.Title, []int) (map[int][]nexusmods.BatchFile, error) {
+		return map[int][]nexusmods.BatchFile{77: {{FileID: 900, Name: "Unofficial", Version: "1.2", Category: "MAIN"}}}, nil
+	}
+	got := checkUpdates(t.Context(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf)
+	if len(got.Updates) != 0 || len(got.Held) != 1 || got.Held[0].Reason != HeldCurrent || got.Held[0].Version != "1.2" {
+		t.Fatalf("updates = %+v held = %+v, want one held current", got.Updates, got.Held)
 	}
 }
 

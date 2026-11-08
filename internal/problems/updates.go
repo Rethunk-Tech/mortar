@@ -151,20 +151,30 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []framework
 	}
 	results := m.CheckUpdates(ctx, req)
 	live := liveNexusFiles(ctx, filesOf, env.Nexus, asked, results)
-	current := func(x framework.Mod, url, version string) bool {
-		if files, ok := live[nexusUpdate(x.UpdateKeys, url)]; ok {
-			if is, known := liveFileIsCurrent(files, x, version); known {
-				return is
-			}
+	current := func(x framework.Mod, u smapiweb.Update) bool {
+		id := nexusUpdate(x.UpdateKeys, u.URL)
+		if s := liveNexusFile(live[id], x, id, u.Version); s.Listed {
+			return s.Current
 		}
-		return nexusFileIsCurrent(ctx, m, x, url, version)
+		return nexusFileIsCurrent(ctx, m, x, u.URL, u.Version)
+	}
+	// An unofficial hold names the same reason as a suggested one, and SMAPI can suggest both at the same version.
+	hold := func(x framework.Mod, version string) {
+		h := heldCurrent(x, version)
+		if !slices.ContainsFunc(r.Held, func(o Held) bool {
+			return o.Key == h.Key && mod.Equal(o.ID, h.ID) && o.Version == h.Version
+		}) {
+			r.Held = append(r.Held, h)
+		}
 	}
 	for i, res := range results {
-		if res.Suggested != nil && (downloaded(asked[i], res.Suggested.Version) || current(asked[i], res.Suggested.URL, res.Suggested.Version)) {
-			r.Held = append(r.Held, heldCurrent(asked[i], res.Suggested.Version))
+		x := asked[i]
+		if res.Suggested != nil && (downloaded(x, res.Suggested.Version) || current(x, *res.Suggested)) {
+			hold(x, res.Suggested.Version)
 			res.Suggested = nil
 		}
-		if res.Unofficial != nil && (downloaded(asked[i], res.Unofficial.Version) || current(asked[i], res.Unofficial.URL, res.Unofficial.Version)) {
+		if res.Unofficial != nil && (downloaded(x, res.Unofficial.Version) || current(x, *res.Unofficial)) {
+			hold(x, res.Unofficial.Version)
 			res.Unofficial = nil
 		}
 		if !res.Known {
@@ -176,11 +186,8 @@ func checkUpdates(ctx context.Context, m Meta, env Environment, mods []framework
 		if res.Suggested != nil && res.Unofficial != nil && res.Suggested.Version == res.Unofficial.Version {
 			res.Suggested = nil
 		}
-		x := asked[i]
 		if res.Suggested != nil {
-			if u, lineDone := suggestedUpdate(x, res, live); !lineDone {
-				r.Updates = append(r.Updates, u)
-			}
+			r.Updates = append(r.Updates, suggestedUpdate(x, res, live))
 		}
 		if res.Unofficial != nil {
 			r.Updates = append(r.Updates, unofficialUpdate(x, *res.Unofficial))
@@ -207,31 +214,33 @@ func heldCurrent(x framework.Mod, version string) Held {
 	return Held{Key: x.Key, ID: x.ModID(), Name: x.Name, Version: version, Have: cmp.Or(x.SourceVersion, x.Version), Reason: HeldCurrent}
 }
 
-func suggestedUpdate(x framework.Mod, res smapiweb.UpdateResult, live map[int][]nexusmods.BatchFile) (u Update, lineDone bool) {
-	u = Update{
+func suggestedUpdate(x framework.Mod, res smapiweb.UpdateResult, live map[int][]nexusmods.BatchFile) Update {
+	nid, repo := nexusUpdate(x.UpdateKeys, res.Suggested.URL), githubUpdate(x.UpdateKeys, res.Suggested.URL)
+	u := Update{
 		Key: x.Key, ID: x.ModID(), Name: x.Name,
 		Installed: x.Version, Version: res.Suggested.Version, URL: res.Suggested.URL,
-		NexusID: nexusUpdate(x.UpdateKeys, res.Suggested.URL), GitHubRepo: githubUpdate(x.UpdateKeys, res.Suggested.URL),
+		NexusID: nid, GitHubRepo: repo,
 		GitHubFallback: cmp.Or(githubFallback(x.UpdateKeys, res.Suggested.URL), metadataFallback(res.GitHubRepo, res.Suggested.URL)),
-		Source:         updateSource(*res.Suggested, nexusUpdate(x.UpdateKeys, res.Suggested.URL), githubUpdate(x.UpdateKeys, res.Suggested.URL)),
+		Source:         updateSource(*res.Suggested, nid, repo),
 	}
-	if files, ok := live[u.NexusID]; ok && u.GitHubRepo == "" {
-		var f nexusmods.File
-		f, u.PickFile, lineDone = supersedingFile(files, x, u.NexusID, u.Version)
-		u.FileID = f.FileID
-		if f.Version != "" {
-			u.Version = f.Version
+	if repo == "" {
+		if s := liveNexusFile(live[nid], x, nid, u.Version); s.Listed && !s.Current {
+			u.FileID, u.PickFile = s.File.FileID, s.PickFile
+			if s.File.Version != "" {
+				u.Version = s.File.Version
+			}
 		}
 	}
-	return u, lineDone
+	return u
 }
 
 func unofficialUpdate(x framework.Mod, un smapiweb.Update) Update {
+	nid, repo := nexusUpdate(x.UpdateKeys, un.URL), githubUpdate(x.UpdateKeys, un.URL)
 	return Update{
 		Key: x.Key, ID: x.ModID(), Name: x.Name,
 		Installed: x.Version, Version: un.Version, URL: un.URL,
-		NexusID: nexusUpdate(x.UpdateKeys, un.URL), GitHubRepo: githubUpdate(x.UpdateKeys, un.URL),
-		Source:     updateSource(un, nexusUpdate(x.UpdateKeys, un.URL), githubUpdate(x.UpdateKeys, un.URL)),
+		NexusID: nid, GitHubRepo: repo,
+		Source:     updateSource(un, nid, repo),
 		Unofficial: true,
 	}
 }
@@ -605,14 +614,26 @@ func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexusmods.Title
 	return files
 }
 
-// supersedingFile is the live file an update of x's Nexus file downloads (nexus.Supersedes), whose version the update
-// then offers. When nothing supersedes the installed file, newest is set if it is still a current file, the newest of
-// its own download, so the page's newer version belongs to another download; pick is set if it is history only. All
-// are zero when the installed file is not listed, which leaves the choice to the queue.
-func supersedingFile(files []nexusmods.BatchFile, x framework.Mod, modID int, version string) (file nexusmods.File, pick, newest bool) {
+// nexusFileState is the installed Nexus file's standing in its live file list. Listed is false when the list does
+// not hold the installed file, which leaves the cached page to say whether the update is real.
+type nexusFileState struct {
+	Listed bool
+	// Current is set when nothing on Nexus supersedes the installed file: the download is as new as its page.
+	Current bool
+	// File is the newer file of the same download that supersedes the installed one, zero when none does.
+	File nexusmods.File
+	// PickFile is set when the installed file is history only and nothing supersedes it: a page of several
+	// downloads has no single "latest file", so the user picks it on Nexus.
+	PickFile bool
+}
+
+// liveNexusFile reads the installed file's standing from the live list (nexus.Supersedes), whose grouping the
+// cached SMAPI page does not share. Nothing superseding an installed file that Nexus still lists means the page's
+// version, which SMAPI repeats, belongs to no file: the download is current even when its version reads lower.
+func liveNexusFile(files []nexusmods.BatchFile, x framework.Mod, modID int, version string) (s nexusFileState) {
 	keyModID, have, ok := nexusFile(x.Key)
-	if !ok || keyModID != modID {
-		return nexusmods.File{}, false, false
+	if !ok || modID == 0 || keyModID != modID {
+		return nexusFileState{}
 	}
 	list := make([]nexusmods.File, len(files))
 	for i, f := range files {
@@ -620,38 +641,13 @@ func supersedingFile(files []nexusmods.BatchFile, x framework.Mod, modID int, ve
 	}
 	installed := nexus.FileByID(list, have)
 	if installed.FileID == 0 {
-		return nexusmods.File{}, false, false
+		return nexusFileState{}
 	}
+	s.Listed = true
 	if f, ok := nexus.Supersedes(list, installed, version, x.SourceCategory); ok {
-		return f, false, false
+		s.File = f
+		return s
 	}
-	return nexusmods.File{}, nexus.Stale(installed), !nexus.Stale(installed)
-}
-
-// liveFileIsCurrent says whether the installed Nexus file is still the newest in its group (same display name) and
-// already at the suggested version. known is false when the installed file is not in the list.
-func liveFileIsCurrent(files []nexusmods.BatchFile, x framework.Mod, suggested string) (current, known bool) {
-	_, fileID, ok := nexusFile(x.Key)
-	if !ok {
-		return false, false
-	}
-	var installed nexusmods.BatchFile
-	for _, f := range files {
-		if f.FileID == fileID {
-			installed = f
-		}
-	}
-	if installed.FileID == 0 {
-		return false, false
-	}
-	for _, f := range files {
-		if f.FileID > installed.FileID && !strings.EqualFold(f.Category, "OLD_VERSION") &&
-			strings.EqualFold(strings.TrimSpace(f.Name), strings.TrimSpace(installed.Name)) {
-			return false, true
-		}
-	}
-	if c, ok := semverish.Compare(installed.Version, suggested); ok && c < 0 {
-		return false, true
-	}
-	return true, true
+	s.PickFile, s.Current = nexus.Stale(installed), !nexus.Stale(installed)
+	return s
 }
