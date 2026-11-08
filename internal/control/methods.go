@@ -464,7 +464,7 @@ func (s *Services) dispatchGlobal3(ctx context.Context, method string, p Params)
 	switch method {
 	case "antivirus.status":
 		v := s.Settings.Get()
-		return avscan.StatusOf(ctx, avscan.Config{Mode: v.Antivirus, Socket: v.AntivirusSocket, Command: v.AntivirusCommand}), nil
+		return avscan.StatusOf(ctx, v.AntivirusConfig()), nil
 	case "settings.get":
 		cur := s.Settings.Get()
 		if p.Key == "" {
@@ -1774,10 +1774,7 @@ func (s *Services) shareLog(ctx context.Context, gameID, id, run string) (map[st
 var launchWait = 3 * time.Minute
 
 func gameName(id string) string {
-	if g := game.Find(id); g != nil {
-		return g.Name()
-	}
-	return id
+	return game.NameOf(id)
 }
 
 type launchWarningError struct {
