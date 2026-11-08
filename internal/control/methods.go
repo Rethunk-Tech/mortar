@@ -2096,11 +2096,7 @@ func (s *Services) queueUpdates(ctx context.Context, gameID, id string, ids []st
 		return QueuedUpdates{}, nil, err
 	}
 	var reqs []queue.Request
-	for _, u := range r.Updates {
-		named := slices.ContainsFunc(ids, func(typed string) bool { return idMatches(typed, u.ID) })
-		if !queueableUpdate(u, named) || (!all && len(ids) > 0 && !named) || (beforePlay && strings.TrimSpace(u.CautionMessage) != "") {
-			continue
-		}
+	for _, u := range pickUpdates(r.Updates, ids, all, beforePlay) {
 		reqs = append(reqs, updateRequest(gameID, id, u))
 	}
 	if len(reqs) == 0 {
@@ -2129,6 +2125,20 @@ func (s *Services) queueUpdates(ctx context.Context, gameID, id string, ids []st
 	}
 	out.Queued, out.Queue = len(reqs), s.Queue.State()
 	return out, items, nil
+}
+
+// pickUpdates is the updates a queue request takes: the named ones (or every one with all or no names) that may be
+// queued, leaving out before Play an update whose author asks the player to read a note first.
+func pickUpdates(updates []problems.Update, ids []string, all, beforePlay bool) []problems.Update {
+	var out []problems.Update
+	for _, u := range updates {
+		named := slices.ContainsFunc(ids, func(typed string) bool { return idMatches(typed, u.ID) })
+		if !queueableUpdate(u, named) || (!all && len(ids) > 0 && !named) || (beforePlay && strings.TrimSpace(u.CautionMessage) != "") {
+			continue
+		}
+		out = append(out, u)
+	}
+	return out
 }
 
 // updatesWait is how long a launch waits for the updates it queued.

@@ -7,11 +7,9 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"reflect"
-	"sync"
+	"strings"
 	"testing"
 	"time"
-	"unsafe"
 
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -303,8 +301,7 @@ func TestLaunchSkipsPlayCheck(t *testing.T) {
 		return errors.New("stop")
 	}
 	_, err := s.launch(t.Context(), "stardew", p.ID, "", "", false)
-	var warn launchWarningError
-	if errors.As(err, &warn) {
+	if _, ok := errors.AsType[launchWarningError](err); ok {
 		t.Fatalf("skipPlayCheck still refused: %v", err)
 	}
 	if !started {
@@ -357,37 +354,35 @@ func TestQueueUpdatesNotFoundSkippingAndBatching(t *testing.T) {
 	if err != nil || len(items) != 0 || out.Queued != 0 {
 		t.Fatalf("beforePlay empty: %+v %v %v", out, items, err)
 	}
+}
 
+func TestPickUpdatesHonoursNamesAllAndCautionBeforePlay(t *testing.T) {
+	t.Parallel()
 	plain := problems.Update{Key: "k", ID: "smapi:Test.Mod", Name: "Test Mod", Version: "2.0.0", GitHubRepo: "owner/mod"}
 	caution := problems.Update{Key: "c", ID: "smapi:Caution.Mod", Name: "Caution", Version: "2.0.0", GitHubRepo: "owner/caution", CautionMessage: "read me"}
 	sw := problems.Update{Key: "s", ID: "smapi:Switch.Mod", Name: "Switch", Version: "2.0.0", GitHubRepo: "owner/switch", Switch: true}
-
-	seedProfileUpdates(t, s.Problems, "stardew", p.ID, []problems.Update{caution})
-	_, items, err = s.queueUpdates(t.Context(), "stardew", p.ID, nil, true, true)
-	if err != nil || len(items) != 0 {
-		t.Fatalf("beforePlay skipped caution: %v %d", err, len(items))
+	all := []problems.Update{plain, caution, sw}
+	keys := func(us []problems.Update) string {
+		var out []string
+		for _, u := range us {
+			out = append(out, u.Key)
+		}
+		return strings.Join(out, ",")
 	}
-	out, items, err = s.queueUpdates(t.Context(), "stardew", p.ID, nil, true, false)
-	if err != nil || len(items) != 1 || out.Before == "" || items[0].BatchID == "" {
-		t.Fatalf("caution queued outside beforePlay: %+v %v %v", out, items, err)
-	}
-
-	seedProfileUpdates(t, s.Problems, "stardew", p.ID, []problems.Update{sw})
-	_, _, err = s.queueUpdates(t.Context(), "stardew", p.ID, nil, true, false)
-	wantNotFound(t, err, "no updates available")
-	out, items, err = s.queueUpdates(t.Context(), "stardew", p.ID, []string{"Switch.Mod"}, false, false)
-	if err != nil || len(items) != 1 || out.Before != "" {
-		t.Fatalf("named switch without all: %+v %v %v", out, items, err)
-	}
-
-	seedProfileUpdates(t, s.Problems, "stardew", p.ID, []problems.Update{plain})
-	out, items, err = s.queueUpdates(t.Context(), "stardew", p.ID, nil, true, false)
-	if err != nil || len(items) != 1 || out.Before == "" || items[0].BatchID == "" {
-		t.Fatalf("all opens a batch: %+v %v %v", out, items, err)
-	}
-	out, items, err = s.queueUpdates(t.Context(), "stardew", p.ID, []string{"Test.Mod"}, false, false)
-	if err != nil || len(items) != 1 || out.Before != "" {
-		t.Fatalf("named does not open a batch: %+v %v %v", out, items, err)
+	for name, tc := range map[string]struct {
+		ids             []string
+		all, beforePlay bool
+		want            string
+	}{
+		"all skips a switch":             {all: true, want: "k,c"},
+		"before Play skips a caution":    {all: true, beforePlay: true, want: "k"},
+		"a named switch is queued":       {ids: []string{"Switch.Mod"}, want: "s"},
+		"names narrow the set":           {ids: []string{"Test.Mod"}, want: "k"},
+		"all with a name takes the rest": {ids: []string{"Test.Mod"}, all: true, want: "k,c"},
+	} {
+		if got := keys(pickUpdates(all, tc.ids, tc.all, tc.beforePlay)); got != tc.want {
+			t.Errorf("%s: got %q, want %q", name, got, tc.want)
+		}
 	}
 }
 
@@ -536,27 +531,4 @@ func waitIdle(t *testing.T, s *Services) {
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
-}
-
-func seedProfileUpdates(t *testing.T, s *problems.Service, gameID, profileID string, updates []problems.Update) {
-	t.Helper()
-	if _, err := s.Updates(t.Context(), gameID, profileID); err != nil {
-		t.Fatal(err)
-	}
-	rs := reflect.ValueOf(s).Elem()
-	mu := (*sync.Mutex)(unsafe.Pointer(rs.FieldByName("mu").UnsafeAddr()))
-	mu.Lock()
-	defer mu.Unlock()
-	field := rs.FieldByName("updates")
-	m := reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem()
-	keys := m.MapKeys()
-	if len(keys) == 0 {
-		t.Fatal("updates cache was empty")
-	}
-	cur := m.MapIndex(keys[0])
-	cp := reflect.New(cur.Type()).Elem()
-	cp.Set(cur)
-	res := (*problems.UpdatesResult)(unsafe.Pointer(cp.FieldByName("result").UnsafeAddr()))
-	res.Updates = updates
-	m.SetMapIndex(keys[0], cp)
 }
