@@ -5,6 +5,7 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-httpkit"
-	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // StatusError is a site answering with an HTTP status that is not 200. Auth is true for 401 and 403, which a caller
@@ -68,31 +68,24 @@ func DoJSON(ctx context.Context, r Request, out any) error {
 		return err
 	}
 	req.Header.Set("User-Agent", r.UserAgent)
-	req.Header.Set("Accept", "application/json")
 	if r.Body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
 	if r.Header != nil {
 		r.Header(req.Header)
 	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
+	err = httpkit.DoJSON(client, req, out, httpkit.JSONOptions{Limit: MaxBody})
+	if err == nil {
+		return nil
 	}
-	defer func() { _ = resp.Body.Close() }()
-	switch resp.StatusCode {
-	case http.StatusOK:
-	case http.StatusTooManyRequests:
-		return Busy(r.Service, resp)
-	default:
-		return &StatusError{Service: r.Service, Code: resp.StatusCode, Status: resp.Status}
+	if rl, ok := errors.AsType[*httpkit.RateLimitError](err); ok {
+		return &BusyError{Source: r.Service, Reset: rl.Reset}
 	}
-	raw, err := safefs.ReadCapped(resp.Body, MaxBody)
-	if err != nil {
-		return err
+	if se, ok := errors.AsType[*httpkit.StatusError](err); ok {
+		return &StatusError{Service: r.Service, Code: se.Code, Status: se.Status}
 	}
-	if err := json.Unmarshal(raw, out); err != nil {
-		return fmt.Errorf("%s: %w", strings.ToLower(r.Service), err)
+	if inner := errors.Unwrap(err); inner != nil && err.Error() == "decode response: "+inner.Error() {
+		return fmt.Errorf("%s: %w", strings.ToLower(r.Service), inner)
 	}
-	return nil
+	return err
 }
