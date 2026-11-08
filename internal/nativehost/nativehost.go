@@ -508,8 +508,8 @@ func nexusModProblems(domain string, modID int) []modProblem {
 	if err != nil || !mortarRunning(dataDir) {
 		return []modProblem{}
 	}
-	profileID := settings.Peek().LastProfile[info.ID]
-	if profileID == "" || filepath.Base(profileID) != profileID {
+	profileID := openProfile(info)
+	if profileID == "" {
 		return []modProblem{}
 	}
 	var rows []modProblem
@@ -690,8 +690,8 @@ func stateOf(info components.GameInfo) (string, string) {
 	if !mortarRunning(dataDir) {
 		return stateNotRunning, ""
 	}
-	profileID := cur.LastProfile[info.ID]
-	if profileID == "" || filepath.Base(profileID) != profileID {
+	profileID := openProfile(info)
+	if profileID == "" {
 		return stateNoProfile, ""
 	}
 	p, _ := readOpenProfile(dataDir, info)
@@ -699,34 +699,34 @@ func stateOf(info components.GameInfo) (string, string) {
 }
 
 func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
-	var openProfile modInProfile
+	var inOpen modInProfile
 	var others []modInProfile
 	if modID < 1 {
-		return openProfile, nil
+		return inOpen, nil
 	}
 	info, ok := components.GameByNexusDomain(domain)
 	if !ok {
-		return openProfile, nil
+		return inOpen, nil
 	}
 	dataDir, err := datadir.Dir()
 	if err != nil || !mortarRunning(dataDir) {
-		return openProfile, nil
+		return inOpen, nil
 	}
-	openID := settings.Peek().LastProfile[info.ID]
+	openID := openProfile(info)
 	root, err := os.OpenRoot(dataDir)
 	if err != nil {
-		return openProfile, nil
+		return inOpen, nil
 	}
 	defer func() { _ = root.Close() }()
 	pageVer, files := cachedNexusDetails(root, info.NexusDomain(), modID)
 	profiles, err := root.Open(filepath.Join("profiles", info.ID))
 	if err != nil {
-		return openProfile, nil
+		return inOpen, nil
 	}
 	entries, err := profiles.ReadDir(-1)
 	_ = profiles.Close()
 	if err != nil {
-		return openProfile, nil
+		return inOpen, nil
 	}
 	for _, dir := range entries {
 		if !dir.IsDir() || strings.HasPrefix(dir.Name(), ".") {
@@ -753,12 +753,12 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 			found.SkipSources = m.skipSources
 			found.RequiredBy, found.RequiredByNames = requiredByMods(profile.Entries, m.targets)
 			found.PageVersion = pageVer
-			openProfile = found
+			inOpen = found
 		} else {
 			others = append(others, found)
 		}
 	}
-	return openProfile, others
+	return inOpen, others
 }
 
 // nexusEntryMatch is what a profile records about one Nexus mod page.
