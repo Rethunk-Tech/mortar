@@ -888,7 +888,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@rethunk/dom-input-nav@0.1.1
+@rethunk/dom-input-nav@0.1.2
 licence: MIT
 https://github.com/Rethunk-Tech/dom-input-nav
 
@@ -916,7 +916,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@rethunk/react-load-hooks@0.3.0
+@rethunk/react-load-hooks@0.3.1
 licence: MIT
 https://github.com/Rethunk-Tech/react-load-hooks
 

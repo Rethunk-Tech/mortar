@@ -23,8 +23,8 @@
         "@lingui/core": "6.12.0",
         "@lingui/react": "6.12.0",
         "@mui/material": "9.5.0",
-        "@rethunk/dom-input-nav": "^0.1.1",
-        "@rethunk/react-load-hooks": "^0.3.0",
+        "@rethunk/dom-input-nav": "^0.1.2",
+        "@rethunk/react-load-hooks": "^0.3.1",
         "@tanstack/react-virtual": "3.14.26",
         "@wailsio/runtime": "3.1.0",
         "lucide-react": "1.70.0",
@@ -529,9 +529,9 @@
 
     "@resvg/resvg-js-win32-x64-msvc": ["@resvg/resvg-js-win32-x64-msvc@2.6.2", "", { "os": "win32", "cpu": "x64" }, "sha512-ZXtYhtUr5SSaBrUDq7DiyjOFJqBVL/dOBN7N/qmi/pO0IgiWW/f/ue3nbvu9joWE5aAKDoIzy/CxsY0suwGosQ=="],
 
-    "@rethunk/dom-input-nav": ["@rethunk/dom-input-nav@0.1.1", "", {}, "sha512-nnb3VUsFxF+3LL/+saEYrGxMPP35RaP/bvlmqSIvvPIhwUxckrUblf+GE/8WliZ/pzSK+9VD0yfhzyLAk5Sbxw=="],
+    "@rethunk/dom-input-nav": ["@rethunk/dom-input-nav@0.1.2", "", {}, "sha512-hTTmHrXZanoSQQnf4vLZVh5En1M+rNh20lgDlguXgqTTPd0Xajx4GVdJyJx3UOVD49pc+xXnRksJrkTug0cKjA=="],
 
-    "@rethunk/react-load-hooks": ["@rethunk/react-load-hooks@0.3.0", "", { "peerDependencies": { "react": "^19.0.0", "react-dom": "^19.0.0" } }, "sha512-ZRaBV/XpCQsiKZ/rLdvTKViAcv2Se2HdRldxUVlxjhPz97bwl2cg39780vYCHbxFrSaLfTeWxchU29y6nn6/vQ=="],
+    "@rethunk/react-load-hooks": ["@rethunk/react-load-hooks@0.3.1", "", { "peerDependencies": { "react": "^19.0.0", "react-dom": "^19.0.0" } }, "sha512-up0q5EiXawiAKBjStWnhusckFG0wvWwipGvSl65aU+ZwAUdEnmn95Bc5LgZxsMi06BAFilH1mLQF8RPlDxVWBA=="],
 
     "@rethunk/react-render-audit": ["@rethunk/react-render-audit@0.1.2", "", { "peerDependencies": { "@playwright/test": "^1.64.0", "react": "^19.0.0", "react-dom": "^19.0.0" }, "bin": { "render-diff": "dist/cli.js" } }, "sha512-+1Xd/BPaVG8vlps2KG0CQ9BZ2H1X4k0qR1Wfqo0533TrzLWa4VsEYpQ/YxPeXdpGafVTM0SSSvaZmpNp9D0gtg=="],
 
