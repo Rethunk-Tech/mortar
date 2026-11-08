@@ -60,15 +60,19 @@ func modDBSources(ctx context.Context, entries []profile.Entry, r modDBResolver)
 			continue
 		}
 		var pick vsmoddb.Resolved
+		var releaseID int
 		ok := true
 		for _, m := range e.Mods {
 			if m.ModID == "" {
 				continue
 			}
 			got, err := r.Resolve(ctx, m.ModID, m.Version)
+			releaseID = got.ReleaseID
 			if err != nil {
+				// The recorded version may be gone from the site; the newest release answers then, and no release id
+				// is pinned, so the source installs the newest one.
 				got, err = r.Resolve(ctx, m.ModID, "")
-				got.ReleaseID = 0
+				releaseID = 0
 			}
 			if err != nil || pick.ID != "" && pick.ID != got.ID {
 				ok = false
@@ -77,7 +81,7 @@ func modDBSources(ctx context.Context, entries []profile.Entry, r modDBResolver)
 			pick = got
 		}
 		if ok && pick.ID != "" {
-			out[e.Key] = profile.Source{Kind: profile.KindVSModDB, Name: pick.ID, FileID: pick.ReleaseID, ModName: pick.Name, Picture: pick.Picture}
+			out[e.Key] = profile.Source{Kind: profile.KindVSModDB, Name: pick.ID, FileID: releaseID, ModName: pick.Name, Picture: pick.Picture}
 		}
 	}
 	return out

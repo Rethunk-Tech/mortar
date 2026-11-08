@@ -18,6 +18,21 @@ func (f fakeModDB) Resolve(_ context.Context, id, _ string) (vsmoddb.Resolved, e
 	return vsmoddb.Resolved{}, errors.New("not on the Mod DB")
 }
 
+// fakeModDBVersions knows each mod only at its newest release, so a versioned lookup fails and the unversioned one
+// answers, the way a site that dropped the recorded version behaves.
+type fakeModDBVersions map[string]vsmoddb.Resolved
+
+func (f fakeModDBVersions) Resolve(_ context.Context, id, version string) (vsmoddb.Resolved, error) {
+	r, ok := f[id]
+	if !ok {
+		return vsmoddb.Resolved{}, errors.New("not on the Mod DB")
+	}
+	if version != "" {
+		return vsmoddb.Resolved{}, errors.New("no such release")
+	}
+	return r, nil
+}
+
 func TestModDBSourcesMatchOneModIDAndSkipAmbiguousOrUnknown(t *testing.T) {
 	local := profile.Source{Kind: profile.KindLocal}
 	entry := func(key string, src profile.Source, ids ...string) profile.Entry {
@@ -38,6 +53,22 @@ func TestModDBSourcesMatchOneModIDAndSkipAmbiguousOrUnknown(t *testing.T) {
 		"chiseltools": {ID: "604-2751"},
 	})
 	if len(got) != 2 || got["carryon"].Name != "890-4405" || got["carryon"].Kind != profile.KindVSModDB || got["pair"].Name != "890-4405" {
+		t.Fatalf("got %+v", got)
+	}
+}
+
+func TestModDBSourcesKeepNoReleaseIDWhenTheVersionFellBack(t *testing.T) {
+	local := profile.Source{Kind: profile.KindLocal}
+	got := modDBSources(t.Context(), []profile.Entry{
+		{Key: "pinned", Source: local, Mods: []profile.Component{{ModID: "carryon", Version: "1.0.0"}}},
+	}, fakeModDBVersions{"carryon": {ID: "890-4405", ReleaseID: 7}})
+	if len(got) != 1 || got["pinned"].FileID != 0 {
+		t.Fatalf("got %+v", got)
+	}
+	got = modDBSources(t.Context(), []profile.Entry{
+		{Key: "newest", Source: local, Mods: []profile.Component{{ModID: "carryon"}}},
+	}, fakeModDBVersions{"carryon": {ID: "890-4405", ReleaseID: 7}})
+	if len(got) != 1 || got["newest"].FileID != 7 {
 		t.Fatalf("got %+v", got)
 	}
 }
