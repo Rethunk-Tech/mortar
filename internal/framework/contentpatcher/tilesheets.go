@@ -3,8 +3,8 @@ package contentpatcher
 import (
 	"strings"
 
+	cp "github.com/Rethunk-Tech/go-contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 )
 
 // tilesheetCleanups word the packs that only load new map and tilesheet assets that nothing installed uses, or that

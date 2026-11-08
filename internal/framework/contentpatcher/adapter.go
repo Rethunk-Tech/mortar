@@ -1,8 +1,8 @@
 package contentpatcher
 
 import (
+	cp "github.com/Rethunk-Tech/go-contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )

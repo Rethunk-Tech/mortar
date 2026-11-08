@@ -3,8 +3,8 @@ package problems
 import (
 	"context"
 
+	cp "github.com/Rethunk-Tech/go-contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 )
 
 type cachedIndex struct {

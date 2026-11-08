@@ -5,8 +5,8 @@ import (
 	"slices"
 	"strings"
 
+	cp "github.com/Rethunk-Tech/go-contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 )
 
 // recolourFamily is a map recolour that packs offer as a config choice. Packs spell the choice their own way

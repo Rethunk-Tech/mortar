@@ -1,6 +1,0 @@
-{
-  "Changes": [
-    { "Action": "EditImage", "Target": "TileSheets/crops" },
-    { "Action": "EditData", "Target": "Data/NPCDispositions" }
-  ]
-}

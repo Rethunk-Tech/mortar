@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
+	cp "github.com/Rethunk-Tech/go-contentpatcher"
 )
 
 // itemConflictInfo is the place an item conflict is about, "cell (x, y)": the shared cells are 16-pixel squares

@@ -1,6 +1,0 @@
-{
-  "Name": "Aware A",
-  "UniqueID": "Fixture.AwareA",
-  "Version": "1.0.0",
-  "ContentPackFor": { "UniqueID": "Pathoschild.ContentPatcher" }
-}

@@ -3,7 +3,7 @@ package contentpatcher
 import (
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
+	cp "github.com/Rethunk-Tech/go-contentpatcher"
 )
 
 func TestVariantSettingsSuggestsOnlyValueMappedToEnabledMod(t *testing.T) {

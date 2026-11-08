@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
+	cp "github.com/Rethunk-Tech/go-contentpatcher"
 )
 
 func TestMain(m *testing.M) {

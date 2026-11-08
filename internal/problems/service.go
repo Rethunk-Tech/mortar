@@ -17,11 +17,11 @@ import (
 	"sync"
 	"time"
 
+	cp "github.com/Rethunk-Tech/go-contentpatcher"
 	"github.com/Rethunk-Tech/go-dotnet"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/launch"

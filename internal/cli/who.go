@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	cp "github.com/Rethunk-Tech/go-contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/control"
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 )
 
 func (c *cmd) who() error {

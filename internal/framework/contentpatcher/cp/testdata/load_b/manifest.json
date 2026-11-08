@@ -1,6 +1,0 @@
-{
-  "Name": "Load B",
-  "UniqueID": "Fixture.LoadB",
-  "Version": "1.0.0",
-  "ContentPackFor": { "UniqueID": "Pathoschild.ContentPatcher" }
-}

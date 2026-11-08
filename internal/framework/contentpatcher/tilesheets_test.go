@@ -3,8 +3,8 @@ package contentpatcher
 import (
 	"testing"
 
+	cp "github.com/Rethunk-Tech/go-contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )

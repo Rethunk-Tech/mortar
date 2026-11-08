@@ -7,8 +7,8 @@ import (
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 
+	cp "github.com/Rethunk-Tech/go-contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/control"
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"

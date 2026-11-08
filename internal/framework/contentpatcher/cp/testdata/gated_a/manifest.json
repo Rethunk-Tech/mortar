@@ -1,6 +1,0 @@
-{
-  "Name": "Gated A",
-  "UniqueID": "Fixture.GatedA",
-  "Version": "1.0.0",
-  "ContentPackFor": { "UniqueID": "Pathoschild.ContentPatcher" }
-}
