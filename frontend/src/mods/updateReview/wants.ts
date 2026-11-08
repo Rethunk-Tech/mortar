@@ -35,16 +35,13 @@ export const updateWant = (u: Update): Want => ({
 })
 
 /** The update's request, then newer versions of the optional files laid over the entry unless they are left out;
- * the queue installs those after the main file. A GitHub update leaves them, since they wait on the Nexus file. */
+ * the queue installs those after the main file. */
 export const withOptional = (
   u: Update,
   profile: Pick<Profile, 'entries'> | null | undefined,
   files: readonly File[],
   skipped: boolean,
-): Want[] => [
-  updateWant(u),
-  ...(skipped || u.githubRepo ? [] : optionalUpdateWants(profile, u, files)),
-]
+): Want[] => [updateWant(u), ...(skipped ? [] : optionalUpdateWants(profile, u, files))]
 
 /** withOptional for an update that no review row decided, such as auto-update before Play or a run error's Update:
  * reads the mod's Nexus files only when the profile holds optional files laid over the entry. */

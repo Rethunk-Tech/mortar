@@ -14,7 +14,7 @@ export function OptionalUpdates({ update, profileId }: { update: Update; profile
   const files = useNexusDetails((s) => nexusEntryOf(s.byKey, game, update.nexusId)?.details?.files)
   const skipped = useOptionalSkips((s) => s.skipped[update.key] === true)
   const setSkipped = useOptionalSkips((s) => s.setSkipped)
-  const n = update.githubRepo ? 0 : optionalUpdateWants(profile, update, files ?? []).length
+  const n = optionalUpdateWants(profile, update, files ?? []).length
   if (n === 0) {
     return null
   }

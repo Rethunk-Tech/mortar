@@ -88,6 +88,10 @@ function newerVersion(files: readonly File[], fileId: number): File | undefined 
 
 /** Queue requests for newer versions of the optional files laid over the entry an update replaces. */
 function optionalUpdateWants(profile: Entries, update: Update, files: readonly File[]): Want[] {
+  // A GitHub update leaves them, since they wait on the Nexus file.
+  if (update.githubRepo) {
+    return []
+  }
   const wants: Want[] = []
   const overlays = (profile?.entries ?? []).filter(
     (e) =>
