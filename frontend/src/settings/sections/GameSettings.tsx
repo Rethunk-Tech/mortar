@@ -24,8 +24,9 @@ import { currentGame, useCurrentGame } from '../../nav/currentGame.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { FlatpakGrant } from '../../shell/FlatpakGrant.tsx'
 import { space } from '../../theme/density.ts'
-import { type InlineError, inlineError, reportError, toastError } from '../../toasts/report.ts'
+import { type InlineError, inlineError, reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
+import { usePending } from '../../toasts/usePending.ts'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { pickFolderSetting } from '../persist.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
@@ -181,7 +182,7 @@ function GameFolder({
   const override = useSettings((s) => s.gameFolders?.[game] ?? '')
   const [error, setError] = useState<InlineError | null>(null)
   const [resetting, setResetting] = useState(false)
-  const [restoreBusy, setRestoreBusy] = useState(false)
+  const [restoreBusy, runReset] = usePending()
   const change = (run: Promise<void>) => {
     setError(null)
     run.then(onRefresh).catch((e: unknown) => setError(inlineError(e)))
@@ -299,35 +300,33 @@ function GameFolder({
             setResetting(false)
           }
         }}
-        onConfirm={async () => {
+        onConfirm={() => {
           setError(null)
-          setRestoreBusy(true)
-          try {
-            await ResetInstall(game)
-            if (System.IsWindows()) {
-              await offerLaunchOptionRemoval(
-                useToasts.getState().push,
-                t`Game install deleted`,
-                t`Remove ${{ loader: SMAPI }} from ${{ launcher: STEAM }}'s launch options`,
-                t`Could not update ${{ launcher: STEAM }}'s launch options`,
-              )
-            }
-            if (store === 'steam' || store === 'flatpak-steam') {
-              await OpenSteamValidate(gameInfo(game)?.appId ?? '')
-            } else {
-              useToasts.getState().push({
-                kind: 'info',
-                title: t`Game install deleted`,
-                body: t`Reinstall ${{ game: gameName }} from your game launcher.`,
-              })
-            }
-            onRefresh()
-            setResetting(false)
-          } catch (e: unknown) {
-            toastError(t`Could not reset the game install`, e)
-          } finally {
-            setRestoreBusy(false)
-          }
+          runReset(
+            async () => {
+              await ResetInstall(game)
+              if (System.IsWindows()) {
+                await offerLaunchOptionRemoval(
+                  useToasts.getState().push,
+                  t`Game install deleted`,
+                  t`Remove ${{ loader: SMAPI }} from ${{ launcher: STEAM }}'s launch options`,
+                  t`Could not update ${{ launcher: STEAM }}'s launch options`,
+                )
+              }
+              if (store === 'steam' || store === 'flatpak-steam') {
+                await OpenSteamValidate(gameInfo(game)?.appId ?? '')
+              } else {
+                useToasts.getState().push({
+                  kind: 'info',
+                  title: t`Game install deleted`,
+                  body: t`Reinstall ${{ game: gameName }} from your game launcher.`,
+                })
+              }
+              onRefresh()
+              setResetting(false)
+            },
+            { errorTitle: t`Could not reset the game install` },
+          )
         }}
       />
     </>
