@@ -15,6 +15,7 @@ import {
 import { Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import { HexColorPicker } from 'react-colorful'
+import { blurOnEnter } from '../../shell/blurOnEnter.ts'
 import { labelledInput } from '../../shell/labelledInput.tsx'
 import { usePopoverAnchor } from '../../shell/usePopoverAnchor.ts'
 import { space } from '../../theme/density.ts'
@@ -55,11 +56,7 @@ function NumberWidget({ entry, label, onChange }: WidgetProps) {
       value={draft ?? String(value)}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={(e) => commit(e.target.value)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          commit(e.currentTarget.querySelector('input')?.value ?? '')
-        }
-      }}
+      onKeyDown={blurOnEnter}
       slotProps={{
         htmlInput: {
           'aria-label': label,
