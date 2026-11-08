@@ -160,6 +160,86 @@ func TestFomodImageRefusesAFileOverTheCap(t *testing.T) {
 	}
 }
 
+func TestFomodReplayKeepsChangedOffWhenChoicesStillFit(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "A")
+	raw, err := safefs.ReadFile(filepath.Join("..", "installer", "testdata", "fomod", "choose-one.xml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	files := map[string]string{
+		"fomod/ModuleConfig.xml": string(raw),
+		"alpha/manifest.json":    manifestJSON("A.Alpha"),
+		"beta/manifest.json":     manifestJSON("A.Beta"),
+	}
+	e.item(t, "v1", files)
+	alpha := map[string]map[string][]string{"Options": {"Pack": {"Alpha"}}}
+	if _, err := e.InstallFomod("stardew", p.ID, "v1", Source{Kind: KindLocal, Name: "x"}, alpha); err != nil {
+		t.Fatal(err)
+	}
+	st, err := settings.OpenIn(e.dataDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.settings = st
+	// Reusing choices is off, so the wizard opens, but nothing about the options changed.
+	if _, err := st.Update(func(s *settings.Settings) { s.ReuseFomodChoices = new(bool) }); err != nil {
+		t.Fatal(err)
+	}
+	src, ask, need, err := e.installAsk("stardew", p.ID, "v1", Source{Kind: KindLocal, Name: "x"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !need || ask.Changed || ask.OldKey != "v1" || !reflect.DeepEqual(ask.Choices, alpha) {
+		t.Fatalf("ask = %+v need=%v choices=%v", ask, need, src.fomodMap())
+	}
+}
+
+func TestFomodImageRefusesAPathOutsideTheItem(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "local-img", map[string]string{
+		"small.png": "x",
+		"sub/x.png": "y",
+	})
+	for _, rel := range []string{"", "..", "../small.png", "/etc/passwd", "sub/../../small.png", `..\small.png`} {
+		if b, err := e.FomodImage("stardew", "local-img", rel); err == nil {
+			t.Errorf("%q was read as %q", rel, b)
+		}
+	}
+}
+
+func TestInstalledGameVersionFindsTheInstallUnderTheStoreHome(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Steam is found by registry on Windows, so the home is not what locates the install")
+	}
+	e := newEnv(t)
+	// SMAPI's log lives under the process home; the game's install is under the home Mortar was opened with.
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	xdg := filepath.Join(home, ".config")
+	t.Setenv("XDG_CONFIG_HOME", xdg)
+	writeFile(t, xdg, "StardewValley/ErrorLogs/SMAPI-latest.txt",
+		"[14:00:00 INFO SMAPI] SMAPI 4.1.10 with Stardew Valley 1.6.15\n")
+	root := filepath.Join(t.TempDir(), ".local", "share", "Steam")
+	e.home = filepath.Dir(filepath.Dir(filepath.Dir(root)))
+	apps := filepath.Join(root, "steamapps")
+	writeFile(t, apps, "libraryfolders.vdf", "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \""+root+"\"\n}\n}\n")
+	writeFile(t, apps, "appmanifest_413150.acf", "\"AppState\"\n{\n\"installdir\" \"Stardew Valley\"\n}\n")
+	writeFile(t, apps, "common/Stardew Valley/Stardew Valley.dll", "x")
+	writeFile(t, apps, "common/Stardew Valley/StardewModdingAPI.dll", "x")
+	set, err := settings.OpenIn(e.dataDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.settings = set
+	if got := e.installedGameVersion("stardew"); got != "1.6.15" {
+		t.Fatalf("game version = %q", got)
+	}
+}
+
 const requiredAndOptionalFomod = `<config><moduleName>Pack</moduleName>` +
 	`<requiredInstallFiles><file source="required/manifest.json" destination="required/manifest.json"/></requiredInstallFiles>` +
 	`<installSteps><installStep name="Setup"><optionalFileGroups>` +

@@ -62,17 +62,12 @@ func (s *Store) reuseFomod() bool {
 
 func (s *Store) fileIndex(modsDir string) fomod.FileIndex {
 	states := map[string]string{}
+	// The walk starts at modsDir, so every path it yields is under it.
 	_ = filepath.WalkDir(modsDir, func(p string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
 			return err
 		}
-		root := filepath.Clean(modsDir)
-		clean := filepath.Clean(p)
-		sep := string(os.PathSeparator)
-		if clean != root && !strings.HasPrefix(clean, root+sep) {
-			return fmt.Errorf("mod file %q is not under %s", p, modsDir)
-		}
-		rel := strings.TrimPrefix(clean, root+sep)
+		rel := strings.TrimPrefix(filepath.Clean(p), filepath.Clean(modsDir)+string(os.PathSeparator))
 		name := filepath.Base(p)
 		inactive := false
 		for part := range strings.SplitSeq(filepath.ToSlash(rel), "/") {
@@ -110,15 +105,11 @@ func (s *Store) installedGameVersion(gameID string) string {
 	if game.Find(gameID) == nil {
 		return ""
 	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return ""
-	}
 	if s.settings == nil {
 		return ""
 	}
 	sett := s.settings
-	dir, err := game.InstallDir(home, sett.Get(), gameID)
+	dir, err := game.InstallDir(s.home, sett.Get(), gameID)
 	if err != nil || dir == "" {
 		return ""
 	}
@@ -198,7 +189,7 @@ func (s *Store) replayAsk(game, id, key string, source Source, oldKey string, ch
 		return FomodAsk{}, false, nil
 	}
 	ask := askFrom(cfg, key, source, oldKey, fomod.Keep(cfg, choices), eval)
-	ask.Changed = true
+	ask.Changed = !fomod.Match(cfg, choices, eval) || fomod.Unanswered(old, cfg, choices, eval)
 	return ask, true, nil
 }
 
@@ -364,13 +355,13 @@ func (s *Store) applyFomod(game, id, key string, choices map[string]map[string][
 		prev := e.Mods
 		e.Mods = entryMods(found)
 		keepLoadAfter(e.Mods, prev)
-		disabled := e.Disabled
-		e.Disabled = []mod.ID{}
+		kept := make([]mod.ID, 0, len(e.Disabled))
 		for _, m := range e.Mods {
-			if hasID(disabled, m.ID) {
-				e.Disabled = append(e.Disabled, m.ID)
+			if !e.Enabled(m.ID) {
+				kept = append(kept, m.ID)
 			}
 		}
+		e.Disabled = kept
 		modsDir := datadir.ModsDirOf(dir)
 		if err := removeEntryFolders(modsDir, key); err != nil {
 			return err
