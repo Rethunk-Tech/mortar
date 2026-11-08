@@ -15,10 +15,9 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { partKey, supportParts } from './installReason.ts'
 import { entryOf, modId, updateFor } from './lookup.ts'
 import { hostOf, type MenuState } from './modActions.ts'
+import { parseNexusKey } from './nexusKey.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
-
-const NEXUS_KEY = /^nexus-(\d+)-(\d+)$/
 
 const isMenuKey = (e: { key: string; shiftKey: boolean }) =>
   e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')
@@ -96,8 +95,8 @@ export function extraFileArchive(
   extraKey: string,
   files: { fileId: number; fileName: string; name: string }[] | null | undefined,
 ): string {
-  const match = NEXUS_KEY.exec(extraKey)
-  const file = match ? files?.find((candidate) => candidate.fileId === Number(match[2])) : undefined
+  const found = parseNexusKey(extraKey)
+  const file = found ? files?.find((candidate) => candidate.fileId === found.fileID) : undefined
   return file && file.fileName !== file.name ? file.fileName : ''
 }
 
@@ -109,8 +108,7 @@ export function extraFileLabel(
   if (!entry) {
     return extraKey
   }
-  const match = NEXUS_KEY.exec(extraKey)
-  const fileId = match ? Number(match[2]) : 0
+  const fileId = parseNexusKey(extraKey)?.fileID ?? 0
   const file = files?.find((candidate) => candidate.fileId === fileId)
   if (file) {
     const title = file.name || file.fileName

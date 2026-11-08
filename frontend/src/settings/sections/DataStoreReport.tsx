@@ -21,6 +21,7 @@ import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { gameInfo } from '../../games/info.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
+import { parseNexusKey } from '../../mods/nexusKey.ts'
 import { AfterDelay } from '../../shell/AfterDelay.tsx'
 import { AppDialog, DialogFooter } from '../../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
@@ -34,7 +35,6 @@ import { usePending } from '../../toasts/usePending.ts'
 import { nowrap } from './dataStyles.ts'
 
 const SELECT_SEP = '\u0000'
-const NEXUS_KEY = /^nexus-(\d+)-\d+$/
 // The key the cleanup dialog's report is last-good under, read again from its own hook.
 const DATA_STORE_KEY = 'data-store-report'
 
@@ -119,8 +119,8 @@ function itemName(i18n: I18n, game: string, item: Item): string {
   if (item.name) {
     return item.name
   }
-  const id = NEXUS_KEY.exec(item.key)?.[1]
-  if (id) {
+  const id = parseNexusKey(item.key)?.modID
+  if (id !== undefined) {
     return i18n._(msg`${{ source: sourceLabel('nexus') }} mod ${{ id }}`)
   }
   const loader = gameInfo(game)?.loaders?.find((l) => item.key.startsWith(`${l.id}-`))
