@@ -3,7 +3,6 @@ package control
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -22,31 +21,20 @@ func (s *Services) historyRevertItem(game, id, eventID, item string) (any, error
 }
 
 func (s *Services) profileChanges(game, id string) (profile.HistoryDiff, error) {
-	since, err := s.lastRunTime(game, id)
+	if s.Launches == nil {
+		return s.Profiles.ChangesSince(game, id, "")
+	}
+	started, err := s.Launches.LastRunStarted(game, id)
 	if err != nil {
 		return profile.HistoryDiff{}, err
 	}
-	if since.IsZero() {
-		return s.Profiles.ChangesSince(game, id, "")
-	}
-	return s.Profiles.ChangesSince(game, id, since.Format(time.RFC3339Nano))
-}
-
-func (s *Services) lastRunTime(game, id string) (time.Time, error) {
-	if s.Launches == nil {
-		return time.Time{}, nil
-	}
-	runs, err := s.Launches.Runs(game, id)
-	if err != nil || len(runs) == 0 {
-		return time.Time{}, err
-	}
-	return profile.ParseSince(runs[0].Started)
+	return s.Profiles.ChangesSince(game, id, started)
 }
 
 func (s *Services) profileGood(game, id string, mark, restore bool) (any, error) {
 	switch {
 	case mark && restore:
-		return nil, fmt.Errorf("profile good needs --mark or --restore")
+		return nil, fmt.Errorf("profile good takes --mark or --restore, not both")
 	case mark:
 		return s.changed(game, func() (any, error) { return s.Profiles.MarkKnownGood(game, id) })
 	case restore:
@@ -56,22 +44,20 @@ func (s *Services) profileGood(game, id string, mark, restore bool) (any, error)
 	}
 }
 
-const playChangeNames = 8
-
 func (s *Services) changesPlayGroup(ctx context.Context, game, id string) PlayIssueGroup {
 	_ = ctx
 	diff, err := s.profileChanges(game, id)
 	if err != nil || len(diff.Items) == 0 {
 		return PlayIssueGroup{}
 	}
-	names := make([]string, 0, len(diff.Items))
+	names := make([]string, 0, min(len(diff.Items), playIssueNameCap))
 	for _, it := range diff.Items {
 		if it.Detail != "" {
 			names = append(names, it.Detail)
 		}
 	}
-	if len(names) > playChangeNames {
-		names = names[:playChangeNames]
+	if len(names) > playIssueNameCap {
+		names = names[:playIssueNameCap]
 	}
 	return PlayIssueGroup{Kind: "changes", Count: len(diff.Items), Names: names}
 }
