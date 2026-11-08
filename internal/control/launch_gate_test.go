@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -464,7 +465,12 @@ func markGameUpdated(t *testing.T, s *Services, profileID string) {
 func markSaveGap(t *testing.T, s *Services, profileID string) bool {
 	t.Helper()
 	home := t.TempDir()
-	dir := filepath.Join(home, ".config", "StardewValley", "Saves", "Farm_1")
+	// Where the catalog puts Stardew's saves: {appData} on Windows, {xdgConfig} elsewhere.
+	saves := filepath.Join(home, ".config", "StardewValley", "Saves")
+	if runtime.GOOS == "windows" {
+		saves = filepath.Join(home, "AppData", "Roaming", "StardewValley", "Saves")
+	}
+	dir := filepath.Join(saves, "Farm_1")
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		t.Fatal(err)
 	}

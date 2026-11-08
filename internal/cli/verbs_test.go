@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -347,7 +348,7 @@ func TestVerbWrappersSendTheirArgumentsOrRefuse(t *testing.T) {
 			args:    []string{"launchers", "add", "steam", "games"},
 			results: map[string]any{"launchers.add": []game.StoreApp{}},
 			method:  "launchers.add",
-			params:  func(p control.Params) bool { return p.Name == "steam" && strings.HasSuffix(p.Path, "/games") },
+			params:  func(p control.Params) bool { return p.Name == "steam" && filepath.Base(p.Path) == "games" },
 		},
 		{
 			name:  "launchers add without a folder",
