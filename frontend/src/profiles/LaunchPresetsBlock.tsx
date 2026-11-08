@@ -183,7 +183,7 @@ function LaunchPresetsBlock({
         onClose={() => setTemplates(false)}
         onAdd={(tpl) => {
           setTemplates(false)
-          addFromTemplate(tpl)
+          void addFromTemplate(tpl)
         }}
       />
       <LaunchPresetDialog
@@ -203,7 +203,7 @@ function LaunchPresetsBlock({
           const gone = removing
           setRemoving(null)
           if (gone) {
-            save(
+            void save(
               presets.filter((p) => p.id !== gone.id),
               defaultId === gone.id ? '' : defaultId,
             )

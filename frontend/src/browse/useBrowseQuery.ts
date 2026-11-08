@@ -62,7 +62,11 @@ function once(items: BrowseItem[]): BrowseItem[] {
   const seen = new Set<string>()
   return items.filter((i) => {
     const key = hitKey(i)
-    return seen.has(key) ? false : (seen.add(key), true)
+    if (seen.has(key)) {
+      return false
+    }
+    seen.add(key)
+    return true
   })
 }
 
