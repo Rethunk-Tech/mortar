@@ -162,6 +162,11 @@ type offlineDoctorError struct {
 
 func (e offlineDoctorError) Error() string { return "doctor ran offline" }
 
+// doctorFindingsError makes doctor exit 1 when the report it printed found something, live or offline.
+type doctorFindingsError struct{}
+
+func (doctorFindingsError) Error() string { return "doctor found findings" }
+
 // Run executes one command and returns the process exit code.
 func Run(version string, args []string, stdout, stderr io.Writer) int {
 	attachConsole()
@@ -182,6 +187,9 @@ func run(version string, call caller, args []string, stdout, stderr io.Writer) i
 func (c *cmd) fail(err error) int {
 	if _, ok := errors.AsType[playCheckError](err); ok {
 		return 3
+	}
+	if _, ok := errors.AsType[doctorFindingsError](err); ok {
+		return 1
 	}
 	if offline, ok := errors.AsType[offlineDoctorError](err); ok {
 		if c.json {
@@ -820,6 +828,29 @@ func countedMissing(r problems.Result) int {
 	return n
 }
 
+// countedBroken is the broken rows Count includes: an unorderable SMAPI or game version is shown, not counted.
+func countedBroken(r problems.Result) int {
+	n := 0
+	for _, x := range r.Broken {
+		if x.Status != "smapi-unknown" && x.Status != problems.StatusGameUnknown {
+			n++
+		}
+	}
+	return n
+}
+
+// severeRunErrors is the last-run errors Count includes: a plugin's errors after it loaded, or a run that did not
+// crash, are shown but not counted.
+func severeRunErrors(r problems.Result) int {
+	n := 0
+	for _, x := range r.RunErrors {
+		if x.Severe {
+			n++
+		}
+	}
+	return n
+}
+
 // loaderColumn heads the runs' loader version column with the name of the loader they used, LOADER when they used
 // different ones or it is unknown. A run that recorded no loader used the game's only one.
 func loaderColumn(game string, list []launchsvc.Run) string {
@@ -997,7 +1028,7 @@ func (c *cmd) gameOrDefault() (string, error) {
 	}
 	var ids []string
 	for _, g := range games {
-		if g.Installed && game.Find(g.ID) != nil {
+		if g.Installed {
 			ids = append(ids, g.ID)
 		}
 	}
@@ -1635,21 +1666,18 @@ func (c *cmd) problems(p control.Params) error {
 }
 
 func (c *cmd) printProblemsText(r problems.Result) {
-	conflicts, harmless := 0, 0
+	harmless := len(r.Missing) - countedMissing(r)
 	for _, x := range r.AssetConflicts {
 		if x.Cosmetic {
 			harmless++
-		} else {
-			conflicts++
 		}
 	}
-	harmless += len(r.Missing) - countedMissing(r)
 	fmt.Fprintf(c.out, "missing: %d\n", countedMissing(r))
 	fmt.Fprintf(c.out, "duplicates: %d\n", len(r.Duplicates))
-	fmt.Fprintf(c.out, "broken: %d\n", len(r.Broken))
-	fmt.Fprintf(c.out, "conflicts: %d\n", conflicts)
+	fmt.Fprintf(c.out, "broken: %d\n", countedBroken(r))
+	fmt.Fprintf(c.out, "conflicts: %d\n", problems.ConflictRows(r.AssetConflicts))
 	fmt.Fprintf(c.out, "settings: %d\n", len(r.Settings))
-	fmt.Fprintf(c.out, "last-run errors: %d\n", len(r.RunErrors))
+	fmt.Fprintf(c.out, "last-run errors: %d\n", severeRunErrors(r))
 	fmt.Fprintf(c.out, "outside edits: %d\n", len(r.Drift))
 	fmt.Fprintf(c.out, "cleanup: %d\n", len(r.Cleanup))
 	fmt.Fprintf(c.out, "compat: %d\n", len(r.Compat))
@@ -1661,7 +1689,7 @@ func (c *cmd) printProblemsText(r problems.Result) {
 func (c *cmd) printProblems(r problems.Result) {
 	conflicts := problems.ConflictRows(r.AssetConflicts)
 	fmt.Fprintf(c.out, "%d problems: %d missing, %d duplicates, %d broken, %d conflict groups, %d settings, %d last-run errors, %d outside edits\n",
-		r.Count(), countedMissing(r), len(r.Duplicates), len(r.Broken), conflicts, len(r.Settings), len(r.RunErrors), len(r.Drift))
+		r.Count(), countedMissing(r), len(r.Duplicates), countedBroken(r), conflicts, len(r.Settings), severeRunErrors(r), len(r.Drift))
 	fmt.Fprintln(c.out, "Active")
 	n := 0
 	next := func() string {
@@ -2173,7 +2201,7 @@ func (c *cmd) dataCmd() error {
 		return c.dataLocation()
 	}
 	if len(c.args) < 2 || c.args[1] != "usage" {
-		return usageError{"data needs usage --by-mod or location"}
+		return usageError{"data needs usage --by-mod, location, move or cleanup"}
 	}
 	if !c.byMod {
 		return usageError{"data usage needs --by-mod"}
@@ -2182,12 +2210,12 @@ func (c *cmd) dataCmd() error {
 		rows := make([][]string, 0, len(u.Items))
 		for _, it := range u.Items {
 			rows = append(rows, []string{
-				it.Game, it.Key, it.Name, strconv.FormatInt(it.Size, 10),
-				strconv.Itoa(it.Profiles), strconv.FormatInt(it.ProfileSize, 10), it.LastUsed,
+				it.Game, it.Key, it.Name, bytefmt.Format(it.Size),
+				strconv.Itoa(it.Profiles), bytefmt.Format(it.ProfileSize), it.LastUsed,
 			})
 		}
 		c.table("GAME\tKEY\tNAME\tSIZE\tPROFILES\tCOPIES\tLAST USED", rows)
-		fmt.Fprintf(c.out, "Total %d\n", u.Total)
+		fmt.Fprintf(c.out, "Total %s\n", bytefmt.Format(u.Total))
 	})
 }
 
@@ -2351,9 +2379,16 @@ func (c *cmd) doctor() error {
 		return err
 	}
 	rep := liveDoctorReport(d, c.version)
-	return c.emit(rep, func() {
+	findings, _ := doctor.Findings(rep)
+	if err := c.emit(rep, func() {
 		fmt.Fprint(c.out, doctor.PlainText(rep))
-	})
+	}); err != nil {
+		return err
+	}
+	if len(findings) > 0 {
+		return doctorFindingsError{}
+	}
+	return nil
 }
 
 func offlineDoctor() error {
@@ -2374,7 +2409,7 @@ func offlineDoctor() error {
 			result["summary"] = fmt.Sprintf("Offline doctor: %d findings; see fixes.", len(findings))
 		}
 	}
-	code := 3
+	code := 0
 	if len(findings) > 0 {
 		code = 1
 	}

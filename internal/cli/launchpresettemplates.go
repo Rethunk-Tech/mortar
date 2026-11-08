@@ -10,7 +10,7 @@ import (
 
 func (c *cmd) gameCmd() error {
 	if len(c.args) < 2 {
-		return usageError{"game needs steam-launch-option, launch-preset-templates or folder"}
+		return usageError{"game needs steam-launch-option, launch-preset-templates, folder, reset-install or steam-status"}
 	}
 	switch c.args[1] {
 	case "steam-launch-option":
