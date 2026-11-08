@@ -238,7 +238,7 @@ func (s *Service) find(game, id string) (profile.Profile, error) {
 func entryNames(e profile.Entry, withDisabled bool) []string {
 	var names []string
 	for _, m := range e.Mods {
-		if (withDisabled || !slices.Contains(e.Disabled, m.ID)) && m.Name != "" && !slices.Contains(names, m.Name) {
+		if (withDisabled || e.Enabled(m.ID)) && m.Name != "" && !slices.Contains(names, m.Name) {
 			names = append(names, m.Name)
 		}
 	}

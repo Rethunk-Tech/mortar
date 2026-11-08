@@ -68,16 +68,21 @@ func Pin(dst, src []byte, mods []mod.ID, files []string) ([]byte, error) {
 	return out.Bytes(), nil
 }
 
+// hasMod reports whether ids names id under mod.Equal, which folds SMAPI ids the way the profile does.
+func hasMod(ids []mod.ID, id mod.ID) bool {
+	return slices.ContainsFunc(ids, func(x mod.ID) bool { return mod.Equal(x, id) })
+}
+
 // pinDisabled returns dst's refs with the named mods' disabled state replaced by src's.
 func pinDisabled(dst, src []Ref, mods []mod.ID) []Ref {
 	entries := make([]Ref, len(dst))
 	for i, r := range dst {
-		r.Disabled = slices.DeleteFunc(slices.Clone(r.Disabled), func(id mod.ID) bool { return slices.Contains(mods, id) })
+		r.Disabled = slices.DeleteFunc(slices.Clone(r.Disabled), func(id mod.ID) bool { return hasMod(mods, id) })
 		entries[i] = r
 	}
 	for _, id := range mods {
 		for _, sr := range src {
-			if !slices.Contains(sr.Disabled, id) {
+			if !hasMod(sr.Disabled, id) {
 				continue
 			}
 			if i := slices.IndexFunc(entries, func(r Ref) bool { return r.Identity() == sr.Identity() }); i >= 0 {

@@ -4,8 +4,10 @@ import (
 	"archive/zip"
 	"bytes"
 	"io"
+	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -55,6 +57,16 @@ func zipFiles(t *testing.T, raw []byte) map[string]string {
 		out[f.Name] = string(data)
 	}
 	return out
+}
+
+// A pinned mod is the same mod under a case variant of its SMAPI id, so src's off state crosses to dst.
+func TestPinDisabledMatchesSmapiIDsByCase(t *testing.T) {
+	dst := []Ref{{ModID: 1, FileID: 2}}
+	src := []Ref{{ModID: 1, FileID: 2, Disabled: []mod.ID{"smapi:A.Off"}}}
+	got := pinDisabled(dst, src, []mod.ID{"smapi:A.OFF"})
+	if len(got) != 1 || !slices.Equal(got[0].Disabled, []mod.ID{"smapi:A.OFF"}) {
+		t.Fatalf("pinDisabled = %+v", got)
+	}
 }
 
 func TestPinTakesNamedFilesFromSrcAndDropsWhatSrcLacks(t *testing.T) {
