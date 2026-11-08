@@ -140,7 +140,8 @@ func (s *site) tamper(t *testing.T) {
 	t.Helper()
 	asset := filepath.Join(s.dir, "fixture-linux-"+runtime.GOARCH)
 	b := readFile(t, asset)
-	b = append(b, 0)
+	// Same size, so the download passes the manifest's size cap and reaches the digest check.
+	b[len(b)-1] ^= 0xff
 	if err := os.WriteFile(asset, b, 0o600); err != nil {
 		t.Fatal(err)
 	}
