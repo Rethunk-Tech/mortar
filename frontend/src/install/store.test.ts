@@ -9,13 +9,8 @@ import { useProfiles } from '../profiles/store.ts'
 import { testProfile } from '../profiles/testProfile.ts'
 import { stubBinding } from '../testing/stubBinding.ts'
 import { useToasts } from '../toasts/store.ts'
-import {
-  dropInstallGate,
-  entryForNames,
-  shouldConsiderMissing,
-  undoArchiveInstall,
-  useInstall,
-} from './store.ts'
+import { dropInstallGate, entryForNames, shouldConsiderMissing, useInstall } from './store.ts'
+import { undoEntryInstall } from './undoEntryInstall.ts'
 
 const calls = {
   remove: [] as string[],
@@ -73,13 +68,13 @@ afterEach(() => {
 
 test('undo of a new archive install removes the entry', async () => {
   expect(entryForNames(baseProfile(), ['SpaceCore'])?.key).toBe('k1')
-  await undoArchiveInstall('stardew', 'p1', 'k1', false)
+  await undoEntryInstall('stardew', 'p1', 'k1', false)
   expect(calls.remove).toEqual(['k1'])
   expect(calls.roll).toEqual([])
 })
 
 test('undo of an archive update rolls back', async () => {
-  await undoArchiveInstall('stardew', 'p1', 'k1', true)
+  await undoEntryInstall('stardew', 'p1', 'k1', true)
   expect(calls.roll).toEqual(['k1'])
   expect(calls.remove).toEqual([])
 })
@@ -95,8 +90,16 @@ test('undo of an archive install does nothing while the profile is locked', asyn
       error: '',
     },
   })
-  await undoArchiveInstall('stardew', 'p1', 'k1', false)
+  await undoEntryInstall('stardew', 'p1', 'k1', false)
   expect(calls.remove).toEqual([])
+})
+
+test('undo toasts when removing the entry fails', async () => {
+  stubBinding(profileService, 'RemoveEntry', () => {
+    throw new Error('busy')
+  })
+  await undoEntryInstall('stardew', 'p1', 'k1', false)
+  expect(useToasts.getState().toasts.map((t) => t.title)).toEqual(['Could not undo the install'])
 })
 
 test('dropInstallGate toasts locked as locked and other missing context as skip', () => {

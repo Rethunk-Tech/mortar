@@ -6,10 +6,6 @@ import type {
   Entry,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import {
-  RemoveEntry,
-  RollBack,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type {
   Item,
   Progress,
@@ -22,13 +18,13 @@ import {
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { sentence } from '../i18n/sentence.ts'
+import { undoEntryInstall } from '../install/undoEntryInstall.ts'
 import { idKey } from '../mods/dependents.ts'
 import { openPage } from '../mods/menu.ts'
 import { nexusEntryOf, useNexusDetails } from '../mods/nexusDetails.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
-import { profileLocked } from '../mods/useLocked.ts'
 import { openSettings } from '../nav/store.ts'
 import { getProfile, useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
@@ -211,22 +207,12 @@ function singleNexusFailure(failed: Item[]) {
 }
 
 async function undoInstall(item: Item, entry: Entry | undefined) {
-  if (!entry || profileLocked(item.profileId)) {
-    return false
+  if (!entry) {
+    return
   }
-  try {
-    const next = shouldRollBack(item)
-      ? await RollBack(item.game, item.profileId, entry.key)
-      : await RemoveEntry(item.game, item.profileId, entry.key)
-    useProfiles.getState().replace(next)
-  } catch {
-    return false
-  }
-  await useMods.getState().load()
-  return true
+  await undoEntryInstall(item.game, item.profileId, entry.key, shouldRollBack(item))
 }
 
-// Says what changed since the last state: installs land in the open profile's list, and failures are worth a nudge.
 function installUndo(item: Item, entry: Entry | undefined) {
   if (!entry) {
     return

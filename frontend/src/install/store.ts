@@ -12,8 +12,6 @@ import type {
 import {
   InstallArchive,
   InstallRemap,
-  RemoveEntry,
-  RollBack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { AnswerRoot } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { useFomod } from '../fomod/store.ts'
@@ -39,6 +37,7 @@ import { type Landed, pushBatchSummary } from './batchSummary.ts'
 import { downloadInstaller } from './handoff.ts'
 import { type MissingOffer, offersFor, wantsOf } from './missingDeps.ts'
 import { offerInstallAnyway } from './offerInstallAnyway.ts'
+import { undoEntryInstall } from './undoEntryInstall.ts'
 
 function dropInstallGate(hasRoute: boolean, hasTarget: boolean, locked: boolean) {
   if (!(hasRoute && hasTarget)) {
@@ -52,27 +51,6 @@ function dropInstallGate(hasRoute: boolean, hasTarget: boolean, locked: boolean)
 
 function entryForNames(profile: Profile, names: string[]) {
   return (profile.entries ?? []).find((e) => (e.mods ?? []).some((m) => names.includes(m.name)))
-}
-
-async function undoArchiveInstall(
-  game: string,
-  profileId: string,
-  entryKey: string,
-  updated: boolean,
-) {
-  if (profileLocked(profileId)) {
-    return
-  }
-  try {
-    const next = updated
-      ? await RollBack(game, profileId, entryKey)
-      : await RemoveEntry(game, profileId, entryKey)
-    useProfiles.getState().replace(next)
-  } catch (e) {
-    toastError(i18n._(msg`Could not undo the install`), e)
-    return
-  }
-  await useMods.getState().load()
 }
 
 // Replacing a mod with the same version is not an update, so the toast says so.
@@ -168,7 +146,7 @@ async function installOne(
       ? {
           action: {
             label: i18n._(msg`Undo`),
-            run: () => undoArchiveInstall(game.id, profile.id, landed.key, updated),
+            run: () => undoEntryInstall(game.id, profile.id, landed.key, updated),
             profileId: profile.id,
             live: () =>
               changeStillLatest(
@@ -232,7 +210,7 @@ async function afterDroppedRemap(
           action: {
             label: i18n._(msg`Undo`),
             run: () =>
-              undoArchiveInstall(session.game, session.profileId, landed.key, res.updated ?? false),
+              undoEntryInstall(session.game, session.profileId, landed.key, res.updated ?? false),
             profileId: session.profileId,
             live: () =>
               changeStillLatest(
@@ -441,4 +419,4 @@ function considerMissing(dependentIds: readonly string[]) {
 queueHooks.installed = considerMissing
 
 export type { RemapSession }
-export { dropInstallGate, entryForNames, shouldConsiderMissing, undoArchiveInstall }
+export { dropInstallGate, entryForNames, shouldConsiderMissing }

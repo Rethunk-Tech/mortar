@@ -12,6 +12,7 @@ import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { testProfile } from '../profiles/testProfile.ts'
 import { stubBinding } from '../testing/stubBinding.ts'
+import { useToasts } from '../toasts/store.ts'
 import {
   applyProgress,
   downloadFailCopy,
@@ -139,20 +140,29 @@ test('undo does nothing while the profile is locked', async () => {
       error: '',
     },
   })
-  expect(await undoInstall(item(), entry())).toBe(false)
+  await undoInstall(item(), entry())
   expect(calls.remove).toEqual([])
 })
 
 test('undo of a new install removes the entry', async () => {
-  expect(await undoInstall(item(), entry())).toBe(true)
+  await undoInstall(item(), entry())
   expect(calls.remove).toEqual(['k1'])
   expect(calls.roll).toEqual([])
 })
 
 test('undo of an update rolls back', async () => {
-  expect(await undoInstall(item({ kind: 'update' }), entry())).toBe(true)
+  await undoInstall(item({ kind: 'update' }), entry())
   expect(calls.roll).toEqual(['k1'])
   expect(calls.remove).toEqual([])
+})
+
+test('undo toasts when removing the entry fails', async () => {
+  stubBinding(profileService, 'RemoveEntry', () => {
+    throw new Error('busy')
+  })
+  useToasts.setState(useToasts.getInitialState(), true)
+  await undoInstall(item(), entry())
+  expect(useToasts.getState().toasts.map((t) => t.title)).toEqual(['Could not undo the install'])
 })
 
 test('a finished install without a matching entry has no undo', () => {
