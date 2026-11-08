@@ -184,6 +184,9 @@ type Result struct {
 	LeftOut []LeftOut
 }
 
+// GitHubRef is the GitHub ref naming a release asset: "<owner>/<repo>@<tag>/<asset>".
+func (Ref) GitHubRef(repo, tag, asset string) string { return repo + "@" + tag + "/" + asset }
+
 // GitHubParts splits a GitHub ref into its "owner/repo", tag and asset name.
 func (r Ref) GitHubParts() (repo, tag, asset string) {
 	repo, rest, _ := strings.Cut(r.GitHub, "@")
@@ -340,7 +343,7 @@ func parseRef(raw json.RawMessage) (Ref, error) {
 	case w.Source == "nexus" && w.Repo == "" && w.Tag == "" && w.Asset == "":
 		r.ModID, r.FileID = w.Mod, w.File
 	case w.Source == "github" && w.Mod == 0 && w.File == 0 && w.Repo != "" && w.Tag != "" && w.Asset != "":
-		r.GitHub = w.Repo + "@" + w.Tag + "/" + w.Asset
+		r.GitHub = r.GitHubRef(w.Repo, w.Tag, w.Asset)
 	default:
 		return Ref{}, fmt.Errorf("%w: bad entry", ErrMalformed)
 	}
@@ -737,7 +740,7 @@ func refOf(e profile.Entry, inc Include) (Ref, string) {
 		r = Ref{ModID: e.Source.ModID, FileID: e.Source.FileID}
 		missing = "no Nexus file recorded"
 	case profile.KindGitHub:
-		r = Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset}
+		r = Ref{GitHub: r.GitHubRef(e.Source.Repo, e.Source.Tag, e.Source.Asset)}
 		missing = "no GitHub release asset recorded"
 	case profile.KindPatreon:
 		r = Ref{Patreon: e.Source.Name}
@@ -788,20 +791,7 @@ func refOf(e profile.Entry, inc Include) (Ref, string) {
 }
 
 // Enabled reports whether any mod of the entry is switched on; an entry with no recorded mods counts as on.
-func Enabled(e profile.Entry) bool {
-	if e.IsOverlay() {
-		return !e.OverlayOff
-	}
-	if len(e.Mods) == 0 {
-		return true
-	}
-	for _, m := range e.Mods {
-		if e.Enabled(m.ID) {
-			return true
-		}
-	}
-	return false
-}
+func Enabled(e profile.Entry) bool { return e.HasPackageEnabled() }
 
 // Collect splits a profile into what a link can carry and the enabled entries it cannot; off holds the keys of
 // the switched-off entries. Bundled entries are in none of them. Every entry cut from one store item (the files of a

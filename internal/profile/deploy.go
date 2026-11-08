@@ -48,7 +48,7 @@ func (s *Store) packageFilesWith(gameID, id string, withDev bool) (files map[str
 	files, wins = map[string]packageFile{}, map[string]int{}
 	byFold := map[string]string{}
 	for _, e := range p.Entries {
-		if e.IsOverlay() || !e.hasPackageEnabled() || e.isTrayEntry() || (e.DevOnly && !withDev) {
+		if e.IsOverlay() || !e.HasPackageEnabled() || e.isTrayEntry() || (e.DevOnly && !withDev) {
 			continue
 		}
 		arch, l, _, err := s.layoutOf(gameID, id, e.StoreKey(), e.Fomod)
@@ -760,7 +760,11 @@ func removeUp(root, file string) {
 	}
 }
 
-// hasPackageEnabled reports an entry with no mods to switch off, or with at least one switched on.
-func (e Entry) hasPackageEnabled() bool {
+// HasPackageEnabled reports whether the entry is switched on: an overlay by its own flag, otherwise an entry with no
+// mods to switch off or with at least one switched on.
+func (e Entry) HasPackageEnabled() bool {
+	if e.IsOverlay() {
+		return !e.OverlayOff
+	}
 	return len(e.Mods) == 0 || slices.ContainsFunc(e.Mods, func(m Component) bool { return e.Enabled(m.ID) })
 }

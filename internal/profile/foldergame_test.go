@@ -217,7 +217,7 @@ func TestFolderGameRollBackRestoresTheSupersededArchiveAndItsSwitches(t *testing
 		t.Fatalf("rolled back to %v, want %v", keysOf(back), oldKeys)
 	}
 	for _, en := range back.Entries {
-		if off := !en.hasPackageEnabled(); off != (en.File == "two.package") || en.Source.FileID != 10 {
+		if off := !en.HasPackageEnabled(); off != (en.File == "two.package") || en.Source.FileID != 10 {
 			t.Fatalf("entry %+v", en)
 		}
 	}
@@ -637,7 +637,7 @@ func TestFolderGameMovesThePlayersModsFolderInWhereEachFileSat(t *testing.T) {
 	}
 	var offNames []string
 	for _, en := range res.Profile.Entries {
-		if !en.hasPackageEnabled() {
+		if !en.HasPackageEnabled() {
 			offNames = append(offNames, en.Mods[0].Name)
 		}
 	}

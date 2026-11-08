@@ -96,7 +96,7 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 				return false
 			}
 			old = append(old, e)
-			off[e.File] = !e.hasPackageEnabled()
+			off[e.File] = !e.HasPackageEnabled()
 			return true
 		})
 		if updated = len(old) > 0; updated {
