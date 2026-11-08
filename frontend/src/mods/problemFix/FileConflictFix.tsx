@@ -4,6 +4,7 @@ import { MakePackageWin } from '../../../bindings/github.com/Rethunk-Tech/mortar
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
+import { modByKey } from '../lookup.ts'
 import { useMods } from '../store.ts'
 import { useLocked } from '../useLocked.ts'
 import { FixAction } from './fixActions.tsx'
@@ -30,7 +31,7 @@ export function FileConflictFix({
         .catch(reportUnexpected)
     }
   }
-  const nameOf = (loser: string) => mods.find((m) => m.key === loser)?.name ?? loser
+  const nameOf = (loser: string) => modByKey(mods, loser)?.name ?? loser
   const [only] = beaten
   if (beaten.length === 1 && only !== undefined) {
     return button(t`Make ${{ name: nameOf(only) }} win`, () => makeWin(only))

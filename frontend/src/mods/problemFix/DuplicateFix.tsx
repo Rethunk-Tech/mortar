@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Trash2 } from 'lucide-react'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
+import { modByKey } from '../lookup.ts'
 import { useMods } from '../store.ts'
 import { useLocked } from '../useLocked.ts'
 import { FixAction } from './fixActions.tsx'
@@ -24,7 +25,7 @@ export function DuplicateFix({
     return (
       <>
         {nexusFiles.map((file) => {
-          const mod = mods.find((candidate) => candidate.key === file.key)
+          const mod = modByKey(mods, file.key)
           return mod ? (
             <FixAction
               icon={<Trash2 size={16} aria-hidden={true} />}

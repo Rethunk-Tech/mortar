@@ -1,7 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { EyeOff, SlidersHorizontal, Wrench } from 'lucide-react'
 import { RememberSettingChoice } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
-import { SetConfigValue } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
 import { useMods } from '../store.ts'
@@ -19,7 +18,7 @@ export function SettingFix({
 }) {
   const { t } = useLingui()
   const { setting } = problem
-  const loadProblems = useMods((s) => s.loadProblems)
+  const setConfigValue = useMods((s) => s.setConfigValue)
   const dismissSetting = useMods((s) => s.dismissSetting)
   const locked = useLocked()
   const values = setting.suggested ?? []
@@ -29,9 +28,8 @@ export function SettingFix({
       return
     }
     try {
-      await SetConfigValue(at.game, at.id, setting.key, setting.id, setting.field, value)
+      await setConfigValue(setting, value)
       await RememberSettingChoice(at.game, at.id, setting.id, setting.field, value)
-      await loadProblems()
     } catch (error) {
       reportUnexpected(error)
     }
