@@ -31,6 +31,8 @@ func (r Ref) Identity() string {
 		return fmt.Sprintf("m:%d:%d", r.Modio, r.FileID)
 	case r.GitHub != "":
 		return "g:" + strings.ToLower(r.GitHub)
+	case r.VSModDB != "":
+		return fmt.Sprintf("v:%s:%d", r.VSModDB, r.FileID)
 	default:
 		return fmt.Sprintf("n:%d:%d", r.ModID, r.FileID)
 	}
