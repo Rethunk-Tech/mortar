@@ -24,6 +24,22 @@ const DISMISSED_KEY = 'mortar.crashHintDismissed'
 
 const isText = (v: unknown): v is string => typeof v === 'string'
 
+function FrameLine({ title, text }: { title: string; text: string }) {
+  return (
+    <Typography
+      title={title}
+      sx={{
+        fontSize: 'small.fontSize',
+        color: 'text.secondary',
+        fontFamily: MONO,
+        wordBreak: 'break-all',
+      }}
+    >
+      {text}
+    </Typography>
+  )
+}
+
 // Shown at the top of the profile after a crashed run: the mod the log blames with a way to switch it off and play
 // again, or, when the log blames none, a way to find it by halving the mods.
 // It reads the last run itself, not Home: that arrives after the page draws, and only this card shows it.
@@ -88,30 +104,16 @@ export function CrashHintCard({ game, profileId }: { game: string; profileId: st
                 : reason || t`The log does not name a mod.`}
             </Typography>
             {hint.nativeFrame ? (
-              <Typography
+              <FrameLine
                 title={hint.nativeFrame}
-                sx={{
-                  fontSize: 'small.fontSize',
-                  color: 'text.secondary',
-                  fontFamily: MONO,
-                  wordBreak: 'break-all',
-                }}
-              >
-                {t`Crashed in ${{ nativeFrame: hint.nativeFrame }}`}
-              </Typography>
+                text={t`Crashed in ${{ nativeFrame: hint.nativeFrame }}`}
+              />
             ) : null}
             {culprit && hint.evidence ? (
-              <Typography
+              <FrameLine
                 title={hint.evidence}
-                sx={{
-                  fontSize: 'small.fontSize',
-                  color: 'text.secondary',
-                  fontFamily: MONO,
-                  wordBreak: 'break-all',
-                }}
-              >
-                {t`Stack frame: ${{ evidence: hint.evidence }}`}
-              </Typography>
+                text={t`Stack frame: ${{ evidence: hint.evidence }}`}
+              />
             ) : null}
           </Box>
           {culprit ? (

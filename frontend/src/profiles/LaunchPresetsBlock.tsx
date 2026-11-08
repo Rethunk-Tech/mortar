@@ -63,14 +63,15 @@ function PresetRow({
 function usePresetActions(gameId: string, profileId: string) {
   const { t } = useLingui()
   const replace = useProfiles((s) => s.replace)
+  const apply = (call: Promise<Profile>, title: string) =>
+    call.then(replace).catch(reportError(title))
   const save = (next: LaunchPreset[], nextDefault: string) =>
-    SetLaunchPresets(gameId, profileId, next, nextDefault)
-      .then((p: Profile) => replace(p))
-      .catch(reportError(t`Could not save the launch presets`))
+    apply(
+      SetLaunchPresets(gameId, profileId, next, nextDefault),
+      t`Could not save the launch presets`,
+    )
   const setDefault = (id: string) =>
-    SetDefaultLaunchPreset(gameId, profileId, id)
-      .then((p: Profile) => replace(p))
-      .catch(reportError(t`Could not set the default launch preset`))
+    apply(SetDefaultLaunchPreset(gameId, profileId, id), t`Could not set the default launch preset`)
   const saveTemplate = (
     name: string,
     spec: { options: string; prefix: string; env: string; showConsole: string },
@@ -89,16 +90,17 @@ function usePresetActions(gameId: string, profileId: string) {
     env: string
     showConsole?: string
   }) =>
-    AddLaunchPreset(gameId, profileId, {
-      id: '',
-      name: tpl.name ?? '',
-      launchOptions: tpl.options,
-      launchPrefix: tpl.prefix,
-      launchEnv: tpl.env,
-      showConsole: tpl.showConsole ?? '',
-    })
-      .then((p: Profile) => replace(p))
-      .catch(reportError(t`Could not add the launch preset`))
+    apply(
+      AddLaunchPreset(gameId, profileId, {
+        id: '',
+        name: tpl.name ?? '',
+        launchOptions: tpl.options,
+        launchPrefix: tpl.prefix,
+        launchEnv: tpl.env,
+        showConsole: tpl.showConsole ?? '',
+      }),
+      t`Could not add the launch preset`,
+    )
   return { save, setDefault, saveTemplate, addFromTemplate }
 }
 

@@ -107,15 +107,16 @@ function LaunchOptionsBlock({
   onLaunchError: (value: LaunchError) => void
 }) {
   const { t } = useLingui()
+  const edit = (set: (value: string) => void) => (v: string) => {
+    set(v)
+    onLaunchError(null)
+  }
   return (
     <>
       <TextInput
         label={t`Launch options`}
         value={launchOptions}
-        onChange={(v) => {
-          onLaunchOptions(v)
-          onLaunchError(null)
-        }}
+        onChange={edit(onLaunchOptions)}
         {...(launchError?.field === 'options' ? { error: launchError.message } : {})}
         hint={t`Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs.`}
       />
@@ -124,10 +125,7 @@ function LaunchOptionsBlock({
         <TextInput
           label={t`Launch prefix`}
           value={launchPrefix}
-          onChange={(v) => {
-            onLaunchPrefix(v)
-            onLaunchError(null)
-          }}
+          onChange={edit(onLaunchPrefix)}
           hint={t`Prefix for direct launches only (for example, gamemoderun mangohud).`}
         />
       )}
@@ -135,10 +133,7 @@ function LaunchOptionsBlock({
         label={t`Launch environment`}
         value={launchEnv}
         multiline={true}
-        onChange={(v) => {
-          onLaunchEnv(v)
-          onLaunchError(null)
-        }}
+        onChange={edit(onLaunchEnv)}
         {...(launchError?.field === 'settings' ? { error: launchError.message } : {})}
         hint={t`One VAR=value per line, for direct launches only; ${{ launcher: STEAM }} launches ignore them.`}
       />
