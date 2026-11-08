@@ -271,12 +271,12 @@ func TestImageMagickShrinksJXL(t *testing.T) {
 	}
 	dir := t.TempDir()
 	src := filepath.Join(dir, "src.jxl")
-	out, err := exec.CommandContext(t.Context(), magick, "-size", "2000x2000", "gradient:", src).CombinedOutput()
+	out, err := exec.CommandContext(t.Context(), magick, "-size", "2000x2000", "gradient:", src).CombinedOutput() //nolint:gosec // G204: the test's own magick, fixed arguments, path under t.TempDir()
 	if err != nil {
 		t.Skipf("ImageMagick cannot write JPEG XL: %v %s", err, out)
 	}
 	was := convertJXL
-	convertJXL = jxlConverter(magick)
+	convertJXL = jxlConverter(true)
 	t.Cleanup(func() { convertJXL = was })
 	h := Middleware(func() settings.Settings { return settings.Settings{Background: settings.BackgroundImage} }, src, none, "")(http.NotFoundHandler())
 	rec := httptest.NewRecorder()
