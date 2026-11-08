@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -30,6 +31,23 @@ func loadCacheRoot() {
 	}
 	cacheRoot = dir
 }
+
+func smapiLoadOrder(mods []framework.Mod) []string {
+	in := make([]smapimanifest.Mod, 0, len(mods))
+	for _, im := range mods {
+		if !im.Enabled {
+			continue
+		}
+		in = append(in, smapimanifest.Mod{Manifest: im.Manifest, Folder: im.Folder})
+	}
+	out := make([]string, 0, len(in))
+	for _, row := range smapimanifest.Order(in) {
+		out = append(out, row.ID.Fold())
+	}
+	return out
+}
+
+var loadOrderIDs = smapiLoadOrder
 
 var _ = framework.Register(Driver{})
 

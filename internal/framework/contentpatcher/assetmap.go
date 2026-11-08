@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
 // AssetTouch is one mod or patch that writes a target (or a data key on that target).
@@ -136,7 +135,6 @@ func sharedTarget(target AssetTarget) bool {
 
 // smapiOrder is each enabled mod's position in SMAPI's load order and the folded mod ids it loads after.
 func smapiOrder(mods []framework.Mod) (order map[string]int, after map[string][]string) {
-	in := make([]smapimanifest.Mod, 0, len(mods))
 	after = map[string][]string{}
 	for _, im := range mods {
 		if !im.Enabled {
@@ -149,11 +147,10 @@ func smapiOrder(mods []framework.Mod) (order map[string]int, after map[string][]
 		if im.ContentPackFor != "" {
 			after[id] = append(after[id], im.ContentPackForID().Fold())
 		}
-		in = append(in, smapimanifest.Mod{Manifest: im.Manifest, Folder: im.Folder})
 	}
 	order = map[string]int{}
-	for _, row := range smapimanifest.Order(in) {
-		order[row.ID.Fold()] = row.Position
+	for i, id := range loadOrderIDs(mods) {
+		order[id] = i + 1
 	}
 	return order, after
 }
