@@ -6,13 +6,14 @@ import { ArrowUpCircle, ShieldCheck } from 'lucide-react'
 import { memo, useEffect, useState } from 'react'
 import type { Update } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { cautionAcknowledged } from '../launch/autoUpdate.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { modId, updatesForReview } from './lookup.ts'
+import { updatesForReview } from './lookup.ts'
 import type { NexusById } from './nexusDetails.ts'
 import { isFull, mergeCachedDetails, useGameNexusDetails } from './nexusDetails.ts'
 import { useOptionalSkips } from './optionalFiles.ts'
@@ -86,7 +87,9 @@ function UpdateReviewDialog({ profile }: { profile: Profile }) {
   const withheld = withheldUpdates(updates, profile, byId)
   const items = useQueue((s) => s.state.items)
   const mods = useMods((s) => s.mods)
-  const [acked, setAcked] = useState<Record<string, boolean>>({})
+  // The acknowledgement lives in auto-update's set, which only a redraw reads: bump it to show the new state.
+  const [, redraw] = useState(0)
+  const refresh = () => redraw((n) => n + 1)
   const [everywhereAll, setEverywhereAll] = useState(false)
   const [loadingAll, setLoadingAll] = useState(false)
   const skipped = useOptionalSkips((s) => s.skipped)
@@ -96,12 +99,11 @@ function UpdateReviewDialog({ profile }: { profile: Profile }) {
   const chosen = sameSourceUpdates(list).filter(
     (u) =>
       !pendingUpdate(items, profile.id, u) &&
-      (installedCaution(u) === '' || acked[modId(u)] === true),
+      (installedCaution(u) === '' || cautionAcknowledged(profile.id, u)),
   )
   const wanted = chosen.flatMap((u) =>
     withOptional(u, profile, byId[u.nexusId]?.details?.files ?? [], skipped[u.key] === true),
   )
-  const onAck = (id: string, on: boolean) => setAcked((prev) => ({ ...prev, [id]: on }))
   const uncachedIds = uncachedNexusIds(list, byId)
   const count = list.length
   const wantedCount = chosen.length
@@ -170,8 +172,8 @@ function UpdateReviewDialog({ profile }: { profile: Profile }) {
       >
         {/* The groups run to the dialog's edges; the body's padding is taken back. */}
         <Box sx={{ mx: -3, my: -2.5 }}>
-          <SourceGroups list={listedBySource(list)} profile={profile} acked={acked} onAck={onAck} />
-          <NeedsChoice list={needChoice} profile={profile} acked={acked} onAck={onAck} />
+          <SourceGroups list={listedBySource(list)} profile={profile} onRefresh={refresh} />
+          <NeedsChoice list={needChoice} profile={profile} onRefresh={refresh} />
           <WithheldGroup withheld={withheld} mods={mods} />
           <KeptGroup kept={keptUpdates(updates, profile)} mods={mods} />
         </Box>
