@@ -89,11 +89,24 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function Facts({ details, mod, columns }: { details: Details; mod: Mod; columns: number }) {
+// `inPanel` shares the sidebar with the mod's own fields block, which already gives the latest version, the category
+// under the player's label, the downloads and the update date; there this adds only what that block leaves out.
+function Facts({
+  details,
+  mod,
+  columns,
+  inPanel,
+}: {
+  details: Details
+  mod: Mod
+  columns: number
+  inPanel: boolean
+}) {
   const { t, i18n } = useLingui()
   const { page, category } = details
   const uploader = safeUrl(page.uploaderUrl)
   const newer = isNewer(page.version, mod.version)
+  const unique = t`${{ unique: formatCount(page.uniqueDownloads, i18n.locale) }} unique`
   return (
     <Box
       sx={{
@@ -102,12 +115,14 @@ function Facts({ details, mod, columns }: { details: Details; mod: Mod; columns:
         gap: space.gap,
       }}
     >
-      <Fact label={t`Latest on ${{ source: sourceLabel('nexus') }}`}>
-        <Box component="span" sx={{ color: newer ? 'primary.main' : undefined }}>
-          {page.version || '—'}
-        </Box>
-      </Fact>
-      <Fact label={t`Category`}>{category || '—'}</Fact>
+      {inPanel ? null : (
+        <Fact label={t`Latest on ${{ source: sourceLabel('nexus') }}`}>
+          <Box component="span" sx={{ color: newer ? 'primary.main' : undefined }}>
+            {page.version || '—'}
+          </Box>
+        </Fact>
+      )}
+      {inPanel ? null : <Fact label={t`Category`}>{category || '—'}</Fact>}
       <Fact label={t`Uploaded by`}>
         {uploader ? (
           <Link component="button" onClick={() => openPage(uploader)} sx={text}>
@@ -117,15 +132,16 @@ function Facts({ details, mod, columns }: { details: Details; mod: Mod; columns:
           page.uploadedBy || '—'
         )}
       </Fact>
-      <Fact label={t`Endorsements`}>{formatCount(page.endorsements, i18n.locale)}</Fact>
+      {inPanel ? null : (
+        <Fact label={t`Endorsements`}>{formatCount(page.endorsements, i18n.locale)}</Fact>
+      )}
       <Fact label={t`Downloads`}>
-        {[
-          formatCount(page.downloads, i18n.locale),
-          t`${{ unique: formatCount(page.uniqueDownloads, i18n.locale) }} unique`,
-        ].join(' · ')}
+        {inPanel ? unique : [formatCount(page.downloads, i18n.locale), unique].join(' · ')}
       </Fact>
-      <Fact label={[t`Created`, lowerFirst(t`Updated`)].join(' · ')}>
-        {`${formatWhen(page.created) || '—'} · ${formatWhen(page.updated) || '—'}`}
+      <Fact label={inPanel ? t`Created` : [t`Created`, lowerFirst(t`Updated`)].join(' · ')}>
+        {inPanel
+          ? formatWhen(page.created) || '—'
+          : `${formatWhen(page.created) || '—'} · ${formatWhen(page.updated) || '—'}`}
       </Fact>
     </Box>
   )
@@ -244,7 +260,12 @@ function Loaded({
       {page.summary && !inPanel ? (
         <Typography sx={{ ...text, color: 'text.secondary' }}>{page.summary}</Typography>
       ) : null}
-      <Facts details={details} mod={mod} columns={inPanel ? PANEL_COLUMNS : WIDE_COLUMNS} />
+      <Facts
+        details={details}
+        mod={mod}
+        columns={inPanel ? PANEL_COLUMNS : WIDE_COLUMNS}
+        inPanel={inPanel}
+      />
       <NexusAccountActions modId={modId} version={mod.version} endorsement={page.endorsement} />
       {(page.requirements ?? []).length > 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
