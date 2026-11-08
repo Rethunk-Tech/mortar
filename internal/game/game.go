@@ -5,11 +5,9 @@ import (
 	"bytes"
 	"cmp"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -449,12 +447,8 @@ func serveRemoteArt(w http.ResponseWriter, r *http.Request, src string) bool {
 	return true
 }
 
-// Steam keeps newer games' art under hashed paths that only its store names, so the fixed hero URL misses them.
-var (
-	storeBrowse = "https://api.steampowered.com/IStoreBrowseService/GetItems/v1"
-	storeAssets = "https://shared.steamstatic.com/store_item_assets/"
-	storeHeroes sync.Map
-)
+// storeHeroes keeps storeHero answers for the session.
+var storeHeroes sync.Map
 
 // storeHero is the library hero (else the header) Steam's store names for appID, "" when it names none; answers
 // are kept for the session.
@@ -464,47 +458,9 @@ func storeHero(ctx context.Context, appID string) string {
 			return hero
 		}
 	}
-	hero := lookupStoreHero(ctx, appID)
+	hero := steam.StoreHero(ctx, nil, appID)
 	storeHeroes.Store(appID, hero)
 	return hero
-}
-
-func lookupStoreHero(ctx context.Context, appID string) string {
-	id, err := strconv.Atoi(appID)
-	if err != nil {
-		return ""
-	}
-	input := fmt.Sprintf(`{"ids":[{"appid":%d}],"context":{"country_code":"US"},"data_request":{"include_assets":true}}`, id)
-	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
-	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, storeBrowse+"?input_json="+url.QueryEscape(input), nil)
-	if err != nil {
-		return ""
-	}
-	raw, err := httpkit.DoCapped(nil, req, 1<<20, nil)
-	if err != nil {
-		return ""
-	}
-	var body struct {
-		Response struct {
-			StoreItems []struct {
-				Assets struct {
-					Format      string `json:"asset_url_format"`
-					LibraryHero string `json:"library_hero"`
-					Header      string `json:"header"`
-				} `json:"assets"`
-			} `json:"store_items"`
-		} `json:"response"`
-	}
-	if json.Unmarshal(raw, &body) != nil || len(body.Response.StoreItems) == 0 {
-		return ""
-	}
-	a := body.Response.StoreItems[0].Assets
-	file := cmp.Or(a.LibraryHero, a.Header)
-	if file == "" || !strings.Contains(a.Format, "${FILENAME}") {
-		return ""
-	}
-	return storeAssets + strings.Replace(a.Format, "${FILENAME}", file, 1)
 }
 
 // ScreenshotMiddleware serves /screenshot/<game>/<source>/<file>: a picture in one of the game's screenshot folders

@@ -79,19 +79,18 @@ func TestListAndArt(t *testing.T) {
 
 	// Valheim (892970) is a newer game whose hero only the store's hashed asset path holds.
 	cdn := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.URL.Path == "/1966720" || r.URL.Path == "/assets/steam/apps/892970/abc/library_hero.jpg":
+		switch r.URL.Path {
+		case "/1966720", "/assets/steam/apps/892970/abc/library_hero.jpg":
 			_, _ = w.Write([]byte("hero"))
-		case r.URL.Path == "/store" && strings.Contains(r.URL.Query().Get("input_json"), "892970"):
-			_, _ = w.Write([]byte(`{"response":{"store_items":[{"assets":{"asset_url_format":"steam/apps/892970/${FILENAME}?t=1","library_hero":"abc/library_hero.jpg"}}]}}`))
 		default:
 			http.NotFound(w, r)
 		}
 	}))
 	defer cdn.Close()
-	was, wasStore, wasAssets := heroCDN, storeBrowse, storeAssets
-	heroCDN, storeBrowse, storeAssets = cdn.URL+"/%s", cdn.URL+"/store", cdn.URL+"/assets/"
-	defer func() { heroCDN, storeBrowse, storeAssets = was, wasStore, wasAssets }()
+	was := heroCDN
+	heroCDN = cdn.URL + "/%s"
+	defer func() { heroCDN = was }()
+	storeHeroes.Store("892970", cdn.URL+"/assets/steam/apps/892970/abc/library_hero.jpg")
 
 	h := ArtMiddleware(h0, store.Get)(http.NotFoundHandler())
 	for path, want := range map[string]int{
