@@ -250,7 +250,6 @@ function GridWindow({
   gameId,
   setCollapsed,
   groupBy,
-  tagHint,
   columns,
   columnsRef,
   orderedIds,
@@ -267,7 +266,6 @@ function GridWindow({
   gameId: string
   setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
   groupBy: string
-  tagHint: string
   columns: number
   columnsRef: { readonly current: number }
   orderedIds: readonly string[]
@@ -307,7 +305,6 @@ function GridWindow({
                 gameId={gameId}
                 setCollapsed={setCollapsed}
                 groupBy={groupBy}
-                tagHint={tagHint}
                 groups={groups}
               />
             </Box>
@@ -350,7 +347,6 @@ function CardsPane({
   setCollapsed,
   gameId,
   heading,
-  tagHint,
   orderedIds,
   profile,
   manual,
@@ -361,7 +357,6 @@ function CardsPane({
   setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
   gameId: string
   heading: (key: string) => string
-  tagHint: string
   orderedIds: readonly string[]
   profile: Profile
   manual: boolean
@@ -443,7 +438,6 @@ function CardsPane({
             gameId={gameId}
             setCollapsed={setCollapsed}
             groupBy={groupBy}
-            tagHint={tagHint}
             groups={groups}
           />
         </StickyGroupSlot>
@@ -457,7 +451,6 @@ function CardsPane({
           gameId={gameId}
           setCollapsed={setCollapsed}
           groupBy={groupBy}
-          tagHint={tagHint}
           columns={columns}
           columnsRef={columnsRef}
           orderedIds={orderedIds}
@@ -481,7 +474,6 @@ export function Cards({
   profile: Profile
   filtering: boolean
 }) {
-  const { t } = useLingui()
   // A search asks for the implicit mods themselves, so they keep their own cards.
   const wanted = useMods((s) => (s.queries[profile.id] ?? '') !== '')
   const { groupBy, sort, gameId, collapsed, setCollapsed, groups, orderedIds } = useModGroups(
@@ -489,7 +481,6 @@ export function Cards({
     profile,
     !wanted,
   )
-  const tagHint = t`A mod with several tags appears under its first tag.`
   const heading = useListHeading(groupBy)
   const manual = sort.column === MANUAL_SORT && !filtering
   return (
@@ -502,7 +493,6 @@ export function Cards({
         setCollapsed={setCollapsed}
         gameId={gameId}
         heading={heading}
-        tagHint={tagHint}
         orderedIds={orderedIds}
         profile={profile}
       />

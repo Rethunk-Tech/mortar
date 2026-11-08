@@ -56,7 +56,6 @@ export function OtherFiles({
         gameId={view.gameId}
         setCollapsed={view.setCollapsed}
         groupBy="none"
-        tagHint=""
         groups={[]}
       />
       {view.collapsed[OTHER_GROUP_KEY] === true

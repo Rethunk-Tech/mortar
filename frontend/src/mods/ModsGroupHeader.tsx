@@ -122,7 +122,6 @@ interface HeaderRowProps {
   gameId: string
   setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
   groupBy: string
-  tagHint: string
   groups: readonly { key: string; items: readonly ListRow[] }[]
 }
 
@@ -146,9 +145,9 @@ function GroupHeaderRowView({
   gameId,
   setCollapsed,
   groupBy,
-  tagHint,
   groups,
 }: HeaderRowProps) {
+  const { t } = useLingui()
   const open = collapsed[groupKey] !== true
   return (
     <ModsGroupHeader
@@ -157,7 +156,9 @@ function GroupHeaderRowView({
       count={count}
       open={open}
       onToggle={() => setCollapsed((cur) => toggleCollapsed(gameId, cur, groupKey, open))}
-      {...(groupBy === 'tag' ? { hint: tagHint } : {})}
+      {...(groupBy === 'tag'
+        ? { hint: t`A mod with several tags appears under its first tag.` }
+        : {})}
       {...(groupBy === 'group' && groupKey !== ''
         ? {
             enabled: subtreeEnabled(groupKey),
@@ -198,7 +199,6 @@ const GroupHeaderRow = memo(
     a.gameId === b.gameId &&
     a.setCollapsed === b.setCollapsed &&
     a.groupBy === b.groupBy &&
-    a.tagHint === b.tagHint &&
     headerFlags(a) === headerFlags(b),
 )
 

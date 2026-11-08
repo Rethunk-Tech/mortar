@@ -160,7 +160,6 @@ const ListEntry = memo(function ListEntryView({
   pictures: ReadonlyMap<string, string | undefined>
   onChoose: (selection: string) => void
 }) {
-  const { t } = useLingui()
   if (item.kind === 'header') {
     return (
       <GroupHeaderRow
@@ -171,7 +170,6 @@ const ListEntry = memo(function ListEntryView({
         gameId={gameId}
         setCollapsed={setCollapsed}
         groupBy={groupBy}
-        tagHint={t`A mod with several tags appears under its first tag.`}
         groups={headerGroups}
       />
     )

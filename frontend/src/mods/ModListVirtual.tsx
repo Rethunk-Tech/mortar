@@ -177,7 +177,6 @@ function ListSlot({
   gameId,
   setCollapsed,
   groupBy,
-  tagHint,
   groups,
   renderRow,
   onArrow,
@@ -188,7 +187,6 @@ function ListSlot({
   gameId: string
   setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
   groupBy: ReturnType<typeof sanitizeListGroupBy>
-  tagHint: string
   groups: readonly { key: string; items: readonly ListRow[] }[]
   renderRow: (row: ListRow, onArrow: (id: string, dir: -1 | 1) => void) => ReactNode
   onArrow: (id: string, dir: -1 | 1) => void
@@ -205,7 +203,6 @@ function ListSlot({
             gameId={gameId}
             setCollapsed={setCollapsed}
             groupBy={groupBy}
-            tagHint={tagHint}
             groups={groups}
           />
         </Box>
@@ -233,7 +230,6 @@ export function ModListTable({
   items,
   groupBy,
   headingFor,
-  tagHint,
   collapsed,
   gameId,
   setCollapsed,
@@ -246,7 +242,6 @@ export function ModListTable({
   items: VirtualRow<ListRow>[]
   groupBy: ReturnType<typeof sanitizeListGroupBy>
   headingFor: (key: string) => string
-  tagHint: string
   collapsed: Record<string, boolean>
   gameId: string
   setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
@@ -312,7 +307,6 @@ export function ModListTable({
                 gameId={gameId}
                 setCollapsed={setCollapsed}
                 groupBy={groupBy}
-                tagHint={tagHint}
                 groups={groups}
               />
             </StickyGroupSlot>
@@ -346,7 +340,6 @@ export function ModListTable({
                 gameId={gameId}
                 setCollapsed={setCollapsed}
                 groupBy={groupBy}
-                tagHint={tagHint}
                 groups={groups}
                 renderRow={renderRow}
                 onArrow={onArrow}

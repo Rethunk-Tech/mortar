@@ -1339,10 +1339,8 @@ msgstr ""
 msgid " {name} wins by load order."
 msgstr ""
 
-#: src/mods/ModCards.tsx
-#: src/mods/ModList.tsx
+#: src/mods/ModsGroupHeader.tsx
 #: src/mods/Toolbar.tsx
-#: src/mods/typedConfig/ConfigTab.tsx
 msgid "A mod with several tags appears under its first tag."
 msgstr ""
 

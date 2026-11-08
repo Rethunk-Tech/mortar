@@ -435,7 +435,7 @@ export function ModList({
   mods: Mod[]
   filtering: boolean
 }) {
-  const { t, i18n } = useLingui()
+  const { i18n } = useLingui()
   const { groupBy, sort, gameId, collapsed, setCollapsed, groups, orderedIds } = useModGroups(
     mods,
     profile,
@@ -452,7 +452,6 @@ export function ModList({
   const [preview, setPreview] = useState<ListColumnId[] | null>(null)
   const cols = preview ?? settled
   const [menu, setMenu] = useState<{ top: number; left: number } | null>(null)
-  const tagHint = t`A mod with several tags appears under its first tag.`
   const items = useMemo(
     () =>
       nestOverlays(
@@ -496,7 +495,6 @@ export function ModList({
           items={items}
           groupBy={groupBy}
           headingFor={headingFor}
-          tagHint={tagHint}
           collapsed={collapsed}
           gameId={gameId}
           setCollapsed={setCollapsed}
