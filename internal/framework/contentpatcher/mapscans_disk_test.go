@@ -10,6 +10,7 @@ import (
 
 func TestMapScansAndListingsPersistAndPruneUninstalledFolders(t *testing.T) {
 	testfs.DataHome(t)
+	loadCacheRoot()
 	mapScans.Lock()
 	mapScans.byPath = map[string]mapScan{
 		filepath.FromSlash("/mods/a/maps/x.tmx"): {Size: 1, ModTime: 2, Keys: []string{"k"}},
