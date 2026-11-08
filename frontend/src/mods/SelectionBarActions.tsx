@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Menu, Typography } from '@mui/material'
+import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import {
   Ban,
   BellOff,
@@ -25,7 +26,6 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
-import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { partKey, supportParts } from './installReason.ts'

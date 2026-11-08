@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test'
-import { openGameSelect, openSeedFarm, openSettings } from './app.ts'
 import { Button, installPad, press } from '@rethunk/dom-input-nav/playwright'
+import { openGameSelect, openSeedFarm, openSettings } from './app.ts'
 
 // The Steam Deck's screen, which Mortar fills in Game Mode.
 test.use({ viewport: { width: 1280, height: 800 } })

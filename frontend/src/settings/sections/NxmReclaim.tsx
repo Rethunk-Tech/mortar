@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { useOnWindowFocus } from '@rethunk/react-load-hooks'
 import { useCallback, useEffect, useState } from 'react'
 import type { Takeover } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/models.ts'
 import {
@@ -9,7 +10,6 @@ import {
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { listNames } from '../../i18n/list.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
-import { useOnWindowFocus } from '@rethunk/react-load-hooks'
 import { toastError } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'
 

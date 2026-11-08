@@ -1,8 +1,8 @@
 import { Button, type ButtonProps, Menu } from '@mui/material'
+import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { ChevronDown } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Tooltip } from '../shell/Tooltip.tsx'
-import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { space } from '../theme/density.ts'
 import { iconWhenCompact } from './compact.ts'
 

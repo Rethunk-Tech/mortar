@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Menu } from '@mui/material'
+import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import {
   ArrowDown,
   ArrowUp,
@@ -35,7 +36,6 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { OnlyHereMenuItem } from '../sync/pins.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'

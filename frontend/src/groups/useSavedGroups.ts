@@ -1,10 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
+import { useOnWindowFocus } from '@rethunk/react-load-hooks'
 import { useCallback } from 'react'
 import type { SavedGroup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
 import { getLast } from '../shell/lastGood.ts'
 import { useLastGood } from '../shell/useLastGood.ts'
-import { useOnWindowFocus } from '@rethunk/react-load-hooks'
 import { reportError } from '../toasts/report.ts'
 
 const NONE: SavedGroup[] = []

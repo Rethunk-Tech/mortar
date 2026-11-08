@@ -12,12 +12,12 @@ import {
   Switch,
   TextField,
 } from '@mui/material'
+import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import { HexColorPicker } from 'react-colorful'
 import { blurOnEnter } from '../../shell/blurOnEnter.ts'
 import { labelledInput } from '../../shell/labelledInput.tsx'
-import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { space } from '../../theme/density.ts'
 import {
   commaListKind,

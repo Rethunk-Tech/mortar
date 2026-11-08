@@ -1,10 +1,10 @@
 import { execFileSync } from 'node:child_process'
 import {
-  MIB,
   browserRoot,
   byRole,
   cpuSeconds,
   exeOf,
+  MIB,
   mappings,
   pssKiB,
   roleOf,
@@ -12,7 +12,7 @@ import {
 } from '@rethunk/react-render-audit/proc'
 import { sandboxPort } from './sandbox.ts'
 
-export { MIB, browserRoot, byRole, cpuSeconds, mappings, pssKiB, tree }
+export { browserRoot, byRole, cpuSeconds, MIB, mappings, pssKiB, tree }
 
 export interface Peak {
   go: number

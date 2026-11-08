@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, ButtonGroup, type ButtonGroupProps, Menu } from '@mui/material'
+import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { ChevronDown, Download, PackagePlus } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { ApplyTemplateMenuItem } from '../game/TemplateMenuItems.tsx'
@@ -10,7 +11,6 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
-import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 
 // The chevron of the Add split button: archives from the downloads folder, and whole sets of mods (a template, a saved
 // group). The archive pick is the button beside it, so the menu does not repeat it.

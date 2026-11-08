@@ -10,12 +10,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { type MouseEvent, memo, type ReactNode, useCallback, useState } from 'react'
 import { GameSettings as FetchGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { cmpText } from '../mods/cmpText.ts'
 import { SelectField } from '../shell/dialog/FormDialog.tsx'
 import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
-import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { reportUnexpected } from '../toasts/report.ts'
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { ProfileDot } from './ProfileDot.tsx'

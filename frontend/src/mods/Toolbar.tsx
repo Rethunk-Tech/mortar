@@ -2,6 +2,7 @@ import type { I18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, CircularProgress, useMediaQuery } from '@mui/material'
+import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import {
   ArrowDown,
   ArrowUp,
@@ -41,7 +42,6 @@ import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { MenuButton } from '../shell/MenuButton.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
-import { usePopoverAnchor } from '@rethunk/react-load-hooks'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'

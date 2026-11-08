@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test'
-import { openSeedFarm } from './app.ts'
 import { Button, installPad, press } from '@rethunk/dom-input-nav/playwright'
+import { openSeedFarm } from './app.ts'
 
 test.beforeEach(({ page }) => installPad(page))
 
