@@ -2,6 +2,8 @@ package backdrop
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"image"
 	"image/color"
 	"image/gif"
@@ -9,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -247,6 +250,7 @@ func TestAnimatedBackdropsKeepTheirFrames(t *testing.T) {
 
 // The system default's JPEG XL cannot be shrunk, so a page asking for its width gets the bundled JPEG of it.
 func TestASizedDefaultBackdropIsTheBundledJPEG(t *testing.T) {
+	noConverter(t)
 	dir := t.TempDir()
 	sys := write(t, dir, "sys.jxl", "jxl")
 	h := Middleware(func() settings.Settings { return settings.Settings{Background: settings.BackgroundImage} }, sys, none, "")(http.NotFoundHandler())
@@ -256,6 +260,100 @@ func TestASizedDefaultBackdropIsTheBundledJPEG(t *testing.T) {
 	h.ServeHTTP(rec, req)
 	if got := rec.Header().Get("Content-Type"); got != "image/jpeg" {
 		t.Errorf("type %q, want the bundled JPEG", got)
+	}
+}
+
+// The real converter, when ImageMagick is installed, shrinks a JPEG XL file to the width asked for.
+func TestImageMagickShrinksJXL(t *testing.T) {
+	magick, err := exec.LookPath("magick")
+	if err != nil {
+		t.Skip("ImageMagick is not on PATH")
+	}
+	dir := t.TempDir()
+	src := filepath.Join(dir, "src.jxl")
+	out, err := exec.CommandContext(t.Context(), magick, "-size", "2000x2000", "gradient:", src).CombinedOutput()
+	if err != nil {
+		t.Skipf("ImageMagick cannot write JPEG XL: %v %s", err, out)
+	}
+	was := convertJXL
+	convertJXL = jxlConverter(magick)
+	t.Cleanup(func() { convertJXL = was })
+	h := Middleware(func() settings.Settings { return settings.Settings{Background: settings.BackgroundImage} }, src, none, "")(http.NotFoundHandler())
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?w=1600", nil))
+	if got := rec.Header().Get("Content-Type"); got != "image/jpeg" {
+		t.Fatalf("type %q, want image/jpeg", got)
+	}
+	cfg, _, err := image.DecodeConfig(rec.Body)
+	if err != nil || cfg.Width != 1600 {
+		t.Fatalf("shrunk to %v, %v", cfg.Width, err)
+	}
+}
+
+// A converter that fails leaves the JPEG XL file served whole, as before.
+func TestAFailingConverterServesTheJXLWhole(t *testing.T) {
+	was := convertJXL
+	convertJXL = func(context.Context, string, int) ([]byte, error) { return nil, errors.New("no") }
+	t.Cleanup(func() { convertJXL = was })
+	dir := t.TempDir()
+	sys := write(t, dir, "sys.jxl", "jxl")
+	h := Middleware(func() settings.Settings { return settings.Settings{Background: settings.BackgroundImage} }, sys, none, "")(http.NotFoundHandler())
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?w=1600", nil)
+	req.Header.Set("Accept", "image/jxl,image/*")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if got := rec.Header().Get("Content-Type"); got != "image/jxl" || rec.Body.String() != "jxl" {
+		t.Fatalf("type %q, body %q", got, rec.Body.String())
+	}
+}
+
+// noConverter makes the test run as if ImageMagick were not installed.
+func noConverter(t *testing.T) {
+	t.Helper()
+	was := convertJXL
+	convertJXL = nil
+	t.Cleanup(func() { convertJXL = was })
+}
+
+// fakeConverter stands in for ImageMagick, counting its calls and recording the width asked for.
+func fakeConverter(t *testing.T, body string) *int {
+	t.Helper()
+	calls := new(int)
+	was := convertJXL
+	convertJXL = func(_ context.Context, _ string, _ int) ([]byte, error) {
+		*calls++
+		return []byte(body), nil
+	}
+	t.Cleanup(func() { convertJXL = was })
+	return calls
+}
+
+// A JPEG XL wallpaper asked for at a width is shrunk to a JPEG, kept, and served from the kept copy next time.
+func TestJXLServedAtAWidthIsShrunkToJPEG(t *testing.T) {
+	var thumb bytes.Buffer
+	if err := jpeg.Encode(&thumb, image.NewNRGBA(image.Rect(0, 0, 1600, 4)), nil); err != nil {
+		t.Fatal(err)
+	}
+	calls := fakeConverter(t, thumb.String())
+	dir := t.TempDir()
+	cache := filepath.Join(dir, "cache")
+	sys := write(t, dir, "sys.jxl", "jxl")
+	h := Middleware(func() settings.Settings { return settings.Settings{Background: settings.BackgroundImage} }, sys, none, cache)(http.NotFoundHandler())
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?w=1600", nil)
+	req.Header.Set("Accept", "image/jxl,image/*")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if got := rec.Header().Get("Content-Type"); got != "image/jpeg" || rec.Body.String() != thumb.String() {
+		t.Fatalf("first request: type %q, %d bytes", got, rec.Body.Len())
+	}
+	// The kept copy answers the second request, so the converter runs once.
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?w=1600", nil))
+	if got := rec.Header().Get("Content-Type"); got != "image/jpeg" || rec.Body.String() != thumb.String() {
+		t.Fatalf("cached request: type %q, %d bytes", got, rec.Body.Len())
+	}
+	if *calls != 1 {
+		t.Errorf("converter ran %d times, want once", *calls)
 	}
 }
 

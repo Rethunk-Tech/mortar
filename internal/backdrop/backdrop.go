@@ -5,6 +5,7 @@ package backdrop
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	_ "embed" // bundled wallpaper
 	"encoding/hex"
@@ -13,13 +14,16 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -116,13 +120,19 @@ func Middleware(current func() settings.Settings, system string, desktop func() 
 			if serveCandidate(w, r, candidates(cur, system, desktop), system, cacheDir) {
 				return
 			}
-			serve(w, r, bytes.NewReader(bundled), "image/jpeg", "bundled", time.Time{}, cacheDir)
+			serve(w, r, bytes.NewReader(bundled), "", "image/jpeg", "bundled", time.Time{}, cacheDir, true)
 		})
 	}
 }
 
 // serveCandidate serves the first candidate that opens and that this client can take, and reports whether it did.
 func serveCandidate(w http.ResponseWriter, r *http.Request, paths []string, system, cacheDir string) bool {
+	_, sized := askedWidth(r)
+	// With ImageMagick a JPEG XL file is shrunk to a JPEG of the width the page asked for, which any client takes.
+	// Without it a JPEG XL file can only be served as is, so a page asking for a width gets the bundled JPEG of the
+	// same default image, shrunk, rather than decoding the system copy's 4096 pixels square.
+	canShrinkJXL := convertJXL != nil && sized
+	asked := r.URL.Query().Get("w") != ""
 	jxl := !negotiates || strings.Contains(r.Header.Get("Accept"), "image/jxl")
 	for _, path := range paths {
 		if path == "" {
@@ -132,9 +142,7 @@ func serveCandidate(w http.ResponseWriter, r *http.Request, paths []string, syst
 		if err != nil {
 			continue
 		}
-		// JPEG XL cannot be shrunk here, so a page asking for its width gets the bundled JPEG of the same default
-		// image, shrunk, rather than decoding the system copy's 4096 pixels square.
-		if typ == "image/jxl" && (!jxl || (path == system && r.URL.Query().Get("w") != "")) {
+		if typ == "image/jxl" && !canShrinkJXL && (!jxl || path == system && asked) {
 			_ = f.Close()
 			continue
 		}
@@ -144,9 +152,11 @@ func serveCandidate(w http.ResponseWriter, r *http.Request, paths []string, syst
 			mod = info.ModTime()
 			id += "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" + strconv.FormatInt(mod.UnixNano(), 10)
 		}
-		serve(w, r, f, typ, id, mod, cacheDir)
+		served := serve(w, r, f, path, typ, id, mod, cacheDir, jxl)
 		_ = f.Close()
-		return true
+		if served {
+			return true
+		}
 	}
 	return false
 }
@@ -157,41 +167,118 @@ const (
 	maxWidthPx = 2560
 )
 
+// askedWidth reports the valid width the page asked for with ?w=.
+func askedWidth(r *http.Request) (int, bool) {
+	px, err := strconv.Atoi(r.URL.Query().Get("w"))
+	return px, err == nil && px >= minWidthPx && px <= maxWidthPx
+}
+
+// convertJXL shrinks a JPEG XL file to a JPEG of the width the page asks for, and is nil when ImageMagick is not
+// installed. It is a package variable so tests can replace it. Go has no JPEG XL decoder of its own, and the page
+// would otherwise decode a 4096 pixel square to fill a smaller window.
+var convertJXL = jxlConverter(magickBin())
+
+const maxThumbBytes = 16 << 20
+
+// magickBin finds ImageMagick once; empty when it is not installed.
+var magickBin = sync.OnceValue(func() string {
+	p, err := exec.LookPath("magick")
+	if err != nil {
+		return ""
+	}
+	return p
+})
+
+// jxlConverter returns the ImageMagick converter, nil when magick is empty.
+func jxlConverter(magick string) func(ctx context.Context, path string, px int) ([]byte, error) {
+	if magick == "" {
+		return nil
+	}
+	return func(ctx context.Context, path string, px int) ([]byte, error) {
+		if !filepath.IsAbs(path) {
+			return nil, fmt.Errorf("%q is not an absolute path", path)
+		}
+		ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
+		// The source is absolute, so a leading dash cannot read it as an option; nothing goes through a shell.
+		cmd := exec.CommandContext(ctx, magick, path, "-thumbnail", strconv.Itoa(px)+"x", "-quality", "85", "jpg:-")
+		cmd.Env = hostenv.Environ()
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			return nil, err
+		}
+		if err := cmd.Start(); err != nil {
+			return nil, err
+		}
+		out, readErr := modpic.ReadCapped(stdout, maxThumbBytes)
+		if readErr != nil {
+			_ = cmd.Process.Kill()
+		}
+		if err := cmd.Wait(); readErr == nil && err != nil {
+			return nil, err
+		}
+		if readErr != nil {
+			return nil, readErr
+		}
+		if len(out) == 0 {
+			return nil, errors.New("ImageMagick wrote no image")
+		}
+		return out, nil
+	}
+}
+
 // serve writes the image as it is, or shrunk to the width the page asked for with ?w=, so the browser does not decode
-// a 4K wallpaper to fill a smaller window. JPEG XL cannot be decoded here and an animation would lose its frames, so
-// both are served whole; the page freezes an animation itself when motion is reduced. id names the source's version;
-// a shrunk copy is kept in cacheDir under it, so a start after the first does not shrink again.
-func serve(w http.ResponseWriter, r *http.Request, src io.ReadSeeker, typ, id string, mod time.Time, cacheDir string) {
+// a 4K wallpaper to fill a smaller window. JPEG XL is shrunk through ImageMagick, falling back to the file whole when
+// it is missing; an animation would lose its frames, so it is served whole; the page freezes an animation itself when
+// motion is reduced. id names the source's version; a shrunk copy is kept in cacheDir under it, so a start after the
+// first does not shrink again. It reports whether it wrote an answer: a JPEG XL file it could not shrink is none for a
+// client that cannot decode JPEG XL, so the next candidate gets its turn.
+func serve(w http.ResponseWriter, r *http.Request, src io.ReadSeeker, path, typ, id string, mod time.Time, cacheDir string, jxl bool) bool {
 	query := r.URL.Query().Get("w")
 	sum := sha256.Sum256([]byte(id + "\x00" + typ + "\x00" + query))
 	name := hex.EncodeToString(sum[:])
 	w.Header().Set("ETag", `"`+name[:32]+`"`)
-	if px, err := strconv.Atoi(query); err == nil && px >= minWidthPx && px <= maxWidthPx && typ != "image/jxl" {
+	if px, ok := askedWidth(r); ok {
 		cached := filepath.Join(cacheDir, name)
 		if cacheDir != "" {
 			if b, err := safefs.ReadFile(cached); err == nil {
 				w.Header().Set("Content-Type", http.DetectContentType(b))
 				http.ServeContent(w, r, "", mod, bytes.NewReader(b))
-				return
+				return true
 			}
 		}
-		if b, err := modpic.ReadCapped(src, maxSourceBytes); err == nil && !animated(b, typ) {
-			if out, outTyp, err := modpic.Shrink(b, typ, px); err == nil {
-				if cacheDir != "" && len(out) < len(b) {
+		if typ == "image/jxl" && convertJXL != nil {
+			if out, err := convertJXL(r.Context(), path, px); err == nil {
+				if cacheDir != "" {
 					keep(cacheDir, cached, out)
 				}
-				w.Header().Set("Content-Type", outTyp)
+				w.Header().Set("Content-Type", "image/jpeg")
 				http.ServeContent(w, r, "", mod, bytes.NewReader(out))
-				return
+				return true
+			}
+		} else if typ != "image/jxl" {
+			if b, err := modpic.ReadCapped(src, maxSourceBytes); err == nil && !animated(b, typ) {
+				if out, outTyp, err := modpic.Shrink(b, typ, px); err == nil {
+					if cacheDir != "" && len(out) < len(b) {
+						keep(cacheDir, cached, out)
+					}
+					w.Header().Set("Content-Type", outTyp)
+					http.ServeContent(w, r, "", mod, bytes.NewReader(out))
+					return true
+				}
 			}
 		}
 		if _, err := src.Seek(0, io.SeekStart); err != nil {
 			http.Error(w, "the backdrop could not be read", http.StatusInternalServerError)
-			return
+			return true
 		}
+	}
+	if typ == "image/jxl" && !jxl {
+		return false
 	}
 	w.Header().Set("Content-Type", typ)
 	http.ServeContent(w, r, "", mod, src)
+	return true
 }
 
 // keptCopies bounds the shrunk copies on disk: a few widths of the current image, and older images' leftovers.
