@@ -16,7 +16,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -41,7 +40,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/source/paradox"
 	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -862,19 +860,24 @@ func (m Mod) storedEntry() (storedEntry, bool) {
 	switch m.Site {
 	case SiteThunderstore:
 		src := profile.Source{Kind: profile.KindThunderstore, Name: m.Package, Version: m.Version}.WithDisabled(m.Disabled)
-		return storedEntry{key: store.PackageKey(m.Package, m.Version), source: src}, true
+		key, _ := profile.SourceKey(src)
+		return storedEntry{key: key, source: src}, true
 	case SiteCurseForge:
 		src := profile.Source{Kind: profile.KindCurseForge, Name: m.Package, FileID: m.FileID}.WithDisabled(m.Disabled)
-		return storedEntry{key: store.PackageKey(profile.KindCurseForge+":"+m.Package, strconv.Itoa(m.FileID)), source: src}, true
+		key, _ := profile.SourceKey(src)
+		return storedEntry{key: key, source: src}, true
 	case SiteModio:
 		src := profile.Source{Kind: profile.KindModio, Name: m.Package, FileID: m.FileID}.WithDisabled(m.Disabled)
-		return storedEntry{key: store.PackageKey(profile.KindModio+":"+m.Package, strconv.Itoa(m.FileID)), source: src}, true
+		key, _ := profile.SourceKey(src)
+		return storedEntry{key: key, source: src}, true
 	case SiteVSModDB:
 		src := profile.Source{Kind: profile.KindVSModDB, Name: m.Package, FileID: m.FileID, Version: m.Version}.WithDisabled(m.Disabled)
-		return storedEntry{key: store.PackageKey(profile.KindVSModDB+":"+m.Package, m.Version), source: src}, true
+		key, _ := profile.SourceKey(src)
+		return storedEntry{key: key, source: src}, true
 	case SiteParadox:
 		src := profile.Source{Kind: profile.KindParadox, Name: m.Package, FileID: m.FileID, Version: m.Version}.WithDisabled(m.Disabled)
-		return storedEntry{key: store.PackageKey(profile.KindParadox+":"+m.Package, m.Version), source: src}, true
+		key, _ := profile.SourceKey(src)
+		return storedEntry{key: key, source: src}, true
 	case SiteGitHub:
 		src := profile.Source{Kind: profile.KindGitHub, Name: m.Asset, Version: m.Tag, Repo: m.Repo, Tag: m.Tag, Asset: m.Asset}
 		return storedEntry{key: gh.Key(m.Author, m.Name, m.Tag, m.Asset), source: withChoices(src, m)}, true
@@ -886,7 +889,8 @@ func (m Mod) storedEntry() (storedEntry, bool) {
 		if o := m.Overlay; o != nil {
 			src = src.WithOverlay(o.From, o.To).WithOverlayOff(o.Off)
 		}
-		return storedEntry{key: m.Key, source: withChoices(src, m)}, true
+		key, _ := profile.SourceKey(src)
+		return storedEntry{key: key, source: withChoices(src, m)}, true
 	}
 	return storedEntry{}, false
 }

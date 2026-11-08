@@ -131,6 +131,23 @@ func (s *Store) installDir(ctx context.Context, game, id, path string, source So
 	return res, err
 }
 
+// SourceKey is the store key InstallSource writes for source. Ok is false when source is not a stored package.
+func SourceKey(source Source) (string, bool) {
+	switch source.Kind {
+	case KindNexus:
+		return store.NexusKey(source.ModID, source.FileID), true
+	case KindThunderstore:
+		return store.PackageKey(source.Name, source.Version), true
+	case KindCurseForge, KindModio:
+		// File display names are author-written and repeat, so the file id keys the store item.
+		return store.PackageKey(source.Kind+":"+source.Name, strconv.Itoa(source.FileID)), true
+	case KindModrinth, KindItch, KindVSModDB, KindParadox:
+		return store.PackageKey(source.Kind+":"+source.Name, source.Version), true
+	default:
+		return "", false
+	}
+}
+
 // InstallSource unpacks the archive at path into the store under the key of its source's file and adds it to the profile,
 // replacing the version of a package the profile already holds. A Nexus file is keyed by mod and file id, a Thunderstore
 // package by name and version.
@@ -138,18 +155,8 @@ func (s *Store) InstallSource(ctx context.Context, game, id, path string, source
 	if err := s.unlocked(game, id); err != nil {
 		return InstallResult{}, err
 	}
-	var key string
-	switch source.Kind {
-	case KindNexus:
-		key = store.NexusKey(source.ModID, source.FileID)
-	case KindThunderstore:
-		key = store.PackageKey(source.Name, source.Version)
-	case KindCurseForge, KindModio:
-		// File display names are author-written and repeat, so the file id keys the store item.
-		key = store.PackageKey(source.Kind+":"+source.Name, strconv.Itoa(source.FileID))
-	case KindModrinth, KindItch, KindVSModDB, KindParadox:
-		key = store.PackageKey(source.Kind+":"+source.Name, source.Version)
-	default:
+	key, ok := SourceKey(source)
+	if !ok {
 		return InstallResult{}, installError(fmt.Errorf("cannot install a %q archive", source.Kind))
 	}
 	if err := s.items.AddArchiveKey(ctx, game, key, path); err != nil {

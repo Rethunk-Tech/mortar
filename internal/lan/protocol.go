@@ -14,7 +14,6 @@ import (
 	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 const protocolVersion = "6"
@@ -112,14 +111,18 @@ func transferItems(shared share.Shared) []transferItem {
 			continue
 		case ref.CurseForge != 0:
 			project := strconv.Itoa(ref.CurseForge)
-			item = transferItem{Key: store.PackageKey(profile.KindCurseForge+":"+project, strconv.Itoa(ref.FileID)), Source: profile.KindCurseForge, Package: project}
+			key, _ := profile.SourceKey(profile.Source{Kind: profile.KindCurseForge, Name: project, FileID: ref.FileID})
+			item = transferItem{Key: key, Source: profile.KindCurseForge, Package: project}
 		case ref.VSModDB != "":
-			item = transferItem{Key: store.PackageKey(profile.KindVSModDB+":"+ref.VSModDB, ref.Version), Source: profile.KindVSModDB, Package: ref.VSModDB, Version: ref.Version}
+			key, _ := profile.SourceKey(profile.Source{Kind: profile.KindVSModDB, Name: ref.VSModDB, Version: ref.Version})
+			item = transferItem{Key: key, Source: profile.KindVSModDB, Package: ref.VSModDB, Version: ref.Version}
 		case ref.Modio != 0:
 			mod := strconv.Itoa(ref.Modio)
-			item = transferItem{Key: store.PackageKey(profile.KindModio+":"+mod, strconv.Itoa(ref.FileID)), Source: profile.KindModio, Package: mod}
+			key, _ := profile.SourceKey(profile.Source{Kind: profile.KindModio, Name: mod, FileID: ref.FileID})
+			item = transferItem{Key: key, Source: profile.KindModio, Package: mod}
 		case ref.Paradox != "":
-			item = transferItem{Key: store.PackageKey(profile.KindParadox+":"+ref.Paradox, ref.Version), Source: profile.KindParadox, Package: ref.Paradox, Version: ref.Version}
+			key, _ := profile.SourceKey(profile.Source{Kind: profile.KindParadox, Name: ref.Paradox, Version: ref.Version})
+			item = transferItem{Key: key, Source: profile.KindParadox, Package: ref.Paradox, Version: ref.Version}
 		case ref.GitHub != "":
 			repo, tag, asset := ref.GitHubParts()
 			owner, name, _ := strings.Cut(repo, "/")
@@ -128,9 +131,11 @@ func transferItems(shared share.Shared) []transferItem {
 			if ref.Version == "" {
 				continue
 			}
-			item = transferItem{Key: store.PackageKey(ref.Package, ref.Version), Source: profile.KindThunderstore, Package: ref.Package, Version: ref.Version}
+			key, _ := profile.SourceKey(profile.Source{Kind: profile.KindThunderstore, Name: ref.Package, Version: ref.Version})
+			item = transferItem{Key: key, Source: profile.KindThunderstore, Package: ref.Package, Version: ref.Version}
 		default:
-			item = transferItem{Key: store.NexusKey(ref.ModID, ref.FileID)}
+			key, _ := profile.SourceKey(profile.Source{Kind: profile.KindNexus, ModID: ref.ModID, FileID: ref.FileID})
+			item = transferItem{Key: key}
 		}
 		if !slices.ContainsFunc(items, func(have transferItem) bool { return have.Key == item.Key }) {
 			items = append(items, item)

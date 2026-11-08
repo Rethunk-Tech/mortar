@@ -509,10 +509,11 @@ func (r *resolver) fileRow(ref share.Ref, site, pkg, name, page, rev string) Mod
 		Package: pkg, FileID: ref.FileID, Version: ref.Version, PageURL: page,
 		State: StateDownload, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
 	}
+	key, keyed := profile.SourceKey(profile.Source{Kind: site, Name: pkg, FileID: ref.FileID, Version: rev})
 	switch {
 	case slices.ContainsFunc(r.target, ref.MatchesEntry):
 		m.State = StateInstalled
-	case r.storedKey(store.PackageKey(site+":"+pkg, rev)):
+	case keyed && r.storedKey(key):
 		m.State, r.storedKeys[m.Key] = StateInstalled, true
 	}
 	return m
@@ -546,8 +547,10 @@ func (r *resolver) thunderstore(ref share.Ref) Mod {
 		m.State, m.Reason, m.Detail = StateUnavailable, ReasonNotInIndex, why
 	} else if r.hasPackage(ref.Package, ref.Version) {
 		m.State = StateInstalled
-	} else if ref.Version != "" && r.storedKey(store.PackageKey(ref.Package, ref.Version)) {
-		m.State, r.storedKeys[m.Key] = StateInstalled, true
+	} else if ref.Version != "" {
+		if key, ok := profile.SourceKey(profile.Source{Kind: profile.KindThunderstore, Name: ref.Package, Version: ref.Version}); ok && r.storedKey(key) {
+			m.State, r.storedKeys[m.Key] = StateInstalled, true
+		}
 	}
 	m.missing = r.missingDeps[ref.Package]
 	return m
