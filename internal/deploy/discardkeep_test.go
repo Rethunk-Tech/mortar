@@ -70,16 +70,18 @@ func TestMoveAcrossFileSystemsCopiesThenRemoves(t *testing.T) {
 	srcDir := t.TempDir()
 	src := filepath.Join(srcDir, "winhttp.dll")
 	write(t, src, "the player's own")
-	other, err := os.MkdirTemp("/dev/shm", "mortar-move-")
+	shm, err := safefs.Device("/dev/shm")
 	if err != nil {
 		t.Skipf("no second file system to move across: %v", err)
 	}
-	t.Cleanup(func() { _ = safefs.RemoveAll(other) })
-	here, hereErr := safefs.Device(srcDir)
-	there, thereErr := safefs.Device(other)
-	if hereErr != nil || thereErr != nil || here == there {
-		t.Skip("both temporary folders are on one file system")
+	if here, err := safefs.Device(srcDir); err != nil || here == shm {
+		t.Skip("both folders are on one file system")
 	}
+	other := filepath.Join("/dev/shm", filepath.Base(srcDir))
+	if err := os.Mkdir(other, 0o700); err != nil {
+		t.Skipf("cannot make a folder on the second file system: %v", err)
+	}
+	t.Cleanup(func() { _ = safefs.RemoveAll(other) })
 	dst := filepath.Join(other, "displaced", "winhttp.dll")
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		t.Fatal(err)
