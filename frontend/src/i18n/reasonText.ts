@@ -14,6 +14,7 @@ export function useReasonText(): ReasonText {
     const list = p.list ?? ''
     const name = p.name ?? ''
     const module = p.module ?? ''
+    const message = p.reason ?? fallback
     switch (code) {
       case 'missingDependencies':
         return t`missing dependencies: ${list}`
@@ -43,6 +44,8 @@ export function useReasonText(): ReasonText {
         return t`dependency cycle among ${list}`
       case 'gameVersionOlder':
         return t`game version ${{ version: p.version ?? '' }} is older than the loader accepts (${{ otherVersion: p.accepted ?? '' }})`
+      case 'runFailed':
+        return t`The last launch failed: ${message}.`
       case 'off':
         return t`Antivirus scanning is off`
       case 'noCommand':

@@ -1519,6 +1519,10 @@ msgstr ""
 msgid "Fix all"
 msgstr ""
 
+#: src/i18n/reasonText.ts
+msgid "The last launch failed: {message}."
+msgstr ""
+
 #: src/develop/CloneDialog.tsx
 msgid "Could not clone the project"
 msgstr ""
