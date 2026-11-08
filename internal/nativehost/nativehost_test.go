@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/go-desktopenv/nativemessaging"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -721,6 +722,31 @@ func TestSlugOfReadsTheLastSegment(t *testing.T) {
 		if got := slugOf(c.src, c.page); got != c.want {
 			t.Errorf("slugOf(%q, %q) = %q, want %q", c.src, c.page, got, c.want)
 		}
+	}
+}
+
+func TestWithSlugsReadsTheStoredPage(t *testing.T) {
+	datadirtest.Use(t, t.TempDir())
+	dir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	// What fillPages leaves behind: the site's answer, keyed by source and driver id.
+	if err := datadir.WriteJSONCompact(filepath.Join(dir, pagesCacheRel), map[string]string{
+		"curseforge:12": "https://www.curseforge.com/sims4/create-a-sim/aurum-heels/",
+		"vsmoddb:7":     "https://mods.vintagestory.at/show/mod/7",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	projects := []hostProject{{ID: "12", Name: "Aurum Heels"}}
+	withSlugs("curseforge", projects, []string{"12"})
+	if projects[0].Slug != "aurum-heels" {
+		t.Fatalf("stored page = %+v", projects[0])
+	}
+	aliases := []hostProject{{ID: "7", Name: "No Alias"}}
+	withSlugs("vsmoddb", aliases, []string{"7"})
+	if aliases[0].Slug != "" {
+		t.Fatalf("a Mod DB page with no alias has no slug: %+v", aliases[0])
 	}
 }
 

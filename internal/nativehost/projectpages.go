@@ -2,16 +2,13 @@ package nativehost
 
 import (
 	"context"
-	"encoding/json"
 	"net/url"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
 	"github.com/Rethunk-Tech/mortar/internal/source/modrinth"
@@ -98,10 +95,7 @@ func fillPages(dir, src string, ids []string) {
 			pagesMu.Lock()
 			pages := readPages(dir)
 			pages[src+":"+id] = page
-			if b, err := json.Marshal(pages); err == nil {
-				_ = os.MkdirAll(filepath.Join(dir, "cache"), 0o700)
-				_ = safefs.WriteFile(filepath.Join(dir, pagesCacheRel), b, 0o600)
-			}
+			_ = datadir.WriteJSONCompact(filepath.Join(dir, pagesCacheRel), pages)
 			pagesMu.Unlock()
 		}
 		pagesMu.Lock()
