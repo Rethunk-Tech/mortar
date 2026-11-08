@@ -99,22 +99,22 @@ function railLabel(label: string, badge: SidebarEntry['badge']): string {
   return badge ? `${label}, ${badge.n}` : label
 }
 
-// Memoised: a badge count changing re-renders that one item, not the whole list of sections.
+// Memoised: a badge count changing re-renders that one item, not the whole list of sections. Each item reads whether
+// it is the open one itself, so switching tabs redraws the two tabs' items and not the list's boxes and headings.
 const Item = memo(
   function ItemView({
     tab,
     label,
     badge,
-    active,
     rail,
   }: {
     tab: TabId
     label: string
     badge: SidebarEntry['badge']
-    active: boolean
     rail: boolean
   }) {
     const setTab = useTab((s) => s.setTab)
+    const active = useTab((s) => s.tab === tab)
     const Icon = icons[tab]
     const button = (
       <ButtonBase
@@ -177,11 +177,7 @@ const Item = memo(
     )
   },
   (a, b) =>
-    a.tab === b.tab &&
-    a.label === b.label &&
-    a.active === b.active &&
-    a.rail === b.rail &&
-    a.badge?.n === b.badge?.n,
+    a.tab === b.tab && a.label === b.label && a.rail === b.rail && a.badge?.n === b.badge?.n,
 )
 
 function GroupHeading({ children }: { children: ReactNode }) {
@@ -226,14 +222,32 @@ function useLabels(): Record<TabId, string> & Record<SidebarGroupId, string> {
   }
 }
 
+// A section saved from another game or loader is not there; fall back to Mods. Its own component, so the open tab
+// changing redraws this and not the list of sections.
+function TabFallback({
+  loader,
+  caps,
+}: {
+  loader: unknown
+  caps: Parameters<typeof tabUnavailable>[1]
+}) {
+  const current = useTab((s) => s.tab)
+  const setTab = useTab((s) => s.setTab)
+  const unavailable = loader !== undefined && tabUnavailable(current, caps)
+  useEffect(() => {
+    if (unavailable) {
+      setTab('mods')
+    }
+  }, [unavailable, setTab])
+  return null
+}
+
 // The open profile's sections as tabs; Home first, then the groups the loader's capabilities leave.
 function Sections({ rail }: { rail: boolean }) {
   const { t } = useLingui()
   const labels = useLabels()
   const loader = useProfileLoader()
   const gameInfo = useGameInfo()
-  const current = useTab((s) => s.tab)
-  const setTab = useTab((s) => s.setTab)
   const openId = useProfiles((s) => s.openId)
   const updates = useBadges((s) => s.byProfile[openId]?.updates ?? 0)
   const problems = useMods((s) =>
@@ -247,13 +261,6 @@ function Sections({ rail }: { rail: boolean }) {
     saves: Boolean(gameInfo?.hasSaves),
     develop: Boolean(gameInfo?.loaders?.[0]?.devTemplate),
   }
-  // A section saved from another game or loader is not there; fall back to Mods.
-  const unavailable = loader !== undefined && tabUnavailable(current, caps)
-  useEffect(() => {
-    if (unavailable) {
-      setTab('mods')
-    }
-  }, [unavailable, setTab])
   return (
     <Box
       role="tablist"
@@ -270,7 +277,8 @@ function Sections({ rail }: { rail: boolean }) {
         overflowY: 'auto',
       }}
     >
-      <Item tab="home" label={labels.home} badge={null} active={current === 'home'} rail={rail} />
+      <TabFallback loader={loader} caps={caps} />
+      <Item tab="home" label={labels.home} badge={null} rail={rail} />
       {sidebarGroups(caps, { updates, problems }).map((group, i) => (
         <Box
           key={group.id}
@@ -297,7 +305,6 @@ function Sections({ rail }: { rail: boolean }) {
               tab={entry.id}
               label={labels[entry.id]}
               badge={entry.badge}
-              active={current === entry.id}
               rail={rail}
             />
           ))}
