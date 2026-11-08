@@ -64,6 +64,9 @@ func TestUpdateDeleteOldVersionCarriesConfigOnly(t *testing.T) {
 }
 
 func TestUpdateKeepsTheExecutableBitOnCarriedFiles(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows file modes carry no executable bit")
+	}
 	t.Parallel()
 	m := manifestJSON("me.a")
 	e, p := updEnv(t,
