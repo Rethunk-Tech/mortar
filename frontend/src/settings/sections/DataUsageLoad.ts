@@ -14,7 +14,7 @@ import {
   UsageProgress,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import { peekLast, putLast, subscribeLast } from '../../shell/lastGood.ts'
-import { reportUnexpected } from '../../toasts/report.ts'
+import { inlineError, type InlineError, reportUnexpected } from '../../toasts/report.ts'
 import { beginUsageLoad } from '../usageLoad.ts'
 
 // Bytes counted so far while disk use is measured. Only the bar's Measuring line reads it, so a progress tick
@@ -34,12 +34,12 @@ const USAGE_KEY = 'data-usage'
 // The last measurement stays on screen while the next one runs: this session's, or the one the previous run saved.
 export function useDataUsage(sentinel: RefObject<Element | null>) {
   const shown = useSyncExternalStore(subscribeLast, () => peekLast<DiskUse>(USAGE_KEY))
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<InlineError | null>(null)
   const stopRef = useRef<() => void>(() => undefined)
   const load = useCallback((fresh: boolean) => {
     stopRef.current()
     setBytes(0)
-    setError(false)
+    setError(null)
     useUsageProgress.setState({ measuring: true })
     stopRef.current = beginUsageLoad({
       usage: () => Usage(fresh),
@@ -50,7 +50,7 @@ export function useDataUsage(sentinel: RefObject<Element | null>) {
         useUsageProgress.setState({ measuring: false })
       },
       onError: (e: unknown) => {
-        setError(true)
+        setError(inlineError(e))
         useUsageProgress.setState({ measuring: false })
         reportUnexpected(e)
       },

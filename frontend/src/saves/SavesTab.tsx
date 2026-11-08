@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import { useStoredState } from '@rethunk/react-load-hooks'
 import { History, Search, Sprout } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
@@ -9,13 +9,12 @@ import { PageActions } from '../game/PageActions.tsx'
 import { CardsView } from '../shell/CardsView.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { isViewMode, type ViewMode } from '../shell/viewMode.ts'
-import { space } from '../theme/density.ts'
-import { errorDetails } from '../toasts/errorKind.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { BackupsDialog } from './BackupsDialog.tsx'
 import { backupsOf } from './backupsOf.ts'
 import { filterAndSortSaves } from './filterAndSortSaves.ts'
@@ -28,7 +27,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   const { t } = useLingui()
   const fits = useSaves((s) => s.fits)
   const status = useSaves((s) => s.status)
-  const detail = useSaves((s) => s.error)
+  const error = useSaves((s) => s.error)
   const load = useSaves((s) => s.load)
   const { name } = profile
   // A save whose format names no mods (Lethal Company) has nothing to match against a profile.
@@ -43,24 +42,14 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   )
   const shown = filterAndSortSaves(fits, query)
   let body: ReactNode = null
-  if (status === 'error') {
+  if (status === 'error' && error) {
     body = (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <Typography
-          sx={{ fontSize: 'base.fontSize', color: 'error.main' }}
-          title={errorDetails(detail)}
-        >
-          {errorMessage(detail)}
-        </Typography>
-        <Button
-          size="small"
-          onClick={() => {
-            load(game, profile.id, String(profile.updated)).catch(reportUnexpected)
-          }}
-        >
-          {t`Retry`}
-        </Button>
-      </Box>
+      <ErrorRetry
+        error={error}
+        onRetry={() => {
+          load(game, profile.id, String(profile.updated)).catch(reportUnexpected)
+        }}
+      />
     )
   } else if (status === 'loading' && fits.length === 0) {
     body = <LoadingRow>{t`Reading your saves…`}</LoadingRow>

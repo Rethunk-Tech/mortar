@@ -1,9 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button } from '@mui/material'
 import { memo, useRef, useState } from 'react'
 import { MoveDataFolderPreview } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import { useNav } from '../../nav/store.ts'
-import { space } from '../../theme/density.ts'
+import { ErrorRetry } from '../../shell/ErrorRetry.tsx'
 import { type InlineError, reportError } from '../../toasts/report.ts'
 import { PrefKeys } from '../PrefRow.tsx'
 import { SettingsSection } from '../SettingsSection.tsx'
@@ -76,7 +75,6 @@ const Upkeep = memo(function UpkeepView() {
 })
 
 export function Storage() {
-  const { t } = useLingui()
   const openProfiles = useNav((s) => s.openProfiles)
   const sentinel = useRef<HTMLSpanElement>(null)
   const { usage, measuredAt, restart, error } = useDataUsage(sentinel)
@@ -88,22 +86,7 @@ export function Storage() {
       <span ref={sentinel} style={{ position: 'absolute' }} />
       <Location usage={usage} onPicked={move.prepare} />
       {error ? (
-        <Box
-          role="alert"
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: space.gap,
-            px: space.pad,
-            py: space.pad,
-            fontSize: 'lead.fontSize',
-          }}
-        >
-          {t`Could not measure disk use`}
-          <Button variant="outlined" onClick={restart}>
-            {t`Retry`}
-          </Button>
-        </Box>
+        <ErrorRetry error={error} onRetry={restart} />
       ) : (
         <UsageRows
           usage={usage}

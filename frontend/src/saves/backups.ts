@@ -9,7 +9,7 @@ import {
   RestoreBackup,
   SetBackupPinned,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { inlineError, type InlineError, reportUnexpected } from '../toasts/report.ts'
 import { useSaves } from './store.ts'
 
 export type Status = 'idle' | 'loading' | 'ready' | 'error'
@@ -22,7 +22,7 @@ export const useSaveBackups = create<{
   // The last list read per game and profile, drawn at once when that pair is opened again.
   lists: Record<string, Backup[]>
   status: Status
-  error: string
+  error: InlineError | null
   // Reads the backups folder for game and profile, showing the last list read for that pair until the new one arrives.
   load: (game: string, profile: string) => Promise<void>
   // Reads the same game and profile again, keeping the rows on screen until the new list arrives.
@@ -38,7 +38,7 @@ export const useSaveBackups = create<{
     const { game, profile } = get()
     const key = `${game}\0${profile}`
     const known = get().lists[key] !== undefined
-    set(known ? { error: '' } : { status: 'loading', error: '' })
+    set(known ? { error: null } : { status: 'loading', error: null })
     try {
       const fresh = (await ListBackups(game, profile)) ?? []
       const items = keepUnchanged(get().lists[key] ?? [], fresh, (b) => b.name)
@@ -50,8 +50,8 @@ export const useSaveBackups = create<{
       if (id === latest) {
         set(
           known
-            ? { status: 'error', error: errorMessage(e) }
-            : { items: [], status: 'error', error: errorMessage(e) },
+            ? { status: 'error', error: inlineError(e) }
+            : { items: [], status: 'error', error: inlineError(e) },
         )
       }
     }
@@ -62,7 +62,7 @@ export const useSaveBackups = create<{
     items: [],
     lists: {},
     status: 'idle',
-    error: '',
+    error: null,
     load: async (game, profile) => {
       const seen = get().lists[`${game}\0${profile}`]
       set({ game, profile, items: seen ?? [], ...(seen ? { status: 'ready' } : {}) })

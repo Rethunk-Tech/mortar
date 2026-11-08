@@ -24,6 +24,7 @@ import { When } from '../../i18n/When.tsx'
 import { AfterDelay } from '../../shell/AfterDelay.tsx'
 import { AppDialog, DialogFooter } from '../../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { ErrorRetry } from '../../shell/ErrorRetry.tsx'
 import { RefreshFailed } from '../../shell/RefreshFailed.tsx'
 import { useLastGood, useLastGoodRefreshing } from '../../shell/useLastGood.ts'
 import { space } from '../../theme/density.ts'
@@ -249,7 +250,7 @@ function useCleanupData(open: boolean) {
     load,
     // Deleting acts on the list shown, so it waits for the re-read.
     refreshing: running && data !== null,
-    error: data === null && error !== null,
+    error: data === null ? error : null,
     stale: data === null ? null : error,
     at,
   }
@@ -428,22 +429,7 @@ function CleanupDialog({
     >
       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
         {error ? (
-          <Box
-            role="alert"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: space.gap,
-              px: space.pad,
-              py: space.pad,
-              fontSize: 'lead.fontSize',
-            }}
-          >
-            {t`Could not load what can be cleaned up`}
-            <Button variant="outlined" onClick={load}>
-              {t`Retry`}
-            </Button>
-          </Box>
+          <ErrorRetry error={error} onRetry={load} />
         ) : (
           <>
             <RefreshFailed error={stale} at={at} onRetry={load} />

@@ -8,8 +8,14 @@ import {
   SetIncludePrereleaseModVersions,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { isGameId, useNav } from '../../nav/store.ts'
+import { ErrorRetry } from '../../shell/ErrorRetry.tsx'
 import { space } from '../../theme/density.ts'
-import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
+import {
+  errorMessage,
+  inlineError,
+  type InlineError,
+  reportUnexpected,
+} from '../../toasts/report.ts'
 import { showWhatsNew } from '../../updates/whatsNew.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
@@ -32,26 +38,16 @@ function MortarUpdate() {
   const check = useMortarUpdate((s) => s.check)
   const install = useMortarUpdate((s) => s.install)
   const restart = useMortarUpdate((s) => s.restart)
-  const [failed, setFailed] = useState('')
+  const [failed, setFailed] = useState<InlineError | null>(null)
   const read = useCallback(() => {
-    setFailed('')
-    load().catch((e: unknown) => setFailed(errorMessage(e)))
-  }, [load])
+    setFailed(null)
+    load().catch((e: unknown) =>
+      setFailed(inlineError(e, t`Could not read this Mortar build's version: ${errorMessage(e)}`)),
+    )
+  }, [load, t])
   useEffect(read, [read])
   if (!info) {
-    return failed ? (
-      <Alert
-        variant="compact"
-        severity="error"
-        action={
-          <Button color="inherit" size="small" onClick={read}>
-            {t`Retry`}
-          </Button>
-        }
-      >
-        {t`Could not read this Mortar build's version: ${failed}`}
-      </Alert>
-    ) : null
+    return failed ? <ErrorRetry error={failed} onRetry={read} /> : null
   }
   if (info.off === 'packaged') {
     return (

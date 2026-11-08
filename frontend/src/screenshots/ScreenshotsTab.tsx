@@ -19,6 +19,7 @@ import { When } from '../i18n/When.tsx'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { BareDialog } from '../shell/dialog/BareDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
@@ -176,16 +177,7 @@ export function ScreenshotsTab({ game }: { game: string }) {
   }
   let body: ReactNode
   if (gallery === null && error !== null) {
-    body = (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <Typography sx={{ fontSize: 'base.fontSize', color: 'error.main' }}>
-          {error?.message}
-        </Typography>
-        <Button size="small" onClick={load}>
-          {t`Retry`}
-        </Button>
-      </Box>
-    )
+    body = <ErrorRetry error={error} onRetry={load} />
   } else if (gallery === null) {
     body = (
       <SkeletonRows

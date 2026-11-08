@@ -111,6 +111,16 @@ test('opening for another game never shows the rows read before', async () => {
   expect(useSaveBackups.getState().items).toEqual([])
 })
 
+test('a signed-out list failure keeps signedOut on the inline error', async () => {
+  listImpl = async () => {
+    throw new Error('[signed_out] nexus')
+  }
+  useSaveBackups.setState(useSaveBackups.getInitialState(), true)
+  await useSaveBackups.getState().load('stardew', 'p1')
+  expect(useSaveBackups.getState().status).toBe('error')
+  expect(useSaveBackups.getState().error?.signedOut).toBe(true)
+})
+
 test('an update backup names its profile, or says it was deleted', () => {
   expect(causeLabel(firstBackup, [{ id: 'p1', name: 'Main' }])).toBe('Before updating Main')
   expect(causeLabel(firstBackup, [])).toBe('Before updating a deleted profile')

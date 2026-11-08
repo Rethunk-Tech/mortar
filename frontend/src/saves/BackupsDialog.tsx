@@ -17,6 +17,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
@@ -164,15 +165,8 @@ export function BackupsDialog({
           </DialogFooter>
         }
       >
-        {status === 'error' ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-            <Typography sx={{ fontSize: 'base.fontSize', color: 'error.main' }}>
-              {t`Could not list backups: ${error}`}
-            </Typography>
-            <Button size="small" onClick={() => load(game, profile).catch(reportUnexpected)}>
-              {t`Retry`}
-            </Button>
-          </Box>
+        {status === 'error' && error ? (
+          <ErrorRetry error={error} onRetry={() => load(game, profile).catch(reportUnexpected)} />
         ) : null}
         {status === 'loading' && items.length === 0 ? (
           <SkeletonRows label={t`Reading backups…`} count={4} height={36} />

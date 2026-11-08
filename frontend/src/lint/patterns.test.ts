@@ -222,6 +222,23 @@ test('tooltips come from shell/Tooltip.tsx', () => {
   expect(hits, hits.join('\n')).toEqual([])
 })
 
+// ErrorRetry swaps in SignInPrompt when the failure is a missing sign-in; an inline Retry copy cannot.
+test('inline read failures use ErrorRetry', () => {
+  const sites = [
+    'settings/sections/Updates.tsx',
+    'screenshots/ScreenshotsTab.tsx',
+    'saves/SavesTab.tsx',
+    'saves/BackupsDialog.tsx',
+    'settings/sections/DataStoreReport.tsx',
+    'settings/sections/Storage.tsx',
+  ]
+  const hits = sites.filter((name) => {
+    const src = files.find(({ path }) => rel(path) === name)?.src ?? ''
+    return !src.includes('<ErrorRetry')
+  })
+  expect(hits, hits.join('\n')).toEqual([])
+})
+
 test('zustand selectors do not allocate arrays or objects', () => {
   const hits = files.flatMap(({ path, src }) => selectorHits(path, strip(src)))
   expect(hits, hits.join('\n')).toEqual([])

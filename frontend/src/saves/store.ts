@@ -12,7 +12,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { sameId } from '../mods/lookup.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { inlineError, type InlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { dropMissing } from './dropMissing.ts'
 
@@ -20,7 +20,7 @@ interface State {
   key: string
   fits: Fit[]
   status: 'idle' | 'loading' | 'ready' | 'error'
-  error: string
+  error: InlineError | null
   load: (game: string, profileId: string, stamp: string) => Promise<void>
   reload: () => Promise<void>
   dismiss: (folder: string, id: string) => Promise<void>
@@ -32,12 +32,12 @@ export const useSaves = create<State>((set, get) => ({
   key: '',
   fits: [],
   status: 'idle',
-  error: '',
+  error: null,
   load: async (game, profileId, stamp) => {
     const key = `${game}/${profileId}/${stamp}`
     // A reload of the same profile keeps its rows on screen; another profile's rows never show.
     const same = get().key.startsWith(`${game}/${profileId}/`)
-    set({ key, fits: same ? get().fits : [], status: 'loading', error: '' })
+    set({ key, fits: same ? get().fits : [], status: 'loading', error: null })
     try {
       const fits = (await Saves(game, profileId)) ?? []
       if (get().key === key) {
@@ -46,7 +46,7 @@ export const useSaves = create<State>((set, get) => ({
       }
     } catch (e) {
       if (get().key === key) {
-        set({ fits: [], status: 'error', error: errorMessage(e) })
+        set({ fits: [], status: 'error', error: inlineError(e) })
       }
     }
   },
