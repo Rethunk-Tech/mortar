@@ -14,9 +14,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Rethunk-Tech/go-archive"
 	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-httpkit"
-	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 )

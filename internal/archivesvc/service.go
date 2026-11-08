@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -319,4 +320,4 @@ func (s *Service) profileNames(game string) (map[string]bool, error) {
 	return out, nil
 }
 
-func isArchive(name string) bool { return archive.HasExtension(name) }
+func isArchive(name string) bool { return ga.HasExtension(name) }

@@ -6,6 +6,7 @@ import (
 	"path"
 	"strings"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -114,7 +115,7 @@ func ManifestInfo(b []byte) (PreviewManifest, bool) {
 
 // PreviewArchive lists the archive at archivePath without extracting it.
 func PreviewArchive(archivePath string) (_ Preview, err error) {
-	defer RecoverMalformed(&err)
+	defer ga.RecoverMalformed(&err)
 	l, err := List(archivePath, previewMaxEntryBytes)
 	if err != nil {
 		return Preview{}, err

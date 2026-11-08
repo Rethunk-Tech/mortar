@@ -42,9 +42,6 @@ var (
 	ErrDecoderMemory     = ga.ErrDecoderMemory
 )
 
-// RecoverMalformed turns a panic in a format reader into ErrMalformed for *err.
-func RecoverMalformed(err *error) { ga.RecoverMalformed(err) }
-
 // Extract unpacks the archive at archivePath into dest, which must exist. It stops at the first failure and leaves
 // what it wrote, so the caller passes a temp directory and discards it on error.
 func Extract(archivePath, dest string) error {

@@ -14,8 +14,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/dlwatch"
 	"github.com/Rethunk-Tech/mortar/internal/profile"

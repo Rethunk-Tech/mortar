@@ -6,7 +6,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 
-	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/go-archive"
 
 	"github.com/Rethunk-Tech/go-semverish"
 )

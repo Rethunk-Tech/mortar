@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -35,7 +36,7 @@ type collectionDetails struct {
 // readCollectionArchive reads the curator's 7z: collection.json for FOMOD choices, and the config files inside
 // bundled/<mod>/. Only a bundled mod's config.json and config/*.json are taken, never its content.
 func readCollectionArchive(raw []byte) (_ collectionDetails, err error) {
-	defer archive.RecoverMalformed(&err)
+	defer ga.RecoverMalformed(&err)
 	l, err := archive.ListBytes(raw, "collection.7z", maxCollectionJSON)
 	if err != nil {
 		return collectionDetails{}, err

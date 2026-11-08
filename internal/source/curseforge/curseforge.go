@@ -20,9 +20,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-archive"
 	cf "github.com/Rethunk-Tech/go-curseforge"
 	"github.com/Rethunk-Tech/go-httpkit"
-	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )

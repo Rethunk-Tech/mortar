@@ -7,15 +7,6 @@ import (
 	ga "github.com/Rethunk-Tech/go-archive"
 )
 
-// HasExtension reports whether name ends in one of the archive endings Mortar offers, ignoring case.
-func HasExtension(name string) bool { return ga.HasExtension(name) }
-
-// StripExtension is name without its archive ending, or name itself when it has none.
-func StripExtension(name string) string { return ga.StripExtension(name) }
-
-// IsMediaType reports whether a Content-Type names a format go-archive reads.
-func IsMediaType(contentType string) bool { return ga.IsMediaType(contentType) }
-
 // PickerPattern is the archive endings as a file dialog's semicolon-separated glob list.
 func PickerPattern() string {
 	exts := ga.Extensions()
@@ -47,7 +38,7 @@ const nameSep = "~~"
 // its whole archive ending (".tar.gz", not ".gz"), which picks the extractor.
 func SavedName(id, fileName string) string {
 	if !ga.IsStream(fileName) {
-		return id + fileName[len(StripExtension(fileName)):]
+		return id + fileName[len(ga.StripExtension(fileName)):]
 	}
 	name := strings.Map(func(r rune) rune {
 		if r < 0x20 || strings.ContainsRune(`/\<>:"|?*`, r) {
@@ -63,7 +54,7 @@ func SavedName(id, fileName string) string {
 }
 
 // IsSaved reports whether name is one SavedName could have made: an archive ending, or the id separator.
-func IsSaved(name string) bool { return HasExtension(name) || strings.Contains(name, nameSep) }
+func IsSaved(name string) bool { return ga.HasExtension(name) || strings.Contains(name, nameSep) }
 
 // originalName is the name a saved download had before SavedName prefixed its queue id. Extraction names a bare
 // stream's one file from it.
@@ -80,7 +71,7 @@ func SavedID(name string) string {
 	if id, _, ok := strings.Cut(name, nameSep); ok {
 		return id
 	}
-	if stem := StripExtension(name); stem != name {
+	if stem := ga.StripExtension(name); stem != name {
 		return stem
 	}
 	return strings.TrimSuffix(name, filepath.Ext(name))
