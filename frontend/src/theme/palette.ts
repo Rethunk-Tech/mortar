@@ -1,4 +1,10 @@
-import type { PaletteOptions } from '@mui/material/styles'
+import {
+  decomposeColor,
+  getContrastRatio,
+  getLuminance,
+  rgbToHex,
+  type PaletteOptions,
+} from '@mui/material/styles'
 
 type ThemeMode = 'light' | 'dark'
 
@@ -214,21 +220,6 @@ function surfaces(mode: ThemeMode): Surfaces {
 
 const CAMEL_TO_DASH = /[A-Z]/g
 const LETTER_THEN_DIGIT = /([a-z])(\d)/g
-const HEX_COLOUR = /^#([\da-f]{3}|[\da-f]{6})$/i
-const RGB_COLOUR = /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)$/
-const SHORT_HEX_LEN = 3
-const HEX_PAIR = 2
-const HEX_RADIX = 16
-const BYTE_MAX = 255
-const SRGB_CUTOFF = 0.040_45
-const LINEAR_DIVISOR = 12.92
-const GAMMA_OFFSET = 0.055
-const GAMMA_SCALE = 1.055
-const GAMMA = 2.4
-const LUMA_R = 0.2126
-const LUMA_G = 0.7152
-const LUMA_B = 0.0722
-const CONTRAST_PAD = 0.05
 const MIX_STEP = 0.08
 const MIX_TRIES = 48
 
@@ -244,99 +235,50 @@ function surfaceCssVars(mode: ThemeMode): Record<string, string> {
   return out
 }
 
-interface Rgb {
-  r: number
-  g: number
-  b: number
-  a: number
-}
-
-function parseColor(input: string): Rgb {
-  const hex = HEX_COLOUR.exec(input)
-  if (hex) {
-    const [, captured] = hex
-    if (captured === undefined) {
-      throw new Error(`unparseable colour ${input}`)
-    }
-    let h = captured
-    if (h.length === SHORT_HEX_LEN) {
-      h = [...h].map((c) => c + c).join('')
-    }
-    const [r = 0, g = 0, b = 0] = (h.match(/../g) ?? []).map((pair) =>
-      Number.parseInt(pair, HEX_RADIX),
-    )
-    return { r, g, b, a: 1 }
+function overlayAlpha(color: ReturnType<typeof decomposeColor>): number {
+  if (color.type !== 'rgba') {
+    return 1
   }
-  const rgb = RGB_COLOUR.exec(input)
-  if (!rgb) {
-    throw new Error(`unparseable colour ${input}`)
-  }
-  return {
-    r: Number(rgb[1]),
-    g: Number(rgb[2]),
-    b: Number(rgb[3]),
-    a: rgb[4] === undefined ? 1 : Number(rgb[4]),
-  }
+  const alpha = color.values[3]
+  return alpha === undefined ? 1 : alpha
 }
 
-function channel(value: number): number {
-  const s = value / BYTE_MAX
-  return s <= SRGB_CUTOFF ? s / LINEAR_DIVISOR : ((s + GAMMA_OFFSET) / GAMMA_SCALE) ** GAMMA
-}
-
-function relativeLuminance(color: string): number {
-  const { r, g, b } = parseColor(color)
-  return LUMA_R * channel(r) + LUMA_G * channel(g) + LUMA_B * channel(b)
-}
-
-function contrastRatio(a: string, b: string): number {
-  const l1 = relativeLuminance(a)
-  const l2 = relativeLuminance(b)
-  const [hi, lo] = l1 > l2 ? [l1, l2] : [l2, l1]
-  return (hi + CONTRAST_PAD) / (lo + CONTRAST_PAD)
+function toHex(color: string): string {
+  const [r = 0, g = 0, b = 0] = decomposeColor(color).values
+  return rgbToHex(`rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`)
 }
 
 function composite(fg: string, bg: string): string {
-  const f = parseColor(fg)
-  const b = parseColor(bg)
-  const { a } = f
-  const r = Math.round(f.r * a + b.r * (1 - a))
-  const g = Math.round(f.g * a + b.g * (1 - a))
-  const bch = Math.round(f.b * a + b.b * (1 - a))
+  const overlay = decomposeColor(fg)
+  const base = decomposeColor(bg)
+  const [or = 0, og = 0, ob = 0] = overlay.values
+  const [br = 0, bgc = 0, bb = 0] = base.values
+  const a = overlayAlpha(overlay)
+  const r = Math.round(or * a + br * (1 - a))
+  const g = Math.round(og * a + bgc * (1 - a))
+  const bch = Math.round(ob * a + bb * (1 - a))
   return `rgb(${r},${g},${bch})`
 }
 
-function toHex({ r, g, b }: Rgb): string {
-  const h = (n: number) =>
-    Math.max(0, Math.min(BYTE_MAX, Math.round(n)))
-      .toString(HEX_RADIX)
-      .padStart(HEX_PAIR, '0')
-  return `#${h(r)}${h(g)}${h(b)}`
-}
-
-function mixToward(color: string, target: Rgb, amount: number): string {
-  const c = parseColor(color)
-  return toHex({
-    r: c.r + (target.r - c.r) * amount,
-    g: c.g + (target.g - c.g) * amount,
-    b: c.b + (target.b - c.b) * amount,
-    a: 1,
-  })
+function mixToward(color: string, target: string, amount: number): string {
+  const [cr = 0, cg = 0, cb = 0] = decomposeColor(color).values
+  const [tr = 0, tg = 0, tb = 0] = decomposeColor(target).values
+  return toHex(
+    `rgb(${cr + (tr - cr) * amount}, ${cg + (tg - cg) * amount}, ${cb + (tb - cb) * amount})`,
+  )
 }
 
 function ensureContrast(fg: string, bg: string, min = MIN_CONTRAST): string {
-  let cur = toHex(parseColor(fg))
+  let cur = toHex(fg)
   const solidBg = composite(bg, bg)
-  if (contrastRatio(cur, solidBg) >= min) {
+  if (getContrastRatio(cur, solidBg) >= min) {
     return cur
   }
-  const towardBlack = relativeLuminance(cur) < relativeLuminance(solidBg)
-  const target = towardBlack
-    ? { r: 0, g: 0, b: 0, a: 1 }
-    : { r: BYTE_MAX, g: BYTE_MAX, b: BYTE_MAX, a: 1 }
+  const towardBlack = getLuminance(cur) < getLuminance(solidBg)
+  const target = towardBlack ? 'rgb(0, 0, 0)' : 'rgb(255, 255, 255)'
   for (let i = 0; i < MIX_TRIES; i++) {
     cur = mixToward(cur, target, MIX_STEP)
-    if (contrastRatio(cur, solidBg) >= min) {
+    if (getContrastRatio(cur, solidBg) >= min) {
       return cur
     }
   }
@@ -352,7 +294,7 @@ const statusColors = {
 } as const
 
 function contrastText(bg: string): string {
-  return contrastRatio('#ffffff', bg) >= MIN_CONTRAST ? '#ffffff' : '#1b1a17'
+  return getContrastRatio('#ffffff', bg) >= MIN_CONTRAST ? '#ffffff' : '#1b1a17'
 }
 
 function paperForContrast(paper: string, mode: ThemeMode): string {
@@ -404,7 +346,7 @@ function honourTheme(setting: string, osLight: boolean): ThemeMode {
 export type { ThemeMode }
 export {
   composite,
-  contrastRatio,
+  getContrastRatio as contrastRatio,
   contrastText,
   honourTheme,
   mortarPalette,
