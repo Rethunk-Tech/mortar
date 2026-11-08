@@ -66,7 +66,7 @@ export function launchScreenCases(): Case[] {
     if (await close.isVisible()) {
       await close.click()
     }
-    await p.getByRole('dialog', { name: /^Launching|did not start/ }).waitFor({ state: 'detached' })
+    await p.getByRole('dialog', { name: /Launching|did not start/u }).waitFor({ state: 'detached' })
   }
   // The marks' arcs and the elapsed clock tick while a launch waits, so its idle watch is never quiet.
   const ticking = { idleUpdates: 5500, idleCommits: 25 }

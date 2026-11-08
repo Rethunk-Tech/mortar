@@ -188,7 +188,8 @@ export const releaseScenes = (h: Helpers) => [
     profile: h.coreKeeper,
     steps: async (page) => {
       await h.click(page, 'tab', 'Browse')
-      await h.click(page, 'button', /^mod\.io/u)
+      // The source's tab is labelled with its brand name; the name match is a substring one, as before.
+      await h.click(page, 'button', 'mod.io')
       await page
         .getByText(/results/u)
         .first()

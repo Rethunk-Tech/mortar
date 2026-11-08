@@ -47,8 +47,20 @@ const STARTS = new Set(
 )
 const STOP = methodId('launchsvc.Service.Stop')
 // Art and icons stay with their sites: Mortar never re-hosts them, and the demo fetches nothing but its own files.
-const PICTURE_KEY =
-  /^(picture|icon|image|art|cover|thumb|avatar|logo|banner)|(Picture|Icon|Image|Art|Cover|Thumb|Avatar|Logo|Banner)/
+// A key names art when it starts with the lowercase word or carries the capitalised one, as `iconUrl` does.
+const PICTURE_WORDS = [
+  'picture',
+  'icon',
+  'image',
+  'art',
+  'cover',
+  'thumb',
+  'avatar',
+  'logo',
+  'banner',
+]
+const PICTURE_KEY = (key: string) =>
+  PICTURE_WORDS.some((w) => key.startsWith(w) || key.includes(w[0].toUpperCase() + w.slice(1)))
 
 // The backend's own art route serves Steam's art, which the demo leaves out too.
 const STEAM_ART = '/steam-art/'
@@ -63,9 +75,7 @@ function blankPictures(v: unknown): unknown {
   return Object.fromEntries(
     Object.entries(v).map(([k, x]) => [
       k,
-      typeof x === 'string' && PICTURE_KEY.test(k) && /^(https?:|\/)/.test(x)
-        ? ''
-        : blankPictures(x),
+      typeof x === 'string' && PICTURE_KEY(k) && /^(https?:|\/)/.test(x) ? '' : blankPictures(x),
     ]),
   )
 }
