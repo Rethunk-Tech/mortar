@@ -21,7 +21,10 @@ import {
   X,
 } from 'lucide-react'
 import { type ReactNode, useMemo } from 'react'
-import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type {
+  Mod,
+  Profile,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
@@ -30,6 +33,7 @@ import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { partKey, supportParts } from './installReason.ts'
 import { LockedReason } from './LockedReason.tsx'
+import { entryOf } from './lookup.ts'
 import { markImplicit } from './markImplicit.ts'
 import type { SourceGroups } from './skipSources.ts'
 import { useMods } from './store.ts'
@@ -48,7 +52,7 @@ function useMarkable(selected: Mod[]) {
   const markable = useMemo(
     () =>
       selected.filter((mod) => {
-        const kind = open?.entries?.find((entry) => entry.key === mod.key)?.source.kind
+        const kind = entryOf(open, mod.key)?.source.kind
         return (
           kind !== 'smapi' &&
           kind !== 'mortar' &&
@@ -60,9 +64,7 @@ function useMarkable(selected: Mod[]) {
       }),
     [selected, open, all],
   )
-  const implicit = markable.every(
-    (mod) => open?.entries?.find((entry) => entry.key === mod.key)?.implicit,
-  )
+  const implicit = markable.every((mod) => entryOf(open, mod.key)?.implicit)
   return { markable, implicit }
 }
 
@@ -128,7 +130,7 @@ export function SelectionBarActions({
   clear,
 }: {
   selected: Mod[]
-  profile: { entries?: { key: string; pinned?: boolean; implicit?: boolean }[] | null } | undefined
+  profile: Profile | null | undefined
   latest: ReadonlyMap<string, string>
   locked: boolean
   count: string
@@ -147,9 +149,7 @@ export function SelectionBarActions({
 }) {
   const { t } = useLingui()
   const { anchor: menu, show: showMenu, hide: hideMenu } = usePopoverAnchor()
-  const pinned = selected.every(
-    (mod) => profile?.entries?.find((entry) => entry.key === mod.key)?.pinned,
-  )
+  const pinned = selected.every((mod) => entryOf(profile, mod.key)?.pinned)
   const { markable, implicit } = useMarkable(selected)
   const pick = (run: () => void) => () => {
     hideMenu()

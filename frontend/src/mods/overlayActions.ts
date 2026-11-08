@@ -13,6 +13,7 @@ import { listNames } from '../i18n/list.ts'
 import { getProfile, useProfiles } from '../profiles/store.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { entryOf } from './lookup.ts'
 import { overlayLabel } from './overlayRows.ts'
 import { openTarget } from './storeView.ts'
 import type { OverlayRow } from './virtualRows.ts'
@@ -80,7 +81,7 @@ export async function removeOverlay(row: OverlayRow) {
     return
   }
   const profile = getProfile(target.id)
-  const entry = (profile?.entries ?? []).find((e) => e.key === row.key)
+  const entry = entryOf(profile, row.key)
   try {
     useProfiles.getState().replace(await RemoveEntries(target.game, target.id, [row.key]))
   } catch (e) {

@@ -67,7 +67,7 @@ function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod[] }) {
           setEnabledMany={setEnabledMany}
           setPinnedMany={setPinnedMany}
           setSkipVersionMany={setSkipVersionMany}
-          sourceGroups={skipSourceGroups(selected, updates, profile?.entries)}
+          sourceGroups={skipSourceGroups(selected, updates, profile)}
           setSkipSourceMany={setSkipSourceMany}
           askRemove={askRemove}
           openAlso={() => setAlsoOpen(true)}

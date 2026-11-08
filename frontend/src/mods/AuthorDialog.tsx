@@ -12,7 +12,7 @@ import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { space } from '../theme/density.ts'
 import { localId } from './dependents.ts'
-import { nexusIdOf } from './lookup.ts'
+import { entryOf, nexusIdOf } from './lookup.ts'
 import { openPage } from './menu.ts'
 import { modsByAuthor } from './modsByAuthor.ts'
 import { nexusAuthorPageUrl } from './nexusAuthorPage.ts'
@@ -24,7 +24,7 @@ const text = { fontSize: 'base.fontSize' } as const
 const muted = { fontSize: 'small.fontSize', color: 'text.secondary' } as const
 
 function modPageUrl(profile: Profile, mod: Mod): string {
-  const source = (profile.entries ?? []).find((e) => e.key === mod.key)?.source
+  const source = entryOf(profile, mod.key)?.source
   if (source?.kind !== 'nexus' || !source.modId) {
     return ''
   }

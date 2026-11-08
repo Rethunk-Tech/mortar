@@ -13,6 +13,7 @@ import { MenuAction } from '../shell/MenuAction.tsx'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { LockedReason } from './LockedReason.tsx'
+import { entryOf } from './lookup.ts'
 import { useLocked } from './useLocked.ts'
 
 interface Target {
@@ -33,7 +34,7 @@ export function NexusPageMenuItem({ mod, close }: { mod: Mod; close: () => void 
   const locked = useLocked()
   const game = useProfiles((s) => s.game)
   const profile = useProfiles(openProfileOf)
-  const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
+  const entry = entryOf(profile, mod.key)
   const kind = entry?.source.kind
   if (
     !(game?.sources?.includes('nexus') && profile) ||

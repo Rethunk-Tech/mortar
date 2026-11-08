@@ -12,7 +12,7 @@ import { Tooltip } from '../../shell/Tooltip.tsx'
 import { space } from '../../theme/density.ts'
 import { changelogsBetween, changelogsHaveRiskyNotes } from '../changelogRange.ts'
 import { LetterTile } from '../LetterTile.tsx'
-import { sameId, siblingsOf } from '../lookup.ts'
+import { entryOf, sameId, siblingsOf } from '../lookup.ts'
 import { openPage } from '../menu.ts'
 import { nexusEntryOf, useNexusDetails } from '../nexusDetails.ts'
 import { useMods } from '../store.ts'
@@ -29,9 +29,9 @@ function useRowNotes(update: Update, profileId: string) {
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const mod = mods.find((m) => m.key === update.key && sameId(m.id, update.id))
-  const entries = useProfiles((s) => s.profiles.find((p) => p.id === profileId)?.entries)
-  const entry = entries?.find((e) => e.key === update.key)
-  const optional = entries?.filter((e) => e.overlayOf === update.key).length ?? 0
+  const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
+  const entry = entryOf(profile, update.key)
+  const optional = (profile?.entries ?? []).filter((e) => e.overlayOf === update.key).length
   const notes = [
     ...(mod
       ? siblingsOf(mods, mod).map((o) => t`Also updates ${{ name: o.name }} (same download)`)

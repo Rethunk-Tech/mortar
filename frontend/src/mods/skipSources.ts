@@ -1,13 +1,12 @@
-import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type {
+  Mod,
+  Profile,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { entryOf } from './lookup.ts'
 
 interface SourceGroups {
   ignore: Map<string, Mod[]>
   use: Map<string, Mod[]>
-}
-
-interface SkipEntry {
-  key: string
-  skipSources?: string[] | null
 }
 
 function push(groups: Map<string, Mod[]>, source: string, mod: Mod) {
@@ -23,11 +22,11 @@ function push(groups: Map<string, Mod[]>, source: string, mod: Mod) {
 function skipSourceGroups(
   selected: Mod[],
   updates: readonly { key: string; source?: string }[],
-  entries: readonly SkipEntry[] | null | undefined,
+  profile: Profile | null | undefined,
 ): SourceGroups {
   const groups: SourceGroups = { ignore: new Map(), use: new Map() }
   for (const mod of selected) {
-    const skipped = entries?.find((entry) => entry.key === mod.key)?.skipSources ?? []
+    const skipped = entryOf(profile, mod.key)?.skipSources ?? []
     const source = updates.find((update) => update.key === mod.key)?.source
     if (source && !skipped.includes(source)) {
       push(groups.ignore, source, mod)

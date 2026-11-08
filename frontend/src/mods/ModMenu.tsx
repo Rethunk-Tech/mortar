@@ -47,7 +47,7 @@ import { useDetail } from './detail.ts'
 import { EverywhereMenuItem } from './EverywhereMenuItem.tsx'
 import { ModGroupItems } from './GroupMenu.tsx'
 import { lockedHint } from './lockedHint.ts'
-import { modId, nexusIdOf, updateFor } from './lookup.ts'
+import { entryOf, modId, nexusIdOf, updateFor } from './lookup.ts'
 import { ModActionItems } from './ModActionItems.tsx'
 import { markImplicit } from './markImplicit.ts'
 import {
@@ -74,7 +74,7 @@ import { useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
 
 function openFomodReinstall(gameId: string, profile: Profile, key: string) {
-  const entry = (profile.entries ?? []).find((e) => e.key === key)
+  const entry = entryOf(profile, key)
   if (!entry) {
     return
   }
@@ -121,7 +121,7 @@ function ModMenuItems({
   const profile = useProfiles(openProfileOf)
   const game = useProfiles((s) => s.game)
   const update = useUpdates((s) => updateFor(s.updates, mod, profile))
-  const currentEntry = (profile?.entries ?? []).find((e) => e.key === mod.key)
+  const currentEntry = entryOf(profile, mod.key)
   const hasFomod = Boolean(currentEntry?.fomod && Object.keys(currentEntry.fomod).length > 0)
   const extras = currentEntry?.extraStoreKeys ?? []
   const siblings = samePageSiblings(profile, currentEntry)
@@ -297,11 +297,10 @@ function RemoveFromOthersDialog({
         const changed = await Promise.all(
           profiles.map((other) => {
             const row = rows.find((candidate) => candidate.profileId === other.id)
-            const entryMods =
-              useProfiles
-                .getState()
-                .profiles.find((candidate) => candidate.id === other.id)
-                ?.entries?.find((profileEntry) => profileEntry.key === row?.key)?.mods ?? []
+            const otherProfile = useProfiles
+              .getState()
+              .profiles.find((candidate) => candidate.id === other.id)
+            const entryMods = (row && entryOf(otherProfile, row.key)?.mods) ?? []
             return entryMods.length > 1
               ? SetModEnabled(game, other.id, row?.key ?? '', mod.id, false).then((result) => {
                   useProfiles.getState().replace(result.profile)
@@ -331,7 +330,7 @@ function ModActionMenu({
 }) {
   const profile = useProfiles(openProfileOf)
   const byId = useGameNexusDetails(useProfiles((s) => s.game?.id ?? ''))
-  const entry = (profile?.entries ?? []).find((e) => e.key === mod.key)
+  const entry = entryOf(profile, mod.key)
   const nexusCategory =
     profile === undefined
       ? ''
