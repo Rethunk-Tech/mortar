@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -61,6 +62,22 @@ func TestClientWordsGitHubsAnswers(t *testing.T) {
 		if !errors.As(err, &rl) || !rl.Reset.Equal(time.Unix(1790000000, 0)) || !strings.Contains(err.Error(), "try again after") {
 			t.Fatalf("%s limit: %v", name, err)
 		}
+	}
+}
+
+func TestWordsRedactsUnreachableGitHubURL(t *testing.T) {
+	t.Parallel()
+	err := words(&url.Error{
+		Op:  "Get",
+		URL: "https://user:token@api.github.com/repos/o/r/releases?access_token=secret",
+		Err: errors.New("connection refused"),
+	}, "releases")
+	got := err.Error()
+	if !strings.HasPrefix(got, "could not reach GitHub: ") {
+		t.Fatalf("got %q", got)
+	}
+	if strings.Contains(got, "token") || strings.Contains(got, "secret") {
+		t.Fatalf("leaked %q", got)
 	}
 }
 

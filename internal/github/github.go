@@ -96,7 +96,7 @@ func words(err error, api string) error {
 		return fmt.Errorf("GitHub's %s API answered %s", api, se.Status)
 	}
 	if _, ok := errors.AsType[*url.Error](err); ok {
-		return fmt.Errorf("could not reach GitHub: %w", err)
+		return fmt.Errorf("could not reach GitHub: %w", httpkit.RedactError(err))
 	}
 	if errors.Is(err, gh.ErrNoRelease) {
 		return ErrNoRelease
