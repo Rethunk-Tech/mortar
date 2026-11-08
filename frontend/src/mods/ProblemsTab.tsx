@@ -3,7 +3,6 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress, Typography } from '@mui/material'
 import { Copy, Map as MapIcon, Plus, ShieldCheck } from 'lucide-react'
 import { memo, useMemo, useState } from 'react'
-import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { findCrashCause, useBisectBlockText } from '../commandPalette/crashBisect.ts'
 import { PageActions } from '../game/PageActions.tsx'
@@ -123,33 +122,63 @@ function RedundantSection({
 }
 
 // The tabs of the section switcher: a segment for each section that has anything in it.
-function useProblemTabs({
-  sections,
-  compat,
-  compatDismissed,
-  redundant,
-  redundantDismissed,
-  redundantTokens,
-  cleanup,
-  replaced,
-  cosmeticConflicts,
-  sectionExtras,
-}: {
-  sections: ReturnType<typeof problemSections>
-  compat: Compat[]
-  compatDismissed: { token: string; row: Compat }[]
-  redundant: RedundantRows
-  redundantDismissed: RedundantRows
-  redundantTokens: Map<string, string>
-  cleanup: Parameters<typeof CleanupSection>[0]['cleanup']
-  replaced: Parameters<typeof ReplacedSection>[0]['files']
-  cosmeticConflicts: string
-  sectionExtras: (section: ReturnType<typeof problemSections>[number]) => { action?: SectionAction }
-}): ProblemTab[] {
+function useProblemTabs(
+  result: NonNullable<ReturnType<typeof useOpenProblems>>,
+  [addingAll, runAddAll]: ReturnType<typeof usePending>,
+): ProblemTab[] {
   const { t } = useLingui()
   const sectionTitle = useSectionTitle()
   const slowRows = useSlowStartups()
   const fileConflicts = useFileConflicts()
+  const cosmeticConflicts = useOpenOverride(
+    'cosmeticConflicts',
+    useSettings((s) => gamePrefs(s).cosmeticConflicts),
+  )
+  const redundantRows = useRedundantRows()
+  // Same section objects across renders, so the memoised ProblemRows of an unchanged section skips rendering.
+  const sections = useMemo(() => problemSections(result), [result])
+  const installable =
+    sections
+      .find((section) => section.id === 'missing')
+      ?.rows.filter(
+        (row): row is Extract<Row, { kind: 'missing' }> =>
+          !isDismissedRow(row) &&
+          row.kind === 'missing' &&
+          row.missing.listed &&
+          row.missing.reason !== 'disabled' &&
+          !row.missing.optional &&
+          row.missing.where !== null,
+      ) ?? []
+  const cleanup = result.cleanup ?? []
+  const replaced = result.replaced ?? []
+  const compat = result.compat ?? []
+  const dismissed = result.dismissed ?? []
+  const compatDismissed = dismissed.flatMap((d) =>
+    d.compat ? [{ token: d.token, row: d.compat }] : [],
+  )
+  const dismissedRedundant = dismissed.flatMap((d) =>
+    d.redundant ? [{ token: d.token, item: d.redundant }] : [],
+  )
+  const redundant = redundantRows(result.redundant ?? [])
+  const redundantDismissed = redundantRows(dismissedRedundant.map((d) => d.item))
+  const redundantTokens = new Map(
+    dismissedRedundant.map((d) => [`${d.item.kind}|${d.item.key}`, d.token]),
+  )
+  const missingAction: SectionAction | undefined =
+    installable.length > 0
+      ? {
+          label: t`Add all ${{ count: installable.length }}`,
+          icon: <Plus size={16} />,
+          disabled: addingAll,
+          onClick: () => {
+            const wants = installable.flatMap(({ missing }) => {
+              const want = missing.where ? refWant(missing.where, 'dependency') : null
+              return want ? [want] : []
+            })
+            runAddAll(() => download(wants))
+          },
+        }
+      : undefined
   return [
     ...sections
       .filter((s) => !(s.id === 'cosmetic' && cosmeticConflicts === 'hidden'))
@@ -159,7 +188,7 @@ function useProblemTabs({
         count: s.rows.length,
         errors: ERROR_SECTIONS.has(s.id),
         body: <ProblemRows rows={s.rows} />,
-        ...sectionExtras(s),
+        ...(s.id === 'missing' && missingAction ? { action: missingAction } : {}),
       })),
     {
       id: 'compat',
@@ -220,77 +249,12 @@ function useProblemTabs({
 
 function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof useOpenProblems>> }) {
   const { t } = useLingui()
-  const [addingAll, runAddAll] = usePending()
-  const cosmeticConflicts = useOpenOverride(
-    'cosmeticConflicts',
-    useSettings((s) => gamePrefs(s).cosmeticConflicts),
-  )
-  const redundantRows = useRedundantRows()
-
-  // Same section objects across renders, so the memoised ProblemRows of an unchanged section skips rendering.
-  const sections = useMemo(() => problemSections(result), [result])
-  const cleanup = result.cleanup ?? []
-  const replaced = result.replaced ?? []
-  const compat = result.compat ?? []
-  const compatDismissed = (result.dismissed ?? []).flatMap((d) =>
-    d.compat ? [{ token: d.token, row: d.compat }] : [],
-  )
-  const redundant = redundantRows(result.redundant ?? [])
-  const dismissedRedundant = (result.dismissed ?? []).flatMap((d) =>
-    d.redundant ? [{ token: d.token, item: d.redundant }] : [],
-  )
-  const redundantDismissed = redundantRows(dismissedRedundant.map((d) => d.item))
-  const redundantTokens = new Map(
-    dismissedRedundant.map((d) => [`${d.item.kind}|${d.item.key}`, d.token]),
-  )
-  const installable =
-    sections
-      .find((section) => section.id === 'missing')
-      ?.rows.filter(
-        (row): row is Extract<Row, { kind: 'missing' }> =>
-          !isDismissedRow(row) &&
-          row.kind === 'missing' &&
-          row.missing.listed &&
-          row.missing.reason !== 'disabled' &&
-          !row.missing.optional &&
-          row.missing.where !== null,
-      ) ?? []
-  const sectionExtras = (section: (typeof sections)[number]): { action?: SectionAction } => {
-    if (section.id === 'missing' && installable.length > 0) {
-      return {
-        action: {
-          label: t`Add all ${{ count: installable.length }}`,
-          icon: <Plus size={16} />,
-          disabled: addingAll,
-          onClick: () => {
-            const wants = installable.flatMap(({ missing }) => {
-              const want = missing.where ? refWant(missing.where, 'dependency') : null
-              return want ? [want] : []
-            })
-            runAddAll(() => download(wants))
-          },
-        },
-      }
-    }
-    return {}
-  }
-
+  const addAll = usePending()
   const problemsAt = useMods((s) => s.problemsAt)
   const openId = useProfiles((s) => s.openId)
   const opened = useProblemFooter((s) => s.byProfile[openId])
   const toggle = useProblemFooter((s) => s.toggle)
-  const tabs = useProblemTabs({
-    sections,
-    compat,
-    compatDismissed,
-    redundant,
-    redundantDismissed,
-    redundantTokens,
-    cleanup,
-    replaced,
-    cosmeticConflicts,
-    sectionExtras,
-  })
+  const tabs = useProblemTabs(result, addAll)
   const listed = tabs.filter((tab) => !FOOTER_SECTIONS.has(tab.id))
   const footer = tabs.filter((tab) => FOOTER_SECTIONS.has(tab.id))
   const openFooter = footer.find((tab) => tab.id === opened)
