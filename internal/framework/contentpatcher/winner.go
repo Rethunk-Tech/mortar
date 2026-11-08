@@ -4,7 +4,6 @@ import (
 	"slices"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // markLoadAfterWinner marks the conflict decided when every clashing pair has a settled order: one of the two loads
@@ -33,7 +32,7 @@ func markLoadAfterWinner(c *framework.AssetConflict, hits []packHit) {
 	c.WinnerID, c.WinnerName, c.WinnerKind = "", "", framework.WinnerPerEntry
 	for _, w := range winners {
 		if allAfter(w, winners, byID) {
-			c.WinnerID, c.WinnerName, c.WinnerKind = w.id, w.name, framework.WinnerChosen
+			c.WinnerID, c.WinnerName, c.WinnerKind = frameworkID(w.id), w.name, framework.WinnerChosen
 			return
 		}
 	}
@@ -80,7 +79,7 @@ func touches(w packHit, shapes []cpShape) bool {
 }
 
 func rivals(a, b packHit) bool {
-	return slices.ContainsFunc(a.rivals, func(id mod.ID) bool { return mod.Equal(id, b.id) })
+	return slices.ContainsFunc(a.rivals, func(id ModID) bool { return Equal(id, b.id) })
 }
 
 // settledAfter reports whether SMAPI loads a after b: through a chosen win or a dependency, directly or through other

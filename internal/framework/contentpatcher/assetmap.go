@@ -8,12 +8,11 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // AssetTouch is one mod or patch that writes a target (or a data key on that target).
 type AssetTouch struct {
-	ModID     mod.ID `json:"modId"`
+	ModID     ModID  `json:"modId"`
 	ModName   string `json:"modName"`
 	ModKey    string `json:"modKey"`
 	Action    string `json:"action"`
@@ -33,7 +32,7 @@ type AssetTarget struct {
 	Target string       `json:"target"`
 	Key    string       `json:"key,omitempty"`
 	Mods   []AssetTouch `json:"mods"`
-	Winner mod.ID       `json:"winner"`
+	Winner ModID        `json:"winner"`
 }
 
 // WhoChangesPage is the fuzzy search result for WhoChanges.
@@ -128,7 +127,7 @@ func AssetMapOf(index []AssetTarget, filter string, shared bool, offset int) Ass
 
 func sharedTarget(target AssetTarget) bool {
 	for _, m := range target.Mods {
-		if !mod.Equal(m.ModID, target.Mods[0].ModID) {
+		if !Equal(m.ModID, target.Mods[0].ModID) {
 			return true
 		}
 	}
@@ -160,7 +159,7 @@ func smapiOrder(mods []framework.Mod) (order map[string]int, after map[string][]
 }
 
 // loadsAfter reports whether mod a already loads after mod b through its dependencies.
-func loadsAfter(after map[string][]string, a, b mod.ID) bool {
+func loadsAfter(after map[string][]string, a, b ModID) bool {
 	seen := map[string]bool{}
 	stack := []string{a.Fold()}
 	target := b.Fold()
@@ -228,7 +227,7 @@ func BuildAssetIndex(mods []framework.Mod) []AssetTarget {
 		winner := indexWinner(touches)
 		modsOut := make([]AssetTouch, len(touches))
 		for i, t := range touches {
-			t.touch.Winner = winner != "" && mod.Equal(t.touch.ModID, winner)
+			t.touch.Winner = winner != "" && Equal(t.touch.ModID, winner)
 			t.touch.CanWin = canWin(touches, t, winner, after)
 			modsOut[i] = t.touch
 		}
@@ -263,7 +262,7 @@ func indexContentPack(im framework.Mod, present map[string]bool, loadOrder int, 
 		}
 		base := indexedTouch{
 			touch: AssetTouch{
-				ModID:     im.ModID(),
+				ModID:     ModID(im.ModID()),
 				ModName:   im.Name,
 				ModKey:    im.Key,
 				Action:    p.action,
@@ -299,7 +298,7 @@ func indexReplacedFiles(im framework.Mod, loadOrder int, grouped map[assetIndexK
 		key := assetIndexKey{target: target, kind: "load"}
 		grouped[key] = append(grouped[key], indexedTouch{
 			touch: AssetTouch{
-				ModID:     im.ModID(),
+				ModID:     ModID(im.ModID()),
 				ModName:   im.Name,
 				ModKey:    im.Key,
 				Action:    kindLoad,
@@ -373,7 +372,7 @@ func dataKeysOf(p cpPatch) []string {
 // PatchManager.ApplyPatchesToAsset replaces its pick with each later candidate, so the last loaded wins too
 // (the Load docs say "first", but the code only skips a strictly higher priority). Two Exclusive loads
 // apply neither.
-func indexWinner(touches []indexedTouch) mod.ID {
+func indexWinner(touches []indexedTouch) ModID {
 	if len(touches) == 0 {
 		return ""
 	}
@@ -381,7 +380,7 @@ func indexWinner(touches []indexedTouch) mod.ID {
 		return touches[0].touch.ModID
 	}
 	type hit struct {
-		id        mod.ID
+		id        ModID
 		rank      int
 		exclusive bool
 		order     int
@@ -435,14 +434,14 @@ func indexWinner(touches []indexedTouch) mod.ID {
 // canWin reports whether making t's mod load after every other mod in the group would make it the winner.
 // Order only breaks a priority tie, and a mod that another already loads after cannot be moved past it
 // without a dependency cycle.
-func canWin(touches []indexedTouch, t indexedTouch, winner mod.ID, after map[string][]string) bool {
-	if winner == "" || mod.Equal(t.touch.ModID, winner) {
+func canWin(touches []indexedTouch, t indexedTouch, winner ModID, after map[string][]string) bool {
+	if winner == "" || Equal(t.touch.ModID, winner) {
 		return false
 	}
 	top, own := t.rank, t.rank
 	for _, o := range touches {
 		top = max(top, o.rank)
-		if mod.Equal(o.touch.ModID, t.touch.ModID) {
+		if Equal(o.touch.ModID, t.touch.ModID) {
 			own = max(own, o.rank)
 		} else if loadsAfter(after, o.touch.ModID, t.touch.ModID) {
 			return false

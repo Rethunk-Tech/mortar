@@ -11,7 +11,6 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-safefs"
 )
@@ -172,7 +171,7 @@ func unusedTilesheetPacks(mods []framework.Mod, skip bool) []framework.Cleanup {
 		mentions := readContentPackForCleanup(im, skip).mentions
 		for _, candidate := range candidates {
 			id := candidate.ModID().Fold()
-			if manifestUses(im, candidate.ModID()) || mentions[id] {
+			if manifestUses(im, ModID(candidate.ModID())) || mentions[id] {
 				recordTilesheetUse(uses[id], im)
 			}
 		}
@@ -288,10 +287,13 @@ func assetBasenames(assets map[string]bool) []string {
 	return out
 }
 
-func manifestUses(im framework.Mod, uniqueID mod.ID) bool {
-	return slices.ContainsFunc(im.Dependencies, func(dep mod.Dependency) bool {
-		return mod.Equal(dep.ModID(), uniqueID)
-	})
+func manifestUses(im framework.Mod, uniqueID ModID) bool {
+	for _, dep := range im.Dependencies {
+		if Equal(ModID(dep.ModID()), uniqueID) {
+			return true
+		}
+	}
+	return false
 }
 
 func recordTilesheetUse(use *tilesheetUse, im framework.Mod) {

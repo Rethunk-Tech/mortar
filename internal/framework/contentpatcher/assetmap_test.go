@@ -145,7 +145,7 @@ func editPack(t *testing.T, id, priority string) framework.Mod {
 func touchOf(t *testing.T, target AssetTarget, id string) AssetTouch {
 	t.Helper()
 	for _, m := range target.Mods {
-		if m.ModID == mod.SMAPI(id) {
+		if m.ModID == SMAPI(id) {
 			return m
 		}
 	}

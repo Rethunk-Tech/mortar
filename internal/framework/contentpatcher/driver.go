@@ -13,6 +13,8 @@ import (
 // ID is Content Patcher's mod id.
 var ID = mod.SMAPI("Pathoschild.ContentPatcher")
 
+func frameworkID(id ModID) mod.ID { return mod.ID(id) }
+
 var _ = framework.Register(Driver{})
 
 // Driver is the Content Patcher framework.

@@ -28,7 +28,6 @@ import (
 	"unique"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -36,7 +35,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
 
-var contentPatcherID = mod.SMAPI("Pathoschild.ContentPatcher")
+var contentPatcherID = SMAPI("Pathoschild.ContentPatcher")
 
 const (
 	kindLoad      = "Load"
@@ -46,7 +45,7 @@ const (
 )
 
 type packHit struct {
-	id           mod.ID
+	id           ModID
 	name         string
 	key          string
 	priority     string
@@ -64,7 +63,7 @@ type packHit struct {
 	schema       map[string]cpSchema
 	config       map[string]string
 	clashes      map[int]bool // indices into edits that overlap an edit of a pack it was not built with
-	rivals       []mod.ID     // the packs of the hit set whose edits clash with this pack's
+	rivals       []ModID      // the packs of the hit set whose edits clash with this pack's
 	// author is the manifest Author, normalised, so two packs by one author can be told apart from strangers.
 	author string
 	// sig is the pack's share of a target's memo key (packSig), and stable whether its stamps can be trusted.
@@ -1081,7 +1080,7 @@ func readConfigSchema(root string) map[string]cpSchema {
 }
 
 func isContentPatcherPack(im framework.Mod) bool {
-	return mod.Equal(im.ContentPackForID(), contentPatcherID)
+	return Equal(ModID(im.ContentPackForID()), contentPatcherID)
 }
 
 // intern shares one copy of a string a pack repeats on every change (its file names, targets and actions), so
@@ -1817,7 +1816,7 @@ func hasModConditionState(arg string, raw json.RawMessage, present map[string]bo
 			return cpConditionUnknown
 		}
 		for _, id := range ids {
-			if present[mod.SMAPI(id).Fold()] {
+			if present[SMAPI(id).Fold()] {
 				return cpConditionTrue
 			}
 		}
@@ -1832,7 +1831,7 @@ func hasModConditionState(arg string, raw json.RawMessage, present map[string]bo
 	if len(ids) == 0 || !condValues(raw, &values) || len(values) != 1 {
 		return cpConditionUnknown
 	}
-	found := slices.ContainsFunc(ids, func(id string) bool { return present[mod.SMAPI(id).Fold()] })
+	found := slices.ContainsFunc(ids, func(id string) bool { return present[SMAPI(id).Fold()] })
 	switch strings.ToLower(values[0]) {
 	case "true":
 		if found {
@@ -1984,7 +1983,7 @@ func noteAssetOwners(target string, mentions map[string]bool) {
 func note(ids []string, mentions map[string]bool) []string {
 	out := make([]string, len(ids))
 	for i, id := range ids {
-		out[i] = mod.SMAPI(id).Fold()
+		out[i] = SMAPI(id).Fold()
 		mentions[out[i]] = true
 	}
 	return out
@@ -2237,7 +2236,7 @@ func (hc *hitCollector) hitFor(k hitAt, p cpPatch, im framework.Mod, pack cached
 	i, found := hc.index[k]
 	if !found {
 		hits = append(hits, packHit{
-			id: im.ModID(), name: im.Name, key: im.Key, priority: p.priority, mentions: knows,
+			id: ModID(im.ModID()), name: im.Name, key: im.Key, priority: p.priority, mentions: knows,
 			root: im.Folder, tokens: pack.patches, present: seen, schema: pack.schema, config: config,
 			dependencies: dependencies, loadAfter: loadAfter, sig: sig, stable: stable, author: normalAuthor(im.Author),
 		})
@@ -2285,7 +2284,7 @@ func addBundledRedundant(mods []framework.Mod, shadowed []framework.Redundant, b
 		shadowed = append(shadowed, framework.Redundant{Kind: "bundled", Key: key, ID: im.ModID(), Name: im.Name, By: []framework.ModRef{bundled[key]}})
 	}
 	// A Redundant row is offered for removal, and SMAPI skips every enabled pack that requires a removed one.
-	return slices.DeleteFunc(shadowed, func(r framework.Redundant) bool { return requiredByEnabled(mods, r.ID) })
+	return slices.DeleteFunc(shadowed, func(r framework.Redundant) bool { return requiredByEnabled(mods, ModID(r.ID)) })
 }
 
 func targetConflicts(at map[string]map[string][]packHit, customFarms map[string]string, bundled map[string]framework.ModRef, run *partsRun, skip bool) ([]framework.AssetConflict, []framework.SettingHint) {
@@ -2328,9 +2327,17 @@ func targetConflicts(at map[string]map[string][]packHit, customFarms map[string]
 
 // requiredByEnabled reports whether an enabled mod needs id: a required dependency, or the framework it is a
 // content pack for.
-func requiredByEnabled(mods []framework.Mod, id mod.ID) bool {
+func requiredByEnabled(mods []framework.Mod, id ModID) bool {
 	return slices.ContainsFunc(mods, func(m framework.Mod) bool {
-		return m.Enabled && slices.ContainsFunc(m.Dependencies, func(d mod.Dependency) bool { return d.Required && mod.Equal(d.ModID(), id) })
+		if !m.Enabled {
+			return false
+		}
+		for _, d := range m.Dependencies {
+			if d.Required && Equal(ModID(d.ModID()), id) {
+				return true
+			}
+		}
+		return false
 	})
 }
 
@@ -2768,9 +2775,10 @@ func aware(a, b packHit) bool {
 
 func conflictOf(kind, target string, hits []packHit) framework.AssetConflict {
 	slices.SortFunc(hits, func(a, b packHit) int { return strings.Compare(a.id.Fold(), b.id.Fold()) })
-	c := framework.AssetConflict{Kind: kind, Target: target, PackIDs: make([]mod.ID, len(hits)), Names: make([]string, len(hits)), Keys: make([]string, len(hits))}
+	c := framework.AssetConflict{Kind: kind, Target: target, Names: make([]string, len(hits)), Keys: make([]string, len(hits))}
 	for i, h := range hits {
-		c.PackIDs[i], c.Names[i], c.Keys[i] = h.id, h.name, h.key
+		c.PackIDs = append(c.PackIDs, frameworkID(h.id))
+		c.Names[i], c.Keys[i] = h.name, h.key
 	}
 	if kind == "edit" && len(hits) >= 3 && strings.Contains(strings.ToLower(target), "objects") {
 		c.Info = itemConflictInfo(hits)
@@ -2795,7 +2803,7 @@ func conflictOf(kind, target string, hits []packHit) framework.AssetConflict {
 		return c
 	}
 	if best >= 0 && len(tied) == 1 {
-		c.WinnerID, c.WinnerName, c.WinnerKind = hits[best].id, hits[best].name, framework.WinnerTop
+		c.WinnerID, c.WinnerName, c.WinnerKind = frameworkID(hits[best].id), hits[best].name, framework.WinnerTop
 		for i, h := range hits {
 			if i != best {
 				c.Overridden = append(c.Overridden, h.name)
@@ -2805,7 +2813,7 @@ func conflictOf(kind, target string, hits []packHit) framework.AssetConflict {
 	}
 	if kind == "load" {
 		if winner, ok := dependencyLoadWinner(hits, tied); ok {
-			c.WinnerID, c.WinnerName, c.WinnerKind = hits[winner].id, hits[winner].name, framework.WinnerLoadOrder
+			c.WinnerID, c.WinnerName, c.WinnerKind = frameworkID(hits[winner].id), hits[winner].name, framework.WinnerLoadOrder
 			for i, h := range hits {
 				if i != winner {
 					c.Overridden = append(c.Overridden, h.name)
@@ -2940,7 +2948,7 @@ func harmlessLoads(hits []packHit, conflict framework.AssetConflict) (bool, *fra
 	if allLoadFilesIdentical(hits, conflict.Target) {
 		return true, nil
 	}
-	winner := slices.IndexFunc(hits, func(h packHit) bool { return mod.Equal(h.id, conflict.WinnerID) })
+	winner := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.id, ModID(conflict.WinnerID)) })
 	if winner < 0 {
 		return allLoadsBlank(hits, conflict.Target), nil
 	}
@@ -3021,7 +3029,7 @@ func settingForDeadLoad(hit packHit, load cpPatch, winner packHit, conflict fram
 			continue
 		}
 		return &framework.SettingHint{
-			Key: hit.key, ID: hit.id, Name: hit.name, Field: schema.key,
+			Key: hit.key, ID: frameworkID(hit.id), Name: hit.name, Field: schema.key,
 			Current: current, Suggested: []string{schema.defaultValue},
 			Description: "This setting has no effect because " + winner.name + " loads " + conflict.Target + " over it.",
 		}
@@ -3071,7 +3079,7 @@ func loadPriorityDecided(hits []packHit, conflict framework.AssetConflict) bool 
 	if conflict.WinnerID == "" {
 		return false
 	}
-	winner := slices.IndexFunc(hits, func(h packHit) bool { return mod.Equal(h.id, conflict.WinnerID) })
+	winner := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.id, ModID(conflict.WinnerID)) })
 	if winner < 0 {
 		return false
 	}

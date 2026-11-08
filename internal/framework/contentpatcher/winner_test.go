@@ -141,7 +141,7 @@ func BenchmarkMarkLoadAfterWinner(b *testing.B) {
 	const h = 64
 	hits := make([]packHit, h)
 	for i := range hits {
-		hits[i] = packHit{id: mod.ID(fmt.Sprintf("a.p%d", i)), edits: []cpPatch{{shapes: whole}}, loadAfter: map[string]bool{}, dependencies: map[string]bool{}}
+		hits[i] = packHit{id: ModID(fmt.Sprintf("a.p%d", i)), edits: []cpPatch{{shapes: whole}}, loadAfter: map[string]bool{}, dependencies: map[string]bool{}}
 	}
 	for i := range hits {
 		for j := range hits {

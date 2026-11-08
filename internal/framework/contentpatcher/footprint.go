@@ -22,7 +22,6 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/go-tilemask"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // cpShape is part of a target one edit writes: an area (image pixels, or map tiles on every layer), one map
@@ -1484,7 +1483,7 @@ func switchOff(h packHit, peerSets ...[]packHit) (framework.ConflictFix, bool) {
 		if !set {
 			current = field.defaultValue
 		}
-		best = framework.ConflictFix{Key: h.key, ID: h.id, Name: h.name, Field: field.key, Current: current, Value: value}
+		best = framework.ConflictFix{Key: h.key, ID: frameworkID(h.id), Name: h.name, Field: field.key, Current: current, Value: value}
 		bestGated, bestNamed, found = gated, named, true
 	}
 	return best, found
@@ -1542,7 +1541,7 @@ func settingStillClashes(h packHit, peers []packHit, field cpSchema, value strin
 		active = h.edits
 	}
 	for _, peer := range peers {
-		if mod.Equal(peer.id, h.id) {
+		if Equal(peer.id, h.id) {
 			continue
 		}
 		if clash, _ := editsClash(active, peer.edits); clash {

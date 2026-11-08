@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 func conflictEvidence(kind string, hits []packHit) []framework.ConflictEvidence {
@@ -32,7 +31,7 @@ func conflictEvidence(kind string, hits []packHit) []framework.ConflictEvidence 
 			}
 			e := framework.ConflictEvidence{
 				PackName: hit.name,
-				PackID:   hit.id,
+				PackID:   frameworkID(hit.id),
 				Source:   patch.source,
 				Index:    patch.index,
 				Action:   patch.action,
@@ -60,14 +59,14 @@ func conflictEvidence(kind string, hits []packHit) []framework.ConflictEvidence 
 
 // clashingKeys lists the data entries and fields of patch that another pack's edit also writes, as
 // "Entry 301" or "Field 301.Price" with any TargetField path, without the pack scoping of token keys.
-func clashingKeys(patch cpPatch, hits []packHit, self mod.ID) []string {
+func clashingKeys(patch cpPatch, hits []packHit, self ModID) []string {
 	keys := []string{}
 	for _, s := range patch.shapes {
 		if s.kind != 'p' {
 			continue
 		}
 		clash := slices.ContainsFunc(hits, func(h packHit) bool {
-			return !mod.Equal(h.id, self) && slices.ContainsFunc(h.edits, func(o cpPatch) bool {
+			return !Equal(h.id, self) && slices.ContainsFunc(h.edits, func(o cpPatch) bool {
 				return slices.ContainsFunc(o.shapes, s.overlaps)
 			})
 		})
@@ -151,7 +150,7 @@ func editBounds(hits []packHit) [][]patchBounds {
 	return out
 }
 
-func overlapAgainst(patch cpPatch, hits []packHit, bounds [][]patchBounds, self mod.ID) (x, y, w, h int, ok bool) {
+func overlapAgainst(patch cpPatch, hits []packHit, bounds [][]patchBounds, self ModID) (x, y, w, h int, ok bool) {
 	own, ok := destBounds(patch)
 	if !ok {
 		return 0, 0, 0, 0, false
@@ -159,7 +158,7 @@ func overlapAgainst(patch cpPatch, hits []packHit, bounds [][]patchBounds, self 
 	var inter image.Rectangle
 	found := false
 	for i, hit := range hits {
-		if mod.Equal(hit.id, self) {
+		if Equal(hit.id, self) {
 			continue
 		}
 		for _, peer := range bounds[i] {

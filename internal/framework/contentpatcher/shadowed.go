@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // shapedFields are the change fields whose whole effect editShapes and dataShapes describe.
@@ -98,7 +97,7 @@ func packShadowedBy(im framework.Mod, pack cachedPack, at map[string]map[string]
 		}
 		seen[p.kind+"\x00"+p.target] = true
 		hits := at[p.kind][p.target]
-		i := slices.IndexFunc(hits, func(h packHit) bool { return mod.Equal(h.id, im.ModID()) })
+		i := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.id, ModID(im.ModID())) })
 		if i < 0 {
 			continue
 		}
@@ -147,7 +146,7 @@ func loadWinner(l cpPatch, self packHit, hits []packHit) (int, bool) {
 			}
 		}
 	}
-	if count != 1 || best.when.conditional || hits[winner].key == self.key || mod.Equal(hits[winner].id, self.id) {
+	if count != 1 || best.when.conditional || hits[winner].key == self.key || Equal(hits[winner].id, self.id) {
 		return -1, false
 	}
 	return winner, top > contentPatcherPriority("load", l.priority)
@@ -176,7 +175,7 @@ func editCoveredBy(e cpPatch, self packHit, hits []packHit) ([]int, bool) {
 	idx := coverIndex{keys: map[string]int{}, tiles: map[tileAt]int{}, rects: map[string][]ownedRect{}}
 	selfRank := contentPatcherPriority("edit", e.priority)
 	for i, h := range hits {
-		if h.key == self.key || mod.Equal(h.id, self.id) {
+		if h.key == self.key || Equal(h.id, self.id) {
 			continue
 		}
 		later := h.loadAfter[self.id.Fold()] || h.dependencies[self.id.Fold()]
