@@ -4,6 +4,7 @@ import {
   type DragEndEvent,
   KeyboardSensor,
   PointerSensor,
+  type UniqueIdentifier,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -45,6 +46,7 @@ import { shouldLeavePageOnEscape } from '../settings/shouldLeavePageOnEscape.ts'
 import { openImport } from '../share/store.ts'
 import { baseName } from '../shell/baseName.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
+import { useDragAnnouncements } from '../shell/dragAnnouncements.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
@@ -375,6 +377,12 @@ export function ProfilesPage() {
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
+  const announcements = useDragAnnouncements(
+    useCallback(
+      (id: UniqueIdentifier) => profiles.find((p) => p.id === id)?.name ?? String(id),
+      [profiles],
+    ),
+  )
   useEffect(() => {
     loadTrash().catch(reportUnexpected)
   }, [loadTrash])
@@ -440,7 +448,12 @@ export function ProfilesPage() {
               {t`Create a profile to manage a set of mods.`}
             </EmptyState>
           ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              accessibility={{ announcements }}
+              onDragEnd={onDragEnd}
+            >
               <SortableContext
                 items={profiles.map((p) => p.id)}
                 strategy={verticalListSortingStrategy}

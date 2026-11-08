@@ -6,6 +6,7 @@ import {
   KeyboardSensor,
   PointerSensor,
   pointerWithin,
+  type UniqueIdentifier,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -16,12 +17,13 @@ import {
   useSortable,
 } from '@dnd-kit/sortable'
 import { useLingui } from '@lingui/react/macro'
-import { alpha, Box, ButtonBase } from '@mui/material'
+import { alpha, Box } from '@mui/material'
 import { GripVertical } from 'lucide-react'
-import { type ReactNode, useMemo, useState } from 'react'
+import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SetModOrder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useDragAnnouncements } from '../shell/dragAnnouncements.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import type { ListRow } from './listColumns.ts'
@@ -69,6 +71,11 @@ export function ManualOrder({
   const [lifted, setLifted] = useState<string | null>(null)
   const rows = useMemo(() => groups.flatMap((g) => g.items), [groups])
   const ids = useMemo(() => rows.map((r) => modId(r.mod)), [rows])
+  const nameOf = useCallback(
+    (id: UniqueIdentifier) => rows.find((r) => modId(r.mod) === id)?.mod.name ?? String(id),
+    [rows],
+  )
+  const announcements = useDragAnnouncements(nameOf)
   if (!enabled) {
     return <>{children}</>
   }
@@ -92,6 +99,7 @@ export function ManualOrder({
         const within = pointerWithin(args)
         return within.length > 0 ? within : closestCenter(args)
       }}
+      accessibility={{ announcements }}
       onDragStart={({ active }) => setLifted(rowOf(active.id)?.mod.name ?? null)}
       onDragCancel={() => setLifted(null)}
       onDragEnd={onDragEnd}
@@ -145,11 +153,14 @@ export function ManualHandle({ id, name }: { id: string; name: string }) {
             : '2px solid transparent',
       })}
     >
-      <ButtonBase
+      <Box
+        component="button"
+        type="button"
         ref={setNodeRef}
         {...attributes}
         {...listeners}
         aria-label={t`Move ${name}`}
+        className="manual-handle"
         sx={{
           position: 'absolute',
           left: 0,
@@ -160,11 +171,20 @@ export function ManualHandle({ id, name }: { id: string; name: string }) {
           cursor: isDragging ? 'grabbing' : 'grab',
           opacity: isDragging ? 1 : IDLE_OPACITY,
           touchAction: 'none',
+          // A plain button: every drag event redraws each mounted grip, and ButtonBase's ripple tree would go with it.
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 0,
+          border: 0,
+          bgcolor: 'transparent',
+          color: 'inherit',
+          '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
           '&:hover, &:focus-visible': { opacity: 1 },
         }}
       >
         <GripVertical size={HANDLE_PX} aria-hidden={true} />
-      </ButtonBase>
+      </Box>
     </Box>
   )
 }

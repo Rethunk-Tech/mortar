@@ -6,6 +6,7 @@ import {
   KeyboardSensor,
   MeasuringStrategy,
   PointerSensor,
+  type UniqueIdentifier,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -19,7 +20,8 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Menu, TableCell, type TableCellProps } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { ArrowDown, ArrowUp, RotateCcw } from 'lucide-react'
-import { type MouseEvent, type ReactNode, useRef, useState } from 'react'
+import { type MouseEvent, type ReactNode, useCallback, useRef, useState } from 'react'
+import { useDragAnnouncements } from '../shell/dragAnnouncements.ts'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { visuallyHidden } from '../shell/visuallyHidden.ts'
@@ -149,6 +151,9 @@ function HeaderCells({
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
+  const announcements = useDragAnnouncements(
+    useCallback((id: UniqueIdentifier) => columnLabel(id as ListColumnId, idName), [idName]),
+  )
   // The click that ends a drag must not also re-sort by the dragged column.
   const dragged = useRef<boolean>(false)
   const [lifted, setLifted] = useState<ListColumnId | null>(null)
@@ -204,7 +209,7 @@ function HeaderCells({
       collisionDetection={closestCenter}
       measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       // The header row is a <tr>, which cannot hold dnd-kit's hidden screen-reader text; it goes to the body instead.
-      accessibility={{ container: document.body }}
+      accessibility={{ container: document.body, announcements }}
       onDragStart={({ active }) => {
         dragged.current = true
         setLifted(active.id as ListColumnId)

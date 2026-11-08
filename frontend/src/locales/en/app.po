@@ -211,6 +211,10 @@ msgstr "No notes for this release."
 msgid "Could not save the file"
 msgstr "Could not save the file"
 
+#: src/shell/dragAnnouncements.ts
+msgid "Dropped {name} at {place}."
+msgstr "Dropped {name} at {place}."
+
 #: src/saves/lackChipActions.tsx
 msgid "Enable {name} in this profile"
 msgstr "Enable {name} in this profile"
@@ -1729,6 +1733,10 @@ msgstr "What happened"
 msgid "Texts"
 msgstr "Texts"
 
+#: src/shell/dragAnnouncements.ts
+msgid "Moving {name} was cancelled."
+msgstr "Moving {name} was cancelled."
+
 #: src/share/ModpackDialog.tsx
 msgid "Export as {source} modpack"
 msgstr "Export as {source} modpack"
@@ -3210,6 +3218,10 @@ msgstr "Could not read the mod project"
 msgid "Could not release the mod"
 msgstr "Could not release the mod"
 
+#: src/shell/dragAnnouncements.ts
+msgid "{name} is not over a place to drop it."
+msgstr "{name} is not over a place to drop it."
+
 #: src/browse/CardAction.tsx
 msgid "Get"
 msgstr "Get"
@@ -4352,6 +4364,10 @@ msgstr "Starting dependencies"
 msgid "Release…"
 msgstr "Release…"
 
+#: src/shell/dragAnnouncements.ts
+msgid "Dropped {name} where it was."
+msgstr "Dropped {name} where it was."
+
 #: src/firstrun/FindStep.tsx
 msgid "Found a copy outside your launchers:"
 msgstr "Found a copy outside your launchers:"
@@ -5425,6 +5441,10 @@ msgstr "found, without {name}"
 #: src/launch/VanillaPlay.tsx
 msgid "Play with"
 msgstr "Play with"
+
+#: src/shell/dragAnnouncements.ts
+msgid "Picked up {name}."
+msgstr "Picked up {name}."
 
 #: src/lan/SendPanel.tsx
 msgid "Sent to {name}"
@@ -7178,6 +7198,10 @@ msgstr "Could not save the last game"
 #: src/develop/RepositoryChoice.tsx
 msgid "Keep it on this computer"
 msgstr "Keep it on this computer"
+
+#: src/shell/dragAnnouncements.ts
+msgid "{name} is over {place}."
+msgstr "{name} is over {place}."
 
 #: src/firstrun/FirstRun.tsx
 msgid "Welcome to Mortar"

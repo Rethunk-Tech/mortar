@@ -205,6 +205,10 @@ msgstr "此版本暂无备注。"
 msgid "Could not save the file"
 msgstr "无法保存该文件"
 
+#: src/shell/dragAnnouncements.ts
+msgid "Dropped {name} at {place}."
+msgstr ""
+
 #: src/saves/lackChipActions.tsx
 msgid "Enable {name} in this profile"
 msgstr "在此配置文件中启用 {name}"
@@ -1723,6 +1727,10 @@ msgstr ""
 msgid "Texts"
 msgstr ""
 
+#: src/shell/dragAnnouncements.ts
+msgid "Moving {name} was cancelled."
+msgstr ""
+
 #: src/share/ModpackDialog.tsx
 msgid "Export as {source} modpack"
 msgstr ""
@@ -3204,6 +3212,10 @@ msgstr ""
 msgid "Could not release the mod"
 msgstr ""
 
+#: src/shell/dragAnnouncements.ts
+msgid "{name} is not over a place to drop it."
+msgstr ""
+
 #: src/browse/CardAction.tsx
 msgid "Get"
 msgstr ""
@@ -4346,6 +4358,10 @@ msgstr ""
 msgid "Release…"
 msgstr ""
 
+#: src/shell/dragAnnouncements.ts
+msgid "Dropped {name} where it was."
+msgstr ""
+
 #: src/firstrun/FindStep.tsx
 msgid "Found a copy outside your launchers:"
 msgstr ""
@@ -5418,6 +5434,10 @@ msgstr ""
 
 #: src/launch/VanillaPlay.tsx
 msgid "Play with"
+msgstr ""
+
+#: src/shell/dragAnnouncements.ts
+msgid "Picked up {name}."
 msgstr ""
 
 #: src/lan/SendPanel.tsx
@@ -7171,6 +7191,10 @@ msgstr ""
 
 #: src/develop/RepositoryChoice.tsx
 msgid "Keep it on this computer"
+msgstr ""
+
+#: src/shell/dragAnnouncements.ts
+msgid "{name} is over {place}."
 msgstr ""
 
 #: src/firstrun/FirstRun.tsx

@@ -4,6 +4,7 @@ import {
   type DragEndEvent,
   KeyboardSensor,
   PointerSensor,
+  type UniqueIdentifier,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -47,6 +48,7 @@ import { persist } from '../settings/persist.ts'
 import { useSettings } from '../settings/store.ts'
 import { CardsView } from '../shell/CardsView.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
+import { useDragAnnouncements } from '../shell/dragAnnouncements.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { MenuButton } from '../shell/MenuButton.tsx'
@@ -254,6 +256,11 @@ function ProjectGridView({
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
+  const nameOf = useCallback(
+    (id: UniqueIdentifier) => projects.find((p) => p.dir === id)?.name ?? String(id),
+    [projects],
+  )
+  const announcements = useDragAnnouncements(nameOf)
   if (projects.length === 0 && filtering) {
     return (
       <EmptyState
@@ -287,7 +294,12 @@ function ProjectGridView({
     }
   }
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      accessibility={{ announcements }}
+      onDragEnd={onDragEnd}
+    >
       <SortableContext
         items={projects.map((p) => p.dir)}
         strategy={list ? verticalListSortingStrategy : rectSortingStrategy}

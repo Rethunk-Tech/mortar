@@ -118,7 +118,7 @@ export function MenuCheck({
     </MenuItem>
   )
   return hint ? (
-    <Tooltip title={hint} placement="right">
+    <Tooltip title={hint} placement="right" describeChild={true}>
       {row}
     </Tooltip>
   ) : (
