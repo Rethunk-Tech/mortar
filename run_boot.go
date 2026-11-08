@@ -30,6 +30,7 @@ import (
 
 	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
+	"github.com/Rethunk-Tech/go-desktopenv/wallpaper"
 	"github.com/Rethunk-Tech/go-safefs"
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
@@ -286,7 +287,7 @@ func (c *boot) newApp() error {
 				game.ScreenshotMiddleware(c.home, currentSettings),
 				profile.CoverMiddleware(func() *profile.Store { return c.profiles }),
 				modpic.Middleware(func() *modpic.Cache { return c.pictures }),
-				backdrop.Middleware(currentSettings, backdrop.SystemDefault, backdrop.DesktopWallpaper, filepath.Join(c.dataDir, "cache", "backdrop")),
+				backdrop.Middleware(currentSettings, backdrop.SystemDefault, wallpaper.Path, filepath.Join(c.dataDir, "cache", "backdrop")),
 			),
 		},
 		OnShutdown: c.shutdown,
