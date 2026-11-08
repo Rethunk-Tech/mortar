@@ -94,15 +94,7 @@ PY
 }
 
 # mx_game_pids prints the pids of the game's own executable in the sandbox prefix, each checked through its environment.
-mx_game_pids() {
-  local d
-  for d in /proc/[0-9]*; do
-    { tr '\0' '\n' <"$d/environ" | grep -qxE "WINEPREFIX=${mx_compat}/pfx/?"; } 2>/dev/null || continue
-    tr '\0' ' ' <"$d/cmdline" 2>/dev/null | grep -q 'Lethal Company.exe' || continue
-    tr '\0' ' ' <"$d/cmdline" | grep -q 'steam.exe' && continue
-    echo "${d#/proc/}"
-  done
-}
+mx_game_pids() { prefix_pids "$mx_compat" --game-only; }
 
 mx_state() { game_state lethal-company; }
 

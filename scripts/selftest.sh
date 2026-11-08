@@ -745,15 +745,19 @@ pick_port() {
   while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
 }
 
-# regress_sandbox [SUFFIX]: a regress run's own sandbox, /var/tmp/mortar-regress[SUFFIX]-XXXXXX, on a free port. A
-# failed run keeps its folder for the logs; the marker lets reap collect it later.
-regress_sandbox() {
-  ROOT=$(mktemp -d "/var/tmp/mortar-regress${1:-}-XXXXXX")
-  case "$ROOT" in "/var/tmp/mortar-regress${1:-}-"??????) ;; *)
+new_sandbox_dir() {
+  ROOT=$(mktemp -d "${1}XXXXXX")
+  case "$ROOT" in "$1"??????) ;; *)
     echo "unexpected sandbox dir $ROOT" >&2
     exit 1
     ;;
   esac
+}
+
+# regress_sandbox [SUFFIX]: a regress run's own sandbox, /var/tmp/mortar-regress[SUFFIX]-XXXXXX, on a free port. A
+# failed run keeps its folder for the logs; the marker lets reap collect it later.
+regress_sandbox() {
+  new_sandbox_dir "/var/tmp/mortar-regress${1:-}-"
   mark
   pick_port
   SANDBOX_HOME=$ROOT/home
@@ -842,31 +846,38 @@ regress() {
   [ "$verdict" = PASS ]
 }
 
-# reap_prefix stops the processes that run in the Lethal Company prefix at $1 (a compatdata folder), each verified
-# through /proc/PID/environ: a Wine process names the prefix in WINEPREFIX, Proton's own script in STEAM_COMPAT_DATA_PATH.
+# prefix_pids COMPAT [--game-only] prints pids whose environ names COMPAT: a Wine process in
+# WINEPREFIX, Proton's own script in STEAM_COMPAT_DATA_PATH. --game-only keeps Lethal Company.exe
+# and drops steam.exe.
+prefix_pids() {
+  local compat=$1 game_only=0 d
+  [ "${2:-}" = --game-only ] && game_only=1
+  for d in /proc/[0-9]*; do
+    { tr '\0' '\n' <"$d/environ" | grep -qxE "(WINEPREFIX=${compat}/pfx/?|STEAM_COMPAT_DATA_PATH=${compat}/?)"; } 2>/dev/null || continue
+    if [ "$game_only" = 1 ]; then
+      tr '\0' ' ' <"$d/cmdline" 2>/dev/null | grep -q 'Lethal Company.exe' || continue
+      tr '\0' ' ' <"$d/cmdline" | grep -q 'steam.exe' && continue
+    fi
+    echo "${d#/proc/}"
+  done
+}
+
+# reap_prefix stops the processes that run in the Lethal Company prefix at $1 (a compatdata folder).
 # The game's executable goes first so Mortar sees it exit while the wineserver still answers.
 reap_prefix() {
-  local compat=$1 d p pids=() first=()
-  for d in /proc/[0-9]*; do
-    p=${d#/proc/}
-    if { tr '\0' '\n' <"$d/environ" | grep -qxE "(WINEPREFIX=${compat}/pfx/?|STEAM_COMPAT_DATA_PATH=${compat}/?)"; } 2>/dev/null; then
-      if tr '\0' ' ' <"$d/cmdline" 2>/dev/null | grep -q 'Lethal Company.exe' && ! tr '\0' ' ' <"$d/cmdline" | grep -q 'steam.exe'; then
-        first+=("$p")
-      else
-        pids+=("$p")
-      fi
-    fi
-  done
+  local compat=$1 p pids=() first=() still=()
+  mapfile -t first < <(prefix_pids "$compat" --game-only)
+  mapfile -t pids < <(prefix_pids "$compat" | grep -vxF -f <(printf '%s\n' "${first[@]}") || true)
   [ ${#first[@]} -gt 0 ] && kill "${first[@]}" 2>/dev/null
   sleep 2
   [ ${#pids[@]} -gt 0 ] && kill "${pids[@]}" 2>/dev/null
   sleep 2
+  mapfile -t still < <(prefix_pids "$compat")
   for p in "${first[@]}" "${pids[@]}"; do
     # A process that ignored SIGTERM is checked against its prefix again before it is killed.
-    if { tr '\0' '\n' <"/proc/$p/environ" | grep -qxE "(WINEPREFIX=${compat}/pfx/?|STEAM_COMPAT_DATA_PATH=${compat}/?)"; } 2>/dev/null &&
-      ! grep -q ') Z' "/proc/$p/stat" 2>/dev/null; then
-      kill -KILL "$p" 2>/dev/null || true
-    fi
+    printf '%s\n' "${still[@]}" | grep -qx "$p" || continue
+    grep -q ') Z' "/proc/$p/stat" 2>/dev/null && continue
+    kill -KILL "$p" 2>/dev/null || true
   done
   echo "${first[*]} ${pids[*]}"
 }
@@ -1778,12 +1789,7 @@ PY
 # and to reach no socket of the desktop session's; the fourth launch must be refused, and stopping must take exactly
 # the recorded pids. It runs under a session key of its own, so it spends none of the real session's launches.
 harness_check() {
-  ROOT=$(mktemp -d "$BASE/mortar-harness-XXXXXX")
-  case "$ROOT" in "$BASE"/mortar-harness-??????) ;; *)
-    echo "unexpected sandbox dir $ROOT" >&2
-    exit 1
-    ;;
-  esac
+  new_sandbox_dir "$BASE/mortar-harness-"
   mark
   SESSION_KEY=harness-check-$$
   LAUNCH_COUNT=$BASE/mortar-launch-cap/$SESSION_KEY
