@@ -17,19 +17,21 @@ func protoString(b []byte, num uint64, s string) []byte {
 	return append(b, s...)
 }
 
+// The field numbers are the game's own SaveGame schema (schema-1.21.0.rc.3.proto); this holds Mortar's conversion of a
+// world's domains into mod ids, which the reader in go-vintagestory does not do.
 func TestScanReadsAVintageStoryWorld(t *testing.T) {
 	dir := t.TempDir()
 	var data []byte
 	data = binary.AppendUvarint(data, 7<<3|5) // a fixed32 the reader skips
 	data = append(data, 1, 2, 3, 4)
-	data = protoString(data, vsWorldName, "Bjornheim")
+	data = protoString(data, 13, "Bjornheim")
 	data = binary.AppendUvarint(data, 40<<3|3) // a group whose own name field must not win
-	data = protoString(data, vsWorldName, "inner")
+	data = protoString(data, 13, "inner")
 	data = binary.AppendUvarint(data, 40<<3|4)
-	data = binary.AppendUvarint(data, vsTotalSecondsPlayed<<3)
+	data = binary.AppendUvarint(data, 14<<3)
 	data = binary.AppendUvarint(data, 7200)
-	data = protoString(data, vsLastSavedVersion, "1.21.4")
-	data = protoString(data, vsPlayStyle, "surviveandbuild")
+	data = protoString(data, 21, "1.21.4")
+	data = protoString(data, 29, "surviveandbuild")
 	// ModData["BlockIDs"]: a map of block ids to codes, a mod's codes in its own domain.
 	var ids []byte
 	for i, code := range []string{"air", "creative:lamp", "primitivesurvival:fishbasket", "PrimitiveSurvival:weir"} {
@@ -45,7 +47,7 @@ func TestScanReadsAVintageStoryWorld(t *testing.T) {
 	entry = binary.AppendUvarint(entry, 2<<3|2)
 	entry = binary.AppendUvarint(entry, uint64(len(ids)))
 	entry = append(entry, ids...)
-	data = binary.AppendUvarint(data, vsModData<<3|2)
+	data = binary.AppendUvarint(data, 11<<3|2)
 	data = binary.AppendUvarint(data, uint64(len(entry)))
 	data = append(data, entry...)
 	conn, err := sql.Open("sqlite", filepath.Join(dir, "Bjornheim.vcdbs"))
