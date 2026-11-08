@@ -1,4 +1,4 @@
-package contentpatcher
+package cp
 
 import (
 	"bytes"
@@ -21,51 +21,50 @@ import (
 	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/go-tilemask"
-	"github.com/Rethunk-Tech/mortar/internal/framework"
 )
 
-// cpShape is part of a target one edit writes: an area (image pixels, or map tiles on every layer), one map
+// Shape is part of a target one edit writes: an area (image pixels, or map tiles on every layer), one map
 // tile on one layer, one map property, or the whole asset when the area cannot be known without running
 // Content Patcher (tokens, a map patched from a file without ToArea).
-type cpShape struct {
-	kind       byte // 'r' area, 't' tile, 'p' property, 'w' whole
-	x, y, w, h int
-	cells      string
-	layer, key string
+type Shape struct {
+	Kind       byte // 'r' area, 't' tile, 'p' property, 'w' whole
+	X, Y, W, H int
+	Cells      string
+	Layer, Key string
 	// value is a property's literal value, "" when tokenized; tiny marks a whole-asset shape that is really one
 	// or two tiles at a position only Content Patcher can work out.
-	value string
-	tiny  bool
+	Value string
+	Tiny  bool
 }
 
-func (s cpShape) area() (x, y, w, h int) {
-	if s.kind == 't' {
-		return s.x, s.y, 1, 1
+func (s Shape) area() (x, y, w, h int) {
+	if s.Kind == 't' {
+		return s.X, s.Y, 1, 1
 	}
-	return s.x, s.y, s.w, s.h
+	return s.X, s.Y, s.W, s.H
 }
 
 // overlaps reports whether two edits can write the same pixels, tiles or properties. A whole-asset edit is
 // taken to touch every tile but no map property, since a map patch replaces tiles and keeps the properties
 // it does not name.
-func (s cpShape) overlaps(o cpShape) bool {
-	if s.kind == 'p' || o.kind == 'p' {
+func (s Shape) overlaps(o Shape) bool {
+	if s.Kind == 'p' || o.Kind == 'p' {
 		// Two packs setting a property to the same value agree; only different (or unknown) values clash.
-		return s.kind == o.kind && s.key == o.key && (s.value == "" || o.value == "" || !strings.EqualFold(s.value, o.value))
+		return s.Kind == o.Kind && s.Key == o.Key && (s.Value == "" || o.Value == "" || !strings.EqualFold(s.Value, o.Value))
 	}
-	if s.kind == 'w' || o.kind == 'w' {
+	if s.Kind == 'w' || o.Kind == 'w' {
 		return true
 	}
-	if s.layer != "" && o.layer != "" && s.layer != o.layer {
+	if s.Layer != "" && o.Layer != "" && s.Layer != o.Layer {
 		return false
 	}
-	if s.cells != "" || o.cells != "" {
-		if s.cells != "" && o.cells != "" {
-			return cellSetsOverlap(s.cells, o.cells)
+	if s.Cells != "" || o.Cells != "" {
+		if s.Cells != "" && o.Cells != "" {
+			return cellSetsOverlap(s.Cells, o.Cells)
 		}
-		cells, area := s.cells, o
+		cells, area := s.Cells, o
 		if cells == "" {
-			cells, area = o.cells, s
+			cells, area = o.Cells, s
 		}
 		return cellsHitArea(cells, area)
 	}
@@ -75,7 +74,7 @@ func (s cpShape) overlaps(o cpShape) bool {
 }
 
 // cellsHitArea reports whether any encoded "x,y" 16-pixel cell intersects the shape's rectangle.
-func cellsHitArea(cells string, area cpShape) bool {
+func cellsHitArea(cells string, area Shape) bool {
 	ax, ay, aw, ah := area.area()
 	for encoded := range strings.SplitSeq(cells, ";") {
 		if encoded == "" {
@@ -136,17 +135,17 @@ func internCellSet(s string) map[string]bool {
 // shapeSet is one patch's shapes with its properties grouped by key: a property only overlaps a property with the
 // same key, so a large data edit is matched by key instead of against every key of the other patch.
 type shapeSet struct {
-	props map[string][]cpShape
-	rest  []cpShape
+	Props map[string][]Shape
+	Rest  []Shape
 }
 
-func indexShapes(shapes []cpShape) *shapeSet {
-	set := &shapeSet{props: map[string][]cpShape{}}
+func indexShapes(shapes []Shape) *shapeSet {
+	set := &shapeSet{Props: map[string][]Shape{}}
 	for _, s := range shapes {
-		if s.kind == 'p' {
-			set.props[s.key] = append(set.props[s.key], s)
+		if s.Kind == 'p' {
+			set.Props[s.Key] = append(set.Props[s.Key], s)
 		} else {
-			set.rest = append(set.rest, s)
+			set.Rest = append(set.Rest, s)
 		}
 	}
 	return set
@@ -156,10 +155,10 @@ func indexShapes(shapes []cpShape) *shapeSet {
 // target edited by many packs indexes each patch once.
 var shapeIndexes = struct {
 	sync.Mutex
-	sets map[*cpShape]*shapeSet
-}{sets: map[*cpShape]*shapeSet{}}
+	sets map[*Shape]*shapeSet
+}{sets: map[*Shape]*shapeSet{}}
 
-func shapeIndex(shapes []cpShape) *shapeSet {
+func shapeIndex(shapes []Shape) *shapeSet {
 	if len(shapes) == 0 {
 		return indexShapes(shapes)
 	}
@@ -175,17 +174,17 @@ func shapeIndex(shapes []cpShape) *shapeSet {
 
 // shapeSummary is what a pack's edits touch, so a pair that touches nothing in common skips the edit-by-edit check.
 type shapeSummary struct {
-	props map[string]struct{}
-	rest  bool
+	Props map[string]struct{}
+	Rest  bool
 }
 
 func summarize(index []*shapeSet) shapeSummary {
-	s := shapeSummary{props: map[string]struct{}{}}
+	s := shapeSummary{Props: map[string]struct{}{}}
 	for _, set := range index {
-		for k := range set.props {
-			s.props[k] = struct{}{}
+		for k := range set.Props {
+			s.Props[k] = struct{}{}
 		}
-		s.rest = s.rest || len(set.rest) > 0
+		s.Rest = s.Rest || len(set.Rest) > 0
 	}
 	return s
 }
@@ -193,10 +192,10 @@ func summarize(index []*shapeSet) shapeSummary {
 // mayOverlap is false only when no shape of one pack can overlap a shape of the other: property shapes overlap only
 // on the same key, and every other shape only another non-property shape.
 func (s shapeSummary) mayOverlap(o shapeSummary) bool {
-	if s.rest && o.rest {
+	if s.Rest && o.Rest {
 		return true
 	}
-	small, large := s.props, o.props
+	small, large := s.Props, o.Props
 	if len(small) > len(large) {
 		small, large = large, small
 	}
@@ -208,11 +207,11 @@ func (s shapeSummary) mayOverlap(o shapeSummary) bool {
 	return false
 }
 
-func (set *shapeSet) overlaps(shapes []cpShape) bool {
+func (set *shapeSet) overlaps(shapes []Shape) bool {
 	for _, x := range shapes {
-		others := set.rest
-		if x.kind == 'p' {
-			others = set.props[x.key]
+		others := set.Rest
+		if x.Kind == 'p' {
+			others = set.Props[x.Key]
 		}
 		if slices.ContainsFunc(others, x.overlaps) {
 			return true
@@ -221,7 +220,7 @@ func (set *shapeSet) overlaps(shapes []cpShape) bool {
 	return false
 }
 
-func shapesOverlap(a, b []cpShape) bool {
+func shapesOverlap(a, b []Shape) bool {
 	for _, x := range a {
 		if slices.ContainsFunc(b, x.overlaps) {
 			return true
@@ -230,7 +229,7 @@ func shapesOverlap(a, b []cpShape) bool {
 	return false
 }
 
-var whole = []cpShape{{kind: 'w'}}
+var whole = []Shape{{Kind: 'w'}}
 
 // packScopedKey keeps a data key that holds a token, such as {{ModId}} or a pack's own config token,
 // from matching another pack's identical text: each pack fills its tokens with its own values.
@@ -241,8 +240,8 @@ func packScopedKey(root, key string) string {
 	return key
 }
 
-func dataShapes(root string, ch cpChange, values map[string]string) []cpShape {
-	var out []cpShape
+func dataShapes(root string, ch contentChange, values map[string]string) []Shape {
+	var out []Shape
 	// With TargetField, Entries and Fields address keys inside that field of one entry, not the asset's
 	// top-level entries, so the path is part of every key.
 	base := ""
@@ -260,7 +259,7 @@ func dataShapes(root string, ch cpChange, values map[string]string) []cpShape {
 				// Content Patcher appends "#-1" entries to the list: any number of packs can.
 				continue
 			}
-			out = append(out, cpShape{kind: 'p', key: intern("entry:" + base + packScopedKey(root, key)), value: intern(dataLiteral(entries[key], values))})
+			out = append(out, Shape{Kind: 'p', Key: intern("entry:" + base + packScopedKey(root, key)), Value: intern(dataLiteral(entries[key], values))})
 		}
 	}
 	var fields map[string]json.RawMessage
@@ -269,23 +268,23 @@ func dataShapes(root string, ch cpChange, values map[string]string) []cpShape {
 			var inner map[string]json.RawMessage
 			if json.Unmarshal(fields[key], &inner) == nil && len(inner) > 0 {
 				for _, field := range slices.Sorted(maps.Keys(inner)) {
-					out = append(out, cpShape{kind: 'p', key: intern("field:" + base + packScopedKey(root, key) + "." + field), value: intern(dataLiteral(inner[field], values))})
+					out = append(out, Shape{Kind: 'p', Key: intern("field:" + base + packScopedKey(root, key) + "." + field), Value: intern(dataLiteral(inner[field], values))})
 				}
 				continue
 			}
-			out = append(out, cpShape{kind: 'p', key: intern("field:" + base + packScopedKey(root, key)), value: intern(dataLiteral(fields[key], values))})
+			out = append(out, Shape{Kind: 'p', Key: intern("field:" + base + packScopedKey(root, key)), Value: intern(dataLiteral(fields[key], values))})
 		}
 	}
 	return out
 }
 
 // packConfigValues are a pack's config values: its ConfigSchema defaults, then what config.json sets.
-func packConfigValues(schema map[string]cpSchema, root string) map[string]string {
+func packConfigValues(schema map[string]Schema, root string) map[string]string {
 	values := make(map[string]string, len(schema))
 	for key, field := range schema {
-		values[strings.ToLower(key)] = field.defaultValue
+		values[strings.ToLower(key)] = field.DefaultValue
 	}
-	maps.Copy(values, readPackConfig(root))
+	maps.Copy(values, ReadPackConfig(root))
 	return values
 }
 
@@ -348,11 +347,11 @@ func scalarLiteral(v string) string {
 // editShapes is what one EditImage or EditMap change writes. An edit that only adds warps, rewrites text
 // properties or sets tile properties has no shape: Content Patcher merges those, so they never overwrite
 // another pack's work.
-func editShapes(root string, ch cpChange, image, skip bool) []cpShape {
+func editShapes(root string, ch contentChange, image, skip bool) []Shape {
 	if image {
 		return editImageShapes(root, ch, skip)
 	}
-	var out []cpShape
+	var out []Shape
 	if strings.TrimSpace(ch.FromFile) != "" {
 		shapes, done := mapSourceShapes(root, ch)
 		if done {
@@ -369,22 +368,22 @@ func editShapes(root string, ch cpChange, image, skip bool) []cpShape {
 		if hasToken(key) {
 			return whole
 		}
-		value, _ := scalarValue(raw)
+		value, _ := ScalarValue(raw)
 		if hasToken(value) {
 			value = ""
 		}
-		out = append(out, cpShape{kind: 'p', key: intern(strings.ToLower(key)), value: intern(compactLiteral(value))})
+		out = append(out, Shape{Kind: 'p', Key: intern(strings.ToLower(key)), Value: intern(compactLiteral(value))})
 	}
 	return out
 }
 
-func editImageShapes(root string, ch cpChange, skip bool) []cpShape {
+func editImageShapes(root string, ch contentChange, skip bool) []Shape {
 	overlay := strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay")
 	if to, ok := areaOf(ch.ToArea); ok {
 		if overlay {
-			return imagePatchShapes(root, ch, to.x, to.y, skip)
+			return imagePatchShapes(root, ch, to.X, to.Y, skip)
 		}
-		return []cpShape{to}
+		return []Shape{to}
 	} else if len(ch.ToArea) > 0 {
 		return unplaced(ch.ToArea)
 	}
@@ -393,19 +392,19 @@ func editImageShapes(root string, ch cpChange, skip bool) []cpShape {
 		if overlay {
 			return imagePatchShapes(root, ch, 0, 0, skip)
 		}
-		return []cpShape{{kind: 'r', w: from.w, h: from.h}}
+		return []Shape{{Kind: 'r', W: from.W, H: from.H}}
 	}
 	if overlay || hasToken(ch.FromFile) {
 		return imagePatchShapes(root, ch, 0, 0, skip)
 	}
 	if w, h, ok := pngSize(root, ch.FromFile); ok {
-		return []cpShape{{kind: 'r', w: w, h: h}}
+		return []Shape{{Kind: 'r', W: w, H: h}}
 	}
 	return whole
 }
 
 // mapSourceShapes is the area a map FromFile lands on. done means shapes is the whole answer for the edit.
-func mapSourceShapes(root string, ch cpChange) (shapes []cpShape, done bool) {
+func mapSourceShapes(root string, ch contentChange) (shapes []Shape, done bool) {
 	ext := strings.ToLower(filepath.Ext(strings.TrimSpace(ch.FromFile)))
 	if ext == ".tmx" || ext == ".tmj" {
 		if decoded, ok := decodeMap(root, ch.FromFile); ok {
@@ -415,23 +414,23 @@ func mapSourceShapes(root string, ch cpChange) (shapes []cpShape, done bool) {
 	to, ok := areaOf(ch.ToArea)
 	switch {
 	case ok:
-		return []cpShape{to}, false
+		return []Shape{to}, false
 	case len(ch.ToArea) > 0:
 		return unplaced(ch.ToArea), true
 	}
 	// Without ToArea the source map lands at the top-left at its own size (or FromArea's).
 	if from, ok := areaOf(ch.FromArea); ok {
-		return []cpShape{{kind: 'r', w: from.w, h: from.h}}, false
+		return []Shape{{Kind: 'r', W: from.W, H: from.H}}, false
 	}
 	if w, h, ok := mapSize(root, ch.FromFile); ok {
-		return []cpShape{{kind: 'r', w: w, h: h}}, false
+		return []Shape{{Kind: 'r', W: w, H: h}}, false
 	}
 	return whole, true
 }
 
 // mapTileShapes is one shape per tile the edit replaces; ok is false when a tile cannot be placed.
-func mapTileShapes(raws []json.RawMessage) ([]cpShape, bool) {
-	var out []cpShape
+func mapTileShapes(raws []json.RawMessage) ([]Shape, bool) {
+	var out []Shape
 	for _, raw := range raws {
 		var tile struct {
 			Position      json.RawMessage `json:"Position"`
@@ -451,7 +450,7 @@ func mapTileShapes(raws []json.RawMessage) ([]cpShape, bool) {
 		if !ok || hasToken(tile.Layer) {
 			return nil, false
 		}
-		out = append(out, cpShape{kind: 't', x: pos.x, y: pos.y, layer: intern(strings.ToLower(strings.TrimSpace(tile.Layer)))})
+		out = append(out, Shape{Kind: 't', X: pos.X, Y: pos.Y, Layer: intern(strings.ToLower(strings.TrimSpace(tile.Layer)))})
 	}
 	return out, true
 }
@@ -462,20 +461,20 @@ var (
 	cellSetCache  sync.Map
 )
 
-func imagePatchShapes(root string, ch cpChange, x, y int, skip bool) []cpShape {
+func imagePatchShapes(root string, ch contentChange, x, y int, skip bool) []Shape {
 	files := sourceFiles(root, ch.FromFile)
 	if len(files) == 0 {
 		return whole
 	}
 	if skip || !strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
-		var out []cpShape
+		var out []Shape
 		for _, file := range files {
 			if from, ok := areaOf(ch.FromArea); ok {
-				out = append(out, cpShape{kind: 'r', x: x, y: y, w: from.w, h: from.h})
+				out = append(out, Shape{Kind: 'r', X: x, Y: y, W: from.W, H: from.H})
 				continue
 			}
 			if w, h, ok := pngSize(root, file); ok {
-				out = append(out, cpShape{kind: 'r', x: x, y: y, w: w, h: h})
+				out = append(out, Shape{Kind: 'r', X: x, Y: y, W: w, H: h})
 			}
 		}
 		if len(out) > 0 {
@@ -483,9 +482,9 @@ func imagePatchShapes(root string, ch cpChange, x, y int, skip bool) []cpShape {
 		}
 		return whole
 	}
-	var out []cpShape
+	var out []Shape
 	for _, file := range files {
-		if shape, ok := opaqueImageShape(root, file, ch.FromArea, x, y); ok && len(shape.cells) > 0 {
+		if shape, ok := opaqueImageShape(root, file, ch.FromArea, x, y); ok && len(shape.Cells) > 0 {
 			out = append(out, shape)
 		}
 	}
@@ -495,33 +494,33 @@ func imagePatchShapes(root string, ch cpChange, x, y int, skip bool) []cpShape {
 	return whole
 }
 
-func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpShape, bool) {
+func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (Shape, bool) {
 	fileKey, ok := pngFileKey(root, rel)
 	if !ok {
-		return cpShape{}, false
+		return Shape{}, false
 	}
 	fromKey := "full"
-	var from cpShape
+	var from Shape
 	if len(fromRaw) > 0 {
 		var parsed bool
 		from, parsed = areaOf(fromRaw)
 		if !parsed {
-			return cpShape{}, false
+			return Shape{}, false
 		}
-		fromKey = strconv.Itoa(from.x) + "," + strconv.Itoa(from.y) + "," +
-			strconv.Itoa(from.w) + "," + strconv.Itoa(from.h)
+		fromKey = strconv.Itoa(from.X) + "," + strconv.Itoa(from.Y) + "," +
+			strconv.Itoa(from.W) + "," + strconv.Itoa(from.H)
 	}
 	key := fileKey + "\x00" + fromKey + "\x00" + strconv.Itoa(x) + "," + strconv.Itoa(y)
 	if cached, ok := pngShapeCache.Load(key); ok {
 		if cells, ok := cached.(string); ok {
-			return cpShape{kind: 'r', cells: cells}, true
+			return Shape{Kind: 'r', Cells: cells}, true
 		}
 	}
 	decoded, ok := loadPNGAlpha(root, rel, fileKey)
 	if !ok {
-		return cpShape{}, false
+		return Shape{}, false
 	}
-	src := image.Rectangle{Min: image.Pt(from.x, from.y), Max: image.Pt(from.x+from.w, from.y+from.h)}
+	src := image.Rectangle{Min: image.Pt(from.X, from.Y), Max: image.Pt(from.X+from.W, from.Y+from.H)}
 	if fromKey == "full" {
 		src = image.Rect(0, 0, decoded.Width, decoded.Height)
 	}
@@ -533,7 +532,7 @@ func opaqueImageShape(root, rel string, fromRaw json.RawMessage, x, y int) (cpSh
 		cells.WriteString(strconv.Itoa(c.Y))
 	}
 	pngShapeCache.Store(key, cells.String())
-	return cpShape{kind: 'r', cells: cells.String()}, true
+	return Shape{Kind: 'r', Cells: cells.String()}, true
 }
 
 // pngFileKey names one version of an image file, so a decode is reused only while the file is unchanged.
@@ -561,7 +560,7 @@ func warmOverlayImages(root, rel string, changes []json.RawMessage, skip bool) {
 	}
 	var wg sync.WaitGroup
 	for _, raw := range changes {
-		var ch cpChange
+		var ch contentChange
 		if json.Unmarshal(raw, &ch) != nil || !strings.EqualFold(strings.TrimSpace(ch.Action), kindEditImage) ||
 			!strings.EqualFold(strings.TrimSpace(ch.PatchMode), "overlay") {
 			continue
@@ -699,7 +698,7 @@ func matchFold(pattern, value string) bool {
 
 // unplaced is the shape of an area whose position is tokenized: the whole asset, marked tiny when its literal
 // size is at most two tiles (a trapdoor or a sign placed by a computed position).
-func unplaced(raw json.RawMessage) []cpShape {
+func unplaced(raw json.RawMessage) []Shape {
 	var fields map[string]json.RawMessage
 	if json.Unmarshal(raw, &fields) != nil {
 		return whole
@@ -718,22 +717,22 @@ func unplaced(raw json.RawMessage) []cpShape {
 		}
 	}
 	if w > 0 && h > 0 && w <= 2 && h <= 2 {
-		return []cpShape{{kind: 'w', tiny: true}}
+		return []Shape{{Kind: 'w', Tiny: true}}
 	}
 	return whole
 }
 
 // areaOf reads {X, Y, Width, Height} (or a Position's {X, Y}) given as numbers or numeric strings; false when
 // it is missing or holds a token.
-func areaOf(raw json.RawMessage) (cpShape, bool) {
+func areaOf(raw json.RawMessage) (Shape, bool) {
 	if len(raw) == 0 {
-		return cpShape{}, false
+		return Shape{}, false
 	}
 	var fields map[string]json.RawMessage
 	if json.Unmarshal(raw, &fields) != nil {
-		return cpShape{}, false
+		return Shape{}, false
 	}
-	s := cpShape{kind: 'r', w: 1, h: 1}
+	s := Shape{Kind: 'r', W: 1, H: 1}
 	for k, v := range fields {
 		var n int
 		var str string
@@ -742,21 +741,21 @@ func areaOf(raw json.RawMessage) (cpShape, bool) {
 		case json.Unmarshal(v, &str) == nil:
 			parsed, err := strconv.Atoi(strings.TrimSpace(str))
 			if err != nil {
-				return cpShape{}, false
+				return Shape{}, false
 			}
 			n = parsed
 		default:
-			return cpShape{}, false
+			return Shape{}, false
 		}
 		switch strings.ToLower(k) {
 		case "x":
-			s.x = n
+			s.X = n
 		case "y":
-			s.y = n
+			s.Y = n
 		case "width":
-			s.w = n
+			s.W = n
 		case "height":
-			s.h = n
+			s.H = n
 		}
 	}
 	return s, true
@@ -780,8 +779,8 @@ func pngSize(root, rel string) (w, h int, ok bool) {
 }
 
 type decodedMapResult struct {
-	value tilemask.Map
-	ok    bool
+	Value tilemask.Map
+	Ok    bool
 }
 
 var mapCache sync.Map
@@ -813,7 +812,7 @@ func decodeMap(root, rel string) (tilemask.Map, bool) {
 	if cached, ok := mapCache.Load(key); ok {
 		result, ok := cached.(decodedMapResult)
 		if ok {
-			return result.value, result.ok
+			return result.Value, result.Ok
 		}
 	}
 	raw, err := readCappedFile(abs)
@@ -828,13 +827,13 @@ func decodeMap(root, rel string) (tilemask.Map, bool) {
 	for i := range decoded.Layers {
 		decoded.Layers[i].Name = strings.ToLower(strings.TrimSpace(decoded.Layers[i].Name))
 	}
-	mapCache.Store(key, decodedMapResult{value: decoded, ok: true})
+	mapCache.Store(key, decodedMapResult{Value: decoded, Ok: true})
 	return decoded, true
 }
 
-func mapFileShapes(m tilemask.Map, ch cpChange) []cpShape {
-	fallback := cpShape{kind: 'r', w: m.Width, h: m.Height}
-	if fallback.w <= 0 || fallback.h <= 0 {
+func mapFileShapes(m tilemask.Map, ch contentChange) []Shape {
+	fallback := Shape{Kind: 'r', W: m.Width, H: m.Height}
+	if fallback.W <= 0 || fallback.H <= 0 {
 		return nil
 	}
 	from, ok := mapArea(ch.FromArea, fallback)
@@ -842,79 +841,79 @@ func mapFileShapes(m tilemask.Map, ch cpChange) []cpShape {
 		return whole
 	}
 	toFallback := fallback
-	toFallback.x, toFallback.y = 0, 0
+	toFallback.X, toFallback.Y = 0, 0
 	to, ok := mapArea(ch.ToArea, toFallback)
 	if !ok {
 		return unplaced(ch.ToArea)
 	}
 	if len(m.Layers) == 0 {
-		to.layer = ""
-		return []cpShape{to}
+		to.Layer = ""
+		return []Shape{to}
 	}
 	mode := strings.ToLower(strings.TrimSpace(ch.PatchMode))
 	mode = cmp.Or(mode, "replacebylayer")
 	switch mode {
 	case "overlay":
-		var out []cpShape
+		var out []Shape
 		for _, layer := range m.Layers {
 			for _, tile := range layer.Tiles {
-				if tile.X < from.x || tile.X >= from.x+from.w || tile.Y < from.y || tile.Y >= from.y+from.h {
+				if tile.X < from.X || tile.X >= from.X+from.W || tile.Y < from.Y || tile.Y >= from.Y+from.H {
 					continue
 				}
-				out = append(out, cpShape{
-					kind: 't', x: to.x + tile.X - from.x, y: to.y + tile.Y - from.y,
-					layer: layer.Name,
+				out = append(out, Shape{
+					Kind: 't', X: to.X + tile.X - from.X, Y: to.Y + tile.Y - from.Y,
+					Layer: layer.Name,
 				})
 			}
 		}
 		return out
 	case "replace":
-		to.layer = ""
-		return []cpShape{to}
+		to.Layer = ""
+		return []Shape{to}
 	case "replacebylayer":
-		var out []cpShape
+		var out []Shape
 		for _, layer := range m.Layers {
 			area := to
-			area.layer = layer.Name
+			area.Layer = layer.Name
 			out = append(out, area)
 		}
 		return out
 	default:
-		var out []cpShape
+		var out []Shape
 		for _, layer := range m.Layers {
 			area := to
-			area.layer = layer.Name
+			area.Layer = layer.Name
 			out = append(out, area)
 		}
 		return out
 	}
 }
 
-func mapArea(raw json.RawMessage, fallback cpShape) (cpShape, bool) {
+func mapArea(raw json.RawMessage, fallback Shape) (Shape, bool) {
 	if len(raw) == 0 {
 		return fallback, true
 	}
 	area, ok := areaOf(raw)
 	if !ok {
-		return cpShape{}, false
+		return Shape{}, false
 	}
 	var fields map[string]json.RawMessage
 	if json.Unmarshal(raw, &fields) != nil {
-		return cpShape{}, false
+		return Shape{}, false
 	}
 	if !hasAreaField(fields, "x") {
-		area.x = fallback.x
+		area.X = fallback.X
 	}
 	if !hasAreaField(fields, "y") {
-		area.y = fallback.y
+		area.Y = fallback.Y
 	}
 	if !hasAreaField(fields, "width") {
-		area.w = fallback.w
+		area.W = fallback.W
 	}
 	if !hasAreaField(fields, "height") {
-		area.h = fallback.h
+		area.H = fallback.H
 	}
-	return area, area.w > 0 && area.h > 0
+	return area, area.W > 0 && area.H > 0
 }
 
 func hasAreaField(fields map[string]json.RawMessage, want string) bool {
@@ -973,7 +972,7 @@ func placesOf(raw map[string]json.RawMessage) map[string][]string {
 			if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) || !condValues(v, &flags) || len(flags) != 1 || !strings.EqualFold(flags[0], "true") {
 				continue
 			}
-			values = splitTargets(list)
+			values = SplitTargets(list)
 		}
 		if out == nil {
 			out = map[string][]string{}
@@ -1006,7 +1005,7 @@ var (
 // "Engaged, Married", or a Query that querySpouse reads, written in the condition or as the value of a dynamic
 // token the condition needs true), or "". A player has one partner at a time, so two patches that need
 // different partners never apply together.
-func spouseOf(raw map[string]json.RawMessage, tokens []cpTokenDefinition) string {
+func spouseOf(raw map[string]json.RawMessage, tokens []TokenDefinition) string {
 	for k, v := range raw {
 		if npc := spouseOfCondition(k, v, tokens); npc != "" {
 			return npc
@@ -1015,7 +1014,7 @@ func spouseOf(raw map[string]json.RawMessage, tokens []cpTokenDefinition) string
 	return ""
 }
 
-func spouseOfCondition(k string, v json.RawMessage, tokens []cpTokenDefinition) string {
+func spouseOfCondition(k string, v json.RawMessage, tokens []TokenDefinition) string {
 	key := strings.TrimSpace(k)
 	if inner, ok := strings.CutPrefix(key, "{{"); ok {
 		if key, ok = strings.CutSuffix(inner, "}}"); !ok {
@@ -1060,7 +1059,7 @@ func spouseOfCondition(k string, v json.RawMessage, tokens []cpTokenDefinition) 
 // querySpouse is the partner a Query expression requires: every OR branch compares {{Spouse}} or {{Roommate}}
 // (or a token that is just {{Spouse}}) with the same NPC in one of its AND terms. A player lives with one partner
 // at a time, so a branch per partner token still names one partner.
-func querySpouse(expr string, tokens []cpTokenDefinition) string {
+func querySpouse(expr string, tokens []TokenDefinition) string {
 	partner := ""
 	for _, branch := range queryOr.Split(strings.TrimSpace(expr), -1) {
 		npc := branchSpouse(branch, tokens)
@@ -1072,7 +1071,7 @@ func querySpouse(expr string, tokens []cpTokenDefinition) string {
 	return partner
 }
 
-func branchSpouse(branch string, tokens []cpTokenDefinition) string {
+func branchSpouse(branch string, tokens []TokenDefinition) string {
 	for _, term := range queryAnd.Split(strings.TrimSpace(branch), -1) {
 		term = strings.TrimSpace(term)
 		var token, npc string
@@ -1092,13 +1091,13 @@ func branchSpouse(branch string, tokens []cpTokenDefinition) string {
 
 // tokenSpouse is the partner a dynamic token is true for when every definition of it is a Query that names
 // one partner, such as "LivingWithSen": "{{Query: '{{Spouse}}' = 'SenS' OR '{{Roommate}}' = 'SenS'}}".
-func tokenSpouse(name string, tokens []cpTokenDefinition) string {
+func tokenSpouse(name string, tokens []TokenDefinition) string {
 	partner := ""
 	for _, definition := range tokens {
-		if definition.name != name {
+		if definition.Name != name {
 			continue
 		}
-		value := strings.TrimSpace(definition.value)
+		value := strings.TrimSpace(definition.Value)
 		inner, ok := strings.CutPrefix(value, "{{")
 		if inner, ok2 := strings.CutSuffix(inner, "}}"); ok && ok2 {
 			if head, expr, ok := strings.Cut(inner, ":"); ok && strings.EqualFold(strings.TrimSpace(head), "query") {
@@ -1116,27 +1115,27 @@ func tokenSpouse(name string, tokens []cpTokenDefinition) string {
 // withTokenFarmTypes pins a patch to the farm types its dynamic token conditions can only be true on, which a
 // FarmType condition written in the patch itself does not show: once config elimination has dropped the
 // definitions that cannot hold, every definition left that yields a wanted value is gated on a FarmType.
-func withTokenFarmTypes(p cpPatch, tokens []cpTokenDefinition, present map[string]bool, schema map[string]cpSchema, config map[string]string) cpPatch {
-	if len(p.when.dynamic) == 0 || len(p.places["farmtype"]) > 0 {
+func withTokenFarmTypes(p Patch, tokens []TokenDefinition, present map[string]bool, schema map[string]Schema, config map[string]string) Patch {
+	if len(p.When.Dynamic) == 0 || len(p.Places["farmtype"]) > 0 {
 		return p
 	}
-	reachable := cachedReachableTokens(tokens, present, schema, config, p.when.flags)
-	for _, condition := range p.when.dynamic {
+	reachable := cachedReachableTokens(tokens, present, schema, config, p.When.Flags)
+	for _, condition := range p.When.Dynamic {
 		var types []string
 		pinned := true
 		for _, definition := range tokens {
-			if definition.name != condition.name {
+			if definition.Name != condition.Name {
 				continue
 			}
-			if hasToken(definition.value) {
+			if hasToken(definition.Value) {
 				pinned = false
 				break
 			}
-			if !dynamicConditionMatchesValue(condition, definition.value) ||
-				dynamicWhenState(definition.when, tokens, reachable, present, schema, config, p.when.flags) == cpConditionFalse {
+			if !dynamicConditionMatchesValue(condition, definition.Value) ||
+				dynamicWhenState(definition.When, tokens, reachable, present, schema, config, p.When.Flags) == cpConditionFalse {
 				continue
 			}
-			farms := placesOf(definition.when)["farmtype"]
+			farms := placesOf(definition.When)["farmtype"]
 			if len(farms) == 0 {
 				pinned = false
 				break
@@ -1144,25 +1143,25 @@ func withTokenFarmTypes(p cpPatch, tokens []cpTokenDefinition, present map[strin
 			types = append(types, farms...)
 		}
 		if pinned && len(types) > 0 {
-			places := maps.Clone(p.places)
+			places := maps.Clone(p.Places)
 			if places == nil {
 				places = map[string][]string{}
 			}
 			places["farmtype"] = types
-			p.places = places
+			p.Places = places
 			return p
 		}
 	}
 	return p
 }
 
-func spouseAlias(name string, tokens []cpTokenDefinition) bool {
+func spouseAlias(name string, tokens []TokenDefinition) bool {
 	found := false
 	for _, definition := range tokens {
-		if definition.name != name {
+		if definition.Name != name {
 			continue
 		}
-		if !strings.EqualFold(strings.Join(strings.Fields(definition.value), ""), "{{spouse}}") {
+		if !strings.EqualFold(strings.Join(strings.Fields(definition.Value), ""), "{{spouse}}") {
 			return false
 		}
 		found = true
@@ -1171,19 +1170,19 @@ func spouseAlias(name string, tokens []cpTokenDefinition) bool {
 }
 
 // exclusive reports whether two edits can never be active together.
-func exclusive(a, b cpPatch) bool {
-	if a.spouse != "" && b.spouse != "" && a.spouse != b.spouse {
+func exclusive(a, b Patch) bool {
+	if a.Spouse != "" && b.Spouse != "" && a.Spouse != b.Spouse {
 		return true
 	}
-	for token, values := range a.places {
-		other, ok := b.places[token]
+	for token, values := range a.Places {
+		other, ok := b.Places[token]
 		if ok && !slices.ContainsFunc(values, func(v string) bool { return slices.Contains(other, v) }) {
 			return true
 		}
 	}
 	// One gated on a farm type and one on a farm map only another farm type loads.
-	_, aFarm := a.places["farmtype"]
-	_, bFarm := b.places["farmtype"]
+	_, aFarm := a.Places["farmtype"]
+	_, bFarm := b.Places["farmtype"]
 	if aFarm != bFarm {
 		x, y := farmTypesOf(a, ""), farmTypesOf(b, "")
 		return len(x) > 0 && len(y) > 0 && !slices.ContainsFunc(x, func(v string) bool { return slices.Contains(y, v) })
@@ -1199,11 +1198,11 @@ var farmMaps = map[string]string{
 
 // farmTypesOf is the farm types a patch applies on, lower-cased: its FarmType condition, else the farm whose
 // map it targets (custom is the id of the custom farm whose map is the target), else nil for any farm.
-func farmTypesOf(p cpPatch, custom string) []string {
-	if types := p.places["farmtype"]; len(types) > 0 {
+func farmTypesOf(p Patch, custom string) []string {
+	if types := p.Places["farmtype"]; len(types) > 0 {
 		return types
 	}
-	if t, ok := farmMaps[p.target]; ok {
+	if t, ok := farmMaps[p.Target]; ok {
 		return []string{t}
 	}
 	if custom != "" {
@@ -1214,16 +1213,16 @@ func farmTypesOf(p cpPatch, custom string) []string {
 
 // editsClash reports whether any active edit of one pack can overwrite one of the other's, and whether every
 // such overlap is harmless (see harmless).
-func editsClash(a, b []cpPatch) (clash, minor bool) {
+func editsClash(a, b []Patch) (clash, minor bool) {
 	clash, minor, _ = editsClashIndexed(a, b, indexesOf(b), false)
 	return clash, minor
 }
 
 // indexesOf is the shape index of each patch, looked up once so a pair loop does not repeat it per comparison.
-func indexesOf(patches []cpPatch) []*shapeSet {
+func indexesOf(patches []Patch) []*shapeSet {
 	out := make([]*shapeSet, len(patches))
 	for i, p := range patches {
-		out[i] = shapeIndex(p.shapes)
+		out[i] = shapeIndex(p.Shapes)
 	}
 	return out
 }
@@ -1231,7 +1230,7 @@ func indexesOf(patches []cpPatch) []*shapeSet {
 // editsClashIndexed is editsClash with bIndex[i] the shape index of b[i], and the note that explains why a
 // minor clash is harmless.
 // One author ordering two of their packs' edits with an explicit priority meant the result.
-func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet, sameAuthor bool) (clash, minor bool, why *framework.ConflictNote) {
+func editsClashIndexed(a, b []Patch, bIndex []*shapeSet, sameAuthor bool) (clash, minor bool, why *Note) {
 	minor = true
 	var note noteAgreement
 	for _, x := range a {
@@ -1239,16 +1238,16 @@ func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet, sameAuthor bool) (cla
 			if mapOverlayHasUnknownLayer(x, y) {
 				continue
 			}
-			if x.image && y.image && x.imageDigest != "" && x.imageDigest == y.imageDigest && x.imageFromArea == y.imageFromArea {
+			if x.Image && y.Image && x.ImageDigest != "" && x.ImageDigest == y.ImageDigest && x.ImageFromArea == y.ImageFromArea {
 				continue
 			}
-			if x.image && y.image && strings.EqualFold(strings.TrimSpace(x.patchMode), "overlay") && strings.EqualFold(strings.TrimSpace(y.patchMode), "overlay") {
+			if x.Image && y.Image && strings.EqualFold(strings.TrimSpace(x.PatchMode), "overlay") && strings.EqualFold(strings.TrimSpace(y.PatchMode), "overlay") {
 				continue
 			}
 			if exclusive(x, y) || sameAuthor && (explicitOrder(x) || explicitOrder(y)) {
 				continue
 			}
-			if bIndex[j].overlaps(x.shapes) {
+			if bIndex[j].overlaps(x.Shapes) {
 				clash = true
 				ok, why := harmless(x, y, bIndex[j])
 				// One overlap that matters settles it: nothing later can make the pair minor again.
@@ -1263,45 +1262,45 @@ func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet, sameAuthor bool) (cla
 }
 
 // explicitOrder is an edit given a non-default Content Patcher priority, set to run before or after the others.
-func explicitOrder(p cpPatch) bool {
-	return contentPatcherPriority("edit", p.priority) != 0
+func explicitOrder(p Patch) bool {
+	return contentPatcherPriority("edit", p.Priority) != 0
 }
 
 // noteAgreement keeps a ConflictNote only while every harmless overlap gives the same one.
 type noteAgreement struct {
-	note  *framework.ConflictNote
-	seen  bool
-	mixed bool
+	Note  *Note
+	Seen  bool
+	Mixed bool
 }
 
-func (a *noteAgreement) add(n *framework.ConflictNote) {
+func (a *noteAgreement) add(n *Note) {
 	switch {
-	case !a.seen:
-		a.note, a.seen = n, true
-	case n == nil || a.note == nil || *n != *a.note:
-		a.mixed = true
+	case !a.Seen:
+		a.Note, a.Seen = n, true
+	case n == nil || a.Note == nil || *n != *a.Note:
+		a.Mixed = true
 	}
 }
 
-func (a *noteAgreement) result() *framework.ConflictNote {
-	if a.mixed {
+func (a *noteAgreement) result() *Note {
+	if a.Mixed {
 		return nil
 	}
-	return a.note
+	return a.Note
 }
 
-func mapOverlayHasUnknownLayer(a, b cpPatch) bool {
-	if a.image || b.image {
+func mapOverlayHasUnknownLayer(a, b Patch) bool {
+	if a.Image || b.Image {
 		return false
 	}
-	aOverlay := strings.EqualFold(strings.TrimSpace(a.patchMode), "overlay")
-	bOverlay := strings.EqualFold(strings.TrimSpace(b.patchMode), "overlay")
+	aOverlay := strings.EqualFold(strings.TrimSpace(a.PatchMode), "overlay")
+	bOverlay := strings.EqualFold(strings.TrimSpace(b.PatchMode), "overlay")
 	return (aOverlay && hasUnknownMapLayer(b)) || (bOverlay && hasUnknownMapLayer(a))
 }
 
-func hasUnknownMapLayer(p cpPatch) bool {
-	return slices.ContainsFunc(p.shapes, func(shape cpShape) bool {
-		return shape.kind != 'p' && shape.layer == ""
+func hasUnknownMapLayer(p Patch) bool {
+	return slices.ContainsFunc(p.Shapes, func(shape Shape) bool {
+		return shape.Kind != 'p' && shape.Layer == ""
 	})
 }
 
@@ -1309,16 +1308,16 @@ func hasUnknownMapLayer(p cpPatch) bool {
 // that applies in one location or weather, or on one day or festival, only matters there; two that only set
 // prices let one mod's numbers win; and a one-tile edit at a computed spot is too small to place, so it is
 // shown without counting as a problem.
-func harmless(x, y cpPatch, yIndex *shapeSet) (bool, *framework.ConflictNote) {
+func harmless(x, y Patch, yIndex *shapeSet) (bool, *Note) {
 	if balanceOverlap(x, y, yIndex) {
-		return true, &framework.ConflictNote{Kind: "balance"}
+		return true, &Note{Kind: "balance"}
 	}
-	for _, p := range []cpPatch{x, y} {
+	for _, p := range []Patch{x, y} {
 		if day := oneDay(p); day != "" {
-			return true, &framework.ConflictNote{Kind: "day", Value: day}
+			return true, &Note{Kind: "day", Value: day}
 		}
 	}
-	return (x.image && y.image) || (textOnly(x) && textOnly(y)) || overlayPriorityHarmless(x, y) || situational(x) || situational(y) || tinyOnly(x) || tinyOnly(y), nil
+	return (x.Image && y.Image) || (textOnly(x) && textOnly(y)) || overlayPriorityHarmless(x, y) || situational(x) || situational(y) || tinyOnly(x) || tinyOnly(y), nil
 }
 
 // balanceFields are data fields that only tune prices and costs: when two collide, one mod's numbers win.
@@ -1326,12 +1325,12 @@ var balanceFields = map[string]bool{"buildcost": true, "buildmaterials": true, "
 
 // balanceOverlap is two data edits that only collide on balance fields (yIndex indexes y's shapes); what
 // else either sets, the other leaves alone.
-func balanceOverlap(x, y cpPatch, yIndex *shapeSet) bool {
-	if x.action != kindEditData || y.action != kindEditData {
+func balanceOverlap(x, y Patch, yIndex *shapeSet) bool {
+	if x.Action != kindEditData || y.Action != kindEditData {
 		return false
 	}
-	return !slices.ContainsFunc(x.shapes, func(s cpShape) bool {
-		return !balanceKey(s.key) && slices.ContainsFunc(yIndex.props[s.key], s.overlaps)
+	return !slices.ContainsFunc(x.Shapes, func(s Shape) bool {
+		return !balanceKey(s.Key) && slices.ContainsFunc(yIndex.Props[s.Key], s.overlaps)
 	})
 }
 
@@ -1346,48 +1345,48 @@ func balanceKey(key string) bool {
 
 // textOnly is a data edit that only replaces lines of text: when two collide, one mod's line shows
 // instead of the other's and nothing breaks. Festival files also hold set-up, which is not text.
-func textOnly(p cpPatch) bool {
-	if p.action != kindEditData {
+func textOnly(p Patch) bool {
+	if p.Action != kindEditData {
 		return false
 	}
-	t := strings.ToLower(p.target)
+	t := strings.ToLower(p.Target)
 	switch {
 	case strings.HasPrefix(t, "characters/dialogue/"), strings.HasPrefix(t, "strings/"), t == "data/extradialogue":
 		return true
 	case strings.HasPrefix(t, "data/festivals/"):
-		return !slices.ContainsFunc(p.shapes, func(s cpShape) bool {
-			k := strings.ToLower(s.key)
+		return !slices.ContainsFunc(p.Shapes, func(s Shape) bool {
+			k := strings.ToLower(s.Key)
 			return strings.Contains(k, "set-up") || strings.Contains(k, "mainevent") || strings.Contains(k, "shop") || strings.Contains(k, "conditions")
 		})
 	}
 	return false
 }
 
-func overlayPriorityHarmless(x, y cpPatch) bool {
-	xOverlay := strings.EqualFold(strings.TrimSpace(x.patchMode), "overlay")
-	yOverlay := strings.EqualFold(strings.TrimSpace(y.patchMode), "overlay")
+func overlayPriorityHarmless(x, y Patch) bool {
+	xOverlay := strings.EqualFold(strings.TrimSpace(x.PatchMode), "overlay")
+	yOverlay := strings.EqualFold(strings.TrimSpace(y.PatchMode), "overlay")
 	if xOverlay == yOverlay {
 		return false
 	}
 	if xOverlay {
-		return contentPatcherPriority("edit", x.priority) > contentPatcherPriority("edit", y.priority)
+		return contentPatcherPriority("edit", x.Priority) > contentPatcherPriority("edit", y.Priority)
 	}
-	return contentPatcherPriority("edit", y.priority) > contentPatcherPriority("edit", x.priority)
+	return contentPatcherPriority("edit", y.Priority) > contentPatcherPriority("edit", x.Priority)
 }
 
-func situational(p cpPatch) bool {
-	_, location := p.places["locationname"]
-	_, context := p.places["locationcontext"]
-	_, weather := p.places["weather"]
+func situational(p Patch) bool {
+	_, location := p.Places["locationname"]
+	_, context := p.Places["locationcontext"]
+	_, weather := p.Places["weather"]
 	return location || context || weather
 }
 
 // oneDay names the single day ("Summer 28") or festival a patch is limited to, or "".
-func oneDay(p cpPatch) string {
-	if events := p.places["dayevent"]; len(events) == 1 {
+func oneDay(p Patch) string {
+	if events := p.Places["dayevent"]; len(events) == 1 {
 		return titleWords(events[0])
 	}
-	season, day := p.places["season"], p.places["day"]
+	season, day := p.Places["season"], p.Places["day"]
 	if len(season) == 1 && len(day) == 1 {
 		return titleWords(season[0]) + " " + day[0]
 	}
@@ -1402,42 +1401,42 @@ func titleWords(s string) string {
 	return strings.Join(words, " ")
 }
 
-func tinyOnly(p cpPatch) bool {
-	return len(p.shapes) > 0 && !slices.ContainsFunc(p.shapes, func(s cpShape) bool { return !s.tiny })
+func tinyOnly(p Patch) bool {
+	return len(p.Shapes) > 0 && !slices.ContainsFunc(p.Shapes, func(s Shape) bool { return !s.Tiny })
 }
 
 // markClashes records which edits of a and b overlap each other.
 func markClashes(a, b *packHit) {
 	ordered := sameAuthor(*a, *b)
-	for i, x := range a.edits {
-		for j, y := range b.edits {
-			if exclusive(x, y) || ordered && (explicitOrder(x) || explicitOrder(y)) || !shapesOverlap(x.shapes, y.shapes) {
+	for i, x := range a.Edits {
+		for j, y := range b.Edits {
+			if exclusive(x, y) || ordered && (explicitOrder(x) || explicitOrder(y)) || !shapesOverlap(x.Shapes, y.Shapes) {
 				continue
 			}
-			if a.clashes == nil {
-				a.clashes = map[int]bool{}
+			if a.Clashes == nil {
+				a.Clashes = map[int]bool{}
 			}
-			if b.clashes == nil {
-				b.clashes = map[int]bool{}
+			if b.Clashes == nil {
+				b.Clashes = map[int]bool{}
 			}
-			a.clashes[i], b.clashes[j] = true, true
+			a.Clashes[i], b.Clashes[j] = true, true
 		}
 	}
 }
 
 // fieldGateStats counts the pack's patches, those gated on field, and those still applying once field is value.
-func fieldGateStats(h packHit, field cpSchema, value string) (gated, total, left int) {
-	config := maps.Clone(h.config)
-	config[strings.ToLower(field.key)] = value
-	for _, p := range h.tokens {
-		if p.kind == "other" {
+func fieldGateStats(h packHit, field Schema, value string) (gated, total, left int) {
+	config := maps.Clone(h.Config)
+	config[strings.ToLower(field.Key)] = value
+	for _, p := range h.Tokens {
+		if p.Kind == "other" {
 			continue
 		}
 		total++
-		if slices.ContainsFunc(p.when.config, func(o cpConfig) bool { return strings.EqualFold(o.field, field.key) }) {
+		if slices.ContainsFunc(p.When.Config, func(o Config) bool { return strings.EqualFold(o.Field, field.Key) }) {
 			gated++
 		}
-		if configHolds(p.when.config, h.schema, config) {
+		if ConfigHolds(p.When.Config, h.Schema, config) {
 			left++
 		}
 	}
@@ -1448,25 +1447,25 @@ func fieldGateStats(h packHit, field cpSchema, value string) (gated, total, left
 // from the conflict, such as Better Things' DesertMinecart for an expansion that redraws the desert. Of the
 // fields that would, it offers the narrowest: one named for what the target is about, then the one gating
 // the fewest of the pack's patches. When only the pack's master switch would, it offers nothing.
-func switchOff(h packHit, peerSets ...[]packHit) (framework.ConflictFix, bool) {
-	if len(h.clashes) == 0 {
-		return framework.ConflictFix{}, false
+func switchOff(h packHit, peerSets ...[]packHit) (Fix, bool) {
+	if len(h.Clashes) == 0 {
+		return Fix{}, false
 	}
-	clashing := slices.Sorted(maps.Keys(h.clashes))
-	subject := h.edits[clashing[0]].target
+	clashing := slices.Sorted(maps.Keys(h.Clashes))
+	subject := h.Edits[clashing[0]].Target
 	subject = strings.ToLower(subject[strings.LastIndex(subject, "/")+1:])
-	var best framework.ConflictFix
+	var best Fix
 	bestGated, bestNamed, found := 0, false, false
-	for _, c := range h.edits[clashing[0]].when.config {
-		field, ok := h.schema[strings.ToLower(c.field)]
-		if !ok || !field.toggle() {
+	for _, c := range h.Edits[clashing[0]].When.Config {
+		field, ok := h.Schema[strings.ToLower(c.Field)]
+		if !ok || !field.Toggle() {
 			continue
 		}
 		value, ok := offValue(h, clashing, field, peerSets...)
 		if !ok {
 			continue
 		}
-		named := strings.Contains(strings.ToLower(field.key), subject)
+		named := strings.Contains(strings.ToLower(field.Key), subject)
 		gated, total, left := fieldGateStats(h, field, value)
 		// A field that switches off the whole pack, or a fifth of it without being named for this target, is
 		// the pack's master switch (Better Water's Color, a schedule pack's PlotSchedules): offering it
@@ -1476,14 +1475,14 @@ func switchOff(h packHit, peerSets ...[]packHit) (framework.ConflictFix, bool) {
 		if left == 0 || !named && gated*5 >= total {
 			continue
 		}
-		if found && (bestNamed && !named || bestNamed == named && (gated > bestGated || gated == bestGated && field.key >= best.Field)) {
+		if found && (bestNamed && !named || bestNamed == named && (gated > bestGated || gated == bestGated && field.Key >= best.Field)) {
 			continue
 		}
-		current, set := h.config[strings.ToLower(field.key)]
+		current, set := h.Config[strings.ToLower(field.Key)]
 		if !set {
-			current = field.defaultValue
+			current = field.DefaultValue
 		}
-		best = framework.ConflictFix{Key: h.key, ID: frameworkID(h.id), Name: h.name, Field: field.key, Current: current, Value: value}
+		best = Fix{Key: h.Key, ID: (h.ID), Name: h.Name, Field: field.Key, Current: current, Value: value}
 		bestGated, bestNamed, found = gated, named, true
 	}
 	return best, found
@@ -1491,18 +1490,18 @@ func switchOff(h packHit, peerSets ...[]packHit) (framework.ConflictFix, bool) {
 
 // offValue is the one value of field that switches off every clashing edit of h without leaving another of
 // its edits clashing with peerSets[0].
-func offValue(h packHit, clashing []int, field cpSchema, peerSets ...[]packHit) (string, bool) {
+func offValue(h packHit, clashing []int, field Schema, peerSets ...[]packHit) (string, bool) {
 	needed := map[string]bool{}
 	for _, i := range clashing {
-		j := slices.IndexFunc(h.edits[i].when.config, func(o cpConfig) bool { return strings.EqualFold(o.field, field.key) })
+		j := slices.IndexFunc(h.Edits[i].When.Config, func(o Config) bool { return strings.EqualFold(o.Field, field.Key) })
 		if j < 0 {
 			return "", false
 		}
-		for _, v := range h.edits[i].when.config[j].values {
+		for _, v := range h.Edits[i].When.Config[j].Values {
 			needed[strings.ToLower(v)] = true
 		}
 	}
-	values := field.allowValues
+	values := field.AllowValues
 	if len(values) == 0 {
 		values = []string{"true", "false"}
 	}
@@ -1527,24 +1526,24 @@ func offValue(h packHit, clashing []int, field cpSchema, peerSets ...[]packHit) 
 	return off[0], true
 }
 
-func settingStillClashes(h packHit, peers []packHit, field cpSchema, value string) bool {
-	config := make(map[string]string, len(h.config))
-	maps.Copy(config, h.config)
-	config[strings.ToLower(field.key)] = value
-	var active []cpPatch
-	for _, edit := range h.eligible {
-		if configHolds(edit.when.config, h.schema, config) {
+func settingStillClashes(h packHit, peers []packHit, field Schema, value string) bool {
+	config := make(map[string]string, len(h.Config))
+	maps.Copy(config, h.Config)
+	config[strings.ToLower(field.Key)] = value
+	var active []Patch
+	for _, edit := range h.Eligible {
+		if ConfigHolds(edit.When.Config, h.Schema, config) {
 			active = append(active, edit)
 		}
 	}
-	if len(h.eligible) == 0 {
-		active = h.edits
+	if len(h.Eligible) == 0 {
+		active = h.Edits
 	}
 	for _, peer := range peers {
-		if Equal(peer.id, h.id) {
+		if Equal(peer.ID, h.ID) {
 			continue
 		}
-		if clash, _ := editsClash(active, peer.edits); clash {
+		if clash, _ := editsClash(active, peer.Edits); clash {
 			return true
 		}
 	}

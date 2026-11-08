@@ -1,4 +1,4 @@
-package contentpatcher
+package cp
 
 import (
 	"crypto/sha256"

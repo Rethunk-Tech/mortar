@@ -1,20 +1,17 @@
-package contentpatcher
+package cp
 
 import (
 	"slices"
 	"testing"
-
-	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
-func shadowedNames(t *testing.T, mods ...framework.Mod) map[string][]string {
+func shadowedNames(t *testing.T, mods ...Mod) map[string][]string {
 	t.Helper()
 	_, _, shadowed := conflictScanOf(mods)
 	out := map[string][]string{}
 	for _, r := range shadowed {
-		if r.Kind != "shadowed" {
-			t.Fatalf("kind = %q", r.Kind)
+		if r.Bundled {
+			t.Fatalf("kind = bundled, want shadowed")
 		}
 		for _, by := range r.By {
 			out[r.Key] = append(out[r.Key], by.Key)
@@ -24,14 +21,14 @@ func shadowedNames(t *testing.T, mods ...framework.Mod) map[string][]string {
 }
 
 func TestShadowedPacks(t *testing.T) {
-	testfs.DataHome(t)
-	resetContentPackCaches()
-	t.Cleanup(resetContentPackCaches)
+	dataHome(t)
+	resetCaches()
+	t.Cleanup(resetCaches)
 
-	pack := func(content string, loadAfter ...framework.Mod) framework.Mod {
+	pack := func(content string, loadAfter ...Mod) Mod {
 		m := syntheticLoadPack(t, content, nil)
 		for _, other := range loadAfter {
-			m.LoadAfter = append(m.LoadAfter, other.ModID())
+			m.LoadAfter = append(m.LoadAfter, other.UniqueID)
 		}
 		return m
 	}
@@ -50,9 +47,9 @@ func TestShadowedPacks(t *testing.T) {
 		if len(got) != 1 || !slices.Equal(got[a.Key], []string{b.Key}) {
 			t.Fatalf("got %v", got)
 		}
-		r := check([]framework.Mod{a, b})
-		if len(r.Redundant) != 1 || r.Redundant[0].Key != a.Key || r.Redundant[0].By[0].Name != b.Name {
-			t.Fatalf("Check redundant = %+v", r.Redundant)
+		r := check([]Mod{a, b})
+		if len(r.Shadowed) != 1 || r.Shadowed[0].Key != a.Key || r.Shadowed[0].By[0].Name != b.Name {
+			t.Fatalf("Check redundant = %+v", r.Shadowed)
 		}
 	})
 
@@ -138,6 +135,7 @@ func TestShadowedPacks(t *testing.T) {
 	}
 }
 
-func conflictScanOf(mods []framework.Mod) ([]framework.AssetConflict, []framework.SettingHint, []framework.Redundant) {
-	return assetConflictScan(mods, nil, false)
+func conflictScanOf(mods []Mod) ([]Conflict, []Hint, []Shadowed) {
+	conflicts, hints, shadowed, _ := assetConflictScan(mods, nil, false)
+	return conflicts, hints, shadowed
 }

@@ -1,4 +1,4 @@
-package contentpatcher
+package cp
 
 import (
 	"cmp"
@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/framework"
 )
 
 // A check's findings are kept on disk with a stamp of every file the check read. The next check of the same mods,
@@ -34,13 +33,15 @@ const racyStampWindow = 2 * time.Second
 
 type analysisMemo struct {
 	// Files holds absolute paths.
-	Files          []packFileStamp           `json:"files"`
-	AssetConflicts []framework.AssetConflict `json:"assetConflicts"`
-	Settings       []framework.SettingHint   `json:"settings"`
-	Cleanup        []framework.Cleanup       `json:"cleanup"`
-	Redundant      []framework.Redundant     `json:"redundant"`
-	Supporting     []string                  `json:"supporting,omitempty"`
-	Mentioned      []string                  `json:"mentioned,omitempty"`
+	Files                []FileStamp       `json:"files"`
+	Conflicts            []Conflict        `json:"conflicts,omitempty"`
+	Hints                []Hint            `json:"hints,omitempty"`
+	Shadowed             []Shadowed        `json:"shadowed,omitempty"`
+	Bundled              map[string]ModRef `json:"bundled,omitempty"`
+	Supporting           []string          `json:"supporting,omitempty"`
+	Mentioned            []string          `json:"mentioned,omitempty"`
+	Tilesheets           []TilesheetUse    `json:"tilesheets,omitempty"`
+	TilesheetsUnreadable bool              `json:"tilesheetsUnreadable,omitempty"`
 }
 
 func analysisMemoDir() (string, error) {
@@ -64,38 +65,43 @@ var buildStamp = sync.OnceValue(func() string {
 	return stamp
 })
 
-// analysisKey covers what a check reads besides files: the build, the mods and the scan depth.
-func analysisKey(in framework.Input) string {
+// analysisKey covers what a check reads besides files: the build, the mods and the scan depth. The request's own
+// callbacks are left out: they are the caller's code, not part of what a check of these mods finds.
+func analysisKey(in Request) string {
 	h := sha256.New()
-	_, _ = fmt.Fprintf(h, "%s|%d|%#v", buildStamp(), contentPackParserVersion, in)
+	_, _ = fmt.Fprintf(h, "%s|%d|%t|%#v|%#v", buildStamp(), contentPackParserVersion, in.SkipImageOverlap, in.Enabled, in.All)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func lookupAnalysis(key string) (framework.Findings, bool) {
+func lookupAnalysis(key string) (Findings, bool) {
 	dir, err := analysisMemoDir()
 	if err != nil {
-		return framework.Findings{}, false
+		return Findings{}, false
 	}
 	path := filepath.Join(dir, key+".json.gz")
 	raw, err := safefs.ReadFile(path)
 	if err != nil {
-		return framework.Findings{}, false
+		return Findings{}, false
 	}
 	payload, ok := unzipPackCache(raw)
 	if !ok {
-		return framework.Findings{}, false
+		return Findings{}, false
 	}
 	var memo analysisMemo
 	if json.Unmarshal(payload, &memo) != nil || !stampsValid(memo.Files) {
-		return framework.Findings{}, false
+		return Findings{}, false
 	}
 	now := time.Now()
 	_ = os.Chtimes(path, now, now)
-	return framework.Findings{AssetConflicts: memo.AssetConflicts, Settings: memo.Settings, Cleanup: memo.Cleanup, Redundant: memo.Redundant, Supporting: memo.Supporting, Mentioned: memo.Mentioned}, true
+	return Findings{
+		Conflicts: memo.Conflicts, Hints: memo.Hints, Shadowed: memo.Shadowed, Bundled: memo.Bundled,
+		Supporting: memo.Supporting, Mentioned: memo.Mentioned,
+		Tilesheets: memo.Tilesheets, TilesheetsUnreadable: memo.TilesheetsUnreadable,
+	}, true
 }
 
 // stampsValid stats in chunks on every core: a large profile's packs stamp tens of thousands of files.
-func stampsValid(files []packFileStamp) bool {
+func stampsValid(files []FileStamp) bool {
 	var stale atomic.Bool
 	var wg sync.WaitGroup
 	for chunk := range slices.Chunk(files, 1024) {
@@ -115,20 +121,20 @@ func stampsValid(files []packFileStamp) bool {
 	return !stale.Load()
 }
 
-func stampOf(abs string) (packFileStamp, bool) {
+func stampOf(abs string) (FileStamp, bool) {
 	info, err := os.Stat(abs)
 	switch {
 	case err == nil:
-		return packFileStamp{Path: abs, Size: info.Size(), ModTime: info.ModTime().UnixNano()}, true
+		return FileStamp{Path: abs, Size: info.Size(), ModTime: info.ModTime().UnixNano()}, true
 	case errors.Is(err, fs.ErrNotExist):
-		return packFileStamp{Path: abs, Size: absentSize}, true
+		return FileStamp{Path: abs, Size: absentSize}, true
 	}
-	return packFileStamp{}, false
+	return FileStamp{}, false
 }
 
-func storeAnalysis(key string, files []packFileStamp, f framework.Findings) {
+func storeAnalysis(key string, files []FileStamp, f Findings) {
 	cutoff := time.Now().Add(-racyStampWindow).UnixNano()
-	if slices.ContainsFunc(files, func(s packFileStamp) bool { return s.ModTime > cutoff }) {
+	if slices.ContainsFunc(files, func(s FileStamp) bool { return s.ModTime > cutoff }) {
 		return
 	}
 	dir, err := analysisMemoDir()
@@ -136,8 +142,9 @@ func storeAnalysis(key string, files []packFileStamp, f framework.Findings) {
 		return
 	}
 	memo := analysisMemo{
-		Files: files, AssetConflicts: f.AssetConflicts, Settings: f.Settings, Cleanup: f.Cleanup, Redundant: f.Redundant,
+		Files: files, Conflicts: f.Conflicts, Hints: f.Hints, Shadowed: f.Shadowed, Bundled: f.Bundled,
 		Supporting: f.Supporting, Mentioned: f.Mentioned,
+		Tilesheets: f.Tilesheets, TilesheetsUnreadable: f.TilesheetsUnreadable,
 	}
 	if writePackedCache(filepath.Join(dir, key+".json.gz"), memo) {
 		pruneAnalysisMemos(dir)
@@ -150,8 +157,8 @@ func pruneAnalysisMemos(dir string) {
 		return
 	}
 	type memoFile struct {
-		name string
-		at   int64
+		Name string
+		At   int64
 	}
 	var memos []memoFile
 	for _, e := range entries {
@@ -159,9 +166,9 @@ func pruneAnalysisMemos(dir string) {
 			memos = append(memos, memoFile{e.Name(), info.ModTime().UnixNano()})
 		}
 	}
-	slices.SortFunc(memos, func(a, b memoFile) int { return cmp.Compare(b.at, a.at) })
+	slices.SortFunc(memos, func(a, b memoFile) int { return cmp.Compare(b.At, a.At) })
 	for _, m := range memos[min(len(memos), analysisMemoKeep):] {
-		_ = safefs.Remove(filepath.Join(dir, m.name))
+		_ = safefs.Remove(filepath.Join(dir, m.Name))
 	}
 }
 
@@ -171,29 +178,29 @@ func pruneAnalysisMemos(dir string) {
 var passReads struct {
 	sync.Mutex
 	active     int
-	files      map[string]packFileStamp
-	log        []packFileStamp
+	files      map[string]FileStamp
+	log        []FileStamp
 	missed     int
 	incomplete bool
 }
 
 // recordReads starts collecting; the func it returns ends it and gives the stamps, or false when a file changed while
 // it was read.
-func recordReads() func() ([]packFileStamp, bool) {
+func recordReads() func() ([]FileStamp, bool) {
 	passReads.Lock()
 	if passReads.active == 0 {
-		passReads.files, passReads.log, passReads.missed, passReads.incomplete = map[string]packFileStamp{}, nil, 0, false
+		passReads.files, passReads.log, passReads.missed, passReads.incomplete = map[string]FileStamp{}, nil, 0, false
 	}
 	passReads.active++
 	passReads.Unlock()
-	return func() ([]packFileStamp, bool) {
+	return func() ([]FileStamp, bool) {
 		passReads.Lock()
 		defer passReads.Unlock()
 		passReads.active--
 		if passReads.active == 0 {
 			passReads.log = nil
 		}
-		files := make([]packFileStamp, 0, len(passReads.files))
+		files := make([]FileStamp, 0, len(passReads.files))
 		for _, s := range passReads.files {
 			files = append(files, s)
 		}
@@ -203,7 +210,7 @@ func recordReads() func() ([]packFileStamp, bool) {
 
 // noteRead stamps abs before it is read; info nil means it was not there.
 func noteRead(abs string, info fs.FileInfo) {
-	stamp := packFileStamp{Path: abs, Size: absentSize}
+	stamp := FileStamp{Path: abs, Size: absentSize}
 	if info != nil {
 		stamp.Size, stamp.ModTime = info.Size(), info.ModTime().UnixNano()
 	}
@@ -236,7 +243,7 @@ func markReads() readMark {
 }
 
 // readsSince is false when no check is recording or a file read since m could not be stamped.
-func readsSince(m readMark) ([]packFileStamp, bool) {
+func readsSince(m readMark) ([]FileStamp, bool) {
 	passReads.Lock()
 	defer passReads.Unlock()
 	if passReads.active == 0 || passReads.missed != m.missed {
@@ -246,16 +253,16 @@ func readsSince(m readMark) ([]packFileStamp, bool) {
 }
 
 // packStamps adds the stamps of every pack the check read, and of each pack that has no content.json to read.
-func packStamps(mods []framework.Mod, files []packFileStamp) ([]packFileStamp, bool) {
+func packStamps(mods []Mod, files []FileStamp) ([]FileStamp, bool) {
 	for _, im := range mods {
-		if im.Folder == "" || !isContentPatcherPack(im) {
+		if im.Folder == "" || !IsContentPatcherPack(im) {
 			continue
 		}
 		root := filepath.Clean(im.Folder)
 		if _, read := packValidated.Load(root); read {
 			if c, ok := packCache.Load(root); ok {
-				if pack, ok := c.(cachedPack); ok {
-					for _, f := range pack.files {
+				if pack, ok := c.(Pack); ok {
+					for _, f := range pack.Files {
 						f.Path = filepath.Join(root, filepath.FromSlash(f.Path))
 						files = append(files, f)
 					}

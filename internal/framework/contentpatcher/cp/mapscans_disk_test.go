@@ -1,29 +1,25 @@
-package contentpatcher
+package cp
 
 import (
 	"path/filepath"
 	"testing"
-
-	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestMapScansAndListingsPersistAndPruneUninstalledFolders(t *testing.T) {
-	testfs.DataHome(t)
-	loadCacheRoot()
+	dataHome(t)
 	mapScans.Lock()
-	mapScans.byPath = map[string]mapScan{
+	mapScans.byPath = map[string]MapScan{
 		filepath.FromSlash("/mods/a/maps/x.tmx"): {Size: 1, ModTime: 2, Keys: []string{"k"}},
 		filepath.FromSlash("/mods/gone/y.tbin"):  {Size: 3, ModTime: 4, Runs: []string{"r"}},
 	}
-	mapScans.folders = map[string]mapFileList{
+	mapScans.folders = map[string]MapFileList{
 		filepath.FromSlash("/mods/a"):    {Stamp: "a", Paths: []string{filepath.FromSlash("/mods/a/maps/x.tmx")}, Complete: true},
 		filepath.FromSlash("/mods/gone"): {Stamp: "g", Paths: []string{filepath.FromSlash("/mods/gone/y.tbin")}, Complete: true},
 	}
 	mapScans.loaded, mapScans.dirty = true, true
 	mapScans.Unlock()
 
-	flushMapScans([]framework.Mod{{Folder: filepath.FromSlash("/mods/a")}})
+	FlushMapScans([]Mod{{Folder: filepath.FromSlash("/mods/a")}})
 
 	mapScans.Lock()
 	resetMapScans()

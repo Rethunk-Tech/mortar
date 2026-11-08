@@ -1,4 +1,4 @@
-package contentpatcher
+package cp
 
 import (
 	"fmt"
@@ -7,15 +7,11 @@ import (
 	"runtime"
 	"strings"
 	"testing"
-
-	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
-	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // bigPack writes a pack shaped like a large real one: an EditData with many object-valued entries, plus many
 // Load and EditData changes with conditions, split over Included files.
-func bigPack(t *testing.T, n int) framework.Mod {
+func bigPack(t *testing.T, n int) Mod {
 	t.Helper()
 	root := t.TempDir()
 	write := func(name, body string) {
@@ -40,7 +36,7 @@ func bigPack(t *testing.T, n int) framework.Mod {
 		includes = append(includes, fmt.Sprintf(`{"Action":"Include","FromFile":"part%d.json"}`, f))
 	}
 	write("content.json", `{"Changes":[`+strings.Join(includes, ",")+`]}`)
-	return packs.FromDisk(framework.Mod{Enabled: true, Folder: root, UniqueID: fmt.Sprintf("Big.Pack%d", n), Name: "Big", Key: fmt.Sprintf("Big.Pack%d", n)})
+	return packFromDisk(Mod{Enabled: true, Folder: root, UniqueID: SMAPI(fmt.Sprintf("Big.Pack%d", n)), Name: "Big", Key: fmt.Sprintf("Big.Pack%d", n)})
 }
 
 func liveHeap() uint64 {
@@ -57,22 +53,22 @@ func liveHeap() uint64 {
 const retainedPerPackBudget = 420 << 10
 
 func TestParsedPackRetainedBytes(t *testing.T) {
-	testfs.DataHome(t)
-	resetContentPackCaches()
-	t.Cleanup(resetContentPackCaches)
+	dataHome(t)
+	resetCaches()
+	t.Cleanup(resetCaches)
 	const count = 5
-	mods := make([]framework.Mod, count)
+	mods := make([]Mod, count)
 	for i := range mods {
 		mods[i] = bigPack(t, i)
 	}
 	before := liveHeap()
-	held := make([]cachedPack, count)
+	held := make([]Pack, count)
 	for i, im := range mods {
-		held[i] = readContentPack(im, false)
+		held[i] = ReadPack(im, false)
 	}
 	after := liveHeap()
 	per := (after - before) / count
-	t.Logf("retained per parsed pack: %d bytes (%d patches)", per, len(held[0].patches))
+	t.Logf("retained per parsed pack: %d bytes (%d patches)", per, len(held[0].Patches))
 	runtime.KeepAlive(held)
 	if per > retainedPerPackBudget {
 		t.Fatalf("a parsed pack holds %d bytes, budget %d", per, retainedPerPackBudget)
@@ -88,11 +84,11 @@ func TestCompactLiteralKeepsEqualityAndDropsBodies(t *testing.T) {
 	if compactLiteral(long) == compactLiteral(long+" ") || compactLiteral("5") != "5" {
 		t.Fatal("different text must differ and short values stay readable")
 	}
-	same := cpShape{kind: 'p', key: "entry:k", value: a}
-	if same.overlaps(cpShape{kind: 'p', key: "entry:k", value: b}) {
+	same := Shape{Kind: 'p', Key: "entry:k", Value: a}
+	if same.overlaps(Shape{Kind: 'p', Key: "entry:k", Value: b}) {
 		t.Fatal("two packs writing the same entry body agree")
 	}
-	if !same.overlaps(cpShape{kind: 'p', key: "entry:k", value: compactLiteral(long + "y")}) {
+	if !same.overlaps(Shape{Kind: 'p', Key: "entry:k", Value: compactLiteral(long + "y")}) {
 		t.Fatal("different entry bodies conflict")
 	}
 }

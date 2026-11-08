@@ -3,57 +3,43 @@ package contentpatcher
 import (
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
+	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 )
 
 func TestVariantSettingsSuggestsOnlyValueMappedToEnabledMod(t *testing.T) {
-	recolourManifest := smapimanifest.Manifest{
-		Name:     "Recolour Pack",
-		UniqueID: "Example.RecolourPack",
-	}
-	fishManifest := smapimanifest.Manifest{
-		Name:     "Fish Recolour",
-		UniqueID: "Example.FishRecolour",
-	}
-	packMod := framework.Mod{
-		Key:      "recolour-pack",
-		Manifest: recolourManifest,
-	}
-	pack := cachedPack{
-		schema: map[string]cpSchema{
+	packMod := cp.Mod{Key: "recolour-pack", Name: "Recolour Pack", UniqueID: cp.SMAPI("Example.RecolourPack")}
+	pack := cp.Pack{
+		Schema: map[string]cp.Schema{
 			"selection": {
-				key:          "Selection",
-				allowValues:  []string{"Vanilla", "Fish"},
-				defaultValue: "Vanilla",
+				Key:          "Selection",
+				AllowValues:  []string{"Vanilla", "Fish"},
+				DefaultValue: "Vanilla",
 			},
 		},
-		patches: []cpPatch{
+		Patches: []cp.Patch{
 			{
-				tokenName:  "RecolourSelection",
-				tokenValue: "{{Selection}}",
-				when: cpWhen{
-					anyOf: [][]string{{"Example.FishRecolour"}},
-					config: []cpConfig{{
-						field:  "Selection",
-						values: []string{"Fish"},
+				TokenName:  "RecolourSelection",
+				TokenValue: "{{Selection}}",
+				When: cp.When{
+					AnyOf: [][]string{{"example.fishrecolour"}},
+					Config: []cp.Config{{
+						Field:  "Selection",
+						Values: []string{"Fish"},
 					}},
 				},
 			},
 			{
-				tokenName:  "RecolourSelection",
-				tokenValue: "Vanilla",
-				when: cpWhen{
-					anyOf: [][]string{{"Example.VanillaRecolour"}},
+				TokenName:  "RecolourSelection",
+				TokenValue: "Vanilla",
+				When: cp.When{
+					AnyOf: [][]string{{"example.vanillarecolour"}},
 				},
 			},
 		},
 	}
 	present := map[string]bool{"example.fishrecolour": true}
-	byID := map[string]framework.Mod{
-		"example.fishrecolour": {
-			Manifest: fishManifest,
-		},
+	byID := map[string]cp.Mod{
+		"example.fishrecolour": {UniqueID: cp.SMAPI("Example.FishRecolour"), Name: "Fish Recolour"},
 	}
 
 	got := variantSettings(packMod, pack, map[string]string{"selection": "Vanilla"}, present, byID)

@@ -21,7 +21,7 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
+	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -834,7 +834,7 @@ func (s *Service) ConflictImageCrop(_ context.Context, gameID, id string, unique
 	if err != nil {
 		return "", err
 	}
-	fromFile = contentpatcher.ContentReference("", fromFile)
+	fromFile = cp.ContentReference("", fromFile)
 	if uniqueID == "" || fromFile == "" {
 		return "", errors.New("missing pack or image")
 	}
@@ -842,7 +842,7 @@ func (s *Service) ConflictImageCrop(_ context.Context, gameID, id string, unique
 		if !mod.Equal(m.ModID(), uniqueID) {
 			continue
 		}
-		return contentpatcher.CropPackImage(m.Folder, fromFile, x, y, w, h)
+		return cp.CropPackImage(m.Folder, fromFile, x, y, w, h)
 	}
 	return "", errors.New("unknown pack")
 }

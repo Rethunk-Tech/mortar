@@ -1,4 +1,4 @@
-package contentpatcher
+package cp
 
 import (
 	"bytes"
@@ -18,19 +18,19 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
-func change(t *testing.T, raw string) cpChange {
+func change(t *testing.T, raw string) contentChange {
 	t.Helper()
-	var ch cpChange
+	var ch contentChange
 	if err := json.Unmarshal([]byte(raw), &ch); err != nil {
 		t.Fatal(err)
 	}
 	return ch
 }
 
-func edit(t *testing.T, raw string, image bool) cpPatch {
+func edit(t *testing.T, raw string, image bool) Patch {
 	t.Helper()
 	ch := change(t, raw)
-	return cpPatch{kind: "edit", shapes: editShapes(t.TempDir(), ch, image, false), spouse: spouseOf(ch.When, nil), places: placesOf(ch.When)}
+	return Patch{Kind: "edit", Shapes: editShapes(t.TempDir(), ch, image, false), Spouse: spouseOf(ch.When, nil), Places: placesOf(ch.When)}
 }
 
 func TestEditsClash(t *testing.T) {
@@ -57,8 +57,8 @@ func TestEditsClash(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			a, b := edit(t, c.a, c.image), edit(t, c.b, c.image)
-			if got, _ := editsClash([]cpPatch{a}, []cpPatch{b}); got != c.want {
-				t.Fatalf("clash = %v, shapes %v / %v", got, a.shapes, b.shapes)
+			if got, _ := editsClash([]Patch{a}, []Patch{b}); got != c.want {
+				t.Fatalf("clash = %v, shapes %v / %v", got, a.Shapes, b.Shapes)
 			}
 		})
 	}
@@ -112,22 +112,22 @@ func TestOpaqueImageShapeMatchesBruteForceCells(t *testing.T) {
 		}
 	}
 	wantCells := ";" + strings.Join(want, ";")
-	if got.cells != wantCells {
-		t.Fatalf("cells = %v, want %v", got.cells, wantCells)
+	if got.Cells != wantCells {
+		t.Fatalf("cells = %v, want %v", got.Cells, wantCells)
 	}
 	seen := map[string]bool{}
-	for cell := range strings.SplitSeq(got.cells, ";") {
+	for cell := range strings.SplitSeq(got.Cells, ";") {
 		if cell == "" {
 			continue
 		}
 		if seen[cell] {
-			t.Fatalf("duplicate cell %q in %v", cell, got.cells)
+			t.Fatalf("duplicate cell %q in %v", cell, got.Cells)
 		}
 		seen[cell] = true
 	}
 	full, ok := opaqueImageShape(dir, "patch.png", nil, 7, 9)
-	if !ok || full.cells == got.cells {
-		t.Fatalf("full-area cache key did not preserve the requested area: %q / %q", full.cells, got.cells)
+	if !ok || full.Cells == got.Cells {
+		t.Fatalf("full-area cache key did not preserve the requested area: %q / %q", full.Cells, got.Cells)
 	}
 	cacheEntries := 0
 	cacheValuesAreCells := true
@@ -159,11 +159,11 @@ func TestSkipImageOverlapUsesRectangles(t *testing.T) {
 	}
 	ch := change(t, `{"FromFile":"patch.png","PatchMode":"Overlay"}`)
 	full := imagePatchShapes(dir, ch, 0, 0, false)
-	if len(full) != 1 || full[0].cells == "" {
+	if len(full) != 1 || full[0].Cells == "" {
 		t.Fatalf("full scan shapes = %#v", full)
 	}
 	skipped := imagePatchShapes(dir, ch, 0, 0, true)
-	if len(skipped) != 1 || skipped[0].cells != "" || skipped[0].w != 32 || skipped[0].h != 16 {
+	if len(skipped) != 1 || skipped[0].Cells != "" || skipped[0].W != 32 || skipped[0].H != 16 {
 		t.Fatalf("skip scan shapes = %#v", skipped)
 	}
 }
@@ -184,8 +184,8 @@ func TestOpaqueImageShapeConcurrent(t *testing.T) {
 	for range 8 {
 		wg.Go(func() {
 			got, ok := opaqueImageShape(dir, "patch.png", nil, 0, 0)
-			if !ok || !strings.Contains(got.cells, "0,0") {
-				errCh <- got.cells
+			if !ok || !strings.Contains(got.Cells, "0,0") {
+				errCh <- got.Cells
 			}
 		})
 	}
@@ -200,10 +200,10 @@ func TestPlacesMakeEditsExclusive(t *testing.T) {
 	a := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName":"EastScarp_Village"}}`, true)
 	b := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName |contains=Custom_Umuwi":true}}`, true)
 	c := edit(t, `{"ToArea":{"X":0,"Y":0,"Width":16,"Height":16},"When":{"LocationName":"Custom_Umuwi, EastScarp_Village"}}`, true)
-	if clash, _ := editsClash([]cpPatch{a}, []cpPatch{b}); clash {
+	if clash, _ := editsClash([]Patch{a}, []Patch{b}); clash {
 		t.Fatal("different locations clashed")
 	}
-	if clash, _ := editsClash([]cpPatch{a}, []cpPatch{c}); !clash {
+	if clash, _ := editsClash([]Patch{a}, []Patch{c}); !clash {
 		t.Fatal("shared location did not clash")
 	}
 }
@@ -215,10 +215,10 @@ func TestMapPatchWithoutToAreaUsesTheSourceMapSize(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := editShapes(dir, change(t, `{"FromFile":"p.tmx"}`), false, false)
-	if len(s) != 1 || s[0].kind != 'r' || s[0].w != 10 || s[0].h != 8 {
+	if len(s) != 1 || s[0].Kind != 'r' || s[0].W != 10 || s[0].H != 8 {
 		t.Fatalf("shapes %v", s)
 	}
-	if s := editShapes(dir, change(t, `{"FromFile":"p.tbin"}`), false, false); len(s) != 1 || s[0].kind != 'w' {
+	if s := editShapes(dir, change(t, `{"FromFile":"p.tbin"}`), false, false); len(s) != 1 || s[0].Kind != 'w' {
 		t.Fatalf("tbin should be whole: %v", s)
 	}
 }
@@ -267,25 +267,25 @@ func TestDecodeMapCacheUsesFileStamp(t *testing.T) {
 
 func TestHasModWithEmptyInput(t *testing.T) {
 	w := parseWhen(map[string]json.RawMessage{"HasMod: |contains=Other.Mod": json.RawMessage(`false`)}, map[string]bool{}, nil)
-	if len(w.noneOf) != 1 || w.noneOf[0] != "smapi:other.mod" {
+	if len(w.NoneOf) != 1 || w.NoneOf[0] != "smapi:other.mod" {
 		t.Fatalf("when %+v", w)
 	}
 }
 
 func TestHarmlessOverlaps(t *testing.T) {
 	area := `"ToArea":{"X":0,"Y":0,"Width":16,"Height":16}`
-	mapEdit := func(when string) cpPatch {
+	mapEdit := func(when string) Patch {
 		return edit(t, `{"FromFile":"p.tmx",`+area+when+`}`, false)
 	}
-	img := func(when string) cpPatch {
+	img := func(when string) Patch {
 		p := edit(t, `{`+area+when+`}`, true)
-		p.image = true
+		p.Image = true
 		return p
 	}
 	tiny := edit(t, `{"FromFile":"p.tmx","ToArea":{"X":"{{x}}","Y":"{{y}}","Width":1,"Height":1}}`, false)
 	cases := []struct {
 		name  string
-		a, b  cpPatch
+		a, b  Patch
 		minor bool
 	}{
 		{"two image edits are cosmetic", img(""), img(""), true},
@@ -296,7 +296,7 @@ func TestHarmlessOverlaps(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			clash, minor := editsClash([]cpPatch{c.a}, []cpPatch{c.b})
+			clash, minor := editsClash([]Patch{c.a}, []Patch{c.b})
 			if !clash || minor != c.minor {
 				t.Fatalf("clash=%v minor=%v", clash, minor)
 			}

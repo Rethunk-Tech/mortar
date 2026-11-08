@@ -1,4 +1,4 @@
-package contentpatcher
+package cp
 
 import (
 	"crypto/sha256"
@@ -14,13 +14,12 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/framework"
 )
 
 // A check after a change recomputes only what the change touches. Each conflict target's outcome is kept under a key
 // made of the packs that touch the target, and each pack's compatibility settings under a key of the pack and the mods
 // its conditions name. A pack's share of a key is its file fingerprint, its place in the profile and which of the mods
-// its conditions name are enabled: presentFor holds the checks to those mods, so nothing else in the profile can change
+// its conditions name are enabled: PresentFor holds the checks to those mods, so nothing else in the profile can change
 // a target's or a pack's outcome.
 
 // partsCacheVersion changes whenever what a part records changes, so an older file is ignored.
@@ -30,18 +29,18 @@ const partsCacheVersion = 6
 // to take turns without evicting each other.
 const partsKeep = 8
 
-type partEntry struct {
+type PartEntry struct {
 	// Files are the stamps, by absolute path, of what computing the part read outside its packs' own files.
-	Files    []packFileStamp          `json:"files,omitempty"`
-	Conflict *framework.AssetConflict `json:"conflict,omitempty"`
-	Settings []framework.SettingHint  `json:"settings,omitempty"`
-	Check    int                      `json:"check"`
+	Files    []FileStamp `json:"files,omitempty"`
+	Conflict *Conflict   `json:"conflict,omitempty"`
+	Settings []Hint      `json:"settings,omitempty"`
+	Check    int         `json:"check"`
 }
 
 type diskParts struct {
 	Version int                  `json:"version"`
 	Check   int                  `json:"check"`
-	Entries map[string]partEntry `json:"entries"`
+	Entries map[string]PartEntry `json:"entries"`
 }
 
 var parts = struct {
@@ -49,8 +48,8 @@ var parts = struct {
 	loaded  bool
 	dirty   bool
 	check   int
-	entries map[string]partEntry
-}{entries: map[string]partEntry{}}
+	entries map[string]PartEntry
+}{entries: map[string]PartEntry{}}
 
 func partsCachePath() (string, error) {
 	if cacheRoot == "" {
@@ -84,7 +83,7 @@ func loadParts() {
 	}
 }
 
-func flushParts() {
+func FlushParts() {
 	parts.Lock()
 	defer parts.Unlock()
 	if !parts.dirty {
@@ -99,27 +98,27 @@ func flushParts() {
 	}
 }
 
-func dropParts() {
+func DropParts() {
 	parts.Lock()
-	parts.entries, parts.loaded, parts.dirty, parts.check = map[string]partEntry{}, false, false, 0
+	parts.entries, parts.loaded, parts.dirty, parts.check = map[string]PartEntry{}, false, false, 0
 	parts.Unlock()
 }
 
-// partsRun is one check's use of the parts: what it found kept and what it computed. Nothing it computed is kept
+// PartsRun is one check's use of the parts: what it found kept and what it computed. Nothing it computed is kept
 // unless the whole check could stamp what it read (commit).
-type partsRun struct {
-	used  map[string]bool
-	fresh map[string]partEntry
+type PartsRun struct {
+	Used  map[string]bool
+	Fresh map[string]PartEntry
 }
 
-func newPartsRun() *partsRun {
+func NewPartsRun() *PartsRun {
 	loadParts()
-	return &partsRun{used: map[string]bool{}, fresh: map[string]partEntry{}}
+	return &PartsRun{Used: map[string]bool{}, Fresh: map[string]PartEntry{}}
 }
 
 // part serves key's entry, or computes it; stable is false when a pack behind key changed too recently for its
 // stamps to be trusted. A nil run always computes.
-func (r *partsRun) part(key string, stable bool, compute func() partEntry) partEntry {
+func (r *PartsRun) Part(key string, stable bool, compute func() PartEntry) PartEntry {
 	if r == nil {
 		return compute()
 	}
@@ -127,7 +126,7 @@ func (r *partsRun) part(key string, stable bool, compute func() partEntry) partE
 	e, ok := parts.entries[key]
 	parts.Unlock()
 	if ok && stampsValid(e.Files) {
-		r.used[key] = true
+		r.Used[key] = true
 		return e
 	}
 	mark := markReads()
@@ -147,24 +146,24 @@ func (r *partsRun) part(key string, stable bool, compute func() partEntry) partE
 			e.Files = append(e.Files, f)
 		}
 	}
-	r.fresh[key] = e
+	r.Fresh[key] = e
 	return e
 }
 
-func (r *partsRun) commit() {
+func (r *PartsRun) Commit() {
 	if r == nil {
 		return
 	}
 	parts.Lock()
 	defer parts.Unlock()
 	parts.check++
-	for key := range r.used {
+	for key := range r.Used {
 		if e, ok := parts.entries[key]; ok {
 			e.Check = parts.check
 			parts.entries[key] = e
 		}
 	}
-	for key, e := range r.fresh {
+	for key, e := range r.Fresh {
 		e.Check = parts.check
 		parts.entries[key] = e
 	}
@@ -176,15 +175,15 @@ func (r *partsRun) commit() {
 		}
 	}
 	// A check that only reused parts leaves the file as it is; their use is saved with the next change.
-	if len(r.fresh) > 0 || pruned {
+	if len(r.Fresh) > 0 || pruned {
 		parts.dirty = true
 	}
 }
 
-// presentFor narrows the enabled mods to those pack's conditions name, the only ones a check of the pack looks up.
-func presentFor(pack cachedPack, present map[string]bool) map[string]bool {
+// PresentFor narrows the enabled mods to those pack's conditions name, the only ones a check of the pack looks up.
+func PresentFor(pack Pack, present map[string]bool) map[string]bool {
 	out := map[string]bool{}
-	for id := range pack.mentions {
+	for id := range pack.Mentions {
 		if present[id] {
 			out[id] = true
 		}
@@ -192,12 +191,12 @@ func presentFor(pack cachedPack, present map[string]bool) map[string]bool {
 	return out
 }
 
-// packSig is pack's share of a part's key; stable is false when the pack has no trusted stamps.
-func packSig(im framework.Mod, pack cachedPack, present map[string]bool) (sig string, stable bool) {
+// PackSig is pack's share of a part's key; stable is false when the pack has no trusted stamps.
+func PackSig(im Mod, pack Pack, present map[string]bool) (sig string, stable bool) {
 	var b strings.Builder
-	_, _ = fmt.Fprintf(&b, "%q|%q|%q|%q|%q|%q|", pack.fingerprint, im.ModID(), im.Name, im.Key, im.Folder, im.Author)
+	_, _ = fmt.Fprintf(&b, "%q|%q|%q|%q|%q|%q|", pack.Fingerprint, im.UniqueID, im.Name, im.Key, im.Folder, im.Author)
 	for _, d := range im.Dependencies {
-		_, _ = fmt.Fprintf(&b, "d%q", d.ModID())
+		_, _ = fmt.Fprintf(&b, "d%q", d.UniqueID)
 	}
 	for _, id := range im.LoadAfter {
 		_, _ = fmt.Fprintf(&b, "a%q", id)
@@ -206,12 +205,12 @@ func packSig(im framework.Mod, pack cachedPack, present map[string]bool) (sig st
 		_, _ = fmt.Fprintf(&b, "p%q", id)
 	}
 	cutoff := time.Now().Add(-racyStampWindow).UnixNano()
-	stable = pack.fingerprint != "" && !slices.ContainsFunc(pack.files, func(f packFileStamp) bool { return f.ModTime > cutoff })
+	stable = pack.Fingerprint != "" && !slices.ContainsFunc(pack.Files, func(f FileStamp) bool { return f.ModTime > cutoff })
 	return b.String(), stable
 }
 
-// partKey also covers what every part reads besides its packs: the build and the scan depth.
-func partKey(skip bool, fields ...string) string {
+// PartKey also covers what every part reads besides its packs: the build and the scan depth.
+func PartKey(skip bool, fields ...string) string {
 	h := sha256.New()
 	_, _ = fmt.Fprintf(h, "%s|%d|%t", buildStamp(), contentPackParserVersion, skip)
 	for _, f := range fields {

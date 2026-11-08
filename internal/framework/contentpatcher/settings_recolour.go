@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 )
 
 // recolourFamily is a map recolour that packs offer as a config choice. Packs spell the choice their own way
@@ -45,13 +45,13 @@ func familyOfValue(value string) int {
 }
 
 // enabledRecolours finds, per family, the enabled mod that is that recolour.
-func enabledRecolours(mods []framework.Mod, self mod.ID) map[int]framework.Mod {
-	out := map[int]framework.Mod{}
+func enabledRecolours(mods []cp.Mod, self cp.ModID) map[int]cp.Mod {
+	out := map[int]cp.Mod{}
 	for _, m := range mods {
-		if !m.Enabled || mod.Equal(m.ModID(), self) {
+		if !m.Enabled || cp.Equal(m.UniqueID, self) {
 			continue
 		}
-		id := squash(m.ModID().Local())
+		id := squash(m.UniqueID.Local())
 		for i, f := range recolourFamilies {
 			if _, seen := out[i]; !seen && slices.ContainsFunc(f.idParts, func(p string) bool {
 				return strings.Contains(id, p) && (p != "eemie" || strings.Contains(id, "recolo"))
@@ -66,10 +66,10 @@ func enabledRecolours(mods []framework.Mod, self mod.ID) map[int]framework.Mod {
 // recolourSettings suggests a pack's recolour choice from the recolours the profile has enabled, for packs whose
 // choices name recolours without a HasMod mapping the pack could detect on its own. It also catches a choice made
 // for a recolour the profile does not have enabled.
-func recolourSettings(packMod framework.Mod, pack cachedPack, config map[string]string, enabled map[int]framework.Mod, covered map[string]bool) []framework.SettingHint {
-	var out []framework.SettingHint
-	for _, schema := range pack.schema {
-		if schema.allowMultiple || len(schema.allowValues) < 2 || covered[strings.ToLower(schema.key)] || mapsByHasMod(pack, schema.key) {
+func recolourSettings(packMod cp.Mod, pack cp.Pack, config map[string]string, enabled map[int]cp.Mod, covered map[string]bool) []cp.Hint {
+	var out []cp.Hint
+	for _, schema := range pack.Schema {
+		if schema.AllowMultiple || len(schema.AllowValues) < 2 || covered[strings.ToLower(schema.Key)] || mapsByHasMod(pack, schema.Key) {
 			continue
 		}
 		if hint, ok := recolourHint(packMod, schema, config, enabled); ok {
@@ -79,40 +79,40 @@ func recolourSettings(packMod framework.Mod, pack cachedPack, config map[string]
 	return out
 }
 
-func recolourHint(packMod framework.Mod, schema cpSchema, config map[string]string, enabled map[int]framework.Mod) (framework.SettingHint, bool) {
+func recolourHint(packMod cp.Mod, schema cp.Schema, config map[string]string, enabled map[int]cp.Mod) (cp.Hint, bool) {
 	valueFamily := map[string]int{}
-	for _, v := range schema.allowValues {
+	for _, v := range schema.AllowValues {
 		if f := familyOfValue(v); f >= 0 {
 			valueFamily[v] = f
 		}
 	}
 	if len(valueFamily) == 0 {
-		return framework.SettingHint{}, false
+		return cp.Hint{}, false
 	}
-	current, set := config[strings.ToLower(schema.key)]
+	current, set := config[strings.ToLower(schema.Key)]
 	if !set {
-		current = schema.defaultValue
+		current = schema.DefaultValue
 	}
 	current = strings.TrimSpace(current)
 	if current == "" || slices.Contains(autoChoices, strings.ToLower(current)) {
-		return framework.SettingHint{}, false
+		return cp.Hint{}, false
 	}
 	currentFamily := familyOfValue(current)
 	if _, ok := enabled[currentFamily]; currentFamily >= 0 && ok {
-		return framework.SettingHint{}, false
+		return cp.Hint{}, false
 	}
 	var suggested, forNames []string
-	var forIDs []mod.ID
-	for _, v := range schema.allowValues {
+	var forIDs []cp.ModID
+	for _, v := range schema.AllowValues {
 		f, ok := valueFamily[v]
 		if !ok {
 			continue
 		}
 		if im, on := enabled[f]; on {
-			addSettingValue(&suggested, v)
-			if !slices.Contains(forIDs, im.ModID()) {
-				forIDs = append(forIDs, im.ModID())
-				forNames = append(forNames, cmp.Or(im.Name, im.ModID().Local()))
+			cp.AddSettingValue(&suggested, v)
+			if !slices.Contains(forIDs, im.UniqueID) {
+				forIDs = append(forIDs, im.UniqueID)
+				forNames = append(forNames, cmp.Or(im.Name, im.UniqueID.Local()))
 			}
 		}
 	}
@@ -120,15 +120,15 @@ func recolourHint(packMod framework.Mod, schema cpSchema, config map[string]stri
 	if currentFamily >= 0 {
 		currentFor = recolourFamilies[currentFamily].name
 		if len(suggested) == 0 {
-			suggested = vanillaChoice(schema.allowValues)
+			suggested = vanillaChoice(schema.AllowValues)
 		}
 	}
 	if len(suggested) == 0 {
-		return framework.SettingHint{}, false
+		return cp.Hint{}, false
 	}
-	return framework.SettingHint{
-		Key: packMod.Key, ID: packMod.ModID(), Name: packMod.Name, Field: schema.key, Current: current,
-		Suggested: suggested, Description: schema.description, Variant: true, CurrentFor: currentFor,
+	return cp.Hint{
+		Key: packMod.Key, ID: packMod.UniqueID, Name: packMod.Name, Field: schema.Key, Current: current,
+		Suggested: suggested, Description: schema.Description, Variant: true, CurrentFor: currentFor,
 		For: forIDs, ForNames: forNames,
 	}, true
 }
@@ -144,14 +144,14 @@ func vanillaChoice(allowed []string) []string {
 }
 
 // mapsByHasMod reports whether the pack ties the field to installed mods itself, so it already follows the profile.
-func mapsByHasMod(pack cachedPack, field string) bool {
+func mapsByHasMod(pack cp.Pack, field string) bool {
 	token := "{{" + strings.ToLower(field) + "}}"
-	return slices.ContainsFunc(pack.patches, func(p cpPatch) bool {
-		if len(p.when.anyOf) == 0 {
+	return slices.ContainsFunc(pack.Patches, func(p cp.Patch) bool {
+		if len(p.When.AnyOf) == 0 {
 			return false
 		}
-		return strings.Contains(strings.ToLower(p.tokenValue), token) ||
-			slices.ContainsFunc(p.when.config, func(c cpConfig) bool { return strings.EqualFold(c.field, field) })
+		return strings.Contains(strings.ToLower(p.TokenValue), token) ||
+			slices.ContainsFunc(p.When.Config, func(c cp.Config) bool { return strings.EqualFold(c.Field, field) })
 	})
 }
 
@@ -161,14 +161,14 @@ var recolourNameWords = map[string]int{"earthy": 0, "starblue": 1, "vpr": 2, "wi
 
 // recolourAddons lists enabled mods made for a recolour the profile does not have enabled, such as "Earthy Icons
 // for Worldmaps Everywhere" without Earthy Recolour; their manifests rarely declare the recolour.
-func recolourAddons(mods []framework.Mod) []framework.Cleanup {
+func recolourAddons(mods []cp.Mod) []framework.Cleanup {
 	enabled := enabledRecolours(mods, "")
 	var out []framework.Cleanup
 	for _, m := range mods {
 		if !m.Enabled {
 			continue
 		}
-		id := squash(m.ModID().Local())
+		id := squash(m.UniqueID.Local())
 		for _, word := range strings.FieldsFunc(strings.ToLower(m.Name), func(r rune) bool { return r < 'a' || r > 'z' }) {
 			f, ok := recolourNameWords[word]
 			if !ok {
@@ -178,7 +178,7 @@ func recolourAddons(mods []framework.Mod) []framework.Cleanup {
 				break
 			}
 			out = append(out, framework.Cleanup{
-				Key: m.Key, ID: m.ModID(), Name: m.Name, Reason: "Made for " + recolourFamilies[f].name + ", which is not enabled",
+				Key: m.Key, ID: frameworkID(m.UniqueID), Name: m.Name, Reason: "Made for " + recolourFamilies[f].name + ", which is not enabled",
 				Code: "recolourMissing", Params: map[string]string{"name": recolourFamilies[f].name},
 			})
 			break

@@ -4,34 +4,35 @@ import (
 	"context"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
+	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 )
 
 type cachedIndex struct {
 	fingerprint string
-	targets     []contentpatcher.AssetTarget
+	targets     []cp.AssetTarget
 }
 
 //wails:ignore
-func (s *Service) WhoChanges(_ context.Context, gameID, id, query string) (contentpatcher.WhoChangesPage, error) {
+func (s *Service) WhoChanges(_ context.Context, gameID, id, query string) (cp.WhoChangesPage, error) {
 	index, err := s.assetIndex(gameID, id)
 	if err != nil {
-		return contentpatcher.WhoChangesPage{}, err
+		return cp.WhoChangesPage{}, err
 	}
-	return contentpatcher.WhoChangesOf(index, query), nil
+	return cp.WhoChangesOf(index, query), nil
 }
 
 // AssetMap pages the profile's touched assets; shared keeps only those more than one mod changes.
-func (s *Service) AssetMap(_ context.Context, gameID, id, filter string, shared bool, offset int) (contentpatcher.AssetMapPage, error) {
+func (s *Service) AssetMap(_ context.Context, gameID, id, filter string, shared bool, offset int) (cp.AssetMapPage, error) {
 	index, err := s.assetIndex(gameID, id)
 	if err != nil {
-		return contentpatcher.AssetMapPage{}, err
+		return cp.AssetMapPage{}, err
 	}
-	return contentpatcher.AssetMapOf(index, filter, shared, offset), nil
+	return cp.AssetMapOf(index, filter, shared, offset), nil
 }
 
 // assetIndex builds the profile's index on first use and keeps it until the problems fingerprint changes, so
 // searching and paging do not re-read every content pack.
-func (s *Service) assetIndex(gameID, id string) ([]contentpatcher.AssetTarget, error) {
+func (s *Service) assetIndex(gameID, id string) ([]cp.AssetTarget, error) {
 	mods, err := s.installed(gameID, id)
 	if err != nil {
 		return nil, err

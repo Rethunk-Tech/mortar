@@ -1,4 +1,4 @@
-package contentpatcher
+package cp
 
 import (
 	"bytes"
@@ -14,11 +14,6 @@ import (
 	"slices"
 	"strings"
 	"testing"
-
-	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
-	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestLoadConflictWithBlankLoserIsCosmetic(t *testing.T) {
@@ -30,7 +25,7 @@ func TestLoadConflictWithBlankLoserIsCosmetic(t *testing.T) {
 			"loser.JSON": `// harmless
 []`,
 		})
-		conflicts := assetConflicts([]framework.Mod{winner, loser})
+		conflicts := assetConflicts([]Mod{winner, loser})
 		if len(conflicts) != 1 || !conflicts[0].Cosmetic {
 			t.Fatalf("expected a cosmetic load conflict, got %#v", conflicts)
 		}
@@ -43,22 +38,22 @@ func TestLoadConflictWithBlankLoserIsCosmetic(t *testing.T) {
 		loser := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"loser.json","Priority":"Low"}]}`, map[string]string{
 			"loser.json": `{"Tile": 1}`,
 		})
-		conflicts := assetConflicts([]framework.Mod{winner, loser})
+		conflicts := assetConflicts([]Mod{winner, loser})
 		if len(conflicts) != 1 || conflicts[0].Cosmetic {
 			t.Fatalf("expected a real load conflict, got %#v", conflicts)
 		}
 	})
 }
 
-func syntheticLoadPack(t *testing.T, content string, files map[string]string) framework.Mod {
+func syntheticLoadPack(t *testing.T, content string, files map[string]string) Mod {
 	t.Helper()
 	root := t.TempDir()
-	testfs.WriteFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	testfs.WriteFile(t, root, "content.json", content)
+	writeFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeFile(t, root, "content.json", content)
 	for name, body := range files {
-		testfs.WriteFile(t, root, name, body)
+		writeFile(t, root, name, body)
 	}
-	return packs.FromDisk(framework.Mod{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)})
+	return packFromDisk(Mod{Enabled: true, Folder: root, UniqueID: SMAPI(filepath.Base(root)), Name: filepath.Base(root), Key: filepath.Base(root)})
 }
 
 func TestEditMapPatchModesUseSourceLayers(t *testing.T) {
@@ -72,9 +67,9 @@ func TestEditMapPatchModesUseSourceLayers(t *testing.T) {
 		if len(shapes) != 3 {
 			t.Fatalf("expected three nonempty tiles, got %#v", shapes)
 		}
-		if !slices.Contains(shapes, (cpShape{kind: 't', x: 10, y: 20, layer: "back"})) ||
-			!slices.Contains(shapes, (cpShape{kind: 't', x: 11, y: 21, layer: "back"})) ||
-			!slices.Contains(shapes, (cpShape{kind: 't', x: 12, y: 20, layer: "front"})) {
+		if !slices.Contains(shapes, (Shape{Kind: 't', X: 10, Y: 20, Layer: "back"})) ||
+			!slices.Contains(shapes, (Shape{Kind: 't', X: 11, Y: 21, Layer: "back"})) ||
+			!slices.Contains(shapes, (Shape{Kind: 't', X: 12, Y: 20, Layer: "front"})) {
 			t.Fatalf("unexpected overlay shapes: %#v", shapes)
 		}
 		if shapes[0].overlaps(shapes[2]) {
@@ -97,7 +92,7 @@ func TestEditMapPatchModesUseSourceLayers(t *testing.T) {
 
 	t.Run("replace by layer writes each source layer", func(t *testing.T) {
 		shapes := syntheticMapShapes(t, mapJSON, "ReplaceByLayer")
-		if len(shapes) != 2 || shapes[0].layer == "" || shapes[1].layer == "" {
+		if len(shapes) != 2 || shapes[0].Layer == "" || shapes[1].Layer == "" {
 			t.Fatalf("expected one full shape per layer, got %#v", shapes)
 		}
 		if shapes[0].overlaps(shapes[1]) {
@@ -107,18 +102,18 @@ func TestEditMapPatchModesUseSourceLayers(t *testing.T) {
 
 	t.Run("replace writes every layer", func(t *testing.T) {
 		shapes := syntheticMapShapes(t, mapJSON, "Replace")
-		if len(shapes) != 1 || shapes[0].layer != "" {
+		if len(shapes) != 1 || shapes[0].Layer != "" {
 			t.Fatalf("expected one all-layer shape, got %#v", shapes)
 		}
-		if !shapes[0].overlaps(cpShape{kind: 't', x: 10, y: 20, layer: "back"}) {
+		if !shapes[0].overlaps(Shape{Kind: 't', X: 10, Y: 20, Layer: "back"}) {
 			t.Fatal("replace shape must overlap every layer")
 		}
 	})
 
 	t.Run("overlay images do not clash", func(t *testing.T) {
 		clash, _ := editsClash(
-			[]cpPatch{{image: true, patchMode: "Overlay", shapes: whole}},
-			[]cpPatch{{image: true, patchMode: "Overlay", shapes: whole}},
+			[]Patch{{Image: true, PatchMode: "Overlay", Shapes: whole}},
+			[]Patch{{Image: true, PatchMode: "Overlay", Shapes: whole}},
 		)
 		if clash {
 			t.Fatal("two overlay image patches should not clash")
@@ -146,18 +141,18 @@ func tmjLayerData(t *testing.T, compression string, gids ...uint32) string {
 	return base64.StdEncoding.EncodeToString(raw.Bytes())
 }
 
-func syntheticMapShapes(t *testing.T, mapJSON, patchMode string) []cpShape {
+func syntheticMapShapes(t *testing.T, mapJSON, patchMode string) []Shape {
 	t.Helper()
 	root := t.TempDir()
-	testfs.WriteFile(t, root, "map.tmj", mapJSON)
+	writeFile(t, root, "map.tmj", mapJSON)
 	content := `{"Changes":[{"Action":"EditMap","Target":"Maps/Test","FromFile":"map.tmj","FromArea":{"X":0,"Y":0,"Width":3,"Height":2},"ToArea":{"X":10,"Y":20,"Width":3,"Height":2},"PatchMode":"` + patchMode + `"}]}`
-	testfs.WriteFile(t, root, "content.json", content)
-	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
-	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
-	if len(pack.patches) != 1 {
-		t.Fatalf("expected one patch, got %#v", pack.patches)
+	writeFile(t, root, "content.json", content)
+	pack := Pack{Mentions: map[string]bool{}, Schema: map[string]Schema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, When{}, &pack)
+	if len(pack.Patches) != 1 {
+		t.Fatalf("expected one patch, got %#v", pack.Patches)
 	}
-	return pack.patches[0].shapes
+	return pack.Patches[0].Shapes
 }
 
 func TestFarmTypeMakesLoadConditionsExclusive(t *testing.T) {
@@ -167,7 +162,7 @@ func TestFarmTypeMakesLoadConditionsExclusive(t *testing.T) {
 	second := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"second.json","When":{"FarmType":"WaFF"}}]}`, map[string]string{
 		"second.json": `{"Tile": 2}`,
 	})
-	if conflicts := assetConflicts([]framework.Mod{first, second}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{first, second}); len(conflicts) != 0 {
 		t.Fatalf("different farm types should not conflict: %#v", conflicts)
 	}
 }
@@ -180,23 +175,23 @@ func TestDynamicTokenWhenMergesDefinitionConditions(t *testing.T) {
 	],"Changes":[
 		{"Action":"Load","Target":"Maps/Test","FromFile":"map.json","When":{"{{FarmChoice}}":"A_TK.FarmProjectForaging"}}
 	]}`
-	testfs.WriteFile(t, root, "content.json", content)
-	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
-	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
-	var load cpPatch
-	for _, patch := range pack.patches {
-		if patch.kind == "load" {
+	writeFile(t, root, "content.json", content)
+	pack := Pack{Mentions: map[string]bool{}, Schema: map[string]Schema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, When{}, &pack)
+	var load Patch
+	for _, patch := range pack.Patches {
+		if patch.Kind == "load" {
 			load = patch
 			break
 		}
 	}
-	if load.when.spouse != "abigail" || !slices.Contains(load.when.places["farmtype"], "a_tk.farmprojectforaging") {
+	if load.When.Spouse != "abigail" || !slices.Contains(load.When.Places["farmtype"], "a_tk.farmprojectforaging") {
 		t.Fatalf("dynamic token conditions were not merged: %#v", load)
 	}
-	if !slices.Contains(load.when.anyOf[0], "smapi:author.required") {
-		t.Fatalf("dynamic token HasMod condition was not merged: %#v", load.when)
+	if !slices.Contains(load.When.AnyOf[0], "smapi:author.required") {
+		t.Fatalf("dynamic token HasMod condition was not merged: %#v", load.When)
 	}
-	if !exclusive(load, cpPatch{places: map[string][]string{"farmtype": {"waff"}}}) {
+	if !exclusive(load, Patch{Places: map[string][]string{"farmtype": {"waff"}}}) {
 		t.Fatal("different dynamic FarmType values should be exclusive")
 	}
 }
@@ -208,14 +203,14 @@ func TestPriorityParsingKeepsOddChangesIsolated(t *testing.T) {
 		{"Action":"EditImage","Target":"Maps/Image","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"Priority":"Late - 10"},
 		{"Action":"Load","Target":"Maps/Odd","FromFile":"odd.json","Priority":{"unexpected":true}}
 	]}`
-	testfs.WriteFile(t, root, "content.json", content)
-	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
-	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
-	if len(pack.patches) != 3 {
-		t.Fatalf("one malformed priority must not discard the other changes: %#v", pack.patches)
+	writeFile(t, root, "content.json", content)
+	pack := Pack{Mentions: map[string]bool{}, Schema: map[string]Schema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, When{}, &pack)
+	if len(pack.Patches) != 3 {
+		t.Fatalf("one malformed priority must not discard the other changes: %#v", pack.Patches)
 	}
-	if pack.patches[0].priority != "42" || pack.patches[1].priority != "Late - 10" || pack.patches[2].priority != "" {
-		t.Fatalf("unexpected parsed priorities: %#v", pack.patches)
+	if pack.Patches[0].Priority != "42" || pack.Patches[1].Priority != "Late - 10" || pack.Patches[2].Priority != "" {
+		t.Fatalf("unexpected parsed priorities: %#v", pack.Patches)
 	}
 	if contentPatcherPriority("load", "Low") != -1000 ||
 		contentPatcherPriority("edit", "Default") != 0 ||
@@ -233,45 +228,45 @@ func TestConflictWinnerUsesClashingPatchPriority(t *testing.T) {
 	second := syntheticEditPack(t, `{"Changes":[
 		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":1,"Y":1,"Width":1,"Height":1},"Priority":"Medium"}
 	]}`)
-	conflicts := assetConflicts([]framework.Mod{first, second})
-	if len(conflicts) != 1 || conflicts[0].WinnerID != second.ModID() {
+	conflicts := assetConflicts([]Mod{first, second})
+	if len(conflicts) != 1 || conflicts[0].WinnerID != second.UniqueID {
 		t.Fatalf("winner must be selected from clashing patches: %#v", conflicts)
 	}
 
 	base := packHit{
-		id: "smapi:base", name: "Base", loads: []cpPatch{{priority: "Medium"}},
-		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{},
+		ID: "smapi:base", Name: "Base", Loads: []Patch{{Priority: "Medium"}},
+		LoadClashes: map[int]bool{0: true}, Dependencies: map[string]bool{},
 	}
 	addon := packHit{
-		id: "smapi:addon", name: "Addon", loads: []cpPatch{{priority: "Medium"}},
-		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{"smapi:base": true},
+		ID: "smapi:addon", Name: "Addon", Loads: []Patch{{Priority: "Medium"}},
+		LoadClashes: map[int]bool{0: true}, Dependencies: map[string]bool{"smapi:base": true},
 	}
 	loadOrder := conflictOf("load", "Maps/Test", []packHit{base, addon})
-	if loadOrder.WinnerID != "smapi:addon" || loadOrder.WinnerKind != framework.WinnerLoadOrder || loadOrder.WinnerName != "Addon" {
+	if loadOrder.WinnerID != "smapi:addon" || loadOrder.WinnerKind != WinnerLoadOrder || loadOrder.WinnerName != "Addon" {
 		t.Fatalf("dependency order should decide equal-priority loads: %#v", loadOrder)
 	}
 	unclear := conflictOf("load", "Maps/Test", []packHit{base, {
-		id: "smapi:other", name: "Other", loads: []cpPatch{{priority: "Medium"}},
-		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{},
+		ID: "smapi:other", Name: "Other", Loads: []Patch{{Priority: "Medium"}},
+		LoadClashes: map[int]bool{0: true}, Dependencies: map[string]bool{},
 	}})
-	if unclear.WinnerKind != framework.WinnerUnclear {
+	if unclear.WinnerKind != WinnerUnclear {
 		t.Fatalf("unrelated equal-priority loads should be unclear: %#v", unclear)
 	}
 	exclusive := conflictOf("load", "Maps/Test", []packHit{
-		{id: "smapi:one", name: "One", loads: []cpPatch{{priority: "Exclusive"}}, loadClashes: map[int]bool{0: true}},
-		{id: "smapi:two", name: "Two", loads: []cpPatch{{priority: "Exclusive"}}, loadClashes: map[int]bool{0: true}},
+		{ID: "smapi:one", Name: "One", Loads: []Patch{{Priority: "Exclusive"}}, LoadClashes: map[int]bool{0: true}},
+		{ID: "smapi:two", Name: "Two", Loads: []Patch{{Priority: "Exclusive"}}, LoadClashes: map[int]bool{0: true}},
 	})
-	if exclusive.WinnerKind != framework.WinnerNeither {
+	if exclusive.WinnerKind != WinnerNeither {
 		t.Fatalf("exclusive loads should leave the asset unchanged: %#v", exclusive)
 	}
 }
 
-func syntheticEditPack(t *testing.T, content string) framework.Mod {
+func syntheticEditPack(t *testing.T, content string) Mod {
 	t.Helper()
 	root := t.TempDir()
-	testfs.WriteFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	testfs.WriteFile(t, root, "content.json", content)
-	return packs.FromDisk(framework.Mod{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)})
+	writeFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeFile(t, root, "content.json", content)
+	return packFromDisk(Mod{Enabled: true, Folder: root, UniqueID: SMAPI(filepath.Base(root)), Name: filepath.Base(root), Key: filepath.Base(root)})
 }
 
 func TestSwitchOffOnlySuggestsNonClashingAllowedValue(t *testing.T) {
@@ -283,12 +278,12 @@ func TestSwitchOffOnlySuggestsNonClashingAllowedValue(t *testing.T) {
 	second := syntheticEditPack(t, `{"Changes":[
 		{"Action":"EditImage","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":1,"Height":1}}
 	]}`)
-	conflicts := assetConflicts([]framework.Mod{first, second})
+	conflicts := assetConflicts([]Mod{first, second})
 	if len(conflicts) != 1 {
 		t.Fatalf("expected one conflict, got %#v", conflicts)
 	}
 	for _, fix := range conflicts[0].Fixes {
-		if mod.Equal(fix.ID, first.ModID()) {
+		if Equal(fix.ID, first.UniqueID) {
 			if fix.Field != "Variant" || fix.Value != "Green" {
 				t.Fatalf("expected the only safe allowed value, got %#v", fix)
 			}
@@ -300,13 +295,13 @@ func TestSwitchOffOnlySuggestsNonClashingAllowedValue(t *testing.T) {
 
 func TestIncludedBlankLoadsUsePackRootPath(t *testing.T) {
 	root := t.TempDir()
-	testfs.WriteFile(t, root, "content.json", `{"Changes":[{"Action":"Include","FromFile":"nested/content.json"}]}`)
-	testfs.WriteFile(t, root, "nested/content.json", `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"blank.json","Priority":"low"}]}`)
-	testfs.WriteFile(t, root, "blank.json", "{\r\n// empty\r\n}")
-	testfs.WriteFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	im := packs.FromDisk(framework.Mod{Key: "included", Enabled: true, Folder: root, UniqueID: "Included.Blank", Name: "Included Blank"})
+	writeFile(t, root, "content.json", `{"Changes":[{"Action":"Include","FromFile":"nested/content.json"}]}`)
+	writeFile(t, root, "nested/content.json", `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"blank.json","Priority":"low"}]}`)
+	writeFile(t, root, "blank.json", "{\r\n// empty\r\n}")
+	writeFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	im := packFromDisk(Mod{Key: "included", Enabled: true, Folder: root, UniqueID: SMAPI("Included.Blank"), Name: "Included Blank"})
 
-	conflicts := assetConflicts([]framework.Mod{im, syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"other.json","Priority":"Medium"}]}`, map[string]string{
+	conflicts := assetConflicts([]Mod{im, syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"other.json","Priority":"Medium"}]}`, map[string]string{
 		"other.json": `{"value":1}`,
 	})})
 	if len(conflicts) != 1 || !conflicts[0].Cosmetic {
@@ -321,7 +316,7 @@ func TestEquivalentLoadsAreNotConflicts(t *testing.T) {
 	second := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Data/Test","FromFile":"b.json"}]}`, map[string]string{
 		"b.json": "{\n}",
 	})
-	if conflicts := assetConflicts([]framework.Mod{first, second}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{first, second}); len(conflicts) != 0 {
 		t.Fatalf("equivalent loads should not conflict: %#v", conflicts)
 	}
 }
@@ -329,7 +324,7 @@ func TestEquivalentLoadsAreNotConflicts(t *testing.T) {
 func TestIdenticalImageEditsAreNotConflicts(t *testing.T) {
 	first := syntheticImagePack(t, "first.png", []byte("same image"))
 	second := syntheticImagePack(t, "second.png", []byte("same image"))
-	if conflicts := assetConflicts([]framework.Mod{first, second}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{first, second}); len(conflicts) != 0 {
 		t.Fatalf("identical image edits should not conflict: %#v", conflicts)
 	}
 }
@@ -338,11 +333,11 @@ func TestDeadLowPriorityLoadOffersDefaultSetting(t *testing.T) {
 	loser := settingPack(t, `{"FarmCaveChange":{"Default":false,"AllowValues":"false, true"}}`,
 		`[{"Action":"Load","Target":"Maps/FarmCave","FromFile":"loser.json","Priority":"Low","When":{"FarmCaveChange":true}}]`,
 		`{"FarmCaveChange":true}`)
-	testfs.WriteFile(t, loser.Folder, "loser.json", `{"Tile":1}`)
+	writeFile(t, loser.Folder, "loser.json", `{"Tile":1}`)
 	winner := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/FarmCave","FromFile":"winner.json","Priority":"High"}]}`, map[string]string{
 		"winner.json": `{"Tile":2}`,
 	})
-	conflicts, settings := assetConflictResults([]framework.Mod{loser, winner})
+	conflicts, settings := assetConflictResults([]Mod{loser, winner})
 	if len(conflicts) != 0 || len(settings) != 1 {
 		t.Fatalf("expected dead-setting hint instead of cosmetic conflict, got %#v %#v", conflicts, settings)
 	}
@@ -352,41 +347,41 @@ func TestDeadLowPriorityLoadOffersDefaultSetting(t *testing.T) {
 	}
 }
 
-func syntheticImagePack(t *testing.T, file string, source []byte) framework.Mod {
+func syntheticImagePack(t *testing.T, file string, source []byte) Mod {
 	t.Helper()
 	root := t.TempDir()
-	testfs.WriteFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	testfs.WriteFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"LooseSprites/Cursors","FromFile":"`+file+`","ToArea":{"X":2,"Y":3,"Width":18,"Height":20}}]}`)
-	testfs.WriteFile(t, root, file, string(source))
-	return packs.FromDisk(framework.Mod{Enabled: true, Folder: root, UniqueID: filepath.Base(root), Name: filepath.Base(root), Key: filepath.Base(root)})
+	writeFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"LooseSprites/Cursors","FromFile":"`+file+`","ToArea":{"X":2,"Y":3,"Width":18,"Height":20}}]}`)
+	writeFile(t, root, file, string(source))
+	return packFromDisk(Mod{Enabled: true, Folder: root, UniqueID: SMAPI(filepath.Base(root)), Name: filepath.Base(root), Key: filepath.Base(root)})
 }
 
 func TestBareDynamicTokenWhenMergesSpouseCondition(t *testing.T) {
 	root := t.TempDir()
-	testfs.WriteFile(t, root, "content.json", `{"DynamicTokens":[
+	writeFile(t, root, "content.json", `{"DynamicTokens":[
 		{"Name":"ShadowKidsActive","Value":false},
 		{"Name":"ShadowKidsActive","Value":true,"When":{"Spouse":"SenS"}}
 	],"Changes":[{"Action":"EditImage","Target":"characters/toddler","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"ShadowKidsActive":true}}]}`)
-	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
-	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
-	if len(pack.patches) != 3 || pack.patches[2].spouse != "sens" {
-		t.Fatalf("bare DynamicToken spouse condition was not merged: %#v", pack.patches)
+	pack := Pack{Mentions: map[string]bool{}, Schema: map[string]Schema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, When{}, &pack)
+	if len(pack.Patches) != 3 || pack.Patches[2].Spouse != "sens" {
+		t.Fatalf("bare DynamicToken spouse condition was not merged: %#v", pack.Patches)
 	}
 }
 
 func TestOverlayMapWithUnknownLayerDoesNotClash(t *testing.T) {
 	root := t.TempDir()
-	testfs.WriteFile(t, root, "content.json", `{"Changes":[
+	writeFile(t, root, "content.json", `{"Changes":[
 		{"Action":"EditMap","Target":"Maps/Test","FromFile":"fog.tmx","PatchMode":"Overlay"},
 		{"Action":"EditMap","Target":"Maps/Test","ToArea":{"X":0,"Y":0,"Width":2,"Height":2}}
 	]}`)
-	testfs.WriteFile(t, root, "fog.tmx", `<?xml version="1.0"?><map width="2" height="2"><layer name="AlwaysFront4" width="2" height="2"><data encoding="csv">1,0,0,0</data></layer></map>`)
-	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
-	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
-	if len(pack.patches) != 2 {
-		t.Fatalf("expected two map patches: %#v", pack.patches)
+	writeFile(t, root, "fog.tmx", `<?xml version="1.0"?><map width="2" height="2"><layer name="AlwaysFront4" width="2" height="2"><data encoding="csv">1,0,0,0</data></layer></map>`)
+	pack := Pack{Mentions: map[string]bool{}, Schema: map[string]Schema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, When{}, &pack)
+	if len(pack.Patches) != 2 {
+		t.Fatalf("expected two map patches: %#v", pack.Patches)
 	}
-	if clash, _ := editsClash([]cpPatch{pack.patches[0]}, []cpPatch{pack.patches[1]}); clash {
+	if clash, _ := editsClash([]Patch{pack.Patches[0]}, []Patch{pack.Patches[1]}); clash {
 		t.Fatal("overlay layer should not clash with an unknown-layer patch")
 	}
 }
@@ -395,27 +390,27 @@ func TestOverlayImageUsesOpaqueCells(t *testing.T) {
 	opaque := image.NewNRGBA(image.Rect(0, 0, 32, 16))
 	opaque.SetNRGBA(0, 0, color.NRGBA{A: 255})
 	root := t.TempDir()
-	testfs.WriteFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	testfs.WriteFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"patch.png","ToArea":{"X":0,"Y":0,"Width":32,"Height":16},"PatchMode":"Overlay"}]}`)
+	writeFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"patch.png","ToArea":{"X":0,"Y":0,"Width":32,"Height":16},"PatchMode":"Overlay"}]}`)
 	writePNG(t, filepath.Join(root, "patch.png"), opaque)
-	pack := readContentPack(packs.FromDisk(framework.Mod{Enabled: true, Folder: root}), false)
-	other := cpPatch{image: true, shapes: []cpShape{{kind: 'r', x: 16, y: 0, w: 16, h: 16}}}
-	if clash, _ := editsClash(pack.patches, []cpPatch{other}); clash {
+	pack := ReadPack(packFromDisk(Mod{Enabled: true, Folder: root}), false)
+	other := Patch{Image: true, Shapes: []Shape{{Kind: 'r', X: 16, Y: 0, W: 16, H: 16}}}
+	if clash, _ := editsClash(pack.Patches, []Patch{other}); clash {
 		t.Fatal("transparent overlay cells must not clash")
 	}
 	opaque.SetNRGBA(16, 0, color.NRGBA{A: 255})
 	writePNG(t, filepath.Join(root, "patch.png"), opaque)
 	packCache.Delete(filepath.Clean(root))
-	pack = readContentPack(packs.FromDisk(framework.Mod{Enabled: true, Folder: root}), false)
-	if clash, _ := editsClash(pack.patches, []cpPatch{other}); !clash {
+	pack = ReadPack(packFromDisk(Mod{Enabled: true, Folder: root}), false)
+	if clash, _ := editsClash(pack.Patches, []Patch{other}); !clash {
 		t.Fatal("opaque overlay cell must clash")
 	}
 }
 
 func TestTokenizedImageFromFileExpandsCaseInsensitive(t *testing.T) {
 	root := t.TempDir()
-	testfs.WriteFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	testfs.WriteFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"sprites/{{season}}.png","ToArea":{"X":32,"Y":0,"Width":16,"Height":16},"PatchMode":"Overlay"}]}`)
+	writeFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"sprites/{{season}}.png","ToArea":{"X":32,"Y":0,"Width":16,"Height":16},"PatchMode":"Overlay"}]}`)
 	for _, season := range []string{"Spring", "Summer", "Fall", "Winter"} {
 		img := image.NewNRGBA(image.Rect(0, 0, 16, 16))
 		if season == "Fall" {
@@ -423,38 +418,38 @@ func TestTokenizedImageFromFileExpandsCaseInsensitive(t *testing.T) {
 		}
 		writePNG(t, filepath.Join(root, "sprites", season+".png"), img)
 	}
-	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
-	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
+	pack := Pack{Mentions: map[string]bool{}, Schema: map[string]Schema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, When{}, &pack)
 	if len(sourceFiles(root, "sprites/{{season}}.png")) != 4 {
 		t.Fatal("season token did not expand to all case-insensitive matches")
 	}
-	other := cpPatch{image: true, shapes: []cpShape{{kind: 'r', x: 32, y: 0, w: 16, h: 16}}}
-	if clash, _ := editsClash(pack.patches, []cpPatch{other}); !clash {
+	other := Patch{Image: true, Shapes: []Shape{{Kind: 'r', X: 32, Y: 0, W: 16, H: 16}}}
+	if clash, _ := editsClash(pack.Patches, []Patch{other}); !clash {
 		t.Fatal("opaque seasonal file must clash")
 	}
 }
 
 func TestUnresolvableTokenizedImageFallsBackToWholeSheet(t *testing.T) {
 	root := t.TempDir()
-	testfs.WriteFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
-	testfs.WriteFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"sprites/{{missing}}.png","PatchMode":"Overlay"}]}`)
-	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
-	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
-	if len(pack.patches) != 1 || len(pack.patches[0].shapes) != 1 || pack.patches[0].shapes[0].kind != 'w' {
-		t.Fatalf("unresolvable token should use whole-sheet fallback: %#v", pack.patches)
+	writeFile(t, root, "manifest.json", `{"UniqueID":"Test.Pack","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`)
+	writeFile(t, root, "content.json", `{"Changes":[{"Action":"EditImage","Target":"Maps/Test","FromFile":"sprites/{{missing}}.png","PatchMode":"Overlay"}]}`)
+	pack := Pack{Mentions: map[string]bool{}, Schema: map[string]Schema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, When{}, &pack)
+	if len(pack.Patches) != 1 || len(pack.Patches[0].Shapes) != 1 || pack.Patches[0].Shapes[0].Kind != 'w' {
+		t.Fatalf("unresolvable token should use whole-sheet fallback: %#v", pack.Patches)
 	}
 }
 
 func TestDifferentSpouseConditionsExcludeEdits(t *testing.T) {
 	root := t.TempDir()
-	testfs.WriteFile(t, root, "content.json", `{"Changes":[
+	writeFile(t, root, "content.json", `{"Changes":[
 		{"Action":"EditImage","Target":"characters/toddler","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Relationship:Sigurd":"Married"}},
 		{"Action":"EditImage","Target":"characters/toddler","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Spouse":"SenS"}}
 	]}`)
-	pack := cachedPack{mentions: map[string]bool{}, schema: map[string]cpSchema{}}
-	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
-	if len(pack.patches) != 2 || !exclusive(pack.patches[0], pack.patches[1]) {
-		t.Fatalf("different spouse conditions should be exclusive: %#v", pack.patches)
+	pack := Pack{Mentions: map[string]bool{}, Schema: map[string]Schema{}}
+	scanContentFile(root, "content.json", map[string]bool{}, When{}, &pack)
+	if len(pack.Patches) != 2 || !exclusive(pack.Patches[0], pack.Patches[1]) {
+		t.Fatalf("different spouse conditions should be exclusive: %#v", pack.Patches)
 	}
 }
 
@@ -468,8 +463,8 @@ func TestDynamicTokenReachabilityGatesConflicts(t *testing.T) {
 			{"Action":"EditImage","Target":"maps/movietheater_tilesheet","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"Concession |contains=Default":false}}
 		]}`)
 		peer := syntheticEditPack(t, `{"Changes":[{"Action":"EditImage","Target":"maps/movietheater_tilesheet","ToArea":{"X":0,"Y":0,"Width":1,"Height":1}}]}`)
-		sve := framework.Mod{Enabled: true, UniqueID: "FlashShifter.StardewValleyExpandedCP", Name: "SVE", Key: "sve"}
-		if conflicts := assetConflicts([]framework.Mod{pack, peer, sve}); len(conflicts) != 0 {
+		sve := Mod{Enabled: true, UniqueID: SMAPI("FlashShifter.StardewValleyExpandedCP"), Name: "SVE", Key: "sve"}
+		if conflicts := assetConflicts([]Mod{pack, peer, sve}); len(conflicts) != 0 {
 			t.Fatalf("masked dynamic token condition should remove the edit: %#v", conflicts)
 		}
 	})
@@ -481,7 +476,7 @@ func TestDynamicTokenReachabilityGatesConflicts(t *testing.T) {
 			{"Action":"EditImage","Target":"maps/movietheater_tilesheet","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"SeasonalChoice":"Spring"}}
 		]}`)
 		peer := syntheticEditPack(t, `{"Changes":[{"Action":"EditImage","Target":"maps/movietheater_tilesheet","ToArea":{"X":0,"Y":0,"Width":1,"Height":1}}]}`)
-		if conflicts := assetConflicts([]framework.Mod{pack, peer}); len(conflicts) != 1 {
+		if conflicts := assetConflicts([]Mod{pack, peer}); len(conflicts) != 1 {
 			t.Fatalf("unknown game-state definition should remain possible: %#v", conflicts)
 		}
 	})
@@ -494,7 +489,7 @@ func TestDynamicTokenReachabilityGatesConflicts(t *testing.T) {
 			{"Action":"EditImage","Target":"maps/movietheater_tilesheet","ToArea":{"X":0,"Y":0,"Width":1,"Height":1},"When":{"FlagChoice":"Flagged","HasFlag |contains=festival":false}}
 		]}`)
 		peer := syntheticEditPack(t, `{"Changes":[{"Action":"EditImage","Target":"maps/movietheater_tilesheet","ToArea":{"X":0,"Y":0,"Width":1,"Height":1}}]}`)
-		if conflicts := assetConflicts([]framework.Mod{pack, peer}); len(conflicts) != 0 {
+		if conflicts := assetConflicts([]Mod{pack, peer}); len(conflicts) != 0 {
 			t.Fatalf("opposite HasFlag definition should not apply: %#v", conflicts)
 		}
 	})
@@ -522,12 +517,12 @@ func TestLoadsWithoutPriorityAreExclusive(t *testing.T) {
 		"ConfigSchema": {"EnableFarmCave": {"AllowValues": "true, false", "Default": "true"}},
 		"Changes": [{"Action": "Load", "Target": "Maps/FarmCave", "FromFile": "FarmCave.tbin", "When": {"EnableFarmCave": "true"}}]
 	}`, map[string]string{"FarmCave.tbin": "tBIN10 farm cave"})
-	mods := []framework.Mod{cave, farm}
+	mods := []Mod{cave, farm}
 	conflicts := assetConflicts(mods)
-	if len(conflicts) != 1 || conflicts[0].WinnerKind != framework.WinnerNeither {
+	if len(conflicts) != 1 || conflicts[0].WinnerKind != WinnerNeither {
 		t.Fatalf("two loads without a priority are both Exclusive, got %#v", conflicts)
 	}
-	if target := findTarget(BuildAssetIndex(mods), "maps/farmcave", ""); target.Winner != "" {
+	if target := findTarget(BuildAssetIndex(mods, testOrder), "maps/farmcave", ""); target.Winner != "" {
 		t.Fatalf("asset map names a winner Content Patcher never applies: %+v", target)
 	}
 }
@@ -537,7 +532,7 @@ func TestLowLoadThatNamesTheOtherPackIsAFallback(t *testing.T) {
 		"curator.png": "aquarium curator",
 	})
 	aquarium.UniqueID = "Gervig91.StardewAquariumCP"
-	portraits := func(compat string) framework.Mod {
+	portraits := func(compat string) Mod {
 		return syntheticLoadPack(t, `{"Changes":[
 			{"Action": "Load", "Target": "Portraits/Curator", "FromFile": "Curator.png", "Priority": "Low"}`+compat+`
 		]}`, map[string]string{
@@ -546,23 +541,23 @@ func TestLowLoadThatNamesTheOtherPackIsAFallback(t *testing.T) {
 		})
 	}
 	aware := portraits(`,{"Action": "Include", "FromFile": "Aquarium.json", "When": {"HasMod": "Gervig91.StardewAquariumCP"}}`)
-	if conflicts := assetConflicts([]framework.Mod{aware, aquarium}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{aware, aquarium}); len(conflicts) != 0 {
 		t.Fatalf("a Low load from a pack with an Aquarium compatibility patch is its fallback, got %#v", conflicts)
 	}
 	unaware := portraits("")
-	if conflicts := assetConflicts([]framework.Mod{unaware, aquarium}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{unaware, aquarium}); len(conflicts) != 0 {
 		t.Fatalf("a Low load under another pack's Exclusive load is a fallback even when it never names it, got %#v", conflicts)
 	}
 	blank := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Portraits/Curator","FromFile":"Blank.json","Priority":"Low"}]}`, map[string]string{
 		"Blank.json": `{}`,
 	})
-	if conflicts := assetConflicts([]framework.Mod{blank, aquarium}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{blank, aquarium}); len(conflicts) != 0 {
 		t.Fatalf("a blank Low load under an unrelated Exclusive load is a fallback, got %#v", conflicts)
 	}
 	medium := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Portraits/Curator","FromFile":"curator.png","Priority":"Medium"}]}`, map[string]string{
 		"curator.png": "medium curator",
 	})
-	if conflicts := assetConflicts([]framework.Mod{unaware, medium}); len(conflicts) != 1 {
+	if conflicts := assetConflicts([]Mod{unaware, medium}); len(conflicts) != 1 {
 		t.Fatalf("a Low load under an unrelated Medium load still conflicts, got %#v", conflicts)
 	}
 }
@@ -571,18 +566,18 @@ func TestLowLoadUnderAPackThatDependsOnItsPackIsAFallback(t *testing.T) {
 	sve := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Town","FromFile":"town.tmx","Priority":"Low"}]}`, map[string]string{"town.tmx": "sve town"})
 	sve.UniqueID = "FlashShifter.StardewValleyExpandedCP"
 	vpe := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Town","FromFile":"town.tmx","Priority":"Medium"}]}`, map[string]string{"town.tmx": "vpe town"})
-	vpe.Dependencies = []mod.Dependency{{UniqueID: sve.UniqueID, Required: true}}
-	if conflicts := assetConflicts([]framework.Mod{sve, vpe}); len(conflicts) != 0 {
+	vpe.Dependencies = []Dependency{{UniqueID: sve.UniqueID, Required: true}}
+	if conflicts := assetConflicts([]Mod{sve, vpe}); len(conflicts) != 0 {
 		t.Fatalf("a Low load under a Medium load from a pack that depends on it is a fallback, got %#v", conflicts)
 	}
 	vpe.Dependencies = nil
-	if conflicts := assetConflicts([]framework.Mod{sve, vpe}); len(conflicts) != 1 {
+	if conflicts := assetConflicts([]Mod{sve, vpe}); len(conflicts) != 1 {
 		t.Fatalf("an unrelated Medium load still conflicts, got %#v", conflicts)
 	}
 }
 
 func TestConfigTokenInConditionIsItsConfiguredValue(t *testing.T) {
-	blackberry := func(config string) framework.Mod {
+	blackberry := func(config string) Mod {
 		files := map[string]string{"Farm_Greenhouse_Dirt.tbin": "tBIN10 blackberry"}
 		if config != "" {
 			files["config.json"] = config
@@ -595,10 +590,10 @@ func TestConfigTokenInConditionIsItsConfiguredValue(t *testing.T) {
 	overgrown := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Farm_Greenhouse_Dirt","FromFile":"Farm_Greenhouse_Dirt.tbin","When":{"FarmType":"Forest"}}]}`, map[string]string{
 		"Farm_Greenhouse_Dirt.tbin": "tBIN10 overgrown",
 	})
-	if conflicts := assetConflicts([]framework.Mod{blackberry(""), overgrown}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{blackberry(""), overgrown}); len(conflicts) != 0 {
 		t.Fatalf("a Standard farm replacement and a Forest one never load together, got %#v", conflicts)
 	}
-	if conflicts := assetConflicts([]framework.Mod{blackberry(`{"FarmToReplace": "Forest"}`), overgrown}); len(conflicts) != 1 {
+	if conflicts := assetConflicts([]Mod{blackberry(`{"FarmToReplace": "Forest"}`), overgrown}); len(conflicts) != 1 {
 		t.Fatalf("both replace the Forest farm, got %#v", conflicts)
 	}
 }
@@ -613,7 +608,7 @@ func TestConfigTokenDataValueMatchesLiteral(t *testing.T) {
 			"When": { "MachinesCopyQuality": true }
 		}]
 	}`, nil)
-	mead := func(retains string) framework.Mod {
+	mead := func(retains string) Mod {
 		return syntheticLoadPack(t, `{
 			"ConfigSchema": {"MeadRetainsQuality": {"AllowValues": "true, false", "Default": "true"}},
 			"Changes": [{
@@ -623,16 +618,16 @@ func TestConfigTokenDataValueMatchesLiteral(t *testing.T) {
 			}]
 		}`, map[string]string{"config.json": `{"EnableColoredSprites": "true", "MeadRetainsQuality": "` + retains + `"}`})
 	}
-	if conflicts := assetConflicts([]framework.Mod{betterThings, mead("true")}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{betterThings, mead("true")}); len(conflicts) != 0 {
 		t.Fatalf("both set CopyQuality to true, got %#v", conflicts)
 	}
-	if conflicts := assetConflicts([]framework.Mod{betterThings, mead("false")}); len(conflicts) != 1 {
+	if conflicts := assetConflicts([]Mod{betterThings, mead("false")}); len(conflicts) != 1 {
 		t.Fatalf("CopyQuality true against false must conflict, got %#v", conflicts)
 	}
 }
 
 func TestEngagedIsOnePartnerAtATime(t *testing.T) {
-	socialPage := func(label, when string) framework.Mod {
+	socialPage := func(label, when string) Mod {
 		return syntheticLoadPack(t, `{"Changes":[{
 			"Action": "EditData", "Target": "Strings/StringsFromCSFiles",
 			"Entries": {"SocialPage_Relationship_Husband": "`+label+`"},
@@ -641,11 +636,11 @@ func TestEngagedIsOnePartnerAtATime(t *testing.T) {
 	}
 	agatha := socialPage("(wife)", `"Relationship:Agatha": "Married", "Language": "en"`)
 	for _, when := range []string{`"Relationship:Lunna": "Engaged"`, `"Relationship:Lunna": "Engaged, Married"`} {
-		if conflicts := assetConflicts([]framework.Mod{agatha, socialPage("(fiancée)", when)}); len(conflicts) != 0 {
+		if conflicts := assetConflicts([]Mod{agatha, socialPage("(fiancée)", when)}); len(conflicts) != 0 {
 			t.Fatalf("%s needs a different partner than Agatha, got %#v", when, conflicts)
 		}
 	}
-	if conflicts := assetConflicts([]framework.Mod{agatha, socialPage("(fiancée)", `"Relationship:Lunna": "Dating, Engaged"`)}); len(conflicts) != 1 {
+	if conflicts := assetConflicts([]Mod{agatha, socialPage("(fiancée)", `"Relationship:Lunna": "Dating, Engaged"`)}); len(conflicts) != 1 {
 		t.Fatalf("dating Lunna can coincide with marriage to Agatha, got %#v", conflicts)
 	}
 }
@@ -685,14 +680,14 @@ func TestSwitchOffOffersTheNarrowestField(t *testing.T) {
 	]}`, nil)
 	want := map[string]string{"characters/schedules/lewis": "Lewis", "characters/schedules/marnie": "Marnie", "characters/schedules/gus": ""}
 	for range 20 {
-		conflicts := assetConflicts([]framework.Mod{breakfast, mayor})
+		conflicts := assetConflicts([]Mod{breakfast, mayor})
 		if len(conflicts) != len(want) {
 			t.Fatalf("conflicts %#v", conflicts)
 		}
 		for _, c := range conflicts {
 			got := ""
 			for _, fix := range c.Fixes {
-				if fix.ID == breakfast.ModID() {
+				if fix.ID == breakfast.UniqueID {
 					got = fix.Field + "=" + fix.Value
 				}
 			}
@@ -715,26 +710,26 @@ func TestSwitchOffOffersTheNarrowestField(t *testing.T) {
 		]
 	}`, nil)
 	alchemistry := syntheticLoadPack(t, `{"Changes": [{"Action": "EditData", "Target": "Data/CraftingRecipes", "Entries": {"Copper Bar": "378 5/Field/334/false/null/"}}]}`, nil)
-	conflicts := assetConflicts([]framework.Mod{dwarven, alchemistry})
-	if len(conflicts) != 1 || !slices.ContainsFunc(conflicts[0].Fixes, func(f framework.ConflictFix) bool {
-		return f.ID == dwarven.ModID() && f.Field == "EnableBaseTransmutationRecipes"
+	conflicts := assetConflicts([]Mod{dwarven, alchemistry})
+	if len(conflicts) != 1 || !slices.ContainsFunc(conflicts[0].Fixes, func(f Fix) bool {
+		return f.ID == dwarven.UniqueID && f.Field == "EnableBaseTransmutationRecipes"
 	}) {
 		t.Fatalf("expected the recipe switch rather than all of Dwarf Magic: %#v", conflicts)
 	}
 }
 
-func assetConflicts(mods []framework.Mod) []framework.AssetConflict {
+func assetConflicts(mods []Mod) []Conflict {
 	conflicts, _ := assetConflictResults(mods)
 	return conflicts
 }
 
-func assetConflictResults(mods []framework.Mod) ([]framework.AssetConflict, []framework.SettingHint) {
+func assetConflictResults(mods []Mod) ([]Conflict, []Hint) {
 	conflicts, settings, _ := conflictScanOf(mods)
 	return conflicts, settings
 }
 
 func TestDynamicTokenPinnedToAFarmTypeIsExclusiveWithOtherFarmTypes(t *testing.T) {
-	farm := func(replaceStandard string) framework.Mod {
+	farm := func(replaceStandard string) Mod {
 		files := map[string]string{}
 		if replaceStandard != "" {
 			files["config.json"] = `{"ReplaceStandardFarm": "` + replaceStandard + `"}`
@@ -750,16 +745,16 @@ func TestDynamicTokenPinnedToAFarmTypeIsExclusiveWithOtherFarmTypes(t *testing.T
 		}`, files)
 	}
 	grandpa := syntheticLoadPack(t, `{"Changes":[{"Action":"EditData","Target":"Data/Farms","Entries":{"Pond":"grandpa"},"When":{"FarmType":"Standard"}}]}`, nil)
-	if conflicts := assetConflicts([]framework.Mod{farm(""), grandpa}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{farm(""), grandpa}); len(conflicts) != 0 {
 		t.Fatalf("a token true only on the custom farm never applies on the Standard farm, got %#v", conflicts)
 	}
-	if conflicts := assetConflicts([]framework.Mod{farm("true"), grandpa}); len(conflicts) != 1 {
+	if conflicts := assetConflicts([]Mod{farm("true"), grandpa}); len(conflicts) != 1 {
 		t.Fatalf("with ReplaceStandardFarm on, the token is also true on the Standard farm, got %#v", conflicts)
 	}
 }
 
 func TestQuerySpouseGatedEditsNeverApplyTogether(t *testing.T) {
-	pack := func(content string) framework.Mod {
+	pack := func(content string) Mod {
 		return syntheticLoadPack(t, content, nil)
 	}
 	lurking := pack(`{"Changes":[{"Action":"EditData","Target":"Data/ExtraDialogue","Entries":{"Greeting":"lurking"},
@@ -767,19 +762,19 @@ func TestQuerySpouseGatedEditsNeverApplyTogether(t *testing.T) {
 	bear := pack(`{"DynamicTokens":[{"Name":"Partner","Value":"{{Spouse}}"}],
 		"Changes":[{"Action":"EditData","Target":"Data/ExtraDialogue","Entries":{"Greeting":"bear"},
 		"When":{"Query: 'Bear' = '{{Partner}}'":true}}]}`)
-	if conflicts := assetConflicts([]framework.Mod{lurking, bear}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{lurking, bear}); len(conflicts) != 0 {
 		t.Fatalf("edits for different spouses never apply together, got %#v", conflicts)
 	}
 	anyone := pack(`{"Changes":[{"Action":"EditData","Target":"Data/ExtraDialogue","Entries":{"Greeting":"anyone"},
 		"When":{"Query: '{{Spouse}}' = 'SenS' OR {{Year}} > 1":true}}]}`)
-	if conflicts := assetConflicts([]framework.Mod{lurking, anyone}); len(conflicts) != 1 {
+	if conflicts := assetConflicts([]Mod{lurking, anyone}); len(conflicts) != 1 {
 		t.Fatalf("an OR query does not pin the spouse, got %#v", conflicts)
 	}
 	// Lurking in the Dark's own shape: a token true when Sen is the spouse or the roommate.
 	living := pack(`{"DynamicTokens":[{"Name":"LivingWithSen","Value":"{{Query: '{{spouse}}' = 'SenS' OR '{{roommate}}' = 'SenS'}}","When":{"IsDitRInstalled":false}}],
 		"Changes":[{"Action":"EditData","Target":"Data/ExtraDialogue","Entries":{"Greeting":"sen"},"When":{"LivingWithSen":true}}]}`)
 	teren := pack(`{"Changes":[{"Action":"EditData","Target":"Data/ExtraDialogue","Entries":{"Greeting":"teren"},"When":{"Spouse":"Teren"}}]}`)
-	if conflicts := assetConflicts([]framework.Mod{living, teren}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{living, teren}); len(conflicts) != 0 {
 		t.Fatalf("living with Sen and marrying Teren never apply together, got %#v", conflicts)
 	}
 }
@@ -796,46 +791,46 @@ func TestTokenizedLoadTargetResolvesFromConfig(t *testing.T) {
 	overgrown := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Farm_Foraging","FromFile":"overgrown.tmx","Priority":"Exclusive"}]}`, map[string]string{
 		"overgrown.tmx": "overgrown",
 	})
-	conflicts := assetConflicts([]framework.Mod{tiny, overgrown})
-	if len(conflicts) != 1 || conflicts[0].Target != "maps/farm_foraging" || conflicts[0].WinnerKind != framework.WinnerNeither {
+	conflicts := assetConflicts([]Mod{tiny, overgrown})
+	if len(conflicts) != 1 || conflicts[0].Target != "maps/farm_foraging" || conflicts[0].WinnerKind != WinnerNeither {
 		t.Fatalf("both load the Forest farm map, got %#v", conflicts)
 	}
 
 	seasonal := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/{{Season}}_Town","FromFile":"town.tmx","When":{"Season":"Summer, Fall"}}]}`, map[string]string{"town.tmx": "a"})
 	summer := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/summer_Town","FromFile":"town.tmx"}]}`, map[string]string{"town.tmx": "b"})
 	winter := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/winter_Town","FromFile":"town.tmx"}]}`, map[string]string{"town.tmx": "c"})
-	if conflicts := assetConflicts([]framework.Mod{seasonal, summer}); len(conflicts) != 1 {
+	if conflicts := assetConflicts([]Mod{seasonal, summer}); len(conflicts) != 1 {
 		t.Fatalf("the Summer expansion clashes, got %#v", conflicts)
 	}
-	if conflicts := assetConflicts([]framework.Mod{seasonal, winter}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{seasonal, winter}); len(conflicts) != 0 {
 		t.Fatalf("no Winter expansion when the change needs Summer or Fall, got %#v", conflicts)
 	}
 }
 
 func TestBalanceOnlyDataEditsAreCosmetic(t *testing.T) {
-	pack := func(fields string) framework.Mod {
+	pack := func(fields string) Mod {
 		return syntheticLoadPack(t, `{"Changes":[{"Action":"EditData","Target":"Data/Buildings","Fields":{"Coop":`+fields+`}}]}`, nil)
 	}
-	conflicts := assetConflicts([]framework.Mod{pack(`{"BuildCost":1000}`), pack(`{"BuildCost":5000}`)})
+	conflicts := assetConflicts([]Mod{pack(`{"BuildCost":1000}`), pack(`{"BuildCost":5000}`)})
 	if len(conflicts) != 1 || !conflicts[0].Cosmetic || conflicts[0].Note == nil || conflicts[0].Note.Kind != "balance" {
 		t.Fatalf("two build costs are balance only, got %#v", conflicts)
 	}
-	conflicts = assetConflicts([]framework.Mod{pack(`{"BuildCost":1000,"Size":{"X":6,"Y":3}}`), pack(`{"BuildCost":5000,"Size":{"X":7,"Y":3}}`)})
+	conflicts = assetConflicts([]Mod{pack(`{"BuildCost":1000,"Size":{"X":6,"Y":3}}`), pack(`{"BuildCost":5000,"Size":{"X":7,"Y":3}}`)})
 	if len(conflicts) != 1 || conflicts[0].Cosmetic || conflicts[0].Note != nil {
 		t.Fatalf("a size clash is real, got %#v", conflicts)
 	}
 	// Better Things also sets hay capacity and materials; Friendships Affect Prices only the cost they share.
-	conflicts = assetConflicts([]framework.Mod{
+	conflicts = assetConflicts([]Mod{
 		pack(`{"HayCapacity":"1920","BuildCost":700,"BuildMaterials":[{"ItemId":"(O)390","Amount":200}]}`),
 		syntheticLoadPack(t, `{"Changes":[{"Action":"EditData","Target":"Data/Buildings","Fields":{"Coop":{"BuildCost":"{{Round: 4000}}"},"Barn":{"BuildCost":6000}}}]}`, nil),
 	})
 	if len(conflicts) != 1 || !conflicts[0].Cosmetic || conflicts[0].Note == nil || conflicts[0].Note.Kind != "balance" {
 		t.Fatalf("only the shared cost collides, got %#v", conflicts)
 	}
-	shop := func(entries string) framework.Mod {
+	shop := func(entries string) Mod {
 		return syntheticLoadPack(t, `{"Changes":[{"Action":"EditData","Target":"Data/Shops","TargetField":["RSVHeapsStore"],"Entries":`+entries+`}]}`, nil)
 	}
-	conflicts = assetConflicts([]framework.Mod{
+	conflicts = assetConflicts([]Mod{
 		shop(`{"PriceModifiers":[{"Modification":"Multiply","Amount":0.8}],"Owners":[{"Name":"Lorenzo"}]}`),
 		shop(`{"PriceModifiers":[{"Modification":"Multiply","Amount":0.9}]}`),
 	})
@@ -845,32 +840,32 @@ func TestBalanceOnlyDataEditsAreCosmetic(t *testing.T) {
 }
 
 func TestOneDayEditsAreSituational(t *testing.T) {
-	pack := func(entry, when string) framework.Mod {
+	pack := func(entry, when string) Mod {
 		return syntheticLoadPack(t, `{"Changes":[{"Action":"EditData","Target":"Data/Events/Town","Entries":{"Show":"`+entry+`"},"When":`+when+`}]}`, nil)
 	}
 	always := pack("a", `{}`)
-	conflicts := assetConflicts([]framework.Mod{always, pack("b", `{"Season":"Summer","Day":"28"}`)})
-	if len(conflicts) != 1 || !conflicts[0].Cosmetic || conflicts[0].Note == nil || *conflicts[0].Note != (framework.ConflictNote{Kind: "day", Value: "Summer 28"}) {
+	conflicts := assetConflicts([]Mod{always, pack("b", `{"Season":"Summer","Day":"28"}`)})
+	if len(conflicts) != 1 || !conflicts[0].Cosmetic || conflicts[0].Note == nil || *conflicts[0].Note != (Note{Kind: "day", Value: "Summer 28"}) {
 		t.Fatalf("a one-day edit is situational, got %#v", conflicts)
 	}
-	conflicts = assetConflicts([]framework.Mod{always, pack("c", `{"DayEvent":"egg festival"}`)})
+	conflicts = assetConflicts([]Mod{always, pack("c", `{"DayEvent":"egg festival"}`)})
 	if len(conflicts) != 1 || !conflicts[0].Cosmetic || conflicts[0].Note == nil || conflicts[0].Note.Value != "Egg Festival" {
 		t.Fatalf("a festival-only edit is situational, got %#v", conflicts)
 	}
-	conflicts = assetConflicts([]framework.Mod{always, pack("d", `{"Season":"Summer"}`)})
+	conflicts = assetConflicts([]Mod{always, pack("d", `{"Season":"Summer"}`)})
 	if len(conflicts) != 1 || conflicts[0].Cosmetic {
 		t.Fatalf("a whole-season edit still counts, got %#v", conflicts)
 	}
-	if conflicts := assetConflicts([]framework.Mod{pack("e", `{"Day":"1"}`), pack("f", `{"Day":"2"}`)}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{pack("e", `{"Day":"1"}`), pack("f", `{"Day":"2"}`)}); len(conflicts) != 0 {
 		t.Fatalf("edits for different days never apply together, got %#v", conflicts)
 	}
 }
 
 func TestFarmMapConflictsNameTheirFarmTypes(t *testing.T) {
-	edit := func(music string) framework.Mod {
+	edit := func(music string) Mod {
 		return syntheticLoadPack(t, `{"Changes":[{"Action":"EditMap","Target":"Maps/Farm_Foraging","MapProperties":{"Music":"`+music+`"}}]}`, nil)
 	}
-	conflicts := assetConflicts([]framework.Mod{edit("x"), edit("z")})
+	conflicts := assetConflicts([]Mod{edit("x"), edit("z")})
 	if len(conflicts) != 1 || len(conflicts[0].Farms) != 2 || !slices.Equal(conflicts[0].Farms[0], []string{"forest"}) {
 		t.Fatalf("both edit the Forest farm map, got %#v", conflicts)
 	}
@@ -879,25 +874,25 @@ func TestFarmMapConflictsNameTheirFarmTypes(t *testing.T) {
 		{"Action":"Load","Target":"Maps/Farm_Frontier","FromFile":"frontier.tmx"}
 	]}`, map[string]string{"frontier.tmx": "a"})
 	other := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Farm_Frontier","FromFile":"other.tmx"}]}`, map[string]string{"other.tmx": "b"})
-	conflicts = assetConflicts([]framework.Mod{frontier, other})
-	if len(conflicts) != 1 || len(conflicts[0].Farms) != 2 || !slices.Equal(conflicts[0].Farms[1], []string{frontier.UniqueID + "_Frontier"}) {
+	conflicts = assetConflicts([]Mod{frontier, other})
+	if len(conflicts) != 1 || len(conflicts[0].Farms) != 2 || !slices.Equal(conflicts[0].Farms[1], []string{frontier.UniqueID.Local() + "_Frontier"}) {
 		t.Fatalf("both load the Frontier farm map, got %#v", conflicts)
 	}
 	frontierDesert := syntheticLoadPack(t, `{"Changes":[
 		{"Action":"EditData","Target":"Data/AdditionalFarms","Entries":{"Mod/FrontierFarm":{"ID":"FrontierFarm","MapName":"Farm_FrontierFarm"}}},
 		{"Action":"EditMap","Target":"Maps/Desert","MapProperties":{"Music":"a"},"When":{"FarmType":"FrontierFarm"}}]}`, nil)
 	desert := syntheticLoadPack(t, `{"Changes":[{"Action":"EditMap","Target":"Maps/Desert","MapProperties":{"Music":"b"}}]}`, nil)
-	conflicts = assetConflicts([]framework.Mod{frontierDesert, desert})
+	conflicts = assetConflicts([]Mod{frontierDesert, desert})
 	if len(conflicts) != 1 || !slices.ContainsFunc(conflicts[0].Farms, func(f []string) bool { return slices.Equal(f, []string{"FrontierFarm"}) }) {
 		t.Fatalf("a FarmType condition names the custom farm by its id, got %#v", conflicts)
 	}
 	gated := syntheticLoadPack(t, `{"Changes":[{"Action":"EditMap","Target":"Maps/Farm_Foraging","MapProperties":{"Music":"y"},"When":{"FarmType":"Standard"}}]}`, nil)
-	if conflicts := assetConflicts([]framework.Mod{edit("x"), gated}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{edit("x"), gated}); len(conflicts) != 0 {
 		t.Fatalf("a Standard-only edit never meets the Forest map, got %#v", conflicts)
 	}
 }
 
-func packBy(t *testing.T, author, content string, files map[string]string) framework.Mod {
+func packBy(t *testing.T, author, content string, files map[string]string) Mod {
 	t.Helper()
 	m := syntheticLoadPack(t, content, files)
 	m.Author = author
@@ -905,25 +900,25 @@ func packBy(t *testing.T, author, content string, files map[string]string) frame
 }
 
 func TestSameAuthorExplicitPriorityIsIntended(t *testing.T) {
-	pack := func(author, priority, value string) framework.Mod {
+	pack := func(author, priority, value string) Mod {
 		return packBy(t, author, `{"Changes":[{"Action":"EditData","Target":"Data/Objects","Fields":{"Cheese":{"Price":`+value+`,"Edibility":`+value+`}}`+priority+`}]}`, nil)
 	}
-	if conflicts := assetConflicts([]framework.Mod{pack("Em", "", "1"), pack(" em ", `,"Priority":"Late"`, "2")}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{pack("Em", "", "1"), pack(" em ", `,"Priority":"Late"`, "2")}); len(conflicts) != 0 {
 		t.Fatalf("one author's Late edit is an intended override, got %#v", conflicts)
 	}
-	if conflicts := assetConflicts([]framework.Mod{pack("Em", "", "1"), pack(" em ", `,"Priority":"High"`, "2")}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{pack("Em", "", "1"), pack(" em ", `,"Priority":"High"`, "2")}); len(conflicts) != 0 {
 		t.Fatalf("one author's High edit is an intended override, got %#v", conflicts)
 	}
-	if conflicts := assetConflicts([]framework.Mod{pack("Em", "", "1"), pack(" em ", `,"Priority":"500"`, "2")}); len(conflicts) != 0 {
+	if conflicts := assetConflicts([]Mod{pack("Em", "", "1"), pack(" em ", `,"Priority":"500"`, "2")}); len(conflicts) != 0 {
 		t.Fatalf("one author's numeric-priority edit is an intended override, got %#v", conflicts)
 	}
-	if conflicts := assetConflicts([]framework.Mod{pack("Em", "", "1"), pack("Other", `,"Priority":"Late"`, "2")}); len(conflicts) != 1 {
+	if conflicts := assetConflicts([]Mod{pack("Em", "", "1"), pack("Other", `,"Priority":"Late"`, "2")}); len(conflicts) != 1 {
 		t.Fatalf("another author's Late edit still conflicts, got %#v", conflicts)
 	}
-	load := func(author, priority, file string) framework.Mod {
+	load := func(author, priority, file string) Mod {
 		return packBy(t, author, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"m.tmx"`+priority+`}]}`, map[string]string{"m.tmx": file})
 	}
-	if conflicts := assetConflicts([]framework.Mod{load("Em", "", "a"), load("Em", `,"Priority":"Exclusive"`, "b")}); len(conflicts) != 1 {
+	if conflicts := assetConflicts([]Mod{load("Em", "", "a"), load("Em", `,"Priority":"Exclusive"`, "b")}); len(conflicts) != 1 {
 		t.Fatalf("one author's clashing loads still conflict, got %#v", conflicts)
 	}
 }
@@ -937,31 +932,31 @@ func TestSameAuthorBundleIsRedundant(t *testing.T) {
 	animals := packBy(t, "Em", `{"Changes":[`+dino+`,{"Action":"EditImage","Target":"Animals/Dinosaur","FromFile":"dino.png","ToArea":{"X":16,"Y":0,"Width":16,"Height":16}},
 		{"Action":"EditImage","Target":"Maps/springobjects","FromFile":"egg.png","ToArea":{ "X": 176, "Y": 64, "Width": 16, "Height": 16 }}]}`, files)
 	dinos.Name, animals.Name = "Em's Dinos", "Em's Farm Animals"
-	got := check([]framework.Mod{dinos, animals})
-	if len(got.AssetConflicts) != 0 {
-		t.Fatalf("a bundled pack is not a conflict, got %#v", got.AssetConflicts)
+	got := check([]Mod{dinos, animals})
+	if len(got.Conflicts) != 0 {
+		t.Fatalf("a bundled pack is not a conflict, got %#v", got.Conflicts)
 	}
-	if len(got.Redundant) != 1 || got.Redundant[0].Kind != "bundled" || got.Redundant[0].Key != dinos.Key ||
-		got.Redundant[0].By[0].Name != "Em's Farm Animals" {
-		t.Fatalf("expected Em's Dinos bundled in Em's Farm Animals, got %#v", got.Redundant)
+	if len(got.Shadowed) != 1 || !got.Shadowed[0].Bundled || got.Shadowed[0].Key != dinos.Key ||
+		got.Shadowed[0].By[0].Name != "Em's Farm Animals" {
+		t.Fatalf("expected Em's Dinos bundled in Em's Farm Animals, got %#v", got.Shadowed)
 	}
 	stranger := packBy(t, "Someone", `{"Changes":[`+dino+`]}`, map[string]string{"dino.png": "other dino"})
-	if got := check([]framework.Mod{stranger, animals}); slices.ContainsFunc(got.Redundant, func(r framework.Redundant) bool { return r.Kind == "bundled" }) {
-		t.Fatalf("another author's copy is not a bundle, got %#v", got.Redundant)
+	if got := check([]Mod{stranger, animals}); slices.ContainsFunc(got.Shadowed, func(r Shadowed) bool { return r.Bundled }) {
+		t.Fatalf("another author's copy is not a bundle, got %#v", got.Shadowed)
 	}
-	got = check([]framework.Mod{dinos, animals, stranger})
-	if len(got.Redundant) != 1 || got.Redundant[0].Key != dinos.Key {
-		t.Fatalf("Em's Dinos is bundled beside a third pack too, got %#v", got.Redundant)
+	got = check([]Mod{dinos, animals, stranger})
+	if len(got.Shadowed) != 1 || got.Shadowed[0].Key != dinos.Key {
+		t.Fatalf("Em's Dinos is bundled beside a third pack too, got %#v", got.Shadowed)
 	}
-	if len(got.AssetConflicts) != 1 || slices.Contains(got.AssetConflicts[0].Keys, dinos.Key) || len(got.AssetConflicts[0].Keys) != 2 {
-		t.Fatalf("the stranger still conflicts with Em's Farm Animals alone, got %#v", got.AssetConflicts)
+	if len(got.Conflicts) != 1 || slices.Contains(got.Conflicts[0].Keys, dinos.Key) || len(got.Conflicts[0].Keys) != 2 {
+		t.Fatalf("the stranger still conflicts with Em's Farm Animals alone, got %#v", got.Conflicts)
 	}
-	load := func(author, file string) framework.Mod {
+	load := func(author, file string) Mod {
 		return packBy(t, author, `{"Changes":[{"Action":"Load","Target":"Maps/Test","FromFile":"m.tmx"}]}`, map[string]string{"m.tmx": file})
 	}
-	got = check([]framework.Mod{load("Em", "a"), load("Em", "a"), load("Someone", "b")})
-	if len(got.AssetConflicts) != 1 || len(got.AssetConflicts[0].Keys) != 3 {
-		t.Fatalf("loads among three packs stay in the conflict, got %#v", got.AssetConflicts)
+	got = check([]Mod{load("Em", "a"), load("Em", "a"), load("Someone", "b")})
+	if len(got.Conflicts) != 1 || len(got.Conflicts[0].Keys) != 3 {
+		t.Fatalf("loads among three packs stay in the conflict, got %#v", got.Conflicts)
 	}
 
 	// Mr Ginger's temporary actor is Marnie Immersive's own sprite, at Low; the rest of the pack is its own.
@@ -969,8 +964,8 @@ func TestSameAuthorBundleIsRedundant(t *testing.T) {
 		{"Action":"EditData","Target":"Data/Events/Town","Entries":{"50706117":"ginger"}}]}`, map[string]string{"golem.png": "golem"})
 	marnie := packBy(t, "Lemurkat", `{"Changes":[{"Action":"Load","Target":"Characters/VoidGolem","FromFile":"golem.png"},
 		{"Action":"EditData","Target":"Data/Events/Forest","Entries":{"50706108":"marnie"}}]}`, map[string]string{"golem.png": "golem"})
-	if got := check([]framework.Mod{ginger, marnie}); len(got.Redundant) != 0 || len(got.AssetConflicts) != 0 {
-		t.Fatalf("a pack sharing one patch with another is not bundled in it, got %#v %#v", got.Redundant, got.AssetConflicts)
+	if got := check([]Mod{ginger, marnie}); len(got.Shadowed) != 0 || len(got.Conflicts) != 0 {
+		t.Fatalf("a pack sharing one patch with another is not bundled in it, got %#v %#v", got.Shadowed, got.Conflicts)
 	}
 }
 
@@ -978,12 +973,12 @@ func TestConfigGatedLowLoadUnderTwoExclusiveLoadsIsAFallback(t *testing.T) {
 	dwarf := settingPack(t, `{"FarmCaveChange":{"Default":false,"AllowValues":"true, false"}}`,
 		`[{"Action":"Load","Target":"Maps/FarmCave","FromFile":"dwarf.json","Priority":"Low","When":{"FarmCaveChange":true}}]`,
 		`{"FarmCaveChange":"true"}`)
-	testfs.WriteFile(t, dwarf.Folder, "dwarf.json", `{"Tile":1}`)
-	exclusive := func(file string) framework.Mod {
+	writeFile(t, dwarf.Folder, "dwarf.json", `{"Tile":1}`)
+	exclusive := func(file string) Mod {
 		return syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/FarmCave","FromFile":"cave.json"}]}`, map[string]string{"cave.json": file})
 	}
-	conflicts, settings := assetConflictResults([]framework.Mod{dwarf, exclusive(`{"Tile":2}`), exclusive(`{"Tile":3}`)})
-	if len(conflicts) != 1 || slices.Contains(conflicts[0].Keys, dwarf.Key) || conflicts[0].WinnerKind != framework.WinnerNeither {
+	conflicts, settings := assetConflictResults([]Mod{dwarf, exclusive(`{"Tile":2}`), exclusive(`{"Tile":3}`)})
+	if len(conflicts) != 1 || slices.Contains(conflicts[0].Keys, dwarf.Key) || conflicts[0].WinnerKind != WinnerNeither {
 		t.Fatalf("the two Exclusive loads clash without the Low one, got %#v", conflicts)
 	}
 	if len(settings) != 1 || settings[0].Field != "FarmCaveChange" || settings[0].Suggested[0] != "false" {
@@ -994,7 +989,7 @@ func TestConfigGatedLowLoadUnderTwoExclusiveLoadsIsAFallback(t *testing.T) {
 // A rooted path or one with a volume names nothing below the pack, on every OS.
 func TestFoldedRelRefusesRootedPaths(t *testing.T) {
 	root := t.TempDir()
-	testfs.WriteFile(t, root, "run.log", "x")
+	writeFile(t, root, "run.log", "x")
 	rels := []string{"/run.log", string(filepath.Separator) + "run.log"}
 	if vol := filepath.VolumeName(root); vol != "" {
 		rels = append(rels, vol+"run.log", vol+`
@@ -1015,7 +1010,7 @@ func TestFoldedRelFindsWhatTheEarlierLookupFound(t *testing.T) {
 	}
 	root := t.TempDir()
 	for _, f := range []string{"Data/x.txt", "Data/sub/z.txt", "data/y.txt", "only/Sub/x.txt", "run.log"} {
-		testfs.WriteFile(t, root, f, "x")
+		writeFile(t, root, f, "x")
 	}
 	for rel, want := range map[string]string{
 		"data/x.txt":                           "Data/x.txt",

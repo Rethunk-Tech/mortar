@@ -2,36 +2,31 @@ package contentpatcher
 
 import (
 	"cmp"
-	"encoding/json"
 	"fmt"
 	"maps"
-	"path/filepath"
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-lenientjson"
-	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 )
 
 type settingGroup struct {
-	pack      framework.Mod
-	schema    cpSchema
+	pack      cp.Mod
+	schema    cp.Schema
 	current   string
-	required  []framework.Mod
+	required  []cp.Mod
 	suggested []string
 	active    bool
 }
 
-func compatibilitySettings(mods []framework.Mod, run *partsRun, skip bool) []framework.SettingHint {
+func compatibilitySettings(mods []cp.Mod, run *cp.PartsRun, skip bool) []cp.Hint {
 	present := map[string]bool{}
-	byID := map[string]framework.Mod{}
+	byID := map[string]cp.Mod{}
 	for _, im := range mods {
 		if !im.Enabled {
 			continue
 		}
-		id := im.ModID().Fold()
+		id := im.UniqueID.Fold()
 		if id == "" {
 			continue
 		}
@@ -41,35 +36,35 @@ func compatibilitySettings(mods []framework.Mod, run *partsRun, skip bool) []fra
 		}
 	}
 	// Only a mod that is some recolour can be one of a pack's enabled recolours.
-	recolours := slices.DeleteFunc(slices.Clone(mods), func(m framework.Mod) bool { return len(enabledRecolours([]framework.Mod{m}, "")) == 0 })
+	recolours := slices.DeleteFunc(slices.Clone(mods), func(m cp.Mod) bool { return len(enabledRecolours([]cp.Mod{m}, "")) == 0 })
 
-	var out []framework.SettingHint
+	var out []cp.Hint
 	for _, packMod := range mods {
 		if !packMod.Enabled {
 			continue
 		}
-		pack := readContentPack(packMod, skip)
-		if len(pack.schema) == 0 {
+		pack := cp.ReadPack(packMod, skip)
+		if len(pack.Schema) == 0 {
 			continue
 		}
-		seen := presentFor(pack, present)
-		enabled := enabledRecolours(recolours, packMod.ModID())
-		sig, stable := packSig(packMod, pack, seen)
+		seen := cp.PresentFor(pack, present)
+		enabled := enabledRecolours(recolours, packMod.UniqueID)
+		sig, stable := cp.PackSig(packMod, pack, seen)
 		fields := []string{"settings", sig}
 		for _, id := range slices.Sorted(maps.Keys(seen)) {
-			fields = append(fields, fmt.Sprintf("%q %q", byID[id].ModID(), byID[id].Name))
+			fields = append(fields, fmt.Sprintf("%q %q", byID[id].UniqueID, byID[id].Name))
 		}
 		for i := range recolourFamilies {
 			if im, ok := enabled[i]; ok {
-				fields = append(fields, fmt.Sprintf("r%d %q %q", i, im.ModID(), im.Name))
+				fields = append(fields, fmt.Sprintf("r%d %q %q", i, im.UniqueID, im.Name))
 			}
 		}
-		e := run.part(partKey(skip, fields...), stable, func() partEntry {
-			return partEntry{Settings: packSettings(packMod, pack, seen, byID, enabled)}
+		e := run.Part(cp.PartKey(skip, fields...), stable, func() cp.PartEntry {
+			return cp.PartEntry{Settings: packSettings(packMod, pack, seen, byID, enabled)}
 		})
 		out = append(out, e.Settings...)
 	}
-	slices.SortStableFunc(out, func(a, b framework.SettingHint) int {
+	slices.SortStableFunc(out, func(a, b cp.Hint) int {
 		if c := strings.Compare(strings.ToLower(a.Key), strings.ToLower(b.Key)); c != 0 {
 			return c
 		}
@@ -82,8 +77,8 @@ func compatibilitySettings(mods []framework.Mod, run *partsRun, skip bool) []fra
 }
 
 // packSettings are one pack's compatibility settings; present holds the enabled mods its conditions name.
-func packSettings(packMod framework.Mod, pack cachedPack, present map[string]bool, byID map[string]framework.Mod, recolours map[int]framework.Mod) []framework.SettingHint {
-	config := readPackConfig(packMod.Folder)
+func packSettings(packMod cp.Mod, pack cp.Pack, present map[string]bool, byID map[string]cp.Mod, recolours map[int]cp.Mod) []cp.Hint {
+	config := cp.ReadPackConfig(packMod.Folder)
 	variants := variantSettings(packMod, pack, config, present, byID)
 	covered := map[string]bool{}
 	for _, hint := range variants {
@@ -92,19 +87,19 @@ func packSettings(packMod framework.Mod, pack cachedPack, present map[string]boo
 	out := slices.Clone(variants)
 	out = append(out, recolourSettings(packMod, pack, config, recolours, covered)...)
 	groups := map[string]*settingGroup{}
-	for _, patch := range pack.patches {
-		if !patch.when.holds(present) || !dynamicWhenHolds(patch.when, pack.tokens, present, pack.schema, config) {
+	for _, patch := range pack.Patches {
+		if !patch.When.Holds(present) || !cp.DynamicWhenHolds(patch.When, pack.Tokens, present, pack.Schema, config) {
 			continue
 		}
-		ids := enabledRequirements(patch.when, present, packMod.ModID())
+		ids := enabledRequirements(patch.When, present, packMod.UniqueID)
 		if len(ids) == 0 {
 			continue
 		}
-		required := make([]framework.Mod, 0, len(ids))
+		required := make([]cp.Mod, 0, len(ids))
 		for _, id := range ids {
 			required = append(required, byID[id])
 		}
-		for _, condition := range patch.when.config {
+		for _, condition := range patch.When.Config {
 			addSettingCondition(groups, packMod, pack, config, condition, required)
 		}
 	}
@@ -121,16 +116,16 @@ func packSettings(packMod framework.Mod, pack cachedPack, present map[string]boo
 // addSettingCondition folds one boolean-toggle condition into its field's group. One group per field: a value
 // that already runs a patch for any installed mod is the player's choice, even when other patches for other
 // mod combinations need a different value.
-func addSettingCondition(groups map[string]*settingGroup, packMod framework.Mod, pack cachedPack, config map[string]string, condition cpConfig, required []framework.Mod) {
-	schema, ok := pack.schema[strings.ToLower(condition.field)]
-	if !ok || len(condition.values) == 0 || !schema.booleanToggle() {
+func addSettingCondition(groups map[string]*settingGroup, packMod cp.Mod, pack cp.Pack, config map[string]string, condition cp.Config, required []cp.Mod) {
+	schema, ok := pack.Schema[strings.ToLower(condition.Field)]
+	if !ok || len(condition.Values) == 0 || !schema.BooleanToggle() {
 		return
 	}
-	current, set := config[strings.ToLower(schema.key)]
+	current, set := config[strings.ToLower(schema.Key)]
 	if !set {
-		current = schema.defaultValue
+		current = schema.DefaultValue
 	}
-	groupKey := strings.ToLower(schema.key)
+	groupKey := strings.ToLower(schema.Key)
 	group := groups[groupKey]
 	if group == nil {
 		group = &settingGroup{
@@ -142,39 +137,39 @@ func addSettingCondition(groups map[string]*settingGroup, packMod framework.Mod,
 		groups[groupKey] = group
 	} else {
 		for _, im := range required {
-			if !slices.ContainsFunc(group.required, func(m framework.Mod) bool { return mod.Equal(m.ModID(), im.ModID()) }) {
+			if !slices.ContainsFunc(group.required, func(m cp.Mod) bool { return cp.Equal(m.UniqueID, im.UniqueID) }) {
 				group.required = append(group.required, im)
 			}
 		}
 	}
-	for _, value := range condition.values {
-		addSettingValue(&group.suggested, value)
+	for _, value := range condition.Values {
+		cp.AddSettingValue(&group.suggested, value)
 	}
-	if settingValueMatches(current, condition) {
+	if cp.SettingValueMatches(current, condition) {
 		group.active = true
 	}
 }
 
-func (group *settingGroup) hint() framework.SettingHint {
-	hint := framework.SettingHint{
+func (group *settingGroup) hint() cp.Hint {
+	hint := cp.Hint{
 		Key:         group.pack.Key,
-		ID:          group.pack.ModID(),
+		ID:          group.pack.UniqueID,
 		Name:        group.pack.Name,
-		Field:       group.schema.key,
+		Field:       group.schema.Key,
 		Current:     group.current,
 		Suggested:   group.suggested,
-		Description: group.schema.description,
+		Description: group.schema.Description,
 	}
 	for _, im := range group.required {
-		hint.For = append(hint.For, im.ModID())
-		hint.ForNames = append(hint.ForNames, cmp.Or(im.Name, im.ModID().Local()))
+		hint.For = append(hint.For, im.UniqueID)
+		hint.ForNames = append(hint.ForNames, cmp.Or(im.Name, im.UniqueID.Local()))
 	}
 	return hint
 }
 
-func enabledRequirements(when cpWhen, present map[string]bool, own mod.ID) []string {
+func enabledRequirements(when cp.When, present map[string]bool, own cp.ModID) []string {
 	ids := map[string]bool{}
-	for _, group := range when.anyOf {
+	for _, group := range when.AnyOf {
 		for _, id := range group {
 			if id != "" && id != own.Fold() && present[id] {
 				ids[id] = true
@@ -185,118 +180,15 @@ func enabledRequirements(when cpWhen, present map[string]bool, own mod.ID) []str
 	return out
 }
 
-func readPackConfig(folder string) map[string]string {
-	raw, err := safefs.ReadFile(filepath.Join(folder, "config.json"))
-	if err != nil {
-		return map[string]string{}
-	}
-	var values map[string]json.RawMessage
-	if json.Unmarshal(lenientjson.Clean(raw), &values) != nil {
-		return map[string]string{}
-	}
-	out := make(map[string]string, len(values))
-	for key, value := range values {
-		if text, ok := configValue(value); ok {
-			out[strings.ToLower(key)] = text
-		}
-	}
-	return out
-}
-
-func configValue(raw json.RawMessage) (string, bool) {
-	if value, ok := scalarValue(raw); ok {
-		return value, true
-	}
-	var values []json.RawMessage
-	if json.Unmarshal(raw, &values) != nil {
-		return "", false
-	}
-	var out []string
-	for _, value := range values {
-		text, ok := scalarValue(value)
-		if !ok {
-			return "", false
-		}
-		out = append(out, text)
-	}
-	return strings.Join(out, ", "), true
-}
-
-func settingValueMatches(current string, condition cpConfig) bool {
-	if condition.allowMultiple {
-		for _, value := range splitTargets(current) {
-			if slices.ContainsFunc(condition.values, func(want string) bool {
-				return strings.EqualFold(strings.TrimSpace(value), strings.TrimSpace(want))
-			}) {
-				return true
-			}
-		}
-		return false
-	}
-	return slices.ContainsFunc(condition.values, func(value string) bool {
-		return strings.EqualFold(strings.TrimSpace(current), strings.TrimSpace(value))
-	})
-}
-
-func addSettingValue(values *[]string, value string) {
-	value = strings.TrimSpace(value)
-	if value == "" || slices.ContainsFunc(*values, func(existing string) bool {
-		return strings.EqualFold(existing, value)
-	}) {
-		return
-	}
-	*values = append(*values, value)
-}
-
-// toggle reports a single-choice field whose values can select which compatibility patch runs.
-func (s cpSchema) toggle() bool {
-	values := s.allowValues
-	if len(values) == 0 {
-		values = []string{s.defaultValue}
-	}
-	if s.allowMultiple || len(values) == 0 {
-		return false
-	}
-	if len(s.allowValues) > 0 {
-		return true
-	}
-	for _, v := range values {
-		switch strings.ToLower(strings.TrimSpace(v)) {
-		case "true", "false", "on", "off", "enabled", "disabled", "yes", "no":
-		default:
-			return false
-		}
-	}
-	return true
-}
-
-func (s cpSchema) booleanToggle() bool {
-	values := s.allowValues
-	if len(values) == 0 {
-		values = []string{s.defaultValue}
-	}
-	if s.allowMultiple || len(values) > 2 {
-		return false
-	}
-	for _, v := range values {
-		switch strings.ToLower(strings.TrimSpace(v)) {
-		case "true", "false", "on", "off", "enabled", "disabled", "yes", "no":
-		default:
-			return false
-		}
-	}
-	return true
-}
-
 // variantSettings suggests a picker value from the pack's own mapping of values to mods: a dynamic token that
 // yields one of the field's allowed values only when a mod is installed (Value "Earthy" When HasMod
 // DaisyNiko.EarthyRecolour). A field with two or more such values is a picker. Its automatic choice is a
 // blank value when allowed, or the value the mapping tokens themselves require of the field ("Off"), since
 // with it the pack detects the installed mod on its own.
-func variantSettings(packMod framework.Mod, pack cachedPack, config map[string]string, present map[string]bool, byID map[string]framework.Mod) []framework.SettingHint {
-	var out []framework.SettingHint
-	for _, schema := range pack.schema {
-		if schema.allowMultiple || len(schema.allowValues) < 2 {
+func variantSettings(packMod cp.Mod, pack cp.Pack, config map[string]string, present map[string]bool, byID map[string]cp.Mod) []cp.Hint {
+	var out []cp.Hint
+	for _, schema := range pack.Schema {
+		if schema.AllowMultiple || len(schema.AllowValues) < 2 {
 			continue
 		}
 		forValue, auto := variantChoices(packMod, pack, schema)
@@ -312,15 +204,15 @@ func variantSettings(packMod framework.Mod, pack cachedPack, config map[string]s
 
 // ownTokens are the field's own tokens: those that read it ({{Field}}) or test it. Other tokens can yield
 // the same words ("Default") for unrelated choices.
-func ownTokens(pack cachedPack, schema cpSchema) map[string]bool {
+func ownTokens(pack cp.Pack, schema cp.Schema) map[string]bool {
 	own := map[string]bool{}
-	for _, p := range pack.patches {
-		if p.tokenName == "" {
+	for _, p := range pack.Patches {
+		if p.TokenName == "" {
 			continue
 		}
-		reads := strings.Contains(strings.ToLower(p.tokenValue), "{{"+strings.ToLower(schema.key)+"}}")
-		if reads || slices.ContainsFunc(p.when.config, func(c cpConfig) bool { return strings.EqualFold(c.field, schema.key) }) {
-			own[p.tokenName] = true
+		reads := strings.Contains(strings.ToLower(p.TokenValue), "{{"+strings.ToLower(schema.Key)+"}}")
+		if reads || slices.ContainsFunc(p.When.Config, func(c cp.Config) bool { return strings.EqualFold(c.Field, schema.Key) }) {
+			own[p.TokenName] = true
 		}
 	}
 	return own
@@ -328,20 +220,20 @@ func ownTokens(pack cachedPack, schema cpSchema) map[string]bool {
 
 // variantChoices maps each lower-cased allowed value to the mod ids that select it, and lists the values the
 // pack's own conditions name.
-func variantChoices(packMod framework.Mod, pack cachedPack, schema cpSchema) (forValue map[string][]string, auto []string) {
+func variantChoices(packMod cp.Mod, pack cp.Pack, schema cp.Schema) (forValue map[string][]string, auto []string) {
 	own := ownTokens(pack, schema)
 	forValue = map[string][]string{}
-	for _, p := range pack.patches {
-		usesField := slices.ContainsFunc(p.when.config, func(c cpConfig) bool {
-			return strings.EqualFold(c.field, schema.key)
+	for _, p := range pack.Patches {
+		usesField := slices.ContainsFunc(p.When.Config, func(c cp.Config) bool {
+			return strings.EqualFold(c.Field, schema.Key)
 		})
-		if !own[p.tokenName] && !usesField {
+		if !own[p.TokenName] && !usesField {
 			continue
 		}
 		ids := make([]string, 0)
-		for _, group := range p.when.anyOf {
+		for _, group := range p.When.AnyOf {
 			for _, id := range group {
-				if id != packMod.ModID().Fold() {
+				if id != packMod.UniqueID.Fold() {
 					ids = append(ids, id)
 				}
 			}
@@ -349,13 +241,13 @@ func variantChoices(packMod framework.Mod, pack cachedPack, schema cpSchema) (fo
 		if len(ids) == 0 {
 			continue
 		}
-		if own[p.tokenName] {
-			if value, ok := allowedValue(schema, p.tokenValue); ok {
+		if own[p.TokenName] {
+			if value, ok := allowedValue(schema, p.TokenValue); ok {
 				forValue[strings.ToLower(value)] = append(forValue[strings.ToLower(value)], ids...)
 			}
 		}
-		for _, c := range p.when.config {
-			if strings.EqualFold(c.field, schema.key) {
+		for _, c := range p.When.Config {
+			if strings.EqualFold(c.Field, schema.Key) {
 				noteConditionValues(schema, c, ids, forValue, &auto)
 			}
 		}
@@ -363,33 +255,33 @@ func variantChoices(packMod framework.Mod, pack cachedPack, schema cpSchema) (fo
 	return forValue, auto
 }
 
-func noteConditionValues(schema cpSchema, c cpConfig, ids []string, forValue map[string][]string, auto *[]string) {
-	for _, conditionValue := range c.values {
+func noteConditionValues(schema cp.Schema, c cp.Config, ids []string, forValue map[string][]string, auto *[]string) {
+	for _, conditionValue := range c.Values {
 		if value, ok := allowedValue(schema, conditionValue); ok {
 			forValue[strings.ToLower(value)] = append(forValue[strings.ToLower(value)], ids...)
 		}
-		for _, v := range c.values {
-			addSettingValue(auto, v)
+		for _, v := range c.Values {
+			cp.AddSettingValue(auto, v)
 		}
 	}
 }
 
-func variantHint(packMod framework.Mod, schema cpSchema, config map[string]string, present map[string]bool, byID map[string]framework.Mod, forValue map[string][]string, auto []string) (framework.SettingHint, bool) {
-	current, set := config[strings.ToLower(schema.key)]
+func variantHint(packMod cp.Mod, schema cp.Schema, config map[string]string, present map[string]bool, byID map[string]cp.Mod, forValue map[string][]string, auto []string) (cp.Hint, bool) {
+	current, set := config[strings.ToLower(schema.Key)]
 	if !set {
-		current = schema.defaultValue
+		current = schema.DefaultValue
 	}
 	current = strings.TrimSpace(current)
-	if (current == "" && schema.allowBlank) || slices.ContainsFunc(auto, func(a string) bool { return strings.EqualFold(a, current) }) {
-		return framework.SettingHint{}, false
+	if (current == "" && schema.AllowBlank) || slices.ContainsFunc(auto, func(a string) bool { return strings.EqualFold(a, current) }) {
+		return cp.Hint{}, false
 	}
-	var enabledFor []framework.Mod
+	var enabledFor []cp.Mod
 	var enabledValues []string
-	for _, value := range schema.allowValues {
+	for _, value := range schema.AllowValues {
 		for _, id := range forValue[strings.ToLower(value)] {
 			if present[id] {
 				enabledFor = append(enabledFor, byID[id])
-				addSettingValue(&enabledValues, value)
+				cp.AddSettingValue(&enabledValues, value)
 			}
 		}
 	}
@@ -399,17 +291,17 @@ func variantHint(packMod framework.Mod, schema cpSchema, config map[string]strin
 			currentFor = ""
 			break
 		}
-		currentFor = mod.ID(id).Local()
+		currentFor = cp.ModID(id).Local()
 	}
 	if forValue[strings.ToLower(current)] != nil && currentFor == "" {
-		return framework.SettingHint{}, false // the current value is for a mod the profile has
+		return cp.Hint{}, false // the current value is for a mod the profile has
 	}
 	if currentFor == "" && len(enabledFor) == 0 {
-		return framework.SettingHint{}, false // a generic choice and none of the mapped mods: nothing to match
+		return cp.Hint{}, false // a generic choice and none of the mapped mods: nothing to match
 	}
 	var suggested []string
 	switch {
-	case schema.allowBlank:
+	case schema.AllowBlank:
 		suggested = []string{""}
 	case len(auto) > 0:
 		suggested = auto
@@ -417,42 +309,26 @@ func variantHint(packMod framework.Mod, schema cpSchema, config map[string]strin
 		suggested = enabledValues
 	}
 	if len(suggested) == 0 {
-		return framework.SettingHint{}, false
+		return cp.Hint{}, false
 	}
-	hint := framework.SettingHint{
-		Key: packMod.Key, ID: packMod.ModID(), Name: packMod.Name, Field: schema.key, Current: current,
-		Suggested: suggested, Description: schema.description, Variant: true, CurrentFor: currentFor,
+	hint := cp.Hint{
+		Key: packMod.Key, ID: packMod.UniqueID, Name: packMod.Name, Field: schema.Key, Current: current,
+		Suggested: suggested, Description: schema.Description, Variant: true, CurrentFor: currentFor,
 	}
 	for _, im := range enabledFor {
-		hint.For = append(hint.For, im.ModID())
-		hint.ForNames = append(hint.ForNames, cmp.Or(im.Name, im.ModID().Local()))
+		hint.For = append(hint.For, im.UniqueID)
+		hint.ForNames = append(hint.ForNames, cmp.Or(im.Name, im.UniqueID.Local()))
 	}
 	return hint, true
 }
 
-func allowedValue(schema cpSchema, value string) (string, bool) {
-	i := slices.IndexFunc(schema.allowValues, func(v string) bool { return strings.EqualFold(strings.TrimSpace(v), strings.TrimSpace(value)) })
+func allowedValue(schema cp.Schema, value string) (string, bool) {
+	i := slices.IndexFunc(schema.AllowValues, func(v string) bool { return strings.EqualFold(strings.TrimSpace(v), strings.TrimSpace(value)) })
 	if i < 0 {
 		return "", false
 	}
-	return schema.allowValues[i], true
+	return schema.AllowValues[i], true
 }
 
 // configHolds reports whether the pack's current settings (config.json, else the schema Default) meet every
 // config condition, so a patch the player switched off is not counted as a conflict.
-func configHolds(conditions []cpConfig, schema map[string]cpSchema, config map[string]string) bool {
-	for _, c := range conditions {
-		field, ok := schema[strings.ToLower(c.field)]
-		if !ok {
-			continue
-		}
-		current, set := config[strings.ToLower(field.key)]
-		if !set {
-			current = field.defaultValue
-		}
-		if !settingValueMatches(current, c) {
-			return false
-		}
-	}
-	return true
-}

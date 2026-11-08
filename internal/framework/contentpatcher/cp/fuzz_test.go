@@ -1,11 +1,9 @@
-package contentpatcher
+package cp
 
 import (
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // FuzzContentPack feeds a pack's content.json and one file it can name (as an Include, a Load or EditData source, a
@@ -39,18 +37,18 @@ func FuzzContentPack(f *testing.F) {
 			files[filepath.Join(root, name)] = data
 		}
 		for p, b := range files {
-			testfs.WriteAt(t, p, b)
+			writeAt(t, p, b)
 		}
-		pack := cachedPack{mentions: map[string]bool{}}
-		pack.schema = readConfigSchema(root)
-		pack.values = packConfigValues(pack.schema, root)
-		scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
-		for _, p := range pack.patches {
-			if strings.Contains(strings.ToLower(p.target), "decoy/leak") {
+		pack := Pack{Mentions: map[string]bool{}}
+		pack.Schema = readConfigSchema(root)
+		pack.Values = packConfigValues(pack.Schema, root)
+		scanContentFile(root, "content.json", map[string]bool{}, When{}, &pack)
+		for _, p := range pack.Patches {
+			if strings.Contains(strings.ToLower(p.Target), "decoy/leak") {
 				t.Fatalf("scanned a file outside the pack: %+v", p)
 			}
 		}
-		for _, s := range pack.files {
+		for _, s := range pack.Files {
 			if filepath.IsAbs(s.Path) || s.Path == ".." || strings.HasPrefix(filepath.ToSlash(s.Path), "../") {
 				t.Fatalf("stamped %q outside the pack", s.Path)
 			}

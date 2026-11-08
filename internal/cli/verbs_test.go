@@ -8,7 +8,7 @@ import (
 	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
-	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
+	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher/cp"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
@@ -262,7 +262,7 @@ func TestVerbWrappersSendTheirArgumentsOrRefuse(t *testing.T) {
 		{
 			name:    "who joins its query",
 			args:    []string{"who", "stardew", "Farm", "Data", "Objects"},
-			results: map[string]any{"who": contentpatcher.WhoChangesPage{Targets: assetTargets()}},
+			results: map[string]any{"who": cp.WhoChangesPage{Targets: assetTargets()}},
 			method:  "who",
 			params:  func(p control.Params) bool { return p.Query == "Data Objects" && p.Profile == "Farm" },
 			out:     []string{"Data/Objects k", "Alpha* Edit", "B Replace", "Alpha"},
@@ -275,7 +275,7 @@ func TestVerbWrappersSendTheirArgumentsOrRefuse(t *testing.T) {
 		{
 			name:    "conflicts map with no assets",
 			args:    []string{"conflicts", "map", "stardew", "Farm", "--filter", "Data"},
-			results: map[string]any{"conflicts.map": contentpatcher.AssetMapPage{}},
+			results: map[string]any{"conflicts.map": cp.AssetMapPage{}},
 			method:  "conflicts.map",
 			params:  func(p control.Params) bool { return p.Query == "Data" },
 			out:     []string{"No assets."},
@@ -283,7 +283,7 @@ func TestVerbWrappersSendTheirArgumentsOrRefuse(t *testing.T) {
 		{
 			name:    "conflicts map",
 			args:    []string{"conflicts", "map", "stardew", "Farm"},
-			results: map[string]any{"conflicts.map": contentpatcher.AssetMapPage{Targets: assetTargets()}},
+			results: map[string]any{"conflicts.map": cp.AssetMapPage{Targets: assetTargets()}},
 			method:  "conflicts.map",
 			out:     []string{"Data/Objects k", "Alpha* Edit"},
 		},
@@ -400,12 +400,12 @@ func TestVerbWrappersSendTheirArgumentsOrRefuse(t *testing.T) {
 	}
 }
 
-func assetTargets() []contentpatcher.AssetTarget {
-	return []contentpatcher.AssetTarget{{
-		Target: "Data/Objects", Key: "k", Winner: contentpatcher.ModID("smapi:Alpha"),
-		Mods: []contentpatcher.AssetTouch{
+func assetTargets() []cp.AssetTarget {
+	return []cp.AssetTarget{{
+		Target: "Data/Objects", Key: "k", Winner: cp.ModID("smapi:Alpha"),
+		Mods: []cp.AssetTouch{
 			{ModName: "Alpha", Action: "Edit", Winner: true},
-			{ModID: contentpatcher.ModID("smapi:B"), Action: "Replace"},
+			{ModID: cp.ModID("smapi:B"), Action: "Replace"},
 		},
 	}}
 }

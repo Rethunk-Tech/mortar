@@ -1,4 +1,4 @@
-package contentpatcher
+package cp
 
 import (
 	"bytes"
@@ -13,41 +13,39 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-
-	"github.com/Rethunk-Tech/mortar/internal/framework"
 )
 
-func conflictEvidence(kind string, hits []packHit) []framework.ConflictEvidence {
-	out := []framework.ConflictEvidence{}
+func ConflictEvidence(kind string, hits []packHit) []Evidence {
+	out := []Evidence{}
 	var bounds [][]patchBounds
 	for _, hit := range hits {
-		patches, clashes := hit.edits, hit.clashes
+		patches, clashes := hit.Edits, hit.Clashes
 		if kind == "load" {
-			patches, clashes = hit.loads, hit.loadClashes
+			patches, clashes = hit.Loads, hit.LoadClashes
 		}
 		for i, patch := range patches {
 			if clashes != nil && !clashes[i] {
 				continue
 			}
-			e := framework.ConflictEvidence{
-				PackName: hit.name,
-				PackID:   frameworkID(hit.id),
-				Source:   patch.source,
-				Index:    patch.index,
-				Action:   patch.action,
-				Target:   patch.target,
-				ToArea:   patch.toArea,
-				FromArea: patch.imageFromArea,
-				When:     whenSummary(patch.when),
-				Priority: patch.priority,
-				FromFile: patch.fromFile,
-				Keys:     clashingKeys(patch, hits, hit.id),
+			e := Evidence{
+				PackName: hit.Name,
+				PackID:   (hit.ID),
+				Source:   patch.Source,
+				Index:    patch.Index,
+				Action:   patch.Action,
+				Target:   patch.Target,
+				ToArea:   patch.ToArea,
+				FromArea: patch.ImageFromArea,
+				When:     patch.When,
+				Priority: patch.Priority,
+				FromFile: patch.FromFile,
+				Keys:     clashingKeys(patch, hits, hit.ID),
 			}
-			if patch.image {
+			if patch.Image {
 				if bounds == nil {
 					bounds = editBounds(hits)
 				}
-				if ox, oy, ow, oh, ok := overlapAgainst(patch, hits, bounds, hit.id); ok {
+				if ox, oy, ow, oh, ok := overlapAgainst(patch, hits, bounds, hit.ID); ok {
 					e.CropX, e.CropY, e.CropW, e.CropH = sourceCrop(patch, ox, oy, ow, oh)
 				}
 			}
@@ -59,19 +57,19 @@ func conflictEvidence(kind string, hits []packHit) []framework.ConflictEvidence 
 
 // clashingKeys lists the data entries and fields of patch that another pack's edit also writes, as
 // "Entry 301" or "Field 301.Price" with any TargetField path, without the pack scoping of token keys.
-func clashingKeys(patch cpPatch, hits []packHit, self ModID) []string {
+func clashingKeys(patch Patch, hits []packHit, self ModID) []string {
 	keys := []string{}
-	for _, s := range patch.shapes {
-		if s.kind != 'p' {
+	for _, s := range patch.Shapes {
+		if s.Kind != 'p' {
 			continue
 		}
 		clash := slices.ContainsFunc(hits, func(h packHit) bool {
-			return !Equal(h.id, self) && slices.ContainsFunc(h.edits, func(o cpPatch) bool {
-				return slices.ContainsFunc(o.shapes, s.overlaps)
+			return !Equal(h.ID, self) && slices.ContainsFunc(h.Edits, func(o Patch) bool {
+				return slices.ContainsFunc(o.Shapes, s.overlaps)
 			})
 		})
 		if clash {
-			keys = append(keys, keyLabel(s.key))
+			keys = append(keys, s.Key)
 		}
 	}
 	return keys
@@ -90,44 +88,44 @@ func keyLabel(key string) string {
 // packScope matches the "@<pack folder>|" packScopedKey puts before a token key.
 var packScope = regexp.MustCompile(`@[^|]*\|`)
 
-func whenSummary(w cpWhen) string {
+func whenSummary(w When) string {
 	var parts []string
-	for _, group := range w.anyOf {
+	for _, group := range w.AnyOf {
 		parts = append(parts, "HasMod "+strings.Join(group, ", "))
 	}
-	for _, id := range w.noneOf {
+	for _, id := range w.NoneOf {
 		parts = append(parts, "not HasMod "+id)
 	}
-	for _, c := range w.config {
-		parts = append(parts, c.field+"="+strings.Join(c.values, "|"))
+	for _, c := range w.Config {
+		parts = append(parts, c.Field+"="+strings.Join(c.Values, "|"))
 	}
-	for _, d := range w.dynamic {
-		label := d.name
-		if d.contains != "" {
-			label += " contains " + d.contains
-		} else if len(d.values) > 0 {
-			label += "=" + strings.Join(d.values, ", ")
+	for _, d := range w.Dynamic {
+		label := d.Name
+		if d.Contains != "" {
+			label += " contains " + d.Contains
+		} else if len(d.Values) > 0 {
+			label += "=" + strings.Join(d.Values, ", ")
 		}
-		if !d.expected {
+		if !d.Expected {
 			label = "not " + label
 		}
 		parts = append(parts, label)
 	}
-	for _, f := range w.flags {
-		if f.present {
-			parts = append(parts, "HasFlag "+f.name)
+	for _, f := range w.Flags {
+		if f.Present {
+			parts = append(parts, "HasFlag "+f.Name)
 		} else {
-			parts = append(parts, "not HasFlag "+f.name)
+			parts = append(parts, "not HasFlag "+f.Name)
 		}
 	}
-	if w.spouse != "" && w.spouse != "\x00" {
-		parts = append(parts, "Spouse "+w.spouse)
+	if w.Spouse != "" && w.Spouse != "\x00" {
+		parts = append(parts, "Spouse "+w.Spouse)
 	}
-	for _, token := range slices.Sorted(maps.Keys(w.places)) {
-		parts = append(parts, token+"="+strings.Join(w.places[token], ", "))
+	for _, token := range slices.Sorted(maps.Keys(w.Places)) {
+		parts = append(parts, token+"="+strings.Join(w.Places[token], ", "))
 	}
-	if len(w.assumed) > 0 {
-		parts = append(parts, "also needs: "+strings.Join(slices.Compact(slices.Sorted(slices.Values(w.assumed))), ", "))
+	if len(w.Assumed) > 0 {
+		parts = append(parts, "also needs: "+strings.Join(slices.Compact(slices.Sorted(slices.Values(w.Assumed))), ", "))
 	}
 	return strings.Join(parts, "; ")
 }
@@ -135,22 +133,22 @@ func whenSummary(w cpWhen) string {
 // patchBounds is one edit's destination rectangle, computed once per conflict rather than once per
 // pair of clashing patches.
 type patchBounds struct {
-	r  image.Rectangle
-	ok bool
+	R  image.Rectangle
+	Ok bool
 }
 
 func editBounds(hits []packHit) [][]patchBounds {
 	out := make([][]patchBounds, len(hits))
 	for i, hit := range hits {
-		out[i] = make([]patchBounds, len(hit.edits))
-		for j, edit := range hit.edits {
-			out[i][j].r, out[i][j].ok = destBounds(edit)
+		out[i] = make([]patchBounds, len(hit.Edits))
+		for j, edit := range hit.Edits {
+			out[i][j].R, out[i][j].Ok = destBounds(edit)
 		}
 	}
 	return out
 }
 
-func overlapAgainst(patch cpPatch, hits []packHit, bounds [][]patchBounds, self ModID) (x, y, w, h int, ok bool) {
+func overlapAgainst(patch Patch, hits []packHit, bounds [][]patchBounds, self ModID) (x, y, w, h int, ok bool) {
 	own, ok := destBounds(patch)
 	if !ok {
 		return 0, 0, 0, 0, false
@@ -158,14 +156,14 @@ func overlapAgainst(patch cpPatch, hits []packHit, bounds [][]patchBounds, self 
 	var inter image.Rectangle
 	found := false
 	for i, hit := range hits {
-		if Equal(hit.id, self) {
+		if Equal(hit.ID, self) {
 			continue
 		}
 		for _, peer := range bounds[i] {
-			if !peer.ok {
+			if !peer.Ok {
 				continue
 			}
-			r := own.Intersect(peer.r)
+			r := own.Intersect(peer.R)
 			if r.Empty() {
 				continue
 			}
@@ -183,7 +181,7 @@ func overlapAgainst(patch cpPatch, hits []packHit, bounds [][]patchBounds, self 
 	return inter.Min.X, inter.Min.Y, inter.Dx(), inter.Dy(), true
 }
 
-func destBounds(p cpPatch) (image.Rectangle, bool) {
+func destBounds(p Patch) (image.Rectangle, bool) {
 	var r image.Rectangle
 	found := false
 	add := func(x, y, w, h int) {
@@ -198,12 +196,12 @@ func destBounds(p cpPatch) (image.Rectangle, bool) {
 		}
 		r = r.Union(nr)
 	}
-	for _, s := range p.shapes {
-		if s.kind == 'p' || s.kind == 'w' {
+	for _, s := range p.Shapes {
+		if s.Kind == 'p' || s.Kind == 'w' {
 			continue
 		}
-		if s.cells != "" {
-			for cell := range strings.SplitSeq(s.cells, ";") {
+		if s.Cells != "" {
+			for cell := range strings.SplitSeq(s.Cells, ";") {
 				xs, ys, isCell := strings.Cut(cell, ",")
 				if !isCell {
 					continue
@@ -223,10 +221,10 @@ func destBounds(p cpPatch) (image.Rectangle, bool) {
 	return r, found
 }
 
-func sourceCrop(p cpPatch, ox, oy, ow, oh int) (int, int, int, int) {
+func sourceCrop(p Patch, ox, oy, ow, oh int) (int, int, int, int) {
 	fx, fy := 0, 0
-	if from, ok := areaOf(json.RawMessage(p.imageFromArea)); ok {
-		fx, fy = from.x, from.y
+	if from, ok := areaOf(json.RawMessage(p.ImageFromArea)); ok {
+		fx, fy = from.X, from.Y
 	}
 	tx, ty := 0, 0
 	if to, ok := destBounds(p); ok {

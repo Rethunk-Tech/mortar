@@ -1,4 +1,4 @@
-package contentpatcher
+package cp
 
 import (
 	"bytes"
@@ -10,9 +10,6 @@ import (
 	"reflect"
 	"testing"
 	"time"
-
-	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 )
 
 // age backdates the files, and each folder's files, past the window in which a memo does not trust a stamp.
@@ -32,28 +29,27 @@ func age(t *testing.T, at time.Time, paths ...string) {
 }
 
 func TestAnalyzeMemoServesUnchangedModsAndNoticesAnEditedLoadFile(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	resetContentPackCaches()
-	t.Cleanup(resetContentPackCaches)
+	dataHome(t)
+	resetCaches()
+	t.Cleanup(resetCaches)
 
 	content := `{"Format":"2.0.0","Changes":[{"Action":"Load","Target":"Data/Thing","FromFile":"thing.json"}]}`
-	a := packs.Disk(t, "A.Pack", map[string]string{"manifest.json": packs.Manifest("A.Pack"), "content.json": content, "thing.json": `{"a":1}`})
-	b := packs.Disk(t, "B.Pack", map[string]string{"manifest.json": packs.Manifest("B.Pack"), "content.json": content, "thing.json": `{"b":2}`})
+	a := diskPack(t, "A.Pack", map[string]string{"manifest.json": packManifest("A.Pack"), "content.json": content, "thing.json": `{"a":1}`})
+	b := diskPack(t, "B.Pack", map[string]string{"manifest.json": packManifest("B.Pack"), "content.json": content, "thing.json": `{"b":2}`})
 	age(t, time.Now().Add(-time.Hour), a.Folder, b.Folder)
-	mods := []framework.Mod{a, b}
-	in := framework.Input{Enabled: mods, All: mods}
+	mods := []Mod{a, b}
+	in := Request{Enabled: mods, All: mods, Order: testOrder}
 
-	fresh := Driver{}.Analyze(in)
-	if len(fresh.AssetConflicts) != 1 {
-		t.Fatalf("conflicts = %#v, want the two loads of Data/Thing", fresh.AssetConflicts)
+	fresh := analyze(in)
+	if len(fresh.Conflicts) != 1 {
+		t.Fatalf("conflicts = %#v, want the two loads of Data/Thing", fresh.Conflicts)
 	}
 	key := analysisKey(in)
 	if _, ok := lookupAnalysis(key); !ok {
 		t.Fatal("the check was not memoised")
 	}
-	resetContentPackCaches()
-	if served := (Driver{}).Analyze(in); !reflect.DeepEqual(served, fresh) {
+	resetCaches()
+	if served := analyze(in); !reflect.DeepEqual(served, fresh) {
 		t.Fatalf("memoised findings = %#v, want %#v", served, fresh)
 	}
 
@@ -63,17 +59,16 @@ func TestAnalyzeMemoServesUnchangedModsAndNoticesAnEditedLoadFile(t *testing.T) 
 		t.Fatal(err)
 	}
 	age(t, time.Now().Add(-30*time.Minute), thing)
-	resetContentPackCaches()
-	if got := (Driver{}).Analyze(in); len(got.AssetConflicts) != 0 {
-		t.Fatalf("identical loads still conflict after the edit: %#v", got.AssetConflicts)
+	resetCaches()
+	if got := analyze(in); len(got.Conflicts) != 0 {
+		t.Fatalf("identical loads still conflict after the edit: %#v", got.Conflicts)
 	}
 }
 
 func TestAnalyzeMemoKeepsImageOverlapDepthsApart(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	resetContentPackCaches()
-	t.Cleanup(resetContentPackCaches)
+	dataHome(t)
+	resetCaches()
+	t.Cleanup(resetCaches)
 
 	sheet := func(x int) string {
 		img := image.NewNRGBA(image.Rect(0, 0, 32, 16))
@@ -85,18 +80,18 @@ func TestAnalyzeMemoKeepsImageOverlapDepthsApart(t *testing.T) {
 		return buf.String()
 	}
 	content := `{"Format":"2.0.0","Changes":[{"Action":"EditImage","Target":"Maps/springobjects","FromFile":"p.png","ToArea":{"X":0,"Y":0,"Width":32,"Height":16},"PatchMode":"Overlay"}]}`
-	a := packs.Disk(t, "A.Pack", map[string]string{"manifest.json": packs.Manifest("A.Pack"), "content.json": content, "p.png": sheet(0)})
-	b := packs.Disk(t, "B.Pack", map[string]string{"manifest.json": packs.Manifest("B.Pack"), "content.json": content, "p.png": sheet(8)})
+	a := diskPack(t, "A.Pack", map[string]string{"manifest.json": packManifest("A.Pack"), "content.json": content, "p.png": sheet(0)})
+	b := diskPack(t, "B.Pack", map[string]string{"manifest.json": packManifest("B.Pack"), "content.json": content, "p.png": sheet(8)})
 	age(t, time.Now().Add(-time.Hour), a.Folder, b.Folder)
-	mods := []framework.Mod{a, b}
+	mods := []Mod{a, b}
 
-	exact := framework.Input{Enabled: mods, All: mods}
-	skipped := framework.Input{Enabled: mods, All: mods, SkipImageOverlap: true}
+	exact := Request{Enabled: mods, All: mods}
+	skipped := Request{Enabled: mods, All: mods, SkipImageOverlap: true}
 	if analysisKey(exact) == analysisKey(skipped) {
 		t.Fatal("one memo key serves both overlap depths")
 	}
 	cells := func(skip bool) string {
-		return readContentPack(a, skip).patches[0].shapes[0].cells
+		return ReadPack(a, skip).Patches[0].Shapes[0].Cells
 	}
 	for range 2 {
 		if cells(false) == "" {

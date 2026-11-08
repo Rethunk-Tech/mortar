@@ -1,4 +1,4 @@
-package contentpatcher
+package cp
 
 import (
 	"encoding/json"
@@ -6,16 +6,15 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/framework"
 )
 
-// mapScanCacheVersion changes whenever what mapScan records changes, so an older file is ignored.
+// mapScanCacheVersion changes whenever what MapScan records changes, so an older file is ignored.
 const mapScanCacheVersion = 2
 
 type diskMapScans struct {
 	Version int                    `json:"version"`
-	Scans   map[string]mapScan     `json:"scans"`
-	Folders map[string]mapFileList `json:"folders"`
+	Scans   map[string]MapScan     `json:"scans"`
+	Folders map[string]MapFileList `json:"folders"`
 }
 
 func mapScanCachePath() (string, error) {
@@ -52,9 +51,9 @@ func loadMapScans() {
 	}
 }
 
-// flushMapScans drops the scans and listings of folders that are no longer installed, then saves them when any
+// FlushMapScans drops the scans and listings of folders that are no longer installed, then saves them when any
 // changed.
-func flushMapScans(mods []framework.Mod) {
+func FlushMapScans(mods []Mod) {
 	prefixes := make([]string, 0, len(mods))
 	installed := map[string]bool{}
 	for _, im := range mods {

@@ -1,4 +1,4 @@
-package contentpatcher
+package cp
 
 import (
 	"bufio"
@@ -27,8 +27,6 @@ import (
 	"sync"
 	"unique"
 
-	"github.com/Rethunk-Tech/mortar/internal/framework"
-
 	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/go-safefs"
 )
@@ -43,158 +41,159 @@ const (
 )
 
 type packHit struct {
-	id           ModID
-	name         string
-	key          string
-	priority     string
-	mentions     map[string]bool
-	root         string
-	tokens       []cpPatch
-	present      map[string]bool
-	loads        []cpPatch
-	edits        []cpPatch // the pack's active edits of this target
-	eligible     []cpPatch // edits whose HasMod conditions hold, including config-off variants
-	configOff    []int     // positions in eligible whose config conditions fail; only used while the scan collects
-	loadClashes  map[int]bool
-	dependencies map[string]bool
-	loadAfter    map[string]bool
-	schema       map[string]cpSchema
-	config       map[string]string
-	clashes      map[int]bool // indices into edits that overlap an edit of a pack it was not built with
-	rivals       []ModID      // the packs of the hit set whose edits clash with this pack's
+	ID           ModID
+	Name         string
+	Key          string
+	Priority     string
+	Mentions     map[string]bool
+	Root         string
+	Tokens       []Patch
+	Present      map[string]bool
+	Loads        []Patch
+	Edits        []Patch // the pack's active edits of this target
+	Eligible     []Patch // edits whose HasMod conditions hold, including config-off variants
+	ConfigOff    []int   // positions in eligible whose config conditions fail; only used while the scan collects
+	LoadClashes  map[int]bool
+	Dependencies map[string]bool
+	LoadAfter    map[string]bool
+	Schema       map[string]Schema
+	Config       map[string]string
+	Clashes      map[int]bool // indices into edits that overlap an edit of a pack it was not built with
+	Rivals       []ModID      // the packs of the hit set whose edits clash with this pack's
 	// author is the manifest Author, normalised, so two packs by one author can be told apart from strangers.
-	author string
-	// sig is the pack's share of a target's memo key (packSig), and stable whether its stamps can be trusted.
-	sig    string
-	stable bool
+	Author string
+	// sig is the pack's share of a target's memo key (PackSig), and stable whether its stamps can be trusted.
+	Sig    string
+	Stable bool
 }
 
-// cpPatch is one Load or EditImage/EditMap change with the HasMod conditions that gate it.
-type cpPatch struct {
-	kind          string // "load" or "edit"
-	target        string
-	fromFile      string
-	priority      string
-	patchMode     string
-	when          cpWhen
-	shapes        []cpShape           // what an edit writes; see editShapes
-	spouse        string              // the spouse the change requires, or ""
-	places        map[string][]string // literal values the change requires of placeTokens
-	image         bool                // an EditImage change, which only changes how something looks
-	imageDigest   string
-	imageFromArea string
-	source        string
-	index         int
-	action        string
-	toArea        string
+// Patch is one Load or EditImage/EditMap change with the HasMod conditions that gate it.
+type Patch struct {
+	Kind          string // "load" or "edit"
+	Target        string
+	FromFile      string
+	Priority      string
+	PatchMode     string
+	When          When
+	Shapes        []Shape             // what an edit writes; see editShapes
+	Spouse        string              // the spouse the change requires, or ""
+	Places        map[string][]string // literal values the change requires of placeTokens
+	Image         bool                // an EditImage change, which only changes how something looks
+	ImageDigest   string
+	ImageFromArea string
+	Source        string
+	Index         int
+	Action        string
+	ToArea        string
 	// tokenValue is a dynamic token's value; a token that yields a picker value only when a mod is
 	// installed is how a pack says which mod that value is for.
-	tokenName  string
-	tokenValue string
+	TokenName  string
+	TokenValue string
 	// extra marks a change that also does something its shapes do not show (warps, text operations,
 	// appended list entries, a source map's properties), which a later edit never undoes.
-	extra bool
+	Extra bool
 }
 
-type cpConfig struct {
-	field         string
-	values        []string
-	allowMultiple bool
+type Config struct {
+	Field         string
+	Values        []string
+	AllowMultiple bool
 }
 
-// cpWhen holds a change's HasMod conditions: each anyOf group needs one of its mods
+// When holds a change's HasMod conditions: each anyOf group needs one of its mods
 // present, and no noneOf mod may be present. Dynamic token conditions are checked
 // with the pack and profile context; other conditions are treated as met.
-type cpWhen struct {
-	anyOf   [][]string
-	noneOf  []string
-	config  []cpConfig
-	dynamic []cpDynamicCondition
-	flags   []cpFlagCondition
-	spouse  string
-	places  map[string][]string
+type When struct {
+	AnyOf   [][]string
+	NoneOf  []string
+	Config  []Config
+	Dynamic []DynamicCondition
+	Flags   []FlagCondition
+	Spouse  string
+	Places  map[string][]string
 	// assumed are the raw keys of the conditions this scan treats as met (time, queries, events), shown
 	// with the conflict so the user knows it may not happen on their save.
-	assumed []string
+	Assumed []string
 	// conditional is set when the change, or an Include around it, has any When condition at all, including
 	// the assumed ones.
-	conditional bool
+	Conditional bool
 }
 
-type cpDynamicCondition struct {
-	name     string
-	values   []string
-	contains string
-	expected bool
+type DynamicCondition struct {
+	Name     string
+	Values   []string
+	Contains string
+	Expected bool
 }
 
-type cpFlagCondition struct {
-	name    string
-	present bool
+type FlagCondition struct {
+	Name    string
+	Present bool
 }
 
-func (w cpWhen) with(o cpWhen) cpWhen {
+func (w When) with(o When) When {
 	// Most changes name no place, so an empty map is not allocated for each.
 	var places map[string][]string
-	if len(w.places)+len(o.places) > 0 {
+	if len(w.Places)+len(o.Places) > 0 {
 		places = map[string][]string{}
 	}
-	for key, values := range w.places {
+	for key, values := range w.Places {
 		places[key] = slices.Clone(values)
 	}
-	for key, values := range o.places {
+	for key, values := range o.Places {
 		places[key] = append(places[key], values...)
 	}
-	spouse := w.spouse
+	spouse := w.Spouse
 	if spouse == "" {
-		spouse = o.spouse
-	} else if o.spouse != "" && !strings.EqualFold(spouse, o.spouse) {
+		spouse = o.Spouse
+	} else if o.Spouse != "" && !strings.EqualFold(spouse, o.Spouse) {
 		spouse = "\x00"
 	}
-	return cpWhen{
-		anyOf:       append(slices.Clone(w.anyOf), o.anyOf...),
-		noneOf:      append(slices.Clone(w.noneOf), o.noneOf...),
-		config:      append(slices.Clone(w.config), o.config...),
-		dynamic:     append(slices.Clone(w.dynamic), o.dynamic...),
-		flags:       append(slices.Clone(w.flags), o.flags...),
-		spouse:      spouse,
-		places:      places,
-		assumed:     append(slices.Clone(w.assumed), o.assumed...),
-		conditional: w.conditional || o.conditional,
+	return When{
+		AnyOf:       append(slices.Clone(w.AnyOf), o.AnyOf...),
+		NoneOf:      append(slices.Clone(w.NoneOf), o.NoneOf...),
+		Config:      append(slices.Clone(w.Config), o.Config...),
+		Dynamic:     append(slices.Clone(w.Dynamic), o.Dynamic...),
+		Flags:       append(slices.Clone(w.Flags), o.Flags...),
+		Spouse:      spouse,
+		Places:      places,
+		Assumed:     append(slices.Clone(w.Assumed), o.Assumed...),
+		Conditional: w.Conditional || o.Conditional,
 	}
 }
 
-func (w cpWhen) withDefinition(o cpWhen) cpWhen {
+func (w When) withDefinition(o When) When {
 	merged := w.with(o)
 	// A definition's flags constrain its reachability, not the patch that selects it.
-	merged.flags = slices.Clone(w.flags)
+	merged.Flags = slices.Clone(w.Flags)
 	return merged
 }
 
-func (w cpWhen) holds(present map[string]bool) bool {
-	for _, group := range w.anyOf {
+// holds reports whether the conditions are met by present, a set of folded mod ids.
+func (w When) Holds(present map[string]bool) bool {
+	for _, group := range w.AnyOf {
 		if !slices.ContainsFunc(group, func(id string) bool { return present[id] }) {
 			return false
 		}
 	}
-	return !slices.ContainsFunc(w.noneOf, func(id string) bool { return present[id] })
+	return !slices.ContainsFunc(w.NoneOf, func(id string) bool { return present[id] })
 }
 
-type cachedPack struct {
+type Pack struct {
 	// values are the pack's config values (schema defaults, then config.json), by lower-case key;
 	// used while scanning only, so not cached on disk.
-	values      map[string]string
-	fingerprint string
-	files       []packFileStamp
-	patches     []cpPatch
-	tokens      []cpTokenDefinition
-	mentions    map[string]bool
-	schema      map[string]cpSchema
-	skips       int
+	Values      map[string]string
+	Fingerprint string
+	Files       []FileStamp
+	Patches     []Patch
+	Tokens      []TokenDefinition
+	Mentions    map[string]bool
+	Schema      map[string]Schema
+	Skips       int
 	// skipImages is whether the pack's image-edit shapes were read without the pixel-overlap scan.
-	skipImages bool
+	SkipImages bool
 	// farms maps the map asset of each custom farm the pack adds to Data/AdditionalFarms to the farm's id.
-	farms map[string]string
+	Farms map[string]string
 }
 
 const contentPackParserVersion = 27
@@ -202,7 +201,7 @@ const contentPackParserVersion = 27
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1
 
-type packFileStamp struct {
+type FileStamp struct {
 	Path    string `json:"path"`
 	Size    int64  `json:"size"`
 	ModTime int64  `json:"mtime"`
@@ -214,9 +213,9 @@ type diskPackCache struct {
 }
 
 type diskPackEntry struct {
-	Fingerprint string          `json:"fingerprint"`
-	Files       []packFileStamp `json:"files"`
-	SkipImages  bool            `json:"skipImages,omitempty"`
+	Fingerprint string      `json:"fingerprint"`
+	Files       []FileStamp `json:"files"`
+	SkipImages  bool        `json:"skipImages,omitempty"`
 	// Pack is the pack's diskCachedPack, encoded when the pack is parsed, so a save after one pack changed encodes
 	// only that pack, and the packs not read yet stay compact in memory.
 	Pack []byte `json:"pack"`
@@ -336,159 +335,159 @@ func packKeyRoot(base, key string) string {
 	return filepath.Join(base, filepath.FromSlash(key))
 }
 
-type cpTokenDefinition struct {
-	name  string
-	value string
-	when  map[string]json.RawMessage
+type TokenDefinition struct {
+	Name  string
+	Value string
+	When  map[string]json.RawMessage
 }
 
-func diskPackOf(pack cachedPack) diskCachedPack {
+func diskPackOf(pack Pack) diskCachedPack {
 	out := diskCachedPack{
-		Mentions: pack.mentions,
-		Skips:    pack.skips,
-		Farms:    pack.farms,
+		Mentions: pack.Mentions,
+		Skips:    pack.Skips,
+		Farms:    pack.Farms,
 	}
-	if pack.patches != nil {
-		out.Patches = make([]diskPatch, len(pack.patches))
-		for i, patch := range pack.patches {
+	if pack.Patches != nil {
+		out.Patches = make([]diskPatch, len(pack.Patches))
+		for i, patch := range pack.Patches {
 			out.Patches[i] = diskPatchOf(patch)
 		}
 	}
-	if pack.tokens != nil {
-		out.Tokens = make([]diskTokenDefinition, len(pack.tokens))
-		for i, token := range pack.tokens {
-			out.Tokens[i] = diskTokenDefinition{Name: token.name, Value: token.value, When: token.when}
+	if pack.Tokens != nil {
+		out.Tokens = make([]diskTokenDefinition, len(pack.Tokens))
+		for i, token := range pack.Tokens {
+			out.Tokens[i] = diskTokenDefinition{Name: token.Name, Value: token.Value, When: token.When}
 		}
 	}
-	if pack.schema != nil {
-		out.Schema = make(map[string]diskSchema, len(pack.schema))
-		for key, schema := range pack.schema {
+	if pack.Schema != nil {
+		out.Schema = make(map[string]diskSchema, len(pack.Schema))
+		for key, schema := range pack.Schema {
 			out.Schema[key] = diskSchema{
-				Key:           schema.key,
-				DefaultValue:  schema.defaultValue,
-				AllowMultiple: schema.allowMultiple,
-				AllowValues:   schema.allowValues,
-				AllowBlank:    schema.allowBlank,
-				Description:   schema.description,
+				Key:           schema.Key,
+				DefaultValue:  schema.DefaultValue,
+				AllowMultiple: schema.AllowMultiple,
+				AllowValues:   schema.AllowValues,
+				AllowBlank:    schema.AllowBlank,
+				Description:   schema.Description,
 			}
 		}
 	}
 	return out
 }
 
-func cachedPackOfDisk(root string, disk diskCachedPack, entry diskPackEntry) cachedPack {
-	out := cachedPack{
-		fingerprint: entry.Fingerprint,
-		files:       entry.Files,
-		mentions:    disk.Mentions,
-		schema:      make(map[string]cpSchema, len(disk.Schema)),
-		skips:       disk.Skips,
-		skipImages:  entry.SkipImages,
-		farms:       disk.Farms,
+func cachedPackOfDisk(root string, disk diskCachedPack, entry diskPackEntry) Pack {
+	out := Pack{
+		Fingerprint: entry.Fingerprint,
+		Files:       entry.Files,
+		Mentions:    disk.Mentions,
+		Schema:      make(map[string]Schema, len(disk.Schema)),
+		Skips:       disk.Skips,
+		SkipImages:  entry.SkipImages,
+		Farms:       disk.Farms,
 	}
 	if disk.Patches != nil {
-		out.patches = make([]cpPatch, len(disk.Patches))
+		out.Patches = make([]Patch, len(disk.Patches))
 		for i, patch := range disk.Patches {
-			out.patches[i] = cpPatchOfDisk(root, patch)
+			out.Patches[i] = cpPatchOfDisk(root, patch)
 		}
 	}
 	if disk.Tokens != nil {
-		out.tokens = make([]cpTokenDefinition, len(disk.Tokens))
+		out.Tokens = make([]TokenDefinition, len(disk.Tokens))
 		for i, token := range disk.Tokens {
-			out.tokens[i] = cpTokenDefinition{name: token.Name, value: token.Value, when: token.When}
+			out.Tokens[i] = TokenDefinition{Name: token.Name, Value: token.Value, When: token.When}
 		}
 	}
 	for key, schema := range disk.Schema {
-		out.schema[key] = cpSchema{
-			key:           schema.Key,
-			defaultValue:  schema.DefaultValue,
-			allowMultiple: schema.AllowMultiple,
-			allowValues:   schema.AllowValues,
-			allowBlank:    schema.AllowBlank,
-			description:   schema.Description,
+		out.Schema[key] = Schema{
+			Key:           schema.Key,
+			DefaultValue:  schema.DefaultValue,
+			AllowMultiple: schema.AllowMultiple,
+			AllowValues:   schema.AllowValues,
+			AllowBlank:    schema.AllowBlank,
+			Description:   schema.Description,
 		}
 	}
 	if disk.Schema == nil {
-		out.schema = nil
+		out.Schema = nil
 	}
 	return out
 }
 
-func diskPatchOf(patch cpPatch) diskPatch {
+func diskPatchOf(patch Patch) diskPatch {
 	out := diskPatch{
-		Kind:          patch.kind,
-		Target:        patch.target,
-		FromFile:      patch.fromFile,
-		Priority:      patch.priority,
-		PatchMode:     patch.patchMode,
-		When:          diskWhenOf(patch.when),
-		Image:         patch.image,
-		ImageDigest:   patch.imageDigest,
-		ImageFromArea: patch.imageFromArea,
-		Source:        patch.source,
-		Index:         patch.index,
-		Action:        patch.action,
-		ToArea:        patch.toArea,
-		TokenName:     patch.tokenName,
-		TokenValue:    patch.tokenValue,
-		Extra:         patch.extra,
+		Kind:          patch.Kind,
+		Target:        patch.Target,
+		FromFile:      patch.FromFile,
+		Priority:      patch.Priority,
+		PatchMode:     patch.PatchMode,
+		When:          diskWhenOf(patch.When),
+		Image:         patch.Image,
+		ImageDigest:   patch.ImageDigest,
+		ImageFromArea: patch.ImageFromArea,
+		Source:        patch.Source,
+		Index:         patch.Index,
+		Action:        patch.Action,
+		ToArea:        patch.ToArea,
+		TokenName:     patch.TokenName,
+		TokenValue:    patch.TokenValue,
+		Extra:         patch.Extra,
 	}
-	if patch.shapes != nil {
-		out.Shapes = make([]diskShape, len(patch.shapes))
-		for i, shape := range patch.shapes {
+	if patch.Shapes != nil {
+		out.Shapes = make([]diskShape, len(patch.Shapes))
+		for i, shape := range patch.Shapes {
 			out.Shapes[i] = diskShape{
-				Kind:  shape.kind,
-				X:     shape.x,
-				Y:     shape.y,
-				W:     shape.w,
-				H:     shape.h,
-				Cells: encodeCellSet(shape.cells),
-				Layer: shape.layer,
-				Key:   shape.key,
-				Value: shape.value,
-				Tiny:  shape.tiny,
+				Kind:  shape.Kind,
+				X:     shape.X,
+				Y:     shape.Y,
+				W:     shape.W,
+				H:     shape.H,
+				Cells: encodeCellSet(shape.Cells),
+				Layer: shape.Layer,
+				Key:   shape.Key,
+				Value: shape.Value,
+				Tiny:  shape.Tiny,
 			}
 		}
 	}
 	return out
 }
 
-func cpPatchOfDisk(_ string, patch diskPatch) cpPatch {
+func cpPatchOfDisk(_ string, patch diskPatch) Patch {
 	when := cpWhenOfDisk(patch.When)
-	out := cpPatch{
-		kind:          patch.Kind,
-		target:        intern(patch.Target),
-		fromFile:      intern(patch.FromFile),
-		priority:      intern(patch.Priority),
-		patchMode:     intern(patch.PatchMode),
-		when:          when,
-		spouse:        when.spouse,
-		places:        when.places,
-		image:         patch.Image,
-		imageDigest:   patch.ImageDigest,
-		imageFromArea: patch.ImageFromArea,
-		source:        intern(patch.Source),
-		index:         patch.Index,
-		action:        intern(patch.Action),
-		toArea:        patch.ToArea,
-		tokenName:     patch.TokenName,
-		tokenValue:    patch.TokenValue,
-		extra:         patch.Extra,
+	out := Patch{
+		Kind:          patch.Kind,
+		Target:        intern(patch.Target),
+		FromFile:      intern(patch.FromFile),
+		Priority:      intern(patch.Priority),
+		PatchMode:     intern(patch.PatchMode),
+		When:          when,
+		Spouse:        when.Spouse,
+		Places:        when.Places,
+		Image:         patch.Image,
+		ImageDigest:   patch.ImageDigest,
+		ImageFromArea: patch.ImageFromArea,
+		Source:        intern(patch.Source),
+		Index:         patch.Index,
+		Action:        intern(patch.Action),
+		ToArea:        patch.ToArea,
+		TokenName:     patch.TokenName,
+		TokenValue:    patch.TokenValue,
+		Extra:         patch.Extra,
 	}
 	if patch.Shapes != nil {
-		out.shapes = make([]cpShape, len(patch.Shapes))
+		out.Shapes = make([]Shape, len(patch.Shapes))
 		for i, shape := range patch.Shapes {
-			out.shapes[i] = cpShape{
-				kind:  shape.Kind,
-				x:     shape.X,
-				y:     shape.Y,
-				w:     shape.W,
-				h:     shape.H,
-				cells: decodeCellSet(shape.Cells),
-				layer: intern(shape.Layer),
-				key:   intern(shape.Key),
-				value: intern(shape.Value),
-				tiny:  shape.Tiny,
+			out.Shapes[i] = Shape{
+				Kind:  shape.Kind,
+				X:     shape.X,
+				Y:     shape.Y,
+				W:     shape.W,
+				H:     shape.H,
+				Cells: decodeCellSet(shape.Cells),
+				Layer: intern(shape.Layer),
+				Key:   intern(shape.Key),
+				Value: intern(shape.Value),
+				Tiny:  shape.Tiny,
 			}
 		}
 	}
@@ -651,108 +650,108 @@ func decodeCellSet(raw []byte) string {
 	return b.String()
 }
 
-func diskWhenOf(when cpWhen) diskWhen {
+func diskWhenOf(when When) diskWhen {
 	out := diskWhen{
-		AnyOf:   when.anyOf,
-		NoneOf:  when.noneOf,
-		Spouse:  when.spouse,
-		Places:  when.places,
-		Assumed: when.assumed,
-		Cond:    when.conditional,
-	}
-	if when.config != nil {
-		out.Config = make([]diskConfig, len(when.config))
-		for i, config := range when.config {
-			out.Config[i] = diskConfig{Field: config.field, Values: config.values, AllowMultiple: config.allowMultiple}
-		}
-	}
-	if when.dynamic != nil {
-		out.Dynamic = make([]diskDynamicCondition, len(when.dynamic))
-		for i, condition := range when.dynamic {
-			out.Dynamic[i] = diskDynamicCondition{
-				Name:     condition.name,
-				Values:   condition.values,
-				Contains: condition.contains,
-				Expected: condition.expected,
-			}
-		}
-	}
-	if when.flags != nil {
-		out.Flags = make([]diskFlagCondition, len(when.flags))
-		for i, flag := range when.flags {
-			out.Flags[i] = diskFlagCondition{Name: flag.name, Present: flag.present}
-		}
-	}
-	return out
-}
-
-func cpWhenOfDisk(when diskWhen) cpWhen {
-	out := cpWhen{
-		anyOf:       when.AnyOf,
-		noneOf:      when.NoneOf,
-		spouse:      when.Spouse,
-		places:      when.Places,
-		assumed:     when.Assumed,
-		conditional: when.Cond,
+		AnyOf:   when.AnyOf,
+		NoneOf:  when.NoneOf,
+		Spouse:  when.Spouse,
+		Places:  when.Places,
+		Assumed: when.Assumed,
+		Cond:    when.Conditional,
 	}
 	if when.Config != nil {
-		out.config = make([]cpConfig, len(when.Config))
+		out.Config = make([]diskConfig, len(when.Config))
 		for i, config := range when.Config {
-			out.config[i] = cpConfig{field: config.Field, values: config.Values, allowMultiple: config.AllowMultiple}
+			out.Config[i] = diskConfig{Field: config.Field, Values: config.Values, AllowMultiple: config.AllowMultiple}
 		}
 	}
 	if when.Dynamic != nil {
-		out.dynamic = make([]cpDynamicCondition, len(when.Dynamic))
+		out.Dynamic = make([]diskDynamicCondition, len(when.Dynamic))
 		for i, condition := range when.Dynamic {
-			out.dynamic[i] = cpDynamicCondition{
-				name:     condition.Name,
-				values:   condition.Values,
-				contains: condition.Contains,
-				expected: condition.Expected,
+			out.Dynamic[i] = diskDynamicCondition{
+				Name:     condition.Name,
+				Values:   condition.Values,
+				Contains: condition.Contains,
+				Expected: condition.Expected,
 			}
 		}
 	}
 	if when.Flags != nil {
-		out.flags = make([]cpFlagCondition, len(when.Flags))
+		out.Flags = make([]diskFlagCondition, len(when.Flags))
 		for i, flag := range when.Flags {
-			out.flags[i] = cpFlagCondition{name: flag.Name, present: flag.Present}
+			out.Flags[i] = diskFlagCondition{Name: flag.Name, Present: flag.Present}
 		}
 	}
 	return out
 }
 
-var packCache sync.Map // folder path -> cachedPack
+func cpWhenOfDisk(when diskWhen) When {
+	out := When{
+		AnyOf:       when.AnyOf,
+		NoneOf:      when.NoneOf,
+		Spouse:      when.Spouse,
+		Places:      when.Places,
+		Assumed:     when.Assumed,
+		Conditional: when.Cond,
+	}
+	if when.Config != nil {
+		out.Config = make([]Config, len(when.Config))
+		for i, config := range when.Config {
+			out.Config[i] = Config{Field: config.Field, Values: config.Values, AllowMultiple: config.AllowMultiple}
+		}
+	}
+	if when.Dynamic != nil {
+		out.Dynamic = make([]DynamicCondition, len(when.Dynamic))
+		for i, condition := range when.Dynamic {
+			out.Dynamic[i] = DynamicCondition{
+				Name:     condition.Name,
+				Values:   condition.Values,
+				Contains: condition.Contains,
+				Expected: condition.Expected,
+			}
+		}
+	}
+	if when.Flags != nil {
+		out.Flags = make([]FlagCondition, len(when.Flags))
+		for i, flag := range when.Flags {
+			out.Flags[i] = FlagCondition{Name: flag.Name, Present: flag.Present}
+		}
+	}
+	return out
+}
+
+var packCache sync.Map // folder path -> Pack
 
 // packValidated holds the folders whose cached pack was checked against its files during the running Check, so a
 // pack read many times in one Check is stat'ed once. Check clears it at both ends, never mid-check.
 var packValidated sync.Map
 
-func readContentPack(im framework.Mod, skip bool) cachedPack {
+func ReadPack(im Mod, skip bool) Pack {
 	return readContentPackWithEnabled(im, true, skip)
 }
 
-func readContentPackForCleanup(im framework.Mod, skip bool) cachedPack {
+func ReadPackForCleanup(im Mod, skip bool) Pack {
 	return readContentPackWithEnabled(im, false, skip)
 }
 
-func readContentPackWithEnabled(im framework.Mod, requireEnabled, skip bool) cachedPack {
-	if (requireEnabled && !im.Enabled) || im.Folder == "" || !isContentPatcherPack(im) {
-		return cachedPack{}
+func readContentPackWithEnabled(im Mod, requireEnabled, skip bool) Pack {
+	if (requireEnabled && !im.Enabled) || im.Folder == "" || !IsContentPatcherPack(im) {
+		return Pack{}
 	}
 	root := filepath.Clean(im.Folder)
 	if c, ok := packCache.Load(root); ok {
 		if _, fresh := packValidated.Load(root); fresh {
-			if got, ok := c.(cachedPack); ok && got.skipImages == skip {
+			if got, ok := c.(Pack); ok && got.SkipImages == skip {
 				return got
 			}
 		}
 	}
 	if _, err := os.Stat(filepath.Join(root, "content.json")); err != nil {
-		return cachedPack{}
+		return Pack{}
 	}
 	if c, ok := packCache.Load(root); ok {
-		got, ok := c.(cachedPack)
-		if ok && got.skipImages == skip && packFingerprintValid(root, got.files, got.fingerprint) {
+		got, ok := c.(Pack)
+		if ok && got.SkipImages == skip && packFingerprintValid(root, got.Files, got.Fingerprint) {
 			packValidated.Store(root, true)
 			return got
 		}
@@ -770,19 +769,19 @@ func readContentPackWithEnabled(im framework.Mod, requireEnabled, skip bool) cac
 	}
 	// Every file is stamped before it is read, and a file changed since its stamp leaves the pack uncached, so a cache
 	// entry never pairs a fresh stamp with what was read before the change.
-	pack := cachedPack{mentions: map[string]bool{}, skipImages: skip}
+	pack := Pack{Mentions: map[string]bool{}, SkipImages: skip}
 	pack.recordPackFile(root, filepath.Join(root, "content.json"))
 	pack.recordPackFile(root, filepath.Join(root, "config.json"))
-	pack.schema = readConfigSchema(root)
-	pack.values = packConfigValues(pack.schema, root)
-	scanContentFile(root, "content.json", map[string]bool{}, cpWhen{}, &pack)
-	slices.SortFunc(pack.files, func(a, b packFileStamp) int {
+	pack.Schema = readConfigSchema(root)
+	pack.Values = packConfigValues(pack.Schema, root)
+	scanContentFile(root, "content.json", map[string]bool{}, When{}, &pack)
+	slices.SortFunc(pack.Files, func(a, b FileStamp) int {
 		return strings.Compare(a.Path, b.Path)
 	})
 	// Appending left spare capacity, up to the slice's own size again.
-	pack.patches = slices.Clip(pack.patches)
-	pack.fingerprint = packFilesFingerprint(pack.files)
-	if !packFingerprintValid(root, pack.files, pack.fingerprint) {
+	pack.Patches = slices.Clip(pack.Patches)
+	pack.Fingerprint = packFilesFingerprint(pack.Files)
+	if !packFingerprintValid(root, pack.Files, pack.Fingerprint) {
 		noteUnstampable()
 		dropPNGAlphaUnder(root)
 		return pack
@@ -791,14 +790,14 @@ func readContentPackWithEnabled(im framework.Mod, requireEnabled, skip bool) cac
 	packValidated.Store(root, true)
 	if cachePath != "" {
 		if disk, err := encodeDiskPack(diskPackOf(pack)); err == nil {
-			storeDiskPackEntry(root, diskPackEntry{Fingerprint: pack.fingerprint, Files: slices.Clone(pack.files), SkipImages: skip, Pack: disk})
+			storeDiskPackEntry(root, diskPackEntry{Fingerprint: pack.Fingerprint, Files: slices.Clone(pack.Files), SkipImages: skip, Pack: disk})
 		}
 	}
 	dropPNGAlphaUnder(root)
 	return pack
 }
 
-func (p *cachedPack) recordPackFile(root, abs string) {
+func (p *Pack) recordPackFile(root, abs string) {
 	if !safefs.UnderRoot(root, abs) {
 		return
 	}
@@ -806,7 +805,7 @@ func (p *cachedPack) recordPackFile(root, abs string) {
 	if err != nil {
 		return
 	}
-	stamp := packFileStamp{Path: filepath.ToSlash(relative), Size: absentSize}
+	stamp := FileStamp{Path: filepath.ToSlash(relative), Size: absentSize}
 	info, err := os.Stat(abs)
 	switch {
 	case err == nil:
@@ -815,23 +814,23 @@ func (p *cachedPack) recordPackFile(root, abs string) {
 		return
 	}
 	// The first stamp is the one taken before the file was read.
-	if slices.ContainsFunc(p.files, func(f packFileStamp) bool { return f.Path == stamp.Path }) {
+	if slices.ContainsFunc(p.Files, func(f FileStamp) bool { return f.Path == stamp.Path }) {
 		return
 	}
-	p.files = append(p.files, stamp)
+	p.Files = append(p.Files, stamp)
 }
 
-func packFilesFingerprint(files []packFileStamp) string {
+func packFilesFingerprint(files []FileStamp) string {
 	raw, _ := json.Marshal(files)
 	sum := sha256.Sum256(raw)
 	return hex.EncodeToString(sum[:])
 }
 
-func packFingerprintValid(root string, files []packFileStamp, fingerprint string) bool {
+func packFingerprintValid(root string, files []FileStamp, fingerprint string) bool {
 	if len(files) == 0 || fingerprint == "" {
 		return false
 	}
-	current := make([]packFileStamp, len(files))
+	current := make([]FileStamp, len(files))
 	for i, expected := range files {
 		abs, ok := inside(root, expected.Path)
 		if !ok {
@@ -984,7 +983,7 @@ func storeDiskPackEntry(root string, entry diskPackEntry) {
 	packDiskState.dirty = true
 }
 
-func flushPackDiskCache(mods []framework.Mod) {
+func FlushPackDiskCache(mods []Mod) {
 	present := map[string]bool{}
 	for _, im := range mods {
 		if im.Folder != "" {
@@ -1040,13 +1039,13 @@ func prunePackCache(present map[string]bool) {
 	})
 }
 
-type cpSchema struct {
-	key           string
-	defaultValue  string
-	allowMultiple bool
-	allowValues   []string
-	allowBlank    bool
-	description   string
+type Schema struct {
+	Key           string
+	DefaultValue  string
+	AllowMultiple bool
+	AllowValues   []string
+	AllowBlank    bool
+	Description   string
 }
 
 type configSchemaEntry struct {
@@ -1075,7 +1074,7 @@ func configSchemaEntries(contentJSON []byte) (map[string]configSchemaEntry, erro
 	return out, nil
 }
 
-func readConfigSchema(root string) map[string]cpSchema {
+func readConfigSchema(root string) map[string]Schema {
 	raw, err := safefs.ReadFile(filepath.Join(root, "content.json"))
 	if err != nil {
 		return nil
@@ -1084,27 +1083,27 @@ func readConfigSchema(root string) map[string]cpSchema {
 	if err != nil {
 		return nil
 	}
-	out := make(map[string]cpSchema, len(entries))
+	out := make(map[string]Schema, len(entries))
 	for key, entry := range entries {
-		defaultValue, _ := scalarValue(entry.Default)
+		defaultValue, _ := ScalarValue(entry.Default)
 		key = strings.TrimSpace(key)
 		if key == "" || hasToken(key) {
 			continue
 		}
-		out[strings.ToLower(key)] = cpSchema{
-			key:           key,
-			defaultValue:  defaultValue,
-			allowMultiple: entry.AllowMultiple,
-			allowValues:   splitTargets(entry.AllowValues),
-			allowBlank:    entry.AllowBlank,
-			description:   entry.Description,
+		out[strings.ToLower(key)] = Schema{
+			Key:           key,
+			DefaultValue:  defaultValue,
+			AllowMultiple: entry.AllowMultiple,
+			AllowValues:   SplitTargets(entry.AllowValues),
+			AllowBlank:    entry.AllowBlank,
+			Description:   entry.Description,
 		}
 	}
 	return out
 }
 
-func isContentPatcherPack(im framework.Mod) bool {
-	return Equal(ModID(im.ContentPackForID()), contentPatcherID)
+func IsContentPatcherPack(im Mod) bool {
+	return Equal(ModID(im.ContentPackFor), contentPatcherID)
 }
 
 // intern shares one copy of a string a pack repeats on every change (its file names, targets and actions), so
@@ -1122,7 +1121,7 @@ type dynamicTokenDoc struct {
 	When  map[string]json.RawMessage `json:"When"`
 }
 
-func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack *cachedPack) {
+func scanContentFile(root, rel string, seen map[string]bool, outer When, pack *Pack) {
 	rel = filepath.ToSlash(rel)
 	key := strings.ToLower(rel)
 	if rel == "" || seen[key] {
@@ -1147,60 +1146,60 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 	if key == "content.json" {
 		scanDynamicTokens(doc.DynamicTokens, outer, pack)
 	}
-	warmOverlayImages(root, rel, doc.Changes, pack.skipImages)
+	warmOverlayImages(root, rel, doc.Changes, pack.SkipImages)
 	var dynamicValues map[string]string
 	for i, rawChange := range doc.Changes {
-		var ch cpChange
+		var ch contentChange
 		if json.Unmarshal(rawChange, &ch) != nil {
 			continue
 		}
 		action := strings.TrimSpace(ch.Action)
-		withConfigValues(ch.When, pack.values)
-		when := outer.with(parseWhenWithTokens(ch.When, pack.mentions, pack.schema, pack.tokens))
-		when.conditional = when.conditional || len(ch.When) > 0
-		noteAssetOwners(ch.Target, pack.mentions)
+		withConfigValues(ch.When, pack.Values)
+		when := outer.with(parseWhenWithTokens(ch.When, pack.Mentions, pack.Schema, pack.Tokens))
+		when.Conditional = when.Conditional || len(ch.When) > 0
+		noteAssetOwners(ch.Target, pack.Mentions)
 		kind, action, shapes, included := classifyChange(root, rel, &ch, action, when, seen, pack)
 		if included {
 			continue
 		}
 		// Changes that cannot conflict still count for compatibility settings, whatever their target.
 		if kind == "other" {
-			pack.patches = append(pack.patches, cpPatch{kind: kind, when: when, source: intern(rel), index: i, action: intern(action)})
+			pack.Patches = append(pack.Patches, Patch{Kind: kind, When: when, Source: intern(rel), Index: i, Action: intern(action)})
 			continue
 		}
 		appendChangePatches(root, rel, i, rawChange, &ch, kind, action, shapes, when, &dynamicValues, pack)
 	}
 }
 
-func scanDynamicTokens(tokens []dynamicTokenDoc, outer cpWhen, pack *cachedPack) {
+func scanDynamicTokens(tokens []dynamicTokenDoc, outer When, pack *Pack) {
 	for _, tok := range tokens {
-		withConfigValues(tok.When, pack.values)
+		withConfigValues(tok.When, pack.Values)
 	}
 	for _, tok := range tokens {
-		value, ok := scalarValue(tok.Value)
+		value, ok := ScalarValue(tok.Value)
 		if !ok {
 			continue
 		}
-		pack.tokens = append(pack.tokens, cpTokenDefinition{name: tokenName(tok.Name), value: value, when: tok.When})
+		pack.Tokens = append(pack.Tokens, TokenDefinition{Name: tokenName(tok.Name), Value: value, When: tok.When})
 	}
 	for _, tok := range tokens {
-		value, ok := scalarValue(tok.Value)
+		value, ok := ScalarValue(tok.Value)
 		if !ok {
 			continue
 		}
-		pack.patches = append(pack.patches, cpPatch{kind: "other", when: outer.with(parseWhen(tok.When, pack.mentions, pack.schema)), tokenName: strings.ToLower(strings.TrimSpace(tok.Name)), tokenValue: value})
+		pack.Patches = append(pack.Patches, Patch{Kind: "other", When: outer.with(parseWhen(tok.When, pack.Mentions, pack.Schema)), TokenName: strings.ToLower(strings.TrimSpace(tok.Name)), TokenValue: value})
 	}
 }
 
 // classifyChange sorts one change into a patch kind and canonical action. An Include is followed
 // recursively and reported as included, so the caller records nothing for it.
-func classifyChange(root, rel string, ch *cpChange, action string, when cpWhen, seen map[string]bool, pack *cachedPack) (kind, canonAction string, shapes []cpShape, included bool) {
+func classifyChange(root, rel string, ch *contentChange, action string, when When, seen map[string]bool, pack *Pack) (kind, canonAction string, shapes []Shape, included bool) {
 	switch {
 	case strings.EqualFold(action, "Include"):
-		for _, from := range splitTargets(ch.FromFile) {
+		for _, from := range SplitTargets(ch.FromFile) {
 			from = contentSourceReference(root, rel, from)
 			if hasToken(from) {
-				pack.skips++
+				pack.Skips++
 				continue
 			}
 			scanContentFile(root, from, seen, when, pack)
@@ -1216,59 +1215,59 @@ func classifyChange(root, rel string, ch *cpChange, action string, when cpWhen, 
 		}
 		ch.FromFile = contentSourceReference(root, rel, ch.FromFile)
 		recordReferencedPackFiles(root, ch.FromFile, canonAction == kindEditImage, pack)
-		shapes = editShapes(root, *ch, canonAction == kindEditImage, pack.skipImages)
+		shapes = editShapes(root, *ch, canonAction == kindEditImage, pack.SkipImages)
 		return editOrOther(shapes), canonAction, shapes, false
 	case strings.EqualFold(action, kindEditData):
-		if normalizeTarget(ch.Target) == "data/additionalfarms" {
+		if NormalizeTarget(ch.Target) == "data/additionalfarms" {
 			pack.recordFarms(ch.Entries)
 		}
-		shapes = dataShapes(root, *ch, pack.values)
+		shapes = dataShapes(root, *ch, pack.Values)
 		return editOrOther(shapes), kindEditData, shapes, false
 	}
 	return "other", action, nil, false
 }
 
-func editOrOther(shapes []cpShape) string {
+func editOrOther(shapes []Shape) string {
 	if len(shapes) == 0 {
 		return "other"
 	}
 	return "edit"
 }
 
-func appendChangePatches(root, rel string, i int, rawChange json.RawMessage, ch *cpChange, kind, action string, shapes []cpShape, when cpWhen, dynamicValues *map[string]string, pack *cachedPack) {
+func appendChangePatches(root, rel string, i int, rawChange json.RawMessage, ch *contentChange, kind, action string, shapes []Shape, when When, dynamicValues *map[string]string, pack *Pack) {
 	fromArea := string(lenientjson.Clean(ch.FromArea))
 	toArea := string(lenientjson.Clean(ch.ToArea))
-	priority, _ := scalarValue(ch.Priority)
+	priority, _ := ScalarValue(ch.Priority)
 	extra := changeDoesMore(rawChange, *ch)
-	for _, t := range splitTargets(ch.Target) {
-		targets := []tokenTarget{{target: t, fromFile: ch.FromFile, when: when}}
+	for _, t := range SplitTargets(ch.Target) {
+		targets := []tokenTarget{{Target: t, FromFile: ch.FromFile, When: when}}
 		if hasToken(t) {
 			if *dynamicValues == nil {
 				*dynamicValues = singleDynamicValues(pack)
 			}
-			if targets = expandTargetTokens(t, ch.FromFile, when, pack.values, *dynamicValues); targets == nil {
-				pack.skips++
+			if targets = expandTargetTokens(t, ch.FromFile, when, pack.Values, *dynamicValues); targets == nil {
+				pack.Skips++
 				continue
 			}
 		}
 		for _, tt := range targets {
-			pack.patches = append(pack.patches, cpPatch{
-				kind: kind, target: intern(normalizeTarget(tt.target)), fromFile: intern(tt.fromFile), priority: intern(strings.TrimSpace(priority)),
-				patchMode: intern(strings.TrimSpace(ch.PatchMode)), when: tt.when,
-				shapes: shapes, spouse: tt.when.spouse, places: tt.when.places, image: action == kindEditImage,
-				imageDigest:   imageFileDigest(root, tt.fromFile, action == kindEditImage),
-				imageFromArea: intern(fromArea),
-				source:        intern(rel), index: i, action: intern(action), toArea: intern(toArea),
-				extra: extra,
+			pack.Patches = append(pack.Patches, Patch{
+				Kind: kind, Target: intern(NormalizeTarget(tt.Target)), FromFile: intern(tt.FromFile), Priority: intern(strings.TrimSpace(priority)),
+				PatchMode: intern(strings.TrimSpace(ch.PatchMode)), When: tt.When,
+				Shapes: shapes, Spouse: tt.When.Spouse, Places: tt.When.Places, Image: action == kindEditImage,
+				ImageDigest:   imageFileDigest(root, tt.FromFile, action == kindEditImage),
+				ImageFromArea: intern(fromArea),
+				Source:        intern(rel), Index: i, Action: intern(action), ToArea: intern(toArea),
+				Extra: extra,
 			})
 		}
 	}
 }
 
 type tokenTarget struct {
-	target   string
-	fromFile string
-	when     cpWhen
+	Target   string
+	FromFile string
+	When     When
 }
 
 var (
@@ -1280,7 +1279,7 @@ var (
 // expandTargetTokens resolves a tokenized target with the pack's config values and its dynamic tokens that
 // have one value under that config. {{Season}} becomes one target per season, each gated on that season.
 // It returns nil when a token stays unknown.
-func expandTargetTokens(target, fromFile string, when cpWhen, config, dynamic map[string]string) []tokenTarget {
+func expandTargetTokens(target, fromFile string, when When, config, dynamic map[string]string) []tokenTarget {
 	resolve := func(s, season string) (string, bool) {
 		ok := true
 		out := plainToken.ReplaceAllStringFunc(s, func(m string) string {
@@ -1302,7 +1301,7 @@ func expandTargetTokens(target, fromFile string, when cpWhen, config, dynamic ma
 	cycle := []string{""}
 	if seasonToken.MatchString(target) {
 		cycle = seasons
-		if limited := when.places["season"]; len(limited) > 0 {
+		if limited := when.Places["season"]; len(limited) > 0 {
 			cycle = limited
 		}
 	}
@@ -1318,33 +1317,33 @@ func expandTargetTokens(target, fromFile string, when cpWhen, config, dynamic ma
 		}
 		w := when
 		if season != "" {
-			w = when.with(cpWhen{})
-			if w.places == nil {
-				w.places = map[string][]string{}
+			w = when.with(When{})
+			if w.Places == nil {
+				w.Places = map[string][]string{}
 			}
-			w.places["season"] = []string{season}
+			w.Places["season"] = []string{season}
 		}
-		out = append(out, tokenTarget{target: t, fromFile: from, when: w})
+		out = append(out, tokenTarget{Target: t, FromFile: from, When: w})
 	}
 	return out
 }
 
 // singleDynamicValues are the pack's dynamic tokens that hold exactly one value under its config. A
 // definition whose When needs more than config fields may or may not apply, so its value stays possible.
-func singleDynamicValues(pack *cachedPack) map[string]string {
+func singleDynamicValues(pack *Pack) map[string]string {
 	possible := map[string][]string{}
 	unknown := map[string]bool{}
-	for _, definition := range pack.tokens {
-		if hasToken(definition.value) {
-			unknown[definition.name] = true
+	for _, definition := range pack.Tokens {
+		if hasToken(definition.Value) {
+			unknown[definition.Name] = true
 			continue
 		}
-		switch configOnlyState(definition.when, pack) {
+		switch configOnlyState(definition.When, pack) {
 		case cpConditionTrue:
-			possible[definition.name] = []string{definition.value}
+			possible[definition.Name] = []string{definition.Value}
 		case cpConditionUnknown:
-			if !slices.Contains(possible[definition.name], definition.value) {
-				possible[definition.name] = append(possible[definition.name], definition.value)
+			if !slices.Contains(possible[definition.Name], definition.Value) {
+				possible[definition.Name] = append(possible[definition.Name], definition.Value)
 			}
 		case cpConditionFalse:
 		}
@@ -1358,21 +1357,21 @@ func singleDynamicValues(pack *cachedPack) map[string]string {
 	return out
 }
 
-func configOnlyState(raw map[string]json.RawMessage, pack *cachedPack) cpConditionState {
+func configOnlyState(raw map[string]json.RawMessage, pack *Pack) cpConditionState {
 	if len(raw) == 0 {
 		return cpConditionTrue
 	}
-	w := parseWhen(raw, map[string]bool{}, pack.schema)
-	if len(w.config) != len(raw) || len(w.anyOf) > 0 || len(w.noneOf) > 0 || len(w.dynamic) > 0 || len(w.flags) > 0 {
+	w := parseWhen(raw, map[string]bool{}, pack.Schema)
+	if len(w.Config) != len(raw) || len(w.AnyOf) > 0 || len(w.NoneOf) > 0 || len(w.Dynamic) > 0 || len(w.Flags) > 0 {
 		return cpConditionUnknown
 	}
-	if configHolds(w.config, pack.schema, pack.values) {
+	if ConfigHolds(w.Config, pack.Schema, pack.Values) {
 		return cpConditionTrue
 	}
 	return cpConditionFalse
 }
 
-func recordReferencedPackFiles(root, rel string, image bool, pack *cachedPack) {
+func recordReferencedPackFiles(root, rel string, image bool, pack *Pack) {
 	rel = strings.TrimSpace(rel)
 	if rel == "" {
 		return
@@ -1413,29 +1412,29 @@ func withConfigValues(when map[string]json.RawMessage, values map[string]string)
 	}
 }
 
-func parseWhen(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]cpSchema) cpWhen {
+func parseWhen(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]Schema) When {
 	return parseWhenWithTokens(raw, mentions, schema, nil)
 }
 
-func parseWhenWithTokens(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]cpSchema, tokens []cpTokenDefinition) cpWhen {
+func parseWhenWithTokens(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]Schema, tokens []TokenDefinition) When {
 	return parseWhenDepth(raw, mentions, schema, tokens, 0)
 }
 
-func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]cpSchema, tokens []cpTokenDefinition, depth int) cpWhen {
-	var w cpWhen
+func parseWhenDepth(raw map[string]json.RawMessage, mentions map[string]bool, schema map[string]Schema, tokens []TokenDefinition, depth int) When {
+	var w When
 	for k, v := range raw {
 		addWhenCondition(&w, k, v, mentions, schema, tokens, depth)
 	}
-	return w.with(cpWhen{spouse: spouseOf(raw, tokens), places: placesOf(raw)})
+	return w.with(When{Spouse: spouseOf(raw, tokens), Places: placesOf(raw)})
 }
 
 // addWhenCondition folds one When entry into w; entries the scan cannot read are skipped or assumed met.
-func addWhenCondition(w *cpWhen, k string, v json.RawMessage, mentions map[string]bool, schema map[string]cpSchema, tokens []cpTokenDefinition, depth int) {
+func addWhenCondition(w *When, k string, v json.RawMessage, mentions map[string]bool, schema map[string]Schema, tokens []TokenDefinition, depth int) {
 	if hasToken(k) {
 		if merged, ok := dynamicTokenWhen(k, v, tokens, mentions, schema, depth); ok {
 			*w = w.withDefinition(merged)
 		} else {
-			w.assumed = appendAssumed(w.assumed, k, v, tokens)
+			w.Assumed = appendAssumed(w.Assumed, k, v, tokens)
 		}
 		return
 	}
@@ -1451,14 +1450,14 @@ func addWhenCondition(w *cpWhen, k string, v json.RawMessage, mentions map[strin
 	}
 	if flags, ok := flagConditions(k, v); ok {
 		if len(flags) == 0 {
-			w.assumed = appendAssumed(w.assumed, k, v, tokens)
+			w.Assumed = appendAssumed(w.Assumed, k, v, tokens)
 		}
-		w.flags = append(w.flags, flags...)
+		w.Flags = append(w.Flags, flags...)
 		return
 	}
 	field, ok := schema[strings.ToLower(name)]
 	if !ok {
-		w.assumed = appendAssumed(w.assumed, k, v, tokens)
+		w.Assumed = appendAssumed(w.Assumed, k, v, tokens)
 		return
 	}
 	var values []string
@@ -1471,17 +1470,17 @@ func addWhenCondition(w *cpWhen, k string, v json.RawMessage, mentions map[strin
 			return
 		}
 	}
-	w.config = append(w.config, cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple})
+	w.Config = append(w.Config, Config{Field: field.Key, Values: values, AllowMultiple: field.AllowMultiple})
 }
 
-func addHasMod(w *cpWhen, arg string, v json.RawMessage, mentions map[string]bool) {
+func addHasMod(w *When, arg string, v json.RawMessage, mentions map[string]bool) {
 	if arg == "" {
 		var list string
 		if json.Unmarshal(v, &list) != nil || hasToken(list) {
 			return
 		}
-		if ids := splitTargets(list); len(ids) > 0 {
-			w.anyOf = append(w.anyOf, note(ids, mentions))
+		if ids := SplitTargets(list); len(ids) > 0 {
+			w.AnyOf = append(w.AnyOf, note(ids, mentions))
 		}
 		return
 	}
@@ -1489,22 +1488,22 @@ func addHasMod(w *cpWhen, arg string, v json.RawMessage, mentions map[string]boo
 	if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) {
 		return
 	}
-	ids := note(splitTargets(list), mentions)
+	ids := note(SplitTargets(list), mentions)
 	var flags []string
 	if !condValues(v, &flags) || len(flags) != 1 {
 		return
 	}
 	switch strings.ToLower(flags[0]) {
 	case "true":
-		w.anyOf = append(w.anyOf, ids)
+		w.AnyOf = append(w.AnyOf, ids)
 	case "false":
-		w.noneOf = append(w.noneOf, ids...)
+		w.NoneOf = append(w.NoneOf, ids...)
 	}
 }
 
 // appendAssumed records a condition this scan treats as met, unless it is a spouse or place condition the
 // summary already names.
-func appendAssumed(assumed []string, key string, raw json.RawMessage, tokens []cpTokenDefinition) []string {
+func appendAssumed(assumed []string, key string, raw json.RawMessage, tokens []TokenDefinition) []string {
 	one := map[string]json.RawMessage{key: raw}
 	if spouseOf(one, tokens) != "" || placesOf(one) != nil {
 		return assumed
@@ -1532,20 +1531,20 @@ func dynamicTokenConditionParts(key string) (string, string, bool) {
 	return name, strings.TrimSpace(arg), name != ""
 }
 
-func dynamicTokenWhen(key string, raw json.RawMessage, tokens []cpTokenDefinition, mentions map[string]bool, schema map[string]cpSchema, depth int) (cpWhen, bool) {
+func dynamicTokenWhen(key string, raw json.RawMessage, tokens []TokenDefinition, mentions map[string]bool, schema map[string]Schema, depth int) (When, bool) {
 	condition, ok := dynamicTokenCondition(key, raw)
-	if !ok || !slices.ContainsFunc(tokens, func(definition cpTokenDefinition) bool {
-		return definition.name == condition.name
+	if !ok || !slices.ContainsFunc(tokens, func(definition TokenDefinition) bool {
+		return definition.Name == condition.Name
 	}) {
-		return cpWhen{}, false
+		return When{}, false
 	}
-	out := cpWhen{dynamic: []cpDynamicCondition{condition}}
-	if condition.contains != "" && !condition.expected {
+	out := When{Dynamic: []DynamicCondition{condition}}
+	if condition.Contains != "" && !condition.Expected {
 		return out, true
 	}
 	match := -1
 	for i, definition := range tokens {
-		if definition.name != condition.name || !dynamicConditionMatchesValue(condition, definition.value) {
+		if definition.Name != condition.Name || !dynamicConditionMatchesValue(condition, definition.Value) {
 			continue
 		}
 		if match >= 0 {
@@ -1555,43 +1554,43 @@ func dynamicTokenWhen(key string, raw json.RawMessage, tokens []cpTokenDefinitio
 		match = i
 	}
 	if match >= 0 && depth < 8 {
-		out = out.withDefinition(parseWhenDepth(tokens[match].when, mentions, schema, tokens, depth+1))
+		out = out.withDefinition(parseWhenDepth(tokens[match].When, mentions, schema, tokens, depth+1))
 	}
 	return out, true
 }
 
-func dynamicTokenCondition(key string, raw json.RawMessage) (cpDynamicCondition, bool) {
+func dynamicTokenCondition(key string, raw json.RawMessage) (DynamicCondition, bool) {
 	name, arg, ok := dynamicTokenConditionParts(key)
 	if !ok {
-		return cpDynamicCondition{}, false
+		return DynamicCondition{}, false
 	}
 	if arg == "" {
 		var values []string
 		if !condValues(raw, &values) {
-			return cpDynamicCondition{}, false
+			return DynamicCondition{}, false
 		}
-		return cpDynamicCondition{name: name, values: values, expected: true}, true
+		return DynamicCondition{Name: name, Values: values, Expected: true}, true
 	}
 	param, list, ok := strings.Cut(arg, "=")
 	if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) {
-		return cpDynamicCondition{}, false
+		return DynamicCondition{}, false
 	}
 	var flags []string
 	if !condValues(raw, &flags) || len(flags) != 1 {
-		return cpDynamicCondition{}, false
+		return DynamicCondition{}, false
 	}
 	expected, err := strconv.ParseBool(strings.TrimSpace(flags[0]))
 	if err != nil {
-		return cpDynamicCondition{}, false
+		return DynamicCondition{}, false
 	}
-	return cpDynamicCondition{name: name, contains: strings.TrimSpace(list), expected: expected}, true
+	return DynamicCondition{Name: name, Contains: strings.TrimSpace(list), Expected: expected}, true
 }
 
-func dynamicConditionMatchesValue(condition cpDynamicCondition, value string) bool {
-	if condition.contains != "" {
-		return condition.expected && strings.EqualFold(strings.TrimSpace(condition.contains), strings.TrimSpace(value))
+func dynamicConditionMatchesValue(condition DynamicCondition, value string) bool {
+	if condition.Contains != "" {
+		return condition.Expected && strings.EqualFold(strings.TrimSpace(condition.Contains), strings.TrimSpace(value))
 	}
-	return slices.ContainsFunc(condition.values, func(want string) bool {
+	return slices.ContainsFunc(condition.Values, func(want string) bool {
 		return strings.EqualFold(strings.TrimSpace(want), strings.TrimSpace(value))
 	})
 }
@@ -1605,43 +1604,43 @@ const (
 )
 
 type cpTokenReachability struct {
-	values map[string]bool
-	known  bool
+	Values map[string]bool
+	Known  bool
 }
 
-func reachableDynamicTokens(tokens []cpTokenDefinition, present map[string]bool, schema map[string]cpSchema, config map[string]string, flags []cpFlagCondition) map[string]cpTokenReachability {
+func reachableDynamicTokens(tokens []TokenDefinition, present map[string]bool, schema map[string]Schema, config map[string]string, flags []FlagCondition) map[string]cpTokenReachability {
 	reachable := map[string]cpTokenReachability{}
 	for _, definition := range tokens {
-		if definition.name == "" {
+		if definition.Name == "" {
 			continue
 		}
-		state := dynamicWhenState(definition.when, tokens, reachable, present, schema, config, flags)
-		current, exists := reachable[definition.name]
+		state := dynamicWhenState(definition.When, tokens, reachable, present, schema, config, flags)
+		current, exists := reachable[definition.Name]
 		if !exists {
-			current.known = true
-			current.values = map[string]bool{}
+			current.Known = true
+			current.Values = map[string]bool{}
 		}
 		switch state {
 		case cpConditionTrue:
-			current.values = map[string]bool{}
-			current.known = true
+			current.Values = map[string]bool{}
+			current.Known = true
 		case cpConditionUnknown:
 		case cpConditionFalse:
-			reachable[definition.name] = current
+			reachable[definition.Name] = current
 			continue
 		}
-		if hasToken(definition.value) {
-			current.known = false
-			reachable[definition.name] = current
+		if hasToken(definition.Value) {
+			current.Known = false
+			reachable[definition.Name] = current
 			continue
 		}
-		current.values[strings.ToLower(strings.TrimSpace(definition.value))] = true
-		reachable[definition.name] = current
+		current.Values[strings.ToLower(strings.TrimSpace(definition.Value))] = true
+		reachable[definition.Name] = current
 	}
 	return reachable
 }
 
-func dynamicWhenState(raw map[string]json.RawMessage, tokens []cpTokenDefinition, reachable map[string]cpTokenReachability, present map[string]bool, schema map[string]cpSchema, config map[string]string, flags []cpFlagCondition) cpConditionState {
+func dynamicWhenState(raw map[string]json.RawMessage, tokens []TokenDefinition, reachable map[string]cpTokenReachability, present map[string]bool, schema map[string]Schema, config map[string]string, flags []FlagCondition) cpConditionState {
 	state := cpConditionTrue
 	for key, value := range raw {
 		current := dynamicConditionState(key, value, tokens, reachable, present, schema, config, flags)
@@ -1655,15 +1654,15 @@ func dynamicWhenState(raw map[string]json.RawMessage, tokens []cpTokenDefinition
 	return state
 }
 
-func flagConditionState(flagValues, assumptions []cpFlagCondition) cpConditionState {
+func flagConditionState(flagValues, assumptions []FlagCondition) cpConditionState {
 	state := cpConditionTrue
 	for _, flag := range flagValues {
 		current := cpConditionUnknown
 		for _, assumption := range assumptions {
-			if assumption.name != flag.name {
+			if assumption.Name != flag.Name {
 				continue
 			}
-			if assumption.present != flag.present {
+			if assumption.Present != flag.Present {
 				return cpConditionFalse
 			}
 			current = cpConditionTrue
@@ -1675,7 +1674,7 @@ func flagConditionState(flagValues, assumptions []cpFlagCondition) cpConditionSt
 	return state
 }
 
-func dynamicConditionState(key string, raw json.RawMessage, tokens []cpTokenDefinition, reachable map[string]cpTokenReachability, present map[string]bool, schema map[string]cpSchema, config map[string]string, flags []cpFlagCondition) cpConditionState {
+func dynamicConditionState(key string, raw json.RawMessage, tokens []TokenDefinition, reachable map[string]cpTokenReachability, present map[string]bool, schema map[string]Schema, config map[string]string, flags []FlagCondition) cpConditionState {
 	name, arg, ok := dynamicTokenConditionParts(key)
 	if !ok {
 		return cpConditionUnknown
@@ -1691,7 +1690,7 @@ func dynamicConditionState(key string, raw json.RawMessage, tokens []cpTokenDefi
 	}
 	if tokenDefinitionExists(tokens, name) {
 		reachableToken, computed := reachable[name]
-		if !computed || !reachableToken.known {
+		if !computed || !reachableToken.Known {
 			return cpConditionUnknown
 		}
 		condition, valid := dynamicTokenCondition(key, raw)
@@ -1705,7 +1704,7 @@ func dynamicConditionState(key string, raw json.RawMessage, tokens []cpTokenDefi
 		if !valid {
 			return cpConditionUnknown
 		}
-		if configHolds([]cpConfig{condition}, schema, config) {
+		if ConfigHolds([]Config{condition}, schema, config) {
 			return cpConditionTrue
 		}
 		return cpConditionFalse
@@ -1713,42 +1712,42 @@ func dynamicConditionState(key string, raw json.RawMessage, tokens []cpTokenDefi
 	return cpConditionUnknown
 }
 
-func dynamicConditionStateForReachable(condition cpDynamicCondition, reachable cpTokenReachability) cpConditionState {
-	if !reachable.known {
+func dynamicConditionStateForReachable(condition DynamicCondition, reachable cpTokenReachability) cpConditionState {
+	if !reachable.Known {
 		return cpConditionUnknown
 	}
-	if len(reachable.values) == 0 {
+	if len(reachable.Values) == 0 {
 		return cpConditionFalse
 	}
 	matched := 0
-	if condition.contains != "" {
-		has := reachable.values[strings.ToLower(strings.TrimSpace(condition.contains))]
-		if condition.expected {
+	if condition.Contains != "" {
+		has := reachable.Values[strings.ToLower(strings.TrimSpace(condition.Contains))]
+		if condition.Expected {
 			if !has {
 				return cpConditionFalse
 			}
-			for value := range reachable.values {
-				if value != strings.ToLower(strings.TrimSpace(condition.contains)) {
+			for value := range reachable.Values {
+				if value != strings.ToLower(strings.TrimSpace(condition.Contains)) {
 					return cpConditionUnknown
 				}
 			}
 			return cpConditionTrue
 		}
 		if has {
-			matched = len(reachable.values) - 1
+			matched = len(reachable.Values) - 1
 		} else {
-			matched = len(reachable.values)
+			matched = len(reachable.Values)
 		}
 		if matched == 0 {
 			return cpConditionFalse
 		}
-		if matched == len(reachable.values) {
+		if matched == len(reachable.Values) {
 			return cpConditionTrue
 		}
 		return cpConditionUnknown
 	}
-	for value := range reachable.values {
-		if slices.ContainsFunc(condition.values, func(want string) bool {
+	for value := range reachable.Values {
+		if slices.ContainsFunc(condition.Values, func(want string) bool {
 			return strings.EqualFold(strings.TrimSpace(want), value)
 		}) {
 			matched++
@@ -1757,16 +1756,16 @@ func dynamicConditionStateForReachable(condition cpDynamicCondition, reachable c
 	if matched == 0 {
 		return cpConditionFalse
 	}
-	if matched == len(reachable.values) {
+	if matched == len(reachable.Values) {
 		return cpConditionTrue
 	}
 	return cpConditionUnknown
 }
 
 type reachableKey struct {
-	tokens  *cpTokenDefinition
-	present uintptr
-	flags   string
+	Tokens  *TokenDefinition
+	Present uintptr
+	Flags   string
 }
 
 // reachableMemo holds reachableDynamicTokens per pack, present set and flag set for the running Check; a pack's
@@ -1776,11 +1775,11 @@ var reachableMemo = struct {
 	byKey map[reachableKey]map[string]cpTokenReachability
 }{byKey: map[reachableKey]map[string]cpTokenReachability{}}
 
-func cachedReachableTokens(tokens []cpTokenDefinition, present map[string]bool, schema map[string]cpSchema, config map[string]string, flags []cpFlagCondition) map[string]cpTokenReachability {
+func cachedReachableTokens(tokens []TokenDefinition, present map[string]bool, schema map[string]Schema, config map[string]string, flags []FlagCondition) map[string]cpTokenReachability {
 	if len(tokens) == 0 {
 		return reachableDynamicTokens(tokens, present, schema, config, flags)
 	}
-	key := reachableKey{tokens: &tokens[0], present: reflect.ValueOf(present).Pointer(), flags: fmt.Sprint(flags)}
+	key := reachableKey{Tokens: &tokens[0], Present: reflect.ValueOf(present).Pointer(), Flags: fmt.Sprint(flags)}
 	reachableMemo.Lock()
 	defer reachableMemo.Unlock()
 	reachable, ok := reachableMemo.byKey[key]
@@ -1791,31 +1790,31 @@ func cachedReachableTokens(tokens []cpTokenDefinition, present map[string]bool, 
 	return reachable
 }
 
-func dynamicWhenHolds(when cpWhen, tokens []cpTokenDefinition, present map[string]bool, schema map[string]cpSchema, config map[string]string) bool {
-	if len(when.dynamic) == 0 {
+func DynamicWhenHolds(when When, tokens []TokenDefinition, present map[string]bool, schema map[string]Schema, config map[string]string) bool {
+	if len(when.Dynamic) == 0 {
 		return true
 	}
-	reachable := cachedReachableTokens(tokens, present, schema, config, when.flags)
-	for _, condition := range when.dynamic {
-		state, ok := reachable[condition.name]
-		if !ok || !state.known {
+	reachable := cachedReachableTokens(tokens, present, schema, config, when.Flags)
+	for _, condition := range when.Dynamic {
+		state, ok := reachable[condition.Name]
+		if !ok || !state.Known {
 			continue
 		}
-		if len(state.values) == 0 {
+		if len(state.Values) == 0 {
 			return false
 		}
-		if condition.contains != "" {
-			has := state.values[strings.ToLower(strings.TrimSpace(condition.contains))]
-			if condition.expected && !has {
+		if condition.Contains != "" {
+			has := state.Values[strings.ToLower(strings.TrimSpace(condition.Contains))]
+			if condition.Expected && !has {
 				return false
 			}
-			if !condition.expected && has && len(state.values) == 1 {
+			if !condition.Expected && has && len(state.Values) == 1 {
 				return false
 			}
 			continue
 		}
-		if !slices.ContainsFunc(condition.values, func(value string) bool {
-			return state.values[strings.ToLower(strings.TrimSpace(value))]
+		if !slices.ContainsFunc(condition.Values, func(value string) bool {
+			return state.Values[strings.ToLower(strings.TrimSpace(value))]
 		}) {
 			return false
 		}
@@ -1823,9 +1822,9 @@ func dynamicWhenHolds(when cpWhen, tokens []cpTokenDefinition, present map[strin
 	return true
 }
 
-func tokenDefinitionExists(tokens []cpTokenDefinition, name string) bool {
-	return slices.ContainsFunc(tokens, func(definition cpTokenDefinition) bool {
-		return definition.name == name
+func tokenDefinitionExists(tokens []TokenDefinition, name string) bool {
+	return slices.ContainsFunc(tokens, func(definition TokenDefinition) bool {
+		return definition.Name == name
 	})
 }
 
@@ -1835,7 +1834,7 @@ func hasModConditionState(arg string, raw json.RawMessage, present map[string]bo
 		if json.Unmarshal(raw, &list) != nil || hasToken(list) {
 			return cpConditionUnknown
 		}
-		ids := splitTargets(list)
+		ids := SplitTargets(list)
 		if len(ids) == 0 {
 			return cpConditionUnknown
 		}
@@ -1850,7 +1849,7 @@ func hasModConditionState(arg string, raw json.RawMessage, present map[string]bo
 	if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) {
 		return cpConditionUnknown
 	}
-	ids := splitTargets(list)
+	ids := SplitTargets(list)
 	var values []string
 	if len(ids) == 0 || !condValues(raw, &values) || len(values) != 1 {
 		return cpConditionUnknown
@@ -1874,17 +1873,17 @@ func hasModConditionState(arg string, raw json.RawMessage, present map[string]bo
 
 // containsValues applies a "Field |contains=A, B" argument to a condition's one true or false value: true accepts A or
 // B, false every other value the field allows. It fails on any other argument or when no value is left.
-func containsValues(field cpSchema, arg string, values []string) ([]string, bool) {
+func containsValues(field Schema, arg string, values []string) ([]string, bool) {
 	param, list, ok := strings.Cut(arg, "=")
 	if !ok || !strings.EqualFold(strings.TrimSpace(param), "contains") || hasToken(list) || len(values) != 1 {
 		return nil, false
 	}
-	named := splitTargets(list)
+	named := SplitTargets(list)
 	switch strings.ToLower(values[0]) {
 	case "true":
 		values = named
 	case "false":
-		values = slices.DeleteFunc(slices.Clone(field.allowValues), func(a string) bool {
+		values = slices.DeleteFunc(slices.Clone(field.AllowValues), func(a string) bool {
 			return slices.ContainsFunc(named, func(n string) bool { return strings.EqualFold(n, a) })
 		})
 	default:
@@ -1893,22 +1892,22 @@ func containsValues(field cpSchema, arg string, values []string) ([]string, bool
 	return values, len(values) > 0
 }
 
-func configCondition(field cpSchema, arg string, raw json.RawMessage) (cpConfig, bool) {
+func configCondition(field Schema, arg string, raw json.RawMessage) (Config, bool) {
 	var values []string
 	if !condValues(raw, &values) {
-		return cpConfig{}, false
+		return Config{}, false
 	}
 	if strings.TrimSpace(arg) == "" {
-		return cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple}, true
+		return Config{Field: field.Key, Values: values, AllowMultiple: field.AllowMultiple}, true
 	}
 	values, ok := containsValues(field, arg, values)
 	if !ok {
-		return cpConfig{}, false
+		return Config{}, false
 	}
-	return cpConfig{field: field.key, values: values, allowMultiple: field.allowMultiple}, true
+	return Config{Field: field.Key, Values: values, AllowMultiple: field.AllowMultiple}, true
 }
 
-func flagConditions(key string, raw json.RawMessage) ([]cpFlagCondition, bool) {
+func flagConditions(key string, raw json.RawMessage) ([]FlagCondition, bool) {
 	name, arg, _ := strings.Cut(key, "|")
 	if base, player, ok := strings.Cut(tokenName(name), ":"); ok && strings.TrimSpace(base) == "hasflag" && flagPlayers[strings.TrimSpace(player)] {
 		name = base
@@ -1921,13 +1920,13 @@ func flagConditions(key string, raw json.RawMessage) ([]cpFlagCondition, bool) {
 		if !condValues(raw, &values) {
 			return nil, true
 		}
-		out := make([]cpFlagCondition, 0, len(values))
+		out := make([]FlagCondition, 0, len(values))
 		for _, value := range values {
 			value = strings.TrimSpace(value)
 			if value == "" || hasToken(value) {
 				return nil, true
 			}
-			out = append(out, cpFlagCondition{name: strings.ToLower(value), present: true})
+			out = append(out, FlagCondition{Name: strings.ToLower(value), Present: true})
 		}
 		return out, true
 	}
@@ -1943,7 +1942,7 @@ func flagConditions(key string, raw json.RawMessage) ([]cpFlagCondition, bool) {
 	if err != nil || strings.TrimSpace(list) == "" {
 		return nil, true
 	}
-	return []cpFlagCondition{{name: strings.ToLower(strings.TrimSpace(list)), present: present}}, true
+	return []FlagCondition{{Name: strings.ToLower(strings.TrimSpace(list)), Present: present}}, true
 }
 
 // flagPlayers are HasFlag's player inputs. A flag is read as the same condition whichever player holds it,
@@ -1961,7 +1960,7 @@ func condValues(v json.RawMessage, out *[]string) bool {
 		str = strconv.FormatBool(b)
 	case json.Unmarshal(v, &arr) == nil:
 		for _, item := range arr {
-			value, ok := scalarValue(item)
+			value, ok := ScalarValue(item)
 			if !ok || hasToken(value) {
 				return false
 			}
@@ -1973,11 +1972,11 @@ func condValues(v json.RawMessage, out *[]string) bool {
 	if hasToken(str) {
 		return false
 	}
-	*out = splitTargets(str)
+	*out = SplitTargets(str)
 	return len(*out) > 0
 }
 
-func scalarValue(v json.RawMessage) (string, bool) {
+func ScalarValue(v json.RawMessage) (string, bool) {
 	var str string
 	if json.Unmarshal(v, &str) == nil {
 		return str, true
@@ -1996,7 +1995,7 @@ func scalarValue(v json.RawMessage) (string, bool) {
 // noteAssetOwners records the mods whose own assets a change targets ("Author.Mod/Data"): changing a mod's asset uses
 // that mod. Built-in assets ("Data/Objects") have no dot before the first slash.
 func noteAssetOwners(target string, mentions map[string]bool) {
-	for _, t := range splitTargets(target) {
+	for _, t := range SplitTargets(target) {
 		owner, _, found := strings.Cut(strings.TrimSpace(t), "/")
 		if found && strings.Contains(owner, ".") && !hasToken(owner) {
 			note([]string{owner}, mentions)
@@ -2013,7 +2012,7 @@ func note(ids []string, mentions map[string]bool) []string {
 	return out
 }
 
-type cpChange struct {
+type contentChange struct {
 	Action        string                     `json:"Action"`
 	Target        string                     `json:"Target"`
 	FromFile      string                     `json:"FromFile"`
@@ -2029,7 +2028,7 @@ type cpChange struct {
 	Entries       json.RawMessage            `json:"Entries"`
 }
 
-func splitTargets(s string) []string {
+func SplitTargets(s string) []string {
 	var out []string
 	for p := range strings.SplitSeq(s, ",") {
 		p = strings.TrimSpace(p)
@@ -2057,7 +2056,7 @@ func hasToken(s string) bool {
 	return ok && strings.Contains(rest, "}}")
 }
 
-func normalizeTarget(s string) string {
+func NormalizeTarget(s string) string {
 	s = strings.TrimSpace(s)
 	s = strings.ReplaceAll(s, "\\", "/")
 	for strings.Contains(s, "//") {
@@ -2074,12 +2073,12 @@ func inside(root, rel string) (string, bool) {
 	return filepath.Join(root, local), true
 }
 
-func preloadContentPacks(mods []framework.Mod, skip bool) {
-	preloadPacks(mods, func(m framework.Mod) cachedPack { return readContentPack(m, skip) })
+func preloadContentPacks(mods []Mod, skip bool) {
+	PreloadPacks(mods, func(m Mod) Pack { return ReadPack(m, skip) })
 }
 
-// preloadPacks parses packs on every core, so the serial passes after it find them cached.
-func preloadPacks(mods []framework.Mod, read func(framework.Mod) cachedPack) {
+// PreloadPacks parses packs on every core, so the serial passes after it find them cached.
+func PreloadPacks(mods []Mod, read func(Mod) Pack) {
 	workers := max(1, runtime.GOMAXPROCS(0))
 	sem := make(chan struct{}, workers)
 	var wg sync.WaitGroup
@@ -2156,42 +2155,42 @@ type hitAt struct{ kind, target, id string }
 
 // hitCollector gathers, per patch kind and target, the packs that touch it.
 type hitCollector struct {
-	at       map[string]map[string][]packHit
-	index    map[hitAt]int
-	authored []authoredPack
+	At       map[string]map[string][]packHit
+	Index    map[hitAt]int
+	Authored []authoredPack
 }
 
 // assetConflictScan also returns the packs whose every change later packs overwrite (see shadowedPacks).
-func assetConflictScan(mods []framework.Mod, run *partsRun, skip bool) ([]framework.AssetConflict, []framework.SettingHint, []framework.Redundant) {
+func assetConflictScan(mods []Mod, run *PartsRun, skip bool) ([]Conflict, []Hint, []Shadowed, map[string]ModRef) {
 	defer dropCheckScratch()
 	preloadContentPacks(mods, skip)
 	present := map[string]bool{}
 	for _, im := range mods {
 		if im.Enabled {
-			present[im.ModID().Fold()] = true
+			present[im.UniqueID.Fold()] = true
 		}
 	}
-	hc := &hitCollector{at: map[string]map[string][]packHit{"load": {}, "edit": {}}, index: map[hitAt]int{}}
+	hc := &hitCollector{At: map[string]map[string][]packHit{"load": {}, "edit": {}}, Index: map[hitAt]int{}}
 	for _, im := range mods {
-		hc.addMod(im, readContentPack(im, skip), present)
+		hc.addMod(im, ReadPack(im, skip), present)
 	}
-	at := hc.at
+	at := hc.At
 	activateEdits(at["edit"])
 	shadowed := shadowedPacks(mods, at, skip)
-	bundled := bundles(hc.authored)
+	bundled := bundles(hc.Authored)
 	shadowed = addBundledRedundant(mods, shadowed, bundled)
 	customFarms := map[string]string{}
 	for _, im := range mods {
-		for target, id := range readContentPack(im, skip).farms {
-			customFarms[target] = modIDToken.ReplaceAllLiteralString(id, im.UniqueID)
+		for target, id := range ReadPack(im, skip).Farms {
+			customFarms[target] = modIDToken.ReplaceAllLiteralString(id, im.UniqueID.Local())
 		}
 	}
 	out, settings := targetConflicts(at, customFarms, bundled, run, skip)
-	return out, settings, shadowed
+	return out, settings, shadowed, bundled
 }
 
-func (hc *hitCollector) addMod(im framework.Mod, pack cachedPack, present map[string]bool) {
-	knows := maps.Clone(pack.mentions)
+func (hc *hitCollector) addMod(im Mod, pack Pack, present map[string]bool) {
+	knows := maps.Clone(pack.Mentions)
 	dependencies := map[string]bool{}
 	loadAfter := map[string]bool{}
 	for _, id := range im.LoadAfter {
@@ -2201,7 +2200,7 @@ func (hc *hitCollector) addMod(im framework.Mod, pack cachedPack, present map[st
 		if knows == nil {
 			knows = map[string]bool{}
 		}
-		id := d.ModID().Fold()
+		id := d.UniqueID.Fold()
 		if loadAfter[id] {
 			continue
 		}
@@ -2209,71 +2208,71 @@ func (hc *hitCollector) addMod(im framework.Mod, pack cachedPack, present map[st
 		dependencies[id] = true
 	}
 	config := map[string]string{}
-	if len(pack.schema) > 0 {
-		config = readPackConfig(im.Folder)
+	if len(pack.Schema) > 0 {
+		config = ReadPackConfig(im.Folder)
 	}
-	seen := presentFor(pack, present)
+	seen := PresentFor(pack, present)
 	sig, stable := "", false
-	if len(pack.patches) > 0 {
-		sig, stable = packSig(im, pack, seen)
+	if len(pack.Patches) > 0 {
+		sig, stable = PackSig(im, pack, seen)
 	}
-	id := im.ModID().Fold()
-	own := authoredPack{key: im.Key, id: id, name: im.Name, author: normalAuthor(im.Author), root: im.Folder, knows: knows}
-	if own.author != "" {
-		own.patches = make([]cpPatch, 0, len(pack.patches))
+	id := im.UniqueID.Fold()
+	own := authoredPack{Key: im.Key, ID: id, Name: im.Name, Author: normalAuthor(im.Author), Root: im.Folder, Knows: knows}
+	if own.Author != "" {
+		own.Patches = make([]Patch, 0, len(pack.Patches))
 	}
 	if stable {
-		own.sig = sig
+		own.Sig = sig
 	}
-	for _, p := range pack.patches {
-		if p.kind == "other" || !p.when.holds(seen) || !dynamicWhenHolds(p.when, pack.tokens, seen, pack.schema, config) {
+	for _, p := range pack.Patches {
+		if p.Kind == "other" || !p.When.Holds(seen) || !DynamicWhenHolds(p.When, pack.Tokens, seen, pack.Schema, config) {
 			continue
 		}
-		p = withTokenFarmTypes(p, pack.tokens, seen, pack.schema, config)
-		i := hc.hitFor(hitAt{p.kind, p.target, id}, p, im, pack, knows, seen, config, dependencies, loadAfter, sig, stable)
-		hits := hc.at[p.kind][p.target]
-		if p.kind == "edit" {
-			hits[i].eligible = append(hits[i].eligible, p)
+		p = withTokenFarmTypes(p, pack.Tokens, seen, pack.Schema, config)
+		i := hc.hitFor(hitAt{p.Kind, p.Target, id}, p, im, pack, knows, seen, config, dependencies, loadAfter, sig, stable)
+		hits := hc.At[p.Kind][p.Target]
+		if p.Kind == "edit" {
+			hits[i].Eligible = append(hits[i].Eligible, p)
 		}
-		if !configHolds(p.when.config, pack.schema, config) {
-			if p.kind == "edit" {
-				hits[i].configOff = append(hits[i].configOff, len(hits[i].eligible)-1)
+		if !ConfigHolds(p.When.Config, pack.Schema, config) {
+			if p.Kind == "edit" {
+				hits[i].ConfigOff = append(hits[i].ConfigOff, len(hits[i].Eligible)-1)
 			}
 			continue
 		}
-		if p.kind != "edit" {
-			hits[i].loads = append(hits[i].loads, p)
+		if p.Kind != "edit" {
+			hits[i].Loads = append(hits[i].Loads, p)
 		}
-		if own.author != "" {
-			own.patches = append(own.patches, p)
+		if own.Author != "" {
+			own.Patches = append(own.Patches, p)
 		}
 	}
-	if own.author != "" {
-		hc.authored = append(hc.authored, own)
+	if own.Author != "" {
+		hc.Authored = append(hc.Authored, own)
 	}
 }
 
 // hitFor returns the index of im's hit for the patch's target, adding the hit on first sight or folding
 // the patch into the existing one.
-func (hc *hitCollector) hitFor(k hitAt, p cpPatch, im framework.Mod, pack cachedPack, knows, seen map[string]bool, config map[string]string, dependencies, loadAfter map[string]bool, sig string, stable bool) int {
-	hits := hc.at[p.kind][p.target]
-	i, found := hc.index[k]
+func (hc *hitCollector) hitFor(k hitAt, p Patch, im Mod, pack Pack, knows, seen map[string]bool, config map[string]string, dependencies, loadAfter map[string]bool, sig string, stable bool) int {
+	hits := hc.At[p.Kind][p.Target]
+	i, found := hc.Index[k]
 	if !found {
 		hits = append(hits, packHit{
-			id: ModID(im.ModID()), name: im.Name, key: im.Key, priority: p.priority, mentions: knows,
-			root: im.Folder, tokens: pack.patches, present: seen, schema: pack.schema, config: config,
-			dependencies: dependencies, loadAfter: loadAfter, sig: sig, stable: stable, author: normalAuthor(im.Author),
+			ID: ModID(im.UniqueID), Name: im.Name, Key: im.Key, Priority: p.Priority, Mentions: knows,
+			Root: im.Folder, Tokens: pack.Patches, Present: seen, Schema: pack.Schema, Config: config,
+			Dependencies: dependencies, LoadAfter: loadAfter, Sig: sig, Stable: stable, Author: normalAuthor(im.Author),
 		})
 		i = len(hits) - 1
-		hc.index[k] = i
-		hc.at[p.kind][p.target] = hits
+		hc.Index[k] = i
+		hc.At[p.Kind][p.Target] = hits
 		return i
 	}
-	hits[i].priority = strongerContentPatcherPriority(hits[i].priority, p.priority, p.kind)
+	hits[i].Priority = strongerContentPatcherPriority(hits[i].Priority, p.Priority, p.Kind)
 	// A second pack with the same id adds its patches to the first one's hit, so its share of the key too.
-	if hits[i].root != im.Folder && !strings.Contains(hits[i].sig, sig) {
-		hits[i].sig += "\x01" + sig
-		hits[i].stable = hits[i].stable && stable
+	if hits[i].Root != im.Folder && !strings.Contains(hits[i].Sig, sig) {
+		hits[i].Sig += "\x01" + sig
+		hits[i].Stable = hits[i].Stable && stable
 	}
 	return i
 }
@@ -2284,36 +2283,36 @@ func activateEdits(edits map[string][]packHit) {
 	for _, hits := range edits {
 		for i := range hits {
 			h := &hits[i]
-			if len(h.configOff) == 0 {
-				h.edits = h.eligible
+			if len(h.ConfigOff) == 0 {
+				h.Edits = h.Eligible
 				continue
 			}
-			h.edits = make([]cpPatch, 0, len(h.eligible)-len(h.configOff))
-			for j, e := range h.eligible {
-				if !slices.Contains(h.configOff, j) {
-					h.edits = append(h.edits, e)
+			h.Edits = make([]Patch, 0, len(h.Eligible)-len(h.ConfigOff))
+			for j, e := range h.Eligible {
+				if !slices.Contains(h.ConfigOff, j) {
+					h.Edits = append(h.Edits, e)
 				}
 			}
-			h.configOff = nil
+			h.ConfigOff = nil
 		}
 	}
 }
 
-func addBundledRedundant(mods []framework.Mod, shadowed []framework.Redundant, bundled map[string]framework.ModRef) []framework.Redundant {
+func addBundledRedundant(mods []Mod, shadowed []Shadowed, bundled map[string]ModRef) []Shadowed {
 	for _, key := range slices.Sorted(maps.Keys(bundled)) {
-		if slices.ContainsFunc(shadowed, func(r framework.Redundant) bool { return r.Key == key }) {
+		if slices.ContainsFunc(shadowed, func(r Shadowed) bool { return r.Key == key }) {
 			continue
 		}
-		im := mods[slices.IndexFunc(mods, func(m framework.Mod) bool { return m.Key == key })]
-		shadowed = append(shadowed, framework.Redundant{Kind: "bundled", Key: key, ID: im.ModID(), Name: im.Name, By: []framework.ModRef{bundled[key]}})
+		im := mods[slices.IndexFunc(mods, func(m Mod) bool { return m.Key == key })]
+		shadowed = append(shadowed, Shadowed{Key: key, ID: im.UniqueID, Name: im.Name, By: []ModRef{bundled[key]}, Bundled: true})
 	}
 	// A Redundant row is offered for removal, and SMAPI skips every enabled pack that requires a removed one.
-	return slices.DeleteFunc(shadowed, func(r framework.Redundant) bool { return requiredByEnabled(mods, ModID(r.ID)) })
+	return slices.DeleteFunc(shadowed, func(r Shadowed) bool { return requiredByEnabled(mods, r.ID) })
 }
 
-func targetConflicts(at map[string]map[string][]packHit, customFarms map[string]string, bundled map[string]framework.ModRef, run *partsRun, skip bool) ([]framework.AssetConflict, []framework.SettingHint) {
-	out := []framework.AssetConflict{}
-	settings := []framework.SettingHint{}
+func targetConflicts(at map[string]map[string][]packHit, customFarms map[string]string, bundled map[string]ModRef, run *PartsRun, skip bool) ([]Conflict, []Hint) {
+	out := []Conflict{}
+	settings := []Hint{}
 	for _, kind := range []string{"load", "edit"} {
 		targets := at[kind]
 		for _, t := range slices.Sorted(maps.Keys(targets)) {
@@ -2325,10 +2324,10 @@ func targetConflicts(at map[string]map[string][]packHit, customFarms map[string]
 			fields := []string{kind, t, farm}
 			stable := true
 			for _, h := range hits {
-				fields = append(fields, h.sig)
-				stable = stable && h.stable
+				fields = append(fields, h.Sig)
+				stable = stable && h.Stable
 			}
-			e := run.part(partKey(skip, fields...), stable, func() partEntry { return targetPart(kind, t, hits, farm, bundled) })
+			e := run.Part(PartKey(skip, fields...), stable, func() PartEntry { return targetPart(kind, t, hits, farm, bundled) })
 			if e.Conflict != nil {
 				c := *e.Conflict
 				c.Farms = farmIDs(c.Farms, customFarms)
@@ -2337,7 +2336,7 @@ func targetConflicts(at map[string]map[string][]packHit, customFarms map[string]
 			settings = append(settings, e.Settings...)
 		}
 	}
-	slices.SortFunc(out, func(a, b framework.AssetConflict) int {
+	slices.SortFunc(out, func(a, b Conflict) int {
 		if a.Kind != b.Kind {
 			if a.Kind == "load" {
 				return -1
@@ -2351,13 +2350,13 @@ func targetConflicts(at map[string]map[string][]packHit, customFarms map[string]
 
 // requiredByEnabled reports whether an enabled mod needs id: a required dependency, or the framework it is a
 // content pack for.
-func requiredByEnabled(mods []framework.Mod, id ModID) bool {
-	return slices.ContainsFunc(mods, func(m framework.Mod) bool {
+func requiredByEnabled(mods []Mod, id ModID) bool {
+	return slices.ContainsFunc(mods, func(m Mod) bool {
 		if !m.Enabled {
 			return false
 		}
 		for _, d := range m.Dependencies {
-			if d.Required && Equal(ModID(d.ModID()), id) {
+			if d.Required && Equal(ModID(d.UniqueID), id) {
 				return true
 			}
 		}
@@ -2368,7 +2367,7 @@ func requiredByEnabled(mods []framework.Mod, id ModID) bool {
 // targetPart is the outcome of one target that two or more packs touch: a conflict, a setting that settles it, or
 // nothing.
 // farm is the custom farm type whose map target is, or "".
-func targetPart(kind, target string, hits []packHit, farm string, bundled map[string]framework.ModRef) partEntry {
+func targetPart(kind, target string, hits []packHit, farm string, bundled map[string]ModRef) PartEntry {
 	hits = withoutBundled(kind, hits, bundled)
 	e := conflictPart(kind, target, hits, farm)
 	if kind == "load" {
@@ -2379,23 +2378,23 @@ func targetPart(kind, target string, hits []packHit, farm string, bundled map[st
 
 // deadFallbackSettings are the settings that only turn on a fallback load another pack's load always beats: the
 // pack is left out of the conflict, and its setting has no effect.
-func deadFallbackSettings(target string, hits []packHit, conflict *framework.AssetConflict) []framework.SettingHint {
-	var out []framework.SettingHint
+func deadFallbackSettings(target string, hits []packHit, conflict *Conflict) []Hint {
+	var out []Hint
 	for _, h := range hits {
-		if conflict != nil && slices.Contains(conflict.Keys, h.key) {
+		if conflict != nil && slices.Contains(conflict.Keys, h.Key) {
 			continue
 		}
 	hit:
-		for _, load := range h.loads {
+		for _, load := range h.Loads {
 			for _, other := range hits {
-				if other.key == h.key {
+				if other.Key == h.Key {
 					continue
 				}
-				for _, otherLoad := range other.loads {
+				for _, otherLoad := range other.Loads {
 					if !fallbackLoad(h, load, other, otherLoad) {
 						continue
 					}
-					if hint := settingForDeadLoad(h, load, other, framework.AssetConflict{Target: target}); hint != nil {
+					if hint := settingForDeadLoad(h, load, other, Conflict{Target: target}); hint != nil {
 						out = append(out, *hint)
 						break hit
 					}
@@ -2406,51 +2405,51 @@ func deadFallbackSettings(target string, hits []packHit, conflict *framework.Ass
 	return out
 }
 
-func conflictPart(kind, target string, hits []packHit, farm string) partEntry {
+func conflictPart(kind, target string, hits []packHit, farm string) PartEntry {
 	cosmetic := false
-	var note *framework.ConflictNote
+	var note *Note
 	if kind == "edit" {
 		hits, cosmetic, note = clashing(hits)
 	} else {
 		hits = clashingLoads(hits)
 	}
 	if len(hits) < 2 {
-		return partEntry{}
+		return PartEntry{}
 	}
 	c := conflictOf(kind, target, hits)
-	c.Evidence = conflictEvidence(kind, hits)
+	c.Evidence = ConflictEvidence(kind, hits)
 	if kind == "load" {
 		if allLoadFilesBlank(hits, target) || allLoadFilesIdentical(hits, target) {
-			return partEntry{}
+			return PartEntry{}
 		}
-		var hint *framework.SettingHint
+		var hint *Hint
 		c.Cosmetic, hint = harmlessLoads(hits, c)
 		if hint != nil {
-			return partEntry{Settings: []framework.SettingHint{*hint}}
+			return PartEntry{Settings: []Hint{*hint}}
 		}
 	}
 	if kind == "edit" {
 		c.Cosmetic, c.Note = cosmetic, note
 		markLoadAfterWinner(&c, hits)
 	}
-	c.Fixes = []framework.ConflictFix{}
+	c.Fixes = []Fix{}
 	for _, h := range hits {
 		if fix, ok := switchOff(h, hits); ok {
 			c.Fixes = append(c.Fixes, fix)
 		}
 	}
 	c.Farms = farmNeeds(kind, hits, farm)
-	return partEntry{Conflict: &c}
+	return PartEntry{Conflict: &c}
 }
 
 // farmNeeds is, per pack in conflict order, the farm types every one of its clashing patches is limited to,
 // nil for a pack with one that applies on any farm; nil when no pack is limited.
-func (h packHit) clashing(kind string) iter.Seq[cpPatch] {
-	patches, clashes := h.edits, h.clashes
+func (h packHit) clashing(kind string) iter.Seq[Patch] {
+	patches, clashes := h.Edits, h.Clashes
 	if kind == "load" {
-		patches, clashes = h.loads, h.loadClashes
+		patches, clashes = h.Loads, h.LoadClashes
 	}
-	return func(yield func(cpPatch) bool) {
+	return func(yield func(Patch) bool) {
 		for i, p := range patches {
 			if clashes != nil && !clashes[i] {
 				continue
@@ -2518,9 +2517,9 @@ func farmIDs(farms [][]string, custom map[string]string) [][]string {
 var modIDToken = regexp.MustCompile(`(?i)\{\{\s*modid\s*\}\}`)
 
 // recordFarms notes the map asset and id of each custom farm in Data/AdditionalFarms entries.
-func (p *cachedPack) recordFarms(raw json.RawMessage) {
+func (p *Pack) recordFarms(raw json.RawMessage) {
 	var entries map[string]struct {
-		ID      string `json:"Id"`
+		ID      string `json:"ID"`
 		MapName string `json:"MapName"`
 	}
 	if json.Unmarshal(lenientjson.Clean(raw), &entries) != nil {
@@ -2531,10 +2530,10 @@ func (p *cachedPack) recordFarms(raw json.RawMessage) {
 			continue
 		}
 		id := cmp.Or(entry.ID, key)
-		if p.farms == nil {
-			p.farms = map[string]string{}
+		if p.Farms == nil {
+			p.Farms = map[string]string{}
 		}
-		p.farms["maps/"+strings.ToLower(entry.MapName)] = id
+		p.Farms["maps/"+strings.ToLower(entry.MapName)] = id
 	}
 }
 
@@ -2542,19 +2541,19 @@ func clashingLoads(hits []packHit) (out []packHit) {
 	in := make([]bool, len(hits))
 	for i := range hits {
 		for j := i + 1; j < len(hits); j++ {
-			for ai, a := range hits[i].loads {
-				for bj, b := range hits[j].loads {
+			for ai, a := range hits[i].Loads {
+				for bj, b := range hits[j].Loads {
 					if exclusive(a, b) || fallbackLoad(hits[i], a, hits[j], b) || fallbackLoad(hits[j], b, hits[i], a) {
 						continue
 					}
 					in[i], in[j] = true, true
-					if hits[i].loadClashes == nil {
-						hits[i].loadClashes = map[int]bool{}
+					if hits[i].LoadClashes == nil {
+						hits[i].LoadClashes = map[int]bool{}
 					}
-					if hits[j].loadClashes == nil {
-						hits[j].loadClashes = map[int]bool{}
+					if hits[j].LoadClashes == nil {
+						hits[j].LoadClashes = map[int]bool{}
 					}
-					hits[i].loadClashes[ai], hits[j].loadClashes[bj] = true, true
+					hits[i].LoadClashes[ai], hits[j].LoadClashes[bj] = true, true
 				}
 			}
 		}
@@ -2571,29 +2570,29 @@ func clashingLoads(hits []packHit) (out []packHit) {
 // the author made it the fallback for when no stronger load is installed. Under a Medium load it is a
 // fallback only when one of the two packs names the other (the stronger pack naming it means its author
 // built the priority gap on purpose); one a blank load wipes stays reported.
-func fallbackLoad(h packHit, load cpPatch, other packHit, otherLoad cpPatch) bool {
-	rank := contentPatcherPriority("load", load.priority)
-	otherRank := contentPatcherPriority("load", otherLoad.priority)
+func fallbackLoad(h packHit, load Patch, other packHit, otherLoad Patch) bool {
+	rank := contentPatcherPriority("load", load.Priority)
+	otherRank := contentPatcherPriority("load", otherLoad.Priority)
 	if rank >= 0 || rank >= otherRank {
 		return false
 	}
-	if h.mentions[other.id.Fold()] || other.mentions[h.id.Fold()] {
+	if h.Mentions[other.ID.Fold()] || other.Mentions[h.ID.Fold()] {
 		return true
 	}
-	return otherRank >= 1000 && (loadFileBlank(h, load, load.target) || !loadFileBlank(other, otherLoad, otherLoad.target))
+	return otherRank >= 1000 && (loadFileBlank(h, load, load.Target) || !loadFileBlank(other, otherLoad, otherLoad.Target))
 }
 
 // clashing keeps the packs that share an overlapping edit of one target with a pack they were not built
 // alongside. Packs in one entry, or where one names the other as a dependency or in a HasMod condition,
 // were patched to work together, so their overlaps are intended.
-func clashing(hits []packHit) (out []packHit, cosmetic bool, why *framework.ConflictNote) {
+func clashing(hits []packHit) (out []packHit, cosmetic bool, why *Note) {
 	in := make([]bool, len(hits))
 	cosmetic = true
 	var note noteAgreement
 	indexes := make([][]*shapeSet, len(hits))
 	summaries := make([]shapeSummary, len(hits))
 	for i := range hits {
-		indexes[i] = indexesOf(hits[i].edits)
+		indexes[i] = indexesOf(hits[i].Edits)
 		summaries[i] = summarize(indexes[i])
 	}
 	for i := range hits {
@@ -2601,14 +2600,14 @@ func clashing(hits []packHit) (out []packHit, cosmetic bool, why *framework.Conf
 			if aware(hits[i], hits[j]) || !summaries[i].mayOverlap(summaries[j]) {
 				continue
 			}
-			clash, minor, pairNote := editsClashIndexed(hits[i].edits, hits[j].edits, indexes[j], sameAuthor(hits[i], hits[j]))
+			clash, minor, pairNote := editsClashIndexed(hits[i].Edits, hits[j].Edits, indexes[j], sameAuthor(hits[i], hits[j]))
 			if !clash {
 				continue
 			}
 			in[i], in[j] = true, true
 			markClashes(&hits[i], &hits[j])
-			hits[i].rivals = append(hits[i].rivals, hits[j].id)
-			hits[j].rivals = append(hits[j].rivals, hits[i].id)
+			hits[i].Rivals = append(hits[i].Rivals, hits[j].ID)
+			hits[j].Rivals = append(hits[j].Rivals, hits[i].ID)
 			cosmetic = cosmetic && minor
 			note.add(pairNote)
 		}
@@ -2625,7 +2624,7 @@ func clashing(hits []packHit) (out []packHit, cosmetic bool, why *framework.Conf
 }
 
 func sameAuthor(a, b packHit) bool {
-	return a.author != "" && a.author == b.author
+	return a.Author != "" && a.Author == b.Author
 }
 
 func normalAuthor(author string) string {
@@ -2634,11 +2633,11 @@ func normalAuthor(author string) string {
 
 // authoredPack is a pack's active Load and edit patches, kept while scanning so packs by one author can be compared.
 type authoredPack struct {
-	key, id, name, author, root string
-	patches                     []cpPatch
-	knows                       map[string]bool // the packs it depends on or names in a HasMod condition
-	// sig is the pack's packSig when its stamps can be trusted, so its footprints can be reused by the next check.
-	sig string
+	Key, ID, Name, Author, Root string
+	Patches                     []Patch
+	Knows                       map[string]bool // the packs it depends on or names in a HasMod condition
+	// sig is the pack's PackSig when its stamps can be trusted, so its footprints can be reused by the next check.
+	Sig string
 }
 
 // footprintMemo holds each pack's footprints from the last check by sig; a check keeps only the packs it saw.
@@ -2649,18 +2648,18 @@ var footprintMemo struct {
 
 // bundles finds the packs whose every active patch writes where another pack by the same author also writes:
 // the larger pack bundles the smaller one. Of two packs with the same footprint, the one listed later is bundled.
-func bundles(packs []authoredPack) map[string]framework.ModRef {
+func bundles(packs []authoredPack) map[string]ModRef {
 	byAuthor := map[string][]authoredPack{}
 	for _, p := range packs {
-		if p.author != "" && len(p.patches) > 0 {
-			byAuthor[p.author] = append(byAuthor[p.author], p)
+		if p.Author != "" && len(p.Patches) > 0 {
+			byAuthor[p.Author] = append(byAuthor[p.Author], p)
 		}
 	}
 	footprintMemo.Lock()
 	defer footprintMemo.Unlock()
 	last, next := footprintMemo.last, map[string]map[string]bool{}
 	defer func() { footprintMemo.last = next }()
-	var out map[string]framework.ModRef
+	var out map[string]ModRef
 	for _, group := range byAuthor {
 		if len(group) < 2 {
 			continue
@@ -2672,51 +2671,51 @@ func bundles(packs []authoredPack) map[string]framework.ModRef {
 
 // groupFootprints lazily spells out each pack's footprint, reusing the previous scan's set under the same signature.
 type groupFootprints struct {
-	group      []authoredPack
-	last, next map[string]map[string]bool
-	sigs       []map[string]bool
+	Group      []authoredPack
+	Last, Next map[string]map[string]bool
+	Sigs       []map[string]bool
 }
 
 func (g *groupFootprints) of(i int) map[string]bool {
-	if g.sigs[i] != nil {
-		return g.sigs[i]
+	if g.Sigs[i] != nil {
+		return g.Sigs[i]
 	}
-	if sig := g.group[i].sig; sig != "" {
-		if set, ok := g.last[sig]; ok {
-			g.sigs[i], g.next[sig] = set, set
+	if sig := g.Group[i].Sig; sig != "" {
+		if set, ok := g.Last[sig]; ok {
+			g.Sigs[i], g.Next[sig] = set, set
 			return set
 		}
 	}
-	g.sigs[i] = make(map[string]bool, len(g.group[i].patches))
-	for _, patch := range g.group[i].patches {
-		g.sigs[i][patchFootprint(patch)] = true
+	g.Sigs[i] = make(map[string]bool, len(g.Group[i].Patches))
+	for _, patch := range g.Group[i].Patches {
+		g.Sigs[i][patchFootprint(patch)] = true
 	}
-	if g.group[i].sig != "" {
-		g.next[g.group[i].sig] = g.sigs[i]
+	if g.Group[i].Sig != "" {
+		g.Next[g.Group[i].Sig] = g.Sigs[i]
 	}
-	return g.sigs[i]
+	return g.Sigs[i]
 }
 
-func bundleGroup(group []authoredPack, last, next map[string]map[string]bool, out map[string]framework.ModRef) map[string]framework.ModRef {
+func bundleGroup(group []authoredPack, last, next map[string]map[string]bool, out map[string]ModRef) map[string]ModRef {
 	// Targets first: they rule out almost every pair before any footprint is spelled out.
 	targets := make([]map[string]bool, len(group))
 	for i, p := range group {
 		targets[i] = map[string]bool{}
-		for _, patch := range p.patches {
-			targets[i][patch.target] = true
+		for _, patch := range p.Patches {
+			targets[i][patch.Target] = true
 		}
 	}
-	fp := &groupFootprints{group: group, last: last, next: next, sigs: make([]map[string]bool, len(group))}
+	fp := &groupFootprints{Group: group, Last: last, Next: next, Sigs: make([]map[string]bool, len(group))}
 	for i, small := range group {
 		for j, big := range group {
-			if i == j || len(small.patches) > len(big.patches) && len(targets[i]) > len(targets[j]) {
+			if i == j || len(small.Patches) > len(big.Patches) && len(targets[i]) > len(targets[j]) {
 				continue
 			}
 			// A pack built on the other layers over it on purpose, as an add-on does over its base.
-			if small.knows[big.id] || big.knows[small.id] {
+			if small.Knows[big.ID] || big.Knows[small.ID] {
 				continue
 			}
-			if _, bundledToo := out[big.key]; bundledToo || !subsetOf(targets[i], targets[j]) {
+			if _, bundledToo := out[big.Key]; bundledToo || !subsetOf(targets[i], targets[j]) {
 				continue
 			}
 			a, b := fp.of(i), fp.of(j)
@@ -2724,9 +2723,9 @@ func bundleGroup(group []authoredPack, last, next map[string]map[string]bool, ou
 				continue
 			}
 			if out == nil {
-				out = map[string]framework.ModRef{}
+				out = map[string]ModRef{}
 			}
-			out[small.key] = framework.ModRef{Key: big.key, Name: big.name}
+			out[small.Key] = ModRef{Key: big.Key, Name: big.Name}
 			break
 		}
 	}
@@ -2735,13 +2734,13 @@ func bundleGroup(group []authoredPack, last, next map[string]map[string]bool, ou
 
 // sameLoads reports whether big loads every file small loads, to the same target.
 func sameLoads(small, big authoredPack) bool {
-	for _, p := range small.patches {
-		if p.kind != "load" {
+	for _, p := range small.Patches {
+		if p.Kind != "load" {
 			continue
 		}
-		digest := imageFileDigest(small.root, p.fromFile, true)
-		if digest == "" || !slices.ContainsFunc(big.patches, func(o cpPatch) bool {
-			return o.kind == "load" && o.target == p.target && imageFileDigest(big.root, o.fromFile, true) == digest
+		digest := imageFileDigest(small.Root, p.FromFile, true)
+		if digest == "" || !slices.ContainsFunc(big.Patches, func(o Patch) bool {
+			return o.Kind == "load" && o.Target == p.Target && imageFileDigest(big.Root, o.FromFile, true) == digest
 		}) {
 			return false
 		}
@@ -2759,53 +2758,53 @@ func subsetOf(a, b map[string]bool) bool {
 }
 
 // withoutBundled drops the packs another pack in hits bundles. Loads are judged only between two packs.
-func withoutBundled(kind string, hits []packHit, bundled map[string]framework.ModRef) []packHit {
+func withoutBundled(kind string, hits []packHit, bundled map[string]ModRef) []packHit {
 	if len(bundled) == 0 || kind == "load" && len(hits) != 2 {
 		return hits
 	}
 	return slices.DeleteFunc(slices.Clone(hits), func(h packHit) bool {
-		by, ok := bundled[h.key]
-		return ok && slices.ContainsFunc(hits, func(o packHit) bool { return o.key == by.Key })
+		by, ok := bundled[h.Key]
+		return ok && slices.ContainsFunc(hits, func(o packHit) bool { return o.Key == by.Key })
 	})
 }
 
 // patchFootprint is where an edit writes, not what: packs by one author that write the same places are one
 // bundled in the other even when their sources are laid out differently. A load replaces the whole asset, so
 // sameLoads compares its file too.
-func patchFootprint(p cpPatch) string {
+func patchFootprint(p Patch) string {
 	b := make([]byte, 0, 64)
-	b = append(b, p.target...)
+	b = append(b, p.Target...)
 	b = append(b, '|')
-	b = append(b, p.action...)
+	b = append(b, p.Action...)
 	b = append(b, '|')
-	b = append(b, strings.ToLower(strings.TrimSpace(p.patchMode))...)
-	if len(p.when.places) > 0 {
-		b = fmt.Appendf(b, "|%v", p.when.places)
+	b = append(b, strings.ToLower(strings.TrimSpace(p.PatchMode))...)
+	if len(p.When.Places) > 0 {
+		b = fmt.Appendf(b, "|%v", p.When.Places)
 	}
-	for _, shape := range p.shapes {
-		b = append(b, '|', shape.kind)
-		for _, n := range []int{shape.x, shape.y, shape.w, shape.h} {
+	for _, shape := range p.Shapes {
+		b = append(b, '|', shape.Kind)
+		for _, n := range []int{shape.X, shape.Y, shape.W, shape.H} {
 			b = strconv.AppendInt(append(b, ','), int64(n), 10)
 		}
-		b = append(append(append(append(append(b, ','), shape.cells...), ','), shape.layer...), ',')
-		b = append(b, shape.key...)
+		b = append(append(append(append(append(b, ','), shape.Cells...), ','), shape.Layer...), ',')
+		b = append(b, shape.Key...)
 	}
 	return string(b)
 }
 
 func aware(a, b packHit) bool {
-	return (a.key != "" && a.key == b.key) || a.mentions[b.id.Fold()] || b.mentions[a.id.Fold()]
+	return (a.Key != "" && a.Key == b.Key) || a.Mentions[b.ID.Fold()] || b.Mentions[a.ID.Fold()]
 }
 
-func conflictOf(kind, target string, hits []packHit) framework.AssetConflict {
-	slices.SortFunc(hits, func(a, b packHit) int { return strings.Compare(a.id.Fold(), b.id.Fold()) })
-	c := framework.AssetConflict{Kind: kind, Target: target, Names: make([]string, len(hits)), Keys: make([]string, len(hits))}
+func conflictOf(kind, target string, hits []packHit) Conflict {
+	slices.SortFunc(hits, func(a, b packHit) int { return strings.Compare(a.ID.Fold(), b.ID.Fold()) })
+	c := Conflict{Kind: kind, Target: target, Names: make([]string, len(hits)), Keys: make([]string, len(hits))}
 	for i, h := range hits {
-		c.PackIDs = append(c.PackIDs, frameworkID(h.id))
-		c.Names[i], c.Keys[i] = h.name, h.key
+		c.PackIDs = append(c.PackIDs, (h.ID))
+		c.Names[i], c.Keys[i] = h.Name, h.Key
 	}
 	if kind == "edit" && len(hits) >= 3 && strings.Contains(strings.ToLower(target), "objects") {
-		c.Info = itemConflictInfo(hits)
+		c.Cells = sharedCells(hits)
 	}
 	best := -1
 	bestRank := -1 << 31
@@ -2823,37 +2822,38 @@ func conflictOf(kind, target string, hits []packHit) framework.AssetConflict {
 		}
 	}
 	if kind == "load" && exclusive >= 2 {
-		c.WinnerKind = framework.WinnerNeither
+		c.WinnerKind = WinnerNeither
 		return c
 	}
 	if best >= 0 && len(tied) == 1 {
-		c.WinnerID, c.WinnerName, c.WinnerKind = frameworkID(hits[best].id), hits[best].name, framework.WinnerTop
+		c.WinnerID, c.WinnerName, c.WinnerKind = (hits[best].ID), hits[best].Name, WinnerTop
 		for i, h := range hits {
 			if i != best {
-				c.Overridden = append(c.Overridden, h.name)
+				c.Overridden = append(c.Overridden, h.Name)
 			}
 		}
 		return c
 	}
 	if kind == "load" {
 		if winner, ok := dependencyLoadWinner(hits, tied); ok {
-			c.WinnerID, c.WinnerName, c.WinnerKind = frameworkID(hits[winner].id), hits[winner].name, framework.WinnerLoadOrder
+			c.WinnerID, c.WinnerName, c.WinnerKind = (hits[winner].ID), hits[winner].Name, WinnerLoadOrder
 			for i, h := range hits {
 				if i != winner {
-					c.Overridden = append(c.Overridden, h.name)
+					c.Overridden = append(c.Overridden, h.Name)
 				}
 			}
 			return c
 		}
 	}
-	c.WinnerKind = framework.WinnerUnclear
+	c.WinnerKind = WinnerUnclear
 	return c
 }
 
-func itemConflictInfo(hits []packHit) string {
+// sharedCells are the cells every pack's clashing patches write, as "x,y", sorted.
+func sharedCells(hits []packHit) []string {
 	common := map[string]bool{}
-	for _, patch := range hits[0].edits {
-		for _, shape := range patch.shapes {
+	for _, patch := range hits[0].Edits {
+		for _, shape := range patch.Shapes {
 			for cell := range shapeCells(shape) {
 				common[cell] = true
 			}
@@ -2861,8 +2861,8 @@ func itemConflictInfo(hits []packHit) string {
 	}
 	for _, hit := range hits[1:] {
 		cells := map[string]bool{}
-		for _, patch := range hit.edits {
-			for _, shape := range patch.shapes {
+		for _, patch := range hit.Edits {
+			for _, shape := range patch.Shapes {
 				for cell := range shapeCells(shape) {
 					cells[cell] = true
 				}
@@ -2874,28 +2874,13 @@ func itemConflictInfo(hits []packHit) string {
 			}
 		}
 	}
-	if len(common) == 0 {
-		return ""
-	}
-	cells := slices.Sorted(maps.Keys(common))
-	if len(cells) == 0 {
-		return ""
-	}
-	parts := strings.Split(cells[0], ",")
-	if len(parts) == 2 {
-		x, xErr := strconv.Atoi(parts[0])
-		y, yErr := strconv.Atoi(parts[1])
-		if xErr == nil && yErr == nil {
-			return "cell (" + strconv.Itoa(x*16) + ", " + strconv.Itoa(y*16) + ")"
-		}
-	}
-	return "cell (" + strings.ReplaceAll(cells[0], ",", ", ") + ")"
+	return slices.Sorted(maps.Keys(common))
 }
 
-func shapeCells(shape cpShape) map[string]bool {
+func shapeCells(shape Shape) map[string]bool {
 	out := map[string]bool{}
-	if shape.cells != "" {
-		for cell := range strings.SplitSeq(shape.cells, ";") {
+	if shape.Cells != "" {
+		for cell := range strings.SplitSeq(shape.Cells, ";") {
 			if cell != "" {
 				out[cell] = true
 			}
@@ -2917,7 +2902,7 @@ func shapeCells(shape cpShape) map[string]bool {
 func hitPriority(kind string, hit packHit) int {
 	best, found := 0, false
 	for patch := range hit.clashing(kind) {
-		rank := contentPatcherPriority(kind, patch.priority)
+		rank := contentPatcherPriority(kind, patch.Priority)
 		if !found {
 			best, found = rank, true
 		} else {
@@ -2927,12 +2912,12 @@ func hitPriority(kind string, hit packHit) int {
 	if found {
 		return best
 	}
-	return contentPatcherPriority(kind, hit.priority)
+	return contentPatcherPriority(kind, hit.Priority)
 }
 
 func hasExclusiveLoad(hit packHit) bool {
 	for patch := range hit.clashing("load") {
-		if exclusiveLoadPriority(patch.priority) {
+		if exclusiveLoadPriority(patch.Priority) {
 			return true
 		}
 	}
@@ -2951,8 +2936,8 @@ func dependencyLoadWinner(hits []packHit, tied []int) (int, bool) {
 		return -1, false
 	}
 	left, right := tied[0], tied[1]
-	leftDepends := hits[left].dependencies[hits[right].id.Fold()]
-	rightDepends := hits[right].dependencies[hits[left].id.Fold()]
+	leftDepends := hits[left].Dependencies[hits[right].ID.Fold()]
+	rightDepends := hits[right].Dependencies[hits[left].ID.Fold()]
 	if leftDepends == rightDepends {
 		return -1, false
 	}
@@ -2962,26 +2947,26 @@ func dependencyLoadWinner(hits []packHit, tied []int) (int, bool) {
 	return right, true
 }
 
-func harmlessLoads(hits []packHit, conflict framework.AssetConflict) (bool, *framework.SettingHint) {
+func harmlessLoads(hits []packHit, conflict Conflict) (bool, *Hint) {
 	if len(hits) < 2 {
 		return false, nil
 	}
-	if conflict.WinnerKind == framework.WinnerNeither {
+	if conflict.WinnerKind == WinnerNeither {
 		return false, nil
 	}
 	if allLoadFilesIdentical(hits, conflict.Target) {
 		return true, nil
 	}
-	winner := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.id, ModID(conflict.WinnerID)) })
+	winner := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.ID, ModID(conflict.WinnerID)) })
 	if winner < 0 {
 		return allLoadsBlank(hits, conflict.Target), nil
 	}
 
 	winnerBlank := true
-	for _, load := range hits[winner].loads {
+	for _, load := range hits[winner].Loads {
 		winnerBlank = winnerBlank && loadFileBlank(hits[winner], load, conflict.Target)
 	}
-	var hint *framework.SettingHint
+	var hint *Hint
 	for i, hit := range hits {
 		if i == winner {
 			continue
@@ -2999,7 +2984,7 @@ func harmlessLoads(hits []packHit, conflict framework.AssetConflict) (bool, *fra
 
 func allLoadsBlank(hits []packHit, target string) bool {
 	for _, hit := range hits {
-		for _, load := range hit.loads {
+		for _, load := range hit.Loads {
 			if !loadFileBlank(hit, load, target) {
 				return false
 			}
@@ -3010,9 +2995,9 @@ func allLoadsBlank(hits []packHit, target string) bool {
 
 // loserLoadsHint checks a losing pack's loads against the winner. It reports false when a load makes the
 // conflict real; the hint then is the setting that would settle it, if any.
-func loserLoadsHint(hits []packHit, hit, winner packHit, winnerBlank bool, conflict framework.AssetConflict) (*framework.SettingHint, bool) {
-	var hint *framework.SettingHint
-	for _, load := range hit.loads {
+func loserLoadsHint(hits []packHit, hit, winner packHit, winnerBlank bool, conflict Conflict) (*Hint, bool) {
+	var hint *Hint
+	for _, load := range hit.Loads {
 		if loadFileBlank(hit, load, conflict.Target) || loadMatchesAny(hit, load, winner, conflict.Target) {
 			continue
 		}
@@ -3022,7 +3007,7 @@ func loserLoadsHint(hits []packHit, hit, winner packHit, winnerBlank bool, confl
 		if !loadPriorityDecided(hits, conflict) {
 			return nil, false
 		}
-		if hitPriority("load", hit) > -1000 && !hit.mentions[winner.id.Fold()] {
+		if hitPriority("load", hit) > -1000 && !hit.Mentions[winner.ID.Fold()] {
 			return nil, false
 		}
 		if candidate := settingForDeadLoad(hit, load, winner, conflict); candidate != nil {
@@ -3032,30 +3017,30 @@ func loserLoadsHint(hits []packHit, hit, winner packHit, winnerBlank bool, confl
 	return hint, true
 }
 
-func loadMatchesAny(hit packHit, load cpPatch, winner packHit, target string) bool {
-	return slices.ContainsFunc(winner.loads, func(winningLoad cpPatch) bool {
+func loadMatchesAny(hit packHit, load Patch, winner packHit, target string) bool {
+	return slices.ContainsFunc(winner.Loads, func(winningLoad Patch) bool {
 		return loadFilesEqual(hit, load, winner, winningLoad, target)
 	})
 }
 
-func settingForDeadLoad(hit packHit, load cpPatch, winner packHit, conflict framework.AssetConflict) *framework.SettingHint {
+func settingForDeadLoad(hit packHit, load Patch, winner packHit, conflict Conflict) *Hint {
 	if hitPriority("load", hit) > -1000 {
 		return nil
 	}
-	for _, condition := range load.when.config {
-		schema, ok := hit.schema[strings.ToLower(condition.field)]
-		if !ok || schema.defaultValue == "" {
+	for _, condition := range load.When.Config {
+		schema, ok := hit.Schema[strings.ToLower(condition.Field)]
+		if !ok || schema.DefaultValue == "" {
 			continue
 		}
-		current := hit.config[strings.ToLower(condition.field)]
-		current = cmp.Or(current, schema.defaultValue)
-		if current == schema.defaultValue || !configHolds([]cpConfig{condition}, hit.schema, hit.config) {
+		current := hit.Config[strings.ToLower(condition.Field)]
+		current = cmp.Or(current, schema.DefaultValue)
+		if current == schema.DefaultValue || !ConfigHolds([]Config{condition}, hit.Schema, hit.Config) {
 			continue
 		}
-		return &framework.SettingHint{
-			Key: hit.key, ID: frameworkID(hit.id), Name: hit.name, Field: schema.key,
-			Current: current, Suggested: []string{schema.defaultValue},
-			Description: "This setting has no effect because " + winner.name + " loads " + conflict.Target + " over it.",
+		return &Hint{
+			Key: hit.Key, ID: hit.ID, Name: hit.Name, Field: schema.Key,
+			Current: current, Suggested: []string{schema.DefaultValue},
+			BecausePack: winner.Name, DeadTarget: conflict.Target,
 		}
 	}
 	return nil
@@ -3065,8 +3050,8 @@ func allLoadFilesIdentical(hits []packHit, target string) bool {
 	var reference any
 	found := false
 	for _, hit := range hits {
-		for _, load := range hit.loads {
-			raw, ok := loadFileBytes(hit, load, target)
+		for _, load := range hit.Loads {
+			raw, ok := LoadFileBytes(hit, load, target)
 			if !ok {
 				return false
 			}
@@ -3089,7 +3074,7 @@ func allLoadFilesIdentical(hits []packHit, target string) bool {
 func allLoadFilesBlank(hits []packHit, target string) bool {
 	found := false
 	for _, hit := range hits {
-		for _, load := range hit.loads {
+		for _, load := range hit.Loads {
 			found = true
 			if !loadFileBlank(hit, load, target) {
 				return false
@@ -3099,11 +3084,11 @@ func allLoadFilesBlank(hits []packHit, target string) bool {
 	return found
 }
 
-func loadPriorityDecided(hits []packHit, conflict framework.AssetConflict) bool {
+func loadPriorityDecided(hits []packHit, conflict Conflict) bool {
 	if conflict.WinnerID == "" {
 		return false
 	}
-	winner := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.id, ModID(conflict.WinnerID)) })
+	winner := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.ID, ModID(conflict.WinnerID)) })
 	if winner < 0 {
 		return false
 	}
@@ -3116,8 +3101,8 @@ func loadPriorityDecided(hits []packHit, conflict framework.AssetConflict) bool 
 	return true
 }
 
-func loadFileBlank(hit packHit, load cpPatch, target string) bool {
-	raw, ok := loadFileBytes(hit, load, target)
+func loadFileBlank(hit packHit, load Patch, target string) bool {
+	raw, ok := LoadFileBytes(hit, load, target)
 	if !ok {
 		return false
 	}
@@ -3130,12 +3115,12 @@ func loadFileBlank(hit packHit, load cpPatch, target string) bool {
 	return json.Unmarshal(raw, &array) == nil && array != nil && len(array) == 0
 }
 
-func loadFilesEqual(a packHit, ap cpPatch, b packHit, bp cpPatch, target string) bool {
-	left, ok := loadFileBytes(a, ap, target)
+func loadFilesEqual(a packHit, ap Patch, b packHit, bp Patch, target string) bool {
+	left, ok := LoadFileBytes(a, ap, target)
 	if !ok {
 		return false
 	}
-	right, ok := loadFileBytes(b, bp, target)
+	right, ok := LoadFileBytes(b, bp, target)
 	if !ok {
 		return false
 	}
@@ -3155,15 +3140,15 @@ func loadJSONValue(raw []byte) (any, bool) {
 	return value, true
 }
 
-func loadFileBytes(hit packHit, load cpPatch, target string) ([]byte, bool) {
-	path, ok := resolveLoadFile(load.fromFile, target, hit.tokens, hit.present, hit.schema, hit.config)
+func LoadFileBytes(hit packHit, load Patch, target string) ([]byte, bool) {
+	path, ok := ResolveLoadFile(load.FromFile, target, hit.Tokens, hit.Present, hit.Schema, hit.Config)
 	if !ok {
 		return nil, false
 	}
-	return readPackPath(hit.root, path)
+	return readPackPath(hit.Root, path)
 }
 
-func resolveLoadFile(file, target string, tokens []cpPatch, present map[string]bool, schema map[string]cpSchema, config map[string]string) (string, bool) {
+func ResolveLoadFile(file, target string, tokens []Patch, present map[string]bool, schema map[string]Schema, config map[string]string) (string, bool) {
 	file = strings.TrimSpace(file)
 	for range 16 {
 		start := strings.Index(file, "{{")
@@ -3188,10 +3173,10 @@ func resolveLoadFile(file, target string, tokens []cpPatch, present map[string]b
 		default:
 			found := false
 			for _, token := range tokens {
-				if token.tokenName != name || !token.when.holds(present) || !configHolds(token.when.config, schema, config) {
+				if token.TokenName != name || !token.When.Holds(present) || !ConfigHolds(token.When.Config, schema, config) {
 					continue
 				}
-				value, found = token.tokenValue, true
+				value, found = token.TokenValue, true
 			}
 			if !found {
 				return "", false

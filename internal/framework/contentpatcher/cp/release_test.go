@@ -1,50 +1,47 @@
-package contentpatcher
+package cp
 
 import (
 	"path/filepath"
 	"runtime/debug"
 	"testing"
 	"time"
-
-	"github.com/Rethunk-Tech/mortar/internal/framework"
 )
 
 // Once no check has run for a while the parsed packs leave memory, and the next read gets the same pack back from
 // the disk cache; a cache with unsaved changes keeps them.
 func TestIdlePacksAreReleasedAndReadBackFromDisk(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	resetContentPackCaches()
-	t.Cleanup(resetContentPackCaches)
+	dataHome(t)
+	resetCaches()
+	t.Cleanup(resetCaches)
 	im, _, _ := diskCachePack(t)
-	first := readContentPack(im, false)
+	first := ReadPack(im, false)
 	packUse.Lock()
 	gen := packUse.gen
 	packUse.Unlock()
-	releasePacks(gen)
+	ReleasePacks(gen)
 	if _, held := packCache.Load(cleanFolder(im)); !held {
 		t.Fatal("packs were released before the disk cache was saved")
 	}
-	flushPackDiskCache([]framework.Mod{im})
+	FlushPackDiskCache([]Mod{im})
 	collections := func() int64 {
 		var st debug.GCStats
 		debug.ReadGCStats(&st)
 		return st.NumGC
 	}
 	before := collections()
-	releasePacks(gen)
+	ReleasePacks(gen)
 	if _, held := packCache.Load(cleanFolder(im)); held {
 		t.Fatal("packs stayed in memory after an idle release")
 	}
 	if collections() == before {
 		t.Fatal("the released packs were left uncollected, so their pages stay with the process")
 	}
-	again := readContentPack(im, false)
-	if len(again.patches) != len(first.patches) || again.fingerprint != first.fingerprint {
-		t.Fatalf("pack read back = %#v, want %#v", again.patches, first.patches)
+	again := ReadPack(im, false)
+	if len(again.Patches) != len(first.Patches) || again.Fingerprint != first.Fingerprint {
+		t.Fatalf("pack read back = %#v, want %#v", again.Patches, first.Patches)
 	}
-	release := holdPacks()
-	releasePacks(gen + 1)
+	release := HoldPacks()
+	ReleasePacks(gen + 1)
 	if _, held := packCache.Load(cleanFolder(im)); !held {
 		t.Fatal("packs were released while a check held them")
 	}
@@ -53,16 +50,15 @@ func TestIdlePacksAreReleasedAndReadBackFromDisk(t *testing.T) {
 
 // A check that saved its disk cache leaves neither the parsed packs nor their encoded copies in memory once it ends.
 func TestPacksLeaveMemoryWhenTheLastCheckEnds(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	resetContentPackCaches()
-	t.Cleanup(resetContentPackCaches)
+	dataHome(t)
+	resetCaches()
+	t.Cleanup(resetCaches)
 	packGrace = 0
 	t.Cleanup(func() { packGrace = 30 * time.Second })
 	im, _, _ := diskCachePack(t)
-	end := holdPacks()
-	readContentPack(im, false)
-	flushPackDiskCache([]framework.Mod{im})
+	end := HoldPacks()
+	ReadPack(im, false)
+	FlushPackDiskCache([]Mod{im})
 	end()
 	if _, held := packCache.Load(cleanFolder(im)); held {
 		t.Fatal("the parsed packs outlived the check")
@@ -77,17 +73,16 @@ func TestPacksLeaveMemoryWhenTheLastCheckEnds(t *testing.T) {
 // The packs outlive a check by the grace period, so the next check of an edited profile finds them, and a check that
 // starts inside it keeps them past the first release.
 func TestPacksStayForTheGraceAfterACheck(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("LOCALAPPDATA", t.TempDir())
-	resetContentPackCaches()
-	t.Cleanup(resetContentPackCaches)
+	dataHome(t)
+	resetCaches()
+	t.Cleanup(resetCaches)
 	// No grace timer fires while the first checks look, however slow the runner (the race detector on CI).
 	packGrace = time.Hour
 	t.Cleanup(func() { packGrace = 30 * time.Second })
 	im, _, _ := diskCachePack(t)
-	end := holdPacks()
-	readContentPack(im, false)
-	flushPackDiskCache([]framework.Mod{im})
+	end := HoldPacks()
+	ReadPack(im, false)
+	FlushPackDiskCache([]Mod{im})
 	packUse.Lock()
 	ended := packUse.gen
 	packUse.Unlock()
@@ -95,9 +90,9 @@ func TestPacksStayForTheGraceAfterACheck(t *testing.T) {
 	if _, held := packCache.Load(cleanFolder(im)); !held {
 		t.Fatal("the packs left memory the moment the check ended")
 	}
-	next := holdPacks()
+	next := HoldPacks()
 	// The first check's grace running out under a newer check must not release the packs.
-	releasePacks(ended)
+	ReleasePacks(ended)
 	if _, held := packCache.Load(cleanFolder(im)); !held {
 		t.Fatal("the packs were released under a running check")
 	}
@@ -113,4 +108,4 @@ func TestPacksStayForTheGraceAfterACheck(t *testing.T) {
 	t.Fatal("the packs stayed in memory after the grace")
 }
 
-func cleanFolder(im framework.Mod) string { return filepath.Clean(im.Folder) }
+func cleanFolder(im Mod) string { return filepath.Clean(im.Folder) }
