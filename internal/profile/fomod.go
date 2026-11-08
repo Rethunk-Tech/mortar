@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -218,13 +219,16 @@ func (s *Store) installAsk(game, id, key string, source Source) (Source, FomodAs
 	return source.WithFomod(cloneFomod(prev.Fomod)), FomodAsk{}, false, nil
 }
 
-// replacing is the one entry holding a mod anywhere in the store item key, under any choice of its options.
+// replacing is the one entry this install replaces: the entry holding a mod that key lays out under that entry's own
+// saved choices. Those are the files that entry's install landed, the same laid-out scan holding makes the
+// add-or-update decision on, so a mod carried only by an option the entry did not choose names no entry and its
+// choices cannot replay onto another mod.
 func (s *Store) replacing(game, id, key string) (Entry, bool, error) {
 	root, err := s.items.Path(game, key)
 	if err != nil {
 		return Entry{}, false, err
 	}
-	found, err := smapimanifest.Scan(root)
+	every, err := smapimanifest.Scan(root)
 	if err != nil {
 		return Entry{}, false, err
 	}
@@ -234,6 +238,23 @@ func (s *Store) replacing(game, id, key string) (Entry, bool, error) {
 	}
 	var held []Entry
 	for _, e := range p.Entries {
+		// Only a saved choice can replay. A layout holds files of the item, so an entry sharing no mod with the
+		// whole item shares none with a layout of it; a dropped choice lays nothing out, so every file stands in,
+		// and that entry's wizard opens, so its saved choices never replay unseen.
+		if e.Fomod == nil || !holdsAny(e, every) {
+			continue
+		}
+		found, err := s.chosenMods(game, id, key, e.Fomod)
+		_, stale := errors.AsType[*NeedChoicesError](err)
+		_, empty := errors.AsType[*NoModError](err)
+		switch {
+		case stale:
+			found = every
+		case empty:
+			found = nil
+		case err != nil:
+			return Entry{}, false, err
+		}
 		if holdsAny(e, found) {
 			held = append(held, e)
 		}
@@ -242,6 +263,14 @@ func (s *Store) replacing(game, id, key string) (Entry, bool, error) {
 		return Entry{}, false, nil
 	}
 	return held[0], true, nil
+}
+
+// chosenMods is the mods key lays out under choices: the one scan saying which entries a store item's install lands
+// on, shared by the replace decision above and holding's add-or-update decision.
+func (s *Store) chosenMods(game, id, key string, choices map[string]map[string][]string) ([]smapimanifest.Mod, error) {
+	_, found, done, err := s.scanItem(game, id, key, choices)
+	defer done()
+	return found, err
 }
 
 // scanItem lays out a store item and scans it for mods; an item with none is a NoModError. done removes any temp

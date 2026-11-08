@@ -364,8 +364,7 @@ func modsVersionChanged(old, neu []Component) bool {
 // holding returns the profile's entries that hold any mod of the store item key. An entry that is already key is a
 // DuplicateError.
 func (s *Store) holding(game, id, key string, choices map[string]map[string][]string) ([]Entry, error) {
-	_, found, done, err := s.scanItem(game, id, key, choices)
-	defer done()
+	found, err := s.chosenMods(game, id, key, choices)
 	if err != nil {
 		return nil, err
 	}

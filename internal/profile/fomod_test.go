@@ -196,6 +196,52 @@ func TestFomodReplayKeepsChangedOffWhenChoicesStillFit(t *testing.T) {
 	}
 }
 
+// An option the player never picked must not name the entry to replace: matching by every option in the archive
+// replays that entry's choices, and installs a mod the player did not ask for while its real entry stays behind.
+func TestFomodInstallDoesNotReplayChoicesFromAnUnchosenOption(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "A")
+	xml, err := safefs.ReadFile(filepath.Join("..", "installer", "testdata", "fomod", "choose-one.xml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	config := string(xml)
+	// The entry holds A.Beta, chosen from Beta.
+	e.item(t, "old", map[string]string{
+		"fomod/ModuleConfig.xml": config,
+		"alpha/manifest.json":    manifestJSON("A.Alpha"),
+		"beta/manifest.json":     manifestJSON("A.Beta"),
+	})
+	beta := map[string]map[string][]string{"Options": {"Pack": {"Beta"}}}
+	if _, err := e.InstallFomod("stardew", p.ID, "old", Source{Kind: KindLocal, Name: "x"}, beta); err != nil {
+		t.Fatal(err)
+	}
+	// Only Beta carries a mod the profile holds, and the entry did not choose Beta here.
+	e.item(t, "new", map[string]string{
+		"fomod/ModuleConfig.xml": config,
+		"alpha/manifest.json":    manifestJSON("A.Beta"),
+		"beta/manifest.json":     manifestJSON("A.Gamma"),
+	})
+	src, ask, need, err := e.installAsk("stardew", p.ID, "new", Source{Kind: KindLocal, Name: "x"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !need || ask.OldKey != "" || len(src.fomodMap()) != 0 {
+		t.Fatalf("replayed choices the item does not lay out: need=%v ask=%+v choices=%v", need, ask, src.fomodMap())
+	}
+	// The choice that does lay A.Beta out updates the entry rather than adding a second one for it.
+	res, err := e.InstallFomod("stardew", p.ID, "new", Source{Kind: KindLocal, Name: "x"},
+		map[string]map[string][]string{"Options": {"Pack": {"Alpha"}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Profile.Entries) != 1 || res.Profile.Entries[0].Key != "new" || len(res.Added) != 1 ||
+		res.Added[0] != "A.Beta" {
+		t.Fatalf("install: %+v", res)
+	}
+}
+
 func TestFomodImageRefusesAPathOutsideTheItem(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
