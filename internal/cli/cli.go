@@ -2605,7 +2605,7 @@ func (c *cmd) confirm(what, prompt string) error {
 	if _, err := fmt.Fscan(os.Stdin, &answer); err != nil {
 		return err
 	}
-	if strings.ToLower(answer) != "y" && strings.ToLower(answer) != "yes" {
+	if answer = strings.ToLower(answer); answer != "y" && answer != "yes" {
 		return errors.New("cancelled")
 	}
 	return nil
