@@ -117,8 +117,7 @@ func movedKeys(moves []EntryMove, entries []Entry) []string {
 		keys = append(keys, m.OldKey, m.NewKey)
 		for _, e := range entries {
 			if e.Key == m.NewKey {
-				keys = append(keys, e.ExtraStoreKeys...)
-				keys = append(keys, e.PreviousExtraStoreKeys...)
+				keys = append(keys, entryStoreKeys(e)...)
 			}
 		}
 	}
@@ -195,8 +194,7 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 	keys := []string{oldKey, newKey}
 	for _, e := range p.Entries {
 		if e.Key == newKey {
-			keys = append(keys, e.ExtraStoreKeys...)
-			keys = append(keys, e.PreviousExtraStoreKeys...)
+			keys = append(keys, entryStoreKeys(e)...)
 			break
 		}
 	}

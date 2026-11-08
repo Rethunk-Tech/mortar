@@ -501,3 +501,27 @@ func TestUpdateEntryMovesNexusSourceToTheNewFile(t *testing.T) {
 		t.Fatalf("entry %q source = %+v, want mod 5 file 11 with no stale digest", got.Entries[0].Key, src)
 	}
 }
+
+func TestMovedKeysUsesEntryStoreKeys(t *testing.T) {
+	t.Parallel()
+	e := Entry{
+		Key:                    "new",
+		PreviousKey:            "prev",
+		ExtraStoreKeys:         []string{"extra"},
+		PreviousExtraStoreKeys: []string{"oldextra"},
+	}
+	got := movedKeys([]EntryMove{{OldKey: "old", NewKey: "new"}}, []Entry{e})
+	want := map[string]bool{"old": true, "new": true}
+	for _, k := range entryStoreKeys(e) {
+		want[k] = true
+	}
+	seen := map[string]bool{}
+	for _, k := range got {
+		seen[k] = true
+	}
+	for k := range want {
+		if !seen[k] {
+			t.Errorf("movedKeys missing %q; got %v", k, got)
+		}
+	}
+}
