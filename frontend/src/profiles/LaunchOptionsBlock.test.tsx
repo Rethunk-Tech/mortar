@@ -3,12 +3,17 @@ import { I18nProvider } from '@lingui/react'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import * as launchsvc from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { useLaunch } from '../launch/store.ts'
 import { stubBinding } from '../testing/stubBinding.ts'
 import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
 
-let release: (value: { reachedTitle: boolean; cause: string }) => void = () => {}
+const noop = () => undefined
+
+let release: (value: { reachedTitle: boolean; cause: string }) => void = noop
 
 beforeEach(() => {
+  cleanup()
+  useLaunch.setState(useLaunch.getInitialState(), true)
   stubBinding(launchsvc, 'PreviewCommand', () => ({ env: [], argv: [], error: '' }))
   stubBinding(launchsvc, 'TestLaunchWith', () => {
     return new Promise<{ reachedTitle: boolean; cause: string }>((resolve) => {
@@ -29,17 +34,18 @@ test('Test launch ignores a second click while the first is in flight', async ()
         gameId="stardewvalley"
         profileId="default"
         launchOptions=""
-        onLaunchOptions={() => {}}
+        onLaunchOptions={noop}
         launchPrefix=""
-        onLaunchPrefix={() => {}}
+        onLaunchPrefix={noop}
         launchEnv=""
-        onLaunchEnv={() => {}}
+        onLaunchEnv={noop}
         launchError={null}
-        onLaunchError={() => {}}
+        onLaunchError={noop}
       />
     </I18nProvider>,
   )
   const button = screen.getByRole('button', { name: /test launch/i })
+  expect((button as HTMLButtonElement).disabled).toBe(false)
   fireEvent.click(button)
   fireEvent.click(button)
   expect(launchsvc.TestLaunchWith).toHaveBeenCalledTimes(1)
