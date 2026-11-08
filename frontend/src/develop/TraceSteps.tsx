@@ -2,12 +2,12 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import type { Member } from '../../bindings/github.com/Rethunk-Tech/go-dotnet/models.ts'
 import type { Assembly } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   FrameAssembly,
   GameCode,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
-import type { Member } from '../../bindings/github.com/Rethunk-Tech/go-dotnet/models.ts'
 import type { StackFrame } from '../console/stackFrame.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'

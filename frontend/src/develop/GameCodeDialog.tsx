@@ -14,6 +14,7 @@ import {
 import { useDebouncedLoad, useLoaded } from '@rethunk/react-load-hooks'
 import { CircleAlert, Code, FileSearch } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { Member } from '../../bindings/github.com/Rethunk-Tech/go-dotnet/models.ts'
 import type {
   Assembly,
   Mapped,
@@ -28,7 +29,6 @@ import {
   InstallDecompiler,
   Usages,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
-import type { Member } from '../../bindings/github.com/Rethunk-Tech/go-dotnet/models.ts'
 import { ILSPY } from '../brand/productNames.ts'
 import type { StackFrame } from '../console/stackFrame.ts'
 import { AppDialog, ToneIcon } from '../shell/dialog/AppDialog.tsx'
