@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-modmanagers/r2modman"
 	_ "modernc.org/sqlite"
 )
 
@@ -113,11 +114,11 @@ func FuzzGaleRows(f *testing.F) {
 // that refuses, so only the pasted form is read.
 func FuzzCode(f *testing.F) {
 	zipped := fuzzZip(map[string]string{exportFile: "profileName: p\ncommunity: lethal-company\nmods:\n- name: Alice-MoreCompany\n  enabled: true\n  version: {major: 1, minor: 2, patch: 3}\n", "BepInEx/config/a.cfg": "x"})
-	f.Add(codePrefix + "\n" + base64.StdEncoding.EncodeToString(zipped))
-	f.Add(codePrefix + "\n" + base64.StdEncoding.EncodeToString(fuzzZip(map[string]string{exportFile: "mods:\n- name: ../../x\n", "../a.cfg": "x"})))
-	f.Add(codePrefix + "\n" + base64.StdEncoding.EncodeToString(fuzzZip(map[string]string{exportFile: yamlMergeCrash})))
+	f.Add(r2modman.CodePrefix + "\n" + base64.StdEncoding.EncodeToString(zipped))
+	f.Add(r2modman.CodePrefix + "\n" + base64.StdEncoding.EncodeToString(fuzzZip(map[string]string{exportFile: "mods:\n- name: ../../x\n", "../a.cfg": "x"})))
+	f.Add(r2modman.CodePrefix + "\n" + base64.StdEncoding.EncodeToString(fuzzZip(map[string]string{exportFile: yamlMergeCrash})))
 	f.Add("018f0b1c-0000-7000-8000-000000000000")
-	f.Add(codePrefix + " not base64 ")
+	f.Add(r2modman.CodePrefix + " not base64 ")
 	c := Code{URL: "http://127.0.0.1:1"}
 	f.Fuzz(func(t *testing.T, text string) {
 		d, err := c.Parse(t.Context(), Input{Text: text})

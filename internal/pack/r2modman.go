@@ -22,7 +22,6 @@ import (
 
 const (
 	thunderstore = "thunderstore"
-	codePrefix   = r2modman.CodePrefix
 	exportFile   = "export.r2x"
 	// BaseURL is Thunderstore's site, where profile codes are stored.
 	BaseURL = "https://thunderstore.io"

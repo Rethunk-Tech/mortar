@@ -14,6 +14,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-modmanagers/r2modman"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testhttp"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -48,7 +50,7 @@ mods:
 
 func TestFormats(t *testing.T) {
 	r2z := makeZip(t, map[string]string{exportFile: export, "config/a.cfg": "x=1", "BepInEx/plugins/note.txt": "hi"})
-	code := codePrefix + "\n" + base64.StdEncoding.EncodeToString(r2z)
+	code := r2modman.CodePrefix + "\n" + base64.StdEncoding.EncodeToString(r2z)
 	key := "0123abcd-0123-0123-0123-0123456789ab"
 	srvURL := testhttp.LegacyProfile(t, key, code)
 
@@ -134,6 +136,9 @@ func TestExportCodeRoundTripsThroughAFakeServer(t *testing.T) {
 		if r.Method != http.MethodPost || r.URL.Path != "/api/experimental/legacyprofile/create/" ||
 			r.Header.Get("Content-Type") != "application/octet-stream" {
 			t.Errorf("request %s %s %s", r.Method, r.URL.Path, r.Header.Get("Content-Type"))
+		}
+		if r.Header.Get("User-Agent") != source.UserAgentWithSite("") {
+			t.Errorf("user-agent %q", r.Header.Get("User-Agent"))
 		}
 		_, _ = w.Write([]byte(`{"key":"0123abcd-0123-0123-0123-0123456789ab"}`))
 	}))

@@ -3,14 +3,11 @@ package pack
 import (
 	"cmp"
 	"context"
-	"encoding/base64"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-modmanagers/r2modman"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -42,35 +39,12 @@ func (c Code) ExportCode(ctx context.Context, d Draft) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	body := codePrefix + "\n" + base64.StdEncoding.EncodeToString(z)
-	base := cmp.Or(c.URL, BaseURL)
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, base+"/api/experimental/legacyprofile/create/", strings.NewReader(body))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/octet-stream")
-	req.Header.Set("User-Agent", source.UserAgentWithSite(""))
-	client := cmp.Or(c.HTTP, http.DefaultClient)
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode == http.StatusRequestEntityTooLarge {
-		return "", errors.New("profile is too large to export as a code")
-	}
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return "", fmt.Errorf("thunderstore answered %s", resp.Status)
-	}
-	var out struct {
-		Key string `json:"key"`
-	}
-	if err := json.NewDecoder(safefs.CapReader(resp.Body, 1<<20)).Decode(&out); err != nil || out.Key == "" {
-		return "", errors.New("thunderstore returned no profile key")
-	}
-	return out.Key, nil
+	hc := cmp.Or(c.HTTP, http.DefaultClient)
+	client := *hc
+	client.Transport = &httpkit.Transport{Base: hc.Transport, UserAgent: source.UserAgentWithSite("")}
+	return r2modman.CreateCode(ctx, &client, cmp.Or(c.URL, BaseURL), z)
 }
 
 // WriteR2z writes d as an r2modman .r2z file at dest. It does not post a public code.
