@@ -67,7 +67,7 @@ func TestClientWordsGitHubsAnswers(t *testing.T) {
 
 func TestWordsRedactsUnreachableGitHubURL(t *testing.T) {
 	t.Parallel()
-	err := words(&url.Error{
+	err := words(&url.Error{ //nolint:gosec // G101: a fake credential this test checks is stripped from the message
 		Op:  "Get",
 		URL: "https://user:token@api.github.com/repos/o/r/releases?access_token=secret",
 		Err: errors.New("connection refused"),
