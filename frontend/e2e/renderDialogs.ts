@@ -387,10 +387,27 @@ export function dialogCases(h: Helpers): Case[] {
     dialog('import-link', (p) => importStep(p, /^Link or code/)),
     dialog('import-manager', (p) => importStep(p, /^Another mod manager/)),
     {
-      // The run's main game may have no Develop tab, so the case switches to Lethal Company.
+      // Picking another game in the title bar's switcher.
+      name: 'game-switch',
+      setup: async (p) => {
+        await closeAll(p)
+        await openGame(p, h.tabs(p), 'Stardew Valley')
+        await h.tab(p, 'Home')
+      },
+      run: (p) => openGame(p, h.tabs(p), 'Lethal Company'),
+    },
+    {
+      // The run's main game may have no Develop tab, so setup switches to Lethal Company (game switches are measured by
+      // their own cases) and the run opens only the tab.
       name: 'develop',
-      setup: (p) => h.tab(p, 'Home'),
-      run: kit.developTab,
+      setup: async (p) => {
+        await kit.developTab(p)
+        await h.tab(p, 'Home')
+      },
+      run: async (p) => {
+        await h.tab(p, 'Develop')
+        await p.getByRole('main').getByRole('button', { name: 'More actions' }).first().waitFor()
+      },
     },
     ...shareCases(kit),
     ...toolAndWizardCases(kit),
