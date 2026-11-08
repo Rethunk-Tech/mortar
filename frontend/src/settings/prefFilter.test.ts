@@ -1,21 +1,34 @@
 import { expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { prefMatches } from './prefFilter.ts'
 
+// Every module prefCopy() consults, so a row's label is asserted wherever its copy lives.
+const copySources = () =>
+  readdirSync(import.meta.dir)
+    .filter(
+      (file) => file.startsWith('prefCopy') && file.endsWith('.ts') && !file.endsWith('.test.ts'),
+    )
+    .concat('vrPrefCopy.ts')
+    .map((file) => readFileSync(join(import.meta.dir, file), 'utf8'))
+
 // The Lingui macro does not run under bun test, so labels are read from the source the catalog is extracted from.
 function copyLabels(): Map<string, string> {
-  const source = readFileSync(join(import.meta.dir, 'prefCopy.ts'), 'utf8')
   const labels = new Map<string, string>()
-  for (const m of source.matchAll(/^ {4}([a-zA-Z0-9]+): \{\n\s+label: i18n\._\(msg`([^`]+)`\)/gm)) {
-    labels.set(m[1] ?? '', m[2] ?? '')
+  for (const source of copySources()) {
+    for (const m of source.matchAll(
+      /^ {4}([a-zA-Z0-9]+): \{\n\s+label: i18n\._\(msg`([^`]+)`\)/gm,
+    )) {
+      labels.set(m[1] ?? '', m[2] ?? '')
+    }
   }
   return labels
 }
 
 test('every preference row is found by its own label', () => {
-  const source = readFileSync(join(import.meta.dir, 'prefCopy.ts'), 'utf8')
-  const keys = [...source.matchAll(/^ {4}([a-zA-Z0-9]+): \{$/gm)].map((m) => m[1] ?? '')
+  const keys = copySources().flatMap((source) =>
+    [...source.matchAll(/^ {4}([a-zA-Z0-9]+): \{$/gm)].map((m) => m[1] ?? ''),
+  )
   const labels = copyLabels()
   expect(keys.length).toBeGreaterThan(50)
   for (const key of keys) {
@@ -23,6 +36,19 @@ test('every preference row is found by its own label', () => {
     expect(label, `${key} has a label`).toBeTruthy()
     expect(prefMatches(label ?? '', label ?? '')).toBe(true)
     expect(prefMatches((label ?? '').toUpperCase(), label ?? '')).toBe(true)
+  }
+})
+
+test('the copy modules the filter consults are covered', () => {
+  const labels = copyLabels()
+  for (const key of [
+    'antivirus',
+    'graphics',
+    'defaultModsView',
+    'enableRequirements',
+    'startFirst',
+  ]) {
+    expect(labels.get(key), `${key} has a label`).toBeTruthy()
   }
 })
 
