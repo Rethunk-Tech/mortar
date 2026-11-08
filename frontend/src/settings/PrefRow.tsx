@@ -3,8 +3,6 @@ import { Box } from '@mui/material'
 import { RotateCcw } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { PrefSpec } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
-import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { setOpenOverride } from '../profiles/openOverrides.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
@@ -21,9 +19,9 @@ import { saveSetting } from './persist.ts'
 import { choiceStyle, prefControl } from './prefControl.ts'
 import { prefCopy } from './prefCopy.ts'
 import { specByKey, usePrefSpecs } from './prefSpecs.ts'
-import { prefAsBool, prefAsNumber, prefAsString, prefRaw, specGameArg } from './prefValue.ts'
+import { prefAsBool, prefAsNumber, prefAsString, prefRaw } from './prefValue.ts'
 import { SettingRow } from './SettingsSection.tsx'
-import { useOpenOverride } from './scopedKey.ts'
+import { useScopedKey } from './scopedKey.ts'
 import { useSettings } from './store.ts'
 import { useProfileScope } from './useProfileScope.ts'
 
@@ -91,24 +89,21 @@ function prefControlNode(o: {
 }
 
 // On the open profile's scope a game setting reads and writes the profile's own value; one no profile can change
-// shows the game's, held.
+// shows the game's, held. useScopedKey decides the override-or-game write; the spec's say over this key is layered
+// on top: only a key it marks profileOverridable can take a profile's copy, and a game-scope key it does not mark is
+// shown held rather than silently saved where the profile cannot hold it.
 function useScopedPref(spec: PrefSpec, game: string | undefined) {
   const gameRaw = useSettings((s) => prefRaw(s, spec, game))
-  const profileScope =
-    useProfileScope() && (spec.scope === 'game' || spec.profileOverridable === true)
-  const own = useOpenOverride(spec.key, profileScope)
-  const ownValue = profileScope && spec.profileOverridable === true
-  const gameArg = specGameArg(spec, game)
+  const overridable = spec.profileOverridable === true
+  const scoped = useScopedKey(spec.key, game ?? '', prefAsString(gameRaw, spec), overridable)
   return {
-    gameRaw,
-    own,
-    ownValue,
-    held: profileScope && !ownValue,
-    raw: ownValue && own !== undefined ? own : gameRaw,
-    commit: (value: string) =>
-      ownValue && game
-        ? setOpenOverride(game, spec.key, value)
-        : SetByKey(spec.key, value, gameArg),
+    own: scoped.own,
+    ownValue: scoped.profileScope,
+    gameValue: scoped.gameValue,
+    held: useProfileScope() && spec.scope === 'game' && !overridable,
+    raw: scoped.own ?? gameRaw,
+    commit: scoped.save,
+    reset: scoped.reset,
   }
 }
 
@@ -180,12 +175,12 @@ function PrefRow({
     save,
     commit: scoped.commit,
   })
-  const gameValue = prefAsString(scoped.gameRaw, spec)
+  const gameValue = scoped.gameValue
   const changed = scoped.ownValue && scoped.own !== undefined
   const note = changed ? (
     <ScopeReset
       gameLabel={options.find((o) => o.value === gameValue)?.label ?? gameValue}
-      onReset={() => game && saveSetting(() => setOpenOverride(game, spec.key, undefined))}
+      onReset={() => saveSetting(scoped.reset)}
     />
   ) : null
   const shownExtra = reason === '' ? extra : null
