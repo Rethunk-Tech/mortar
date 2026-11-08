@@ -72,9 +72,6 @@ func (s *Store) Delete(gameID, id string) error {
 	}
 	dst, _ := s.trashDir(gameID, id)
 	forgetProfile(filepath.Join(src, fileName))
-	if _, err := os.Stat(src); err != nil {
-		return err
-	}
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return err
 	}
