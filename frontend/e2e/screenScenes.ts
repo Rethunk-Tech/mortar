@@ -53,6 +53,33 @@ const accountsScene = (h: Helpers) => ({
   },
 })
 
+// Mid-drag in the Manual sort: a mod picked up by its handle and carried down a row, with the line where it would land.
+const manualSortScene = (h: Helpers) => ({
+  name: 'manual-sort',
+  file: 'manual-sort-0-6-0.png',
+  ...h.desk,
+  profile: h.profile,
+  steps: async (page: Page) => {
+    await h.click(page, 'tab', 'Mods')
+    await h.click(page, 'button', 'List view')
+    await h.click(page, 'button', /^Sort$/u)
+    await h.click(page, 'menuitemradio', /^Manual/u)
+    await page
+      .getByRole('button', { name: /^Move / })
+      .nth(2)
+      .focus({ timeout: h.stepMs })
+    await page.keyboard.press('Space')
+    await page.getByText(/^Picked up /u).waitFor({ state: 'attached', timeout: h.stepMs })
+    // The sensor starts listening a moment after the pick-up is announced and drops an arrow pressed before then.
+    const over = page.getByText(/ is over /u)
+    for (let tries = 0; tries < 10 && (await over.count()) === 0; tries++) {
+      await page.keyboard.press('ArrowDown')
+      await over.waitFor({ state: 'attached', timeout: 300 }).catch(() => undefined)
+    }
+    await over.waitFor({ state: 'attached', timeout: h.stepMs })
+  },
+})
+
 const requestCountsScene = (h: Helpers) => ({
   ...accountsScene(h),
   name: 'request-counts',
@@ -170,28 +197,7 @@ export const releaseScenes = (h: Helpers) => [
   },
   accountsScene(h),
   requestCountsScene(h),
-  {
-    name: 'manual-sort',
-    file: 'manual-sort-0-6-0.png',
-    ...h.desk,
-    profile: h.profile,
-    steps: async (page) => {
-      await h.click(page, 'tab', 'Mods')
-      await h.click(page, 'button', 'List view')
-      await h.click(page, 'button', /^Sort$/u)
-      await h.click(page, 'menuitemradio', /^Manual/u)
-      // Mid-drag: a mod picked up by its handle and carried two rows down, with the line where it would land.
-      const handle = page.getByRole('button', { name: /^Move / }).nth(2)
-      await handle.focus({ timeout: h.stepMs })
-      await page.keyboard.press('Space')
-      await page.getByText(/^Picked up /u).waitFor({ state: 'attached', timeout: h.stepMs })
-      for (const _ of [1, 2]) {
-        await page.waitForTimeout(300)
-        await page.keyboard.press('ArrowDown')
-      }
-      await page.getByText(/ is over /u).waitFor({ state: 'attached', timeout: h.stepMs })
-    },
-  },
+  manualSortScene(h),
   {
     name: 'load-order',
     file: 'load-order-0-5-0.png',

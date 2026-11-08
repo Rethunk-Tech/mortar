@@ -11,7 +11,7 @@ import { ProjectCard } from './ProjectCard.tsx'
 
 const DRAG_TINT_ALPHA = 0.24
 
-type Grip = {
+interface Grip {
   label: string
   attributes: DraggableAttributes
   listeners: DraggableSyntheticListeners
