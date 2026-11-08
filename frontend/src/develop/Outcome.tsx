@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Link } from '@mui/material'
-import type { Problem } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
+import type { Diagnostic } from '../../bindings/github.com/Rethunk-Tech/go-dotnet/models.ts'
 import { OpenAt } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { reportError } from '../toasts/report.ts'
@@ -17,7 +17,7 @@ function Problems({
 }: {
   game: string
   project: DevProject
-  problems: Problem[]
+  problems: Diagnostic[]
 }) {
   const { t } = useLingui()
   const failed = t`Could not open the file`

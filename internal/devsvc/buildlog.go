@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-dotnet"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -31,7 +32,7 @@ func buildLogName(name, dir string) string {
 // bundle, so a report of a failed build carries the error the player saw.
 func (s *Service) keepBuildLog(p settings.DevProject, args []string, out []byte, err error, took time.Duration) {
 	took = took.Round(time.Millisecond)
-	problems := ParseProblems(string(out))
+	problems := dotnet.Diagnostics(string(out))
 	result := "succeeded"
 	if err != nil {
 		result = "failed: " + err.Error()

@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/go-dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -71,6 +72,30 @@ func TestBuildRemovesBundlesAssetsNoLongerHolds(t *testing.T) {
 	}
 	if want := []string{"ShopDrop.dll", "kept.bundle"}; !slices.Equal(left, want) {
 		t.Errorf("output holds %v, want %v", left, want)
+	}
+}
+
+func TestBuildReadsMSBuildErrorsOnce(t *testing.T) {
+	svc, _ := testService(t, testTemplate)
+	dir := fixtureProject(t, svc)
+	out := `  Plugin.cs(12,5): error CS1002: ; expected [/p/src/A/A.csproj]
+/p/src/A/Plugin.cs(3,1,3,9): warning CS0168: The variable 'x' is declared but never used [/p/src/A/A.csproj]
+  Plugin.cs(12,5): error CS1002: ; expected [/p/src/A/A.csproj]
+Build FAILED.
+`
+	svc.Run = func(context.Context, string, string, ...string) ([]byte, error) {
+		return []byte(out), errors.New("exit status 1")
+	}
+	r, err := svc.Build(t.Context(), "lethal-company", dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []dotnet.Diagnostic{
+		{File: "Plugin.cs", Line: 12, Column: 5, Severity: "error", Code: "CS1002", Message: "; expected"},
+		{File: "/p/src/A/Plugin.cs", Line: 3, Column: 1, Severity: "warning", Code: "CS0168", Message: "The variable 'x' is declared but never used"},
+	}
+	if !slices.Equal(r.Problems, want) {
+		t.Fatalf("problems = %+v", r.Problems)
 	}
 }
 

@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-dotnet"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -64,7 +65,7 @@ func (s *Service) Pack(ctx context.Context, gameID, dir string) (PackResult, err
 	args := buildArgs(p, "Release")
 	out, err := s.run(ctx, p.Dir, "dotnet", args...)
 	s.keepBuildLog(p, args, out, err, time.Since(started))
-	r := PackResult{OK: err == nil, Problems: ParseProblems(string(out)), Log: tail(string(out)), Issues: []string{}, Warnings: []string{}}
+	r := PackResult{OK: err == nil, Problems: dotnet.Diagnostics(string(out)), Log: tail(string(out)), Issues: []string{}, Warnings: []string{}}
 	if !r.OK {
 		return r, nil
 	}
