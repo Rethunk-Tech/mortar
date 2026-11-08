@@ -19,6 +19,7 @@ import { useMods } from '../store.ts'
 import { CautionAck } from './CautionAck.tsx'
 import { ROW_TILE } from './constants.ts'
 import { dependencyChanges, rowDetails } from './details.ts'
+import { reportsElsewhere } from './groups.ts'
 import { OptionalUpdates } from './OptionalUpdates.tsx'
 import { RowCopy } from './RowCopy.tsx'
 import { UpdateActions } from './UpdateActions.tsx'
@@ -175,8 +176,7 @@ function Row({
       : false
   const { sizeKb, changelog } = rowDetails(update, details)
   const queued = useQueue((s) => pendingUpdate(s.state.items, profileId, update))
-  const reportedElsewhere =
-    entry?.source.kind === 'nexus' && update.source !== '' && update.source !== 'Nexus'
+  const reportedElsewhere = reportsElsewhere(entry?.source.kind, update.source)
   return (
     <ListItem
       disablePadding={true}
