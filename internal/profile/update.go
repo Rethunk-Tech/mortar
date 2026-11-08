@@ -159,10 +159,8 @@ func (s *Store) moveToLocked(game, id, oldKey, newKey string, source *Source) (P
 				return fmt.Errorf("%q has no previous version to roll back to", oldKey)
 			}
 		}
-		for _, e := range p.Entries {
-			if e.Key == newKey {
-				return &DuplicateError{Key: newKey, Label: entryLabel(e)}
-			}
+		if err := checkNotHeld(p.Entries, newKey); err != nil {
+			return err
 		}
 		ne, w, err := s.swapTo(game, p, dir, ei, newKey, source)
 		sw = w

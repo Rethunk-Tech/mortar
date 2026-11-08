@@ -443,10 +443,8 @@ func (s *Store) placeOverlayLocked(game, id, key string, source Source) (Profile
 		}
 		return Profile{}, &NoBaseError{Archive: source.Name, ModName: source.ModName, ModID: source.ModID}
 	}
-	for _, e := range cur.Entries {
-		if e.Key == key {
-			return Profile{}, &DuplicateError{Key: key, Label: entryLabel(e)}
-		}
+	if err := checkNotHeld(cur.Entries, key); err != nil {
+		return Profile{}, err
 	}
 	replaced := func(e Entry) bool {
 		return source.replacing > 0 && e.OverlayOf == base.Key && e.Source.FileID == source.replacing

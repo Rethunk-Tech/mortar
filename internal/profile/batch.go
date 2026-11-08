@@ -30,18 +30,12 @@ func (s *Store) updateEntriesAs(game, id, kind string, note HistoryEvent, keys [
 				continue
 			}
 			seen[key] = true
-			found := false
-			for i := range p.Entries {
-				if p.Entries[i].Key == key {
-					if err := fn(&p.Entries[i], key); err != nil {
-						return err
-					}
-					found = true
-					break
-				}
-			}
-			if !found {
+			i := EntryIndex(p.Entries, key)
+			if i < 0 {
 				return fmt.Errorf("unknown profile entry %q", key)
+			}
+			if err := fn(&p.Entries[i], key); err != nil {
+				return err
 			}
 		}
 		return nil
@@ -113,17 +107,11 @@ func (s *Store) SetEntryTagsMany(game, id string, keys []string, tag string, add
 func (s *Store) SetSkipVersionMany(game, id string, refs []SkipVersionRef) (Profile, error) {
 	return s.updateMods(game, id, func(p *Profile, _ string) error {
 		for _, ref := range refs {
-			found := false
-			for i := range p.Entries {
-				if p.Entries[i].Key == ref.Key {
-					p.Entries[i].SkipVersion = ref.Version
-					found = true
-					break
-				}
-			}
-			if !found {
+			i := EntryIndex(p.Entries, ref.Key)
+			if i < 0 {
 				return fmt.Errorf("unknown profile entry %q", ref.Key)
 			}
+			p.Entries[i].SkipVersion = ref.Version
 		}
 		return nil
 	})

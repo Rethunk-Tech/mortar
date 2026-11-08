@@ -322,11 +322,8 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 			return Profile{}, true, false, err
 		}
 		var neu []Component
-		for _, e := range p.Entries {
-			if e.Key == key {
-				neu = e.Mods
-				break
-			}
+		if i := EntryIndex(p.Entries, key); i >= 0 {
+			neu = p.Entries[i].Mods
 		}
 		return p, true, modsVersionChanged(old, neu), nil
 	}
@@ -376,11 +373,11 @@ func (s *Store) holding(game, id, key string, choices map[string]map[string][]st
 	if err != nil {
 		return nil, err
 	}
+	if err := checkNotHeld(p.Entries, key); err != nil {
+		return nil, err
+	}
 	var held []Entry
 	for _, e := range p.Entries {
-		if e.Key == key {
-			return nil, &DuplicateError{Key: key, Label: entryLabel(e)}
-		}
 		if holdsAny(e, found) {
 			held = append(held, e)
 		}

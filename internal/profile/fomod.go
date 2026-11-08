@@ -297,13 +297,10 @@ func (s *Store) FomodPreview(game, id, key string, choices map[string]map[string
 	}
 	var src Source
 	held := false
-	for _, e := range p.Entries {
-		if e.Key == key {
-			src, held = e.Source, true
-			if choices == nil {
-				choices = e.Fomod
-			}
-			break
+	if i := EntryIndex(p.Entries, key); i >= 0 {
+		src, held = p.Entries[i].Source, true
+		if choices == nil {
+			choices = p.Entries[i].Fomod
 		}
 	}
 	if !held && len(choices) == 0 {
@@ -337,18 +334,16 @@ func (s *Store) InstallFomod(game, id, key string, source Source, choices map[st
 		return InstallResult{}, err
 	}
 	src := source.WithFomod(choices)
-	for _, e := range p.Entries {
-		if e.Key == key {
-			out, err := s.applyFomod(game, id, key, choices)
-			if err != nil {
-				return InstallResult{}, installError(err)
-			}
-			res := InstallResult{Profile: out, Added: addedNames(out, key), Updated: true}
-			if err := s.RecordModsSnapshot(game, id); err != nil {
-				return InstallResult{}, err
-			}
-			return res, nil
+	if EntryIndex(p.Entries, key) >= 0 {
+		out, err := s.applyFomod(game, id, key, choices)
+		if err != nil {
+			return InstallResult{}, installError(err)
 		}
+		res := InstallResult{Profile: out, Added: addedNames(out, key), Updated: true}
+		if err := s.RecordModsSnapshot(game, id); err != nil {
+			return InstallResult{}, err
+		}
+		return res, nil
 	}
 	return s.installKey(game, id, key, src)
 }

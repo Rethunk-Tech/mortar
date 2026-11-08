@@ -63,6 +63,18 @@ func hasID(ids []mod.ID, id mod.ID) bool {
 	return slices.ContainsFunc(ids, func(x mod.ID) bool { return mod.Equal(x, id) })
 }
 
+func sameIDs(a, b []mod.ID) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for _, id := range a {
+		if !hasID(b, id) {
+			return false
+		}
+	}
+	return true
+}
+
 func writeProfile(dir string, p Profile) error {
 	p.FormatVersion = datadir.FormatVersion
 	p.LastChange, p.Folder = "", ""
@@ -266,10 +278,8 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 // addToStaged is addTo that, when staged, leaves the folder under its pending name and returns that as placed and the
 // name to give it once profile.json records the entry as final. A folder that needs no staging has them equal.
 func (s *Store) addToStaged(game string, p *Profile, dir, key string, source Source, disabled []mod.ID, staged bool) (placed, final string, err error) {
-	for _, e := range p.Entries {
-		if e.Key == key {
-			return "", "", &DuplicateError{Key: key, Label: entryLabel(e)}
-		}
+	if err := checkNotHeld(p.Entries, key); err != nil {
+		return "", "", err
 	}
 	mods, isPackage, err := s.packageMods(game, key, source.ModName)
 	if err != nil {

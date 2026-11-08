@@ -68,6 +68,13 @@ func requireEntry(entries []Entry, key string) (int, error) {
 	return i, nil
 }
 
+func checkNotHeld(entries []Entry, key string) error {
+	if i := EntryIndex(entries, key); i >= 0 {
+		return &DuplicateError{Key: key, Label: entryLabel(entries[i])}
+	}
+	return nil
+}
+
 func setLoadAfter(ids []mod.ID, loser mod.ID, on bool) []mod.ID {
 	out := make([]mod.ID, 0, len(ids)+1)
 	for _, id := range ids {
