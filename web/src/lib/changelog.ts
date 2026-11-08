@@ -58,12 +58,17 @@ export interface Release {
   html: string
 }
 
+let cached: Release[] | undefined
+
 /** Every release with written notes, newest first, dated from the metainfo. Notes drafted for the next release, newer than any dated one, wait until it is cut. */
 export function releases(): Release[] {
+  if (cached) {
+    return cached
+  }
   const metainfo = readFileSync(METAINFO, 'utf8')
   const dated = [...metainfo.matchAll(RELEASE_VERSION)].map((m) => m[1] ?? '')
   const newest = dated.sort(byVersionDesc)[0] ?? ''
-  return readdirSync(NOTES)
+  cached = readdirSync(NOTES)
     .map((f) => NOTES_FILE.exec(f)?.[1])
     .filter((v): v is string => v !== undefined)
     .sort(byVersionDesc)
@@ -78,6 +83,7 @@ export function releases(): Release[] {
       const md = readFileSync(`${NOTES}/v${version}.md`, 'utf8')
       return { version, date, md, html: notesHtml(md) }
     })
+  return cached
 }
 
 /** How many changes a release's notes list: one per "- " line. */

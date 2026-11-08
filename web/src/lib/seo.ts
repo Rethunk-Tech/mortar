@@ -1,6 +1,5 @@
 // Structured data for search engines and the address of each page's link-preview picture.
-import { appVersion } from './faq.ts'
-import { SITE } from './site.ts'
+import { SITE, currentVersion } from './site.ts'
 
 const EDGE_SLASHES = /^\/|\/$/g
 const HTML_EXT = /\.html$/
@@ -17,7 +16,7 @@ export function appLd(): object {
     name: 'Mortar',
     applicationCategory: 'GameApplication',
     operatingSystem: 'Windows, Linux',
-    softwareVersion: appVersion(),
+    softwareVersion: currentVersion(),
     url: `${SITE}/`,
     downloadUrl: `${SITE}/download/`,
     license: 'https://www.gnu.org/licenses/agpl-3.0.html',

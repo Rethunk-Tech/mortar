@@ -1,12 +1,17 @@
 // Addresses and helpers every page shares. Build-time code reads repo files through repo(), which finds the repo root
 // from wherever the build was started.
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
 
 export const SITE = 'https://mortar.rethunk.tech'
 export const REPO = 'https://github.com/Rethunk-Tech/mortar'
 export const DISCORD = 'https://discord.gg/TfecaTm8J2'
+
+/** GitHub release asset directory for a version tag. */
+export function releaseBase(version: string): string {
+  return `${REPO}/releases/download/v${version}/`
+}
 // Where volunteers translate Mortar.
 export const TRANSLATE = 'https://hosted.weblate.org/projects/mortar/'
 // The Mortar packages OpenPGP key, which signs the package repositories and each release's SHA256SUMS.
@@ -34,6 +39,17 @@ const ROOT = rootFrom(process.cwd())
 
 /** A path in the repo, from its root. */
 export const repo = (path: string) => join(ROOT, path)
+
+const CONFIG_VERSION = /^\s+version: "([^"]+)"/m
+let version: string | undefined
+
+/** The version build/config.yml names, which chrome and download links share. */
+export function currentVersion(): string {
+  if (version === undefined) {
+    version = CONFIG_VERSION.exec(readFileSync(repo('build/config.yml'), 'utf8'))?.[1] ?? ''
+  }
+  return version
+}
 
 export function escapeHTML(raw: string): string {
   return raw.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)

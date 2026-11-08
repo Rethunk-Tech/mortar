@@ -27,8 +27,15 @@ export interface TopMod {
 /** A game's top mods by source id. */
 export type GameTop = Record<string, TopMod[]>
 
+let cached: Record<string, GameTop> | undefined
+
 export function topMods(): Record<string, GameTop> {
-  return existsSync(TOP) ? (JSON.parse(readFileSync(TOP, 'utf8')) as Record<string, GameTop>) : {}
+  if (!cached) {
+    cached = existsSync(TOP)
+      ? (JSON.parse(readFileSync(TOP, 'utf8')) as Record<string, GameTop>)
+      : {}
+  }
+  return cached
 }
 
 /** The game's note as HTML, or undefined when nobody wrote one. */
@@ -141,6 +148,7 @@ export async function refreshTopMods(games: Game[]): Promise<void> {
   }
   const sorted = Object.fromEntries(Object.entries(out).sort(([a], [b]) => a.localeCompare(b)))
   writeFileSync(TOP, `${JSON.stringify(sorted, null, 2)}\n`)
+  cached = sorted
   process.stderr.write(
     `site: top mods: ${Object.keys(sorted).length} games from ${jobs.length} lists, ${kept} kept from the committed file; ${[...skipped].map((s) => SOURCE_NAMES[s] ?? s).join(', ')} skipped, since their lists need an account key\n`,
   )

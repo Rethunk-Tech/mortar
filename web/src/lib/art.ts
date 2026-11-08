@@ -20,8 +20,15 @@ export interface SteamArt {
   capsule2x?: string
 }
 
+let cached: Record<string, SteamArt> | undefined
+
 export function steamArt(): Record<string, SteamArt> {
-  return existsSync(ART) ? (JSON.parse(readFileSync(ART, 'utf8')) as Record<string, SteamArt>) : {}
+  if (!cached) {
+    cached = existsSync(ART)
+      ? (JSON.parse(readFileSync(ART, 'utf8')) as Record<string, SteamArt>)
+      : {}
+  }
+  return cached
 }
 
 interface StoreItem {
@@ -79,6 +86,7 @@ export async function refreshSteamArt(appIds: string[]): Promise<void> {
   await dropMissing(art)
   const sorted = Object.fromEntries(Object.entries(art).sort(([a], [b]) => Number(a) - Number(b)))
   writeFileSync(ART, `${JSON.stringify(sorted, null, 2)}\n`)
+  cached = sorted
 }
 
 const CHECKS_AT_ONCE = 16

@@ -1,6 +1,6 @@
 ---
 import Page from '../../layouts/Page.astro'
-import { PACKAGES_FINGERPRINT } from '../../lib/site.ts'
+import { PACKAGES_FINGERPRINT, REPO } from '../../lib/site.ts'
 ---
 
 <Page
@@ -28,7 +28,7 @@ import { PACKAGES_FINGERPRINT } from '../../lib/site.ts'
 <p>
   The Mortar packages key is <code>{PACKAGES_FINGERPRINT}</code>, published at
   <a href="/packages/mortar-archive-keyring.asc">mortar.rethunk.tech/packages</a>, in the
-  <a href="https://github.com/Rethunk-Tech/mortar/blob/main/build/linux/repo/mortar-archive-keyring.asc">repository</a>
+  <a href={`${REPO}/blob/main/build/linux/repo/mortar-archive-keyring.asc`}>repository</a>
   and on keyserver.ubuntu.com. The private keys live only in the repository's GitHub Actions secrets.
 </p>
 
@@ -49,7 +49,7 @@ import { PACKAGES_FINGERPRINT } from '../../lib/site.ts'
   <li><strong>Approvers</strong> (approve each release before it is signed and published): <a href="https://github.com/Albinogeek">Damon Blais (@Albinogeek)</a>.</li>
 </ul>
 <p>
-  Releases are built only from tags in <a href="https://github.com/Rethunk-Tech/mortar">Rethunk-Tech/mortar</a>
+  Releases are built only from tags in <a href={REPO}>Rethunk-Tech/mortar</a>
   by its release workflow, published as a draft, verified, and only then made public. Published releases are
   immutable. Accounts with write access use multi-factor authentication.
 </p>

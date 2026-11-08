@@ -4,7 +4,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { brandIcon } from './brands.ts'
 import { modSites, named, SOURCE_NAMES } from './games.ts'
-import { markdown, repo } from './site.ts'
+import { currentVersion, markdown, repo } from './site.ts'
 
 const FAQ = repo('web/src/content/faq.md')
 const WHY = repo('web/src/content/why')
@@ -19,7 +19,6 @@ const MD_LINK = /\[([^\]]+)\]\([^)]+\)/g
 const WHITESPACE = /\s+/g
 const SOURCE_TOKEN_RUN = /(?::[a-z]+:\s*)+/g
 const TOKEN_NAME = /[a-z]+/g
-const CONFIG_VERSION = /^\s+version: "([^"]+)"/m
 const GAMES_ROW = /^\| Games \| ([^|]*)\| ([^|]*)\|$/m
 const FIRST_NUMBER = /\d+/
 const OVER_PREFIX = /^over /i
@@ -233,14 +232,17 @@ export async function refreshRivalFacts(): Promise<void> {
     }
   }
   writeFileSync(RIVALS, `${JSON.stringify(out, null, 2)}\n`)
+  rivals = out
 }
 
-export const rivalFacts = (): Record<string, number | string> =>
-  JSON.parse(readFileSync(RIVALS, 'utf8')) as Record<string, number | string>
+let rivals: Record<string, number | string> | undefined
 
-/** The app version, from build/config.yml where it is set; a comparison page names it as MORTAR_VERSION. */
-export const appVersion = (): string =>
-  CONFIG_VERSION.exec(readFileSync(repo('build/config.yml'), 'utf8'))?.[1] ?? ''
+export function rivalFacts(): Record<string, number | string> {
+  if (!rivals) {
+    rivals = JSON.parse(readFileSync(RIVALS, 'utf8')) as Record<string, number | string>
+  }
+  return rivals
+}
 
 /** Mortar's own counts, filled into a comparison page's GAME_COUNT and THUNDERSTORE_COUNT. */
 export interface Counts {
@@ -277,7 +279,7 @@ export function whyHtml(w: Why, counts: Counts): string {
   const filled = w.md
     .replaceAll('GAME_COUNT', String(counts.games))
     .replaceAll('THUNDERSTORE_COUNT', String(counts.thunderstore))
-    .replaceAll('MORTAR_VERSION', appVersion())
+    .replaceAll('MORTAR_VERSION', currentVersion())
     .replaceAll(
       'MORTAR_SITES',
       modSites()

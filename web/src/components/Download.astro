@@ -2,11 +2,13 @@
 // A card per system with the visitor's own picked out, and package-manager commands behind one copy button.
 import { releases } from '../lib/changelog.ts'
 import { shortDate } from '../lib/news.ts'
+import { REPO, currentVersion, releaseBase } from '../lib/site.ts'
 import Mark from './Mark.astro'
 
+const version = currentVersion()
 const [latest] = releases()
 // The site deploys with each release, so its links name that release's files: a download is the version the page shows.
-const RELEASE = `https://github.com/Rethunk-Tech/mortar/releases/download/v${latest?.version}/`
+const RELEASE = releaseBase(version)
 const systems = [
   {
     os: 'windows',
@@ -102,10 +104,10 @@ const managers = [
   }
 </div>
 <div class="dlmeta reveal">
-  {latest && <span>Version {latest.version} · {shortDate(new Date(`${latest.date}T00:00:00Z`))}</span>}
+  {latest && <span>Version {version} · {shortDate(new Date(`${latest.date}T00:00:00Z`))}</span>}
   <a href="/news/">What's new</a>
   <a href="/download/#verify">Verify your download</a>
-  <a href="https://github.com/Rethunk-Tech/mortar/releases">All releases and checksums</a>
+  <a href={`${REPO}/releases`}>All releases and checksums</a>
 </div>
 <div class="cmds reveal">
   <span class="lbl">Or from your package manager</span>
