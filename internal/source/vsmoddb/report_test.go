@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/Rethunk-Tech/go-vintagestory/moddb"
 )
 
 func TestReportTargetIsTheModPage(t *testing.T) {
@@ -12,7 +14,7 @@ func TestReportTargetIsTheModPage(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	got, err := Driver{HTTP: srv.Client(), URL: srv.URL}.ReportTarget(t.Context(), "", "5-50", "")
-	if err != nil || got.URL != siteURL+"/fine" || got.Repo != "" {
+	if err != nil || got.URL != moddb.SiteURL+"/fine" || got.Repo != "" {
 		t.Fatalf("target %+v, %v", got, err)
 	}
 }

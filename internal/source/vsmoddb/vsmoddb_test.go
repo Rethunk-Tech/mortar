@@ -1,11 +1,14 @@
 package vsmoddb
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/go-vintagestory/moddb"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -50,7 +53,7 @@ func TestSearchKeepsTheLastPageOfTheLimitAndDropsExcludedTags(t *testing.T) {
 		t.Fatal(err)
 	}
 	// A full page means more may follow, so the total offers one more.
-	if first.Total != source.PageSize+1 || first.Hidden != 1 || first.Items[0].URL != siteURL+"/bee" || first.Items[0].Endorsements != 7 {
+	if first.Total != source.PageSize+1 || first.Hidden != 1 || first.Items[0].URL != moddb.SiteURL+"/bee" || first.Items[0].Endorsements != 7 {
 		t.Fatalf("first page = %+v", first)
 	}
 	second, err := d.Search(t.Context(), source.Query{Page: source.FirstPage + 1, Text: "b"})
@@ -74,7 +77,7 @@ func TestResolvePrefersTheNewestStableReleaseAndMatchesAReleaseID(t *testing.T) 
 	if err != nil || items["890-4405"].Version != "1.14.3" || len(items) != 1 {
 		t.Fatalf("items = %+v, %v", items, err)
 	}
-	if got := (Driver{}).ModPageURL("", "890-4405"); got != siteURL+"/show/mod/4405" || (Driver{}).ModPageURL("", "890") != "" {
+	if got := (Driver{}).ModPageURL("", "890-4405"); got != moddb.SiteURL+"/show/mod/4405" || (Driver{}).ModPageURL("", "890") != "" {
 		t.Fatalf("page = %q", got)
 	}
 }
@@ -119,5 +122,28 @@ func TestPagesShareOneFetchUntilTheTTLPasses(t *testing.T) {
 	clock = clock.Add(modListTTL + time.Second)
 	if _, err := d.Search(t.Context(), source.Query{Page: source.FirstPage}); err != nil || hits.Load() != 2 {
 		t.Fatalf("after the TTL: %d fetches, %v; want 2", hits.Load(), err)
+	}
+}
+
+// A site refusing calls for a while is the queue's busy error, so the item waits instead of failing.
+func TestARefusedCallIsTheQueuesBusyError(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Retry-After", "120")
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	t.Cleanup(srv.Close)
+	d := Driver{HTTP: srv.Client(), URL: srv.URL}
+	lists.m = nil
+	if _, err := d.Search(t.Context(), source.Query{Page: source.FirstPage}); !errors.Is(err, source.ErrBusy) {
+		t.Fatalf("search: %v, want ErrBusy", err)
+	}
+	if _, err := d.Resolve(t.Context(), "890", ""); !errors.Is(err, source.ErrBusy) {
+		t.Fatalf("resolve: %v, want ErrBusy", err)
+	}
+	tags.Lock()
+	tags.ids, tags.until = nil, time.Time{}
+	tags.Unlock()
+	if _, err := d.Categories(t.Context(), ""); !errors.Is(err, source.ErrBusy) {
+		t.Fatalf("categories: %v, want ErrBusy", err)
 	}
 }

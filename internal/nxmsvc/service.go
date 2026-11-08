@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-nexusmods"
+	"github.com/Rethunk-Tech/go-vintagestory/moddb"
 
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -164,7 +165,7 @@ func (s *Service) receiveOne(arg string) {
 		go s.receiveCurseForge(arg, ref)
 		return
 	}
-	if ref, err := vsmoddb.ParseLink(arg); err == nil {
+	if ref, err := moddb.ParseLink(arg); err == nil {
 		go s.receiveVSModDB(arg, ref)
 		return
 	}
@@ -315,7 +316,7 @@ func (s *Service) receiveCurseForge(raw string, ref curseforge.Ref) {
 
 // receiveVSModDB reads the Mod DB's ids for the mod a link names, so the install lands under the same key as one from
 // Browse; when the site cannot be asked, the link's own mod id stands in, which the Mod DB also answers to.
-func (s *Service) receiveVSModDB(raw string, ref vsmoddb.Ref) {
+func (s *Service) receiveVSModDB(raw string, ref moddb.Ref) {
 	release := s.VSModDBRelease
 	if release == nil {
 		release = vsmoddb.Driver{}.Resolve

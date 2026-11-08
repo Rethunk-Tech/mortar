@@ -21,16 +21,3 @@ func FuzzDecoders(f *testing.F) {
 		_, _ = d.Items(t.Context(), "", "", []string{"1-2"})
 	})
 }
-
-// FuzzParseLink holds that an accepted install link names a mod id and a version of safe characters only.
-func FuzzParseLink(f *testing.F) {
-	f.Add("vintagestorymodinstall://carryon@1.14.3")
-	f.Add("vintagestorymodinstall://carryon@0.13.0-pre.2/")
-	f.Add("vintagestorymodinstall://../x@1")
-	f.Fuzz(func(t *testing.T, raw string) {
-		ref, err := ParseLink(raw)
-		if err == nil && (!linkModID.MatchString(ref.ModID) || !linkVersion.MatchString(ref.Version)) {
-			t.Fatalf("%q gave %+v", raw, ref)
-		}
-	})
-}

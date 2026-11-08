@@ -6,7 +6,9 @@ package vsmoddb
 import (
 	"cmp"
 	"context"
+	"errors"
 	"fmt"
+	"maps"
 	"net/http"
 	"net/url"
 	"slices"
@@ -15,13 +17,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-httpkit"
+	"github.com/Rethunk-Tech/go-vintagestory/moddb"
+
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
-
-// BaseURL is the real API.
-const BaseURL = "https://mods.vintagestory.at/api"
-
-const siteURL = "https://mods.vintagestory.at"
 
 // Driver searches the Mod DB. HTTP and URL are for tests; the zero value talks to the real API.
 type Driver struct {
@@ -44,32 +44,33 @@ func (Driver) Modes() []source.Acquire { return []source.Acquire{source.Download
 func (Driver) Hosts() []string { return []string{"mods.vintagestory.at"} }
 
 // ID joins a mod's modid and assetid into the id Mortar keeps.
-func ID(modID, assetID int) string { return strconv.Itoa(modID) + "-" + strconv.Itoa(assetID) }
-
-// splitID is the modid and assetid of id; an id without an assetid still names its mod.
-func splitID(id string) (modID, assetID string, ok bool) {
-	modID, assetID, _ = strings.Cut(id, "-")
-	if _, err := strconv.Atoi(modID); err != nil {
-		return "", "", false
-	}
-	if _, err := strconv.Atoi(assetID); err != nil {
-		assetID = ""
-	}
-	return modID, assetID, true
-}
+func ID(modID, assetID int) string { return moddb.ID(modID, assetID) }
 
 // ModPageURL is the mod's page; gameKey does not enter the address.
 func (Driver) ModPageURL(_, id string) string {
-	if _, asset, ok := splitID(id); ok && asset != "" {
-		return siteURL + "/show/mod/" + asset
+	if _, asset, ok := moddb.SplitID(id); ok && asset != "" {
+		return moddb.SiteURL + "/show/mod/" + asset
 	}
 	return ""
 }
 
-func (d Driver) get(ctx context.Context, path string, params url.Values, out any) error {
-	return source.DoJSON(ctx, source.Request{
-		Service: "the Vintage Story Mod DB", Client: d.HTTP, URL: strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + path, Params: params,
-	}, out)
+// client is the API client for this driver's HTTP and URL. Passing http.DefaultClient rather than nil keeps Mortar's
+// own transport, whose user agent the app sets.
+func (d Driver) client() *moddb.Client {
+	return moddb.New(moddb.Config{BaseURL: d.URL, HTTP: cmp.Or(d.HTTP, http.DefaultClient)})
+}
+
+// busy turns the API's 429 into the source's busy error, which the download queue waits on. The client gives the wait
+// only when the site's Retry-After named one.
+func busy(err error) error {
+	var rl *httpkit.RateLimitError
+	switch {
+	case errors.As(err, &rl):
+		return &source.BusyError{Source: "the Vintage Story Mod DB", Reset: rl.Reset}
+	case errors.Is(err, httpkit.ErrRateLimited):
+		return &source.BusyError{Source: "the Vintage Story Mod DB"}
+	}
+	return err
 }
 
 // MaxPageSize is a page of the listing; the API takes any limit.
@@ -83,29 +84,15 @@ func (Driver) Sorts() []string {
 func orderBy(sort string) string {
 	switch sort {
 	case source.SortDownloads:
-		return "downloads"
+		return moddb.OrderDownloads
 	case source.SortEndorsements:
-		return "follows"
+		return moddb.OrderFollows
 	case source.SortUpdated:
-		return "lastreleased"
+		return moddb.OrderLastReleased
 	case source.SortNewest:
-		return "asset.created"
+		return moddb.OrderCreated
 	}
 	return ""
-}
-
-type listedMod struct {
-	ModID        int      `json:"modid"`
-	AssetID      int      `json:"assetid"`
-	Downloads    int      `json:"downloads"`
-	Follows      int      `json:"follows"`
-	Name         string   `json:"name"`
-	Summary      string   `json:"summary"`
-	Author       string   `json:"author"`
-	URLAlias     string   `json:"urlalias"`
-	Logo         string   `json:"logo"`
-	Tags         []string `json:"tags"`
-	LastReleased string   `json:"lastreleased"`
 }
 
 // stamp turns the site's "2006-01-02 15:04:05" (UTC) into RFC 3339, as the other sources give it.
@@ -117,34 +104,13 @@ func stamp(s string) string {
 	return t.UTC().Format(time.RFC3339)
 }
 
-// pageURL prefers the author's alias, the address the site itself links.
-func pageURL(alias string, assetID int) string {
-	if alias != "" {
-		return siteURL + "/" + url.PathEscape(alias)
-	}
-	return siteURL + "/show/mod/" + strconv.Itoa(assetID)
-}
-
 // Search lists the site's mods. The API has no offset and returns the whole matching list in one response, so the
 // list is fetched once per query and every page is cut from that copy (see listCached).
 // Included categories go to the site as tag ids; excluded ones are dropped from the page and counted in Hidden.
 // Total is the rows through this page plus one when more follow; the API gives no total.
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	page := max(q.Page-source.FirstPage, 0) + 1
-	params := url.Values{}
-	if q.Text != "" {
-		params.Set("text", q.Text)
-	}
-	by := orderBy(q.Sort)
-	if by == "" && q.Text != "" {
-		// The site has no relevance order, and its own order puts a word found in any description ahead of the mod
-		// named by the search; the most downloaded matches come first instead.
-		by = "downloads"
-	}
-	if by != "" {
-		params.Set("orderby", by)
-		params.Set("orderdirection", "desc")
-	}
+	query := moddb.ListQuery{Text: q.Text, OrderBy: orderBy(q.Sort)}
 	if len(q.Categories) > 0 {
 		ids, err := d.tagIDs(ctx)
 		if err != nil {
@@ -152,15 +118,15 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		}
 		for _, c := range q.Categories {
 			if id, ok := ids[strings.ToLower(c)]; ok {
-				params.Add("tagids[]", id)
+				query.Tags = append(query.Tags, id)
 			}
 		}
 		// An included category the site has no tag for matches nothing; searching without one would match everything.
-		if len(params["tagids[]"]) == 0 {
+		if len(query.Tags) == 0 {
 			return source.Page{Items: []source.Item{}}, nil
 		}
 	}
-	mods, err := d.listCached(ctx, params)
+	mods, err := d.listCached(ctx, query)
 	if err != nil {
 		return source.Page{}, err
 	}
@@ -176,7 +142,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		out.Items = append(out.Items, source.Item{
 			Source: d.ID(), ID: ID(m.ModID, m.AssetID), Name: m.Name, Summary: m.Summary, Author: m.Author,
 			Picture: m.Logo, Endorsements: m.Follows, Downloads: m.Downloads, Updated: stamp(m.LastReleased),
-			URL: pageURL(m.URLAlias, m.AssetID),
+			URL: moddb.PageURL(m.URLAlias, m.AssetID),
 		})
 	}
 	return out, nil
@@ -200,12 +166,16 @@ var lists struct {
 
 type listEntry struct {
 	sync.Mutex
-	mods  []listedMod
+	mods  []moddb.ListedMod
 	until time.Time
 }
 
-func (d Driver) listCached(ctx context.Context, params url.Values) ([]listedMod, error) {
-	key := strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + "?" + params.Encode()
+func (d Driver) listCached(ctx context.Context, q moddb.ListQuery) ([]moddb.ListedMod, error) {
+	// The key is the upstream query, so two pages of it share one fetch; tags are ids, so their order is not a
+	// difference worth a second fetch.
+	tags := slices.Sorted(slices.Values(q.Tags))
+	key := strings.TrimRight(cmp.Or(d.URL, moddb.BaseURL), "/") + "?" +
+		url.Values{"text": {q.Text}, "orderby": {q.OrderBy}, "tags": tags}.Encode()
 	lists.Lock()
 	if lists.m == nil {
 		lists.m = map[string]*listEntry{}
@@ -221,16 +191,11 @@ func (d Driver) listCached(ctx context.Context, params url.Values) ([]listedMod,
 	if e.mods != nil && now().Before(e.until) {
 		return e.mods, nil
 	}
-	var parsed struct {
-		Mods []listedMod `json:"mods"`
+	mods, err := d.client().Mods(ctx, q)
+	if err != nil {
+		return nil, busy(err)
 	}
-	if err := d.get(ctx, "/mods", params, &parsed); err != nil {
-		return nil, err
-	}
-	if parsed.Mods == nil {
-		parsed.Mods = []listedMod{}
-	}
-	e.mods, e.until = parsed.Mods, now().Add(modListTTL)
+	e.mods, e.until = mods, now().Add(modListTTL)
 	return e.mods, nil
 }
 
@@ -248,22 +213,12 @@ func (d Driver) tagIDs(ctx context.Context) (map[string]string, error) {
 	if tags.ids != nil && now().Before(tags.until) {
 		return tags.ids, nil
 	}
-	var parsed struct {
-		Tags []struct {
-			ID   string `json:"tagid"`
-			Name string `json:"name"`
-		} `json:"tags"`
+	ids, err := d.client().Tags(ctx)
+	if err != nil {
+		return nil, busy(err)
 	}
-	if err := d.get(ctx, "/tags", nil, &parsed); err != nil {
-		return nil, err
-	}
-	ids := make(map[string]string, len(parsed.Tags))
-	names := make([]string, 0, len(parsed.Tags))
-	for _, t := range parsed.Tags {
-		ids[strings.ToLower(t.Name)] = t.ID
-		names = append(names, t.Name)
-	}
-	tags.ids, tags.names, tags.until = ids, source.UniqueNames(names), now().Add(tagsTTL)
+	names := slices.Sorted(maps.Keys(ids))
+	tags.ids, tags.names, tags.until = ids, names, now().Add(tagsTTL)
 	return ids, nil
 }
 
@@ -277,62 +232,6 @@ func (d Driver) Categories(ctx context.Context, _ string) ([]string, error) {
 	return slices.Clone(tags.names), nil
 }
 
-type release struct {
-	ReleaseID  int      `json:"releaseid"`
-	MainFile   string   `json:"mainfile"`
-	FileName   string   `json:"filename"`
-	ModVersion string   `json:"modversion"`
-	ModIDStr   string   `json:"modidstr"`
-	Tags       []string `json:"tags"`
-	Created    string   `json:"created"`
-	Changelog  string   `json:"changelog"`
-}
-
-type modDetail struct {
-	ModID    int       `json:"modid"`
-	AssetID  int       `json:"assetid"`
-	Name     string    `json:"name"`
-	Author   string    `json:"author"`
-	URLAlias string    `json:"urlalias"`
-	Logo     string    `json:"logofile"`
-	Text     string    `json:"text"`
-	Tags     []string  `json:"tags"`
-	Releases []release `json:"releases"`
-}
-
-// mod reads one mod by its modid, or by the mod id its modinfo.json names.
-func (d Driver) mod(ctx context.Context, ref string) (modDetail, error) {
-	var parsed struct {
-		Mod *modDetail `json:"mod"`
-	}
-	if err := d.get(ctx, "/mod/"+url.PathEscape(ref), nil, &parsed); err != nil {
-		return modDetail{}, err
-	}
-	if parsed.Mod == nil {
-		return modDetail{}, fmt.Errorf("%s is not on the Vintage Story Mod DB", ref)
-	}
-	return *parsed.Mod, nil
-}
-
-// preRelease reports a version its author marks as a test build (1.0.0-rc.1, 2.0.0-pre.8, 1.2-dev.3).
-func preRelease(version string) bool { return strings.Contains(version, "-") }
-
-// newest is the newest release a player on stable builds should get: the newest stable one, else the newest of all.
-// The site lists releases newest first.
-func (m modDetail) newest() (release, bool) {
-	for _, r := range m.Releases {
-		if !preRelease(r.ModVersion) && r.MainFile != "" {
-			return r, true
-		}
-	}
-	for _, r := range m.Releases {
-		if r.MainFile != "" {
-			return r, true
-		}
-	}
-	return release{}, false
-}
-
 // Resolved is what an install needs of one release.
 type Resolved struct {
 	ID, Name, Version, FileName, URL, Picture string
@@ -343,14 +242,14 @@ type Resolved struct {
 // release. id is a Mortar id, a modid, or the mod id a modinfo.json names.
 func (d Driver) Resolve(ctx context.Context, id, version string) (Resolved, error) {
 	ref := id
-	if modID, _, ok := splitID(id); ok {
+	if modID, _, ok := moddb.SplitID(id); ok {
 		ref = modID
 	}
-	m, err := d.mod(ctx, ref)
+	m, err := d.client().Mod(ctx, ref)
 	if err != nil {
-		return Resolved{}, err
+		return Resolved{}, busy(err)
 	}
-	pick, ok := m.newest()
+	pick, ok := m.Newest(false)
 	if version != "" {
 		ok = false
 		for _, r := range m.Releases {
@@ -374,21 +273,21 @@ func (d Driver) Resolve(ctx context.Context, id, version string) (Resolved, erro
 func (d Driver) Items(ctx context.Context, _, _ string, ids []string) (map[string]source.Item, error) {
 	out := map[string]source.Item{}
 	for _, id := range ids {
-		modID, _, ok := splitID(id)
+		modID, _, ok := moddb.SplitID(id)
 		if !ok {
 			continue
 		}
-		m, err := d.mod(ctx, modID)
+		m, err := d.client().Mod(ctx, modID)
 		if err != nil {
-			return out, err
+			return out, busy(err)
 		}
-		r, ok := m.newest()
+		r, ok := m.Newest(false)
 		if !ok {
 			continue
 		}
 		out[strings.ToLower(id)] = source.Item{
 			Source: d.ID(), ID: ID(m.ModID, m.AssetID), Name: m.Name, Author: m.Author, Version: r.ModVersion,
-			Picture: m.Logo, URL: pageURL(m.URLAlias, m.AssetID),
+			Picture: m.Logo, URL: moddb.PageURL(m.URLAlias, m.AssetID),
 		}
 	}
 	return out, nil
@@ -398,12 +297,12 @@ func (d Driver) Items(ctx context.Context, _, _ string, ids []string) (map[strin
 // lists releases newest first and writes each changelog as HTML.
 func (d Driver) Changelog(ctx context.Context, _, id, installed, latest, _ string) ([]source.Note, error) {
 	ref := id
-	if modID, _, ok := splitID(id); ok {
+	if modID, _, ok := moddb.SplitID(id); ok {
 		ref = modID
 	}
-	m, err := d.mod(ctx, ref)
+	m, err := d.client().Mod(ctx, ref)
 	if err != nil {
-		return nil, err
+		return nil, busy(err)
 	}
 	out := []source.Note{}
 	started := latest == ""
@@ -424,14 +323,14 @@ func (d Driver) Changelog(ctx context.Context, _, id, installed, latest, _ strin
 // ReportTarget is the mod's page, where the Mod DB takes comments and links its author.
 func (d Driver) ReportTarget(ctx context.Context, _, id, _ string) (source.ReportTarget, error) {
 	ref := id
-	if modID, _, ok := splitID(id); ok {
+	if modID, _, ok := moddb.SplitID(id); ok {
 		ref = modID
 	}
-	m, err := d.mod(ctx, ref)
+	m, err := d.client().Mod(ctx, ref)
 	if err != nil {
-		return source.ReportTarget{}, err
+		return source.ReportTarget{}, busy(err)
 	}
-	return source.ReportTarget{URL: pageURL(m.URLAlias, m.AssetID)}, nil
+	return source.ReportTarget{URL: moddb.PageURL(m.URLAlias, m.AssetID)}, nil
 }
 
 // Details reads the mod's page: its description (HTML on the site, Markdown here), its tags, every release's version
@@ -439,12 +338,12 @@ func (d Driver) ReportTarget(ctx context.Context, _, id, _ string) (source.Repor
 // archive.
 func (d Driver) Details(ctx context.Context, _, id, _ string) (source.Details, error) {
 	ref := id
-	if modID, _, ok := splitID(id); ok {
+	if modID, _, ok := moddb.SplitID(id); ok {
 		ref = modID
 	}
-	m, err := d.mod(ctx, ref)
+	m, err := d.client().Mod(ctx, ref)
 	if err != nil {
-		return source.Details{}, err
+		return source.Details{}, busy(err)
 	}
 	out := source.Details{
 		Description: source.HTMLMarkdown(m.Text), Versions: []string{}, Dependencies: []string{},
@@ -454,7 +353,7 @@ func (d Driver) Details(ctx context.Context, _, id, _ string) (source.Details, e
 		out.Versions = append(out.Versions, r.ModVersion)
 		out.Released = append(out.Released, source.Released(stamp(r.Created)))
 	}
-	if r, ok := m.newest(); ok {
+	if r, ok := m.Newest(false); ok {
 		out.Changelog = source.HTMLMarkdown(r.Changelog)
 	}
 	return out, nil

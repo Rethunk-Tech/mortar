@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-nexusmods"
+	"github.com/Rethunk-Tech/go-vintagestory/moddb"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
@@ -482,7 +483,7 @@ func TestACurseForgeLinkWaitsForItsOwnGameAndAnotherGamesGoesBack(t *testing.T) 
 
 func TestAModDBLinkArrivesUnderTheIDBrowseUses(t *testing.T) {
 	s := newService(t, &fakeHandler{})
-	ref, err := vsmoddb.ParseLink("vintagestorymodinstall://carryon@1.14.3")
+	ref, err := moddb.ParseLink("vintagestorymodinstall://carryon@1.14.3")
 	if err != nil {
 		t.Fatal(err)
 	}
