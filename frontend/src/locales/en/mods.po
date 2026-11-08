@@ -3389,6 +3389,10 @@ msgstr "{count, plural, one {# optional file will be re-applied; check it still 
 msgid "Delete file"
 msgstr "Delete file"
 
+#: src/mods/lockedHint.ts
+msgid "{name} is in use by the running game. Close the game to change its mods."
+msgstr "{name} is in use by the running game. Close the game to change its mods."
+
 #: src/mods/ModSections.tsx
 msgid "Pinned: Mortar offers no update for this mod until you unpin it."
 msgstr "Pinned: Mortar offers no update for this mod until you unpin it."

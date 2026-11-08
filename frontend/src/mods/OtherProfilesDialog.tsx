@@ -22,7 +22,7 @@ import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
-import { lockedHint } from './lockedHint.ts'
+import { lockedInHint } from './lockedHint.ts'
 import { lockedIn, useLaunchLocks } from './useLocked.ts'
 
 const MARK_PX = 36
@@ -59,7 +59,7 @@ function ProfileChoice({
   const checked = mode === 'remove' ? selected : has || selected
   let status = modsLabel(userModCount(profile))
   if (isLockedProfile) {
-    status = t(lockedHint)
+    status = t(lockedInHint(profile.name))
   } else if (has && mode !== 'remove') {
     status = t`Already has it`
   }

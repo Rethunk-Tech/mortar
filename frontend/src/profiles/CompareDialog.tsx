@@ -11,6 +11,7 @@ import {
 import { FarmDialog } from '../game/FarmMenuItem.tsx'
 import { hasModList } from '../game/modList.ts'
 import { applyWithUndo } from '../mods/menu.ts'
+import { lockedInHint } from '../mods/lockedHint.ts'
 import { lockedIn, useLaunchLocks } from '../mods/useLocked.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
@@ -38,9 +39,7 @@ function useMatch(profileA: Profile, profileB: Profile, selected: CompareRow[]) 
   const [pending, run] = usePending()
   const launch = useLaunchLocks()
   const lockedReason = (profile: Profile) =>
-    lockedIn(launch, profile.id)
-      ? t`${{ name: profile.name }} is in use by the running game. Close the game to change its mods.`
-      : ''
+    lockedIn(launch, profile.id) ? t(lockedInHint(profile.name)) : ''
   const apply = (to: Profile, change: () => Promise<Profile>, title: string) =>
     applyWithUndo(gameId, to.id, change, (undo) =>
       pushUndoToast(useToasts.getState().push, title, {

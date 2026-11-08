@@ -1468,10 +1468,6 @@ msgstr ""
 msgid "The automatic cover is already in use."
 msgstr ""
 
-#: src/profiles/CompareDialog.tsx
-msgid "{name} is in use by the running game. Close the game to change its mods."
-msgstr ""
-
 #: src/profiles/GameModsDialog.tsx
 msgid "Reading the Mods folder…"
 msgstr ""
