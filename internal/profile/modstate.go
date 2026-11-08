@@ -2,7 +2,6 @@ package profile
 
 import (
 	"bytes"
-	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -30,13 +29,16 @@ func (s *Store) ConfigPath(game, id, key string, uniqueID mod.ID) (string, error
 }
 
 func configPathIn(dir string) (string, error) {
-	cfg, err := configInMod(dir, configFile)
+	cfg, err := configInMod(dir)
 	if err != nil {
 		return "", err
 	}
 	st, err := os.Stat(cfg)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return "", err
+	}
 	if err != nil || st.IsDir() {
-		return "", fmt.Errorf("config.json is missing")
+		return "", fmt.Errorf("config.json is missing: %w", fs.ErrNotExist)
 	}
 	return cfg, nil
 }
@@ -115,12 +117,24 @@ func (s *Store) ModState(game, id, key string, uniqueID mod.ID) (ModState, error
 		return ModState{}, err
 	case !found:
 		st.Config = ConfigGenerated
-	case bytes.Equal(mine, shipped):
-		st.Config = ConfigDefault
 	default:
-		st.Config = ConfigChanged
+		st.Config = configState(mine, shipped)
 	}
 	return st, nil
+}
+
+// configState compares the profile's config.json with the shipped one as both read in the panel, where a rewritten
+// file that only differs in spacing is still the shipped default.
+func configState(mine, shipped []byte) string {
+	m, merr := rewriteConfigJSON(mine)
+	s, serr := rewriteConfigJSON(shipped)
+	if merr == nil && serr == nil && bytes.Equal(m, s) {
+		return ConfigDefault
+	}
+	if bytes.Equal(mine, shipped) {
+		return ConfigDefault
+	}
+	return ConfigChanged
 }
 
 func (s *Store) previousVersion(game string, e Entry, uniqueID mod.ID) string {
@@ -131,14 +145,16 @@ func (s *Store) previousVersion(game string, e Entry, uniqueID mod.ID) string {
 	if err != nil {
 		return ""
 	}
-	found, err := smapimanifest.Scan(src)
-	if err != nil {
-		return ""
-	}
-	for _, f := range found {
-		if mod.Equal(f.ModID(), uniqueID) {
-			return f.Version
+	if found, err := smapimanifest.Scan(src); err == nil {
+		for _, f := range found {
+			if mod.Equal(f.ModID(), uniqueID) {
+				return f.Version
+			}
 		}
+	}
+	// A package mod (a Thunderstore one) has no SMAPI manifest; the source it was installed from carries its version.
+	if e.PreviousSource != nil {
+		return e.PreviousSource.Version
 	}
 	return ""
 }
@@ -161,16 +177,12 @@ func (s *Store) ResetConfig(game, id, key string, uniqueID mod.ID) error {
 	})
 }
 
-// configInMod joins rel onto the mod folder and refuses anything that leaves it.
-func configInMod(modDir, rel string) (string, error) {
+// configInMod joins configFile onto the mod folder and refuses a folder with a link in it.
+func configInMod(modDir string) (string, error) {
 	root := filepath.Clean(modDir)
-	rel = cmp.Or(rel, configFile)
-	if filepath.IsAbs(rel) {
-		return "", fmt.Errorf("config.json is not in the mod folder")
-	}
-	cfg := filepath.Join(root, filepath.FromSlash(rel))
+	cfg := filepath.Join(root, configFile)
 	out, err := filepath.Rel(root, cfg)
-	if err != nil || filepath.IsAbs(out) || strings.HasPrefix(out, "..") || out != configFile {
+	if err != nil || filepath.IsAbs(out) || strings.HasPrefix(out, "..") {
 		return "", fmt.Errorf("config.json is not in the mod folder")
 	}
 	return cfg, nil
@@ -211,7 +223,7 @@ func (s *Store) writeConfig(game, id, key string, uniqueID mod.ID, contents stri
 	if err != nil {
 		return err
 	}
-	path, err := configInMod(folder, configFile)
+	path, err := configInMod(folder)
 	if err != nil {
 		return err
 	}

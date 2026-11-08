@@ -37,7 +37,7 @@ func (s *Service) ListConfigFields(game, id, key string, uniqueID mod.ID) ([]Con
 	}
 	raw, err := s.ReadConfig(game, id, key, uniqueID)
 	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) || strings.Contains(err.Error(), "missing") {
+		if errors.Is(err, fs.ErrNotExist) {
 			raw = "{}"
 		} else {
 			return nil, err
@@ -89,11 +89,10 @@ func (s *Service) SetConfigValues(game, id, key string, uniqueID mod.ID, sets []
 	if !found {
 		raw = []byte("{}")
 	}
-	schema, err := s.contentSchema(game, id, key, uniqueID)
+	schema, types, err := s.store.contentSchemaFrom(game, id, key, uniqueID)
 	if err != nil {
 		return err
 	}
-	types := schemaFromDir(folder)
 	shipped, _ := s.store.ShippedConfig(game, id, key, uniqueID)
 	for _, c := range sets {
 		field := strings.TrimSpace(c.Field)
@@ -116,21 +115,26 @@ func (s *Service) contentSchema(game, id, key string, uniqueID mod.ID) (modconfi
 
 // ContentSchema is the Content Patcher ConfigSchema of a content pack, or an empty schema for any other mod.
 func (s *Store) ContentSchema(game, id, key string, uniqueID mod.ID) (modconfig.Schema, error) {
+	schema, _, err := s.contentSchemaFrom(game, id, key, uniqueID)
+	return schema, err
+}
+
+// contentSchemaFrom is ContentSchema with the content.json schema of the mod folder beside it, so a caller that wants
+// both parses that file once.
+func (s *Store) contentSchemaFrom(game, id, key string, uniqueID mod.ID) (schema, types modconfig.Schema, err error) {
 	folder, err := s.ModFolder(game, id, key, uniqueID)
 	if err != nil {
-		return nil, err
+		return nil, modconfig.Schema{}, err
 	}
+	types = schemaFromDir(folder)
 	man, found, err := safefs.ReadFileIfExists(filepath.Join(folder, smapimanifest.FileName))
 	if err != nil {
-		return nil, err
+		return nil, modconfig.Schema{}, err
 	}
-	if !found {
-		return modconfig.Schema{}, nil
+	if !found || !modconfig.IsContentPack(man) {
+		return modconfig.Schema{}, types, nil
 	}
-	if !modconfig.IsContentPack(man) {
-		return modconfig.Schema{}, nil
-	}
-	return schemaFromDir(folder), nil
+	return types, types, nil
 }
 
 func schemaFromDir(folder string) modconfig.Schema {

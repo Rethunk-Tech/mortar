@@ -2,6 +2,7 @@ package profile
 
 import (
 	"bytes"
+	"path/filepath"
 	"testing"
 )
 
@@ -42,15 +43,14 @@ func TestRewriteConfigJSONKeepsOrderAndTypes(t *testing.T) {
 	}
 }
 
-func TestConfigInModRejectsPathsOutsideTheFolder(t *testing.T) {
+func TestConfigInModJoinsTheConfigOntoTheModFolder(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
-	if _, err := configInMod(root, configFile); err != nil {
+	got, err := configInMod(root)
+	if err != nil {
 		t.Fatal(err)
 	}
-	for _, rel := range []string{"../config.json", "/tmp/config.json", "nested/config.json", "config.json/../x"} {
-		if _, err := configInMod(root, rel); err == nil {
-			t.Errorf("%s: accepted", rel)
-		}
+	if filepath.Dir(got) != filepath.Clean(root) || filepath.Base(got) != configFile {
+		t.Fatalf("config = %q", got)
 	}
 }

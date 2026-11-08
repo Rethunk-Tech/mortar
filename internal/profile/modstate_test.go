@@ -262,3 +262,69 @@ func TestConfigHistoryNamesTheModNotItsID(t *testing.T) {
 		t.Fatalf("a mod that is gone reads %q", got)
 	}
 }
+
+// A config the mod shipped no default for is its own doing, so the panel cannot say whether the player edited it.
+func TestConfigGeneratedWhenTheStoreItemIsGone(t *testing.T) {
+	t.Parallel()
+	m := manifestJSON("me.a")
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m + " "})
+	writeFile(t, e.mods(p.ID), "a-1/A/config.json", `{"x":1}`)
+	src, err := e.items.Path("stardew", "a-1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.RemoveAll(src); err != nil {
+		t.Fatal(err)
+	}
+	st, err := e.ModState("stardew", p.ID, "a-1", "smapi:me.a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Config != ConfigGenerated {
+		t.Fatalf("config = %q, want %q", st.Config, ConfigGenerated)
+	}
+}
+
+// The panel reads both files through rewriteConfigJSON, so a config the panel saved with other spacing is the shipped
+// default, not an edit.
+func TestConfigSavedWithOtherSpacingIsStillTheDefault(t *testing.T) {
+	t.Parallel()
+	m := manifestJSON("me.a")
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m, "A/config.json": `{"x":1,"y":[1,2]}`}, map[string]string{"A/manifest.json": m + " "})
+	if err := e.WriteConfig("stardew", p.ID, "a-1", "smapi:me.a", "{\n  \"x\": 1,\n  \"y\": [1, 2]\n}"); err != nil {
+		t.Fatal(err)
+	}
+	st, err := e.ModState("stardew", p.ID, "a-1", "smapi:me.a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Config != ConfigDefault {
+		t.Fatalf("config = %q, want %q", st.Config, ConfigDefault)
+	}
+}
+
+// A package mod has no SMAPI manifest to read the previous version from; its source's version says what the roll back
+// would install.
+func TestModStatePreviousVersionOfAPackage(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.InstallSource(t.Context(), "lethal-company", p.ID, tsZip(t, "1.0.0"), Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"}); err != nil {
+		t.Fatal(err)
+	}
+	res, err := e.InstallSource(t.Context(), "lethal-company", p.ID, tsZip(t, "1.1.0"), Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.1.0"})
+	if err != nil || !res.Updated {
+		t.Fatalf("update = %+v, %v", res, err)
+	}
+	en := res.Profile.Entries[0]
+	st, err := e.ModState("lethal-company", p.ID, en.Key, en.Mods[0].ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.PreviousVersion != "1.0.0" {
+		t.Fatalf("previous version = %q, want 1.0.0", st.PreviousVersion)
+	}
+}
