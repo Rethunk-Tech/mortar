@@ -48,10 +48,12 @@ test('search matches keys and descriptions and a section name keeps its entries'
         entries: [entry({ key: 'Speed' }), entry({ key: 'Gravity', description: 'fall speed' })],
       },
       { name: 'Audio', entries: [entry({ key: 'Volume' })] },
+      { name: 'Other', entries: [entry({ key: 'x', label: 'Jump Height' })] },
     ],
   }
   expect(filterFile(file, 'speed').sections[0]?.entries).toHaveLength(2)
   expect(filterFile(file, 'audio').sections[0]?.entries).toHaveLength(1)
+  expect(filterFile(file, 'jump').sections[0]?.entries[0]?.key).toBe('x')
   expect(filterFile(file, 'zzz').sections).toHaveLength(0)
 })
 

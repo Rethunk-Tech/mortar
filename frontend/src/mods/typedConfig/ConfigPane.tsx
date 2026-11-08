@@ -434,7 +434,7 @@ export function ConfigPane({
     open({ game, profile, key, id }, landing?.file ?? initialFile).catch(reportUnexpected)
   }, [open, game, profile, key, id, initialFile, landing?.file])
   const reload = () => {
-    open(target, initialFile).catch(reportUnexpected)
+    open(target, landing?.file ?? initialFile).catch(reportUnexpected)
   }
   const resetAll = useTypedConfig((s) => s.resetAll)
   const [query, setQuery] = useState(landing?.query ?? '')

@@ -1,4 +1,5 @@
 import { sameValue } from '@rethunk/react-load-hooks'
+import { matchesQuery } from '../modSearch.ts'
 import { looksLikeKeybind } from './keybind.ts'
 import type { ConfigEntry, ConfigFile, ConfigValue } from './types.ts'
 
@@ -27,11 +28,8 @@ function filterFile(file: ConfigFile, query: string): ConfigFile {
         ? s
         : {
             ...s,
-            entries: s.entries.filter(
-              (e) =>
-                e.key.toLowerCase().includes(q) ||
-                (e.label ?? '').toLowerCase().includes(q) ||
-                e.description.toLowerCase().includes(q),
+            entries: s.entries.filter((e) =>
+              matchesQuery(q, [e.key, e.label ?? '', e.description]),
             ),
           },
     )

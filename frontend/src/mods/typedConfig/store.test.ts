@@ -38,3 +38,21 @@ test('a signed-out read keeps the sign-in state, so the pane offers the sign-in 
   expect(loadError?.signedOut).toBe(true)
   expect(loadError?.details).toBe('no token')
 })
+
+test('selecting a file that loads clears a previous load error', async () => {
+  spyOn(configApi, 'files').mockResolvedValue([
+    { name: 'bad.cfg', label: 'bad', format: 'bepinex', sections: [] },
+    { name: 'good.cfg', label: 'good', format: 'bepinex', sections: [] },
+  ])
+  spyOn(configApi, 'schema').mockImplementation(async (_t, file) => {
+    if (file === 'bad.cfg') {
+      throw new Error('unreadable')
+    }
+    return []
+  })
+  const { open, select } = useTypedConfig.getState()
+  await open(target, 'bad.cfg')
+  expect(useTypedConfig.getState().loadError).not.toBe(null)
+  await select('good.cfg')
+  expect(useTypedConfig.getState().loadError).toBe(null)
+})

@@ -131,7 +131,10 @@ const useTypedConfig = create<{
         if (get().target !== target) {
           return
         }
-        set((s) => ({ files: s.files.map((f) => (f.name === file ? { ...f, sections } : f)) }))
+        set((s) => ({
+          files: s.files.map((f) => (f.name === file ? { ...f, sections } : f)),
+          loadError: null,
+        }))
       } catch (e) {
         if (get().target === target) {
           set({ loadError: inlineError(e) })

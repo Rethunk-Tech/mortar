@@ -213,6 +213,7 @@ function useListed(view: GroupsView, shown: ModConfig[]) {
       .filter((g) => g.items.length > 0)
     return flattenModGroups(rows, {
       grouped: view.groupBy !== 'none',
+      nested: view.groupBy === 'group',
       collapsed: view.collapsed,
       idOf: (c) => c.id,
     })
