@@ -2,6 +2,8 @@ import {
   closestCenter,
   DndContext,
   type DragEndEvent,
+  type DraggableAttributes,
+  type DraggableSyntheticListeners,
   DragOverlay,
   KeyboardSensor,
   PointerSensor,
@@ -19,7 +21,7 @@ import {
 import { useLingui } from '@lingui/react/macro'
 import { alpha, Box } from '@mui/material'
 import { GripVertical } from 'lucide-react'
-import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { memo, type ReactNode, useCallback, useMemo, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SetModOrder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -131,16 +133,25 @@ export function ManualOrder({
   )
 }
 
-/**
- * The drag handle of one row or card, laid over the start of its positioned parent, and the line where a drop would
- * land. It is the row's drop target too, so the row itself keeps its own click and keyboard handling.
- */
-export function ManualHandle({ id, name }: { id: string; name: string }) {
-  const { t } = useLingui()
-  const { attributes, listeners, setNodeRef, isDragging, isOver, index, activeIndex } = useSortable(
-    { id },
-  )
-  const after = activeIndex > NONE && activeIndex < index
+// What a handle shows. Every drag event hands each sortable new context, so the handle re-renders either way; keeping
+// its markup here means only a handle whose own state changed redraws the tree below.
+const HandleBody = memo(function HandleBodyView({
+  label,
+  attributes,
+  listeners,
+  setNodeRef,
+  isDragging,
+  isOver,
+  after,
+}: {
+  label: string
+  attributes: DraggableAttributes
+  listeners: DraggableSyntheticListeners
+  setNodeRef: (node: HTMLElement | null) => void
+  isDragging: boolean
+  isOver: boolean
+  after: boolean
+}) {
   return (
     <Box
       sx={(theme) => ({
@@ -159,7 +170,7 @@ export function ManualHandle({ id, name }: { id: string; name: string }) {
         ref={setNodeRef}
         {...attributes}
         {...listeners}
-        aria-label={t`Move ${name}`}
+        aria-label={label}
         className="manual-handle"
         sx={{
           position: 'absolute',
@@ -186,5 +197,28 @@ export function ManualHandle({ id, name }: { id: string; name: string }) {
         <GripVertical size={HANDLE_PX} aria-hidden={true} />
       </Box>
     </Box>
+  )
+})
+
+/**
+ * The drag handle of one row or card, laid over the start of its positioned parent, and the line where a drop would
+ * land. It is the row's drop target too, so the row itself keeps its own click and keyboard handling.
+ */
+export function ManualHandle({ id, name }: { id: string; name: string }) {
+  const { t } = useLingui()
+  const { attributes, listeners, setNodeRef, isDragging, isOver, index, activeIndex } = useSortable(
+    { id },
+  )
+  const after = activeIndex > NONE && activeIndex < index
+  return (
+    <HandleBody
+      label={t`Move ${name}`}
+      attributes={attributes}
+      listeners={listeners}
+      setNodeRef={setNodeRef}
+      isDragging={isDragging}
+      isOver={isOver}
+      after={after}
+    />
   )
 }
