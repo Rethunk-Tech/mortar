@@ -370,6 +370,20 @@ function Log() {
   )
 }
 
+// The usual-start line and the elapsed clock: its own component, so a second passing redraws this line rather than the
+// marks, the log and the buttons under it.
+function TimingLine({ usual, ticking, since }: { usual: string; ticking: boolean; since: number }) {
+  const elapsed = useSecondValue(
+    (now) => (ticking && since > 0 ? formatElapsed(now - since) : ''),
+    ticking,
+  )
+  return (
+    <Typography sx={{ fontSize: 13.5, color: 'text.secondary', minHeight: 19 }}>
+      {[usual, elapsed].filter(Boolean).join(' · ')}
+    </Typography>
+  )
+}
+
 function screenTitle(phase: Phase, name: string): string {
   if (phase === 'failed') {
     return i18n._(msg`${name} did not start`)
@@ -402,10 +416,6 @@ export function LaunchScreen({ game }: { game: string }) {
   const slowAt = status?.slowAt ?? 0
   const since = status?.since ?? 0
   const pastSlowAt = useSecondValue((now) => ticking && now >= slowAt, ticking)
-  const elapsed = useSecondValue(
-    (now) => (ticking && since > 0 ? formatElapsed(now - since) : ''),
-    ticking,
-  )
   const [settled, setSettled] = useState(false)
   const [keptWaiting, setKeptWaiting] = useState(0)
   const onSettled = useCallback(() => setSettled(true), [])
@@ -480,9 +490,7 @@ export function LaunchScreen({ game }: { game: string }) {
           {title}
         </Typography>
         <Typography sx={{ fontSize: 'large.fontSize' }}>{sub}</Typography>
-        <Typography sx={{ fontSize: 13.5, color: 'text.secondary', minHeight: 19 }}>
-          {[usual, elapsed].filter(Boolean).join(' · ')}
-        </Typography>
+        <TimingLine usual={usual} ticking={ticking} since={since} />
         <LaunchStages stages={stages} marks={marks} onSettled={onSettled} />
         <Box sx={{ position: 'relative', width: '100%', maxWidth: 720 }}>
           <Log />
