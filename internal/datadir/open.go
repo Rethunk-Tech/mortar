@@ -1,15 +1,12 @@
 package datadir
 
 import (
-	"context"
 	"errors"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
+	"github.com/Rethunk-Tech/go-desktopenv/reveal"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -39,19 +36,7 @@ func Open(dir string) error {
 	if err := checkOpenable(dir); err != nil {
 		return err
 	}
-	name := "xdg-open"
-	switch runtime.GOOS {
-	case "windows":
-		name = "explorer"
-	}
-	cmd := exec.CommandContext(context.Background(), name, dir) //nolint:gosec // G204: name is the OS file manager; dir is a validated data path
-	cmd.Env = hostenv.Environ()
-	setArgs(cmd, dir)
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	go func() { _ = cmd.Wait() }()
-	return nil
+	return reveal.Open(dir)
 }
 
 // isUNC reports a network share path, in either the plain or the \\?\UNC\ spelling.
