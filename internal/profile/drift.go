@@ -18,9 +18,9 @@ import (
 	"sync"
 	"time"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
@@ -568,7 +568,7 @@ func safeFolder(name string) (string, error) {
 	if name == "" || name == "." || name == ".." {
 		return "", errors.New("invalid folder")
 	}
-	if !winname.Valid(name) {
+	if !ga.WindowsSegment(name) {
 		return "", errors.New("invalid folder")
 	}
 	return name, nil

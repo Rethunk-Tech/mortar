@@ -15,11 +15,11 @@ import (
 
 	"github.com/Rethunk-Tech/go-httpkit"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/source"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 func fileName(u *url.URL) string {
@@ -27,7 +27,7 @@ func fileName(u *url.URL) string {
 	if n == "." || n == ".." || n == "/" || n == "" {
 		return "download"
 	}
-	if clean := winname.Clean(n); clean != "" {
+	if clean := ga.Clean(n); clean != "" {
 		return clean
 	}
 	return "download"

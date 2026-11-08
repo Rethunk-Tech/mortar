@@ -21,9 +21,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // Caps on a .mortar file, enforced by counting bytes read rather than trusting declared sizes.
@@ -101,7 +101,7 @@ func ValidFomod(f map[string]map[string][]string) bool { return validDetails(Ref
 // from the shape rules so reading can skip such a file, which an older release wrote, instead of refusing the share.
 func winSafe(p string) bool {
 	for s := range strings.SplitSeq(p, "/") {
-		if !winname.Valid(s) {
+		if !ga.WindowsSegment(s) {
 			return false
 		}
 	}
@@ -128,7 +128,7 @@ func validConfigShape(p string) bool {
 // refused: 0.3.8 accepted an id ending in a dot or space, so share files holding one must still read.
 func validID(id mod.ID) bool {
 	local := id.Local()
-	return format.MatchString(id.Format()) && len(local) <= maxIDLen && uniqueID.MatchString(local) && winname.Valid(strings.TrimRight(local, ". "))
+	return format.MatchString(id.Format()) && len(local) <= maxIDLen && uniqueID.MatchString(local) && ga.WindowsSegment(strings.TrimRight(local, ". "))
 }
 
 // Write writes the profile as a .mortar zip: profile.json with the link's entries plus name and notes,

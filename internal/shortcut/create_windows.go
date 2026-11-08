@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-desktopenv/lnk"
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // create writes a .lnk in the Start menu's Mortar folder through the shell's own shortcut object.
@@ -129,7 +129,7 @@ func profileLinks(game, profile string) (dir string, matches []string, err error
 
 // fileName keeps a shortcut's name to characters every file system accepts.
 func fileName(name string) string {
-	if clean := winname.Clean(name); clean != "" {
+	if clean := ga.Clean(name); clean != "" {
 		return clean
 	}
 	return "Mortar profile"

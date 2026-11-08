@@ -4,11 +4,11 @@ import (
 	"slices"
 	"strings"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // blockedExtensions are the executable types r2modman refuses to extract from an imported profile
@@ -73,7 +73,7 @@ func winPath(p string) (string, bool) {
 	segs := strings.Split(p, "/")
 	for i, seg := range segs {
 		segs[i] = strings.TrimRight(seg, ". ")
-		if !winname.Valid(segs[i]) {
+		if !ga.WindowsSegment(segs[i]) {
 			return "", false
 		}
 	}

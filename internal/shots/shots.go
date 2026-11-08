@@ -10,8 +10,8 @@ import (
 	"slices"
 	"strings"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // Screenshot sources.
@@ -38,7 +38,7 @@ var pictureExts = []string{".png", ".jpg", ".jpeg", ".webp", ".bmp"}
 
 // IsPicture reports whether name is a bare file name in a picture format the app's webview shows.
 func IsPicture(name string) bool {
-	return winname.Valid(name) && !strings.HasPrefix(name, ".") &&
+	return ga.WindowsSegment(name) && !strings.HasPrefix(name, ".") &&
 		slices.Contains(pictureExts, strings.ToLower(filepath.Ext(name)))
 }
 

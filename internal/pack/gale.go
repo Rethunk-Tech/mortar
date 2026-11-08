@@ -8,11 +8,11 @@ import (
 	"slices"
 	"strings"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-modmanagers/gale"
 	"github.com/Rethunk-Tech/go-modmanagers/r2modman"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 	_ "modernc.org/sqlite"
 )
 
@@ -112,7 +112,7 @@ func (g Gale) Parse(ctx context.Context, in Input) (Draft, error) {
 		off := !m.Enabled
 		if m.FullName == "" {
 			dir := filepath.Join(p.Path, "BepInEx", "plugins", m.Name)
-			if winname.Valid(m.Name) && safefs.IsDir(dir) {
+			if ga.WindowsSegment(m.Name) && safefs.IsDir(dir) {
 				d.Local = append(d.Local, LocalMod{Name: m.Name, Author: m.Author, Version: m.Version, Disabled: off, Dir: dir})
 				deps = append(deps, m.Dependencies...)
 			}

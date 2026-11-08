@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -19,7 +20,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // packCodes are the pack formats a pasted text can be: an r2modman code or key, or a Gale code.
@@ -134,7 +134,7 @@ func adoptLocalPlugins(out *Preview, d *pack.Draft, importedFrom string) {
 	kept := out.Mods[:0]
 	for _, m := range out.Mods {
 		dir := filepath.Join(importedFrom, "BepInEx", "plugins", m.Package)
-		if m.Reason != ReasonNotInIndex || !winname.Valid(m.Package) || !safefs.IsDir(dir) {
+		if m.Reason != ReasonNotInIndex || !ga.WindowsSegment(m.Package) || !safefs.IsDir(dir) {
 			kept = append(kept, m)
 			continue
 		}

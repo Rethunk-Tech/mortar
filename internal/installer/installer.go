@@ -12,9 +12,9 @@ import (
 	"strings"
 	"sync"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-fomod"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // Archive is an archive already extracted into Dir (the store item folder).
@@ -185,7 +185,7 @@ func validate(l Layout, g Game) error {
 		}
 		segs := strings.Split(f.Rel, "/")
 		for _, s := range segs {
-			if !winname.Valid(s) {
+			if !ga.WindowsSegment(s) {
 				return fmt.Errorf("%w: %q", ErrUnsafe, f.Rel)
 			}
 		}

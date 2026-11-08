@@ -10,9 +10,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // changedPrefix is where a .mortar file keeps a profile's changed copies (a file a mod rewrote or created while a
@@ -50,7 +50,7 @@ func validChangedLocation(game, p string) bool {
 
 // deviceSegment is a segment whose only fault is a Windows device name such as CON.
 func deviceSegment(seg string) bool {
-	return !winname.Valid(seg) && !unsafeName.MatchString(seg) && !strings.HasSuffix(seg, ".") && !strings.HasSuffix(seg, " ")
+	return !ga.WindowsSegment(seg) && !unsafeName.MatchString(seg) && !strings.HasSuffix(seg, ".") && !strings.HasSuffix(seg, " ")
 }
 
 // hasDeviceSegment reports that p has a segment that is a device name.
