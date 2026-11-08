@@ -54,11 +54,53 @@
   <releases>
     <release version="0.6.0" date="2026-11-04">
       <description>
+        <p>New</p>
+        <ul>
+          <li>Nexus Mods sign-in happens in your browser: choose Sign in to Nexus Mods in Settings › Accounts and approve Mortar. If a sign-in is already in progress, the button shows Cancel</li>
+          <li>Desktop notifications go through the system portal, and clicking one brings Mortar back to what it was about</li>
+          <li>The Flatpak builds mods with Flathub's .NET SDK extension, and New mod prints the install command when the extension is missing</li>
+          <li>Game code in Develop is offered whenever the game's install is known, with or without a mod project</li>
+          <li>The stream overlay for Stardew Valley adds weekday, days left, friend and pet fields</li>
+          <li>Develop's diagnostics zip carries each project's last build log, and mortar.log gets a line per build</li>
+          <li>The console's Performance panel has Stop measuring for BepInEx games; it keeps the last summary readable</li>
+          <li>A Sort menu beside Group by sorts the Mods list in list and card views, and Manual lets you drag mods into any order, saved per profile, with mods added later at the bottom</li>
+          <li>Develop's projects sort by name or by hand: drag them into your own order</li>
+          <li>A mod's config can be edited while the game runs. BepInEx games re-read a changed .cfg at once, so mods that react to setting changes apply it without a restart</li>
+          <li>On Linux, Sandbox the game (a game's Play settings) runs a directly started game inside a sandbox that keeps it to its own folders; the Console lists anything it was denied, with an Allow button</li>
+          <li>A share's import preview lists the changed copies of files it carries</li>
+          <li>Mortar says when its signed game catalog is more than 14 days old, with a retry</li>
+        </ul>
         <p>Changed</p>
         <ul>
-          <li>Nexus Mods sign-in now happens in your browser: choose Sign in to Nexus Mods in Settings › Accounts and approve Mortar. Personal API keys are gone, and Mortar deletes a saved one, so sign in again once</li>
+          <li>Personal Nexus API keys are gone, and Mortar deletes a saved one, so sign in again once</li>
           <li>Nexus Mods and GitHub request counts in Settings › Accounts say what time they reset</li>
-          <li>The Flatpak keeps sign-ins in a sealed file, using your desktop's Secret portal</li>
+          <li>Menus follow one order: the main action first, and an ellipsis only on items that ask for more input</li>
+          <li>Develop names the Thunderstore team an upload goes out as, and Release everywhere says Nexus was skipped when you are not signed in</li>
+          <li>A package's config files are applied when you install or update it, the way r2modman and Gale do, even over another mod's settings (a theme pack's); your later edits stay, and the file it replaced is listed under Problems to restore</li>
+          <li>Updates install only with Mortar's signed release statement</li>
+          <li>SMAPI, MelonLoader and BepInEx packs install only as the signed catalog pins them; a newer release waits for the next catalog, and Settings says so</li>
+          <li>CurseForge and mod.io downloads are checked against the hash the site publishes, and a download address that is not https is refused</li>
+          <li>Sharing between your own computers over the LAN is sealed end to end, and repeated pairing attempts are limited</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Games that load from a folder and have no ordering extension no longer show a broken Load order tab</li>
+          <li>Mortar finds a Proton prefix in any Steam library, not only the game's own</li>
+          <li>The Flatpak finds a .NET install in your home folder's .dotnet, and the code decompiler runs with the Flatpak's own dotnet, and the dedicated server starts with the dotnet on the host, where it runs</li>
+          <li>Removing a Develop project that something still holds names the programs holding the folder</li>
+          <li>A Build or Pack queued behind Trash refuses instead of building a project that is gone</li>
+          <li>Reset all in a mod's config is one restore point and one write</li>
+          <li>Vintage Story's mod database is fetched once an hour, not again for every page you browse</li>
+          <li>Mortar keeps the newest 20 startup reports per profile and deletes older ones</li>
+          <li>Endorse prompts are counted per game, so Never in one game no longer silences the same mod number in another</li>
+          <li>A failed share import is undone before its preview comes back</li>
+          <li>A FOMOD item is laid out in the store's own cache</li>
+          <li>Ticking levels under Levels shown in a game's Console settings saves again</li>
+          <li>The Share dialog counts every mod, and a development profile's share lists Develop's test helpers as left out, so its numbers add up</li>
+          <li>History records one event per change, against what it changed from</li>
+          <li>A long mod id wraps after its dots in the detail panel</li>
+          <li>Clone in Develop starts in the same projects folder as New mod</li>
+          <li>Screen readers announce dragged items by name in Profiles, Develop, Mods and the list's column menu</li>
         </ul>
       </description>
     </release>
