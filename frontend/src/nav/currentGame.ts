@@ -19,8 +19,8 @@ export function useCurrentGame(): string {
   const routeId = useNav((s) => routeGame(s.route))
   // A route naming a game decides the answer, so the other two are read as empty while it does: a save of the last
   // game, or a game loading, would otherwise redraw every reader of this hook.
-  const onRoute = () => routeId !== null
-  const lastGame = useSettings((s) => (onRoute() ? '' : (s.lastGame ?? '')))
-  const loaded = useProfiles((s) => (onRoute() ? undefined : s.game?.id))
+  const onRoute = routeId !== null
+  const lastGame = useSettings((s) => (onRoute ? '' : (s.lastGame ?? '')))
+  const loaded = useProfiles((s) => (onRoute ? undefined : s.game?.id))
   return pick(routeId, lastGame, loaded)
 }
