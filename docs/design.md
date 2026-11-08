@@ -8,14 +8,6 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 ## Ready to build
 
-### Update version binding
-
-A freshness gap in what the signing pipeline signs ([security](security.md)). It needs the signing step, so it is not a client-only change.
-
-- **Update version binding.** Wails' updater verifies an Ed25519 signature over the artifact digest only (`Rethunk-AI/wails/v3/pkg/updater/verify.go:137`, `:175`); `Verification` carries no version or platform. Whoever controls `releases/latest/download/manifest.json` can serve an older signed build, or another platform's, under a higher version number. `TestUpdaterE2EDowngradeIgnored` covers only a lower version number.
-  - **Decided shape:** the release step signs `version|platform|digest` instead of the digest (`wails3 task release:manifest`, `docs/release.md`), the fork's verifier rebuilds that message from the release it checked, and `updatesvc.Check` (`internal/updatesvc/service.go:187`) keeps refusing a release without a signature. Mortar and the fork change together, and older builds must still read the new manifest, so the manifest carries both signatures for one release cycle.
-  - **Done when:** an e2e test installs nothing when a validly signed older artifact is relabelled with a higher version.
-
 ### Game sandbox (Linux, opt-in)
 
 A malicious mod is code in the game process, so it can read the player's `~/.ssh`, browser profiles and Mortar's own data folder (store keys, tokens). Opt-in: the Lethal Company proof passes (`MORTAR_REGRESS_SANDBOX=1 scripts/selftest.sh regress --game lethal-company`), and the maintainer kept it off by default on 2026-11-07. `internal/sandbox` builds the bubblewrap argv, `game.sandboxed` applies it to a direct start, `launchsvc.sandboxSpec` supplies the profile, saves and mod roots. The run record keeps the writable folders (`Run.Sandbox`), and the Console shows them under the run's problems with any denial found in its logs (`launchsvc.SandboxReport`, `sandbox.Denials`, `console/SandboxNote.tsx`). Reuses what the self-test harness learned (`scripts/launch-guard.sh`): bwrap works unprivileged here, nested namespaces work, and a socket stays connectable through a read-only bind.
