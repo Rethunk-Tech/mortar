@@ -134,18 +134,22 @@ func longModsFolderPaths(modsDir string, mods []framework.Mod) []readPath {
 	// Each top folder is walked on its own goroutine: on Windows a walk mostly waits on each folder's listing, and an
 	// 800-mod folder one after another took about a second.
 	found := make([][]readPath, len(top))
-	sem := make(chan struct{}, max(1, runtime.GOMAXPROCS(0)))
+	work := make(chan int)
 	var wg sync.WaitGroup
+	for range runtime.GOMAXPROCS(0) {
+		wg.Go(func() {
+			for i := range work {
+				found[i] = longPathsBelow(modsDir, top[i].Name(), folders)
+			}
+		})
+	}
 	for i, e := range top {
 		if e.IsDir() && strings.HasPrefix(e.Name(), ".") {
 			continue
 		}
-		wg.Go(func() {
-			sem <- struct{}{}
-			defer func() { <-sem }()
-			found[i] = longPathsBelow(modsDir, e.Name(), folders)
-		})
+		work <- i
 	}
+	close(work)
 	wg.Wait()
 	return slices.Concat(found...)
 }

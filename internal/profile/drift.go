@@ -188,13 +188,130 @@ type dirListing struct {
 // added within the filesystem's timestamp granularity of the listing would leave the time unchanged.
 const racyListingWindow = 2 * time.Second
 
-var dirListings = struct {
-	sync.Mutex
-	byPath map[string]dirListing
+// gobCache is a map keyed by folder path, read from its gob file on first use and written back atomically when an
+// entry changed. A failed write leaves it dirty so the next save retries it, and release holds nothing in memory after
+// a save, so the next check reads back from disk instead of keeping tens of megabytes of names between checks.
+type gobCache[V any] struct {
+	path     func() (string, error)
+	gone     func(key string) bool // keys no lookup wanted and whose folder is gone are dropped before a write
+	keepUsed bool                  // a key looked up since the process started is kept even if its folder is gone
+	release  bool
+
+	mu     sync.Mutex
+	byPath map[string]V
 	used   map[string]bool
 	loaded bool
 	dirty  bool
-}{byPath: map[string]dirListing{}, used: map[string]bool{}}
+}
+
+// get returns the key's value, from the cache file or an earlier put, and remembers the key was wanted.
+func (c *gobCache[V]) get(key string) (V, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.loadLocked()
+	if c.keepUsed {
+		if c.used == nil {
+			c.used = map[string]bool{}
+		}
+		c.used[key] = true
+	}
+	v, ok := c.byPath[key]
+	return v, ok
+}
+
+func (c *gobCache[V]) put(key string, v V) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.loadLocked()
+	if c.byPath == nil {
+		c.byPath = map[string]V{}
+	}
+	c.byPath[key] = v
+	c.dirty = true
+}
+
+// loadLocked reads the cache file once per process; one that cannot be read or decoded leaves the cache empty, so its
+// entries are measured again instead of failing the check.
+func (c *gobCache[V]) loadLocked() {
+	if c.loaded {
+		return
+	}
+	c.loaded = true
+	path, err := c.path()
+	if err != nil {
+		return
+	}
+	raw, err := safefs.ReadFile(path)
+	if err != nil {
+		return
+	}
+	var disk map[string]V
+	if gob.NewDecoder(bytes.NewReader(raw)).Decode(&disk) != nil {
+		return
+	}
+	c.byPath = disk
+}
+
+func (c *gobCache[V]) save() {
+	c.mu.Lock()
+	if !c.dirty {
+		c.releaseLocked()
+		c.mu.Unlock()
+		return
+	}
+	for key := range c.byPath {
+		if c.keepUsed && c.used[key] {
+			continue
+		}
+		if c.gone(key) {
+			delete(c.byPath, key)
+		}
+	}
+	var buf bytes.Buffer
+	err := gob.NewEncoder(&buf).Encode(c.byPath)
+	c.dirty = false
+	c.mu.Unlock()
+	if err != nil {
+		c.setDirty()
+		return
+	}
+	path, pathErr := c.path()
+	if pathErr != nil || os.MkdirAll(filepath.Dir(path), 0o700) != nil || safefs.WriteFileAtomic(path, buf.Bytes(), 0o600) != nil {
+		c.setDirty()
+		return
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if !c.dirty {
+		c.releaseLocked()
+	}
+}
+
+func (c *gobCache[V]) setDirty() {
+	c.mu.Lock()
+	c.dirty = true
+	c.mu.Unlock()
+}
+
+func (c *gobCache[V]) releaseLocked() {
+	if c.release {
+		c.byPath, c.loaded = nil, false
+	}
+}
+
+// goneStat and goneLstat are whether a cache key's folder is no longer there; a store item may be a link, so it is
+// followed.
+func goneStat(key string) bool {
+	_, err := os.Stat(key)
+	return err != nil
+}
+
+func goneLstat(key string) bool {
+	_, err := os.Lstat(key)
+	return err != nil
+}
+
+var dirListings = gobCache[dirListing]{path: dirListingsPath, gone: goneLstat}
 
 func dirListingsPath() (string, error) {
 	base, err := datadir.Dir()
@@ -204,37 +321,13 @@ func dirListingsPath() (string, error) {
 	return filepath.Join(base, "cache", "drift-listings.gob"), nil
 }
 
-func loadDirListingsLocked() {
-	if dirListings.loaded {
-		return
-	}
-	dirListings.loaded = true
-	path, err := dirListingsPath()
-	if err != nil {
-		return
-	}
-	raw, err := safefs.ReadFile(path)
-	if err != nil {
-		return
-	}
-	var disk map[string]dirListing
-	if gob.NewDecoder(bytes.NewReader(raw)).Decode(&disk) == nil {
-		dirListings.byPath = disk
-	}
-}
-
 func listDir(dir string) (dirListing, error) {
 	info, err := os.Lstat(dir)
 	if err != nil {
 		return dirListing{}, err
 	}
 	stamp := info.ModTime().UnixNano()
-	dirListings.Lock()
-	loadDirListingsLocked()
-	cached, ok := dirListings.byPath[dir]
-	dirListings.used[dir] = true
-	dirListings.Unlock()
-	if ok && cached.ModTime == stamp {
+	if cached, ok := dirListings.get(dir); ok && cached.ModTime == stamp {
 		return cached, nil
 	}
 	entries, err := os.ReadDir(dir)
@@ -250,65 +343,25 @@ func listDir(dir string) (dirListing, error) {
 		}
 	}
 	if time.Since(info.ModTime()) > racyListingWindow {
-		dirListings.Lock()
-		dirListings.byPath[dir] = listing
-		dirListings.dirty = true
-		dirListings.Unlock()
+		dirListings.put(dir, listing)
 	}
 	return listing, nil
 }
 
 // saveDirListings writes the listings when any changed, dropping those of directories that are gone.
 func saveDirListings() {
-	dirListings.Lock()
-	if !dirListings.dirty {
-		dirListings.Unlock()
-		return
-	}
-	for dir := range dirListings.byPath {
-		if dirListings.used[dir] {
-			continue
-		}
-		if _, err := os.Lstat(dir); err != nil {
-			delete(dirListings.byPath, dir)
-		}
-	}
-	var buf bytes.Buffer
-	err := gob.NewEncoder(&buf).Encode(dirListings.byPath)
-	dirListings.dirty = false
-	dirListings.Unlock()
-	path, pathErr := dirListingsPath()
-	if err != nil || pathErr != nil {
-		return
-	}
-	if os.MkdirAll(filepath.Dir(path), 0o700) != nil || safefs.WriteFileAtomic(path, buf.Bytes(), 0o600) != nil {
-		dirListings.Lock()
-		dirListings.dirty = true
-		dirListings.Unlock()
-	}
+	dirListings.save()
 }
 
 // storeListing is a store item's file list and stats. Store items do not change once installed, so a listing is
 // kept on disk across starts and measured again only if the item's folder is replaced.
 type storeListing struct {
-	modTime int64
-	files   map[string]struct{}
-	stat    FolderStat
-}
-
-var storeListings = struct {
-	sync.Mutex
-	byPath map[string]storeListing
-	loaded bool
-	dirty  bool
-}{byPath: map[string]storeListing{}}
-
-// diskListing is a storeListing as the listings cache file holds it.
-type diskListing struct {
 	ModTime int64
-	Files   []string
+	Files   map[string]struct{}
 	Stat    FolderStat
 }
+
+var storeListings = gobCache[storeListing]{path: storeListingsPath, gone: goneStat, release: true}
 
 func storeListingsPath() (string, error) {
 	base, err := datadir.Dir()
@@ -318,125 +371,48 @@ func storeListingsPath() (string, error) {
 	return filepath.Join(base, "cache", "store-listings.gob"), nil
 }
 
-// loadStoreListingsLocked reads the listings cache once per process; an unreadable one is measured again.
-func loadStoreListingsLocked() {
-	if storeListings.loaded {
-		return
-	}
-	storeListings.loaded = true
-	path, err := storeListingsPath()
-	if err != nil {
-		return
-	}
-	raw, err := safefs.ReadFile(path)
-	if err != nil {
-		return
-	}
-	var disk map[string]diskListing
-	if gob.NewDecoder(bytes.NewReader(raw)).Decode(&disk) != nil {
-		return
-	}
-	for peer, d := range disk {
-		if _, ok := storeListings.byPath[peer]; ok {
-			continue
-		}
-		files := make(map[string]struct{}, len(d.Files))
-		for _, f := range d.Files {
-			files[f] = struct{}{}
-		}
-		storeListings.byPath[peer] = storeListing{modTime: d.ModTime, files: files, stat: d.Stat}
-	}
-}
-
 // saveStoreListings writes the listings measured since the last write, then lets go of them: a drift check reads them
 // once, and on a large profile they hold tens of megabytes of file names that the next check reads back from disk.
 func saveStoreListings() {
-	storeListings.Lock()
-	if !storeListings.dirty {
-		releaseStoreListingsLocked()
-		storeListings.Unlock()
-		return
-	}
-	disk := make(map[string]diskListing, len(storeListings.byPath))
-	for peer, l := range storeListings.byPath {
-		// A collected store item's listing goes with it.
-		if _, err := os.Stat(peer); err != nil {
-			delete(storeListings.byPath, peer)
-			continue
-		}
-		disk[peer] = diskListing{ModTime: l.modTime, Files: slices.Collect(maps.Keys(l.files)), Stat: l.stat}
-	}
-	storeListings.dirty = false
-	storeListings.Unlock()
-	path, err := storeListingsPath()
-	if err != nil {
-		return
-	}
-	var buf bytes.Buffer
-	if err := gob.NewEncoder(&buf).Encode(disk); err != nil {
-		return
-	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return
-	}
-	err = safefs.WriteFileAtomic(path, buf.Bytes(), 0o600)
-	storeListings.Lock()
-	defer storeListings.Unlock()
-	if err != nil {
-		storeListings.dirty = true
-	} else if !storeListings.dirty {
-		releaseStoreListingsLocked()
-	}
-}
-
-// releaseStoreListingsLocked drops the listings the cache file holds; the next lookup reads the file again.
-func releaseStoreListingsLocked() {
-	storeListings.byPath, storeListings.loaded = map[string]storeListing{}, false
+	storeListings.save()
 }
 
 func storeListingFor(peer string) (storeListing, error) {
 	info, err := os.Stat(peer)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return storeListing{files: map[string]struct{}{}}, nil
+			return storeListing{Files: map[string]struct{}{}}, nil
 		}
 		return storeListing{}, err
 	}
 	stamp := info.ModTime().UnixNano()
-	storeListings.Lock()
-	loadStoreListingsLocked()
-	cached, ok := storeListings.byPath[peer]
-	storeListings.Unlock()
-	if ok && cached.modTime == stamp {
+	if cached, ok := storeListings.get(peer); ok && cached.ModTime == stamp {
 		return cached, nil
 	}
 	listing, err := listStoreItem(peer)
 	if err != nil {
 		return storeListing{}, err
 	}
-	listing.modTime = stamp
-	storeListings.Lock()
-	storeListings.byPath[peer] = listing
-	storeListings.dirty = true
-	storeListings.Unlock()
+	listing.ModTime = stamp
+	storeListings.put(peer, listing)
 	return listing, nil
 }
 
 func storeFiles(peer string) (map[string]struct{}, error) {
 	listing, err := storeListingFor(peer)
-	return listing.files, err
+	return listing.Files, err
 }
 
 // listStoreItem is relFiles and walkFolderStat of a store item in one walk.
 func listStoreItem(root string) (storeListing, error) {
 	prefix := root + string(filepath.Separator)
-	out := storeListing{files: map[string]struct{}{}}
+	out := storeListing{Files: map[string]struct{}{}}
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
 			return err
 		}
 		rel := strings.TrimPrefix(path, prefix)
-		out.files[rel] = struct{}{}
+		out.Files[rel] = struct{}{}
 		if isUserWritten(rel) {
 			return nil
 		}
@@ -444,7 +420,7 @@ func listStoreItem(root string) (storeListing, error) {
 		if err != nil {
 			return err
 		}
-		out.stat.add(info)
+		out.Stat.add(info)
 		return nil
 	})
 	return out, err
@@ -666,27 +642,31 @@ func (s *Store) liveDriftState(game, id string) (Profile, string, map[string]str
 		return Profile{}, "", nil, nil, err
 	}
 	stats := make(map[string]FolderStat, len(names))
+	keys := make(chan string)
 	var mu sync.Mutex
 	var errs []error
-	sem := make(chan struct{}, max(1, runtime.GOMAXPROCS(0)))
 	var wg sync.WaitGroup
-	for key, folder := range names {
+	for range runtime.GOMAXPROCS(0) {
 		wg.Go(func() {
-			sem <- struct{}{}
-			defer func() { <-sem }()
-			st, err := folderStatAt(modsDir, held, folder, storePeer(s, game, key))
-			mu.Lock()
-			defer mu.Unlock()
-			if err != nil {
-				errs = append(errs, err)
-				return
+			for key := range keys {
+				st, err := folderStatAt(modsDir, held, names[key], storePeer(s, game, key))
+				mu.Lock()
+				if err != nil {
+					errs = append(errs, err)
+				} else {
+					stats[key] = st
+				}
+				mu.Unlock()
 			}
-			stats[key] = st
 		})
 	}
+	for key := range names {
+		keys <- key
+	}
+	close(keys)
 	wg.Wait()
-	if len(errs) > 0 {
-		return Profile{}, "", nil, nil, errs[0]
+	if err := errors.Join(errs...); err != nil {
+		return Profile{}, "", nil, nil, err
 	}
 	return p, dir, names, stats, nil
 }
@@ -800,7 +780,7 @@ func (s *Store) ScanModsDrift(game, id string) ([]Drift, error) {
 			if err != nil {
 				return nil, err
 			}
-			storeStats[key] = listing.stat
+			storeStats[key] = listing.Stat
 		}
 	}
 	before := maps.Clone(snap.Folders)

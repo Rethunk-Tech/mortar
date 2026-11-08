@@ -3,7 +3,9 @@ package profile
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -92,6 +94,38 @@ func (e env) mustScanDrift(t *testing.T, profileID string) []Drift {
 		t.Fatal(err)
 	}
 	return got
+}
+
+// Every folder whose stat failed is reported, not just the first one a worker happened to reach.
+func TestDriftCheckReportsEveryFailedFolder(t *testing.T) {
+	t.Parallel()
+	if runtime.GOOS == "windows" || os.Geteuid() == 0 {
+		t.Skip("folder permissions are not enforced here")
+	}
+	e := newEnv(t)
+	p, err := e.Create("stardew", "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"b-locked", "a-locked"} {
+		dir := filepath.Join(e.mods(p.ID), name)
+		if err := os.MkdirAll(dir, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chmod(dir, 0); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = os.Chmod(dir, 0o700) })
+	}
+	_, err = e.ScanModsDrift("stardew", p.ID)
+	if err == nil {
+		t.Fatal("unreadable folders passed")
+	}
+	for _, name := range []string{"a-locked", "b-locked"} {
+		if !strings.Contains(err.Error(), name) {
+			t.Fatalf("error names only part of the failures: %v", err)
+		}
+	}
 }
 
 // Files a mod writes while the game runs (its config.json, its data folder) are not outside edits.
@@ -347,11 +381,11 @@ func TestListStoreItemMatchesSeparateWalks(t *testing.T) {
 		t.Fatal(err)
 	}
 	st := mustFolderStat(t, root, "")
-	if len(got.files) != len(files) || got.stat != st {
-		t.Fatalf("one walk = %v %+v, separate walks = %v %+v", got.files, got.stat, files, st)
+	if len(got.Files) != len(files) || got.Stat != st {
+		t.Fatalf("one walk = %v %+v, separate walks = %v %+v", got.Files, got.Stat, files, st)
 	}
 	for f := range files {
-		if _, ok := got.files[f]; !ok {
+		if _, ok := got.Files[f]; !ok {
 			t.Fatalf("one walk is missing %s", f)
 		}
 	}
@@ -361,9 +395,9 @@ func TestListStoreItemMatchesSeparateWalks(t *testing.T) {
 func TestStoreListingKeptAcrossStarts(t *testing.T) {
 	testfs.DataHome(t)
 	reset := func() {
-		storeListings.Lock()
-		storeListings.byPath, storeListings.loaded, storeListings.dirty = map[string]storeListing{}, false, false
-		storeListings.Unlock()
+		storeListings.mu.Lock()
+		storeListings.byPath, storeListings.used, storeListings.loaded, storeListings.dirty = nil, nil, false, false
+		storeListings.mu.Unlock()
 	}
 	reset()
 	t.Cleanup(reset)
@@ -374,9 +408,9 @@ func TestStoreListingKeptAcrossStarts(t *testing.T) {
 		t.Fatal(err)
 	}
 	saveStoreListings()
-	storeListings.Lock()
+	storeListings.mu.Lock()
 	held := len(storeListings.byPath)
-	storeListings.Unlock()
+	storeListings.mu.Unlock()
 	if held != 0 {
 		t.Fatalf("%d saved listings stayed in memory", held)
 	}
@@ -389,7 +423,7 @@ func TestStoreListingKeptAcrossStarts(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, ok := got.files[filepath.Join("sub", "a.dll")]; !ok || got.stat != first.stat {
+	if _, ok := got.Files[filepath.Join("sub", "a.dll")]; !ok || got.Stat != first.Stat {
 		t.Fatalf("after a restart the item was listed again: %+v", got)
 	}
 }
@@ -429,9 +463,9 @@ func TestRefreshDependenciesReadsAPackagesThunderstoreManifest(t *testing.T) {
 func TestFolderStatKeptListingsStillSeeEditsAndNewFiles(t *testing.T) {
 	testfs.DataHome(t)
 	reset := func() {
-		dirListings.Lock()
-		dirListings.byPath, dirListings.used, dirListings.loaded, dirListings.dirty = map[string]dirListing{}, map[string]bool{}, false, false
-		dirListings.Unlock()
+		dirListings.mu.Lock()
+		dirListings.byPath, dirListings.used, dirListings.loaded, dirListings.dirty = nil, nil, false, false
+		dirListings.mu.Unlock()
 	}
 	reset()
 	t.Cleanup(reset)
