@@ -8,7 +8,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
-func parseSince(since string) (time.Time, error) {
+func ParseSince(since string) (time.Time, error) {
 	since = strings.TrimSpace(since)
 	if since == "" {
 		return time.Time{}, nil
@@ -46,7 +46,7 @@ func (s *Service) RevertHistoryItem(game, id, eventID, item string) (Profile, er
 }
 
 func (s *Service) ChangesSince(game, id, since string) (HistoryDiff, error) {
-	when, err := parseSince(since)
+	when, err := ParseSince(since)
 	if err != nil {
 		return HistoryDiff{}, err
 	}

@@ -40,19 +40,7 @@ func (s *Services) lastRunTime(game, id string) (time.Time, error) {
 	if err != nil || len(runs) == 0 {
 		return time.Time{}, err
 	}
-	return parseSinceTime(runs[0].Started), nil
-}
-
-func parseSinceTime(raw string) time.Time {
-	for _, layout := range []string{time.RFC3339Nano, time.RFC3339, "2006-01-02 15:04:05", "2006-01-02 15:04"} {
-		if t, err := time.Parse(layout, raw); err == nil {
-			return t
-		}
-		if t, err := time.ParseInLocation(layout, raw, time.Local); err == nil {
-			return t
-		}
-	}
-	return time.Time{}
+	return profile.ParseSince(runs[0].Started)
 }
 
 func (s *Services) profileGood(game, id string, mark, restore bool) (any, error) {
