@@ -18,6 +18,7 @@ import { CompareSummary } from './CompareSummary.tsx'
 import { ImportFooter } from './ImportFooter.tsx'
 import { ImportInput } from './ImportInput.tsx'
 import { Tiles } from './ImportPreview.tsx'
+import { Problems } from './ImportProblems.tsx'
 import { type ImportSource, ImportSources } from './ImportSources.tsx'
 import { missingModName, summarize } from './logic.ts'
 import { useManagerPane } from './ManagerPane.tsx'
@@ -263,6 +264,7 @@ function Body({ request }: { request: ImportRequest }) {
             <CompareSummary preview={preview} targetName={targetName} />
           ) : null}
           {preview.collection ? <CollectionNotes collection={preview.collection} /> : null}
+          <Problems preview={preview} excluded={flow.excluded} onLeaveOut={flow.toggle} />
           {hasMods ? (
             <Tiles mods={preview.mods} excluded={flow.excluded} onToggle={flow.toggle} />
           ) : null}

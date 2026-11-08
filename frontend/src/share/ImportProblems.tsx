@@ -224,9 +224,7 @@ export function Problems({
         display: 'grid',
         gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
         gap: '6px',
-        p: '8px 8px 0',
-        maxHeight: 142,
-        overflowY: 'auto',
+        mb: space.gap,
       }}
     >
       {shown.map((p) => (

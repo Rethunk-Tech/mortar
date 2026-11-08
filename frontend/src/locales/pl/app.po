@@ -1338,10 +1338,6 @@ msgstr ""
 msgid "Show"
 msgstr ""
 
-#: src/share/ImportPreview.tsx
-msgid "Open its page in the browser"
-msgstr ""
-
 #: src/share/IncludeOptions.tsx
 msgid "Include libraries and supporting mods"
 msgstr ""

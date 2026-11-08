@@ -259,6 +259,80 @@ function importPreviewChangedFilesCase({ dialog, importStep }: ReturnType<typeof
   }
 }
 
+/** A large Thunderstore share's preview: long names on one line, the broken mods scrolling with the tiles, and the
+ * install choice in the footer beside the import button. */
+function importPreviewBrokenCase({ dialog, importStep }: ReturnType<typeof dialogKit>): Case {
+  const names = [
+    'HookGenPatcher',
+    'FixPluginTypesSerialization',
+    'LethalCompany_InputUtils',
+    'YourOwnPersonalBoombox',
+    'ReservedFlashlightSlot',
+    'Motion_Tracker_V2',
+    'SCP_Foundation_Suit',
+    'LethalLevelLoader',
+  ]
+  const mods = Array.from({ length: 24 }, (_, i) => ({
+    key: `thunderstore:Author${i}-${names[i % names.length]}${i}`,
+    site: 'thunderstore',
+    name: `${names[i % names.length]}${i >= names.length ? i : ''}`,
+    author: `Author${i}`,
+    version: '1.0.0',
+    state: i % 3 === 0 ? 'download' : 'installed',
+    enabled: true,
+    reason: '',
+    modId: 0,
+    fileId: 0,
+    repo: '',
+    tag: '',
+    asset: '',
+    pageUrl: i % 2 === 0 ? 'https://thunderstore.io/' : '',
+    sizeKb: 120,
+    different: false,
+    unverified: false,
+    ids: [],
+  }))
+  const problems = Array.from({ length: 7 }, (_, i) => ({
+    kind: 'broken',
+    key: mods[i * 3].key,
+    name: `BrokenModWithALongName${i}`,
+    detail: 'Does not work with the current version of the game',
+    url: '',
+  }))
+  const stub = stubCalls({
+    [PREVIEW_LINK]: {
+      session: 'render-check',
+      name: 'Default',
+      notes: '',
+      settings: 0,
+      choices: 0,
+      mods,
+      problems,
+      signedIn: true,
+      premium: false,
+      replace: { removeKeys: [], remove: [], keepLocal: [] },
+    },
+  })
+  return {
+    ...dialog(
+      '',
+      async (p) => {
+        const link = p.getByRole('textbox', { name: 'Link or code' })
+        await link.fill('mortar://render-check')
+        await link.press('Enter')
+        await p.getByText('BrokenModWithALongName0', { exact: false }).first().waitFor()
+      },
+      undefined,
+      async (p) => {
+        await p.route('**/wails/runtime', stub)
+        await importStep(p, /^Link or code/)
+      },
+    ),
+    name: 'import-preview-broken',
+    teardown: (p: Page) => p.unroute('**/wails/runtime', stub),
+  }
+}
+
 /** Screens the render data may not reach on its own, each with the backend answer that opens it stubbed. */
 export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
   const {
@@ -276,6 +350,7 @@ export function stubbedCases(kit: ReturnType<typeof dialogKit>): Case[] {
   return [
     updateReadyCase(),
     importPreviewChangedFilesCase(kit),
+    importPreviewBrokenCase(kit),
     // The Mods tab with the project and its development profile disagreeing in all three ways.
     (() => {
       const stub = stubCalls({

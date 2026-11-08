@@ -45,7 +45,9 @@ const CHIP = (th: Theme): Record<ModState, { bg: string; fg: string }> => ({
 const tileName = {
   fontSize: 'base.fontSize',
   lineHeight: 1.4,
-  overflowWrap: 'anywhere',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
   userSelect: 'text',
 } as const
 const tileDetail = {
@@ -83,8 +85,8 @@ function tileTint(
 }
 
 // The name in full (it wraps rather than cuts off, so it can be copied), opening the mod's page when it has one.
+// One line per name, so every tile in a row has the same height; the full name shows on hover.
 function TileName({ mod }: { mod: Mod }) {
-  const { t } = useLingui()
   if (!mod.pageUrl) {
     return mod.name
   }
@@ -93,12 +95,20 @@ function TileName({ mod }: { mod: Mod }) {
       component="button"
       underline="hover"
       color="inherit"
-      title={t`Open its page in the browser`}
+      title={mod.name}
       onClick={(e) => {
         e.stopPropagation()
         openPage(mod.pageUrl)
       }}
-      sx={{ font: 'inherit', textAlign: 'left', verticalAlign: 'baseline', userSelect: 'text' }}
+      sx={{
+        display: 'block',
+        maxWidth: '100%',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        font: 'inherit',
+        textAlign: 'left',
+        userSelect: 'text',
+      }}
     >
       {mod.name}
     </Link>
@@ -193,7 +203,7 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
         <LetterTile mod={{ id: mod.key, name: mod.name, picture: mod.icon ?? '' }} size={52} />
       </Box>
       <Box sx={{ flex: 1, minWidth: 0, py: 0.5 }}>
-        <Typography sx={tileName}>
+        <Typography sx={tileName} title={mod.pageUrl ? undefined : mod.name}>
           <TileName mod={mod} />
         </Typography>
         <Typography sx={tileDetail}>{byline}</Typography>

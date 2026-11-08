@@ -12,12 +12,12 @@ import { Fold } from '../shell/Fold.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { Problems, StatusBar } from './ImportProblems.tsx'
+import { StatusBar } from './ImportProblems.tsx'
 import type { ShownPreview, Summary } from './logic.ts'
 import { useImportDialog } from './store.ts'
 import type { ImportFlow } from './useImportFlow.ts'
 
-// The preview's problems, status bar and actions. Nothing downloads until one of the two import buttons is pressed.
+// The preview's status bar and actions. Nothing downloads until one of the two import buttons is pressed.
 export function ImportFooter({
   flow,
   preview,
@@ -45,7 +45,6 @@ export function ImportFooter({
   const targetLocked = useProfileLocked(targetId)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-      <Problems preview={preview} excluded={flow.excluded} onLeaveOut={flow.toggle} />
       {needsSignIn ? (
         <Box
           sx={{
@@ -70,7 +69,6 @@ export function ImportFooter({
         </Box>
       ) : null}
       <StatusBar preview={preview} summary={summary} needsSignIn={needsSignIn} />
-      <InstallMode flow={flow} preview={preview} />
       {flow.error ? (
         <Typography
           role="alert"
@@ -79,7 +77,7 @@ export function ImportFooter({
           {flow.error}
         </Typography>
       ) : null}
-      <DialogFooter>
+      <DialogFooter aside={<InstallMode flow={flow} preview={preview} />}>
         {targetName ? (
           <LockedReason locked={targetLocked}>
             <Button
@@ -171,7 +169,7 @@ function InstallMode({ flow, preview }: { flow: ImportFlow; preview: ShownPrevie
       aria-label={t`How to install`}
       value={flow.asIs ? 'as-is' : 'fill'}
       onChange={(e) => flow.setAsIs(e.target.value === 'as-is')}
-      sx={{ px: space.gap }}
+      sx={{ color: 'text.primary' }}
     >
       <FormControlLabel
         value="fill"
