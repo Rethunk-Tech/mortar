@@ -49,6 +49,10 @@ func smapiLoadOrder(mods []framework.Mod) []string {
 
 var loadOrderIDs = smapiLoadOrder
 
+func init() {
+	freeOSMemory = true
+}
+
 var _ = framework.Register(Driver{})
 
 // Driver is the Content Patcher framework.
