@@ -1,12 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Typography } from '@mui/material'
 import type { ComponentProps } from 'react'
-import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { space } from '../../theme/density.ts'
-import { readsImplicit } from '../installReason.ts'
-import { entryOf } from '../lookup.ts'
 import { useMods } from '../store.ts'
-import { groupBySource } from './groups.ts'
+import { splitBySource } from './groups.ts'
 import { ReviewList } from './ReviewList.tsx'
 
 /**
@@ -16,14 +13,7 @@ import { ReviewList } from './ReviewList.tsx'
 export function SourceGroups(props: ComponentProps<typeof ReviewList>) {
   const { t } = useLingui()
   const all = useMods((s) => s.mods)
-  const library = (u: Update) =>
-    readsImplicit(
-      entryOf(props.profile, u.key)?.implicit,
-      all.find((m) => m.key === u.key && m.id === u.id) ?? { key: u.key, id: u.id },
-      all,
-    )
-  const libraries = props.list.filter(library)
-  const groups = groupBySource(props.list.filter((u) => !library(u)))
+  const { groups, libraries } = splitBySource(props.list, all, props.profile)
   // One section needs no heading: the dialog's title already counts its updates.
   const headed = groups.length + (libraries.length > 0 ? 1 : 0) > 1
   const heading = (text: string) =>
