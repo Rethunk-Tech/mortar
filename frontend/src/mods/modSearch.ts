@@ -10,7 +10,10 @@ export function searchFields(
   m: Mod,
   entry: Entry | undefined,
   nexusById: Record<number, { details?: { category?: string } } | undefined>,
-  customById: ReturnType<typeof customCategoryById>,
+  categories: {
+    customById: ReturnType<typeof customCategoryById>
+    siteCategories?: readonly string[] | null | undefined
+  },
 ): string[] {
   const nexusId = entry?.source.kind === 'nexus' ? (entry.source.modId ?? 0) : 0
   return [
@@ -19,7 +22,12 @@ export function searchFields(
     m.id,
     ...(entry?.tags ?? []),
     entry?.note ?? '',
-    ...categoryNames(entry, siteCategory(entry, nexusById[nexusId]?.details?.category), customById),
+    ...categoryNames(
+      entry,
+      siteCategory(entry, nexusById[nexusId]?.details?.category),
+      categories.customById,
+      categories.siteCategories,
+    ),
   ]
 }
 
@@ -31,16 +39,34 @@ export function siteCategory(
   return entry?.source.kind === 'thunderstore' ? entry.source.category : nexusCategory
 }
 
-/** Category names a search can match: the resolved label (custom name or Nexus category) and the raw override. */
+/** Every site category an installed Thunderstore package has, in the site's order: those the cached listing gives, else
+ * the one recorded when it was installed. Nothing for any other source. */
+export function siteCategories(
+  entry: Entry | undefined,
+  listed: readonly string[] | null | undefined,
+): string[] | undefined {
+  if (entry?.source.kind !== 'thunderstore') {
+    return undefined
+  }
+  if (listed && listed.length > 0) {
+    return [...listed]
+  }
+  return entry.source.category ? [entry.source.category] : undefined
+}
+
+/** Category names a search can match: the resolved label (custom name or Nexus category), the raw override, and every
+ * site category of a Thunderstore package. */
 export function categoryNames(
   entry: Entry | undefined,
   nexusCategory: string | undefined,
   customById: ReturnType<typeof customCategoryById>,
+  listed?: readonly string[] | null,
 ): string[] {
   return [
     resolvedCategoryLabel(entry?.categoryOverride, nexusCategory, customById),
     entry?.categoryOverride ?? '',
     nexusCategory ?? '',
+    ...(listed ?? []),
   ]
 }
 

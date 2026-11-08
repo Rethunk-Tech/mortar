@@ -127,6 +127,6 @@ func (d Driver) resolved(p tstore.Package, v tstore.Version) Resolved {
 	return Resolved{
 		Namespace: p.Owner, Name: p.Name, Version: v.Number, Size: v.Size, Dependencies: p.Dependencies(v),
 		URL:  base + "/package/download/" + p.Owner + "/" + p.Name + "/" + v.Number + "/",
-		Icon: p.Icon, Category: Category(p.Categories),
+		Look: lookOf(&p),
 	}
 }

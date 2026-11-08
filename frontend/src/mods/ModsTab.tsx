@@ -32,13 +32,14 @@ import { partKey, supportParts } from './installReason.ts'
 import { LegacyReasonsCallout } from './LegacyReasonsCallout.tsx'
 import { LockedNote } from './LockedNote.tsx'
 import { useLastRun } from './lastRun.ts'
+import { useProfileModFacts } from './listFigures.ts'
 import { entryOf, modId, modStatusProblem, updateFor } from './lookup.ts'
 import { Cards } from './ModCards.tsx'
 import { ModList } from './ModList.tsx'
 import { ModContextMenu } from './ModMenu.tsx'
 import { ModsHeaderActions } from './ModsHeaderActions.tsx'
 import { useContextMenu } from './menu.ts'
-import { hasAllTags, matchesQuery, searchFields } from './modSearch.ts'
+import { hasAllTags, matchesQuery, searchFields, siteCategories } from './modSearch.ts'
 import { NewFoldersCallout } from './NewFoldersCallout.tsx'
 import type { NexusById } from './nexusDetails.ts'
 import { detailsFor, useNexusDetails } from './nexusDetails.ts'
@@ -242,6 +243,7 @@ function FilteredMods({ profile }: { profile: Profile }) {
   )
   const nexusById = useNexusDetails((s) => (q === '' ? NO_DETAILS : detailsFor(s.byKey, game)))
   const customCategories = useCustomCategories((s) => (q === '' ? NO_CATEGORIES : s.categories))
+  const facts = useProfileModFacts(game, profile)
   // Stable for the memoised Show menu, which a key typed into the search then skips.
   const tagKey = profileTags(profile.entries).join('\n')
   const tags = useMemo(() => (tagKey === '' ? [] : tagKey.split('\n')), [tagKey])
@@ -273,7 +275,10 @@ function FilteredMods({ profile }: { profile: Profile }) {
       if (hideImplicit && (Boolean(entry?.implicit) || parts.has(partKey(m)))) {
         return false
       }
-      const searchable = searchFields(m, entry, nexusById, customById)
+      const searchable = searchFields(m, entry, nexusById, {
+        customById,
+        siteCategories: siteCategories(entry, facts[m.id]?.categories),
+      })
       if (!(matchesQuery(q, searchable) && hasAllTags(entry?.tags, selectedTags))) {
         return false
       }
@@ -295,6 +300,7 @@ function FilteredMods({ profile }: { profile: Profile }) {
     updates,
     problems,
     starred,
+    facts,
   ])
   // The same mods keep the previous array, so an answer that changes nothing they show does not redraw the list.
   const last = lastShown.current

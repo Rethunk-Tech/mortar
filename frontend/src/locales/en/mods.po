@@ -1595,6 +1595,10 @@ msgstr "{count, plural, one {# mod has} other {# mods have}} no page, or more th
 msgid "Mortar replaced these with the mods' own files. Deleting them cannot be undone."
 msgstr "Mortar replaced these with the mods' own files. Deleting them cannot be undone."
 
+#: src/mods/Sidebar.tsx
+msgid "{source} tags"
+msgstr "{source} tags"
+
 #: src/mods/describeLoadFailure.ts
 msgid "{plugin} failed to load."
 msgstr "{plugin} failed to load."

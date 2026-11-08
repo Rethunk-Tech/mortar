@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
 // What a BepInEx package ships, as ModFact.Kind says it.
@@ -241,6 +242,17 @@ func (s *Store) ModFacts(game, id string) (map[string]ModFact, error) {
 			m := out[string(c.ID)]
 			m.Released, m.Latest, m.LatestReleased = f.Released, f.Latest, f.LatestReleased
 			m.Updated, m.Rating, m.Downloads, m.Categories = f.Updated, f.Rating, f.Downloads, f.Categories
+			out[string(c.ID)] = m
+		}
+	}
+	// A package the cached listing lacks keeps the one category its entry recorded at install.
+	for _, e := range p.Entries {
+		if e.Source.Kind != KindThunderstore {
+			continue
+		}
+		for _, c := range e.Mods {
+			m := out[string(c.ID)]
+			m.Categories = thunderstore.SiteCategories(m.Categories, e.Source.Category)
 			out[string(c.ID)] = m
 		}
 	}

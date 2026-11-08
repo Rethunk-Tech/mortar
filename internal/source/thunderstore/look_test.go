@@ -3,6 +3,7 @@ package thunderstore
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
@@ -21,6 +22,24 @@ func TestCategoryPrefersWhatThePackageIs(t *testing.T) {
 	}
 }
 
+// A site's categories come back in the site's order; a listing that lacks the package leaves the one recorded at install.
+func TestSiteCategoriesKeepTheSitesOrderAndFallBackToTheStoredOne(t *testing.T) {
+	for _, tc := range []struct {
+		listed []string
+		stored string
+		want   []string
+	}{
+		{[]string{"Tools", "Mods", "Libraries"}, "Mods", []string{"Tools", "Mods", "Libraries"}},
+		{nil, "Tools", []string{"Tools"}},
+		{[]string{}, "Tools", []string{"Tools"}},
+		{nil, "", nil},
+	} {
+		if got := SiteCategories(tc.listed, tc.stored); !slices.Equal(got, tc.want) {
+			t.Errorf("SiteCategories(%v, %q) = %v, want %v", tc.listed, tc.stored, got, tc.want)
+		}
+	}
+}
+
 func TestLooksComeFromTheIndexAndTheCacheAlone(t *testing.T) {
 	f := newFake(t)
 	icon := "https://ccdn.thunderstore.io/live/repository/icons/Ns-Gen-1.0.0.png"
@@ -29,13 +48,18 @@ func TestLooksComeFromTheIndexAndTheCacheAlone(t *testing.T) {
 	f.chunk0 = append(f.chunk0, l)
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
 	got, err := d.Closure(t.Context(), "lethal-company", []tstore.Ref{{Namespace: "Ns", Name: "Gen", Version: ""}}, "1.2.3", DepsNewest)
-	if err != nil || len(got) != 1 || got[0].Look != (Look{Icon: icon, Category: "Tools"}) {
+	if err != nil || len(got) != 1 || got[0].Look.Category != "Tools" || got[0].Look.Icon != icon ||
+		!slices.Equal(got[0].Look.Categories, []string{"Mods", "Tools"}) {
 		t.Fatalf("closure %+v %v", got, err)
 	}
 	f.srv.Close()
 	looks, err := d.CachedLooks("lethal-company", []string{"NS-GEN", "Ns-Missing"})
-	if err != nil || len(looks) != 1 || looks["ns-gen"] != (Look{Icon: icon, Category: "Tools"}) {
+	if err != nil || len(looks) != 1 || looks["ns-gen"].Category != "Tools" || looks["ns-gen"].Icon != icon {
 		t.Fatalf("cached looks %+v %v", looks, err)
+	}
+	// Every category the site lists, in the site's order, beside the one the list groups by.
+	if got := looks["ns-gen"].Categories; !slices.Equal(got, []string{"Mods", "Tools"}) {
+		t.Fatalf("cached look categories = %v", got)
 	}
 	for range 2 {
 		if icons, err := d.CachedIcons("lethal-company", []string{"NS-GEN", "Ns-Missing"}); err != nil || len(icons) != 1 || icons["ns-gen"] != icon {

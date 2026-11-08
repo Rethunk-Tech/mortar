@@ -58,6 +58,7 @@ import { ModSettings, ModVersion } from './ModSections.tsx'
 import { openPage } from './menu.ts'
 import { hostOf, openPageLabel } from './modActions.ts'
 import { useModFresh, useSourceLooked } from './modFresh.ts'
+import { siteCategories } from './modSearch.ts'
 import { NexusDetails } from './NexusDetails.tsx'
 import { useNexusEntry } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
@@ -389,7 +390,10 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
   // The mod's own ids under its loader's name for them (UniqueID, GUID), not Mortar's id for the mod.
   const idName = useModIdName()
   const ownIds = useModFacts((s) => s.byId[mod.id]?.ids?.join(', ') ?? '')
+  const siteCats = useModFacts((s) => s.byId[mod.id]?.categories)
   const entry = entryOf(profile, mod.key)
+  // The package's site categories, from the cached listing, else the one recorded at install.
+  const siteTags = (siteCategories(entry, siteCats) ?? []).join(' · ')
   const offered = useUpdates((s) => updateFor(s.updates, mod, profile))
   return (
     <>
@@ -438,6 +442,9 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
           nexusId={nexusId}
           categoryOverride={entry?.categoryOverride ?? ''}
         />
+      ) : null}
+      {entry?.source?.kind === 'thunderstore' && siteTags !== '' ? (
+        <Field label={t`${{ source: sourceLabel('thunderstore') }} tags`} value={siteTags} />
       ) : null}
       <OptionalFiles mod={mod} profile={profile} />
       <ModHealth mod={mod} profile={profile} />

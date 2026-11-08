@@ -96,6 +96,25 @@ function ValueCell({ text, title, accent }: { text: ReactNode; title?: string; a
   )
 }
 
+// The category label, then how many site categories it does not show, with all of them in the cell's tooltip.
+function CategoryCell({ row }: { row: ListRow }) {
+  const hint = row.siteTagHint
+  if (!hint) {
+    return <ValueCell text={dash(row.categoryLabel)} />
+  }
+  return (
+    <ValueCell
+      title={hint.title}
+      text={
+        <>
+          {dash(row.categoryLabel)}
+          {` +${hint.extra}`}
+        </>
+      }
+    />
+  )
+}
+
 function MeasureCell({
   column,
   row,
@@ -232,10 +251,12 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
       if (id === 'switchedOff') {
         return <ValueCell key={id} text={<When value={row.switchedOff} />} />
       }
+      if (id === 'category') {
+        return <CategoryCell key={id} row={row} />
+      }
       const text = {
         author: dash(formatAuthors(m.author)),
         source: dash(row.source),
-        category: dash(row.categoryLabel),
         reason: row.reason,
         notes: dash(notes),
       }[id]

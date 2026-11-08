@@ -23,7 +23,7 @@ import { partKey, supportParts } from './installReason.ts'
 import type { ListRow } from './listColumns.ts'
 import { figureFields } from './listFigures.ts'
 import { kindLabel } from './lookup.ts'
-import { siteCategory } from './modSearch.ts'
+import { siteCategories, siteCategory } from './modSearch.ts'
 
 // Fetched again each time the mods list mounts, but kept between mounts and replaced only when an answer differs, so
 // switching views or tabs does not first draw every row without them and then again with them.
@@ -165,6 +165,19 @@ function sourceText(
   })
 }
 
+// What the Category cell adds to the label: the site categories it does not show, and how many there are.
+function siteTagHint(
+  entry: Entry | undefined,
+  shown: string | undefined,
+  listed: string[] | undefined,
+) {
+  if (!listed) {
+    return
+  }
+  const others = entry?.categoryOverride ? listed : listed.filter((c) => c !== shown)
+  return others.length > 0 ? { extra: others.length, title: listed.join(', ') } : undefined
+}
+
 function toListRow(
   m: Mod,
   entry: Entry | undefined,
@@ -177,11 +190,10 @@ function toListRow(
   const source = sourceText(entry, { pageless, fileless, developed })
   const nexusId = entry?.source.kind === 'nexus' ? (entry.source.modId ?? 0) : 0
   const details = byId[nexusId]?.details
-  const categoryLabel = resolvedCategoryLabel(
-    entry?.categoryOverride,
-    siteCategory(entry, details?.category),
-    customById,
-  )
+  const picked = siteCategory(entry, details?.category)
+  const categoryLabel = resolvedCategoryLabel(entry?.categoryOverride, picked, customById)
+  const siteCats = siteCategories(entry, facts[m.id]?.categories)
+  const hint = siteTagHint(entry, picked, siteCats)
   const row: ListRow = {
     mod: m,
     added: entry?.added ?? '',
@@ -197,6 +209,7 @@ function toListRow(
     categoryOverride: entry?.categoryOverride ?? '',
     categoryLabel,
     siteCategory: entry?.source.kind === 'thunderstore' ? entry.source.category : undefined,
+    ...(hint ? { siteTagHint: hint } : {}),
     groupName,
     download: entry?.source.modName || entry?.source.repo || entry?.source.name || '',
     order,

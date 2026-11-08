@@ -122,6 +122,8 @@ interface ListRow {
   categoryOverride?: string
   categoryLabel: string
   siteCategory?: string | undefined
+  /** The site categories beyond the one the Category cell shows: how many, and all of them for its tooltip. */
+  siteTagHint?: { extra: number; title: string }
   groupName?: string
   download?: string
   pinned?: boolean

@@ -69,6 +69,40 @@ test('size and startupMs are absent when the maps lack the key', () => {
   expect(full?.startupMs).toBe(3)
 })
 
+test('the Category row gains +N for the site categories beyond the one shown, and a tooltip of all of them', () => {
+  const [row] = rows(
+    { entries: [entry('a', { kind: 'thunderstore', category: 'Tools' })] },
+    [mod('a')],
+    data({ facts: { A: { categories: ['Tools', 'Mods', 'Libraries'] } } as never }),
+  )
+  expect(row?.categoryLabel).toBe('Tools')
+  expect(row?.siteTagHint).toEqual({ extra: 2, title: 'Tools, Mods, Libraries' })
+})
+
+test('a category override shows +N for every site category, and one site category alone shows no +N', () => {
+  const [overridden, alone, other] = rows(
+    {
+      entries: [
+        {
+          ...entry('a', { kind: 'thunderstore', category: 'Tools' }),
+          categoryOverride: 'c1',
+        } as Entry,
+        entry('b', { kind: 'thunderstore', category: 'Tools' }),
+        entry('c', { kind: 'nexus', modId: 5 }),
+      ],
+    },
+    [mod('a'), mod('b'), mod('c')],
+    data({
+      customById: new Map([['c1', { id: 'c1', name: 'Farm Life' }]]) as never,
+      facts: { A: { categories: ['Tools', 'Mods'] }, B: { categories: ['Tools'] } } as never,
+    }),
+  )
+  expect(overridden?.categoryLabel).toBe('Farm Life')
+  expect(overridden?.siteTagHint).toEqual({ extra: 2, title: 'Tools, Mods' })
+  expect(alone?.siteTagHint).toBeUndefined()
+  expect(other?.siteTagHint).toBeUndefined()
+})
+
 test('sameLibraries compares by identity, then length and mod order', () => {
   const a = mod('a')
   const b = mod('b')

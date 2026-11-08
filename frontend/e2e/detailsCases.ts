@@ -1,11 +1,14 @@
-import type { Page, Route } from '@playwright/test'
+import { expect, type Page, type Route } from '@playwright/test'
 import type { Case } from './render-budget.ts'
 import { patchCalls } from './renderCoverage.ts'
-import { openGame } from './renderProfile.ts'
+import { openGame, reopenMainProfile } from './renderProfile.ts'
 import { NEXUS_ACCOUNT, reloadUnder } from './stateCases.ts'
 
 const CACHED_DETAILS = 504_566_085
+const MOD_FACTS = 3_470_223_160
+const PROFILE_LIST = 3_126_696_187
 const SAVED_AT = '2026-11-01T09:30:00Z'
+const SITE_TAGS = ['Tools', 'Mods', 'Libraries']
 
 const savedPage = (modId: number) => ({
   page: {
@@ -60,6 +63,32 @@ export function detailsCases(
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(pages) })
   }
   const panel = (p: Page) => p.getByRole('complementary', { name: 'Selected mod' })
+  // A profile whose entries are Thunderstore packages, and every package's facts carrying the three site categories: a
+  // seeded sandbox installs only local archives, which no site lists categories for.
+  type StubbedProfile = {
+    entries?: { key: string; source: Record<string, unknown>; mods?: { id: string }[] }[]
+  }
+  const packageIds: string[] = []
+  const thunderstoreProfile = patchCalls<StubbedProfile[]>([PROFILE_LIST], (profiles) => {
+    for (const p of profiles) {
+      for (const e of p.entries ?? []) {
+        e.source = { ...e.source, kind: 'thunderstore', category: SITE_TAGS[0] }
+        for (const c of e.mods ?? []) {
+          packageIds.push(c.id)
+        }
+      }
+    }
+    return profiles
+  })
+  const siteTags = patchCalls<Record<string, { categories?: string[] }>>([MOD_FACTS], () =>
+    Object.fromEntries(packageIds.map((id) => [id, { categories: SITE_TAGS }])),
+  )
+  const openTags = async (p: Page) => {
+    await tab(p, 'Mods')
+    await p.getByRole('button', { name: 'List view' }).click()
+    await p.locator('[data-mod-row]').first().click()
+    await panel(p).waitFor()
+  }
   const openUpdated = async (p: Page) => {
     await openGame(p, tabs(p), 'Stardew Valley')
     await tab(p, 'Mods')
@@ -94,6 +123,33 @@ export function detailsCases(
         await p.unroute('**/wails/runtime', signedOut)
         await p.unroute('**/wails/runtime', savedPages)
         await reloadUnder(p, tabs)
+      },
+    },
+    {
+      // A Thunderstore package with three site categories: the list adds +2 beside its category and the panel names all
+      // three, which is what a player could not see before.
+      name: 'mods-details-site-tags',
+      // Opening the Mods tab and its details panel re-renders the list's rows, as the mods cases do.
+      budget: { updates: 3000 },
+      setup: async (p) => {
+        await ready(p)
+        await p.route('**/wails/runtime', thunderstoreProfile)
+        await p.route('**/wails/runtime', siteTags)
+        await reloadUnder(p, tabs)
+      },
+      run: async (p) => {
+        await openTags(p)
+        await panel(p).getByText(SITE_TAGS.join(' · ')).waitFor()
+        const cell = p.locator(`[data-mod-row] [title="${SITE_TAGS.join(', ')}"]`).first()
+        await cell.waitFor()
+        await expect(cell).toContainText('+2')
+      },
+      teardown: async (p) => {
+        await p.keyboard.press('Escape')
+        await p.unroute('**/wails/runtime', thunderstoreProfile)
+        await p.unroute('**/wails/runtime', siteTags)
+        await reloadUnder(p, tabs)
+        await reopenMainProfile(p, tabs(p))
       },
     },
   ]

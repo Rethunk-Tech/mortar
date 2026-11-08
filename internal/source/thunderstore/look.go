@@ -15,10 +15,29 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
-// Look is how the Mods tab shows a package: its icon's address and its category.
+// Look is how the Mods tab shows a package: its icon's address, the one of its categories it is grouped by, and every
+// category the site gives it, in the site's order.
 type Look struct {
-	Icon     string
-	Category string
+	Icon       string
+	Category   string
+	Categories []string
+}
+
+// lookOf is the Look of a package read from the community's listing.
+func lookOf(p *tstore.Package) Look {
+	return Look{Icon: p.Icon, Category: Category(p.Categories), Categories: slices.Clone(p.Categories)}
+}
+
+// SiteCategories is a package's site categories as a list shows them: every one the cached listing gives, in the site's
+// order, else the one category recorded when it was installed, which is all a listing that lacks the package can say.
+func SiteCategories(listed []string, stored string) []string {
+	if len(listed) > 0 {
+		return slices.Clone(listed)
+	}
+	if stored == "" {
+		return nil
+	}
+	return []string{stored}
 }
 
 // broadCategories fit nearly every package of a community, or say where it runs rather than what it is.
@@ -110,7 +129,7 @@ func (d Driver) CachedLooks(key string, names []string) (map[string]Look, error)
 	out := map[string]Look{}
 	stored, err := c.Stored(context.Background(), key, func(p *tstore.Package) {
 		if id := p.ID(); want[id] {
-			out[id] = Look{Icon: p.Icon, Category: Category(p.Categories)}
+			out[id] = lookOf(p)
 		}
 	})
 	if err != nil || !stored {

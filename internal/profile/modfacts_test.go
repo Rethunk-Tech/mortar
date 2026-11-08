@@ -104,6 +104,43 @@ func TestModFactsReadsWhatABepInExPackageShipsAndWhatTheIndexSays(t *testing.T) 
 	}
 }
 
+// Every site category of an installed package reaches the frontend from the cached listing, in the site's order; a
+// package the listing lacks keeps the one category its entry recorded.
+func TestModFactsCarryEverySiteCategoryOfAPackage(t *testing.T) {
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "Lobby")
+	if err != nil {
+		t.Fatal(err)
+	}
+	addPackage(t, e, p, "Ns-Listed", map[string]string{"manifest.json": "{}"})
+	addPackage(t, e, p, "Ns-Gone", map[string]string{"manifest.json": "{}"})
+	if _, err := e.update("lethal-company", p.ID, func(p *Profile, _ string) error {
+		for i := range p.Entries {
+			p.Entries[i].Source.Category = "Picked"
+		}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	e.SourceFacts = func(_, kind string, installed map[string]string) map[string]source.Facts {
+		out := map[string]source.Facts{}
+		if _, ok := installed["ns-listed"]; ok {
+			out["ns-listed"] = source.Facts{Categories: []string{"Tools", "Mods", "Libraries"}}
+		}
+		return out
+	}
+	got, err := e.ModFacts("lethal-company", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c := got["thunderstore:Ns-Listed"].Categories; !slices.Equal(c, []string{"Tools", "Mods", "Libraries"}) {
+		t.Errorf("listed categories = %v", c)
+	}
+	if c := got["thunderstore:Ns-Gone"].Categories; !slices.Equal(c, []string{"Picked"}) {
+		t.Errorf("unlisted categories = %v", c)
+	}
+}
+
 func TestModFactsNameTheIDsOfManifestAndFolderMods(t *testing.T) {
 	e := newEnv(t)
 	p := mustCreate(t, e, "Farm")

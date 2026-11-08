@@ -86,7 +86,7 @@ func TestALookedRecordStampedWithAHashIsRebuilt(t *testing.T) {
 	t.Cleanup(func() { restart(d) })
 
 	looks, err := d.CachedLooks("lethal-company", []string{"Alice-MoreCompany"})
-	if err != nil || looks["alice-morecompany"] != (Look{Category: "Items"}) {
+	if err != nil || looks["alice-morecompany"].Category != "Items" || !slices.Equal(looks["alice-morecompany"].Categories, []string{"Items"}) {
 		t.Fatalf("looks = %+v, %v", looks, err)
 	}
 	b, err := safefs.ReadFile(filepath.Join(cache, "thunderstore", "lethal-company.looked.json"))
