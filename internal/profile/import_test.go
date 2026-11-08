@@ -275,6 +275,45 @@ func TestPreviewGameModsSkipsASymlinkDirectory(t *testing.T) {
 	}
 }
 
+// Vortex writes its tag file from Windows, so a case-insensitive filesystem can replay it in any case; the import must
+// treat every spelling as Vortex's bookkeeping, both when deciding a folder is an empty leftover and when copying.
+func TestVortexTagsAreMatchedWhateverTheCase(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	mods := filepath.Join(t.TempDir(), "Stardew Valley", "Mods")
+	writeFile(t, mods, "Leftover/__FOLDER_MANAGED_BY_VORTEX", "")
+	writeFile(t, mods, "Mixed/manifest.json", manifestJSON("Me.Mixed"))
+	writeFile(t, mods, "Mixed/__Folder_Managed_By_Vortex", "")
+
+	preview, err := e.PreviewGameMods("stardew", mods)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range preview.Mods {
+		if m.Name == "Leftover" {
+			t.Fatalf("an undeployed Vortex folder was offered: %+v", m)
+		}
+	}
+	res, err := e.ImportGameMods(t.Context(), "stardew", mods, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Imported != 1 {
+		t.Fatalf("result = %+v", res)
+	}
+	list, err := e.UserMods("stardew", res.Profile.ID)
+	if err != nil || len(list) != 1 {
+		t.Fatalf("mods = %+v %v", list, err)
+	}
+	dir, err := e.ModFolder("stardew", res.Profile.ID, list[0].Key, list[0].ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "__Folder_Managed_By_Vortex")); !os.IsNotExist(err) {
+		t.Fatalf("the Vortex tag was stored as mod content: %v", err)
+	}
+}
+
 // Vortex deploys a mod by linking each of its files from Vortex's staging folder into the game's Mods folder; the
 // import copies the files' contents, never the links.
 func TestImportGameModsCopiesVortexLinkedFiles(t *testing.T) {

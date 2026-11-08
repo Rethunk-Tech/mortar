@@ -3,6 +3,7 @@ package datadir
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
 )
@@ -34,7 +35,7 @@ func CopyTree(src, dst string) error {
 // manager (Vortex) filled with links into its staging folder.
 func CopyTreeResolvingLinks(src, dst string) error {
 	opts := mortarCopy
-	opts.Skip = vortexTag
+	opts.Skip = VortexTag
 	_, err := safefs.CopyTreeFollowingLinks(src, dst, opts)
 	if dangling, ok := errors.AsType[*safefs.DanglingLinkError](err); ok {
 		return fmt.Errorf("%s links to a file that no longer exists; if Vortex put it there, its staging folder was moved or purged", dangling.Rel)
@@ -42,12 +43,15 @@ func CopyTreeResolvingLinks(src, dst string) error {
 	return err
 }
 
-// vortexTag reports the marker files Vortex leaves in every folder it deploys into
+// VortexTag reports a marker file Vortex leaves in every folder it deploys into
 // (LinkingDeployment.ts: "__folder_managed_by_vortex", dot-prefixed off Windows, and the older "__delete_if_empty");
-// they are Vortex's bookkeeping, not mod content.
-func vortexTag(name string) bool {
-	switch name {
-	case "__folder_managed_by_vortex", ".__folder_managed_by_vortex", "__delete_if_empty":
+// they are Vortex's bookkeeping, not mod content. Vortex writes them on Windows and deploys the same tags from Wine,
+// so a case-insensitive filesystem can hand either spelling to a scan.
+func VortexTag(name string) bool {
+	switch {
+	case strings.EqualFold(name, "__folder_managed_by_vortex"),
+		strings.EqualFold(name, ".__folder_managed_by_vortex"),
+		strings.EqualFold(name, "__delete_if_empty"):
 		return true
 	}
 	return false

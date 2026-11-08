@@ -154,13 +154,11 @@ func readTopManifest(dir string) (smapimanifest.Manifest, bool, error) {
 	return m, true, err
 }
 
-var vortexTags = []string{"__folder_managed_by_vortex", ".__folder_managed_by_vortex", "__delete_if_empty"}
-
 // vortexLeftover reports a folder holding no files but Vortex's tag files (what an undeployed mod leaves) or nothing at all.
 func vortexLeftover(dir string) bool {
 	leftover := true
 	_ = filepath.WalkDir(dir, func(_ string, d fs.DirEntry, err error) error {
-		if err != nil || (!d.IsDir() && !slices.ContainsFunc(vortexTags, func(t string) bool { return strings.EqualFold(t, d.Name()) })) {
+		if err != nil || (!d.IsDir() && !datadir.VortexTag(d.Name())) {
 			leftover = false
 			return fs.SkipAll
 		}
@@ -549,16 +547,21 @@ func (s *Store) ImportGameMods(ctx context.Context, game, modsDir string, move b
 // events the import recorded, oldest first; under a history batch that is the batch's one event.
 func (s *Store) ImportExternalMods(ctx context.Context, game, id string, mods []ExternalMod) ([]string, error) {
 	enabled := make(map[string]bool, len(mods))
-	paths := make(map[string]bool, len(mods))
+	seen := make(map[string]bool, len(mods))
+	var paths []string
 	for _, im := range mods {
 		if im.SourcePath == "" {
 			continue
 		}
-		paths[filepath.Clean(im.SourcePath)] = true
+		path := filepath.Clean(im.SourcePath)
+		if !seen[path] {
+			seen[path] = true
+			paths = append(paths, path)
+		}
 		enabled[im.ID.Fold()] = im.Enabled
 	}
 	var slots []gameModSlot
-	for path := range paths {
+	for _, path := range paths {
 		name := filepath.Base(path)
 		slot, keep := classifyFolder(path, name)
 		if keep {
