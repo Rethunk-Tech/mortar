@@ -1,16 +1,13 @@
 package profile
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
 	"path/filepath"
-	"slices"
-	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-cfgedit/jsonfile"
 	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -148,14 +145,23 @@ func schemaFromDir(folder string) modconfig.Schema {
 	return schema
 }
 
-func decodeConfigBytes(raw []byte) (jsonNode, error) {
-	rewritten, err := rewriteConfigJSON(raw)
+func decodeConfigBytes(raw []byte) (jsonfile.Node, error) {
+	node, err := jsonfile.Parse(raw)
 	if err != nil {
-		return jsonNode{}, fmt.Errorf("config.json is not valid JSON: %w", err)
+		return jsonfile.Node{}, fmt.Errorf("config.json is not valid JSON: %w", err)
 	}
-	dec := json.NewDecoder(bytes.NewReader(rewritten))
-	dec.UseNumber()
-	return decodeJSON(dec)
+	return node, nil
+}
+
+func rewriteConfigJSON(data []byte) ([]byte, error) {
+	node, err := jsonfile.Parse(data)
+	if err != nil {
+		if err.Error() == "trailing data after the JSON value" {
+			return nil, fmt.Errorf("config.json has trailing data")
+		}
+		return nil, err
+	}
+	return node.Marshal()
 }
 
 // SetJSONValue writes one value at a dotted field path of a JSON config file the mod writes itself, keeping its key
@@ -164,23 +170,21 @@ func SetJSONValue(raw []byte, field, value string) ([]byte, error) {
 	return applyConfigSet(raw, field, value, modconfig.Schema{}, "")
 }
 
-// splitField splits a dotted field path into its keys; a backslash escapes a "." or "\\" inside one.
-func splitField(field string) []string {
-	var parts []string
-	var cur strings.Builder
-	for i := 0; i < len(field); i++ {
-		switch c := field[i]; {
-		case c == '\\' && i+1 < len(field) && (field[i+1] == '.' || field[i+1] == '\\'):
-			i++
-			cur.WriteByte(field[i])
-		case c == '.':
-			parts = append(parts, cur.String())
-			cur.Reset()
-		default:
-			cur.WriteByte(c)
-		}
+func configJSONError(err error, field, key string) error {
+	switch {
+	case errors.Is(err, jsonfile.ErrBadPath):
+		return fmt.Errorf("invalid config field %s", field)
+	case errors.Is(err, jsonfile.ErrUnknownKey):
+		return fmt.Errorf("unknown config field %s", key)
+	case errors.Is(err, jsonfile.ErrNotObject):
+		return fmt.Errorf("%s is not an object", key)
+	case errors.Is(err, jsonfile.ErrNotBool):
+		return fmt.Errorf("config field %s expects a boolean", key)
+	case errors.Is(err, jsonfile.ErrNotNumber):
+		return fmt.Errorf("config field %s expects a number", key)
+	default:
+		return err
 	}
-	return append(parts, cur.String())
 }
 
 // applyConfigSet writes one value. shipped is the mod's own config.json, whose value kinds type a setting that is
@@ -190,128 +194,74 @@ func applyConfigSet(raw []byte, field, value string, schema modconfig.Schema, sh
 	if err != nil {
 		return nil, err
 	}
-	var defaults jsonNode
+	var defaults jsonfile.Node
 	if shipped != "" {
 		defaults, _ = decodeConfigBytes([]byte(shipped))
 	}
-	parts := splitField(field)
-	for i := range parts {
-		parts[i] = strings.TrimSpace(parts[i])
-		if parts[i] == "" {
-			return nil, fmt.Errorf("invalid config field %s", field)
-		}
-	}
-	next, err := setJSONPath(node, parts, value, schema, defaultKind(defaults, parts))
+	parts, err := jsonfile.SplitPath(field)
 	if err != nil {
-		return nil, err
+		return nil, configJSONError(err, field, "")
 	}
-	var buf bytes.Buffer
-	if err := encodeJSON(&buf, next, 0); err != nil {
-		return nil, err
-	}
-	buf.WriteByte('\n')
-	return buf.Bytes(), nil
-}
-
-// defaultKind is the JSON kind of the value at parts in the shipped config, or jsonNull when it has none.
-func defaultKind(n jsonNode, parts []string) byte {
-	for _, part := range parts {
-		if n.kind != jsonObj {
-			return jsonNull
+	def := defaultKind(defaults, parts)
+	existing, found := node.Lookup(parts)
+	key := parts[len(parts)-1]
+	if !found {
+		if f, ok := schema.Lookup(key); ok {
+			key = f.Name
+			parts[len(parts)-1] = key
 		}
-		i := slices.IndexFunc(n.obj, func(p jsonPair) bool { return strings.EqualFold(p.Key, part) })
-		if i < 0 {
-			return jsonNull
-		}
-		n = n.obj[i].Value
 	}
-	return n.kind
-}
-
-func setJSONPath(n jsonNode, parts []string, raw string, schema modconfig.Schema, def byte) (jsonNode, error) {
-	if len(parts) == 0 {
-		return coerceJSON(n, raw, schema, "", def)
-	}
-	if n.kind != jsonObj {
-		return n, fmt.Errorf("%s is not an object", parts[0])
-	}
-	head, rest := parts[0], parts[1:]
-	for i, p := range n.obj {
-		if !strings.EqualFold(p.Key, head) {
-			continue
-		}
-		var (
-			child jsonNode
-			err   error
-		)
-		if len(rest) == 0 {
-			child, err = coerceJSON(p.Value, raw, schema, p.Key, def)
-		} else {
-			child, err = setJSONPath(p.Value, rest, raw, schema, def)
-		}
-		if err != nil {
-			return n, err
-		}
-		n.obj[i].Value = child
-		return n, nil
-	}
-	if len(rest) > 0 {
-		return n, fmt.Errorf("unknown config field %s", head)
-	}
-	name := head
-	if f, ok := schema.Lookup(head); ok {
-		name = f.Name
-	}
-	child, err := coerceJSON(jsonNode{kind: jsonNull}, raw, schema, name, def)
-	if err != nil {
-		return n, err
-	}
-	n.obj = append(n.obj, jsonPair{Key: name, Value: child})
-	return n, nil
-}
-
-// coerceJSON types the new value like the one it replaces. A null setting has no type of its own: a Content Patcher
-// field is text (the pack's values are always strings), any other takes the kind of the shipped default.
-func coerceJSON(existing jsonNode, raw string, schema modconfig.Schema, field string, def byte) (jsonNode, error) {
-	kind := existing.kind
-	if kind == jsonNull {
-		if _, cp := schema.Lookup(field); !cp {
+	// A Content Patcher field stays text when null; any other null takes the shipped default's kind.
+	kind := existing.Kind
+	if kind == jsonfile.Null {
+		if _, cp := schema.Lookup(key); !cp {
 			kind = def
 		}
 	}
-	switch kind {
-	case jsonBool:
-		parsed, err := strconv.ParseBool(strings.TrimSpace(raw))
-		if err != nil {
-			return jsonNode{}, fmt.Errorf("config field %s expects a boolean", field)
-		}
-		return jsonNode{kind: jsonBool, flag: parsed}, nil
-	case jsonNum:
-		if _, err := strconv.ParseFloat(strings.TrimSpace(raw), 64); err != nil {
-			return jsonNode{}, fmt.Errorf("config field %s expects a number", field)
-		}
-		return jsonNode{kind: jsonNum, num: json.Number(strings.TrimSpace(raw))}, nil
+	child, err := jsonfile.Coerce(value, kind)
+	if err != nil {
+		return nil, configJSONError(err, field, key)
 	}
-	return jsonNode{kind: jsonStr, str: raw}, nil
+	next, err := jsonfile.Set(node, parts, child)
+	if err != nil {
+		head := parts[0]
+		switch {
+		case errors.Is(err, jsonfile.ErrUnknownKey):
+			head = strings.TrimPrefix(err.Error(), jsonfile.ErrUnknownKey.Error()+" ")
+		case errors.Is(err, jsonfile.ErrNotObject):
+			head, _, _ = strings.Cut(err.Error(), " ")
+		}
+		return nil, configJSONError(err, field, head)
+	}
+	return next.Marshal()
 }
 
-func listFields(n jsonNode, prefix string, schema modconfig.Schema, out *[]ConfigField) {
-	if n.kind != jsonObj {
+// defaultKind is the JSON kind of the value at parts in the shipped config, or Null when it has none.
+func defaultKind(n jsonfile.Node, parts []string) jsonfile.Kind {
+	found, ok := n.Lookup(parts)
+	if !ok {
+		return jsonfile.Null
+	}
+	return found.Kind
+}
+
+func listFields(n jsonfile.Node, prefix string, schema modconfig.Schema, out *[]ConfigField) {
+	if n.Kind != jsonfile.Object {
 		if prefix != "" {
-			*out = append(*out, schemaField(prefix, nodeText(n), fieldForPath(schema, prefix)))
+			*out = append(*out, schemaField(prefix, n.Text(), fieldForPath(schema, prefix)))
 		}
 		return
 	}
-	for _, p := range n.obj {
+	for _, p := range n.Obj {
 		path := p.Key
 		if prefix != "" {
 			path = prefix + "." + p.Key
 		}
-		if p.Value.kind == jsonObj {
+		if p.Value.Kind == jsonfile.Object {
 			listFields(p.Value, path, schema, out)
 			continue
 		}
-		*out = append(*out, schemaField(path, nodeText(p.Value), fieldForPath(schema, path)))
+		*out = append(*out, schemaField(path, p.Value.Text(), fieldForPath(schema, path)))
 	}
 }
 
@@ -334,22 +284,5 @@ func schemaField(path, value string, spec modconfig.Field) ConfigField {
 		Default:       spec.Default,
 		Description:   spec.Description,
 		Section:       spec.Section,
-	}
-}
-
-func nodeText(n jsonNode) string {
-	switch n.kind {
-	case jsonBool:
-		return strconv.FormatBool(n.flag)
-	case jsonNum:
-		return n.num.String()
-	case jsonStr:
-		return n.str
-	case jsonNull:
-		return "null"
-	default:
-		var buf bytes.Buffer
-		_ = encodeJSON(&buf, n, 0)
-		return buf.String()
 	}
 }
