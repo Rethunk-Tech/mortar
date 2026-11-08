@@ -13,6 +13,7 @@ import { saveName } from '../saves/saveName.ts'
 import { useSaves } from '../saves/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openShare } from '../share/store.ts'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { space } from '../theme/density.ts'
 import { compact } from './compact.ts'
@@ -31,10 +32,11 @@ function SavesList() {
   const fits = useSaves((s) => s.fits)
   const status = useSaves((s) => s.status)
   const error = useSaves((s) => s.error)
+  const reload = useSaves((s) => s.reload)
   const { shown } = savesView(filterAndSortSaves(fits, ''))
   const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
-  if (status === 'error') {
-    return <Typography color="error">{error}</Typography>
+  if (status === 'error' && error) {
+    return <ErrorRetry error={error} onRetry={() => void reload()} />
   }
   if (shown.length === 0) {
     return status === 'loading' ? (

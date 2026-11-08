@@ -229,6 +229,7 @@ test('inline read failures use ErrorRetry', () => {
     'screenshots/ScreenshotsTab.tsx',
     'saves/SavesTab.tsx',
     'saves/BackupsDialog.tsx',
+    'game/Home.tsx',
     'settings/sections/DataStoreReport.tsx',
     'settings/sections/Storage.tsx',
   ]

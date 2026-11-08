@@ -41,9 +41,10 @@ function MortarUpdate() {
   const [failed, setFailed] = useState<InlineError | null>(null)
   const read = useCallback(() => {
     setFailed(null)
-    load().catch((e: unknown) =>
-      setFailed(inlineError(e, t`Could not read this Mortar build's version: ${errorMessage(e)}`)),
-    )
+    load().catch((e: unknown) => {
+      const failed = errorMessage(e)
+      setFailed(inlineError(e, t`Could not read this Mortar build's version: ${failed}`))
+    })
   }, [load, t])
   useEffect(read, [read])
   if (!info) {
