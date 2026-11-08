@@ -390,6 +390,29 @@ func TestPurgeTrash(t *testing.T) {
 	}
 }
 
+func TestPurgeTrashRefusesASymlinkedProfile(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	target := filepath.Join(e.dataDir, "target")
+	if err := os.MkdirAll(target, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, target, "keep.txt", "kept")
+	link := filepath.Join(e.trash, "stardew", "0123456789abcdef")
+	if err := os.MkdirAll(filepath.Dir(link), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(target, link); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	if err := e.PurgeTrash(time.Now().Add(31 * 24 * time.Hour)); err == nil {
+		t.Fatal("a symlinked trash entry was purged without a word")
+	}
+	if !datadir.Exists(filepath.Join(target, "keep.txt")) {
+		t.Fatal("purge followed the symlink out of the trash")
+	}
+}
+
 func TestRebuildAfterModsDeleted(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)

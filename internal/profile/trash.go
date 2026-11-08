@@ -173,6 +173,12 @@ func (s *Store) Purge(gameID, id string) error {
 	if err != nil {
 		return err
 	}
+	return purgeDir(dir, id)
+}
+
+// purgeDir permanently removes one trashed profile folder. A symlink is refused rather than followed, so one planted in
+// the trash cannot take the folder it points at with it.
+func purgeDir(dir, id string) error {
 	info, err := os.Lstat(dir)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil
@@ -190,31 +196,31 @@ func (s *Store) purgeTrash(gameID string) error {
 	if !game.Valid(gameID) {
 		return usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", gameID))
 	}
-	dir := filepath.Join(s.trash, gameID)
+	return errors.Join(s.purgeTrashDir(filepath.Join(s.trash, gameID), nil)...)
+}
+
+// purgeTrashDir removes the trashed profiles in one folder for which expired reports true (all of them when it is nil).
+// A symlink is looked at rather than skipped with the other non-folders, so one planted in the trash is refused, not
+// followed out of it.
+func (s *Store) purgeTrashDir(dir string, expired func(id string) bool) []error {
 	items, found, err := safefs.ReadDirIfExists(dir)
 	if err != nil {
-		return err
+		return []error{err}
 	}
 	if !found {
 		return nil
 	}
 	var errs []error
 	for _, item := range items {
-		if !item.IsDir() || !idPattern.MatchString(item.Name()) {
+		if !idPattern.MatchString(item.Name()) || (!item.IsDir() && item.Type()&os.ModeSymlink == 0) {
 			continue
 		}
-		info, err := os.Lstat(filepath.Join(dir, item.Name()))
-		if err != nil {
-			errs = append(errs, err)
+		if expired != nil && item.IsDir() && !expired(item.Name()) {
 			continue
 		}
-		if info.Mode()&os.ModeSymlink != 0 {
-			errs = append(errs, fmt.Errorf("refusing to purge symlink %q", item.Name()))
-			continue
-		}
-		errs = append(errs, safefs.RemoveAll(filepath.Join(dir, item.Name())))
+		errs = append(errs, purgeDir(filepath.Join(dir, item.Name()), item.Name()))
 	}
-	return errors.Join(errs...)
+	return errs
 }
 
 // PurgeTrash permanently removes all trashed profiles for a game. A time.Time
@@ -243,16 +249,18 @@ func (s *Store) PurgeTrash(target any) error {
 		if !g.IsDir() || !game.Valid(g.Name()) {
 			continue
 		}
+		dir := filepath.Join(s.trash, g.Name())
+		// Only a profile that reads is expired: a damaged one's store keys are unknown, so its folder stays.
 		items, err := s.trashed(g.Name())
 		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
+		expired := make(map[string]bool, len(items))
 		for _, it := range items {
-			if now.Sub(it.DeletedAt) > s.trashKeep() {
-				errs = append(errs, safefs.RemoveAll(filepath.Join(s.trash, g.Name(), it.ID)))
-			}
+			expired[it.ID] = now.Sub(it.DeletedAt) > s.trashKeep()
 		}
+		errs = append(errs, s.purgeTrashDir(dir, func(id string) bool { return expired[id] })...)
 	}
 	return errors.Join(errs...)
 }
@@ -432,23 +440,15 @@ func historyStoreKeys(dir string) ([]string, error) {
 	if len(ids) == 0 && !cached.old && len(cached.Snapshots) == len(current) {
 		return cached.Keys, nil
 	}
-	seen := make(map[string]struct{}, len(cached.Keys))
 	keys := slices.Clone(cached.Keys)
-	for _, k := range keys {
-		seen[k] = struct{}{}
-	}
 	for _, id := range ids {
 		entries, found := snapshotEntries(&data, id)
 		if !found {
 			return nil, fmt.Errorf("history snapshot %s not found", id)
 		}
-		for _, k := range entriesStoreKeys(entries) {
-			if _, dup := seen[k]; !dup {
-				seen[k] = struct{}{}
-				keys = append(keys, k)
-			}
-		}
+		keys = append(keys, entriesStoreKeys(entries)...)
 	}
+	keys = uniqueKeys(keys)
 	next := snapshotKeys{Format: snapshotKeysFormat, Snapshots: slices.Sorted(maps.Keys(current)), Keys: keys}
 	if err := datadir.WriteJSON(path, next); err != nil {
 		log.Printf("history key cache: %v", err)
