@@ -217,12 +217,6 @@ msgstr ""
 msgid "{mods} will be copied into a new profile. The game folder is left as it is."
 msgstr ""
 
-#: src/profiles/GameModsDialog.tsx
-#: src/profiles/HealthDialog.tsx
-#: src/profiles/LaunchPreview.tsx
-msgid "Retry"
-msgstr ""
-
 #: src/profiles/historyLabel.ts
 msgid "Unpinned {name}"
 msgstr ""
@@ -1043,6 +1037,10 @@ msgstr ""
 msgid "No profile"
 msgstr ""
 
+#: src/profiles/HealthDialog.tsx
+msgid "Checking the profile"
+msgstr ""
+
 #: src/profiles/CompareDialog.tsx
 msgid "{onlyA} only in {name}"
 msgstr ""
@@ -1172,10 +1170,6 @@ msgstr ""
 
 #: src/profiles/GameVersionRows.tsx
 msgid "Installs from Browse and updates pick the newest version released on or before this date. Mods from sites that list no dates are not filtered."
-msgstr ""
-
-#: src/profiles/HealthDialog.tsx
-msgid "Could not check profile"
 msgstr ""
 
 #: src/profiles/LaunchPresetsBlock.tsx

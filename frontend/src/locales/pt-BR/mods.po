@@ -528,8 +528,6 @@ msgid "Click the star on a mod to add it here."
 msgstr ""
 
 #: src/mods/LoadOrderTab.tsx
-#: src/mods/ModsTab.tsx
-#: src/mods/typedConfig/ConfigPane.tsx
 #: src/mods/updateReview/updateAll.ts
 msgid "Retry"
 msgstr ""
@@ -2625,10 +2623,6 @@ msgstr ""
 
 #: src/mods/Toolbar.tsx
 msgid "Implicit mods"
-msgstr ""
-
-#: src/mods/ModsTab.tsx
-msgid "Could not read the mods: {loadError}"
 msgstr ""
 
 #: src/mods/describeLoadFailure.ts

@@ -15,6 +15,7 @@ import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { useSettings } from '../../settings/store.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
+import { ErrorRetry } from '../../shell/ErrorRetry.tsx'
 import { OfflineGate } from '../../shell/OfflineGate.tsx'
 import { SearchField } from '../../shell/SearchField.tsx'
 import { Tooltip } from '../../shell/Tooltip.tsx'
@@ -481,18 +482,9 @@ export function ConfigPane({
         onDelete={!mod && initialFile ? () => setDeleting(true) : undefined}
       />
       {loadError ? (
-        <Alert
-          variant="compact"
-          severity="error"
-          sx={{ mx: space.gutter }}
-          action={
-            <Button color="inherit" size="small" onClick={reload}>
-              {t`Retry`}
-            </Button>
-          }
-        >
-          {loadError}
-        </Alert>
+        <Box sx={{ mx: space.gutter }}>
+          <ErrorRetry error={loadError} onRetry={reload} />
+        </Box>
       ) : null}
       {file && file.format !== 'gmcm' ? <RunningWarning /> : null}
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>

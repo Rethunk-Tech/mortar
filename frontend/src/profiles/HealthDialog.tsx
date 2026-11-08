@@ -1,6 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, List, ListItem, ListItemText, ListSubheader, Skeleton } from '@mui/material'
+import { Button, List, ListItem, ListItemText, ListSubheader } from '@mui/material'
 import { absoluteWhen } from '@rethunk/react-load-hooks'
 import { ShieldCheck } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
@@ -13,13 +13,13 @@ import { formatBytes } from '../i18n/bytes.ts'
 import { i18n } from '../i18n/index.ts'
 import { openSettings } from '../nav/store.ts'
 import { download } from '../queue/actions.ts'
-import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { RefreshFailed } from '../shell/RefreshFailed.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { useLastGood } from '../shell/useLastGood.ts'
-import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { downloadWantsForEntries, type UndoEntry } from '../toasts/undo.ts'
 import { historyLabel } from './historyLabel.ts'
@@ -181,7 +181,6 @@ export function HealthDialog({
     open ? () => ProfileHealth(game, profileId).then((next) => next ?? []) : null,
     [open, game, profileId],
   )
-  const failed = findings === null && error !== null
   const [busy, setBusy] = useState(false)
   const [queued, setQueued] = useState<Set<string>>(new Set())
   const [confirm, setConfirm] = useState<HealthFinding[] | null>(null)
@@ -235,24 +234,10 @@ export function HealthDialog({
   const repairable = (findings ?? []).filter((f) => f.repair !== '' && !queued.has(f.id))
 
   let body: ReactNode
-  if (failed) {
-    body = (
-      <Box
-        role="alert"
-        sx={{ display: 'flex', alignItems: 'center', gap: space.gap, py: space.pad }}
-      >
-        {t`Could not check profile`}
-        <Button variant="outlined" onClick={load}>
-          {t`Retry`}
-        </Button>
-      </Box>
-    )
+  if (findings === null && error !== null) {
+    body = <ErrorRetry error={error} onRetry={load} />
   } else if (findings === null) {
-    body = (
-      <AfterDelay>
-        <Skeleton height={44} />
-      </AfterDelay>
-    )
+    body = <SkeletonRows label={t`Checking the profile`} count={1} height={44} />
   } else if (findings.length === 0) {
     body = (
       <EmptyState compact={true} icon={<ShieldCheck size={28} />} title={t`Everything looks fine`}>

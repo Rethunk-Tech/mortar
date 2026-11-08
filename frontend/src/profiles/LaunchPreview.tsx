@@ -1,14 +1,16 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, Typography } from '@mui/material'
+import { Box, IconButton, Typography } from '@mui/material'
 import { useDebouncedLoad } from '@rethunk/react-load-hooks'
 import { Copy } from 'lucide-react'
+import type { ReactNode } from 'react'
 import type { CommandPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { PreviewCommand } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { sentence } from '../i18n/sentence.ts'
 import { copyText } from '../share/copyText.ts'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { inlineError } from '../toasts/report.ts'
 
 const PREVIEW_DEBOUNCE_MS = 300
 const NO_PREVIEW: CommandPreview = { env: [], argv: [], error: '' }
@@ -46,9 +48,18 @@ export function LaunchPreview({
     initial: NO_PREVIEW,
     delayMs: PREVIEW_DEBOUNCE_MS,
   })
-  const loadError = error === null ? '' : errorMessage(error)
-  const shownError = preview.error ? sentence(preview.error) : loadError
+  const loadFailure = error === null ? null : inlineError(error)
   const read = () => run(load)
+  let failure: ReactNode = null
+  if (loadFailure !== null) {
+    failure = <ErrorRetry error={loadFailure} onRetry={read} />
+  } else if (preview.error) {
+    failure = (
+      <Typography color="error" sx={{ fontSize: 'small.fontSize' }}>
+        {sentence(preview.error)}
+      </Typography>
+    )
+  }
   const copyCommand = () => {
     copyText(formatShellLine(preview), t`Command copied`)
   }
@@ -59,7 +70,7 @@ export function LaunchPreview({
         <Typography sx={{ fontSize: 'small.fontSize', color: 'text.secondary', flex: 1 }}>
           {t`Direct launch preview`}
         </Typography>
-        {preview.error || loadError ? null : (
+        {failure === null ? (
           <IconButton
             size="small"
             aria-label={t`Copy the command`}
@@ -68,18 +79,9 @@ export function LaunchPreview({
           >
             <Copy size={14} />
           </IconButton>
-        )}
+        ) : null}
       </Box>
-      {shownError ? (
-        <Typography color="error" sx={{ fontSize: 'small.fontSize' }}>
-          {shownError}
-          {loadError && !preview.error ? (
-            <Button size="small" onClick={read}>
-              {t`Retry`}
-            </Button>
-          ) : null}
-        </Typography>
-      ) : (
+      {failure ?? (
         <Box
           component="pre"
           // A scroll region needs its own keyboard stop, and a region role for its name.

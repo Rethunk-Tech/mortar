@@ -13,7 +13,7 @@ import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { getLast, peekLast, putLast } from '../shell/lastGood.ts'
-import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
+import { type InlineError, inlineError, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useBadges } from './badges.ts'
 import { loadCollapsed, persistCollapsed } from './group.ts'
 import { missingCount, modId, problemCount } from './lookup.ts'
@@ -155,7 +155,7 @@ export function showUpdatesView() {
 
 export async function loadMods(
   set: (p: {
-    loadError?: string
+    loadError?: InlineError | null
     mods?: Mod[]
     pages?: Record<string, string | undefined>
     loaded?: boolean
@@ -175,7 +175,7 @@ export async function loadMods(
   latestLoad += 1
   const seq = latestLoad
   const current = () => seq === latestLoad && openTarget()?.id === target.id
-  set({ loadError: '' })
+  set({ loadError: null })
   try {
     const [mods, pages] = await Promise.all([
       Mods(target.game, target.id),
@@ -193,7 +193,7 @@ export async function loadMods(
     }
   } catch (e) {
     if (current()) {
-      set({ loadError: errorMessage(e) })
+      set({ loadError: inlineError(e) })
     }
     return
   }

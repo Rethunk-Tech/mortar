@@ -15,7 +15,7 @@ beforeEach(() => {
     asked.push(file)
     return []
   })
-  useTypedConfig.setState({ target: null, files: [], current: '', errors: {}, loadError: '' })
+  useTypedConfig.setState({ target: null, files: [], current: '', errors: {}, loadError: null })
 })
 afterEach(() => {
   mock.restore()
@@ -28,5 +28,13 @@ test('a mod with only an in-game menu opens it and never asks for config.json', 
   await select('config.json')
   expect(asked).toEqual(['(in-game menu)'])
   expect(useTypedConfig.getState().current).toBe('(in-game menu)')
-  expect(useTypedConfig.getState().loadError).toBe('')
+  expect(useTypedConfig.getState().loadError).toBe(null)
+})
+
+test('a signed-out read keeps the sign-in state, so the pane offers the sign-in prompt', async () => {
+  spyOn(configApi, 'files').mockRejectedValue(new Error('[signed_out] no token'))
+  await useTypedConfig.getState().open(target)
+  const loadError = useTypedConfig.getState().loadError
+  expect(loadError?.signedOut).toBe(true)
+  expect(loadError?.details).toBe('no token')
 })

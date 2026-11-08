@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Skeleton, Typography } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import { isTypingTarget } from '@rethunk/dom-input-nav'
 import { useDebouncedValue } from '@rethunk/react-load-hooks'
 import { SearchX } from 'lucide-react'
@@ -16,8 +16,9 @@ import { entriesKey } from '../profiles/entriesKey.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { boundShortcut, dialogOpen } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
-import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { space } from '../theme/density.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -117,31 +118,19 @@ const ModsBody = memo(function ModsBodyView({
   const load = useMods((s) => s.load)
   if (!loaded) {
     return loadError ? (
-      <Box sx={{ px: space.pad, display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <Typography
-          sx={{ color: 'error.main' }}
-        >{t`Could not read the mods: ${loadError}`}</Typography>
-        <Button variant="outlined" onClick={() => load().catch(reportUnexpected)}>
-          {t`Retry`}
-        </Button>
+      <Box sx={{ px: space.pad }}>
+        <ErrorRetry error={loadError} onRetry={() => load().catch(reportUnexpected)} />
       </Box>
     ) : (
-      <AfterDelay>
-        <Box
-          role="status"
-          aria-label={t`Loading mods`}
-          sx={{ px: space.pad, display: 'flex', flexDirection: 'column', gap: space.gap }}
-        >
-          {LOADING_ROWS.map((n) => (
-            <Skeleton
-              key={n}
-              variant="rounded"
-              height={ROW_HEIGHT}
-              sx={{ bgcolor: 'var(--mortar-hairline-faint)' }}
-            />
-          ))}
-        </Box>
-      </AfterDelay>
+      <SkeletonRows
+        label={t`Loading mods`}
+        count={8}
+        height={44}
+        sx={{
+          px: space.pad,
+          '& .MuiSkeleton-root': { bgcolor: 'var(--mortar-hairline-faint)' },
+        }}
+      />
     )
   }
   if (shown.length === 0 && filtering) {
@@ -181,11 +170,6 @@ const ModsBody = memo(function ModsBodyView({
     </Box>
   )
 })
-
-// Placeholder rows while a profile's mods load for the first time.
-const LOADING_ROW_COUNT = 8
-const LOADING_ROWS = Array.from({ length: LOADING_ROW_COUNT }, (_, i) => i)
-const ROW_HEIGHT = 44
 
 function useSelectedTags(profileId: string): string[] {
   const saved = useMemo(() => storedTags(profileId), [profileId])
@@ -376,7 +360,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
       // A profile open before in this session draws its mods and last problem check at once; the reads refresh them.
       useMods.setState({
         ...recallProfile(profile.id),
-        loadError: '',
+        loadError: null,
         resolving: null,
         removing: [],
       })

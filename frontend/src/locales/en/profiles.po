@@ -217,12 +217,6 @@ msgstr "Repair all"
 msgid "{mods} will be copied into a new profile. The game folder is left as it is."
 msgstr "{mods} will be copied into a new profile. The game folder is left as it is."
 
-#: src/profiles/GameModsDialog.tsx
-#: src/profiles/HealthDialog.tsx
-#: src/profiles/LaunchPreview.tsx
-msgid "Retry"
-msgstr "Retry"
-
 #: src/profiles/historyLabel.ts
 msgid "Unpinned {name}"
 msgstr "Unpinned {name}"
@@ -1043,6 +1037,10 @@ msgstr "Crashed: {cause}"
 msgid "No profile"
 msgstr "No profile"
 
+#: src/profiles/HealthDialog.tsx
+msgid "Checking the profile"
+msgstr "Checking the profile"
+
 #: src/profiles/CompareDialog.tsx
 msgid "{onlyA} only in {name}"
 msgstr "{onlyA} only in {name}"
@@ -1173,10 +1171,6 @@ msgstr "Added {added} from {profile} to {name}"
 #: src/profiles/GameVersionRows.tsx
 msgid "Installs from Browse and updates pick the newest version released on or before this date. Mods from sites that list no dates are not filtered."
 msgstr "Installs from Browse and updates pick the newest version released on or before this date. Mods from sites that list no dates are not filtered."
-
-#: src/profiles/HealthDialog.tsx
-msgid "Could not check profile"
-msgstr "Could not check profile"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Set as default"

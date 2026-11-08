@@ -9,6 +9,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useSettings } from '../settings/store.ts'
+import type { InlineError } from '../toasts/report.ts'
 import { dependentsOf } from './dependents.ts'
 import { disableAlso } from './disableUnneeded.ts'
 import { requestPinWithReason } from './pinReasonStore.ts'
@@ -67,7 +68,7 @@ export const useMods = create<{
   queries: Record<string, string>
   filters: Record<string, ModFilter | undefined>
   tagFilters: Record<string, string[] | undefined>
-  loadError: string
+  loadError: InlineError | null
   pages: Record<string, string | undefined>
   view: View
   removing: Mod[]
@@ -130,7 +131,7 @@ export const useMods = create<{
   queries: {},
   filters: {},
   tagFilters: {},
-  loadError: '',
+  loadError: null,
   pages: {},
   view: storedView(),
   removing: [],

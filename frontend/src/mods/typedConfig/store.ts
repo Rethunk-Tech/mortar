@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
+import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
 import { configApi } from './api.ts'
 import { useConfigList } from './configList.ts'
 import type { ConfigFile, ConfigValue } from './types.ts'
@@ -22,7 +22,7 @@ const useTypedConfig = create<{
   files: ConfigFile[]
   current: string
   errors: Record<string, string>
-  loadError: string
+  loadError: InlineError | null
   open: (target: Target, file?: string) => Promise<void>
   select: (file: string) => Promise<void>
   set: (section: string, key: string, value: ConfigValue) => void
@@ -88,9 +88,9 @@ const useTypedConfig = create<{
     files: [],
     current: '',
     errors: {},
-    loadError: '',
+    loadError: null,
     open: async (target, file) => {
-      set({ target, files: [], current: '', errors: {}, loadError: '' })
+      set({ target, files: [], current: '', errors: {}, loadError: null })
       try {
         const files = await configApi.files(target)
         // A mod opened since this began owns the pane now; its own open fills it.
@@ -99,14 +99,14 @@ const useTypedConfig = create<{
         }
         const current = files.find((f) => f.name === file)?.name ?? files[0]?.name ?? ''
         // The list and the shown file's settings land in one update, so the pane draws once rather than per step.
-        let loadError = ''
+        let loadError: InlineError | null = null
         let shown = files
         if (current) {
           try {
             const sections = await configApi.schema(target, current)
             shown = files.map((f) => (f.name === current ? { ...f, sections } : f))
           } catch (e) {
-            loadError = errorMessage(e)
+            loadError = inlineError(e)
           }
         }
         if (get().target === target) {
@@ -114,7 +114,7 @@ const useTypedConfig = create<{
         }
       } catch (e) {
         if (get().target === target) {
-          set({ loadError: errorMessage(e) })
+          set({ loadError: inlineError(e) })
         }
       }
     },
@@ -134,7 +134,7 @@ const useTypedConfig = create<{
         set((s) => ({ files: s.files.map((f) => (f.name === file ? { ...f, sections } : f)) }))
       } catch (e) {
         if (get().target === target) {
-          set({ loadError: errorMessage(e) })
+          set({ loadError: inlineError(e) })
         }
       }
     },

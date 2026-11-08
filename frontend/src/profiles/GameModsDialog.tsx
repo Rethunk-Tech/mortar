@@ -14,10 +14,10 @@ import { brokenKindLabel } from '../mods/brokenKind.ts'
 import type { GameId } from '../nav/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
+import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { useLastGood, useLastGoodRefreshing } from '../shell/useLastGood.ts'
-import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { GameModsProgressLine } from './GameModsProgress.tsx'
@@ -211,16 +211,7 @@ export function GameModsDialog({
         </DialogFooter>
       }
     >
-      {error === null ? null : (
-        <>
-          <Typography sx={{ color: 'error.main' }} title={error.details}>
-            {error.message}
-          </Typography>
-          <Button onClick={loadPreview} sx={{ mt: space.gap }}>
-            {t`Retry`}
-          </Button>
-        </>
-      )}
+      {error === null ? null : <ErrorRetry error={error} onRetry={loadPreview} />}
       {error === null && previewing ? (
         <SkeletonRows label={t`Reading the Mods folder…`} count={5} height={36} />
       ) : null}
