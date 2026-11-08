@@ -169,6 +169,14 @@ type boot struct {
 	windowMu        sync.Mutex
 }
 
+func (c *boot) cacheDir() string {
+	return filepath.Join(c.dataDir, "cache")
+}
+
+func (c *boot) tsDriver() thunderstore.Driver {
+	return thunderstore.Driver{CacheDir: c.cacheDir()}
+}
+
 func (c *boot) initInstanceState() {
 	c.ready = make(chan struct{})
 	c.plays = &shortcut.Service{}
@@ -371,11 +379,11 @@ func (c *boot) openStores() error {
 	c.items.SetScanner(
 		func() goavscan.Scanner {
 			v := c.store.Get()
-			return avscan.New(avscan.Config{Mode: v.Antivirus, Socket: v.AntivirusSocket, Command: v.AntivirusCommand})
+			return avscan.New(v.AntivirusConfig())
 		},
 		func(game, key string, err error) {
 			v := c.store.Get()
-			why, tell := avscan.Config{Mode: v.Antivirus, Socket: v.AntivirusSocket, Command: v.AntivirusCommand}.Notice(err)
+			why, tell := v.AntivirusConfig().Notice(err)
 			if !tell {
 				return
 			}
@@ -400,7 +408,7 @@ func (c *boot) openStores() error {
 	}
 	c.profiles.Tidied = func(code, what, profileName, folder string) { c.tidied.Add(code, what, "", profileName, 1, folder) }
 	// Every Thunderstore Driver on this cache folder shares the one client made here, under Mortar's own user agent.
-	c.tsClient, err = (thunderstore.Driver{CacheDir: filepath.Join(c.dataDir, "cache")}).Open(version)
+	c.tsClient, err = c.tsDriver().Open(version)
 	if err != nil {
 		return err
 	}
@@ -415,7 +423,7 @@ func (c *boot) profileHooks() error {
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 		defer cancel()
-		ns, ok, err := thunderstore.Driver{CacheDir: filepath.Join(c.dataDir, "cache")}.Publisher(ctx, key, name, ver, version)
+		ns, ok, err := c.tsDriver().Publisher(ctx, key, name, ver, version)
 		return ns, ok && err == nil
 	}
 	c.profiles.PackageLooks = func(gameID string, names []string) map[string]thunderstore.Look {
@@ -423,7 +431,7 @@ func (c *boot) profileHooks() error {
 		if key == "" {
 			return nil
 		}
-		looks, err := thunderstore.Driver{CacheDir: filepath.Join(c.dataDir, "cache")}.CachedLooks(key, names)
+		looks, err := c.tsDriver().CachedLooks(key, names)
 		if err != nil {
 			return nil
 		}
@@ -451,17 +459,8 @@ func (c *boot) profileHooks() error {
 		if err != nil {
 			return nil, err
 		}
-		if all, err := c.profiles.List(gameID); err == nil {
-			for _, p := range all {
-				if p.Error != "" || p.ID != profileID {
-					continue
-				}
-				switch p.Cover {
-				case "cover.png", "cover.jpg", "cover.webp":
-					covers = append([]string{filepath.Join(c.dataDir, "profiles", gameID, profileID, p.Cover)}, covers...)
-				}
-				break
-			}
+		if path, ok := c.profiles.CoverFile(gameID, profileID); ok {
+			covers = append([]string{path}, covers...)
 		}
 		return covers, nil
 	}
@@ -474,9 +473,9 @@ func (c *boot) startLaunches() error {
 	c.profiles.Running = c.launches.Running
 	c.profiles.GameRunning = c.launches.Busy
 	c.bisectSvc = bisect.NewService(c.profiles, c.launches)
-	c.modMeta = &meta.Client{CacheDir: filepath.Join(c.dataDir, "cache"), Version: version}
-	source.Register(thunderstore.Driver{CacheDir: filepath.Join(c.dataDir, "cache")})
-	source.Register(&githubsrc.Driver{CacheDir: filepath.Join(c.dataDir, "cache")})
+	c.modMeta = &meta.Client{CacheDir: c.cacheDir(), Version: version}
+	source.Register(c.tsDriver())
+	source.Register(&githubsrc.Driver{CacheDir: c.cacheDir()})
 	c.componentClient = components.NewClient(&http.Client{Timeout: 30 * time.Second})
 	game.ConfigureComponents(c.componentClient)
 	// The catalog an earlier run cached answers from the start; the network check (Load, below) runs behind the window.
@@ -547,8 +546,8 @@ func (c *boot) nxmSetup() error {
 	if err := shortcut.Repoint(hostenv.Launchable(exe)); err != nil {
 		log.Printf("profile shortcuts: %v", err)
 	}
-	if h, ok := any(nxmHandler).(interface{ WriteNativeHosts() error }); ok && c.store.Get().NxmHandled {
-		if err := h.WriteNativeHosts(); err != nil {
+	if c.store.Get().NxmHandled {
+		if err := nxmHandler.WriteNativeHosts(); err != nil {
 			log.Printf("browser extension host: %v", err)
 		}
 	}
@@ -630,7 +629,8 @@ func (c *boot) openQueue() error {
 			if key == "" {
 				return nil, fmt.Errorf("%s has no Thunderstore community", gameID)
 			}
-			d := thunderstore.Driver{CacheDir: filepath.Join(c.dataDir, "cache"), DropIns: components.KnownBrokenFor(ctx, gameID).DropIns()}
+			d := c.tsDriver()
+			d.DropIns = components.KnownBrokenFor(ctx, gameID).DropIns()
 			return d.Closure(ctx, key, roots, version, deps)
 		},
 		ExactDependencies: func(game, profileID string) bool {
@@ -704,10 +704,7 @@ func (c *boot) openQueue() error {
 			_ = c.nexusSvc.Track(ctx, gameID, modID)
 		},
 	})
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (c *boot) wireQueue() error {
@@ -731,7 +728,7 @@ func (c *boot) wireQueue() error {
 	c.profileSvc.Version = version
 	c.savedGroupsSvc = savedgroups.NewService(c.profiles, c.dataDir)
 	c.watchHolds = folderwatch.NewHolds()
-	c.devSvc = &devsvc.Service{Version: version, Home: c.home, Settings: c.svc, Profiles: c.profileSvc, CacheDir: filepath.Join(c.dataDir, "cache"), BuildLogDir: filepath.Join(c.dataDir, datadir.BuildLogs), Unwatch: c.watchHolds.Hold}
+	c.devSvc = &devsvc.Service{Version: version, Home: c.home, Settings: c.svc, Profiles: c.profileSvc, CacheDir: c.cacheDir(), BuildLogDir: filepath.Join(c.dataDir, datadir.BuildLogs), Unwatch: c.watchHolds.Hold}
 	c.devSvc.MigrateRecords()
 	c.problemsSvc = problems.NewService(c.home, c.store, c.profiles, c.modMeta)
 	c.problemsSvc.Runs = c.launches
@@ -763,26 +760,16 @@ func (c *boot) problemsWiring() error {
 func (c *boot) shareSync() error {
 	var err error
 	c.shareSvc = sharesvc.NewService(sharesvc.Deps{
-		Profiles: c.profiles,
-		Meta:     c.modMeta,
-		Files: func(ctx context.Context, t nexusmods.Title, modID int) ([]nexusmods.File, error) {
-			client, err := nexussvc.Authed(c.store, c.nexusClient)
-			if err != nil {
-				return nil, err
-			}
-			files, err := client.Files(ctx, t, modID)
-			return files, nexus.Worded(err)
-		},
+		Profiles:   c.profiles,
+		Meta:       c.modMeta,
+		Files:      c.nexusFiles1,
 		SignedIn:   func() bool { return c.store.Get().NexusUserID != 0 },
 		Premium:    func() bool { return c.store.Get().NexusPremium },
 		NexusPages: c.nexusPages,
 		CollectionArchive: func(ctx context.Context, link string) ([]byte, error) {
-			client, err := nexussvc.Authed(c.store, c.nexusClient)
-			if err != nil {
-				return nil, err
-			}
-			archive, err := client.PremiumCollectionArchive(ctx, link)
-			return archive, nexus.Worded(err)
+			return nexusAuthedCall(c, func(client *nexusmods.Client) ([]byte, error) {
+				return client.PremiumCollectionArchive(ctx, link)
+			})
 		},
 		Env:          c.problemsSvc.Environment,
 		Queue:        c.queueSvc,
@@ -792,7 +779,7 @@ func (c *boot) shareSync() error {
 			if key == "" {
 				return nil
 			}
-			icons, err := thunderstore.Driver{CacheDir: filepath.Join(c.dataDir, "cache")}.CachedIcons(key, names)
+			icons, err := c.tsDriver().CachedIcons(key, names)
 			if err != nil {
 				return nil
 			}
@@ -907,12 +894,7 @@ func (c *boot) dataServices() error {
 			if err != nil {
 				return "", err
 			}
-			client, err := nexussvc.Authed(c.store, c.nexusClient)
-			if err != nil {
-				return "", err
-			}
-			files, err := client.Files(ctx, t, modID)
-			err = nexus.Worded(err)
+			files, err := c.nexusFiles1(ctx, t, modID)
 			for _, f := range files {
 				if f.FileID == fileID {
 					return f.MD5, err
@@ -1274,11 +1256,7 @@ func (c *boot) storeMaintenance() error {
 				c.emit(control.ChangedEvent, g)
 			}
 		}
-		for _, g := range game.Catalog() {
-			if err := c.profiles.FillPackageLooks(g.ID); err != nil {
-				log.Printf("package icons and categories: %s: %v", g.ID, err)
-			}
-		}
+		c.fillPackageLooks()
 	}()
 	return nil
 }
@@ -1325,11 +1303,7 @@ func (c *boot) catalogRefresh(ctx context.Context) error {
 		for _, id := range game.Implemented() {
 			loadersvc.SyncBundled(ctx, c.loaders, id)
 		}
-		for _, g := range game.Catalog() {
-			if err := c.profiles.FillPackageLooks(g.ID); err != nil {
-				log.Printf("package icons and categories: %s: %v", g.ID, err)
-			}
-		}
+		c.fillPackageLooks()
 		c.emit(game.CatalogChangedEvent, m.Serial)
 	}()
 	return nil
@@ -1454,13 +1428,7 @@ func (c *boot) setupTray() error {
 }
 
 func (t *trayUI) downloadsLeft() int {
-	left := 0
-	for _, item := range t.c.queueSvc.State().Items {
-		if item.State != queue.StateDone && item.State != queue.StateSkipped && item.State != queue.StateCancelled {
-			left++
-		}
-	}
-	return left
+	return t.c.queueSvc.Left()
 }
 
 func (t *trayUI) read() trayView {
@@ -1478,10 +1446,7 @@ func (t *trayUI) read() trayView {
 }
 
 func trayGameName(id string) string {
-	if g := game.Find(id); g != nil {
-		return g.Name()
-	}
-	return id
+	return game.NameOf(id)
 }
 
 func (t *trayUI) build(v trayView) {
@@ -1613,6 +1578,30 @@ func (t *trayUI) settingsChanged() {
 	applyLinkChoices(c.store.Get())
 	if err := c.lanSvc.Apply(); err != nil {
 		log.Printf("LAN sharing: %v", err)
+	}
+}
+
+func nexusAuthedCall[T any](c *boot, call func(*nexusmods.Client) (T, error)) (T, error) {
+	var zero T
+	client, err := nexussvc.Authed(c.store, c.nexusClient)
+	if err != nil {
+		return zero, err
+	}
+	v, err := call(client)
+	return v, nexus.Worded(err)
+}
+
+func (c *boot) nexusFiles1(ctx context.Context, t nexusmods.Title, modID int) ([]nexusmods.File, error) {
+	return nexusAuthedCall(c, func(client *nexusmods.Client) ([]nexusmods.File, error) {
+		return client.Files(ctx, t, modID)
+	})
+}
+
+func (c *boot) fillPackageLooks() {
+	for _, g := range game.Catalog() {
+		if err := c.profiles.FillPackageLooks(g.ID); err != nil {
+			log.Printf("package icons and categories: %s: %v", g.ID, err)
+		}
 	}
 }
 
