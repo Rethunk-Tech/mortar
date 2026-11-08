@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -89,16 +90,20 @@ func (s *Store) modConfigPaths(game string, p Profile, dir string, e Entry) []st
 	return out
 }
 
-// setConfigsAside moves the live config files of a removed entry into config-aside/ (a path from modConfigPaths), so
-// Undo, or adding the mod again, brings its settings back through parkModConfigs.
-func setConfigsAside(paths []string) {
+// setConfigsAside moves the live config files of a removed entry into the profile's config-aside folder (the paths come
+// from modConfigPaths), so Undo, or adding the mod again, brings its settings back through parkModConfigs.
+func setConfigsAside(profileDir string, paths []string) error {
+	aside := filepath.Join(profileDir, ConfigAsideDir)
 	for _, f := range paths {
-		aside := filepath.Join(filepath.Dir(f), "..", "..", ConfigAsideDir)
-		if err := os.MkdirAll(aside, 0o750); err != nil {
-			continue
+		to := filepath.Join(aside, filepath.Base(f))
+		if err := datadir.MkdirParent(to); err != nil {
+			return err
 		}
-		_ = safefs.Rename(f, filepath.Join(aside, filepath.Base(f)))
+		if err := safefs.Rename(f, to); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // parkModConfigs moves the config files of switched-off package mods aside and brings back those of mods switched on.

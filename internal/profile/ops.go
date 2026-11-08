@@ -463,8 +463,9 @@ func (s *Store) removeFrom(game string, p *Profile, dir, key string) (configs []
 // RemoveEntries deletes each named entry's folder and drops it from the profile, one write.
 func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
 	var dropped []string
+	var droppedIn string
 	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) error {
-		dropped = nil
+		dropped, droppedIn = nil, dir
 		seen := map[string]bool{}
 		for _, e := range p.Entries {
 			// Removing the main entry takes its optional files with it.
@@ -491,7 +492,9 @@ func (s *Store) RemoveEntries(game, id string, keys []string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
-	setConfigsAside(dropped)
+	if err := setConfigsAside(droppedIn, dropped); err != nil {
+		return Profile{}, err
+	}
 	s.syncDropped(game, id)
 	return p, nil
 }
@@ -1009,7 +1012,9 @@ func (s *Store) applyBundledTo(game, id string, b Bundle) error {
 	}
 	s.historyQuietIDs[id]++
 	var dropped []string
+	var droppedIn string
 	_, err := s.updateLocked(game, id, func(p *Profile, dir string) (err error) {
+		droppedIn = dir
 		var disabled []mod.ID
 		for _, e := range slices.Backward(slices.Clone(p.Entries)) {
 			if e.Source.Kind != b.Source.Kind || e.Key == b.Key {
@@ -1036,7 +1041,9 @@ func (s *Store) applyBundledTo(game, id string, b Bundle) error {
 		err = errors.Join(err, safefs.RemoveAll(placed))
 	}
 	if err == nil {
-		setConfigsAside(dropped)
+		err = setConfigsAside(droppedIn, dropped)
+	}
+	if err == nil {
 		err = s.RecordModsSnapshot(game, id)
 	}
 	return err
