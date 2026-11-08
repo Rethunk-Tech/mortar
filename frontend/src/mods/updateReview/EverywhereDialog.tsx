@@ -19,7 +19,8 @@ import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
-import { sameId, visibleUpdates } from '../lookup.ts'
+import { sameId, updatesForReview } from '../lookup.ts'
+import { detailsFor, useNexusDetails } from '../nexusDetails.ts'
 import { useUpdates } from '../updates.ts'
 import { mergePreviews } from './mergePreviews.ts'
 import { withOptionalLoaded } from './wants.ts'
@@ -129,7 +130,11 @@ export function EverywhereDialog({
   // The new version is not in the store yet: queue its download once; when it lands, the queue updates the other profiles.
   const downloadFirst = async () => {
     const profile = openProfileOf(useProfiles.getState())
-    const updates = visibleUpdates(useUpdates.getState().updates, profile)
+    const updates = updatesForReview(
+      useUpdates.getState().updates,
+      profile,
+      detailsFor(useNexusDetails.getState().byKey, game),
+    )
     const wants = await Promise.all(
       mods.map(async (m) => {
         const update = updates.find((u) => sameId(u.id, m.id))

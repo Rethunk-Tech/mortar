@@ -346,6 +346,18 @@ export const updateCount = (
   >,
 ): number => updatesForReview(result, profile, details).length
 
+// The update the review offers for this very copy of a mod: updateFor's, unless its Nexus page is hidden or removed.
+export const offeredUpdateFor = (
+  result: UpdatesResult | null,
+  mod: Pick<Mod, 'key' | 'id'>,
+  profile?: Profile | null,
+  details: Record<
+    number,
+    { details?: { page?: { status?: string; available?: boolean } } } | undefined
+  > = {},
+): Update | undefined =>
+  updatesForReview(result, profile, details).find((u) => u.key === mod.key && sameId(u.id, mod.id))
+
 // The update SMAPI's API suggests for this very copy of a mod, if any.
 export const updateFor = (
   result: UpdatesResult | null,

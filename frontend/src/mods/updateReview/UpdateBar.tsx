@@ -8,7 +8,8 @@ import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useBadges } from '../badges.ts'
 import { ListCallout } from '../ListCallout.tsx'
-import { visibleUpdates } from '../lookup.ts'
+import { updatesForReview } from '../lookup.ts'
+import { useGameNexusDetails } from '../nexusDetails.ts'
 import { accent } from '../paper.ts'
 import { useUpdates } from '../updates.ts'
 
@@ -21,7 +22,10 @@ export const UpdateBar = memo(function UpdateBarView() {
   const count = useBadges((s) => s.byProfile[openId]?.updates ?? 0)
   const profile = useProfiles(profileById(openId))
   const checkNow = useUpdates((s) => s.checkNow)
-  const [first] = visibleUpdates(updates, profile)
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const byId = useGameNexusDetails(game)
+  // The teaser names the first update the review offers, never one it withholds.
+  const [first] = updatesForReview(updates, profile, byId)
   // Dismissed for this answer only: the next check's answer brings the notice back if it is still incomplete.
   const [dismissed, setDismissed] = useState<unknown>(null)
   const [checking, setChecking] = useState(false)

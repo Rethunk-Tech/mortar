@@ -12,7 +12,8 @@ import { useLoader } from '../../loader/store.ts'
 import { profileById, useProfiles } from '../../profiles/store.ts'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { modByKey, type Problem, updateFor } from '../lookup.ts'
+import { modByKey, offeredUpdateFor, type Problem } from '../lookup.ts'
+import { detailsFor, useNexusDetails } from '../nexusDetails.ts'
 import { useMods } from '../store.ts'
 import { openTarget } from '../storeView.ts'
 import { useUpdates } from '../updates.ts'
@@ -74,7 +75,12 @@ function LoadFailureAction({
   const owner = useMods((s) => (failure.key === '' ? undefined : modByKey(s.mods, failure.key)))
   const profile = useProfiles(profileById(useProfiles((s) => s.openId)))
   const updates = useUpdates((s) => s.updates)
-  const hasUpdate = owner !== undefined && updateFor(updates, owner, profile) !== undefined
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const byKey = useNexusDetails((s) => s.byKey)
+  // Only an update the review offers opens it; one it withholds would open a review that says nothing is there.
+  const hasUpdate =
+    owner !== undefined &&
+    offeredUpdateFor(updates, owner, profile, detailsFor(byKey, game)) !== undefined
   const disable = () =>
     owner
       ? button(t`Disable`, () =>
