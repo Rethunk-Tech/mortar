@@ -3,6 +3,7 @@ import { Box, Button, FormControlLabel, Radio, RadioGroup, Typography } from '@m
 import { ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { listNames } from '../i18n/list.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
 import { DialogFooter } from '../shell/dialog/AppDialog.tsx'
@@ -134,7 +135,7 @@ export function ImportFooter({
               tabIndex={0}
               sx={{ fontSize: 'base.fontSize', maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
             >
-              {(preview.replace.remove ?? []).join(', ')}
+              {listNames(preview.replace.remove ?? [], Infinity)}
             </Typography>
           </Fold>
         ) : (
@@ -148,7 +149,7 @@ export function ImportFooter({
               tabIndex={0}
               sx={{ fontSize: 'base.fontSize', maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
             >
-              {(preview.replace.keepLocal ?? []).join(', ')}
+              {listNames(preview.replace.keepLocal ?? [], Infinity)}
             </Typography>
           </Fold>
         ) : null}

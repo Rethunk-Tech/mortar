@@ -60,7 +60,7 @@ function BackupRow({
 }) {
   const { t } = useLingui()
   const when = backup.at > 0 ? <When value={backup.at} withTime={true} /> : backup.name
-  const farms = (backup.saves ?? []).map(saveName).join(', ')
+  const farms = listNames((backup.saves ?? []).map(saveName), Infinity)
   const meta = [causeLabel(backup, profiles), formatBytes(backup.size), farms]
     .filter(Boolean)
     .join(' · ')

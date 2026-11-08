@@ -16,6 +16,7 @@ import {
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { FLATPAK } from '../brand/productNames.ts'
 import { useGameInfo } from '../games/info.ts'
+import { listNames } from '../i18n/list.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { ToneIcon } from '../shell/dialog/AppDialog.tsx'
@@ -443,7 +444,7 @@ export function NewModDialog({
             useToasts.getState().push({
               kind: 'warning',
               title: t`No version found for some dependencies, so they were not added`,
-              body: skipped.join(', '),
+              body: listNames(skipped, Infinity),
             })
           }
         } catch (e) {
