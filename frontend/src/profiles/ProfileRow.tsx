@@ -7,7 +7,7 @@ import { memo, useRef, useState } from 'react'
 import type { ProfileBudget } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { NameField } from '../game/NameField.tsx'
-import { MoreMenuItems, ProfileMenuItem } from '../game/ProfileMenuItems.tsx'
+import { MoreMenuItems } from '../game/ProfileMenuItems.tsx'
 import { openProfileDialog } from '../game/profileDialog.ts'
 import { useRestoreFocus } from '../game/useRestoreFocus.ts'
 import { formatBytes } from '../i18n/bytes.ts'
@@ -15,6 +15,7 @@ import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading } from '../shell/TitleMenu.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
@@ -72,12 +73,12 @@ function RowMenu({
       }}
     >
       <MenuHeading>{t`This profile`}</MenuHeading>
-      <ProfileMenuItem
+      <MenuAction
         icon={<Pencil size={16} />}
         label={t`Rename`}
         onClick={choose(onRename, false)}
       />
-      <ProfileMenuItem
+      <MenuAction
         icon={<Palette size={16} />}
         label={t`Edit profile…`}
         onClick={choose(() => openProfileDialog('edit', profile.id), false)}

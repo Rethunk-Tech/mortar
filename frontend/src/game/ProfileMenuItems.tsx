@@ -50,33 +50,6 @@ import {
 
 // The profile actions shared by the profile page's buttons and the sidebar's context menu, so both offer the same.
 
-function ProfileMenuItem({
-  icon,
-  label,
-  disabled,
-  tooltip,
-  tone,
-  onClick,
-}: {
-  icon: React.ReactNode
-  label: React.ReactNode
-  disabled?: boolean
-  tooltip?: string
-  tone?: 'error'
-  onClick: () => void
-}) {
-  return (
-    <MenuAction
-      icon={icon}
-      label={label}
-      disabled={disabled}
-      reason={tooltip}
-      tone={tone}
-      onClick={onClick}
-    />
-  )
-}
-
 // What shortcuts this install can make is fixed for the run, so it is asked once.
 let capabilities: ReturnType<typeof ShortcutCapabilities> | null = null
 const shortcutCapabilities = () => {
@@ -104,7 +77,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
   }, [])
   return (
     <>
-      <ProfileMenuItem
+      <MenuAction
         icon={<SquareArrowOutUpRight size={16} />}
         label={t`Add a desktop shortcut`}
         onClick={() => {
@@ -121,7 +94,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
         }}
       />
       {hasShortcut ? (
-        <ProfileMenuItem
+        <MenuAction
           icon={<Trash2 size={16} />}
           label={t`Remove the shortcut`}
           tone="error"
@@ -140,7 +113,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
         />
       ) : null}
       {steamShortcut ? (
-        <ProfileMenuItem
+        <MenuAction
           icon={<Gamepad2 size={16} />}
           label={t`Add this profile to ${{ launcher: STEAM }}`}
           onClick={() => {
@@ -174,7 +147,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
 function CheckProfileMenuItem({ profile, close }: { profile: Profile; close: () => void }) {
   const { t } = useLingui()
   return (
-    <ProfileMenuItem
+    <MenuAction
       icon={<ShieldCheck size={16} />}
       label={t`Check this profile`}
       onClick={() => {
@@ -196,7 +169,7 @@ function ReviewItems({ profile, close }: Item) {
   return [
     <MenuRule key="review-divider" />,
     <MenuHeading key="review-heading">{t`Review`}</MenuHeading>,
-    <ProfileMenuItem
+    <MenuAction
       key="history"
       icon={<History size={16} />}
       label={t`History…`}
@@ -205,7 +178,7 @@ function ReviewItems({ profile, close }: Item) {
         openProfileDialog('history', profile.id)
       }}
     />,
-    <ProfileMenuItem
+    <MenuAction
       key="compare"
       icon={<GitCompare size={16} />}
       label={t`Compare…`}
@@ -230,7 +203,7 @@ function MakeServerItem({ profile, close }: Item) {
     reportUnexpected,
   )
   return offered ? (
-    <ProfileMenuItem
+    <MenuAction
       icon={<Server size={16} />}
       label={t`Make a server from this profile`}
       onClick={() => {
@@ -249,7 +222,7 @@ function CopyItems({ profile, close }: Item) {
   return [
     <MenuRule key="copies-divider" />,
     <MenuHeading key="copies-heading">{t`Copies`}</MenuHeading>,
-    <ProfileMenuItem
+    <MenuAction
       key="duplicate"
       icon={<Copy size={16} />}
       label={t`Duplicate`}
@@ -259,12 +232,12 @@ function CopyItems({ profile, close }: Item) {
       }}
     />,
     <MakeServerItem key="make-server" profile={profile} close={close} />,
-    <ProfileMenuItem
+    <MenuAction
       key="merge"
       icon={<GitMerge size={16} />}
       label={t`Add these mods to another profile…`}
       disabled={!others}
-      {...(others ? {} : { tooltip: t`No other profile to add them to.` })}
+      {...(others ? {} : { reason: t`No other profile to add them to.` })}
       onClick={() => {
         close()
         openProfileDialog('merge', profile.id)
@@ -287,7 +260,7 @@ function MoreMenuItems({ profile, close }: Item) {
   const openId = useProfiles((s) => s.openId)
   const openFolder = useProfiles((s) => s.openFolder)
   return [
-    <ProfileMenuItem
+    <MenuAction
       key="favourite"
       icon={<Star size={16} fill={profile.favourite ? 'currentColor' : 'none'} />}
       label={profile.favourite ? t`Remove from favourites` : t`Add to favourites`}
@@ -301,18 +274,18 @@ function MoreMenuItems({ profile, close }: Item) {
         }
       }}
     />,
-    <ProfileMenuItem
+    <MenuAction
       key="freeze"
       icon={<Snowflake size={16} />}
       label={isFrozen(profile) ? t`Unfreeze` : t`Freeze this profile`}
       disabled={profile.id !== openId}
-      {...(profile.id === openId ? {} : { tooltip: t`Open profile first.` })}
+      {...(profile.id === openId ? {} : { reason: t`Open profile first.` })}
       onClick={() => {
         close()
         setFrozen(!isFrozen(profile)).catch(reportUnexpected)
       }}
     />,
-    <ProfileMenuItem
+    <MenuAction
       key="open-folder"
       icon={<FolderOpen size={16} />}
       label={t`Open profile folder`}
@@ -321,7 +294,7 @@ function MoreMenuItems({ profile, close }: Item) {
         openFolder(profile.id).catch(reportUnexpected)
       }}
     />,
-    <ProfileMenuItem
+    <MenuAction
       key="folder"
       icon={<FolderInput size={16} />}
       label={t`Move profile folder…`}
@@ -333,7 +306,7 @@ function MoreMenuItems({ profile, close }: Item) {
     <ReviewItems key="review" profile={profile} close={close} />,
     <MenuRule key="add-divider" />,
     <MenuHeading key="add-heading">{t`Add mods`}</MenuHeading>,
-    <ProfileMenuItem
+    <MenuAction
       key="saved-group"
       icon={<PackagePlus size={16} />}
       label={t`Add a saved group…`}
@@ -349,7 +322,7 @@ function MoreMenuItems({ profile, close }: Item) {
     <MenuHeading key="shortcuts-heading">{t`Shortcuts`}</MenuHeading>,
     <ShortcutMenuItems key="shortcuts" profile={profile} close={close} />,
     <MenuRule key="delete-divider" />,
-    <ProfileMenuItem
+    <MenuAction
       key="delete"
       icon={<Trash2 size={16} />}
       label={t`Delete profile`}
@@ -362,4 +335,4 @@ function MoreMenuItems({ profile, close }: Item) {
   ]
 }
 
-export { MoreMenuItems, ProfileMenuItem, ShortcutMenuItems }
+export { MoreMenuItems, ShortcutMenuItems }

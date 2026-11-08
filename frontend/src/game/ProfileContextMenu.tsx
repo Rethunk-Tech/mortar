@@ -8,7 +8,8 @@ import { useKeptWhileClosed } from '../shell/keptWhileClosed.ts'
 import { MenuHeading } from '../shell/TitleMenu.tsx'
 import { readTemplates } from '../templates/useTemplates.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { MoreMenuItems, ProfileMenuItem } from './ProfileMenuItems.tsx'
+import { MoreMenuItems } from './ProfileMenuItems.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { openProfileDialog } from './profileDialog.ts'
 import { useRenameRequest } from './renameRequest.ts'
 import { lookForShortcut } from './shortcutLooks.ts'
@@ -30,7 +31,7 @@ export function ProfileContextMenu({
   const items = useMemo(
     () => [
       <MenuHeading key="heading">{t`This profile`}</MenuHeading>,
-      <ProfileMenuItem
+      <MenuAction
         key="rename"
         icon={<Pencil size={16} />}
         label={t`Rename`}
@@ -40,7 +41,7 @@ export function ProfileContextMenu({
           useRenameRequest.getState().request(profile.id)
         }}
       />,
-      <ProfileMenuItem
+      <MenuAction
         key="edit"
         icon={<Palette size={16} />}
         label={t`Edit profile…`}
