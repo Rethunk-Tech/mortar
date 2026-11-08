@@ -204,26 +204,24 @@ function ModMenuItems({
       extraArchive={(extraKey) => extraFileArchive(extraKey, files)}
     />
   )
-  return [
-    ...ModActionItems({
-      actions: modActions(state),
-      items,
-      close,
-      locked,
-      hasFomod,
-      onSetCategory,
-      onAlsoAdd,
-      onRemoveOther,
-      onEditConfig: configured ? () => openConfigPage(mod.id) : undefined,
-      labels: {
-        editConfig: t`Edit config`,
-        category: t`Set category…`,
-        alsoAdd: t`Also add to…`,
-      },
-      splitCombine,
-      extra,
-    }),
-  ]
+  return ModActionItems({
+    actions: modActions(state),
+    items,
+    close,
+    locked,
+    hasFomod,
+    onSetCategory,
+    onAlsoAdd,
+    onRemoveOther,
+    onEditConfig: configured ? () => openConfigPage(mod.id) : undefined,
+    labels: {
+      editConfig: t`Edit config`,
+      category: t`Set category…`,
+      alsoAdd: t`Also add to…`,
+    },
+    splitCombine,
+    extra,
+  })
 }
 
 // A later package wins a file two mods both provide, so moving one down makes it win more.
@@ -335,11 +333,13 @@ function ModActionMenu({
     profile === undefined
       ? ''
       : (siteCategory(entry, byId[nexusIdOf(profile, mod)]?.details?.category) ?? '')
-  const [categoryOpen, setCategoryOpen] = useState(false)
-  const [alsoOpen, setAlsoOpen] = useState(false)
-  const [groupOpen, setGroupOpen] = useState(false)
-  const [removeOtherOpen, setRemoveOtherOpen] = useState(false)
-  const [everywhereOpen, setEverywhereOpen] = useState(false)
+  const [dialog, setDialog] = useState<
+    'category' | 'also' | 'group' | 'removeOther' | 'everywhere' | null
+  >(null)
+  const closeDialog = () => {
+    setDialog(null)
+    onClose()
+  }
   const game = useProfiles((s) => s.game?.id ?? '')
   const currentProfileId = useProfiles((s) => s.openId)
   const update = useUpdates((s) => updateFor(s.updates, mod, profile))
@@ -348,7 +348,7 @@ function ModActionMenu({
   return (
     <>
       <Menu
-        open={!(categoryOpen || groupOpen || alsoOpen || removeOtherOpen || everywhereOpen)}
+        open={dialog === null}
         onClose={onClose}
         anchorEl={'el' in anchor ? anchor.el : undefined}
         {...position}
@@ -356,9 +356,9 @@ function ModActionMenu({
         <ModMenuItems
           mod={mod}
           close={onClose}
-          onSetCategory={() => setCategoryOpen(true)}
-          onAlsoAdd={() => setAlsoOpen(true)}
-          onRemoveOther={() => setRemoveOtherOpen(true)}
+          onSetCategory={() => setDialog('category')}
+          onAlsoAdd={() => setDialog('also')}
+          onRemoveOther={() => setDialog('removeOther')}
           extra={{
             version: update
               ? [
@@ -367,7 +367,7 @@ function ModActionMenu({
                     game={game}
                     id={mod.id}
                     update={update}
-                    onOpen={() => setEverywhereOpen(true)}
+                    onOpen={() => setDialog('everywhere')}
                   />,
                 ]
               : [],
@@ -377,7 +377,7 @@ function ModActionMenu({
                 profile={profile}
                 entryKey={mod.key}
                 close={onClose}
-                onAdd={() => setGroupOpen(true)}
+                onAdd={() => setDialog('group')}
               />,
               <PackageMoveItems key="package-move" mod={mod} close={onClose} />,
               <OnlyHereMenuItem
@@ -393,11 +393,8 @@ function ModActionMenu({
         />
       </Menu>
       <SetCategoryDialog
-        open={categoryOpen}
-        onClose={() => {
-          setCategoryOpen(false)
-          onClose()
-        }}
+        open={dialog === 'category'}
+        onClose={closeDialog}
         modKey={mod.key}
         nexusCategory={nexusCategory}
         currentOverride={entry?.categoryOverride ?? ''}
@@ -405,37 +402,25 @@ function ModActionMenu({
       <AlsoAddDialog
         mod={mod}
         profileId={currentProfileId ?? ''}
-        open={alsoOpen}
-        onClose={() => {
-          setAlsoOpen(false)
-          onClose()
-        }}
+        open={dialog === 'also'}
+        onClose={closeDialog}
       />
       <EverywhereDialog
-        open={everywhereOpen}
+        open={dialog === 'everywhere'}
         game={game}
         mods={[{ id: mod.id, newKey: 'latest' }]}
-        onClose={() => {
-          setEverywhereOpen(false)
-          onClose()
-        }}
+        onClose={closeDialog}
       />
       <RemoveFromOthersDialog
-        open={removeOtherOpen}
-        onClose={() => {
-          setRemoveOtherOpen(false)
-          onClose()
-        }}
+        open={dialog === 'removeOther'}
+        onClose={closeDialog}
         mod={mod}
         game={game}
         currentProfileId={currentProfileId}
       />
       <AddToGroupDialog
-        open={groupOpen}
-        onClose={() => {
-          setGroupOpen(false)
-          onClose()
-        }}
+        open={dialog === 'group'}
+        onClose={closeDialog}
         mods={actingMods(mod)}
         profile={profile}
       />
