@@ -2987,7 +2987,7 @@ msgstr ""
 msgid "Give the {source} community first."
 msgstr ""
 
-#: src/browse/BrowseFilters.tsx
+#: src/browse/stats.ts
 msgid "Sort: most followed"
 msgstr ""
 
@@ -5099,10 +5099,6 @@ msgstr ""
 msgid "Change"
 msgstr ""
 
-#: src/browse/stats.ts
-msgid "{endorsements, plural, one {# positive rating} other {# positive ratings}}"
-msgstr ""
-
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
 msgid "Browse"
@@ -5353,7 +5349,7 @@ msgstr ""
 msgid "Message {count} of {total}"
 msgstr ""
 
-#: src/browse/BrowseFilters.tsx
+#: src/browse/stats.ts
 msgid "Sort: most endorsed"
 msgstr ""
 
@@ -5524,6 +5520,10 @@ msgstr ""
 
 #: src/queue/UnmoderatedDialog.tsx
 msgid "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
+msgstr ""
+
+#: src/browse/stats.ts
+msgid "{count, plural, one {# positive rating} other {# positive ratings}}"
 msgstr ""
 
 #: src/nxm/ArrivalDialog.tsx
@@ -7310,11 +7310,11 @@ msgstr ""
 msgid "Sending to {peer} stopped"
 msgstr ""
 
-#: src/browse/BrowseFilters.tsx
+#: src/browse/stats.ts
 msgid "Sort: top rated"
 msgstr ""
 
-#: src/browse/BrowseFilters.tsx
+#: src/browse/stats.ts
 msgid "Sort: most popular"
 msgstr ""
 

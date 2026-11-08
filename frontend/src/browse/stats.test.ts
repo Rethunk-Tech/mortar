@@ -20,8 +20,6 @@ function row(
   return {
     mod: { endorsements } as ListRow['mod'],
     source,
-    size: undefined,
-    details: undefined,
   }
 }
 

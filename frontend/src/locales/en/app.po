@@ -2987,7 +2987,7 @@ msgstr "Choose a file…"
 msgid "Give the {source} community first."
 msgstr "Give the {source} community first."
 
-#: src/browse/BrowseFilters.tsx
+#: src/browse/stats.ts
 msgid "Sort: most followed"
 msgstr "Sort: most followed"
 
@@ -5099,10 +5099,6 @@ msgstr "Manage tools"
 msgid "Change"
 msgstr "Change"
 
-#: src/browse/stats.ts
-msgid "{endorsements, plural, one {# positive rating} other {# positive ratings}}"
-msgstr "{endorsements, plural, one {# positive rating} other {# positive ratings}}"
-
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
 msgid "Browse"
@@ -5353,7 +5349,7 @@ msgstr "Challenge moon"
 msgid "Message {count} of {total}"
 msgstr "Message {count} of {total}"
 
-#: src/browse/BrowseFilters.tsx
+#: src/browse/stats.ts
 msgid "Sort: most endorsed"
 msgstr "Sort: most endorsed"
 
@@ -5525,6 +5521,10 @@ msgstr "Report copied"
 #: src/queue/UnmoderatedDialog.tsx
 msgid "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
 msgstr "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
+
+#: src/browse/stats.ts
+msgid "{count, plural, one {# positive rating} other {# positive ratings}}"
+msgstr "{count, plural, one {# positive rating} other {# positive ratings}}"
 
 #: src/nxm/ArrivalDialog.tsx
 msgid "You started this download on {source}, but you have no {game} profile yet."
@@ -7310,11 +7310,11 @@ msgstr "The game's name in its {source} address (thunderstore.io/c/…). Mortar 
 msgid "Sending to {peer} stopped"
 msgstr "Sending to {peer} stopped"
 
-#: src/browse/BrowseFilters.tsx
+#: src/browse/stats.ts
 msgid "Sort: top rated"
 msgstr "Sort: top rated"
 
-#: src/browse/BrowseFilters.tsx
+#: src/browse/stats.ts
 msgid "Sort: most popular"
 msgstr "Sort: most popular"
 
