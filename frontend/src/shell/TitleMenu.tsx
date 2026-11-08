@@ -31,8 +31,6 @@ export function TitleMenu({
       anchorEl={anchorEl}
       open={anchorEl !== null}
       onClose={onClose}
-      // Kept mounted: each opening then redraws only the items that changed, not every item twice.
-      keepMounted={true}
       disableEnforceFocus={true}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       transformOrigin={{ vertical: 'top', horizontal: 'left' }}
