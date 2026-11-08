@@ -236,8 +236,9 @@ func TestCheckUpdatesPicksTheBundlePacksOwnFile(t *testing.T) {
 	}
 }
 
-// Earthy Cursor: the page says 1.0.1 but its only file is the installed 1.0.0.
-func TestCheckUpdatesIgnoresAPageVersionWithoutANewFile(t *testing.T) {
+// Earthy Cursor: the page says 1.0.1 but its only file is the installed 1.0.0. The row is held, not dropped, so the
+// Console can say why SMAPI's list has it and Mortar's does not.
+func TestCheckUpdatesHoldsAPageVersionWithoutANewFile(t *testing.T) {
 	const id = "Example.EarthyCursor"
 	rm := fakeMeta{compat: map[string]smapiweb.UpdateResult{
 		id: {Known: true, Suggested: &smapiweb.Update{Version: "1.0.1", URL: "https://www.nexusmods.com/stardewvalley/mods/33076"}},
@@ -247,8 +248,12 @@ func TestCheckUpdatesIgnoresAPageVersionWithoutANewFile(t *testing.T) {
 	filesOf := func(context.Context, nexusmods.Title, []int) (map[int][]nexusmods.BatchFile, error) {
 		return map[int][]nexusmods.BatchFile{33076: {{FileID: 129465, Name: "Earthy Cursor", Version: "1.0.0", Category: "MAIN"}}}, nil
 	}
-	if got := checkUpdates(t.Context(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf).Updates; len(got) != 0 {
-		t.Fatalf("updates = %+v, want none", got)
+	got := checkUpdates(t.Context(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf)
+	if len(got.Updates) != 0 {
+		t.Fatalf("updates = %+v, want none", got.Updates)
+	}
+	if len(got.Held) != 1 || got.Held[0].Reason != HeldCurrent || got.Held[0].Version != "1.0.1" {
+		t.Fatalf("held = %+v, want the page's 1.0.1 held as current", got.Held)
 	}
 }
 
