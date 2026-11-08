@@ -38,10 +38,6 @@ export function prefAsNumber(raw: unknown, spec: PrefSpec, game = currentGame())
   return Number.isFinite(n) ? n : Number(specDefault(spec, game))
 }
 
-export function specGameArg(spec: PrefSpec, game = currentGame()): string {
-  return spec.scope === 'game' ? game : ''
-}
-
 /** A setting's value as its control shows it (stored, else its default), for a control another setting disables. */
 export function usePrefValue(key: string, game = currentGame()): string {
   const spec = specByKey(usePrefSpecs(), key)

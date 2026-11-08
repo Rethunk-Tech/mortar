@@ -24,6 +24,6 @@ export function useScopedKey(key: string, game: string, gameValue: string, overr
 }
 
 /** The open profile's own value for key, read only while on. */
-export function useOpenOverride(key: string, on: boolean) {
+function useOpenOverride(key: string, on: boolean) {
   return useProfiles((s) => (on ? openProfileOf(s)?.overrides?.[key] : undefined))
 }
