@@ -301,10 +301,6 @@ function cmpVersion(a: string, b: string): number {
   return cmpText(a, b)
 }
 
-function isMissing(value: unknown): boolean {
-  return value === undefined || value === null
-}
-
 function yearMissing(ms: number): boolean {
   return Number.isNaN(ms) || new Date(ms).getUTCFullYear() < FIRST_YEAR
 }
@@ -332,11 +328,69 @@ function compareLastRun(a: ListRow, b: ListRow, dir: ListSortDir): number {
   return primary
 }
 
-function measureOf(column: 'size' | 'startup' | 'order', row: ListRow): number | undefined {
-  if (column === 'order') {
-    return row.order
+type SortValue = { missing: boolean; key: string | number }
+
+const textKey =
+  (read: (row: ListRow) => string, emptyCounts = true) =>
+  (row: ListRow): SortValue => {
+    const key = read(row)
+    return { missing: emptyCounts && !key, key }
   }
-  return column === 'size' ? row.size : row.startupMs
+
+const numKey =
+  (read: (row: ListRow) => number | undefined) =>
+  (row: ListRow): SortValue => {
+    const key = read(row)
+    return { missing: key === undefined, key: key ?? 0 }
+  }
+
+const dateKey =
+  (read: (row: ListRow) => string, miss: (ms: number) => boolean) =>
+  (row: ListRow): SortValue => {
+    const key = Date.parse(read(row))
+    return { missing: miss(key), key }
+  }
+
+const LIST_SORT_VALUE: {
+  [C in Exclude<ListColumnId, 'on' | 'lastRun'>]: (row: ListRow) => SortValue
+} = {
+  name: textKey((row) => row.mod.name, false),
+  version: textKey((row) => row.mod.version),
+  latest: textKey((row) => figureText(row, 'latest')),
+  pluginVersion: textKey((row) => figureText(row, 'pluginVersion')),
+  id: textKey((row) => figureText(row, 'id')),
+  kind: textKey((row) => figureText(row, 'kind')),
+  author: textKey((row) => row.mod.author),
+  source: textKey((row) => row.source),
+  category: textKey((row) => row.categoryLabel),
+  endorsements: numKey((row) => figureNumber(row, 'endorsements')),
+  downloads: numKey((row) => figureNumber(row, 'downloads')),
+  updated: dateKey((row) => figureText(row, 'updated'), Number.isNaN),
+  released: dateKey((row) => figureText(row, 'released'), Number.isNaN),
+  installed: dateKey((row) => row.added, yearMissing),
+  switchedOff: dateKey((row) => row.switchedOff, yearMissing),
+  needs: numKey((row) => (row.mod.needs == null ? undefined : row.mod.needs.length)),
+  status: textKey((row) => row.status),
+  reason: textKey((row) => row.reason, false),
+  notes: textKey((row) => notesText(row)),
+  size: numKey((row) => row.size),
+  startup: numKey((row) => row.startupMs),
+  order: numKey((row) => row.order),
+}
+
+function compareSortValues(
+  column: ListColumnId,
+  a: SortValue,
+  b: SortValue,
+  dir: ListSortDir,
+): number {
+  const ordered =
+    column === 'version' || column === 'latest' || column === 'pluginVersion'
+      ? cmpVersion(String(a.key), String(b.key))
+      : typeof a.key === 'number' && typeof b.key === 'number'
+        ? cmpNum(a.key, b.key)
+        : cmpText(String(a.key), String(b.key))
+  return missingLast(a.missing, b.missing, dir, ordered)
 }
 
 function compareListRows(
@@ -350,109 +404,11 @@ function compareListRows(
     return (rank ? compareManual(a, b, rank) : 0) || cmpText(a.mod.name, b.mod.name)
   }
   let primary = 0
-  switch (column) {
-    case 'on':
-      primary = 0
-      break
-    case 'name':
-      primary = missingLast(false, false, dir, cmpText(a.mod.name, b.mod.name))
-      break
-    case 'version':
-      primary = missingLast(
-        !a.mod.version,
-        !b.mod.version,
-        dir,
-        cmpVersion(a.mod.version, b.mod.version),
-      )
-      break
-    case 'latest':
-    case 'pluginVersion': {
-      const av = figureText(a, column)
-      const bv = figureText(b, column)
-      primary = missingLast(!av, !bv, dir, cmpVersion(av, bv))
-      break
-    }
-    case 'id':
-    case 'kind': {
-      const av = figureText(a, column)
-      const bv = figureText(b, column)
-      primary = missingLast(!av, !bv, dir, cmpText(av, bv))
-      break
-    }
-    case 'author':
-      primary = missingLast(!a.mod.author, !b.mod.author, dir, cmpText(a.mod.author, b.mod.author))
-      break
-    case 'source':
-      primary = missingLast(!a.source, !b.source, dir, cmpText(a.source, b.source))
-      break
-    case 'category': {
-      const av = a.categoryLabel
-      const bv = b.categoryLabel
-      primary = missingLast(!av, !bv, dir, cmpText(av, bv))
-      break
-    }
-    case 'endorsements':
-    case 'downloads': {
-      const av = figureNumber(a, column)
-      const bv = figureNumber(b, column)
-      primary = missingLast(av === undefined, bv === undefined, dir, cmpNum(av ?? 0, bv ?? 0))
-      break
-    }
-    case 'updated':
-    case 'released': {
-      const av = Date.parse(figureText(a, column))
-      const bv = Date.parse(figureText(b, column))
-      primary = missingLast(Number.isNaN(av), Number.isNaN(bv), dir, cmpNum(av, bv))
-      break
-    }
-    case 'installed': {
-      const av = Date.parse(a.added)
-      const bv = Date.parse(b.added)
-      primary = missingLast(yearMissing(av), yearMissing(bv), dir, cmpNum(av, bv))
-      break
-    }
-    case 'switchedOff': {
-      const av = Date.parse(a.switchedOff)
-      const bv = Date.parse(b.switchedOff)
-      primary = missingLast(yearMissing(av), yearMissing(bv), dir, cmpNum(av, bv))
-      break
-    }
-    case 'needs': {
-      const an = a.mod.needs
-      const bn = b.mod.needs
-      primary = missingLast(
-        isMissing(an),
-        isMissing(bn),
-        dir,
-        cmpNum(an?.length ?? 0, bn?.length ?? 0),
-      )
-      break
-    }
-    case 'status':
-      primary = missingLast(!a.status, !b.status, dir, cmpText(a.status, b.status))
-      break
-    case 'reason':
-      primary = missingLast(false, false, dir, cmpText(a.reason, b.reason))
-      break
-    case 'notes': {
-      const av = notesText(a)
-      const bv = notesText(b)
-      primary = missingLast(!av, !bv, dir, cmpText(av, bv))
-      break
-    }
-    case 'lastRun':
-      primary = compareLastRun(a, b, dir)
-      break
-    case 'size':
-    case 'startup':
-    case 'order': {
-      const av = measureOf(column, a)
-      const bv = measureOf(column, b)
-      primary = missingLast(av === undefined, bv === undefined, dir, cmpNum(av ?? 0, bv ?? 0))
-      break
-    }
-    default:
-      primary = 0
+  if (column === 'lastRun') {
+    primary = compareLastRun(a, b, dir)
+  } else if (column !== 'on') {
+    const valueOf = LIST_SORT_VALUE[column]
+    primary = compareSortValues(column, valueOf(a), valueOf(b), dir)
   }
   if (primary !== 0) {
     return primary
