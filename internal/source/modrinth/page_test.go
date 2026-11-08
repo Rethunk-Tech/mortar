@@ -20,3 +20,16 @@ func TestPageURLNamesTheSlug(t *testing.T) {
 		t.Fatalf("%q %v", got, err)
 	}
 }
+
+// A player reads the site's name and status, not the HTTP client's wording.
+func TestPageURLSaysTheSitesNameWhenTheProjectIsMissing(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, "no", http.StatusNotFound)
+	}))
+	t.Cleanup(srv.Close)
+	_, err := Driver{URL: srv.URL, HTTP: srv.Client()}.PageURL(t.Context(), "nope")
+	if err == nil || err.Error() != "Modrinth answered 404 Not Found" {
+		t.Fatalf("err = %v", err)
+	}
+}
