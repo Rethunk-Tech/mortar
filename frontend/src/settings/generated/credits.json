@@ -290,6 +290,11 @@
     "url": "https://github.com/Rethunk-Tech/go-thunderstore"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-vintagestory",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-vintagestory"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-winsym",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-winsym"
