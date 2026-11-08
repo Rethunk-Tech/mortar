@@ -1,3 +1,4 @@
+import { sameValue } from '@rethunk/react-load-hooks'
 import { Events } from '@wailsio/runtime'
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
@@ -149,8 +150,7 @@ const loadCached = async (game: string, id: number) => {
 }
 
 // The same details again leave the entry, and every screen reading it, as they were.
-const sameDetails = (a: Details | undefined, b: Details) =>
-  a !== undefined && JSON.stringify(a) === JSON.stringify(b)
+const sameDetails = (a: Details | undefined, b: Details) => a !== undefined && sameValue(a, b)
 
 const loadDetails = (game: string, id: number) => {
   if (!useNexus.getState().signedIn) {
