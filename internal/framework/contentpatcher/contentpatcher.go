@@ -31,7 +31,6 @@ import (
 
 	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
 
 var contentPatcherID = SMAPI("Pathoschild.ContentPatcher")
@@ -1050,12 +1049,38 @@ type cpSchema struct {
 	description   string
 }
 
+type configSchemaEntry struct {
+	Default       json.RawMessage `json:"Default"`
+	AllowValues   string          `json:"AllowValues"`
+	AllowMultiple bool            `json:"AllowMultiple"`
+	AllowBlank    bool            `json:"AllowBlank"`
+	Description   string          `json:"Description"`
+}
+
+func configSchemaEntries(contentJSON []byte) (map[string]configSchemaEntry, error) {
+	var doc struct {
+		ConfigSchema map[string]json.RawMessage `json:"ConfigSchema"`
+	}
+	if err := json.Unmarshal(contentJSON, &doc); err != nil {
+		return nil, fmt.Errorf("content.json: %w", err)
+	}
+	out := make(map[string]configSchemaEntry, len(doc.ConfigSchema))
+	for name, raw := range doc.ConfigSchema {
+		var e configSchemaEntry
+		if json.Unmarshal(raw, &e) != nil {
+			continue
+		}
+		out[name] = e
+	}
+	return out, nil
+}
+
 func readConfigSchema(root string) map[string]cpSchema {
 	raw, err := safefs.ReadFile(filepath.Join(root, "content.json"))
 	if err != nil {
 		return nil
 	}
-	entries, err := modconfig.Entries(lenientjson.Clean(raw))
+	entries, err := configSchemaEntries(lenientjson.Clean(raw))
 	if err != nil {
 		return nil
 	}
