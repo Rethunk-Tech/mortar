@@ -79,7 +79,7 @@ export function Storage() {
   const { t } = useLingui()
   const openProfiles = useNav((s) => s.openProfiles)
   const sentinel = useRef<HTMLSpanElement>(null)
-  const { usage, measuredAt, measuring, restart, error } = useDataUsage(sentinel)
+  const { usage, measuredAt, restart, error } = useDataUsage(sentinel)
   const move = useMove()
   const [clearing, setClearing] = useState(false)
   const [cleaning, setCleaning] = useState(false)
@@ -108,7 +108,6 @@ export function Storage() {
         <UsageRows
           usage={usage}
           measuredAt={measuredAt}
-          measuring={measuring}
           onCleanUp={() => setCleaning(true)}
           onClearCache={() => setClearing(true)}
           onDeletedProfiles={openProfiles}

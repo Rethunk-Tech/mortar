@@ -14,7 +14,7 @@ import { reportUnexpected } from '../../toasts/report.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettingsRelevant } from '../useSettingsSearch.ts'
 import { MoveDataButton } from './DataMove.tsx'
-import { useUsageBytes } from './DataUsageLoad.ts'
+import { useUsageBytes, useUsageProgress } from './DataUsageLoad.ts'
 import { nowrap } from './dataStyles.ts'
 import { type SegmentId, storageSegments } from './storageSegments.ts'
 
@@ -126,16 +126,33 @@ function MeasuringBytes() {
   return t`Measuring… ${{ size: formatBytes(bytes) }}`
 }
 
+// The measuring line, and afterwards when it finished. A leaf, so starting a measurement or ending one redraws this
+// line and nothing else on the page.
+function UsageState({ at }: { at: number | null }) {
+  const { t } = useLingui()
+  const measuring = useUsageProgress((s) => s.measuring)
+  if (measuring) {
+    return (
+      <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
+        <MeasuringBytes />
+      </Box>
+    )
+  }
+  return at === null ? null : (
+    <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
+      {t`Measured ${{ when: formatWhen(at, { withTime: true }) }}`}
+    </Box>
+  )
+}
+
 function StorageBar({
   usage,
   measuredAt,
-  measuring,
   labels,
   actions,
 }: {
   usage: DiskUse | null
   measuredAt: number | null
-  measuring: boolean
   labels: Record<SegmentId, string>
   actions: ReactNode
 }) {
@@ -155,16 +172,7 @@ function StorageBar({
         <Box sx={{ flex: 1, fontSize: 'large.fontSize' }}>
           {usage ? t`${{ size: formatBytes(usage.total) }} used` : <MeasuringBytes />}
         </Box>
-        {usage && measuring ? (
-          <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
-            <MeasuringBytes />
-          </Box>
-        ) : null}
-        {usage && !measuring && measuredAt !== null ? (
-          <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
-            {t`Measured ${{ when: formatWhen(measuredAt, { withTime: true }) }}`}
-          </Box>
-        ) : null}
+        {usage ? <UsageState at={measuredAt} /> : null}
         {usage?.sharedSavedKnown && usage.sharedSaved > 0 ? (
           <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>
             {t`${{ size: formatBytes(usage.sharedSaved) }} saved by sharing files`}
@@ -211,14 +219,12 @@ function StorageBar({
 export function UsageRows({
   usage,
   measuredAt,
-  measuring,
   onCleanUp,
   onClearCache,
   onDeletedProfiles,
 }: {
   usage: DiskUse | null
   measuredAt: number | null
-  measuring: boolean
   onCleanUp: () => void
   onClearCache: () => void
   onDeletedProfiles: () => void
@@ -272,13 +278,7 @@ export function UsageRows({
         <Searchable
           terms={`${t`Usage`} ${t`Storage`} ${t`Disk space`} ${Object.values(labels).join(' ')} ${t`Clean up…`} ${t`Clear cache…`} ${t`Open recently deleted`}`}
         >
-          <StorageBar
-            usage={usage}
-            measuredAt={measuredAt}
-            measuring={measuring}
-            labels={labels}
-            actions={actions}
-          />
+          <StorageBar usage={usage} measuredAt={measuredAt} labels={labels} actions={actions} />
         </Searchable>
       </SettingsSection>
       <SettingsSection title={t`By game`}>
