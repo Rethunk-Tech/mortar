@@ -139,6 +139,22 @@ function DirectDialog() {
   )
 }
 
+// The launch layer's own dialogs take no props and read their stores themselves. Held as one constant element list, a
+// navigation that changes the open game re-renders the layer without walking a single closed dialog.
+const CLOSED_DIALOGS = (
+  <>
+    <DirectDialog />
+    <CrashDialog />
+    <UpdateWarnDialog />
+    <SaveWarnDialog />
+    <GraphicsDialog />
+    <PrePlayDialog />
+    <KnownGoodOffer />
+    <SyncOffers />
+    <VanillaPlayDialogs />
+  </>
+)
+
 export function LaunchLayer({ game }: { game: string }) {
   const refresh = useLaunch((s) => s.refresh)
   useEffect(() => {
@@ -150,15 +166,7 @@ export function LaunchLayer({ game }: { game: string }) {
     <>
       <LaunchScreen game={game} />
       <Failure game={game} />
-      <DirectDialog />
-      <CrashDialog />
-      <UpdateWarnDialog />
-      <SaveWarnDialog />
-      <GraphicsDialog />
-      <PrePlayDialog />
-      <KnownGoodOffer />
-      <SyncOffers />
-      <VanillaPlayDialogs />
+      {CLOSED_DIALOGS}
     </>
   )
 }
