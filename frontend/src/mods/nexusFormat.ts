@@ -24,7 +24,7 @@ const DIGITS = /^\d+$/
 const LEADING_ZEROS = /^0+/
 const PRE_SEPARATOR = /[.-]/
 
-const cmpText = (a: string, b: string) => {
+const compareCodeUnits = (a: string, b: string) => {
   if (a === b) {
     return 0
   }
@@ -51,7 +51,7 @@ const comparePre = (a: string, b: string) => {
   if (nx && ny) {
     const p = x.replace(LEADING_ZEROS, '')
     const q = y.replace(LEADING_ZEROS, '')
-    return sign(p.length - q.length) || cmpText(p, q)
+    return sign(p.length - q.length) || compareCodeUnits(p, q)
   }
   if (nx) {
     return -1
@@ -59,7 +59,7 @@ const comparePre = (a: string, b: string) => {
   if (ny) {
     return 1
   }
-  return cmpText(x, y)
+  return compareCodeUnits(x, y)
 }
 
 const parseVersion = (s: string) => {
