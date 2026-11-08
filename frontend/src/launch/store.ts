@@ -23,6 +23,7 @@ import { errorDetails } from '../toasts/errorKind.ts'
 import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type AutoUpdateRestorePoint, rollbackAutoUpdate } from './autoUpdate.ts'
+import { delay } from './delay.ts'
 import { gameBusy } from './busy.ts'
 import { playDirect } from './directPref.ts'
 import { applyOnPlayWindow } from './onPlay.ts'
@@ -157,7 +158,7 @@ async function checkUpdatedRun(
     } catch {
       return
     }
-    await new Promise<void>((resolve) => globalThis.setTimeout(resolve, RUN_POLL_MS))
+    await delay(RUN_POLL_MS)
   }
 }
 

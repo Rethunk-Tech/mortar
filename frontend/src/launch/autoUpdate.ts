@@ -17,6 +17,7 @@ import {
   State as QueueState,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { delay } from './delay.ts'
 import { installableUpdate, visibleUpdates } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { installedCaution, updateWant, withOptionalLoaded } from '../mods/updateReview/wants.ts'
@@ -116,8 +117,6 @@ function itemFailure(item: Item): Error {
       i18n._(msg`The update for ${{ name: item.name || i18n._(msg`the mod`) }} did not finish`),
   )
 }
-
-const delay = (ms: number) => new Promise<void>((resolve) => globalThis.setTimeout(resolve, ms))
 
 function queueItemSucceeded(item: Item | undefined, premium: boolean): boolean {
   return item === undefined || item.state === 'done' || (!premium && item.state === 'waiting-click')
