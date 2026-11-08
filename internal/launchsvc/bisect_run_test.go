@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -138,13 +139,35 @@ func TestStopBisectRunStopsOnlyWhenRunning(t *testing.T) {
 	if err := cmd.Start(); err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = cmd.Process.Kill() })
-	fakeProc(t, svc, strconv.Itoa(cmd.Process.Pid), "", "/g/StardewModdingAPI", "--mods-path", mods)
+	t.Cleanup(func() {
+		_ = cmd.Process.Kill()
+		_ = cmd.Wait()
+	})
+	pid := strconv.Itoa(cmd.Process.Pid)
+	fakeProc(t, svc, pid, "", "/g/StardewModdingAPI", "--mods-path", mods)
 	svc.mu.Lock()
 	svc.status[keyOf(sl)] = Status{Game: "stardew", Install: sl.inst, State: Running, Profile: p.ID}
 	svc.mu.Unlock()
 	if err := svc.stopBisectRun(t.Context(), sl); err != nil {
 		t.Fatal(err)
+	}
+	// The fake process tree goes on naming the process after it is gone, so the watcher the stop started would take
+	// the run for a new one and keep writing settings into the data folder as the test's TempDir is removed.
+	if err := os.RemoveAll(filepath.Join(svc.procDir, pid)); err != nil {
+		t.Fatal(err)
+	}
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		svc.mu.Lock()
+		watching := svc.watching[keyOf(sl)]
+		svc.mu.Unlock()
+		if !watching {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("the watcher of the stopped run never stopped")
+		}
+		time.Sleep(10 * time.Millisecond)
 	}
 	if svc.current(sl).State != Idle {
 		t.Fatalf("state = %s", svc.current(sl).State)
