@@ -112,10 +112,10 @@ func TestDriftCheckReportsEveryFailedFolder(t *testing.T) {
 		if err := os.MkdirAll(dir, 0o700); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.Chmod(dir, 0); err != nil {
+		if err := safefs.Chmod(dir, 0o300); err != nil {
 			t.Fatal(err)
 		}
-		t.Cleanup(func() { _ = os.Chmod(dir, 0o700) })
+		t.Cleanup(func() { _ = safefs.Chmod(dir, 0o700) })
 	}
 	_, err = e.ScanModsDrift("stardew", p.ID)
 	if err == nil {
