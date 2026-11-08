@@ -583,6 +583,11 @@ func (s *Store) restoreOverlay(game string, p *Profile, dir string, want Entry) 
 	}
 	was := overlaysOf(p.Entries, want.OverlayOf)
 	p.Entries = append(p.Entries, want)
+	if !want.OverlayOff {
+		if err := s.offAlternatives(game, p, want.Key); err != nil {
+			return err
+		}
+	}
 	return s.relayBase(game, p, dir, want.OverlayOf, was)
 }
 

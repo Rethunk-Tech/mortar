@@ -216,6 +216,35 @@ func TestOverlayAlternativesSwitchEachOtherOff(t *testing.T) {
 	}
 }
 
+func TestOverlayRestoreSwitchesItsAlternativeOff(t *testing.T) {
+	t.Parallel()
+	e, p, baseKey, optKey := installOverlayPair(t)
+	second := buildZip(t, "opt2.zip", map[string]string{overlayDir + "/assets/a.png": "A-two"})
+	res, err := e.InstallSource(t.Context(), "stardew", p.ID, second, overlaySource(3, "opt2.zip"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	optKey2 := store.NexusKey(overlayModID, 3)
+	removed := overlayEntry(res.Profile, optKey2)
+	if _, err := e.RemoveEntry("stardew", p.ID, optKey2); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.SetOverlayEnabled("stardew", p.ID, optKey, true); err != nil {
+		t.Fatal(err)
+	}
+	art := overlayDir + "/assets/a.png"
+	got, err := e.RestoreEntries("stardew", p.ID, []Entry{removed})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !overlayEntry(got, optKey).OverlayOff || overlayEntry(got, optKey2).OverlayOff {
+		t.Fatalf("restoring an optional file should switch its alternative off: %+v", got.Entries)
+	}
+	if live := readLive(t, e, p.ID, baseKey, art); live != "A-two" {
+		t.Fatalf("restored live file = %q", live)
+	}
+}
+
 func TestOverlayNewVersionTakesItsPlace(t *testing.T) {
 	t.Parallel()
 	e, p, baseKey, optKey := installOverlayPair(t)
