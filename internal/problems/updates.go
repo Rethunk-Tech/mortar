@@ -17,6 +17,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -471,23 +472,13 @@ func pageURL(domain string, keys []string) string {
 	return ""
 }
 
-// nexusID is the Nexus mod of the first update key that names one, or 0.
-func nexusID(keys []string) int {
-	for _, k := range keys {
-		if n, ok := smapi.NexusUpdateKey(k); ok {
-			return n
-		}
-	}
-	return 0
-}
-
 // nexusUpdate is the Nexus mod of the update keys, unless the suggested update lives somewhere other than Nexus or GitHub.
 func nexusUpdate(keys []string, url string) int {
 	u := strings.ToLower(url)
 	if u != "" && !strings.Contains(u, "nexusmods.com/") && !strings.HasPrefix(u, "https://github.com/") {
 		return 0
 	}
-	return nexusID(keys)
+	return smapimanifest.FirstNexusID(keys)
 }
 
 // githubUpdate is the repository of the first GitHub update key, provided the suggested update lives on GitHub too.
@@ -495,12 +486,7 @@ func githubUpdate(keys []string, url string) string {
 	if !strings.HasPrefix(strings.ToLower(url), "https://github.com/") {
 		return ""
 	}
-	for _, k := range keys {
-		if repo, ok := smapi.GitHubUpdateKey(k); ok {
-			return repo
-		}
-	}
-	return ""
+	return smapimanifest.FirstGitHubRepo(keys)
 }
 
 // metadataFallback is the GitHub repo SMAPI's metadata lists for a mod whose manifest has no GitHub key, unless the
@@ -517,12 +503,7 @@ func githubFallback(keys []string, url string) string {
 	if githubUpdate(keys, url) != "" {
 		return ""
 	}
-	for _, k := range keys {
-		if repo, ok := smapi.GitHubUpdateKey(k); ok {
-			return repo
-		}
-	}
-	return ""
+	return smapimanifest.FirstGitHubRepo(keys)
 }
 
 // downloaded reports whether the entry's download is already at version or newer, so the update is installed

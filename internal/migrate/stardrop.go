@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/go-smapi"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modname"
@@ -81,7 +80,7 @@ func stardropMods(
 		seen[key] = true
 		out = append(out, ModPreview{
 			ID: item.ModID(), Name: item.Name, Version: item.Version,
-			Enabled: enabled[key], NexusModID: nexusID(item.UpdateKeys), SourcePath: item.Path,
+			Enabled: enabled[key], NexusModID: smapimanifest.FirstNexusID(item.UpdateKeys), SourcePath: item.Path,
 		})
 	}
 	for _, item := range portable {
@@ -184,13 +183,4 @@ func modDirs(modsPath string) ([]string, error) {
 		}
 	}
 	return names, err
-}
-
-func nexusID(updateKeys []string) int {
-	for _, key := range updateKeys {
-		if id, ok := smapi.NexusUpdateKey(key); ok && id > 0 {
-			return id
-		}
-	}
-	return 0
 }

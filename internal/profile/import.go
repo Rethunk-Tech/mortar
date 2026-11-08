@@ -11,8 +11,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-smapi"
-
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
@@ -121,17 +119,13 @@ func bundledFolder(name string) string {
 
 func sourceFromMods(mods []smapimanifest.Mod, folder string) Source {
 	for _, m := range mods {
-		for _, k := range m.UpdateKeys {
-			if n, ok := smapi.NexusUpdateKey(k); ok && n > 0 {
-				return Source{Kind: KindNexus, Name: folder, ModID: n, Version: m.Version}
-			}
+		if n := smapimanifest.FirstNexusID(m.UpdateKeys); n != 0 {
+			return Source{Kind: KindNexus, Name: folder, ModID: n, Version: m.Version}
 		}
 	}
 	for _, m := range mods {
-		for _, k := range m.UpdateKeys {
-			if repo, ok := smapi.GitHubUpdateKey(k); ok {
-				return Source{Kind: KindGitHub, Name: folder, Repo: repo, Version: m.Version}
-			}
+		if repo := smapimanifest.FirstGitHubRepo(m.UpdateKeys); repo != "" {
+			return Source{Kind: KindGitHub, Name: folder, Repo: repo, Version: m.Version}
 		}
 	}
 	return Source{Kind: KindLocal, Name: folder}

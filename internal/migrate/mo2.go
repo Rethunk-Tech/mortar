@@ -154,7 +154,7 @@ func appendMO2Mod(out []ModPreview, missing []string, modsPath string, byBase ma
 	for _, item := range items {
 		nexus := meta.NexusID
 		if nexus == 0 {
-			nexus = nexusID(item.UpdateKeys)
+			nexus = smapimanifest.FirstNexusID(item.UpdateKeys)
 		}
 		out = append(out, ModPreview{
 			ID: item.ModID(), Name: item.Name, Version: cmp.Or(item.Version, meta.Version),

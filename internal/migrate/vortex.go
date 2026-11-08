@@ -86,7 +86,7 @@ func vortexPreviewState(modsPath, domain, gameID string, state *vortex.State, id
 		for _, item := range items {
 			out = append(out, ModPreview{
 				ID: item.ModID(), Name: item.Name, Version: item.Version,
-				Enabled: enabled, NexusModID: nexusID(item.UpdateKeys), SourcePath: item.Path,
+				Enabled: enabled, NexusModID: smapimanifest.FirstNexusID(item.UpdateKeys), SourcePath: item.Path,
 			})
 		}
 		if len(items) > 0 {

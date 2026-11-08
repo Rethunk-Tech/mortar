@@ -4,12 +4,11 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-smapi"
-
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -110,12 +109,7 @@ func installedMeetsUnofficial(installed, unofficial string) bool {
 }
 
 func nexusIDOf(m framework.Mod) int {
-	for _, key := range m.UpdateKeys {
-		if n, ok := smapi.NexusUpdateKey(key); ok {
-			return n
-		}
-	}
-	return 0
+	return smapimanifest.FirstNexusID(m.UpdateKeys)
 }
 
 // providers are the metadata providers the game's catalog entry names; a game with no client has none.

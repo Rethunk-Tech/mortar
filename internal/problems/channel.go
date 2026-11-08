@@ -8,6 +8,7 @@ import (
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 
 	"github.com/Rethunk-Tech/go-semverish"
@@ -19,7 +20,7 @@ func applyChannelFileOffers(ctx context.Context, m Meta, domain string, asked []
 		if ch == profile.ChannelMain {
 			continue
 		}
-		modID := nexusID(x.UpdateKeys)
+		modID := smapimanifest.FirstNexusID(x.UpdateKeys)
 		if modID == 0 {
 			if pageID, _, ok := nexusFile(x.Key); ok {
 				modID = pageID
