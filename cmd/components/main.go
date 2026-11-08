@@ -12,7 +12,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path"
@@ -20,7 +19,6 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 )
@@ -209,7 +207,7 @@ func resolve(ctx context.Context, client *github.Client, source components.Sourc
 		return components.Component{}, err
 	}
 	defer func() { _ = safefs.Remove(tempPath) }()
-	if err := downloadAsset(ctx, client.HTTP, downloadURL(client, source, asset), tempPath); err != nil {
+	if err := github.Download(ctx, client.HTTP, downloadURL(client, source, asset), tempPath, maxAsset, "", nil); err != nil {
 		return components.Component{}, fmt.Errorf("download %s: %w", asset.Name, err)
 	}
 	sum, err := safefs.HashFile(tempPath, sha256.New())
@@ -229,41 +227,6 @@ func downloadURL(client *github.Client, source components.SourceComponent, asset
 		return fmt.Sprintf("%s/repos/%s/%s/releases/assets/%d", base, source.Source.Owner, source.Source.Repo, asset.ID)
 	}
 	return asset.URL
-}
-
-func downloadAsset(ctx context.Context, client *http.Client, address, dest string) error {
-	if client == nil {
-		client = http.DefaultClient
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, address, nil)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Accept", "application/octet-stream")
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("server answered %s", resp.Status)
-	}
-	if resp.ContentLength > maxAsset {
-		return fmt.Errorf("larger than %s", bytefmt.Format(maxAsset))
-	}
-	file, err := safefs.OpenFile(dest, os.O_WRONLY|os.O_TRUNC, 0o600)
-	if err != nil {
-		return err
-	}
-	_, copyErr := io.Copy(file, safefs.CapReader(resp.Body, maxAsset))
-	closeErr := file.Close()
-	if errors.Is(copyErr, safefs.ErrTooLarge) {
-		return fmt.Errorf("larger than %s", bytefmt.Format(maxAsset))
-	}
-	if copyErr != nil {
-		return copyErr
-	}
-	return closeErr
 }
 
 func selectAsset(releases []github.Release, repo, version, pattern string) (github.Release, github.Asset, error) {
