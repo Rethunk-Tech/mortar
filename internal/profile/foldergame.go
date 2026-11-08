@@ -5,35 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
-	"strings"
 	"time"
 
-	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // fileKeySep joins a store item's key and a file's path into the key of a per-file entry; no store key holds it.
 const fileKeySep = "#"
-
-// supersedes reports whether the install of next is the update of the archive installed from old: a page's file
-// whose update names old's file id (Source.WithReplacing), or a repository's release asset of the same shape. A fresh
-// install, another file of the same page and a local archive replace nothing.
-func supersedes(next, old Source) bool {
-	if next.Kind != old.Kind {
-		return false
-	}
-	switch next.Kind {
-	case KindGitHub:
-		return next.Repo != "" && strings.EqualFold(next.Repo, old.Repo) && next.Tag != old.Tag &&
-			gh.Shape(next.Asset) == gh.Shape(old.Asset)
-	case KindLocal:
-		return false
-	case KindParadox:
-		return next.Name == old.Name && next.Version != old.Version
-	}
-	return next.replacing > 0 && next.ModID == old.ModID && old.FileID == next.replacing
-}
 
 // folderEntries are the entries a folder-loader game's store item key becomes: one per laid-out file, or the one
 // entry holding them all when a file in it only works beside its siblings. Each keeps the archive's source.
@@ -92,7 +71,7 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 		off := map[string]bool{}
 		var old []Entry
 		p.Entries = slices.DeleteFunc(p.Entries, func(e Entry) bool {
-			if e.IsOverlay() || !e.Package || !supersedes(source, e.Source) || e.StoreKey() == key {
+			if e.IsOverlay() || !e.Package || !replaces(source, e.Source) || e.StoreKey() == key {
 				return false
 			}
 			old = append(old, e)

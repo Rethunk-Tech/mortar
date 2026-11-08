@@ -302,12 +302,12 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 	if err != nil {
 		return Profile{}, false, false, err
 	}
-	if len(held) == 0 && (source.replacing > 0 || source.Folder != "") {
+	if len(held) == 0 {
 		p, err := s.read(game, id)
 		if err != nil {
 			return Profile{}, false, false, err
 		}
-		if i := slices.IndexFunc(p.Entries, source.replaces); i >= 0 {
+		if i := slices.IndexFunc(p.Entries, func(e Entry) bool { return !e.IsOverlay() && replaces(source, e.Source) }); i >= 0 {
 			held = p.Entries[i : i+1]
 		}
 	}
@@ -334,17 +334,24 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 	return Profile{}, false, false, &SpansEntriesError{Labels: labels}
 }
 
-// replaces reports whether e is the entry this install updates though none of its mods match: the Nexus file it is a
-// newer version of (replacing: one the queue matched by file_updates or as the page's only retired main file, or one
-// the user is updating), or the mod last installed from the same extra mods folder.
-func (s Source) replaces(e Entry) bool {
-	if e.IsOverlay() {
+// replaces reports whether installing next is the update of an entry installed from old: a repository's newer release
+// asset of the same shape, a Paradox page's newer version, the Nexus file whose id next names as the one it replaces,
+// or a mod re-read from the same extra mods folder. Another file of a page, a first install and a local archive from
+// anywhere else replace nothing.
+func replaces(next, old Source) bool {
+	if next.Kind != old.Kind {
 		return false
 	}
-	if s.replacing > 0 {
-		return e.Source.Kind == KindNexus && e.Source.ModID == s.ModID && e.Source.FileID == s.replacing
+	switch next.Kind {
+	case KindGitHub:
+		return next.Repo != "" && strings.EqualFold(next.Repo, old.Repo) && next.Tag != old.Tag &&
+			gh.Shape(next.Asset) == gh.Shape(old.Asset)
+	case KindLocal:
+		return next.Folder != "" && next.Folder == old.Folder
+	case KindParadox:
+		return next.Name == old.Name && next.Version != old.Version
 	}
-	return s.Folder != "" && e.Source.Kind == KindLocal && e.Source.Folder == s.Folder
+	return next.replacing > 0 && next.ModID == old.ModID && old.FileID == next.replacing
 }
 
 func modsVersionChanged(old, neu []Component) bool {

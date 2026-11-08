@@ -227,6 +227,72 @@ func tsZip(t *testing.T, version string) string {
 	})
 }
 
+// A mod read again from the same extra mods folder is that entry's update on every game type, not a second copy.
+func TestExtraFolderReinstallReplacesTheSameEntryOnBothGameTypes(t *testing.T) {
+	t.Parallel()
+	for _, game := range []string{"lethal-company", folderGame} {
+		t.Run(game, func(t *testing.T) {
+			t.Parallel()
+			e := newEnv(t)
+			p, err := e.Create(game, "P")
+			if err != nil {
+				t.Fatal(err)
+			}
+			dir := t.TempDir()
+			rel, ext := "Thing.dll", "MZ "
+			if game == folderGame {
+				rel, ext = "a.package", ""
+			}
+			for _, body := range []string{"1", "2"} {
+				writeFile(t, dir, rel, ext+body)
+				if _, err := e.InstallExtraFolder(t.Context(), game, p.ID, dir); err != nil {
+					t.Fatal(err)
+				}
+			}
+			cur, err := e.read(game, p.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(cur.Entries) != 1 {
+				t.Fatalf("the reinstall left %d entries: %+v", len(cur.Entries), cur.Entries)
+			}
+		})
+	}
+}
+
+// A package game's GitHub update replaces its entry by the repository and asset shape, which hold when nothing inside
+// the asset names the mod.
+func TestGitHubUpdateReplacesItsEntryOnAPackageGame(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	stage := func(tag, asset, dll string) (string, Source) {
+		src := Source{Kind: KindGitHub, Name: asset, Version: tag, Repo: "Me/Mod", Tag: tag, Asset: asset}
+		zip := buildZip(t, asset, map[string]string{dll: tag})
+		key, _, err := e.StageGitHub(t.Context(), "lethal-company", src, zip)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return key, src
+	}
+	key1, src1 := stage("v1.0", "Frames-1.0.zip", "One.dll")
+	if _, err := e.InstallStaged("lethal-company", p.ID, key1, src1); err != nil {
+		t.Fatal(err)
+	}
+	// The newer release's plugin is named differently, so only the repository and asset shape tie the two together.
+	key2, src2 := stage("v2.0", "Frames-2.0.zip", "Two.dll")
+	res, err := e.InstallStaged("lethal-company", p.ID, key2, src2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !res.Updated || len(res.Profile.Entries) != 1 || res.Profile.Entries[0].Key != key2 {
+		t.Fatalf("the update = %+v", res)
+	}
+}
+
 func TestDiskThunderstoreZipPublisher(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)

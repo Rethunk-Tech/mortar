@@ -253,7 +253,7 @@ func (s *Store) placePackageLocked(game, id, key string, source Source, mods []C
 			return &DuplicateError{Key: key, Label: p.Entries[i].Label()}
 		}
 		i := slices.IndexFunc(p.Entries, func(e Entry) bool {
-			return e.Package && (len(e.Mods) == 1 && mod.Equal(e.Mods[0].ID, mods[0].ID) || source.replaces(e))
+			return e.Package && !e.IsOverlay() && (len(e.Mods) == 1 && mod.Equal(e.Mods[0].ID, mods[0].ID) || replaces(source, e.Source))
 		})
 		if i < 0 {
 			_, err := s.addTo(game, p, dir, key, source, nil)
