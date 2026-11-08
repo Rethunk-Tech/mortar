@@ -7,6 +7,8 @@ import {
   DEFAULT_LIST_COLUMN_SORT,
   DEFAULT_VISIBLE_LIST_COLUMNS,
   fitListColumns,
+  fixedListWidth,
+  listGridColumns,
   type ListColumnId,
   type ListRow,
   moveListColumn,
@@ -218,6 +220,14 @@ test('columns that would squeeze the name out are dropped, the least useful firs
   // 1280 wide with the profile sidebar and the details panel open leaves the list about 700px.
   const fitted = fitListColumns(all, 700)
   expect(fitted).toEqual(['on', 'name', 'version', 'author', 'status'])
+})
+
+test('fixedListWidth sums listGridColumns tracks except the fluid name min', () => {
+  const cols: ListColumnId[] = ['on', 'name', 'version', 'author', 'status']
+  const tracks = listGridColumns(cols).split(' ')
+  const trackPx = tracks.reduce((n, t) => n + (Number.parseInt(t, 10) || 0), 0)
+  expect(fixedListWidth(cols)).toBe(trackPx + 32 + Math.max(tracks.length - 1, 0) * 10)
+  expect(fitListColumns(cols, 640)).toEqual(['on', 'name', 'version', 'status'])
 })
 
 test('the manual sort follows the saved order, then names, and ignores direction', () => {

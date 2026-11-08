@@ -221,7 +221,7 @@ function moveListColumn(ids: readonly ListColumnId[], from: number, to: number):
 const ROW_GAP_PX = 10
 const ROW_PAD_PX = 32
 const NAME_MIN_PX = 160
-const ICON_TRACK_PX = 26
+const ICON_TRACK_PX = 54
 
 function fixedListWidth(cols: readonly ListColumnId[]): number {
   let px = ROW_PAD_PX
@@ -257,8 +257,8 @@ function listGridColumns(cols: readonly ListColumnId[]): string {
   const parts: string[] = []
   for (const id of cols) {
     if (id === 'name') {
-      // The favourite star, then the mod's 26px picture.
-      parts.push('54px')
+      // The favourite star, then the mod's picture.
+      parts.push(`${ICON_TRACK_PX}px`)
     }
     parts.push(LIST_COLUMN_WIDTH[id])
   }
@@ -439,6 +439,7 @@ export {
   DEFAULT_LIST_COLUMN_SORT,
   DEFAULT_VISIBLE_LIST_COLUMNS,
   fitListColumns,
+  fixedListWidth,
   LIST_COLUMN_GROUPS,
   LIST_COLUMN_IDS,
   LOCKED_LIST_COLUMNS,
