@@ -15,7 +15,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-bepinex/wineoverride"
+	"github.com/Rethunk-Tech/go-bepinex"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -278,17 +278,6 @@ func (l Loader) seeded(rel string) bool {
 	return slices.ContainsFunc(l.Seed, func(pat string) bool { ok, _ := path.Match(pat, rel); return ok })
 }
 
-func hostPath(dir string, proton bool) string {
-	p, err := filepath.Abs(dir)
-	if err != nil {
-		p = dir
-	}
-	if proton {
-		return wineoverride.ZPath(p)
-	}
-	return p
-}
-
 // Contribute starts the game on the profile and declares the files that sit beside its executable. Only Windows builds
 // are started: they run under Proton or on Windows, where the proxy library is one the prefix loads natively.
 func (l Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.ProfileView) error {
@@ -332,7 +321,7 @@ func (l Loader) Vanilla(_ context.Context, plan *launchplan.Plan, _ loader.Targe
 
 // Owns is true for a game process started on this profile's folder, in either the host or the Wine form.
 func (Loader) Owns(p loader.Process, prof loader.ProfileView) bool {
-	host, wine := hostPath(prof.Dir, false), hostPath(prof.Dir, true)
+	host, wine := bepinex.HostPath(prof.Dir, "", false), bepinex.HostPath(prof.Dir, "", true)
 	return slices.ContainsFunc(p.Args, func(a string) bool { return namesFolder(a, host) || namesFolder(a, wine) })
 }
 

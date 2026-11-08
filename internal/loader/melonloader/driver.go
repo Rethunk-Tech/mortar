@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-bepinex/wineoverride"
+	"github.com/Rethunk-Tech/go-bepinex"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -82,22 +82,11 @@ const baseDirFlag = "--melonloader.basedir"
 // LaunchArgs point MelonLoader at the profile as its base folder, and ask it to write the game's assemblies on a start
 // that has none yet. proton gives the path in the Wine Z: form.
 func LaunchArgs(profileRoot string, proton bool) []string {
-	args := []string{baseDirFlag, basePath(profileRoot, proton)}
+	args := []string{baseDirFlag, bepinex.HostPath(profileRoot, "", proton)}
 	if !generated(profileRoot) {
 		args = append(args, "--melonloader.agfregenerate")
 	}
 	return args
-}
-
-func basePath(profileRoot string, proton bool) string {
-	p, err := filepath.Abs(profileRoot)
-	if err != nil {
-		p = profileRoot
-	}
-	if proton {
-		return wineoverride.ZPath(p)
-	}
-	return p
 }
 
 // Contribute starts MelonLoader on the profile and declares the proxy for the game folder. Only Windows builds run
@@ -119,7 +108,7 @@ func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.Prof
 // Owns is true for a game process started on this profile's base folder, in either the host or the Wine Z: form.
 func (Loader) Owns(p loader.Process, prof loader.ProfileView) bool {
 	for i, a := range p.Args[:max(len(p.Args)-1, 0)] {
-		if a == baseDirFlag && (p.Args[i+1] == basePath(prof.Dir, false) || p.Args[i+1] == basePath(prof.Dir, true)) {
+		if a == baseDirFlag && (p.Args[i+1] == bepinex.HostPath(prof.Dir, "", false) || p.Args[i+1] == bepinex.HostPath(prof.Dir, "", true)) {
 			return true
 		}
 	}

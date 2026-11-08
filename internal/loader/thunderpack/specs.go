@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-bepinex"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
@@ -26,7 +27,7 @@ var specs = []Spec{
 		Placed: topLevelDLL,
 		Files:  []string{"version.dll", "d3d12.dll"},
 		Args: func(dir string, proton bool) []string {
-			return []string{"--rom_modding_root_folder", hostPath(dir, proton)}
+			return []string{"--rom_modding_root_folder", bepinex.HostPath(dir, "", proton)}
 		},
 		VanillaArgs:   []string{"--rom_enabled", "false"},
 		Log:           &LogSpec{Pattern: "ReturnOfModding/LogOutput.log", Analyze: analyzeROM},
@@ -47,7 +48,7 @@ var specs = []Spec{
 		Replace: []string{"GDWeave/core"},
 		Files:   []string{"winmm.dll", "GDWeave/core"},
 		Args: func(dir string, proton bool) []string {
-			return []string{"--gdweave-folder-override=" + hostPath(filepath.Join(dir, "GDWeave"), proton)}
+			return []string{"--gdweave-folder-override=" + bepinex.HostPath(filepath.Join(dir, "GDWeave"), "", proton)}
 		},
 		VanillaArgs: []string{"--gdweave-disable"},
 		Log:         &LogSpec{Pattern: "GDWeave/GDWeave.log", Analyze: analyzeGDWeave},
@@ -62,7 +63,7 @@ var specs = []Spec{
 		Seed:   []string{"lovely/config.toml"},
 		Files:  []string{"winmm.dll", "version.dll", "mods/lovely"},
 		Args: func(dir string, proton bool) []string {
-			return []string{"--mod-dir", hostPath(filepath.Join(dir, "mods"), proton)}
+			return []string{"--mod-dir", bepinex.HostPath(filepath.Join(dir, "mods"), "", proton)}
 		},
 		VanillaArgs: []string{"--vanilla"},
 		Log:         &LogSpec{Pattern: "mods/lovely/log/lovely-*.log", Analyze: analyzeLovely, Ready: regexp.MustCompile(`Initialization complete in`)},
@@ -79,8 +80,8 @@ var specs = []Spec{
 		Args: func(dir string, proton bool) []string {
 			return []string{
 				"-rivetEnable", "true",
-				"-rivetTarget", hostPath(filepath.Join(dir, "Rivet", "Loader.dll"), proton),
-				"-rivetDirectory", hostPath(filepath.Join(dir, "Rivet", "Mods"), proton),
+				"-rivetTarget", bepinex.HostPath(filepath.Join(dir, "Rivet", "Loader.dll"), "", proton),
+				"-rivetDirectory", bepinex.HostPath(filepath.Join(dir, "Rivet", "Mods"), "", proton),
 			}
 		},
 		VanillaArgs: []string{"-rivetEnable", "false"},
@@ -95,7 +96,7 @@ var specs = []Spec{
 		Replace: []string{"UMM/Core"},
 		Files:   []string{"UMM/Core", "winhttp.dll", "doorstop_config.ini", ".doorstop_version", "doorstop_libs"},
 		Args: func(dir string, proton bool) []string {
-			target := hostPath(filepath.Join(dir, "UMM", "Core", "UnityModManager.dll"), proton)
+			target := bepinex.HostPath(filepath.Join(dir, "UMM", "Core", "UnityModManager.dll"), "", proton)
 			return []string{"--doorstop-enabled", "true", "--doorstop-target-assembly", target, "--doorstop-enable", "true", "--doorstop-target", target}
 		},
 		VanillaArgs: []string{"--doorstop-enabled", "false", "--doorstop-enable", "false"},
@@ -112,7 +113,7 @@ var specs = []Spec{
 		Args: func(dir string, proton bool) []string {
 			var out []string
 			for _, f := range []string{"mod", "pak", "cfg", "overlay"} {
-				out = append(out, "--"+f+"-dir", hostPath(filepath.Join(dir, "shimloader", f), proton))
+				out = append(out, "--"+f+"-dir", bepinex.HostPath(filepath.Join(dir, "shimloader", f), "", proton))
 			}
 			return out
 		},
@@ -127,7 +128,7 @@ var specs = []Spec{
 		Files:  []string{"addons"},
 		Dirs:   []string{"mods"},
 		Args: func(dir string, proton bool) []string {
-			return []string{"--script", "res://addons/mod_loader/mod_loader_setup.gd", "--enable-mods", "--mods-path", hostPath(filepath.Join(dir, "mods"), proton)}
+			return []string{"--script", "res://addons/mod_loader/mod_loader_setup.gd", "--enable-mods", "--mods-path", bepinex.HostPath(filepath.Join(dir, "mods"), "", proton)}
 		},
 	},
 	{
@@ -140,7 +141,7 @@ var specs = []Spec{
 		Replace: []string{"R2Northstar/mods/Northstar.*"},
 		Files:   []string{"NorthstarLauncher.exe", "R2Northstar", "bin"},
 		Args: func(dir string, proton bool) []string {
-			return []string{"-northstar", "-profile=" + hostPath(filepath.Join(dir, "R2Northstar"), proton)}
+			return []string{"-northstar", "-profile=" + bepinex.HostPath(filepath.Join(dir, "R2Northstar"), "", proton)}
 		},
 		Log:       &LogSpec{Pattern: "R2Northstar/logs/nslog*.txt", Analyze: analyzeNorthstar},
 		Overrides: func([]string) []string { return []string{"wsock32"} },
