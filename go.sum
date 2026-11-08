@@ -22,6 +22,8 @@ github.com/Rethunk-Tech/go-desktopenv v0.9.0 h1:uME9J1cf6cLBLoSsitxWqfWLq+X/hKuM
 github.com/Rethunk-Tech/go-desktopenv v0.9.0/go.mod h1:g3n7aV6s+I9RwrTkMyRKywK6HJy5hdSjItaSf2evl08=
 github.com/Rethunk-Tech/go-dotnet v0.3.0 h1://IlbmPNpbnm9jHpaMikSj8b2iC2cTBn08X56AOR8a8=
 github.com/Rethunk-Tech/go-dotnet v0.3.0/go.mod h1:lJSyQ5mtaPq4P0bsIiKAkZICS56mAHJrBvQESSuiCS0=
+github.com/Rethunk-Tech/go-editorlocator v0.1.0 h1:m4+dBoCaKPyePlRHcvOSJ6w8d2piiEbO7GBEnp/iCV0=
+github.com/Rethunk-Tech/go-editorlocator v0.1.0/go.mod h1:KJA1eZGpUJQxytB4s+yvx/f5fZfzWKE+eIieW3TpC3s=
 github.com/Rethunk-Tech/go-folderwatch v0.1.0 h1:tE/ML8gwpBNuKs3/1vAOggoWOpe6pBNANLMl/QWkfcw=
 github.com/Rethunk-Tech/go-folderwatch v0.1.0/go.mod h1:BFYdvyQnNpTalFbcf3sZHnyj8IbJHFNYa8rIvWpe6R4=
 github.com/Rethunk-Tech/go-fomod v0.1.2 h1:O4e1zttRosz/hhi+zSNP4kKoZBUGHJ/13BLXI8wVuBU=
