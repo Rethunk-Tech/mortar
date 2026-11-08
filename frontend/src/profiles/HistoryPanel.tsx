@@ -13,10 +13,10 @@ import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { HistoryDiffView } from './HistoryDiffView.tsx'
 import { HistoryTimeline } from './HistoryTimeline.tsx'
 import { HistoryToolbar } from './HistoryToolbar.tsx'
-import { historyLabel } from './historyLabel.ts'
+import { historySummary } from './historyTimeline.ts'
 import { useHistoryPanel } from './useHistoryPanel.ts'
 
-export function HistoryPanel({
+export function HistoryDialog({
   profileId,
   open,
   onClose,
@@ -38,7 +38,7 @@ export function HistoryPanel({
   }
   const labelOf = (id: string) => {
     const ev = h.events.find((e) => e.id === id)
-    return ev ? historyLabel(ev) : id
+    return ev ? historySummary(ev) : id
   }
   const errorText =
     h.missingNames.length > 0

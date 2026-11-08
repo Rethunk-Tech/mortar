@@ -16,7 +16,7 @@ import { changesView } from '../game/homeView.ts'
 import { lastRunStarted } from '../game/useLastRun.ts'
 import { space } from '../theme/density.ts'
 import { changesSinceCache } from './changesSinceCache.ts'
-import { HistoryDialog } from './HistoryDialog.tsx'
+import { HistoryDialog } from './HistoryPanel.tsx'
 import { diffLines } from './historyDiff.ts'
 import { useProfiles } from './store.ts'
 
