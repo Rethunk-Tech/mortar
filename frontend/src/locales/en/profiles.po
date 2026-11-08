@@ -400,10 +400,6 @@ msgstr "Compare {summary}"
 msgid "{count, plural, one {# stored mod is} other {# stored mods are}} not used by any profile"
 msgstr "{count, plural, one {# stored mod is} other {# stored mods are}} not used by any profile"
 
-#: src/profiles/historyLabel.ts
-msgid "Set the {source} page of {name}"
-msgstr "Set the {source} page of {name}"
-
 #: src/profiles/CompareTop.tsx
 msgid "with"
 msgstr "with"
@@ -1033,6 +1029,10 @@ msgstr "Show all"
 msgid "Add"
 msgstr "Add"
 
+#: src/profiles/historyLabel.ts
+msgid "Found sources"
+msgstr "Found sources"
+
 #: src/profiles/restoreBackup.ts
 msgid "Every mod is in place."
 msgstr "Every mod is in place."
@@ -1544,6 +1544,10 @@ msgstr "Profiles"
 msgid "Use {manager} from another folder?"
 msgstr "Use {manager} from another folder?"
 
+#: src/profiles/historyLabel.ts
+msgid "Set the page of {name}"
+msgstr "Set the page of {name}"
+
 #: src/profiles/restoreBackup.ts
 msgid "Could not restore the backup"
 msgstr "Could not restore the backup"
@@ -1563,10 +1567,6 @@ msgstr "Could not make a server profile"
 #: src/profiles/HistoryToolbar.tsx
 msgid "Mark current as known good"
 msgstr "Mark current as known good"
-
-#: src/profiles/historyLabel.ts
-msgid "Found mods on {source}"
-msgstr "Found mods on {source}"
 
 #: src/profiles/compareTitle.ts
 msgid "Enabled in one only"

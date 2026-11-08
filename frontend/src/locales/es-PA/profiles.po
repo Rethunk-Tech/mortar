@@ -400,10 +400,6 @@ msgstr ""
 msgid "{count, plural, one {# stored mod is} other {# stored mods are}} not used by any profile"
 msgstr ""
 
-#: src/profiles/historyLabel.ts
-msgid "Set the {source} page of {name}"
-msgstr ""
-
 #: src/profiles/CompareTop.tsx
 msgid "with"
 msgstr ""
@@ -1033,6 +1029,10 @@ msgstr ""
 msgid "Add"
 msgstr ""
 
+#: src/profiles/historyLabel.ts
+msgid "Found sources"
+msgstr ""
+
 #: src/profiles/restoreBackup.ts
 msgid "Every mod is in place."
 msgstr ""
@@ -1544,6 +1544,10 @@ msgstr ""
 msgid "Use {manager} from another folder?"
 msgstr ""
 
+#: src/profiles/historyLabel.ts
+msgid "Set the page of {name}"
+msgstr ""
+
 #: src/profiles/restoreBackup.ts
 msgid "Could not restore the backup"
 msgstr ""
@@ -1562,10 +1566,6 @@ msgstr ""
 
 #: src/profiles/HistoryToolbar.tsx
 msgid "Mark current as known good"
-msgstr ""
-
-#: src/profiles/historyLabel.ts
-msgid "Found mods on {source}"
 msgstr ""
 
 #: src/profiles/compareTitle.ts
