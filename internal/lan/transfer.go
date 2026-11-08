@@ -300,7 +300,7 @@ func (s *Service) fetchOnce(
 	var received int64
 	var last time.Time
 	if err := extractTar(ctx, idle.reader(response.Body), temp, &received, func(n int64) {
-		if now := time.Now(); now.Sub(last) >= progressEvery {
+		if now := s.clock(); now.Sub(last) >= progressEvery {
 			last = now
 		} else {
 			return
@@ -481,6 +481,14 @@ func (s *Service) rememberGrant(token, game string, keys []string, key []byte) {
 
 // progressEvery is the cadence of per-file byte progress inside one store entry, the same as the queue's.
 const progressEvery = 250 * time.Millisecond
+
+// clock is the service's time source; tests pin it to drive the progress throttle without sleeping.
+func (s *Service) clock() time.Time {
+	if s.now != nil {
+		return s.now()
+	}
+	return time.Now()
+}
 
 func (s *Service) emitTransfer(progress TransferProgress) {
 	if s.deps.Emit != nil {

@@ -38,11 +38,31 @@ func TestFetchEntryThrottlesFileProgress(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	emitted = 0
-	if _, err := svc.fetchEntry(t.Context(), incoming, transferItem{Key: store.NexusKey(1, 1), Hash: hash}, 1, 1, 1, 0, time.Now()); err != nil {
-		t.Fatal(err)
+	clock := time.Unix(1_700_000_000, 0)
+	svc.now = func() time.Time { return clock }
+	fetch := func() {
+		t.Helper()
+		if _, err := svc.fetchEntry(t.Context(), incoming, transferItem{Key: store.NexusKey(1, 1), Hash: hash}, 1, 1, 1, 0, time.Now()); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if emitted == 0 || emitted > 2 {
+	// A clock that does not move is the throttle's worst case: however many reads the unpack takes, and however
+	// long a loaded runner stretches that out, one entry inside one window sends one event.
+	emitted = 0
+	fetch()
+	if emitted != 1 {
 		t.Fatalf("%d files inside %v emitted %d progress events, want 1", files, progressEvery, emitted)
+	}
+	// Moving the clock past the window is what opens the next one, not the wall's passing.
+	reads, emitted := 0, 0
+	svc.now = func() time.Time {
+		if reads++; reads == 2 {
+			clock = clock.Add(progressEvery)
+		}
+		return clock
+	}
+	fetch()
+	if emitted != 2 {
+		t.Fatalf("%d files inside %v emitted %d progress events across two windows, want 2", files, progressEvery, emitted)
 	}
 }
