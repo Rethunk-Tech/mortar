@@ -52,16 +52,16 @@ func create(exe, arg, name string) (string, error) {
 		return "", err
 	}
 	path := filepath.Join(dir, launcherID(arg))
-	entry := fmt.Sprintf(`[Desktop Entry]
-Type=Application
-Name=%s
-Comment=Play this Mortar profile
-Exec=%s
-Icon=mortar
-Terminal=false
-Categories=Game;
-`, desktopentry.Value(name), desktopentry.Exec(exe, arg))
-	if err := safefs.WriteFileAtomic(path, []byte(entry), 0o600); err != nil {
+	body := desktopentry.Entry{
+		{"Type", "Application"},
+		{"Name", desktopentry.Value(name)},
+		{"Comment", "Play this Mortar profile"},
+		{"Exec", desktopentry.Exec(exe, arg)},
+		{"Icon", "mortar"},
+		{"Terminal", "false"},
+		{"Categories", "Game;"},
+	}.Marshal()
+	if err := safefs.WriteFileAtomic(path, []byte(body), 0o600); err != nil {
 		return "", err
 	}
 	return path, nil
@@ -140,23 +140,11 @@ func Renamed(game, profile, profileName, gameName string) error {
 	if !found {
 		return nil
 	}
-	lines := strings.SplitAfter(string(b), "\n")
-	replaced := false
-	for i, line := range lines {
-		if strings.HasPrefix(line, "Name=") {
-			suffix := ""
-			if strings.HasSuffix(line, "\n") {
-				suffix = "\n"
-			}
-			lines[i] = "Name=" + desktopentry.Value(profileName+" ("+gameName+")") + suffix
-			replaced = true
-			break
-		}
-	}
-	if !replaced {
+	out, err := desktopentry.SetKey(string(b), "Name", desktopentry.Value(profileName+" ("+gameName+")"))
+	if err != nil {
 		return fmt.Errorf("desktop entry %s has no Name", path)
 	}
-	return safefs.WriteFileAtomic(path, []byte(strings.Join(lines, "")), 0o600)
+	return safefs.WriteFileAtomic(path, []byte(out), 0o600)
 }
 
 // Removed removes the desktop entry for a deleted profile.
@@ -235,28 +223,31 @@ func Repoint(exe string) error {
 			errs = append(errs, err)
 			continue
 		}
-		lines := strings.SplitAfter(string(b), "\n")
-		changed := false
-		for i, line := range lines {
+		s := string(b)
+		var argv []string
+		quoted := false
+		for _, line := range strings.SplitAfter(s, "\n") {
 			rest, ok := strings.CutPrefix(line, `Exec="`)
 			if !ok {
 				continue
 			}
-			body, nl := strings.CutSuffix(rest, "\n")
-			argv := desktopentry.SplitExec(`"` + body)
-			if _, err := os.Stat(argv[0]); err == nil || argv[0] == exe {
-				break
-			}
-			lines[i] = "Exec=" + desktopentry.Exec(append([]string{exe}, argv[1:]...)...)
-			if nl {
-				lines[i] += "\n"
-			}
-			changed = true
+			body, _ := strings.CutSuffix(rest, "\n")
+			argv = desktopentry.SplitExec(`"` + body)
+			quoted = true
 			break
 		}
-		if changed {
-			errs = append(errs, safefs.WriteFileAtomic(p, []byte(strings.Join(lines, "")), 0o600))
+		if !quoted {
+			continue
 		}
+		if _, err := os.Stat(argv[0]); err == nil || argv[0] == exe {
+			continue
+		}
+		out, err := desktopentry.SetKey(s, "Exec", desktopentry.Exec(append([]string{exe}, argv[1:]...)...))
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		errs = append(errs, safefs.WriteFileAtomic(p, []byte(out), 0o600))
 	}
 	return errors.Join(errs...)
 }

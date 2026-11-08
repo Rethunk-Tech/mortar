@@ -56,10 +56,16 @@ func TestCreateWritesADesktopEntryThatPlaysTheProfile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"Name=Main (Stardew Valley)\n", `Exec="/opt/Mortar/mortar" --play=stardew/p1` + "\n", "Icon=mortar\n"} {
-		if !strings.Contains(string(b), want) {
-			t.Errorf("entry lacks %q:\n%s", want, b)
-		}
+	want := "[Desktop Entry]\n" +
+		"Type=Application\n" +
+		"Name=Main (Stardew Valley)\n" +
+		"Comment=Play this Mortar profile\n" +
+		"Exec=\"/opt/Mortar/mortar\" --play=stardew/p1\n" +
+		"Icon=mortar\n" +
+		"Terminal=false\n" +
+		"Categories=Game;\n"
+	if string(b) != want {
+		t.Fatalf("got:\n%s", b)
 	}
 }
 
