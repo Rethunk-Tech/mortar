@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/dotnet/models.ts'
+import type { Member } from '../../bindings/github.com/Rethunk-Tech/go-dotnet/models.ts'
 import { harmonyPatchSnippet, hookSnippet, monoModHookSnippet } from './hook.ts'
 
 test('a hook passes self for an instance method and returns what the original returns', () => {

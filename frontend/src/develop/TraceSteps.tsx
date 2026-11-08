@@ -7,7 +7,7 @@ import {
   FrameAssembly,
   GameCode,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
-import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/dotnet/models.ts'
+import type { Member } from '../../bindings/github.com/Rethunk-Tech/go-dotnet/models.ts'
 import type { StackFrame } from '../console/stackFrame.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'

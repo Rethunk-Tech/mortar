@@ -28,7 +28,7 @@ import {
   InstallDecompiler,
   Usages,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
-import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/dotnet/models.ts'
+import type { Member } from '../../bindings/github.com/Rethunk-Tech/go-dotnet/models.ts'
 import { ILSPY } from '../brand/productNames.ts'
 import type { StackFrame } from '../console/stackFrame.ts'
 import { AppDialog, ToneIcon } from '../shell/dialog/AppDialog.tsx'

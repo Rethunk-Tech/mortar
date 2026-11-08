@@ -1,4 +1,4 @@
-import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/dotnet/models.ts'
+import type { Member } from '../../bindings/github.com/Rethunk-Tech/go-dotnet/models.ts'
 
 // HookGen names a constructor's hook ctor (and a static constructor's cctor), without the dot.
 const CONSTRUCTOR = /^\.c?ctor$/

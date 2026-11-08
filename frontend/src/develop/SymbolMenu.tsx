@@ -7,7 +7,7 @@ import {
   DecompileMapped,
   GameCode,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
-import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/dotnet/models.ts'
+import type { Member } from '../../bindings/github.com/Rethunk-Tech/go-dotnet/models.ts'
 import { HARMONY, HOOKGEN, MONOMOD } from '../brand/productNames.ts'
 import { copyText } from '../share/copyText.ts'
 import { escapeRegExp } from '../shell/escapeRegExp.ts'
