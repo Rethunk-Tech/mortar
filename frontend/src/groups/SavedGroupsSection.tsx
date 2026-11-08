@@ -8,8 +8,8 @@ import {
   Delete,
   Rename,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
-import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { listNames } from '../i18n/list.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { idKey } from '../mods/dependents.ts'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -36,7 +36,7 @@ function hasSavedGroup(profile: Profile, group: SavedGroup) {
 function holderNamesOf(profiles: Profile[], group: SavedGroup) {
   return listNames(
     profiles.filter((profile) => hasSavedGroup(profile, group)).map((profile) => profile.name),
-    Infinity,
+    Number.POSITIVE_INFINITY,
   )
 }
 

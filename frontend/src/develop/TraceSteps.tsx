@@ -1,7 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { useEffect, useState } from 'react'
 import type { Assembly } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
@@ -10,6 +9,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
 import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/dotnet/models.ts'
 import type { StackFrame } from '../console/stackFrame.ts'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 
 const dotted = (type: string) => type.replaceAll('+', '.')
@@ -98,11 +98,7 @@ export function TraceSteps({
   const total = trace.frames.length
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-      <TipIconButton
-        label={t`Previous frame`}
-        disabled={at === 0}
-        onClick={() => setAt(at - 1)}
-      >
+      <TipIconButton label={t`Previous frame`} disabled={at === 0} onClick={() => setAt(at - 1)}>
         <ChevronLeft size={16} />
       </TipIconButton>
       <Typography

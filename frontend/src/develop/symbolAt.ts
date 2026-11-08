@@ -27,9 +27,7 @@ export function symbolAt(x: number, y: number): string {
 // A call, field load or store writes its target as [Assembly]Namespace.Type::Member, a nested type with '/' and a
 // generic one with its arguments in angle brackets.
 export function ilOwner(line: string, name: string): string {
-  const m = line.match(
-    new RegExp(`([A-Za-z_][\\w.\`/]*)(?:<[^\\s]*>)?::${escapeRegExp(name)}\\b`),
-  )
+  const m = line.match(new RegExp(`([A-Za-z_][\\w.\`/]*)(?:<[^\\s]*>)?::${escapeRegExp(name)}\\b`))
   return m?.[1]?.replaceAll('/', '+') ?? ''
 }
 
@@ -51,10 +49,7 @@ export function ilArity(line: string, name: string): number {
 
 // How many parameters a C# declaration of name lists, or -1 when the line declares no method called name.
 export function csArity(line: string, name: string): number {
-  return arityAt(
-    line,
-    line.search(new RegExp(`\\b${escapeRegExp(name)}\\s*(?:<[^>()]*>)?\\s*\\(`)),
-  )
+  return arityAt(line, line.search(new RegExp(`\\b${escapeRegExp(name)}\\s*(?:<[^>()]*>)?\\s*\\(`)))
 }
 
 // The number of entries in the first parameter list after position at, counting commas outside nested <> and ().

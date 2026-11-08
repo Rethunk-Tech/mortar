@@ -444,7 +444,7 @@ export function NewModDialog({
             useToasts.getState().push({
               kind: 'warning',
               title: t`No version found for some dependencies, so they were not added`,
-              body: listNames(skipped, Infinity),
+              body: listNames(skipped, Number.POSITIVE_INFINITY),
             })
           }
         } catch (e) {

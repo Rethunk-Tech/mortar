@@ -1,6 +1,6 @@
 import { i18n } from '@lingui/core'
-import { baseName } from '../shell/baseName.ts'
 import { msg } from '@lingui/core/macro'
+import { baseName } from '../shell/baseName.ts'
 
 const lcSlot = /^LCSaveFile(\d+)$/
 // Lethal Company has three save slots of its own; a higher one comes from a mod.

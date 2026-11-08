@@ -5,8 +5,8 @@ import type {
   Mod,
   Preview,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
-import { Fold } from '../shell/Fold.tsx'
 import { listNames } from '../i18n/list.ts'
+import { Fold } from '../shell/Fold.tsx'
 import { space } from '../theme/density.ts'
 
 // CompareSummary is how a shared profile lines up with the profile it would join, so friends can match mods before
@@ -47,7 +47,7 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
               tabIndex={0}
               sx={{ fontSize: 'base.fontSize', maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
             >
-              {listNames(r.items, Infinity)}
+              {listNames(r.items, Number.POSITIVE_INFINITY)}
             </Typography>
           </Fold>
         ))}

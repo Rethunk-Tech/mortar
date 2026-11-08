@@ -10,11 +10,11 @@ import {
 import type { Member } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/dotnet/models.ts'
 import { HARMONY, HOOKGEN, MONOMOD } from '../brand/productNames.ts'
 import { copyText } from '../share/copyText.ts'
+import { escapeRegExp } from '../shell/escapeRegExp.ts'
 import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { declares } from './declaration.ts'
 import { harmonyPatchSnippet, hookSnippet, memberKey, monoModHookSnippet } from './hook.ts'
-import { escapeRegExp } from '../shell/escapeRegExp.ts'
 import { csArity, ilArity, ilOwner, type SymbolClick } from './symbolAt.ts'
 
 // Members a right-click menu lists, at most.

@@ -135,7 +135,7 @@ export function ImportFooter({
               tabIndex={0}
               sx={{ fontSize: 'base.fontSize', maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
             >
-              {listNames(preview.replace.remove ?? [], Infinity)}
+              {listNames(preview.replace.remove ?? [], Number.POSITIVE_INFINITY)}
             </Typography>
           </Fold>
         ) : (
@@ -149,7 +149,7 @@ export function ImportFooter({
               tabIndex={0}
               sx={{ fontSize: 'base.fontSize', maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
             >
-              {listNames(preview.replace.keepLocal ?? [], Infinity)}
+              {listNames(preview.replace.keepLocal ?? [], Number.POSITIVE_INFINITY)}
             </Typography>
           </Fold>
         ) : null}
