@@ -89,6 +89,7 @@ type cmd struct {
 	call           caller
 	out            io.Writer
 	errOut         io.Writer
+	in             io.Reader
 	json           bool
 	verbose        bool
 	all            bool
@@ -2242,6 +2243,9 @@ func (c *cmd) backupsRestore(game string) error {
 	if err != nil {
 		return err
 	}
+	if err := c.confirm("restoring a save backup", "Restoring replaces the saves on disk with the backup's. Continue?"); err != nil {
+		return err
+	}
 	if err := c.call("backups.restore", control.Params{Game: game, Name: a[0], IDs: a[1:], Profile: c.profileFlag}, nil, installTimeout); err != nil {
 		return err
 	}
@@ -2597,12 +2601,16 @@ func (c *cmd) confirm(what, prompt string) error {
 	if c.yesFlag {
 		return nil
 	}
-	if info, err := os.Stdin.Stat(); err != nil || info.Mode()&os.ModeCharDevice == 0 {
-		return refusedError{what + " needs --yes when stdin is not a terminal"}
+	in := c.in
+	if in == nil {
+		if info, err := os.Stdin.Stat(); err != nil || info.Mode()&os.ModeCharDevice == 0 {
+			return refusedError{what + " needs --yes when stdin is not a terminal"}
+		}
+		in = os.Stdin
 	}
 	fmt.Fprintf(c.errOut, "%s [y/N] ", prompt)
 	var answer string
-	if _, err := fmt.Fscan(os.Stdin, &answer); err != nil {
+	if _, err := fmt.Fscan(in, &answer); err != nil {
 		return err
 	}
 	if answer = strings.ToLower(answer); answer != "y" && answer != "yes" {
