@@ -1421,6 +1421,10 @@ msgstr "Changed bytes of a mod file are kept beside it, since no profile could t
 msgid "Standard"
 msgstr "Standard"
 
+#: src/profiles/GameVersionRows.tsx
+msgid "To run this profile on an older copy of the game, choose its folder."
+msgstr "To run this profile on an older copy of the game, choose its folder."
+
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Move back to the data folder"
 msgstr "Move back to the data folder"

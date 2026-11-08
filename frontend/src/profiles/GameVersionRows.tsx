@@ -66,7 +66,9 @@ export function GameVersionRows({
           ) : null}
         </Box>
         <Typography sx={hint}>
-          {t`This profile runs the game from this folder, an older copy, instead of the selected install.`}
+          {folder
+            ? t`This profile runs the game from this folder, an older copy, instead of the selected install.`
+            : t`To run this profile on an older copy of the game, choose its folder.`}
         </Typography>
       </Field>
       <TextInput
