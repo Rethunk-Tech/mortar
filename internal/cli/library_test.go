@@ -2,6 +2,7 @@ package cli
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -61,6 +62,10 @@ func TestWaveCommandsSendTheirArguments(t *testing.T) {
 		{[]string{"queue", "top", "q1"}, "queue.top", func(p control.Params) bool { return p.Name == "q1" }, "top"},
 		{[]string{"data", "location"}, "data.location", func(p control.Params) bool { return true }, "Portable"},
 		{[]string{"archive", "preview", "/tmp/a.zip"}, "archive.preview", func(p control.Params) bool { return p.Path == "/tmp/a.zip" }, "A.B"},
+		// A relative archive is resolved here, not against the running app's folder.
+		{[]string{"archive", "preview", "a.zip"}, "archive.preview", func(p control.Params) bool {
+			return filepath.IsAbs(p.Path) && filepath.Base(p.Path) == "a.zip"
+		}, "A.B"},
 	}
 	for _, tc := range cases {
 		r := invoke(t, results, tc.args...)

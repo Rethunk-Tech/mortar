@@ -33,7 +33,7 @@ func (c *cmd) keepCount() (int, error) {
 }
 
 func (c *cmd) templatesCmd() error {
-	sub, err := c.sub("list, save, delete or new")
+	sub, err := c.sub("list, save, delete, new, apply, undo, rename or restore")
 	if err != nil {
 		return err
 	}
@@ -160,7 +160,7 @@ func (c *cmd) archiveCmd() error {
 		if err != nil {
 			return err
 		}
-		return show(c, "archive.preview", control.Params{Path: a[0]}, func(pv archive.Preview) {
+		return show(c, "archive.preview", control.Params{Path: absPath(a[0])}, func(pv archive.Preview) {
 			rows := make([][]string, 0, len(pv.Manifests))
 			for _, m := range pv.Manifests {
 				rows = append(rows, []string{m.ID.Local(), m.Name, m.Version, m.Folder})
