@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test'
 import { openGameSelect, openSeedFarm, openSettings } from './app.ts'
-import { DOWN, installPad, press } from './pad.ts'
+import { Button, installPad, press } from '@rethunk/dom-input-nav/playwright'
 
 // The Steam Deck's screen, which Mortar fills in Game Mode.
 test.use({ viewport: { width: 1280, height: 800 } })
@@ -104,7 +104,7 @@ function smallTargets(page: Page): Promise<string[]> {
 test('with a gamepad leading, Mods, Browse and a dialog have 44px targets', async ({ page }) => {
   await installPad(page)
   await openSeedFarm(page)
-  await press(page, DOWN)
+  await press(page, Button.down)
   expect(await smallTargets(page), 'Mods targets under 44px').toEqual([])
   await expectNoSidewaysScroll(page, 'Mods')
   await page.getByRole('tab', { name: 'Browse' }).click()
