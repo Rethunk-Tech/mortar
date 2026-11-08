@@ -1,5 +1,5 @@
 import { i18n } from '@lingui/core'
-import { plural, t } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { formatBytes } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
@@ -80,14 +80,14 @@ function popularityWording(source: string, count: number): string {
 function popularitySortLabel(source: string): string {
   switch (POPULARITY[source]?.kind) {
     case 'follower':
-      return t`Sort: most followed`
+      return i18n._(msg`Sort: most followed`)
     case 'like':
     case 'rating':
-      return t`Sort: top rated`
+      return i18n._(msg`Sort: top rated`)
     case 'popular':
-      return t`Sort: most popular`
+      return i18n._(msg`Sort: most popular`)
     default:
-      return t`Sort: most endorsed`
+      return i18n._(msg`Sort: most endorsed`)
   }
 }
 

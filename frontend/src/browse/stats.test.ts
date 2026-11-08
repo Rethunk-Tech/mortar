@@ -1,7 +1,7 @@
+import { expect, test } from 'bun:test'
 import { i18n } from '@lingui/core'
 import { I18nProvider } from '@lingui/react'
 import { renderHook } from '@testing-library/react'
-import { expect, test } from 'bun:test'
 import { createElement, type ReactNode } from 'react'
 import type { ListRow } from '../mods/listColumns.ts'
 import { popularitySortLabel, useModCardStats } from './stats.ts'
