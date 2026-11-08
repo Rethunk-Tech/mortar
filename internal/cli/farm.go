@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
@@ -34,7 +33,7 @@ func (c *cmd) profileFarm() error {
 			return err
 		}
 		text := strings.Join(a[2:], " ")
-		if raw, err := os.ReadFile(a[2]); err == nil {
+		if raw, err := readBody(a[2]); err == nil {
 			text = string(raw)
 		}
 		p := control.Params{Game: a[0], Profile: a[1], Value: text}
