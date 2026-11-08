@@ -247,7 +247,7 @@ interface EditProfileDialogProps {
 }
 
 // The open tab; a launch field Save rejected is shown, wherever the user was.
-function useFieldsTab(initialTab: FieldsTab, launchError: LaunchError) {
+function useFieldsTab(initialTab: FieldsTab, launchError: LaunchError, open: boolean) {
   const ids = useId()
   const [tab, setTab] = useState<FieldsTab>(initialTab)
   useEffect(() => {
@@ -255,6 +255,11 @@ function useFieldsTab(initialTab: FieldsTab, launchError: LaunchError) {
       setTab('launch')
     }
   }, [launchError])
+  useEffect(() => {
+    if (open) {
+      setTab(initialTab)
+    }
+  }, [open, initialTab])
   const bar = <FieldsTabs ids={ids} tab={tab} onTab={setTab} />
   return { ids, tab, bar }
 }
@@ -274,7 +279,7 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
   const [launchEnv, setLaunchEnv] = useState(profile.launchEnv ?? '')
   const [stagedCover, setStagedCover] = useState<StagedCover>(undefined)
   const [launchError, setLaunchError] = useState<LaunchError>(null)
-  const { ids, tab, bar } = useFieldsTab(initialTab, launchError)
+  const { ids, tab, bar } = useFieldsTab(initialTab, launchError, open)
   const [busy, setBusy] = useState(false)
   const [touched, setTouched] = useState(false)
   const edited = <A,>(set: (value: A) => void) => touching(setTouched, set)
