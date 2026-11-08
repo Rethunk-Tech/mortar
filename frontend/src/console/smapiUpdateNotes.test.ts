@@ -45,3 +45,20 @@ test('an update only on another site is named as such', () => {
   )
   expect(notes.get(9)).toEqual({ kind: 'elsewhere' })
 })
+
+test('a URL that only mentions Nexus or GitHub is still elsewhere', () => {
+  const empty = { updates: [], held: [] } as unknown as UpdatesResult
+  const notes = smapiUpdateNotes(
+    [
+      row(1, '   Trap 1.0.0: https://evil.example/nexusmods.com (you have 0.9.0)'),
+      row(2, '   Trap2 1.0.0: https://github.com.evil.example/repo (you have 0.9.0)'),
+      row(3, '   Fine 1.0.0: https://www.nexusmods.com/stardewvalley/mods/1 (you have 0.9.0)'),
+      row(4, '   Fine2 1.0.0: https://github.com/owner/repo (you have 0.9.0)'),
+    ],
+    empty,
+  )
+  expect(notes.get(1)).toEqual({ kind: 'elsewhere' })
+  expect(notes.get(2)).toEqual({ kind: 'elsewhere' })
+  expect(notes.get(3)).toBeUndefined()
+  expect(notes.get(4)).toBeUndefined()
+})
