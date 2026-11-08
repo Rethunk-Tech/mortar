@@ -7,57 +7,67 @@ import (
 
 var errUnavailable = errors.New("that service is not running")
 
-// handleLibrary answers the methods that manage templates, history and backup size, library cleanups, the data
-// folder and archives; ok is false for any other method.
-func (s *Services) handleLibrary(ctx context.Context, method string, p Params) (res any, ok bool, err error) {
-	switch method {
-	case "templates", "templates.save", "templates.delete", "templates.new":
-		res, err = s.templatesMethod(method, p)
-	case "history.usage":
-		res, err = s.Profiles.HistoryUsage(p.Game)
-	case "history.trim":
-		res, err = s.profileCall(p, func(id string) (any, error) { return s.Profiles.TrimHistory(p.Game, id, p.Keep) })
-	case "backups.usage", "backups.trim":
-		res, err = s.backupSize(method, p)
-	case "library.extra":
-		res, err = s.Profiles.ExtraFolderMods(ctx, p.Game)
-	case "library.hidden":
-		res, err = s.profileCall(p, func(id string) (any, error) { return s.Profiles.DotHiddenMods(p.Game, id, p.Key) })
-	case "library.old-files":
-		res, err = s.profileCall(p, func(id string) (any, error) { return s.Profiles.PendingOldFiles(p.Game, id) })
-	case "library.old-files.resolve":
-		res, err = s.profileCall(p, func(id string) (any, error) {
+var libraryGlobal = map[string]globalMethod{
+	"templates": func(s *Services, _ context.Context, p Params) (any, error) { return s.templatesMethod("templates", p) },
+	"templates.save": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.templatesMethod("templates.save", p)
+	},
+	"templates.delete": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.templatesMethod("templates.delete", p)
+	},
+	"templates.new": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.templatesMethod("templates.new", p)
+	},
+	"history.usage": func(s *Services, _ context.Context, p Params) (any, error) { return s.Profiles.HistoryUsage(p.Game) },
+	"history.trim": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.profileCall(p, func(id string) (any, error) { return s.Profiles.TrimHistory(p.Game, id, p.Keep) })
+	},
+	"backups.usage": func(s *Services, _ context.Context, p Params) (any, error) { return s.backupSize("backups.usage", p) },
+	"backups.trim":  func(s *Services, _ context.Context, p Params) (any, error) { return s.backupSize("backups.trim", p) },
+	"library.extra": func(s *Services, ctx context.Context, p Params) (any, error) {
+		return s.Profiles.ExtraFolderMods(ctx, p.Game)
+	},
+	"library.hidden": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.profileCall(p, func(id string) (any, error) { return s.Profiles.DotHiddenMods(p.Game, id, p.Key) })
+	},
+	"library.old-files": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.profileCall(p, func(id string) (any, error) { return s.Profiles.PendingOldFiles(p.Game, id) })
+	},
+	"library.old-files.resolve": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.profileCall(p, func(id string) (any, error) {
 			return nil, s.Profiles.ResolveOldFiles(p.Game, id, p.Key, p.Set)
 		})
-	case "library.strays":
-		res, err = s.Profiles.NewGameModsFolders(ctx, p.Game)
-	case "library.strays.move":
-		res, err = s.profileCall(p, func(id string) (any, error) {
+	},
+	"library.strays": func(s *Services, ctx context.Context, p Params) (any, error) {
+		return s.Profiles.NewGameModsFolders(ctx, p.Game)
+	},
+	"library.strays.move": func(s *Services, ctx context.Context, p Params) (any, error) {
+		return s.profileCall(p, func(id string) (any, error) {
 			return s.changed(p.Game, func() (any, error) { return s.Profiles.MoveGameModsFolders(ctx, p.Game, id, p.IDs) })
 		})
-	case "library.strays.dismiss":
-		res, err = nil, s.Profiles.DismissGameModsFolder(p.Game, p.Name)
-	case "queue.retry-failed":
-		res, err = s.Queue.RetryAllFailed(ctx)
-	case "data.location":
+	},
+	"library.strays.dismiss": func(s *Services, _ context.Context, p Params) (any, error) {
+		return nil, s.Profiles.DismissGameModsFolder(p.Game, p.Name)
+	},
+	"queue.retry-failed": func(s *Services, ctx context.Context, _ Params) (any, error) { return s.Queue.RetryAllFailed(ctx) },
+	"data.location": func(s *Services, _ context.Context, _ Params) (any, error) {
 		if s.Data == nil {
-			return nil, true, errUnavailable
+			return nil, errUnavailable
 		}
-		res, err = s.Data.DataLocation()
-	case "archive.preview":
+		return s.Data.DataLocation()
+	},
+	"archive.preview": func(s *Services, _ context.Context, p Params) (any, error) {
 		if s.Archives == nil {
-			return nil, true, errUnavailable
+			return nil, errUnavailable
 		}
-		res, err = s.Archives.ArchivePreview(p.Path)
-	case "archive.downloads":
+		return s.Archives.ArchivePreview(p.Path)
+	},
+	"archive.downloads": func(s *Services, _ context.Context, p Params) (any, error) {
 		if s.Archives == nil {
-			return nil, true, errUnavailable
+			return nil, errUnavailable
 		}
-		res, err = s.Archives.DownloadsArchives(p.Game)
-	default:
-		return nil, false, nil
-	}
-	return res, true, err
+		return s.Archives.DownloadsArchives(p.Game)
+	},
 }
 
 func (s *Services) profileCall(p Params, fn func(id string) (any, error)) (any, error) {

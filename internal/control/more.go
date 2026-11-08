@@ -21,54 +21,86 @@ import (
 
 var errNoLinks = errors.New("link handling is unavailable")
 
-// handleMore answers the saved-group, template, tool, LAN, data-folder, update and link methods; ok is false for any
-// other method.
-func (s *Services) handleMore(ctx context.Context, method string, p Params) (res any, ok bool, err error) {
-	switch method {
-	case "groups.create", "groups.delete", "groups.rename", "groups.add", "groups.remove":
-		res, err = s.savedGroupsWrite(method, p)
-	case "templates.apply", "templates.preview", "templates.undo", "templates.rename", "templates.restore":
-		res, err = s.templatesWrite(method, p)
-	case "tools.add", "tools.update", "tools.remove":
-		res, err = s.toolsWrite(method, p)
-	case "external.sources":
-		res, err = s.externalSources(p)
-	case "external.import":
-		res, err = s.externalImport(ctx, p)
-	case "lan.peers", "lan.send", "lan.inbox", "lan.accept", "lan.decline", "lan.paircode", "lan.pair", "lan.paired", "lan.unpair":
-		res, err = s.lanMethod(ctx, method, p)
-	case "data.move":
-		res, err = s.dataMove(p)
-	case "data.cleanup":
-		res, err = s.dataCleanup(p)
-	case "app.update.check":
-		res, err = s.appUpdate(ctx, false)
-	case "app.update.install":
-		res, err = s.appUpdate(ctx, true)
-	case "links.register":
-		res, err = nil, s.withNxm(func() error { return s.Nxm.RegisterLinks() })
-	case "links.enable":
-		res, err = nil, s.withNxm(func() error { return s.Nxm.EnableSource(p.Source) })
-	case "links.disable":
-		res, err = nil, s.withNxm(func() error { return s.Nxm.DisableSource(p.Source) })
-	case "links":
+var moreGlobal = map[string]globalMethod{
+	"groups.create": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.savedGroupsWrite("groups.create", p)
+	},
+	"groups.delete": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.savedGroupsWrite("groups.delete", p)
+	},
+	"groups.rename": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.savedGroupsWrite("groups.rename", p)
+	},
+	"groups.add": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.savedGroupsWrite("groups.add", p)
+	},
+	"groups.remove": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.savedGroupsWrite("groups.remove", p)
+	},
+	"templates.apply": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.templatesWrite("templates.apply", p)
+	},
+	"templates.preview": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.templatesWrite("templates.preview", p)
+	},
+	"templates.undo": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.templatesWrite("templates.undo", p)
+	},
+	"templates.rename": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.templatesWrite("templates.rename", p)
+	},
+	"templates.restore": func(s *Services, _ context.Context, p Params) (any, error) {
+		return s.templatesWrite("templates.restore", p)
+	},
+	"tools.add":        func(s *Services, _ context.Context, p Params) (any, error) { return s.toolsWrite("tools.add", p) },
+	"tools.update":     func(s *Services, _ context.Context, p Params) (any, error) { return s.toolsWrite("tools.update", p) },
+	"tools.remove":     func(s *Services, _ context.Context, p Params) (any, error) { return s.toolsWrite("tools.remove", p) },
+	"external.sources": func(s *Services, _ context.Context, p Params) (any, error) { return s.externalSources(p) },
+	"external.import":  func(s *Services, ctx context.Context, p Params) (any, error) { return s.externalImport(ctx, p) },
+	"lan.peers":        func(s *Services, ctx context.Context, p Params) (any, error) { return s.lanMethod(ctx, "lan.peers", p) },
+	"lan.send":         func(s *Services, ctx context.Context, p Params) (any, error) { return s.lanMethod(ctx, "lan.send", p) },
+	"lan.inbox":        func(s *Services, ctx context.Context, p Params) (any, error) { return s.lanMethod(ctx, "lan.inbox", p) },
+	"lan.accept": func(s *Services, ctx context.Context, p Params) (any, error) {
+		return s.lanMethod(ctx, "lan.accept", p)
+	},
+	"lan.decline": func(s *Services, ctx context.Context, p Params) (any, error) {
+		return s.lanMethod(ctx, "lan.decline", p)
+	},
+	"lan.paircode": func(s *Services, ctx context.Context, p Params) (any, error) {
+		return s.lanMethod(ctx, "lan.paircode", p)
+	},
+	"lan.pair": func(s *Services, ctx context.Context, p Params) (any, error) { return s.lanMethod(ctx, "lan.pair", p) },
+	"lan.paired": func(s *Services, ctx context.Context, p Params) (any, error) {
+		return s.lanMethod(ctx, "lan.paired", p)
+	},
+	"lan.unpair": func(s *Services, ctx context.Context, p Params) (any, error) {
+		return s.lanMethod(ctx, "lan.unpair", p)
+	},
+	"data.move":          func(s *Services, _ context.Context, p Params) (any, error) { return s.dataMove(p) },
+	"data.cleanup":       func(s *Services, _ context.Context, p Params) (any, error) { return s.dataCleanup(p) },
+	"app.update.check":   func(s *Services, ctx context.Context, _ Params) (any, error) { return s.appUpdate(ctx, false) },
+	"app.update.install": func(s *Services, ctx context.Context, _ Params) (any, error) { return s.appUpdate(ctx, true) },
+	"links.register": func(s *Services, _ context.Context, _ Params) (any, error) {
+		return nil, s.withNxm(func() error { return s.Nxm.RegisterLinks() })
+	},
+	"links.enable": func(s *Services, _ context.Context, p Params) (any, error) {
+		return nil, s.withNxm(func() error { return s.Nxm.EnableSource(p.Source) })
+	},
+	"links.disable": func(s *Services, _ context.Context, p Params) (any, error) {
+		return nil, s.withNxm(func() error { return s.Nxm.DisableSource(p.Source) })
+	},
+	"links": func(s *Services, _ context.Context, _ Params) (any, error) {
 		if s.Nxm == nil {
-			res, err = nil, errNoLinks
-		} else {
-			res = s.Nxm.ListOwners()
+			return nil, errNoLinks
 		}
-	case "problems.checkUpdates":
-		res, err = s.profileCall(p, func(id string) (any, error) { return s.Problems.CheckUpdatesNow(ctx, p.Game, id) })
-	case "support.diagnostics":
-		res, err = s.supportDiagnostics(p)
-	case "game.resetInstall":
-		res, err = nil, s.Games.ResetInstall(p.Game)
-	case "game.steamStatus":
-		res = s.Games.SteamStatus()
-	default:
-		return nil, false, nil
-	}
-	return res, true, err
+		return s.Nxm.ListOwners(), nil
+	},
+	"problems.checkUpdates": func(s *Services, ctx context.Context, p Params) (any, error) {
+		return s.profileCall(p, func(id string) (any, error) { return s.Problems.CheckUpdatesNow(ctx, p.Game, id) })
+	},
+	"support.diagnostics": func(s *Services, _ context.Context, p Params) (any, error) { return s.supportDiagnostics(p) },
+	"game.resetInstall":   func(s *Services, _ context.Context, p Params) (any, error) { return nil, s.Games.ResetInstall(p.Game) },
+	"game.steamStatus":    func(s *Services, _ context.Context, _ Params) (any, error) { return s.Games.SteamStatus(), nil },
 }
 
 // resolveIDs is the profile p names and the mods p.IDs pick from it.

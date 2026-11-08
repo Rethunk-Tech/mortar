@@ -41,9 +41,9 @@ func TestLinksListsOwnersPerScheme(t *testing.T) {
 		},
 		ownerErrs: map[string]error{"curseforge": errors.New("no handler")},
 	})}
-	res, ok, err := svc.handleMore(t.Context(), "links", Params{})
-	if err != nil || !ok {
-		t.Fatalf("links: %v ok=%v", err, ok)
+	res, err := svc.Handle(t.Context(), "links", Params{})
+	if err != nil {
+		t.Fatalf("links: %v", err)
 	}
 	rows, ok := res.([]nxmsvc.LinkOwner)
 	if !ok || len(rows) == 0 {
