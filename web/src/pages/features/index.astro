@@ -1,14 +1,14 @@
 ---
 import Mark from '../../components/Mark.astro'
 import Page from '../../layouts/Page.astro'
-import { loaderFamilies, modSites, playableGames, SOURCE_NAMES, STORE_NAMES } from '../../lib/games.ts'
+import { LANDING_STORES, loaderFamilies, modSites, playableGames, SOURCE_NAMES, STORE_NAMES } from '../../lib/games.ts'
 import '../../styles/landing.css'
 import '../../styles/landing-features.css'
 import '../../styles/landing-compare.css'
 
 const games = playableGames().length
 const SHOWN_LOADERS = 2
-const stores = ['steam', 'gog', 'epic', 'ea', 'lutris', 'xbox']
+const stores = LANDING_STORES
 const loaders = loaderFamilies()
 const sites = modSites()
 const sections = [

@@ -29,6 +29,9 @@ export const STORE_NAMES: Record<string, string> = {
   standalone: 'Its own installer',
 }
 
+// The stores the landing pages show as a row of marks: the ones a game is usually found on.
+export const LANDING_STORES = ['steam', 'gog', 'epic', 'ea', 'lutris', 'xbox']
+
 export const SOURCE_NAMES: Record<string, string> = {
   nexus: 'Nexus Mods',
   thunderstore: 'Thunderstore',
