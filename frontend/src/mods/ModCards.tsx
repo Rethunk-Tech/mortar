@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Card, Typography, useMediaQuery } from '@mui/material'
 import { useWidth } from '@rethunk/react-load-hooks'
-import { memo, useCallback, useMemo, useRef } from 'react'
+import { memo, useMemo, useRef } from 'react'
 import type {
   Mod,
   Profile,
@@ -17,7 +17,7 @@ import { actingMods, toggleActing } from './actingMods.ts'
 import { CardBadges } from './CardBadges.tsx'
 import { CardMeta } from './CardMeta.tsx'
 import { cardMarks } from './cardMarks.ts'
-import { showModId, useDetail } from './detail.ts'
+import { useDetail } from './detail.ts'
 import { firstTag } from './group.ts'
 import { type ListRow, MANUAL_SORT } from './listColumns.ts'
 import { sameLibraries } from './listRows.ts'
@@ -36,15 +36,14 @@ import { useListHeading } from './useListHeading.ts'
 import { useModGroups } from './useModGroups.ts'
 import {
   flattenModGroups,
-  focusModAt,
   GROUP_HEADER_PX,
   gridColumnCount,
   gridLanePx,
   listRowId,
-  orderedModIds,
+  type ModGroupChrome,
   RevealOpen,
-  stepId,
   stuckHeader,
+  useModStep,
   useModTypeahead,
   useModVirtual,
   type VirtualRow,
@@ -246,32 +245,26 @@ function GridWindow({
   rows,
   top,
   heading,
-  collapsed,
-  gameId,
-  setCollapsed,
-  groupBy,
+  group,
+  groups,
   columns,
   columnsRef,
   orderedIds,
   orderedRef,
   profile,
-  groups,
   manual,
   onMove,
 }: {
   rows: readonly VirtualRow<ListRow>[]
   top: number
   heading: (key: string) => string
-  collapsed: Record<string, boolean>
-  gameId: string
-  setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
-  groupBy: string
+  group: ModGroupChrome
+  groups: readonly { key: string; items: readonly ListRow[] }[]
   columns: number
   columnsRef: { readonly current: number }
   orderedIds: readonly string[]
   orderedRef: { readonly current: readonly string[] }
   profile: Profile
-  groups: readonly { key: string; items: readonly ListRow[] }[]
   manual: boolean
   onMove: (id: string, delta: number) => void
 }) {
@@ -301,10 +294,7 @@ function GridWindow({
                 groupKey={item.groupKey}
                 count={item.count}
                 label={heading(item.groupKey)}
-                collapsed={collapsed}
-                gameId={gameId}
-                setCollapsed={setCollapsed}
-                groupBy={groupBy}
+                {...group}
                 groups={groups}
               />
             </Box>
@@ -341,26 +331,21 @@ function GridWindow({
 }
 
 function CardsPane({
+  group,
   groups,
-  groupBy,
-  collapsed,
-  setCollapsed,
-  gameId,
   heading,
   orderedIds,
   profile,
   manual,
 }: {
-  groups: { key: string; items: ListRow[] }[]
-  groupBy: string
-  collapsed: Record<string, boolean>
-  setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
-  gameId: string
+  group: ModGroupChrome
+  groups: readonly { key: string; items: readonly ListRow[] }[]
   heading: (key: string) => string
   orderedIds: readonly string[]
   profile: Profile
   manual: boolean
 }) {
+  const { groupBy, collapsed, setCollapsed, gameId } = group
   const compactCards = useMediaQuery(compactQuery)
   const cardSize = useSettings((s) => s.gridCardSize) || 'medium'
   const laneCompact = compactCards || cardSize === 'small'
@@ -390,17 +375,7 @@ function CardsPane({
   const visibleStart = virtualItems[0]?.start ?? 0
   const stuck = stuckHeader(items, virtualizer.measurementsCache, virtualizer.scrollOffset ?? 0)
   const { orderedRef } = useRowFocus(orderedIds)
-  const navIds = useMemo(() => orderedModIds(items, (row) => modId(row.mod)), [items])
-  const move = useRef<(id: string, delta: number) => void>(() => undefined)
-  move.current = (id, delta) => {
-    const next = stepId(navIds, id, delta)
-    if (next && next !== id) {
-      focusModAt({ items, idOf: listRowId, virtualizer, parentRef }, next)
-      showModId(next)
-    }
-  }
-  // Stable, so memoised cards keep their props across renders while still stepping through the current items.
-  const onMove = useCallback((id: string, delta: number) => move.current(id, delta), [])
+  const onMove = useModStep(items, virtualizer, parentRef)
   useModTypeahead({
     items,
     nameOf: (row) => row.mod.name,
@@ -434,10 +409,7 @@ function CardsPane({
             groupKey={stuck.row.groupKey}
             count={stuck.row.count}
             label={heading(stuck.row.groupKey)}
-            collapsed={collapsed}
-            gameId={gameId}
-            setCollapsed={setCollapsed}
-            groupBy={groupBy}
+            {...group}
             groups={groups}
           />
         </StickyGroupSlot>
@@ -447,16 +419,13 @@ function CardsPane({
           rows={visible}
           top={visibleStart}
           heading={heading}
-          collapsed={collapsed}
-          gameId={gameId}
-          setCollapsed={setCollapsed}
-          groupBy={groupBy}
+          group={group}
+          groups={groups}
           columns={columns}
           columnsRef={columnsRef}
           orderedIds={orderedIds}
           orderedRef={orderedRef}
           profile={profile}
-          groups={groups}
           manual={manual}
           onMove={onMove}
         />
@@ -483,15 +452,13 @@ export function Cards({
   )
   const heading = useListHeading(groupBy)
   const manual = sort.column === MANUAL_SORT && !filtering
+  const group: ModGroupChrome = { collapsed, gameId, setCollapsed, groupBy }
   return (
     <ManualOrder enabled={manual} profile={profile} groups={groups}>
       <CardsPane
         manual={manual}
+        group={group}
         groups={groups}
-        groupBy={groupBy}
-        collapsed={collapsed}
-        setCollapsed={setCollapsed}
-        gameId={gameId}
         heading={heading}
         orderedIds={orderedIds}
         profile={profile}

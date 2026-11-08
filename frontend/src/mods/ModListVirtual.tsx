@@ -1,9 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Table, TableBody, TableHead, TableRow } from '@mui/material'
 import { sameValue } from '@rethunk/react-load-hooks'
-import { type MouseEvent, memo, type ReactNode, type Ref, useCallback, useRef } from 'react'
+import { type MouseEvent, memo, type ReactNode, type Ref } from 'react'
 import { space } from '../theme/density.ts'
-import { showModId } from './detail.ts'
 import type { sanitizeListGroupBy } from './group.ts'
 import { HeaderCells, ListColumnMenu } from './ListColumnMenu.tsx'
 import {
@@ -14,18 +13,16 @@ import {
   toggleListColumn,
 } from './listColumns.ts'
 import { persistColumns } from './listPrefs.ts'
-import { modId } from './lookup.ts'
 import { GroupHeaderRow, StickyGroupSlot } from './ModsGroupHeader.tsx'
 import { OverlayListRow } from './OverlayRow.tsx'
 import { heading } from './paper.ts'
 import {
-  focusModAt,
   LIST_ROW_PX,
   listRowId,
-  orderedModIds,
+  type ModGroupChrome,
   RevealOpen,
-  stepId,
   stuckHeader,
+  useModStep,
   useModTypeahead,
   useModVirtual,
   type VirtualRow,
@@ -173,20 +170,14 @@ function ListShell({
 function ListSlot({
   item,
   headingFor,
-  collapsed,
-  gameId,
-  setCollapsed,
-  groupBy,
+  group,
   groups,
   renderRow,
   onArrow,
 }: {
   item: VirtualRow<ListRow>
   headingFor: (key: string) => string
-  collapsed: Record<string, boolean>
-  gameId: string
-  setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
-  groupBy: ReturnType<typeof sanitizeListGroupBy>
+  group: ModGroupChrome
   groups: readonly { key: string; items: readonly ListRow[] }[]
   renderRow: (row: ListRow, onArrow: (id: string, dir: -1 | 1) => void) => ReactNode
   onArrow: (id: string, dir: -1 | 1) => void
@@ -199,10 +190,7 @@ function ListSlot({
             groupKey={item.groupKey}
             count={item.count}
             label={headingFor(item.groupKey)}
-            collapsed={collapsed}
-            gameId={gameId}
-            setCollapsed={setCollapsed}
-            groupBy={groupBy}
+            {...group}
             groups={groups}
           />
         </Box>
@@ -252,7 +240,6 @@ export function ModListTable({
 }) {
   const { t } = useLingui()
   const { parentRef, virtualizer } = useModVirtual(items, LIST_ROW_PX)
-  const navIds = orderedModIds(items, (row) => modId(row.mod))
   useModTypeahead({
     items,
     nameOf: (row) => row.mod.name,
@@ -260,16 +247,8 @@ export function ModListTable({
     virtualizer,
     parentRef,
   })
-  const arrow = useRef<(id: string, dir: -1 | 1) => void>(() => undefined)
-  arrow.current = (id, dir) => {
-    const next = stepId(navIds, id, dir)
-    if (next && next !== id) {
-      focusModAt({ items, idOf: listRowId, virtualizer, parentRef }, next)
-      showModId(next)
-    }
-  }
-  // Stable, so memoised rows keep their props across renders while still stepping through the current items.
-  const onArrow = useCallback((id: string, dir: -1 | 1) => arrow.current(id, dir), [])
+  const onArrow = useModStep(items, virtualizer, parentRef)
+  const group: ModGroupChrome = { collapsed, gameId, setCollapsed, groupBy }
   const stuck = stuckHeader(items, virtualizer.measurementsCache, virtualizer.scrollOffset ?? 0)
   return (
     <>
@@ -303,10 +282,7 @@ export function ModListTable({
                 groupKey={stuck.row.groupKey}
                 count={stuck.row.count}
                 label={headingFor(stuck.row.groupKey)}
-                collapsed={collapsed}
-                gameId={gameId}
-                setCollapsed={setCollapsed}
-                groupBy={groupBy}
+                {...group}
                 groups={groups}
               />
             </StickyGroupSlot>
@@ -336,10 +312,7 @@ export function ModListTable({
               <ListSlot
                 item={item}
                 headingFor={headingFor}
-                collapsed={collapsed}
-                gameId={gameId}
-                setCollapsed={setCollapsed}
-                groupBy={groupBy}
+                group={group}
                 groups={groups}
                 renderRow={renderRow}
                 onArrow={onArrow}

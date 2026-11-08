@@ -6,8 +6,8 @@ import {
   typedMatch,
 } from '@rethunk/dom-input-nav'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { type RefObject, useEffect, useLayoutEffect, useRef } from 'react'
-import { useDetail } from './detail.ts'
+import { type RefObject, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { showModId, useDetail } from './detail.ts'
 import { hiddenByAncestor, toggleCollapsed } from './group.ts'
 import type { ListRow } from './listColumns.ts'
 import { modId } from './lookup.ts'
@@ -373,4 +373,28 @@ export function useModTypeahead<T>(opts: {
     root.addEventListener('keydown', onKey)
     return () => root.removeEventListener('keydown', onKey)
   }, [idOf, items, nameOf, parentRef, virtualizer])
+}
+
+export interface ModGroupChrome {
+  collapsed: Record<string, boolean>
+  gameId: string
+  setCollapsed: (fn: (cur: Record<string, boolean>) => Record<string, boolean>) => void
+  groupBy: string
+}
+
+// Stable, so memoised cards and rows keep their props across renders while still stepping through the current items.
+export function useModStep(
+  items: readonly VirtualRow<ListRow>[],
+  virtualizer: Scroller,
+  parentRef: RefObject<HTMLElement | null>,
+): (id: string, delta: number) => void {
+  const step = useRef<(id: string, delta: number) => void>(() => undefined)
+  step.current = (id, delta) => {
+    const next = stepId(orderedModIds(items, listRowId), id, delta)
+    if (next && next !== id) {
+      focusModAt({ items, idOf: listRowId, virtualizer, parentRef }, next)
+      showModId(next)
+    }
+  }
+  return useCallback((id: string, delta: number) => step.current(id, delta), [])
 }
