@@ -270,6 +270,11 @@
     "url": "https://github.com/Rethunk-Tech/go-nexusmods"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-paradoxmods",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-paradoxmods"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-safefs",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-safefs"
