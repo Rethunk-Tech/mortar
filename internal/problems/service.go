@@ -17,9 +17,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-dotnet"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/framework/contentpatcher"
 	"github.com/Rethunk-Tech/mortar/internal/game"

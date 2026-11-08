@@ -1,4 +1,4 @@
-package dotnet
+package dotnet_test
 
 import (
 	"flag"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-bepinex/plugins"
 
+	"github.com/Rethunk-Tech/go-dotnet"
 	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/Rethunk-Tech/go-semverish"
@@ -82,7 +83,7 @@ func TestRealBepInExRun(t *testing.T) {
 		t.Errorf("BepInEx counted %d plugins to load, then logged %d Loading and %d skipped lines", count, len(loaded), len(skipped))
 	}
 	found := plugins.PluginsIn(filepath.Join(dir, "BepInEx", "plugins"))
-	in := func(list []runPlugin, p Plugin) bool {
+	in := func(list []runPlugin, p dotnet.Plugin) bool {
 		for _, l := range list {
 			if l.name == p.Name && sameVersion(l.version, p.Version) {
 				return true
@@ -91,7 +92,7 @@ func TestRealBepInExRun(t *testing.T) {
 		return false
 	}
 	for _, l := range loaded {
-		if !slices.ContainsFunc(found, func(p Plugin) bool { return in([]runPlugin{l}, p) }) {
+		if !slices.ContainsFunc(found, func(p dotnet.Plugin) bool { return in([]runPlugin{l}, p) }) {
 			t.Errorf("BepInEx loaded [%s %s], which Mortar found in no DLL", l.name, l.version)
 		}
 	}

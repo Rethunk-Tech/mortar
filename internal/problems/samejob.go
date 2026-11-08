@@ -10,8 +10,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/mod"

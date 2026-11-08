@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/dotnet"
+	"github.com/Rethunk-Tech/go-dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 

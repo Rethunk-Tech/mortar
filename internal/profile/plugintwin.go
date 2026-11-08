@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/dotnet"
+	"github.com/Rethunk-Tech/go-dotnet"
 )
 
 // PluginTwins maps the key of each package not installed from Thunderstore to the Thunderstore package

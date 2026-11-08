@@ -6,7 +6,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-bepinex/plugins"
 
-	"github.com/Rethunk-Tech/mortar/internal/dotnet"
+	"github.com/Rethunk-Tech/go-dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 

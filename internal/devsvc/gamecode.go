@@ -17,8 +17,8 @@ import (
 	"github.com/Rethunk-Tech/go-bepinex/plugins"
 
 	"github.com/Rethunk-Tech/go-cfgedit/msbuild"
+	"github.com/Rethunk-Tech/go-dotnet"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/dotnetroot"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
