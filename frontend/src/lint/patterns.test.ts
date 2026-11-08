@@ -213,6 +213,23 @@ test('Lingui t is not taken as a helper parameter or argument', () => {
   expect(hits, hits.join('\n')).toEqual([])
 })
 
+// A relative time honours the Dates setting, the locale and the translated "a few seconds" only through formatWhen.
+test('relative times come through formatWhen', () => {
+  const hits = files
+    .filter(({ path }) => rel(path) !== 'i18n/formatWhen.ts')
+    .filter(({ src }) => /\brelativeWhen\b/.test(src))
+    .map(({ path }) => rel(path))
+  expect(hits, hits.join('\n')).toEqual([])
+})
+
+// Cancelling a picker resolves empty, so a rejection is a broken dialog the player has to hear about.
+test('a failed file dialog is reported', () => {
+  const picker =
+    /(?:PickFolder|PickImage|PickExecutable|PickArchives|SaveFile|pick)\([^()]*\)\s*\.catch\(\(\) => undefined\)/
+  const hits = files.filter(({ src }) => picker.test(src)).map(({ path }) => rel(path))
+  expect(hits, hits.join('\n')).toEqual([])
+})
+
 // MUI's Tooltip renders itself and its child twice on mount; shell/Tooltip.tsx mounts it only while it shows.
 test('tooltips come from shell/Tooltip.tsx', () => {
   const hits = files

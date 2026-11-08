@@ -264,7 +264,10 @@ function ProjectStep({
               value={draft.parent}
               slotProps={{ input: { readOnly: true } }}
             />
-            <Button variant="outlined" onClick={() => pick().catch(() => undefined)}>
+            <Button
+              variant="outlined"
+              onClick={() => pick().catch(reportError(t`Could not open the file dialog`))}
+            >
               {t`Choose…`}
             </Button>
           </Box>
