@@ -103,19 +103,11 @@ func (s *Store) CreateGroup(game, id, name string) (Profile, error) {
 // freeGroupName is name, or when the profile has a group by that name the first of "name (2)", "name (3)" and so on
 // that it does not, cut to fit the length limit.
 func (p Profile) freeGroupName(name string) string {
-	if p.groupIndex(name) < 0 {
-		return name
+	taken := make([]string, 0, len(p.Groups))
+	for _, g := range p.Groups {
+		taken = append(taken, g.Name)
 	}
-	for n := 2; ; n++ {
-		suffix := fmt.Sprintf(" (%d)", n)
-		base := []rune(name)
-		if over := len(base) + utf8.RuneCountInString(suffix) - maxGroupName; over > 0 {
-			base = base[:len(base)-over]
-		}
-		if candidate := string(base) + suffix; p.groupIndex(candidate) < 0 {
-			return candidate
-		}
-	}
+	return UniqueName(taken, name)
 }
 
 // AddGroup creates a group holding those of keys that name entries of the profile, under the first free name from

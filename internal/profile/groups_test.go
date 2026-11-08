@@ -46,6 +46,28 @@ func TestSetGroupEnabledOneHistoryEvent(t *testing.T) {
 	}
 }
 
+func TestSetGroupEnabledLeavesBundledEntriesAlone(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "smapi-1.0.0", bundle())
+	p := mustCreate(t, e, "P")
+	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
+		t.Fatal(err)
+	}
+	var err error
+	if p, err = e.AddToGroup("stardew", p.ID, "Core", "smapi-1.0.0"); err != nil {
+		t.Fatal(err)
+	}
+	if p, err = e.SetGroupEnabled("stardew", p.ID, "Core", false); err != nil {
+		t.Fatal(err)
+	}
+	for _, en := range p.Entries {
+		if en.Key == "smapi-1.0.0" && len(en.Disabled) != 0 {
+			t.Fatalf("bundled entry switched off by its group: %+v", en)
+		}
+	}
+}
+
 func TestRemoveEntryDropsGroupKeys(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
