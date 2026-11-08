@@ -6,8 +6,12 @@ import { join } from 'node:path'
 const script = join(import.meta.dir, 'notes.sh')
 let repo = ''
 
+// Git's own variables are dropped: run from a hook or a worktree, GIT_DIR would point every command, `git config`
+// included, at the repository running the test instead of the throwaway one.
+const outside = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_')))
+
 function run(cmd: string[], env: Record<string, string> = {}): string {
-  const p = Bun.spawnSync(cmd, { cwd: repo, env: { ...process.env, ...env } })
+  const p = Bun.spawnSync(cmd, { cwd: repo, env: { ...outside, ...env } })
   if (p.exitCode !== 0) {
     throw new Error(`${cmd.join(' ')}: ${p.stderr.toString()}`)
   }
