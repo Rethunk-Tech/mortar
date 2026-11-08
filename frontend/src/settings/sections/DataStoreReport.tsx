@@ -25,7 +25,7 @@ import { AfterDelay } from '../../shell/AfterDelay.tsx'
 import { AppDialog, DialogFooter } from '../../shell/dialog/AppDialog.tsx'
 import { ConfirmationDialog } from '../../shell/dialog/ConfirmationDialog.tsx'
 import { RefreshFailed } from '../../shell/RefreshFailed.tsx'
-import { useLastGood } from '../../shell/useLastGood.ts'
+import { useLastGood, useLastGoodRefreshing } from '../../shell/useLastGood.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -34,6 +34,8 @@ import { nowrap } from './dataStyles.ts'
 
 const SELECT_SEP = '\u0000'
 const NEXUS_KEY = /^nexus-(\d+)-\d+$/
+// The key the cleanup dialog's report is last-good under, read again from its own hook.
+const DATA_STORE_KEY = 'data-store-report'
 
 interface Sel {
   id: string
@@ -223,11 +225,11 @@ function Section({
 }
 
 function useCleanupData(open: boolean) {
-  const { data, error, at, refreshing, reload } = useLastGood<{
+  const { data, error, at, reload } = useLastGood<{
     store: { unused: Sel[]; older: Sel[] }
     preview: Preview
   }>(
-    'data-store-report',
+    DATA_STORE_KEY,
     open
       ? () =>
           Promise.all([Report(), CleanupPreview()]).then(([rep, preview]) => ({
@@ -240,12 +242,13 @@ function useCleanupData(open: boolean) {
   const load = useCallback(() => {
     reload().catch(reportUnexpected)
   }, [reload])
+  const running = useLastGoodRefreshing(open ? DATA_STORE_KEY : null)
   return {
     store: data?.store ?? null,
     preview: data?.preview ?? null,
     load,
     // Deleting acts on the list shown, so it waits for the re-read.
-    refreshing,
+    refreshing: running && data !== null,
     error: data === null && error !== null,
     stale: data === null ? null : error,
     at,

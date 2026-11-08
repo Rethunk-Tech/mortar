@@ -18,6 +18,37 @@ export interface LastGoodOptions<T> {
   onError?: (error: unknown) => void
 }
 
+// Keys with a read in flight. Kept outside the hook so that only a view that shows a read's progress redraws for it:
+// every other reader of a key would otherwise redraw twice per read for a flag it never looks at.
+const inflight = new Set<string>()
+const inflightListeners = new Set<() => void>()
+
+const setInflight = (key: string, on: boolean) => {
+  if (on === inflight.has(key)) {
+    return
+  }
+  if (on) {
+    inflight.add(key)
+  } else {
+    inflight.delete(key)
+  }
+  for (const listener of inflightListeners) {
+    listener()
+  }
+}
+
+const subscribeInflight = (listener: () => void): (() => void) => {
+  inflightListeners.add(listener)
+  return () => {
+    inflightListeners.delete(listener)
+  }
+}
+
+/** Whether a read of the key is on its way, for a view that waits on it before acting on what it shows. */
+export function useLastGoodRefreshing(key: string | null): boolean {
+  return useSyncExternalStore(subscribeInflight, () => key !== null && inflight.has(key))
+}
+
 /**
  * Loads `load` for `key` on mount and whenever `key` or `deps` change, drawing the key's last good answer at once
  * (module memory, then `seed`) and refreshing behind it. An answer equal to the shown one changes nothing; a null
@@ -33,10 +64,11 @@ export function useLastGood<T>(
   const entry = useSyncExternalStore(subscribeLast, () =>
     key === null ? undefined : peekLast<T>(key),
   )
-  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<InlineError | null>(null)
   const latest = useRef({ key, load, options })
   latest.current = { key, load, options }
+  // The key this hook last marked as being read, cleared when the read ends or the hook unmounts.
+  const marked = useRef<string | null>(null)
   const [runs] = useState(() =>
     loader<T>(
       {
@@ -51,10 +83,15 @@ export function useLastGood<T>(
           latest.current.options?.onError?.(e)
         },
         loading: (on) => {
-          // Nothing shown yet means refreshing reads false whatever this says, so starting a read redraws nothing.
+          if (marked.current !== null) {
+            setInflight(marked.current, false)
+            marked.current = null
+          }
           const { key: now } = latest.current
-          const visible = on && now !== null && peekLast(now) !== undefined
-          setRefreshing((prev) => (prev === visible ? prev : visible))
+          if (on && now !== null) {
+            setInflight(now, true)
+            marked.current = now
+          }
           if (on) {
             setError(null)
           }
@@ -70,7 +107,16 @@ export function useLastGood<T>(
   useEffect(() => {
     runs.deps([key, ...deps], active ? load : null)
   })
-  useEffect(() => () => runs.stop(), [runs])
+  useEffect(
+    () => () => {
+      runs.stop()
+      if (marked.current !== null) {
+        setInflight(marked.current, false)
+        marked.current = null
+      }
+    },
+    [runs],
+  )
   const shown = entry !== undefined
   useEffect(() => {
     const { key: now, options: opts } = latest.current
@@ -101,7 +147,6 @@ export function useLastGood<T>(
     /** The shown answer is a saved snapshot the live read has not confirmed yet. */
     fromSeed: entry?.seed ?? false,
     at: entry?.at ?? null,
-    refreshing: refreshing && shown,
     error,
     reload,
     set,

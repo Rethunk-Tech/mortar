@@ -16,7 +16,7 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { RefreshFailed } from '../shell/RefreshFailed.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
-import { useLastGood } from '../shell/useLastGood.ts'
+import { useLastGood, useLastGoodRefreshing } from '../shell/useLastGood.ts'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -120,7 +120,8 @@ export function GameModsDialog({
   const error = importError ?? (preview.data === null ? preview.error : null)
   const previewing = open && preview.data === null && preview.error === null
   // Nothing imports from a list the live folder has not confirmed.
-  const rechecking = preview.refreshing
+  const rechecking =
+    useLastGoodRefreshing(open ? `game-mods:${game}` : null) && preview.data !== null
   const loadPreview = () => {
     preview.reload().catch(reportUnexpected)
   }
