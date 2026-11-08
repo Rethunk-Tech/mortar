@@ -70,11 +70,11 @@ func TestUpdateKeepsTheExecutableBitOnCarriedFiles(t *testing.T) {
 		map[string]string{"A/manifest.json": m, "A/tool.sh": "shipped"},
 		map[string]string{"A/manifest.json": m})
 	cur := filepath.Join(e.mods(p.ID), "a-1", "A", "tool.sh")
-	if err := os.Chmod(cur, 0o755); err != nil {
+	if err := os.Chmod(cur, 0o755); err != nil { //nolint:gosec // the test is about keeping an executable bit, so the fixture needs one
 		t.Fatal(err)
 	}
 	writeFile(t, e.mods(p.ID), "a-1/A/tool.sh", "mine")
-	if err := os.Chmod(cur, 0o755); err != nil {
+	if err := os.Chmod(cur, 0o755); err != nil { //nolint:gosec // the test is about keeping an executable bit, so the fixture needs one
 		t.Fatal(err)
 	}
 	if _, err := e.UpdateEntry("stardew", p.ID, "a-1", "a-2"); err != nil {
