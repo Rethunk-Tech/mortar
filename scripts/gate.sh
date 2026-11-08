@@ -125,7 +125,13 @@ step golangci-windows env GOGC=400 GOOS=windows golangci-lint run --allow-parall
 step vet-darwin env GOOS=darwin go vet ./internal/...
 step version go run ./cmd/version -check
 step i18n-dupes bun scripts/i18n-dupes.ts
-step credits bun scripts/gen-credits.ts --check
+# Locally a dependency bump rewrites the credits for its commit to carry (the lefthook credits job stages them); CI
+# only checks that the commit did.
+if [ -n "${CI:-}" ]; then
+  step credits bun scripts/gen-credits.ts --check
+else
+  step credits bun scripts/gen-credits.ts
+fi
 step metainfo appstreamcli validate --strict --no-net build/linux/tech.rethunk.Mortar.metainfo.xml
 
 wait "$bindings_pid" || {
