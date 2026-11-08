@@ -1,5 +1,5 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-22 10:43-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: es\nPO-Revision-Date: 2026-11-08 20:26+0000\nLast-Translator: Skript <skriptty@users.noreply.hosted.weblate.org>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/mortar/app/es/>\nPlural-Forms: nplurals=2; plural=n != 1;\n"
+msgstr "POT-Creation-Date: 2026-10-22 10:43-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: es\nPO-Revision-Date: 2026-11-08 22:59+0000\nLast-Translator: Skript <skriptty@users.noreply.hosted.weblate.org>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/mortar/app/es/>\nPlural-Forms: nplurals=2; plural=n != 1;\n"
 
 #: src/saves/SavesTab.tsx
 msgid "No saves match"
@@ -893,7 +893,7 @@ msgstr ""
 
 #: src/templates/TemplateDialogs.tsx
 msgid "Template name"
-msgstr ""
+msgstr "Nombre de la plantilla"
 
 #: src/share/MethodPanes.tsx
 msgid "Link length"
@@ -901,7 +901,7 @@ msgstr ""
 
 #: src/firstrunTour/TourPopover.tsx
 msgid "See load errors, missing dependencies, and other issues before you play."
-msgstr ""
+msgstr "Lee errores de carga, dependencias faltantes, y otros problemas antes de jugar."
 
 #: src/develop/ProjectCard.tsx
 msgid "Not installed"
