@@ -175,6 +175,11 @@
     "url": "https://github.com/Rethunk-Tech/go-cfgedit"
   },
   {
+    "name": "github.com/Rethunk-Tech/go-codepair",
+    "licence": "MIT",
+    "url": "https://github.com/Rethunk-Tech/go-codepair"
+  },
+  {
     "name": "github.com/Rethunk-Tech/go-contentpatcher",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-contentpatcher"
