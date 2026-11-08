@@ -19,7 +19,6 @@ import (
 	gomodrinth "github.com/Rethunk-Tech/go-modrinth"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 const siteURL = "https://modrinth.com"
@@ -300,9 +299,9 @@ func hasFile(v gomodrinth.Version, sha512 string) bool {
 	return false
 }
 
-// Latest asks for the newest version of every file at once through POST /version_files/update, which takes the files'
-// hashes and the loaders and game versions to keep to (https://docs.modrinth.com/api/operations/getlatestversionsfromhashes/).
-// The installed versions of the files that have a newer one are then read through POST /version_files
+// Latest asks for the newest version of every file at once, kept to the loaders, game versions and version types
+// (https://docs.modrinth.com/api/operations/getlatestversionsfromhashes/). The installed versions of the files that
+// have a newer one are then read through POST /version_files
 // (https://docs.modrinth.com/api/operations/versionsfromhashes/), so Dependencies knows both sides.
 func (d Driver) Latest(ctx context.Context, src components.GameSource, mortarVersion string, files []source.InstalledFile) (map[string]source.Latest, error) {
 	out := map[string]source.Latest{}
@@ -326,21 +325,12 @@ func (d Driver) Latest(ctx context.Context, src components.GameSource, mortarVer
 	}
 	newest := map[string]gomodrinth.Version{}
 	for _, stability := range slices.Sorted(maps.Keys(groups)) {
-		var got map[string]gomodrinth.Version
-		// The version types a channel accepts are not part of the library's lookup, so this request is sent here.
-		if err := source.DoJSON(ctx, source.Request{
-			Service: "Modrinth", Client: d.HTTP, Method: http.MethodPost,
-			URL: strings.TrimRight(cmp.Or(d.URL, gomodrinth.BaseURL), "/") + "/version_files/update",
-			Body: struct {
-				Hashes       []string `json:"hashes"`
-				Algorithm    string   `json:"algorithm"`
-				Loaders      []string `json:"loaders"`
-				GameVersions []string `json:"game_versions"`
-				VersionTypes []string `json:"version_types"`
-			}{slices.Sorted(slices.Values(groups[stability])), "sha512", usererr.NonNil(src.Loaders), usererr.NonNil(src.GameVersions), versionTypes[:stability]},
-			UserAgent: userAgent(mortarVersion),
-		}, &got); err != nil {
-			return nil, err
+		callCtx, cancel := bounded(ctx)
+		got, err := d.api(mortarVersion).LatestByHash(callCtx, "sha512",
+			slices.Sorted(slices.Values(groups[stability])), src.Loaders, src.GameVersions, versionTypes[:stability])
+		cancel()
+		if err != nil {
+			return nil, apiErr(err)
 		}
 		maps.Copy(newest, got)
 	}
