@@ -2,14 +2,13 @@ package updatesvc
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/go-httpkit"
+	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 	"github.com/wailsapp/wails/v3/pkg/updater/providers/endpoint"
@@ -54,30 +53,17 @@ func (p *prereleaseProvider) Download(ctx context.Context, rel *updater.Release,
 }
 
 func (p *prereleaseProvider) latestPrereleaseTag(ctx context.Context, current string) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.github.com/repos/"+mortarRepo+"/releases?per_page=30", nil)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Accept", "application/vnd.github+json")
-	b, err := httpkit.DoCapped(p.client, req, 8<<20, nil)
+	releases, err := gh.FetchReleases(ctx, p.client, "https://api.github.com/repos/"+mortarRepo+"/releases?per_page=30")
 	if err != nil {
 		return "", fmt.Errorf("github releases: %w", err)
-	}
-	var releases []struct {
-		TagName    string `json:"tag_name"`
-		Prerelease bool   `json:"prerelease"`
-		Draft      bool   `json:"draft"`
-	}
-	if err := json.Unmarshal(b, &releases); err != nil {
-		return "", err
 	}
 	for _, r := range releases {
 		if r.Draft || !r.Prerelease {
 			continue
 		}
-		v := strings.TrimPrefix(strings.TrimSpace(r.TagName), "v")
+		v := strings.TrimPrefix(strings.TrimSpace(r.Tag), "v")
 		if meta.Newer(v, current) {
-			return strings.TrimSpace(r.TagName), nil
+			return strings.TrimSpace(r.Tag), nil
 		}
 	}
 	return "", nil
