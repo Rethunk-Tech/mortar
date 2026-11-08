@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Card, Typography, useMediaQuery } from '@mui/material'
+import { useWidth } from '@rethunk/react-load-hooks'
 import { memo, useCallback, useMemo, useRef } from 'react'
 import type {
   Mod,
@@ -9,7 +10,6 @@ import { parseCardStats } from '../browse/stats.ts'
 import { compact, compactQuery } from '../game/compact.ts'
 import { boundShortcut } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
-import { useElementSize } from '../shell/useElementSize.ts'
 import { space } from '../theme/density.ts'
 import { PAD_FOCUS } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -374,8 +374,7 @@ function CardsPane({
     gridLanePx(laneCompact) +
     (cardSize === 'large' ? LARGE_LANE_EXTRA : 0) +
     (statsLine ? STATS_LINE_PX : 0)
-  const parentRef = useRef<HTMLDivElement>(null)
-  const { width } = useElementSize(parentRef)
+  const [parentRef, width] = useWidth<HTMLDivElement>()
   const columns = gridColumnCount(width)
   const columnsRef = useRef(columns)
   columnsRef.current = columns

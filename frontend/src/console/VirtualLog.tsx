@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Link } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import { useSize } from '@rethunk/react-load-hooks'
 import {
   memo,
   type ReactNode,
@@ -12,7 +13,6 @@ import {
   useState,
 } from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
-import { useElementSize } from '../shell/useElementSize.ts'
 import { space } from '../theme/density.ts'
 import {
   type ConsoleLink,
@@ -284,7 +284,7 @@ export function VirtualLog({
   const { t } = useLingui()
   const ref = useRef<HTMLDivElement>(null)
   const [top, setTop] = useState(0)
-  const { height } = useElementSize(ref)
+  const { height } = useSize(ref)
   const [menu, setMenu] = useState<{
     seq: number
     top: number

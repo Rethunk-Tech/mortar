@@ -2,12 +2,12 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Pagination, Typography } from '@mui/material'
 import { arrowFocus } from '@rethunk/dom-input-nav'
+import { useSize } from '@rethunk/react-load-hooks'
 import { CloudOff, Search, SearchX } from 'lucide-react'
 import { memo, useRef } from 'react'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { unreachableNote, unsortedNote } from '../shell/offlineText.ts'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
-import { useElementSize } from '../shell/useElementSize.ts'
 import { space } from '../theme/density.ts'
 import type { InlineError } from '../toasts/report.ts'
 import {
@@ -52,7 +52,7 @@ interface BrowseBodyProps {
 function BrowseSkeleton({ view }: { view: string }) {
   const { t } = useLingui()
   const box = useRef<HTMLDivElement>(null)
-  const size = useElementSize(box)
+  const size = useSize(box)
   const isGrid = view === 'grid'
   const rowPx = PICTURE_PX + CARD_PAD_PX
   return (
