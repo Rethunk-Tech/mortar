@@ -12,6 +12,7 @@ import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
 import { download } from '../queue/actions.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
+import { changeStillLatest } from '../toasts/history.ts'
 import { errorMessage, logAction } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
@@ -123,10 +124,15 @@ function pushRevertUndo(game: string, profileId: string, beforeId: string, next:
         if (!current) {
           return { disabled: true, reason: i18n._(msg`That profile is gone.`) }
         }
-        const keys = new Set((next.entries ?? []).map((entry) => entry.key))
-        const now = new Set((current.entries ?? []).map((entry) => entry.key))
-        if (keys.size !== now.size || [...keys].some((key) => !now.has(key))) {
-          return { disabled: true, reason: i18n._(msg`This is no longer the latest change.`) }
+        for (const entry of next.entries ?? []) {
+          const state = changeStillLatest(
+            current,
+            entry.key,
+            (entry.mods ?? []).map((mod) => mod.id),
+          )
+          if (state.disabled) {
+            return state
+          }
         }
         return { disabled: false }
       },
