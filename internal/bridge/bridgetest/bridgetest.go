@@ -1,3 +1,4 @@
+// Package bridgetest starts a loopback companion listener for tests.
 package bridgetest
 
 import (
@@ -42,7 +43,7 @@ func FakeBridge(t *testing.T, c bridge.Companion, root string, replies ...string
 				return
 			}
 			func() {
-				defer conn.Close()
+				defer func() { _ = conn.Close() }()
 				r := bufio.NewReader(conn)
 				got, _ := r.ReadString('\n')
 				if strings.TrimSpace(got) != token {

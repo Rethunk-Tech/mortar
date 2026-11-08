@@ -3,7 +3,6 @@
 package launchsvc
 
 import (
-	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -135,7 +134,7 @@ func TestStopBisectRunStopsOnlyWhenRunning(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cmd := exec.Command("sleep", "30")
+	cmd := exec.CommandContext(t.Context(), "sleep", "30")
 	if err := cmd.Start(); err != nil {
 		t.Fatal(err)
 	}
@@ -144,7 +143,7 @@ func TestStopBisectRunStopsOnlyWhenRunning(t *testing.T) {
 	svc.mu.Lock()
 	svc.status[keyOf(sl)] = Status{Game: "stardew", Install: sl.inst, State: Running, Profile: p.ID}
 	svc.mu.Unlock()
-	if err := svc.stopBisectRun(context.Background(), sl); err != nil {
+	if err := svc.stopBisectRun(t.Context(), sl); err != nil {
 		t.Fatal(err)
 	}
 	if svc.current(sl).State != Idle {
