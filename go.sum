@@ -16,8 +16,8 @@ github.com/Rethunk-Tech/go-cfgedit v0.3.0 h1:3Ohao7UVI+Gh7ALtvPe5aZH74sjzvdpReQq
 github.com/Rethunk-Tech/go-cfgedit v0.3.0/go.mod h1:pYLtZnBgk9DEM0KGz/12x7xMhrn0v3wMmOlk3ymBQ/0=
 github.com/Rethunk-Tech/go-curseforge v0.4.0 h1:Nr9pRINnAK/yqhMlBOJul8Etc35UiYp7MvBiGMGusO8=
 github.com/Rethunk-Tech/go-curseforge v0.4.0/go.mod h1:jC18Ee4y2zZpF4tM3DSWe6D8rTZsEURTvzKzAoQ8E9A=
-github.com/Rethunk-Tech/go-desktopenv v0.7.0 h1:oMTK8oeKOJrpLhfYOApNfhjNlcVfwlXnhTpXd8m4yZs=
-github.com/Rethunk-Tech/go-desktopenv v0.7.0/go.mod h1:g3n7aV6s+I9RwrTkMyRKywK6HJy5hdSjItaSf2evl08=
+github.com/Rethunk-Tech/go-desktopenv v0.8.0 h1:ReoVKEj5N73J9yxXpNr7y8C2GxO2JuUjmbwVtrlnDRI=
+github.com/Rethunk-Tech/go-desktopenv v0.8.0/go.mod h1:g3n7aV6s+I9RwrTkMyRKywK6HJy5hdSjItaSf2evl08=
 github.com/Rethunk-Tech/go-dotnet v0.3.0 h1://IlbmPNpbnm9jHpaMikSj8b2iC2cTBn08X56AOR8a8=
 github.com/Rethunk-Tech/go-dotnet v0.3.0/go.mod h1:lJSyQ5mtaPq4P0bsIiKAkZICS56mAHJrBvQESSuiCS0=
 github.com/Rethunk-Tech/go-fomod v0.1.2 h1:O4e1zttRosz/hhi+zSNP4kKoZBUGHJ/13BLXI8wVuBU=
