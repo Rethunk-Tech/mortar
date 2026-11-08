@@ -21,9 +21,9 @@ func useTempData(t *testing.T) {
 }
 
 // makeExe is a file that stands in for a game's executable, in a folder named after the game.
-func makeExe(t *testing.T, folder string) string {
+func makeExe(t *testing.T) string {
 	t.Helper()
-	exe := filepath.Join(t.TempDir(), folder, "game.exe")
+	exe := filepath.Join(t.TempDir(), "My Game", "game.exe")
 	if err := os.MkdirAll(filepath.Dir(exe), 0o750); err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func makeExe(t *testing.T, folder string) string {
 
 func TestAddRefusesWhatItCannotUse(t *testing.T) {
 	useTempData(t)
-	exe := makeExe(t, "My Game")
+	exe := makeExe(t)
 	abs := t.TempDir()
 	for _, tc := range []struct {
 		name, game, exe, loader, community, want string
@@ -77,7 +77,7 @@ func mustFail(t *testing.T, fn func() error) error {
 
 func TestAddSuffixesEveryCollisionBeyondTheFirst(t *testing.T) {
 	useTempData(t)
-	exe := makeExe(t, "My Game")
+	exe := makeExe(t)
 	var ids []string
 	for range 3 {
 		e, _, err := Add("My Game", exe, Folder, "")
@@ -98,7 +98,7 @@ func TestAddSuffixesEveryCollisionBeyondTheFirst(t *testing.T) {
 
 func TestAddRefusesPastTheGameCap(t *testing.T) {
 	useTempData(t)
-	exe := makeExe(t, "My Game")
+	exe := makeExe(t)
 	for i := range maxGames {
 		if _, _, err := Add(fmt.Sprintf("Game %d", i), exe, Folder, ""); err != nil {
 			t.Fatalf("game %d: %v", i, err)
@@ -179,7 +179,7 @@ func TestRemoveRefusesAnUnknownID(t *testing.T) {
 
 func TestRemoveForgetsTheGameAndItsRegistration(t *testing.T) {
 	useTempData(t)
-	exe := makeExe(t, "My Game")
+	exe := makeExe(t)
 	e, _, err := Add("My Game", exe, Folder, "")
 	if err != nil {
 		t.Fatal(err)

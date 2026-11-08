@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
+	"github.com/Rethunk-Tech/go-safefs"
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 )
@@ -81,7 +82,7 @@ func TestRemoveSteamShortcutsDropsOnlyMortarsAndKeepsABackup(t *testing.T) {
 	if err := os.Remove(shortcuts + appversion.SteamBackupSuffix); err != nil {
 		t.Fatal(err)
 	}
-	before, err := os.ReadFile(shortcuts)
+	before, err := safefs.ReadFile(shortcuts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,11 +95,11 @@ func TestRemoveSteamShortcutsDropsOnlyMortarsAndKeepsABackup(t *testing.T) {
 	if got := out.String(); got != "Removed 2 Mortar shortcuts from Steam\n" {
 		t.Fatalf("printed %q", got)
 	}
-	backup, err := os.ReadFile(shortcuts + appversion.SteamBackupSuffix)
+	backup, err := safefs.ReadFile(shortcuts + appversion.SteamBackupSuffix)
 	if err != nil || !bytes.Equal(backup, before) {
 		t.Fatalf("the backup holds %q, %v; want the file as it was", backup, err)
 	}
-	body, err := os.ReadFile(shortcuts)
+	body, err := safefs.ReadFile(shortcuts)
 	if err != nil {
 		t.Fatal(err)
 	}

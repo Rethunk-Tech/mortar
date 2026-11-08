@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // releaseFiles are the five copies cmd/version rewrites, with the shapes the real files have. {version} stands in
@@ -69,7 +71,7 @@ func writeFile(t *testing.T, root, rel, body string) {
 
 func readAll(t *testing.T, root, rel string) string {
 	t.Helper()
-	b, err := os.ReadFile(filepath.Join(root, rel))
+	b, err := safefs.ReadFile(filepath.Join(root, rel))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,14 +81,7 @@ func readAll(t *testing.T, root, rel string) string {
 // inDir runs fn with the process's working directory at root, which cmd/version reads its files from.
 func inDir(t *testing.T, root string, fn func()) {
 	t.Helper()
-	old, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Chdir(root); err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = os.Chdir(old) })
+	t.Chdir(root)
 	fn()
 }
 
