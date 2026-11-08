@@ -328,7 +328,10 @@ function compareLastRun(a: ListRow, b: ListRow, dir: ListSortDir): number {
   return primary
 }
 
-type SortValue = { missing: boolean; key: string | number }
+interface SortValue {
+  missing: boolean
+  key: string | number
+}
 
 const textKey =
   (read: (row: ListRow) => string, emptyCounts = true) =>
@@ -369,7 +372,7 @@ const LIST_SORT_VALUE: {
   released: dateKey((row) => figureText(row, 'released'), Number.isNaN),
   installed: dateKey((row) => row.added, yearMissing),
   switchedOff: dateKey((row) => row.switchedOff, yearMissing),
-  needs: numKey((row) => (row.mod.needs == null ? undefined : row.mod.needs.length)),
+  needs: numKey((row) => row.mod.needs?.length),
   status: textKey((row) => row.status),
   reason: textKey((row) => row.reason, false),
   notes: textKey((row) => notesText(row)),
@@ -384,12 +387,14 @@ function compareSortValues(
   b: SortValue,
   dir: ListSortDir,
 ): number {
-  const ordered =
-    column === 'version' || column === 'latest' || column === 'pluginVersion'
-      ? cmpVersion(String(a.key), String(b.key))
-      : typeof a.key === 'number' && typeof b.key === 'number'
-        ? cmpNum(a.key, b.key)
-        : cmpText(String(a.key), String(b.key))
+  let ordered: number
+  if (column === 'version' || column === 'latest' || column === 'pluginVersion') {
+    ordered = cmpVersion(String(a.key), String(b.key))
+  } else if (typeof a.key === 'number' && typeof b.key === 'number') {
+    ordered = cmpNum(a.key, b.key)
+  } else {
+    ordered = cmpText(String(a.key), String(b.key))
+  }
   return missingLast(a.missing, b.missing, dir, ordered)
 }
 
@@ -407,8 +412,8 @@ function compareListRows(
   if (column === 'lastRun') {
     primary = compareLastRun(a, b, dir)
   } else if (column !== 'on') {
-    const valueOf = LIST_SORT_VALUE[column]
-    primary = compareSortValues(column, valueOf(a), valueOf(b), dir)
+    const sortValue = LIST_SORT_VALUE[column]
+    primary = compareSortValues(column, sortValue(a), sortValue(b), dir)
   }
   if (primary !== 0) {
     return primary
