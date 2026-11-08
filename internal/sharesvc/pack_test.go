@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
+	"errors"
 	"os"
 	"path/filepath"
 	"slices"
@@ -22,7 +23,22 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testhttp"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
+
+func TestPackUnreadable(t *testing.T) {
+	err := packUnreadable(pack.ErrUnknown)
+	if !errors.Is(err, pack.ErrUnknown) {
+		t.Fatalf("errors.Is unknown: %v", err)
+	}
+	if usererr.KindOf(err) != usererr.Damaged {
+		t.Fatalf("kind = %s", usererr.KindOf(err))
+	}
+	other := errors.New("disk")
+	if packUnreadable(other) != other {
+		t.Fatalf("passthrough = %v", packUnreadable(other))
+	}
+}
 
 const codeKey = "019c9378-d2e6-4fec-5a2f-e4b22f8cf1d1"
 

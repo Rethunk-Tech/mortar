@@ -19,6 +19,60 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
+func TestWriteCollectionRoundTrip(t *testing.T) {
+	modsDir := t.TempDir()
+	dest := filepath.Join(t.TempDir(), "collection.zip")
+	p := profile.Profile{Name: "Two Mods", Notes: "bring both", Entries: []profile.Entry{
+		{Key: "k1", Source: profile.Source{Kind: profile.KindNexus, Name: "one.zip", ModID: 100, FileID: 7, Version: "1.0"}},
+		{Key: "k2", Source: profile.Source{Kind: profile.KindNexus, Name: "two.zip", ModID: 200, FileID: 9, Version: "2.0"}},
+	}}
+	s := &Service{}
+	got, err := s.writeCollection(t.Context(), p, nexusmods.Title{Domain: "stardewvalley"}, modsDir, dest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Path != dest || got.External != 0 || s.lastExport != dest {
+		t.Fatalf("export = %+v last=%q", got, s.lastExport)
+	}
+
+	zr, err := zip.OpenReader(dest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer zr.Close()
+	var raw []byte
+	for _, f := range zr.File {
+		if f.Name != collectionManifestName {
+			continue
+		}
+		rc, err := f.Open()
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, err = io.ReadAll(rc)
+		_ = rc.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if len(raw) == 0 {
+		t.Fatal("no collection.json")
+	}
+	var doc collectionDoc
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		t.Fatal(err)
+	}
+	if doc.Info.Name != "Two Mods" || doc.Info.DomainName != "stardewvalley" || len(doc.Mods) != 2 {
+		t.Fatalf("doc = %+v", doc)
+	}
+	if doc.Mods[0].Source.ModID != 100 || doc.Mods[1].Source.ModID != 200 {
+		t.Fatalf("mods = %+v", doc.Mods)
+	}
+	if _, err := parseChoices(raw); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestCollectionExportRoundTrip(t *testing.T) {
 	modsDir := t.TempDir()
 	folder := filepath.Join(modsDir, "k1", "Cozy")
