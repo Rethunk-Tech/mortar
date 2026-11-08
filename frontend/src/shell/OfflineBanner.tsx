@@ -15,31 +15,35 @@ import {
   useOffline,
 } from './offline.ts'
 import { offlineMessage } from './offlineText.ts'
+import { useOnWindowFocus } from './useOnWindowFocus.ts'
 
 // Runs only while the window is focused: a source that answered costs nothing, an unreachable one gets one probe
 // every five minutes.
+const whileFocused = (task: () => Promise<void>) => {
+  if (document.hasFocus()) {
+    task().catch(reportUnexpected)
+  }
+}
+
+// A focus event means the window is focused already, so the listener skips the check the poll needs.
+const refreshOnFocus = () => {
+  refresh().catch(reportUnexpected)
+}
+
 function useOfflineSync() {
   useEffect(() => {
-    const focused = () => document.hasFocus()
-    const run = (task: () => Promise<void>) => {
-      if (focused()) {
-        task().catch(reportUnexpected)
-      }
-    }
-    run(refresh)
-    const poll = globalThis.setInterval(() => run(refresh), STATE_POLL_MS)
-    const probe = globalThis.setInterval(() => run(recheck), RECHECK_MS)
-    const onFocus = () => run(refresh)
-    globalThis.addEventListener('focus', onFocus)
+    whileFocused(refresh)
+    const poll = globalThis.setInterval(() => whileFocused(refresh), STATE_POLL_MS)
+    const probe = globalThis.setInterval(() => whileFocused(recheck), RECHECK_MS)
     // Go says the moment a source flips, so the banner does not wait for the poll.
-    const off = Events.On('netstate:changed', () => run(refresh))
+    const off = Events.On('netstate:changed', () => whileFocused(refresh))
     return () => {
       globalThis.clearInterval(poll)
       globalThis.clearInterval(probe)
-      globalThis.removeEventListener('focus', onFocus)
       off()
     }
   }, [])
+  useOnWindowFocus(refreshOnFocus)
 }
 
 // One slim row under the title bar while a mod source cannot be reached.
