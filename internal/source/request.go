@@ -84,8 +84,10 @@ func DoJSON(ctx context.Context, r Request, out any) error {
 	if se, ok := errors.AsType[*httpkit.StatusError](err); ok {
 		return &StatusError{Service: r.Service, Code: se.Code, Status: se.Status}
 	}
-	if inner := errors.Unwrap(err); inner != nil && err.Error() == "decode response: "+inner.Error() {
-		return fmt.Errorf("%s: %w", strings.ToLower(r.Service), inner)
+	var syntax *json.SyntaxError
+	var typed *json.UnmarshalTypeError
+	if errors.As(err, &syntax) || errors.As(err, &typed) {
+		return fmt.Errorf("%s: %w", strings.ToLower(r.Service), errors.Unwrap(err))
 	}
 	return err
 }
