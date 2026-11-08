@@ -2060,15 +2060,8 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 	}()
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
-	if err := github.Download(ctx, c.HTTP, address, tmpPath, maxComponent, nil); err != nil {
+	if err := github.Download(ctx, c.HTTP, address, tmpPath, maxComponent, "sha256:"+strings.ToLower(component.SHA256), nil); err != nil {
 		return fmt.Errorf("download component %s: %w", component.Name, err)
-	}
-	sum, err := safefs.HashFile(tmpPath, sha256.New())
-	if err != nil {
-		return err
-	}
-	if !strings.EqualFold(sum, component.SHA256) {
-		return fmt.Errorf("component %s has sha256 %s, want %s", component.Name, sum, component.SHA256)
 	}
 	return safefs.WriteStreamAtomic(dest, 0o600, func(w io.Writer) error {
 		f, err := safefs.Open(tmpPath)

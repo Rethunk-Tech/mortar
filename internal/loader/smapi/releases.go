@@ -2,14 +2,13 @@ package smapi
 
 import (
 	"context"
-	"crypto/sha256"
 	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-httpkit/download"
 	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -156,15 +155,11 @@ func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dest 
 		return usererr.New(usererr.Invalid, fmt.Sprintf("SMAPI %s is not in Mortar's signed catalog, so Mortar will not run its installer.", version))
 	}
 	url := base + "/" + version + "/" + asset
-	if err := github.Download(ctx, l.Client, url, dest, maxInstaller, nil); err != nil {
-		return fmt.Errorf("download SMAPI %s: %w", version, err)
-	}
-	got, err := safefs.HashFile(dest, sha256.New())
-	if err == nil && !strings.EqualFold(got, want) {
+	err := github.Download(ctx, l.Client, url, dest, maxInstaller, "sha256:"+strings.ToLower(want), nil)
+	if errors.Is(err, download.ErrChecksum) {
 		err = errors.New("the download does not match the checksum in Mortar's signed catalog")
 	}
 	if err != nil {
-		_ = safefs.Remove(dest)
 		return fmt.Errorf("download SMAPI %s: %w", version, err)
 	}
 	return nil

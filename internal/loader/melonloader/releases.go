@@ -2,13 +2,12 @@ package melonloader
 
 import (
 	"context"
-	"crypto/sha256"
 	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-httpkit/download"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -148,16 +147,9 @@ func (l Loader) download(ctx context.Context, r github.Release, want, dst string
 			pack = a
 		}
 	}
-	if err := github.Download(ctx, l.HTTP, pack.URL, dst, maxPack, nil); err != nil {
-		return err
+	err := github.Download(ctx, l.HTTP, pack.URL, dst, maxPack, "sha256:"+strings.ToLower(want), nil)
+	if errors.Is(err, download.ErrChecksum) {
+		return errors.New("the download does not match the checksum in Mortar's signed catalog")
 	}
-	got, err := safefs.HashFile(dst, sha256.New())
-	if err == nil && !strings.EqualFold(got, want) {
-		err = errors.New("the download does not match the checksum in Mortar's signed catalog")
-	}
-	if err != nil {
-		_ = safefs.Remove(dst)
-		return err
-	}
-	return nil
+	return err
 }

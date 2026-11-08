@@ -26,10 +26,12 @@ func (e tooLargeError) Error() string { return string(e) }
 func (tooLargeError) Unwrap() error   { return safefs.ErrTooLarge }
 
 // Download streams url to dest, appending with Range when a partial and the server allow it, and failing when the
-// body exceeds limit bytes (which must be positive).
-func Download(ctx context.Context, hc *http.Client, url, dest string, limit int64, progress download.Progress) error {
+// body exceeds limit bytes (which must be positive). A non-empty digest (`sha256:<hex>`) must match the finished file,
+// or the file is removed and the error wraps download.ErrChecksum.
+func Download(ctx context.Context, hc *http.Client, url, dest string, limit int64, digest string, progress download.Progress) error {
 	err := download.File(ctx, hc, url, dest, download.Options{
 		Limit:     limit,
+		Digest:    digest,
 		Progress:  progress,
 		Limiter:   Limiter,
 		Authorize: DefaultAuth.Apply,

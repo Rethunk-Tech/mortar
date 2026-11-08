@@ -96,7 +96,7 @@ func (s *Service) fetchTicking(ctx context.Context, it Item, url, path string, t
 		return usererr.New(usererr.Invalid, "the download address is not https, so Mortar will not fetch it")
 	}
 	p := &progress{s: s, id: it.ID, total: it.SizeKB << 10, last: s.d.Now()}
-	err := github.Download(ctx, s.d.HTTP, url, path, archive.DefaultMaxTotalBytes, func(done, total int64) {
+	err := github.Download(ctx, s.d.HTTP, url, path, archive.DefaultMaxTotalBytes, "", func(done, total int64) {
 		if total > 0 {
 			p.total = total
 		}

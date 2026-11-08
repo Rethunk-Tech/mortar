@@ -20,7 +20,7 @@ func TestDownloadErrorOmitsToken(t *testing.T) {
 		}
 		return nil, errors.New("boom")
 	})}
-	err := Download(t.Context(), hc, "https://github.com/o/r/releases/download/v1/a.zip", t.TempDir()+"/a.zip", 1<<20, nil)
+	err := Download(t.Context(), hc, "https://github.com/o/r/releases/download/v1/a.zip", t.TempDir()+"/a.zip", 1<<20, "", nil)
 	if err == nil || strings.Contains(err.Error(), secret) {
 		t.Fatalf("err %v", err)
 	}

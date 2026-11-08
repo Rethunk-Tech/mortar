@@ -734,7 +734,7 @@ func (s *Service) templateDir(ctx context.Context, tpl components.DevTemplate) (
 	}
 	defer func() { _ = safefs.RemoveAll(work) }()
 	zip := filepath.Join(work, "template.zip")
-	if err := github.Download(ctx, s.HTTP, url, zip, maxTemplateZip, nil); err != nil {
+	if err := github.Download(ctx, s.HTTP, url, zip, maxTemplateZip, "", nil); err != nil {
 		return "", fmt.Errorf("downloading the template %s %s: %w", tpl.Repo, tpl.Ref, err)
 	}
 	unpacked := filepath.Join(work, "files")
