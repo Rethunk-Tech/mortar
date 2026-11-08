@@ -1765,7 +1765,7 @@ func (s *Services) shareLog(ctx context.Context, gameID, id, run string) (map[st
 }
 
 // launchWait bounds how long launch waits for the game to leave Launching.
-const launchWait = 3 * time.Minute
+var launchWait = 3 * time.Minute
 
 func gameName(id string) string {
 	if g := game.Find(id); g != nil {
@@ -2124,7 +2124,7 @@ func (s *Services) queueUpdates(ctx context.Context, gameID, id string, ids []st
 }
 
 // updatesWait is how long a launch waits for the updates it queued.
-const updatesWait = 5 * time.Minute
+var updatesWait = 5 * time.Minute
 
 // updatesSettled reports whether every queued update has ended, and the failure of the first that did not finish. A
 // download a free Nexus account must click through is handed to the player and does not hold the game back.
