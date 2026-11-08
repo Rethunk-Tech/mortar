@@ -10,7 +10,7 @@ import { listNames } from '../i18n/list.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { localId } from './dependents.ts'
 import { describeLoadFailure } from './describeLoadFailure.ts'
-import { type Problem, sameId } from './lookup.ts'
+import { modById, modByKey, type Problem } from './lookup.ts'
 import { useMods } from './store.ts'
 
 type Describe = (p: Problem) => string
@@ -331,8 +331,7 @@ export function useDescribe(): Describe {
   const { t } = useLingui()
   // Read when a problem is described, not subscribed: a missing mod is seldom in the list, and every problem badge on
   // screen would otherwise redraw whenever any mod changes.
-  const nameOf = (id: string) =>
-    useMods.getState().mods.find((m) => sameId(m.id, id))?.name ?? localId(id)
+  const nameOf = (id: string) => modById(useMods.getState().mods, id)?.name ?? localId(id)
 
   return (p: Problem): string => {
     switch (p.kind) {
@@ -358,8 +357,7 @@ export function useDescribe(): Describe {
       }
       case 'fileConflict': {
         const { winner, beaten, paths } = p.fileConflict
-        const keyName = (key: string) =>
-          useMods.getState().mods.find((m) => m.key === key)?.name ?? key
+        const keyName = (key: string) => modByKey(useMods.getState().mods, key)?.name ?? key
         const losers = listNames(beaten.map(keyName))
         return i18n._(
           msg`${plural(
