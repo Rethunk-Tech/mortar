@@ -71,8 +71,7 @@ func (d Driver) client(version string) *paradoxmods.Client {
 }
 
 func mapErr(err error) error {
-	var api *paradoxmods.APIError
-	if errors.As(err, &api) {
+	if api, ok := errors.AsType[*paradoxmods.APIError](err); ok {
 		return fmt.Errorf("the answer from Paradox Mods was: %s", cmp.Or(api.Message, "refused"))
 	}
 	if rl, ok := errors.AsType[*httpkit.RateLimitError](err); ok {
