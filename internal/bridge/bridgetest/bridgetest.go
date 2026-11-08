@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 )
 
@@ -64,7 +65,7 @@ func FakeBridge(t *testing.T, c bridge.Companion, root string, replies ...string
 		t.Fatal(err)
 	}
 	state := fmt.Sprintf(`{"port":%d,"token":"%s"}`, addr.Port, token)
-	if err := os.WriteFile(path, []byte(state), 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(path, []byte(state), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	return cmds
