@@ -419,6 +419,44 @@ function useOverlaySnapshot(enabled: boolean, port: number, token: string): Snap
   return snapshot
 }
 
+// The values list, alone with the poll that fills it: a poll's answer redraws these rows and not the token and port
+// fields under them, which share nothing with it.
+function OverlayValuesLive({
+  game,
+  enabled,
+  port,
+  token,
+  labels,
+  idle,
+  wait,
+  copied,
+  failCopy,
+}: {
+  game: string
+  enabled: boolean
+  port: number
+  token: string
+  labels: boolean
+  idle: string
+  wait: string
+  copied: string
+  failCopy: string
+}) {
+  const snapshot = useOverlaySnapshot(enabled, port, token)
+  return (
+    <OverlayValues
+      game={game}
+      snapshot={snapshot}
+      labels={labels}
+      token={token}
+      idle={idle}
+      wait={wait}
+      copied={copied}
+      failCopy={failCopy}
+    />
+  )
+}
+
 export function StreamOverlay({ game }: { game: string }) {
   const { t } = useLingui()
   const enabled = useSettings((s) => s.overlayEnabled)
@@ -430,7 +468,6 @@ export function StreamOverlay({ game }: { game: string }) {
   const copied = t`Copied`
   const failCopy = t`Could not copy`
   const [labels, setLabels] = useState(false)
-  const snapshot = useOverlaySnapshot(enabled, port, token)
   return (
     <SettingsSection title={t`Stream overlay`}>
       <SettingRow
@@ -451,11 +488,12 @@ export function StreamOverlay({ game }: { game: string }) {
       ) : null}
       {enabled ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, p: space.pad }}>
-          <OverlayValues
+          <OverlayValuesLive
             game={game}
-            snapshot={snapshot}
-            labels={labels}
+            enabled={enabled}
+            port={port}
             token={token}
+            labels={labels}
             idle={idle}
             wait={wait}
             copied={copied}
