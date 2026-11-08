@@ -3,7 +3,8 @@
 import re
 import sys
 
-text = open(sys.argv[1]).read()
+with open(sys.argv[1]) as f:
+    text = f.read()
 fields = {}
 for m in re.finditer(r"^(\w+)=(\(.*?\)|'[^']*'|\S+)$", text, re.M | re.S):
     key, raw = m.groups()
