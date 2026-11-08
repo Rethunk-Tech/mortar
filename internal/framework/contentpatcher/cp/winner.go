@@ -30,7 +30,7 @@ func markLoadAfterWinner(c *Conflict, hits []packHit) {
 	c.WinnerID, c.WinnerName, c.WinnerKind = "", "", WinnerPerEntry
 	for _, w := range winners {
 		if allAfter(w, winners, byID) {
-			c.WinnerID, c.WinnerName, c.WinnerKind = (w.ID), w.Name, WinnerChosen
+			c.WinnerID, c.WinnerName, c.WinnerKind = w.ID, w.Name, WinnerChosen
 			return
 		}
 	}

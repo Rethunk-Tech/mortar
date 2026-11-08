@@ -1482,7 +1482,7 @@ func switchOff(h packHit, peerSets ...[]packHit) (Fix, bool) {
 		if !set {
 			current = field.DefaultValue
 		}
-		best = Fix{Key: h.Key, ID: (h.ID), Name: h.Name, Field: field.Key, Current: current, Value: value}
+		best = Fix{Key: h.Key, ID: h.ID, Name: h.Name, Field: field.Key, Current: current, Value: value}
 		bestGated, bestNamed, found = gated, named, true
 	}
 	return best, found

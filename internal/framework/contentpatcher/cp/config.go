@@ -97,7 +97,7 @@ func ConfigHolds(conditions []Config, schema map[string]Schema, config map[strin
 	return true
 }
 
-// toggle reports a single-choice field whose values can select which compatibility patch runs.
+// Toggle reports a single-choice field whose values can select which compatibility patch runs.
 func (s Schema) Toggle() bool {
 	values := s.AllowValues
 	if len(values) == 0 {
@@ -119,7 +119,7 @@ func (s Schema) Toggle() bool {
 	return true
 }
 
-// booleanToggle reports a two-valued on/off field.
+// BooleanToggle reports a two-valued on/off field.
 func (s Schema) BooleanToggle() bool {
 	values := s.AllowValues
 	if len(values) == 0 {

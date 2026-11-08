@@ -95,7 +95,7 @@ func packShadowedBy(im Mod, pack Pack, at map[string]map[string][]packHit) (map[
 		}
 		seen[p.Kind+"\x00"+p.Target] = true
 		hits := at[p.Kind][p.Target]
-		i := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.ID, ModID(im.UniqueID)) })
+		i := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.ID, im.UniqueID) })
 		if i < 0 {
 			continue
 		}

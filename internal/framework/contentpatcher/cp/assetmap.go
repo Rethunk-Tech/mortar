@@ -261,7 +261,7 @@ func indexContentPack(im Mod, present map[string]bool, loadOrder int, grouped ma
 		}
 		base := indexedTouch{
 			Touch: AssetTouch{
-				ModID:     ModID(im.UniqueID),
+				ModID:     im.UniqueID,
 				ModName:   im.Name,
 				ModKey:    im.Key,
 				Action:    p.Action,
@@ -297,7 +297,7 @@ func indexReplacedFiles(im Mod, loadOrder int, grouped map[assetIndexKey][]index
 		key := assetIndexKey{Target: target, Kind: "load"}
 		grouped[key] = append(grouped[key], indexedTouch{
 			Touch: AssetTouch{
-				ModID:     ModID(im.UniqueID),
+				ModID:     im.UniqueID,
 				ModName:   im.Name,
 				ModKey:    im.Key,
 				Action:    kindLoad,
@@ -353,8 +353,7 @@ func dataKeysOf(p Patch) []string {
 		if s.Kind != 'p' {
 			continue
 		}
-		label := packScope.ReplaceAllString(s.Key, "")
-		label = strings.TrimPrefix(label, "entry:")
+		label := strings.TrimPrefix(s.Key, "entry:")
 		label = strings.TrimPrefix(label, "field:")
 		if label == "" || seen[label] {
 			continue

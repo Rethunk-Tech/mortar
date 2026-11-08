@@ -116,7 +116,7 @@ func NewPartsRun() *PartsRun {
 	return &PartsRun{Used: map[string]bool{}, Fresh: map[string]PartEntry{}}
 }
 
-// part serves key's entry, or computes it; stable is false when a pack behind key changed too recently for its
+// Part serves key's entry, or computes it; stable is false when a pack behind key changed too recently for its
 // stamps to be trusted. A nil run always computes.
 func (r *PartsRun) Part(key string, stable bool, compute func() PartEntry) PartEntry {
 	if r == nil {

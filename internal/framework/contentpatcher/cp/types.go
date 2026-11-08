@@ -123,114 +123,114 @@ type Findings struct {
 // Conflict is two or more enabled packs that Load the same target (hard) or edit the same image, map or data
 // entry (soft).
 type Conflict struct {
-	Kind     string
-	Target   string
-	PackIDs  []ModID
-	Names    []string
-	Keys     []string
-	WinnerID ModID
+	Kind     string   `json:"kind"`
+	Target   string   `json:"target"`
+	PackIDs  []ModID  `json:"packIds"`
+	Names    []string `json:"names"`
+	Keys     []string `json:"keys"`
+	WinnerID ModID    `json:"winnerId"`
 	// WinnerName is the winning pack's own name; empty when WinnerKind names no single winner.
-	WinnerName string
-	WinnerKind string
-	Overridden []string
+	WinnerName string   `json:"winnerName"`
+	WinnerKind string   `json:"winnerKind"`
+	Overridden []string `json:"overridden"`
 	// Cosmetic marks an edit conflict whose every overlap is harmless: shown, never counted.
-	Cosmetic bool
+	Cosmetic bool `json:"cosmetic"`
 	// Fixes are settings that switch off every clashing edit of one pack.
-	Fixes    []Fix
-	Evidence []Evidence
+	Fixes    []Fix      `json:"fixes"`
+	Evidence []Evidence `json:"evidence"`
 	// Note is why a cosmetic conflict cannot hurt play, when one reason covers every overlap.
-	Note *Note
+	Note *Note `json:"note,omitempty"`
 	// Farms is, per pack in PackIDs order, the farm types its clashing patches are all limited to: lower-case
 	// FarmType values, or a custom farm's Data/AdditionalFarms id (nil for a pack that applies on any farm); nil
 	// when no pack is limited.
-	Farms [][]string
+	Farms [][]string `json:"farms,omitempty"`
 	// Cells are the 16-pixel cells, as "x,y", that every pack's clashing patches write; empty when they share none.
-	Cells []string
+	Cells []string `json:"cells,omitempty"`
 }
 
 // Note is one reason a conflict is cosmetic. Kind "balance": the packs only set prices and costs, so one mod's
 // prices win. Kind "day": the overlap only applies on Value, one day or festival. Kind "farm": it only applies on
 // Value farm types, which none of the profile's saves uses.
 type Note struct {
-	Kind  string
-	Value string
+	Kind  string `json:"kind"`
+	Value string `json:"value,omitempty"`
 }
 
 // Fix sets one on/off field of a pack (Key, ID) to Value, which turns off all of that pack's edits in the
 // conflict; Current is the field's value now.
 type Fix struct {
-	Key     string
-	ID      ModID
-	Name    string
-	Field   string
-	Current string
-	Value   string
+	Key     string `json:"key"`
+	ID      ModID  `json:"id"`
+	Name    string `json:"name"`
+	Field   string `json:"field"`
+	Current string `json:"current"`
+	Value   string `json:"value"`
 }
 
 // Hint is a pack setting that would settle a clash. Description is the pack's own schema text; BecausePack names
 // the pack whose load beats this one when the current value has no effect.
 type Hint struct {
-	Key         string
-	ID          ModID
-	Name        string
-	Field       string
-	Current     string
-	Suggested   []string
-	For         []ModID
-	ForNames    []string
-	Description string
+	Key         string   `json:"key"`
+	ID          ModID    `json:"id"`
+	Name        string   `json:"name"`
+	Field       string   `json:"field"`
+	Current     string   `json:"current"`
+	Suggested   []string `json:"suggested"`
+	For         []ModID  `json:"for"`
+	ForNames    []string `json:"forNames"`
+	Description string   `json:"description"`
 	// Variant marks a picker (a palette, recolour or similar choice) whose values the pack maps to mods.
-	Variant bool
+	Variant bool `json:"variant,omitempty"`
 	// CurrentFor names the mod the current value is for when that mod is not enabled.
-	CurrentFor string
+	CurrentFor string `json:"currentFor,omitempty"`
 	// BecausePack and DeadTarget mark a setting with no effect: BecausePack loads DeadTarget over the pack's own.
-	BecausePack string
-	DeadTarget  string
+	BecausePack string `json:"becausePack,omitempty"`
+	DeadTarget  string `json:"deadTarget,omitempty"`
 }
 
 // Evidence is one clashing patch of a pack in a Conflict.
 type Evidence struct {
-	PackName string
-	PackID   ModID
-	Source   string
-	Index    int
-	Action   string
-	Target   string
-	ToArea   string
-	FromArea string
+	PackName string `json:"packName"`
+	PackID   ModID  `json:"packId"`
+	Source   string `json:"source"`
+	Index    int    `json:"index"`
+	Action   string `json:"action"`
+	Target   string `json:"target"`
+	ToArea   string `json:"toArea,omitempty"`
+	FromArea string `json:"fromArea,omitempty"`
 	// When is the patch's condition, for the caller to word.
-	When     When
-	Priority string
-	FromFile string
-	CropX    int
-	CropY    int
-	CropW    int
-	CropH    int
+	When     When   `json:"when"`
+	Priority string `json:"priority"`
+	FromFile string `json:"fromFile,omitempty"`
+	CropX    int    `json:"cropX"`
+	CropY    int    `json:"cropY"`
+	CropW    int    `json:"cropW"`
+	CropH    int    `json:"cropH"`
 	// Keys are the data entries and fields this patch sets that another pack's patch also sets.
-	Keys []string
+	Keys []string `json:"keys"`
 }
 
 // Shadowed is one enabled pack that later packs overwrite everywhere it writes.
 type Shadowed struct {
-	Key     string
-	ID      ModID
-	Name    string
-	By      []ModRef
-	Bundled bool
+	Key     string   `json:"key"`
+	ID      ModID    `json:"id"`
+	Name    string   `json:"name"`
+	By      []ModRef `json:"by"`
+	Bundled bool     `json:"bundled,omitempty"`
 }
 
 // TilesheetUse is a pack that only loads map and tilesheet assets: Enabled when a switched-on mod uses it, and
 // Names of the switched-off mods that do.
 type TilesheetUse struct {
-	Key     string
-	ID      ModID
-	Name    string
-	Enabled bool
-	Names   []string
+	Key     string   `json:"key"`
+	ID      ModID    `json:"id"`
+	Name    string   `json:"name"`
+	Enabled bool     `json:"enabled,omitempty"`
+	Names   []string `json:"names,omitempty"`
 }
 
 // ModRef names one enabled mod.
 type ModRef struct {
-	Key  string
-	Name string
+	Key  string `json:"key"`
+	Name string `json:"name"`
 }

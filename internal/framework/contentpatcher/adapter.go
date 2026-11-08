@@ -57,10 +57,9 @@ func smapiLoadOrder(mods []cp.Mod) []string {
 		if !m.Enabled {
 			continue
 		}
-		in = append(in, smapimanifest.Mod{
-			Manifest: smapimanifest.Manifest{UniqueID: m.UniqueID.Local(), ContentPackFor: m.ContentPackFor.Local()},
-			Folder:   m.Folder,
-		})
+		row := smapimanifest.Mod{Folder: m.Folder}
+		row.UniqueID, row.ContentPackFor = m.UniqueID.Local(), m.ContentPackFor.Local()
+		in = append(in, row)
 	}
 	out := make([]string, 0, len(in))
 	for _, row := range smapimanifest.Order(in) {
@@ -199,25 +198,6 @@ func winnerKind(kind string) string {
 		return framework.WinnerPerEntry
 	case cp.WinnerUnclear:
 		return framework.WinnerUnclear
-	}
-	return ""
-}
-
-// toCPWinnerKind is the library's kind of a Mortar winner.
-func toCPWinnerKind(kind string) string {
-	switch kind {
-	case framework.WinnerTop:
-		return cp.WinnerTop
-	case framework.WinnerChosen:
-		return cp.WinnerChosen
-	case framework.WinnerLoadOrder:
-		return cp.WinnerLoadOrder
-	case framework.WinnerNeither:
-		return cp.WinnerNeither
-	case framework.WinnerPerEntry:
-		return cp.WinnerPerEntry
-	case framework.WinnerUnclear:
-		return cp.WinnerUnclear
 	}
 	return ""
 }

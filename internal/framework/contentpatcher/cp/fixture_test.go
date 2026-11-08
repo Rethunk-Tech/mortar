@@ -74,7 +74,9 @@ func packFromDisk(m Mod) Mod {
 		return m
 	}
 	var doc struct {
-		ContentPackFor struct{ UniqueID string }
+		ContentPackFor struct {
+			UniqueID string `json:"UniqueID"`
+		} `json:"ContentPackFor"`
 	}
 	if json.Unmarshal(lenientjson.Clean(raw), &doc) == nil && doc.ContentPackFor.UniqueID != "" {
 		m.ContentPackFor = SMAPI(doc.ContentPackFor.UniqueID)
@@ -97,15 +99,6 @@ func writeAt(t *testing.T, path string, body []byte) {
 	if err := safefs.WriteFile(path, body, 0o600); err != nil {
 		t.Fatal(err)
 	}
-}
-
-func readFile(t *testing.T, path string) string {
-	t.Helper()
-	raw, err := safefs.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(raw)
 }
 
 // touchFile puts a file's modification time back the way it was, after ageing it.
@@ -157,13 +150,4 @@ func settingPack(t *testing.T, schema, changes, config string) Mod {
 func contentPack(t *testing.T, id, content string) Mod {
 	t.Helper()
 	return diskPack(t, id, map[string]string{"manifest.json": packManifest(id), "content.json": content})
-}
-
-// packAt builds the mod for a folder a test filled, marking it as content for Content Patcher as the profile scan
-// would from its manifest.
-func packAt(t *testing.T, id, root string) Mod {
-	t.Helper()
-	m := packFromDisk(Mod{Key: id, Name: id, UniqueID: SMAPI(id), Folder: root, Enabled: true})
-	m.ContentPackFor = SMAPI("Pathoschild.ContentPatcher")
-	return m
 }

@@ -8,8 +8,6 @@ import (
 	"image"
 	"image/draw"
 	"image/png"
-	"maps"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -29,7 +27,7 @@ func ConflictEvidence(kind string, hits []packHit) []Evidence {
 			}
 			e := Evidence{
 				PackName: hit.Name,
-				PackID:   (hit.ID),
+				PackID:   hit.ID,
 				Source:   patch.Source,
 				Index:    patch.Index,
 				Action:   patch.Action,
@@ -39,7 +37,7 @@ func ConflictEvidence(kind string, hits []packHit) []Evidence {
 				When:     patch.When,
 				Priority: patch.Priority,
 				FromFile: patch.FromFile,
-				Keys:     clashingKeys(patch, hits, hit.ID),
+				Keys:     sharedKeys(patch, hits, hit.ID),
 			}
 			if patch.Image {
 				if bounds == nil {
@@ -55,9 +53,9 @@ func ConflictEvidence(kind string, hits []packHit) []Evidence {
 	return out
 }
 
-// clashingKeys lists the data entries and fields of patch that another pack's edit also writes, as
-// "Entry 301" or "Field 301.Price" with any TargetField path, without the pack scoping of token keys.
-func clashingKeys(patch Patch, hits []packHit, self ModID) []string {
+// sharedKeys are the data entries and fields of patch that another pack's edit also writes, as the pack scoped
+// token keys the shapes hold.
+func sharedKeys(patch Patch, hits []packHit, self ModID) []string {
 	keys := []string{}
 	for _, s := range patch.Shapes {
 		if s.Kind != 'p' {
@@ -73,61 +71,6 @@ func clashingKeys(patch Patch, hits []packHit, self ModID) []string {
 		}
 	}
 	return keys
-}
-
-func keyLabel(key string) string {
-	label := "Entry "
-	if rest, ok := strings.CutPrefix(key, "field:"); ok {
-		label, key = "Field ", rest
-	} else {
-		key = strings.TrimPrefix(key, "entry:")
-	}
-	return label + packScope.ReplaceAllString(key, "")
-}
-
-// packScope matches the "@<pack folder>|" packScopedKey puts before a token key.
-var packScope = regexp.MustCompile(`@[^|]*\|`)
-
-func whenSummary(w When) string {
-	var parts []string
-	for _, group := range w.AnyOf {
-		parts = append(parts, "HasMod "+strings.Join(group, ", "))
-	}
-	for _, id := range w.NoneOf {
-		parts = append(parts, "not HasMod "+id)
-	}
-	for _, c := range w.Config {
-		parts = append(parts, c.Field+"="+strings.Join(c.Values, "|"))
-	}
-	for _, d := range w.Dynamic {
-		label := d.Name
-		if d.Contains != "" {
-			label += " contains " + d.Contains
-		} else if len(d.Values) > 0 {
-			label += "=" + strings.Join(d.Values, ", ")
-		}
-		if !d.Expected {
-			label = "not " + label
-		}
-		parts = append(parts, label)
-	}
-	for _, f := range w.Flags {
-		if f.Present {
-			parts = append(parts, "HasFlag "+f.Name)
-		} else {
-			parts = append(parts, "not HasFlag "+f.Name)
-		}
-	}
-	if w.Spouse != "" && w.Spouse != "\x00" {
-		parts = append(parts, "Spouse "+w.Spouse)
-	}
-	for _, token := range slices.Sorted(maps.Keys(w.Places)) {
-		parts = append(parts, token+"="+strings.Join(w.Places[token], ", "))
-	}
-	if len(w.Assumed) > 0 {
-		parts = append(parts, "also needs: "+strings.Join(slices.Compact(slices.Sorted(slices.Values(w.Assumed))), ", "))
-	}
-	return strings.Join(parts, "; ")
 }
 
 // patchBounds is one edit's destination rectangle, computed once per conflict rather than once per

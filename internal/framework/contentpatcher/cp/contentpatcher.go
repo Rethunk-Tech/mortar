@@ -95,40 +95,40 @@ type Patch struct {
 }
 
 type Config struct {
-	Field         string
-	Values        []string
-	AllowMultiple bool
+	Field         string   `json:"field"`
+	Values        []string `json:"values"`
+	AllowMultiple bool     `json:"allowMultiple,omitempty"`
 }
 
 // When holds a change's HasMod conditions: each anyOf group needs one of its mods
 // present, and no noneOf mod may be present. Dynamic token conditions are checked
 // with the pack and profile context; other conditions are treated as met.
 type When struct {
-	AnyOf   [][]string
-	NoneOf  []string
-	Config  []Config
-	Dynamic []DynamicCondition
-	Flags   []FlagCondition
-	Spouse  string
-	Places  map[string][]string
-	// assumed are the raw keys of the conditions this scan treats as met (time, queries, events), shown
-	// with the conflict so the user knows it may not happen on their save.
-	Assumed []string
-	// conditional is set when the change, or an Include around it, has any When condition at all, including
-	// the assumed ones.
-	Conditional bool
+	AnyOf   [][]string          `json:"anyOf,omitempty"`
+	NoneOf  []string            `json:"noneOf,omitempty"`
+	Config  []Config            `json:"config,omitempty"`
+	Dynamic []DynamicCondition  `json:"dynamic,omitempty"`
+	Flags   []FlagCondition     `json:"flags,omitempty"`
+	Spouse  string              `json:"spouse,omitempty"`
+	Places  map[string][]string `json:"places,omitempty"`
+	// Assumed are the raw keys of the conditions this scan treats as met (time, queries, events), shown with
+	// the conflict so the user knows it may not happen on their save.
+	Assumed []string `json:"assumed,omitempty"`
+	// Conditional is set when the change, or an Include around it, has any When condition at all, including the
+	// assumed ones.
+	Conditional bool `json:"conditional,omitempty"`
 }
 
 type DynamicCondition struct {
-	Name     string
-	Values   []string
-	Contains string
-	Expected bool
+	Name     string   `json:"name"`
+	Values   []string `json:"values,omitempty"`
+	Contains string   `json:"contains,omitempty"`
+	Expected bool     `json:"expected,omitempty"`
 }
 
 type FlagCondition struct {
-	Name    string
-	Present bool
+	Name    string `json:"name"`
+	Present bool   `json:"present,omitempty"`
 }
 
 func (w When) with(o When) When {
@@ -169,7 +169,7 @@ func (w When) withDefinition(o When) When {
 	return merged
 }
 
-// holds reports whether the conditions are met by present, a set of folded mod ids.
+// Holds reports whether the conditions are met by present, a set of folded mod ids.
 func (w When) Holds(present map[string]bool) bool {
 	for _, group := range w.AnyOf {
 		if !slices.ContainsFunc(group, func(id string) bool { return present[id] }) {
@@ -356,20 +356,13 @@ func diskPackOf(pack Pack) diskCachedPack {
 	if pack.Tokens != nil {
 		out.Tokens = make([]diskTokenDefinition, len(pack.Tokens))
 		for i, token := range pack.Tokens {
-			out.Tokens[i] = diskTokenDefinition{Name: token.Name, Value: token.Value, When: token.When}
+			out.Tokens[i] = diskTokenDefinition(token)
 		}
 	}
 	if pack.Schema != nil {
 		out.Schema = make(map[string]diskSchema, len(pack.Schema))
 		for key, schema := range pack.Schema {
-			out.Schema[key] = diskSchema{
-				Key:           schema.Key,
-				DefaultValue:  schema.DefaultValue,
-				AllowMultiple: schema.AllowMultiple,
-				AllowValues:   schema.AllowValues,
-				AllowBlank:    schema.AllowBlank,
-				Description:   schema.Description,
-			}
+			out.Schema[key] = diskSchema(schema)
 		}
 	}
 	return out
@@ -394,21 +387,14 @@ func cachedPackOfDisk(root string, disk diskCachedPack, entry diskPackEntry) Pac
 	if disk.Tokens != nil {
 		out.Tokens = make([]TokenDefinition, len(disk.Tokens))
 		for i, token := range disk.Tokens {
-			out.Tokens[i] = TokenDefinition{Name: token.Name, Value: token.Value, When: token.When}
+			out.Tokens[i] = TokenDefinition(token)
 		}
 	}
-	for key, schema := range disk.Schema {
-		out.Schema[key] = Schema{
-			Key:           schema.Key,
-			DefaultValue:  schema.DefaultValue,
-			AllowMultiple: schema.AllowMultiple,
-			AllowValues:   schema.AllowValues,
-			AllowBlank:    schema.AllowBlank,
-			Description:   schema.Description,
+	if disk.Schema != nil {
+		out.Schema = make(map[string]Schema, len(disk.Schema))
+		for key, schema := range disk.Schema {
+			out.Schema[key] = Schema(schema)
 		}
-	}
-	if disk.Schema == nil {
-		out.Schema = nil
 	}
 	return out
 }
@@ -662,24 +648,19 @@ func diskWhenOf(when When) diskWhen {
 	if when.Config != nil {
 		out.Config = make([]diskConfig, len(when.Config))
 		for i, config := range when.Config {
-			out.Config[i] = diskConfig{Field: config.Field, Values: config.Values, AllowMultiple: config.AllowMultiple}
+			out.Config[i] = diskConfig(config)
 		}
 	}
 	if when.Dynamic != nil {
 		out.Dynamic = make([]diskDynamicCondition, len(when.Dynamic))
 		for i, condition := range when.Dynamic {
-			out.Dynamic[i] = diskDynamicCondition{
-				Name:     condition.Name,
-				Values:   condition.Values,
-				Contains: condition.Contains,
-				Expected: condition.Expected,
-			}
+			out.Dynamic[i] = diskDynamicCondition(condition)
 		}
 	}
 	if when.Flags != nil {
 		out.Flags = make([]diskFlagCondition, len(when.Flags))
 		for i, flag := range when.Flags {
-			out.Flags[i] = diskFlagCondition{Name: flag.Name, Present: flag.Present}
+			out.Flags[i] = diskFlagCondition(flag)
 		}
 	}
 	return out
@@ -697,24 +678,19 @@ func cpWhenOfDisk(when diskWhen) When {
 	if when.Config != nil {
 		out.Config = make([]Config, len(when.Config))
 		for i, config := range when.Config {
-			out.Config[i] = Config{Field: config.Field, Values: config.Values, AllowMultiple: config.AllowMultiple}
+			out.Config[i] = Config(config)
 		}
 	}
 	if when.Dynamic != nil {
 		out.Dynamic = make([]DynamicCondition, len(when.Dynamic))
 		for i, condition := range when.Dynamic {
-			out.Dynamic[i] = DynamicCondition{
-				Name:     condition.Name,
-				Values:   condition.Values,
-				Contains: condition.Contains,
-				Expected: condition.Expected,
-			}
+			out.Dynamic[i] = DynamicCondition(condition)
 		}
 	}
 	if when.Flags != nil {
 		out.Flags = make([]FlagCondition, len(when.Flags))
 		for i, flag := range when.Flags {
-			out.Flags[i] = FlagCondition{Name: flag.Name, Present: flag.Present}
+			out.Flags[i] = FlagCondition(flag)
 		}
 	}
 	return out
@@ -1103,7 +1079,7 @@ func readConfigSchema(root string) map[string]Schema {
 }
 
 func IsContentPatcherPack(im Mod) bool {
-	return Equal(ModID(im.ContentPackFor), contentPatcherID)
+	return Equal(im.ContentPackFor, contentPatcherID)
 }
 
 // intern shares one copy of a string a pack repeats on every change (its file names, targets and actions), so
@@ -2259,7 +2235,7 @@ func (hc *hitCollector) hitFor(k hitAt, p Patch, im Mod, pack Pack, knows, seen 
 	i, found := hc.Index[k]
 	if !found {
 		hits = append(hits, packHit{
-			ID: ModID(im.UniqueID), Name: im.Name, Key: im.Key, Priority: p.Priority, Mentions: knows,
+			ID: im.UniqueID, Name: im.Name, Key: im.Key, Priority: p.Priority, Mentions: knows,
 			Root: im.Folder, Tokens: pack.Patches, Present: seen, Schema: pack.Schema, Config: config,
 			Dependencies: dependencies, LoadAfter: loadAfter, Sig: sig, Stable: stable, Author: normalAuthor(im.Author),
 		})
@@ -2356,7 +2332,7 @@ func requiredByEnabled(mods []Mod, id ModID) bool {
 			return false
 		}
 		for _, d := range m.Dependencies {
-			if d.Required && Equal(ModID(d.UniqueID), id) {
+			if d.Required && Equal(d.UniqueID, id) {
 				return true
 			}
 		}
@@ -2800,7 +2776,7 @@ func conflictOf(kind, target string, hits []packHit) Conflict {
 	slices.SortFunc(hits, func(a, b packHit) int { return strings.Compare(a.ID.Fold(), b.ID.Fold()) })
 	c := Conflict{Kind: kind, Target: target, Names: make([]string, len(hits)), Keys: make([]string, len(hits))}
 	for i, h := range hits {
-		c.PackIDs = append(c.PackIDs, (h.ID))
+		c.PackIDs = append(c.PackIDs, h.ID)
 		c.Names[i], c.Keys[i] = h.Name, h.Key
 	}
 	if kind == "edit" && len(hits) >= 3 && strings.Contains(strings.ToLower(target), "objects") {
@@ -2826,7 +2802,7 @@ func conflictOf(kind, target string, hits []packHit) Conflict {
 		return c
 	}
 	if best >= 0 && len(tied) == 1 {
-		c.WinnerID, c.WinnerName, c.WinnerKind = (hits[best].ID), hits[best].Name, WinnerTop
+		c.WinnerID, c.WinnerName, c.WinnerKind = hits[best].ID, hits[best].Name, WinnerTop
 		for i, h := range hits {
 			if i != best {
 				c.Overridden = append(c.Overridden, h.Name)
@@ -2836,7 +2812,7 @@ func conflictOf(kind, target string, hits []packHit) Conflict {
 	}
 	if kind == "load" {
 		if winner, ok := dependencyLoadWinner(hits, tied); ok {
-			c.WinnerID, c.WinnerName, c.WinnerKind = (hits[winner].ID), hits[winner].Name, WinnerLoadOrder
+			c.WinnerID, c.WinnerName, c.WinnerKind = hits[winner].ID, hits[winner].Name, WinnerLoadOrder
 			for i, h := range hits {
 				if i != winner {
 					c.Overridden = append(c.Overridden, h.Name)
@@ -2957,7 +2933,7 @@ func harmlessLoads(hits []packHit, conflict Conflict) (bool, *Hint) {
 	if allLoadFilesIdentical(hits, conflict.Target) {
 		return true, nil
 	}
-	winner := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.ID, ModID(conflict.WinnerID)) })
+	winner := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.ID, conflict.WinnerID) })
 	if winner < 0 {
 		return allLoadsBlank(hits, conflict.Target), nil
 	}
@@ -3088,7 +3064,7 @@ func loadPriorityDecided(hits []packHit, conflict Conflict) bool {
 	if conflict.WinnerID == "" {
 		return false
 	}
-	winner := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.ID, ModID(conflict.WinnerID)) })
+	winner := slices.IndexFunc(hits, func(h packHit) bool { return Equal(h.ID, conflict.WinnerID) })
 	if winner < 0 {
 		return false
 	}
