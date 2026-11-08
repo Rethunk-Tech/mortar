@@ -14,6 +14,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
+const contentURL = "https://modscontent.paradox-interactive.com"
+
 func fixture(t *testing.T, name string) []byte {
 	t.Helper()
 	raw, err := safefs.ReadFile(filepath.Join("testdata", name))
