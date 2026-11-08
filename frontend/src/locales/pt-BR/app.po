@@ -983,9 +983,6 @@ msgstr ""
 #: src/launch/LaunchScreen.tsx
 #: src/queue/QueueBody.tsx
 #: src/queue/store.ts
-#: src/saves/BackupsDialog.tsx
-#: src/saves/SavesTab.tsx
-#: src/screenshots/ScreenshotsTab.tsx
 #: src/shell/ErrorBoundary.tsx
 #: src/shell/ErrorRetry.tsx
 #: src/shell/LoadingRow.tsx
@@ -2432,7 +2429,7 @@ msgid "Create one in your team's settings"
 msgstr ""
 
 #: src/install/batchSummary.ts
-#: src/install/store.ts
+#: src/install/undoEntryInstall.ts
 msgid "Could not undo the install"
 msgstr ""
 
@@ -4164,10 +4161,6 @@ msgstr ""
 
 #: src/queue/QueueBody.tsx
 msgid "Skip all"
-msgstr ""
-
-#: src/saves/BackupsDialog.tsx
-msgid "Could not list backups: {error}"
 msgstr ""
 
 #: src/queue/LargeDownloadDialog.tsx
@@ -7189,8 +7182,6 @@ msgstr ""
 msgid "Dependencies"
 msgstr ""
 
-#: src/games/GameSelect.tsx
-#: src/games/ProfileCards.tsx
 #: src/games/useOpenGame.ts
 msgid "Could not save the last game"
 msgstr ""

@@ -484,12 +484,6 @@ msgstr "Default sort"
 msgid "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
 msgstr "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
 
-#: src/settings/sections/DataStoreReport.tsx
-#: src/settings/sections/Storage.tsx
-#: src/settings/sections/Updates.tsx
-msgid "Retry"
-msgstr "Retry"
-
 #: src/settings/prefCopy.ts
 msgid "What Mortar does while the game runs."
 msgstr "What Mortar does while the game runs."
@@ -590,10 +584,6 @@ msgstr "{count} selected"
 #: src/settings/prefCopyGame.ts
 msgid "Enable them in this profile's own copy of the file before each launch. Your own file is never changed."
 msgstr "Enable them in this profile's own copy of the file before each launch. Your own file is never changed."
-
-#: src/settings/sections/Storage.tsx
-msgid "Could not measure disk use"
-msgstr "Could not measure disk use"
 
 #: src/settings/sections/General.tsx
 msgid "Show the first-run tips again"
@@ -1962,10 +1952,6 @@ msgstr "Source code"
 #: src/settings/sections/Appearance.tsx
 msgid "color"
 msgstr "color"
-
-#: src/settings/sections/DataStoreReport.tsx
-msgid "Could not load what can be cleaned up"
-msgstr "Could not load what can be cleaned up"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Compatibility tool"

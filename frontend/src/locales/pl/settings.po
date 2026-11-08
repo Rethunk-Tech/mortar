@@ -484,12 +484,6 @@ msgstr ""
 msgid "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
 msgstr ""
 
-#: src/settings/sections/DataStoreReport.tsx
-#: src/settings/sections/Storage.tsx
-#: src/settings/sections/Updates.tsx
-msgid "Retry"
-msgstr ""
-
 #: src/settings/prefCopy.ts
 msgid "What Mortar does while the game runs."
 msgstr ""
@@ -589,10 +583,6 @@ msgstr ""
 
 #: src/settings/prefCopyGame.ts
 msgid "Enable them in this profile's own copy of the file before each launch. Your own file is never changed."
-msgstr ""
-
-#: src/settings/sections/Storage.tsx
-msgid "Could not measure disk use"
 msgstr ""
 
 #: src/settings/sections/General.tsx
@@ -1961,10 +1951,6 @@ msgstr ""
 
 #: src/settings/sections/Appearance.tsx
 msgid "color"
-msgstr ""
-
-#: src/settings/sections/DataStoreReport.tsx
-msgid "Could not load what can be cleaned up"
 msgstr ""
 
 #: src/settings/sections/GameSettings.tsx
