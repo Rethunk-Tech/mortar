@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { openGameSelect, openSettings } from './app.ts'
 import { largeDownloadCases } from './largeDownloadCase.ts'
 import { launchScreenCases } from './launchScreenCase.ts'
@@ -17,6 +17,30 @@ export interface Helpers {
   settleMs: number
 }
 
+const DRAG_SETTLE_MS = 300
+
+/** Moves the handle at `from` one place up by keyboard and checks it landed there, then moves it back. Each key waits
+ * for the spoken announcement. */
+export async function keyboardDragUp(p: Page, handles: Locator, from: number) {
+  const said = (text: RegExp) => p.getByText(text).last().waitFor({ state: 'attached' })
+  const move = async (at: number, key: 'ArrowUp' | 'ArrowDown') => {
+    await handles.nth(at).focus()
+    await p.keyboard.press('Space')
+    await said(/^Picked up /)
+    // The sensor starts listening a moment after the pick-up is announced, and drops an arrow pressed before.
+    await p.waitForTimeout(DRAG_SETTLE_MS)
+    await p.keyboard.press(key)
+    await said(/ is over /)
+    await p.keyboard.press('Space')
+    await said(/^Dropped /)
+  }
+  const name = await handles.nth(from).getAttribute('aria-label')
+  await move(from, 'ArrowUp')
+  await expect(handles.nth(from - 1)).toHaveAttribute('aria-label', name ?? '')
+  await move(from - 1, 'ArrowDown')
+  await expect(handles.nth(from)).toHaveAttribute('aria-label', name ?? '')
+}
+
 /** Cases for the dialogs and screens added with the version picker, modpack form, profile folder, custom games, co-op
  * list, hidden mods, favourites, freezing and config search. */
 export function newCases(h: Helpers): Case[] {
@@ -27,6 +51,10 @@ export function newCases(h: Helpers): Case[] {
     await page.getByRole('button', { name: /^Switch profile/ }).click({ button: 'right' })
   }
   const pick = (page: Page, item: RegExp) => page.getByRole('menuitem', { name: item }).click()
+  const sortBy = async (p: Page, name: RegExp) => {
+    await p.getByRole('button', { name: /^Sort$/ }).click()
+    await p.getByRole('menuitemradio', { name }).click()
+  }
 
   let versioned = false
 
@@ -57,6 +85,35 @@ export function newCases(h: Helpers): Case[] {
       },
       // The filter is remembered: later cases expect every mod listed.
       teardown: (p) => p.getByRole('button', { name: 'Show all mods' }).click(),
+    },
+    {
+      name: 'mods-sort-manual',
+      // Two keyboard drags (there and back): dnd-kit redraws every mounted grip on each pick, move and drop (~3,800),
+      // and each drop re-sorts the list (~1,400).
+      budget: { updates: 6500 },
+      setup: (p) => view(p, 'List view'),
+      run: async (p) => {
+        await sortBy(p, /^Manual/)
+        await keyboardDragUp(p, p.getByRole('button', { name: /^Move / }), 5)
+      },
+      // The sort is remembered: later cases expect name order.
+      teardown: (p) => sortBy(p, /^Name/),
+    },
+    {
+      name: 'mods-sort-manual-cards',
+      setup: async (p) => {
+        await view(p, 'Grid view')
+        await sortBy(p, /^Manual/)
+      },
+      run: (p) =>
+        p
+          .getByRole('button', { name: /^Move / })
+          .first()
+          .waitFor(),
+      teardown: async (p) => {
+        await sortBy(p, /^Name/)
+        await view(p, 'List view')
+      },
     },
     {
       name: 'config-search',

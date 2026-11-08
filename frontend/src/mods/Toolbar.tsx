@@ -310,8 +310,19 @@ const SortControl = memo(function SortMenu() {
             key={item.id}
             radio={true}
             checked={sort.column === item.id}
-            label={item.label}
-            detail={sort.column === item.id ? arrow : undefined}
+            label={
+              sort.column === item.id ? (
+                <Box
+                  component="span"
+                  sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+                >
+                  {item.label}
+                  {arrow}
+                </Box>
+              ) : (
+                item.label
+              )
+            }
             onClick={() => {
               persistSort(nextListSort(sort, item.id))
               menu.hide()

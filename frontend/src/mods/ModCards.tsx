@@ -50,6 +50,14 @@ import {
   type VirtualRow,
 } from './virtualRows.ts'
 
+// The grip would cover the card's picture, so it shows only while the card is pointed at or the grip has focus.
+const cardHandleSx = {
+  position: 'relative',
+  minWidth: 0,
+  '& .manual-handle': { opacity: 0 },
+  '&:hover .manual-handle, & .manual-handle:focus-visible': { opacity: 1 },
+} as const
+
 const CARD_HEIGHT_SMALL = 50
 const CARD_HEIGHT_MEDIUM = 64
 const CARD_HEIGHT_LARGE = 80
@@ -322,7 +330,7 @@ function GridWindow({
             />
           )
           return manual ? (
-            <Box key={modId(r.mod)} sx={{ position: 'relative', minWidth: 0 }}>
+            <Box key={modId(r.mod)} sx={cardHandleSx}>
               {card}
               <ManualHandle id={modId(r.mod)} name={r.mod.name} />
             </Box>

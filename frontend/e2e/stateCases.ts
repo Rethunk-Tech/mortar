@@ -1,6 +1,7 @@
 import type { Page, Route } from '@playwright/test'
 import { openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
+import { keyboardDragUp } from './renderCases.ts'
 import { patchCalls } from './renderCoverage.ts'
 import type { dialogKit } from './renderDialogs.ts'
 import { biggestProfileIds, openGame, renderDataDir } from './renderProfile.ts'
@@ -212,6 +213,7 @@ export function stateCases(
       },
     },
     configRunningCase(tabs, tab, running),
+    developSortCase(developTab),
     sandboxedRunCase(tabs, tab),
     overlayFieldsCase(tabs, tab),
     {
@@ -236,6 +238,21 @@ export function stateCases(
       },
     },
   ]
+}
+
+/** Develop's Sort menu, then the Manual order's drag handles on the project cards. */
+function developSortCase(developTab: (p: Page) => Promise<void>): Case {
+  return {
+    name: 'develop-sort-manual',
+    // Two keyboard drags (there and back): each pick, move and drop redraws every card's sortable wrapper and grip.
+    budget: { updates: 2000 },
+    setup: developTab,
+    run: async (p) => {
+      await p.getByRole('button', { name: 'Sort projects' }).click()
+      await p.getByRole('menuitemradio', { name: /^Manual/ }).click()
+      await keyboardDragUp(p, p.getByRole('button', { name: /^Reorder / }), 1)
+    },
+  }
 }
 
 /** The Config page while the game runs: the fields stay editable under a warning that a change may wait. */
