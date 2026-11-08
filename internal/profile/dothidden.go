@@ -45,7 +45,7 @@ func (s *Store) DotHiddenMods(game, id, key string) ([]HiddenMod, error) {
 		if e.Source.Bundled() || (key != "" && e.Key != key) {
 			continue
 		}
-		found, err := hiddenUnder(entryRoot(modsDir, e.Key), oursOf(e))
+		found, err := hiddenUnder(liveEntryDir(modsDir, e.Key), oursOf(e))
 		if err != nil {
 			return nil, err
 		}
@@ -55,15 +55,6 @@ func (s *Store) DotHiddenMods(game, id, key string) ([]HiddenMod, error) {
 		}
 	}
 	return out, nil
-}
-
-// entryRoot is the entry's folder in mods/, which carries a dot while the entry is switched off.
-func entryRoot(modsDir, key string) string {
-	root := filepath.Join(modsDir, key)
-	if !datadir.Exists(root) {
-		root = filepath.Join(modsDir, "."+key)
-	}
-	return root
 }
 
 // oursOf is the folders Mortar dotted to switch the entry's mods off; they are its own, not hidden.
@@ -112,7 +103,7 @@ func (s *Store) hiddenModPath(game, id, key, folder string) (string, error) {
 	if ei < 0 {
 		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("no entry %s", key))
 	}
-	root := entryRoot(datadir.ModsDirOf(dir), key)
+	root := liveEntryDir(datadir.ModsDirOf(dir), key)
 	if _, err := findHidden(root, p.Entries[ei], folder); err != nil {
 		return "", err
 	}
@@ -140,7 +131,7 @@ func (s *Store) UnhideMod(game, id, key, folder string) (Profile, error) {
 			return usererr.Wrap(usererr.NotFound, fmt.Errorf("no entry %s", key))
 		}
 		e := &p.Entries[ei]
-		root := entryRoot(datadir.ModsDirOf(dir), key)
+		root := liveEntryDir(datadir.ModsDirOf(dir), key)
 		h, err := findHidden(root, *e, folder)
 		if err != nil {
 			return err

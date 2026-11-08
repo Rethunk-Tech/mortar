@@ -558,7 +558,7 @@ func (s *Store) missingEntryFolders(game, id string) ([]string, error) {
 	modsDir := datadir.ModsDirOf(dir)
 	var missing []string
 	for _, key := range entryKeys(p) {
-		if datadir.Exists(filepath.Join(modsDir, key)) || datadir.Exists(filepath.Join(modsDir, "."+key)) {
+		if entryDirExists(modsDir, key) {
 			continue
 		}
 		missing = append(missing, key)

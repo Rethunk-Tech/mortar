@@ -83,10 +83,7 @@ func (s *Store) Backup(game, id string) (Profile, map[string][]byte, error) {
 		if e.Source.Bundled() || e.IsOverlay() || !e.hasFolder() {
 			continue
 		}
-		folder := filepath.Join(modsDir, e.Key)
-		if !datadir.Exists(folder) {
-			folder = filepath.Join(modsDir, "."+e.Key)
-		}
+		folder := liveEntryDir(modsDir, e.Key)
 		err := walk(folder, "mods/"+e.Key+"/", func(rel string, size int64) bool {
 			return strings.EqualFold(filepath.Ext(rel), ".json") && !strings.EqualFold(filepath.Base(rel), smapimanifest.FileName) && size <= maxBackupConfig
 		})
@@ -407,10 +404,7 @@ func applyRestored(dir, modsDir, key string) error {
 	if !datadir.Exists(src) {
 		return nil
 	}
-	dst := filepath.Join(modsDir, key)
-	if !datadir.Exists(dst) {
-		dst = filepath.Join(modsDir, "."+key)
-	}
+	dst := liveEntryDir(modsDir, key)
 	err := safefs.WalkRegular(src, func(path string, _ fs.DirEntry) error {
 		rel, err := filepath.Rel(src, path)
 		if err != nil {

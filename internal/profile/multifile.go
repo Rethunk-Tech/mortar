@@ -452,10 +452,16 @@ func (s *Store) refreshEntryMods(e *Entry, entryDir string) error {
 	return nil
 }
 
+// liveEntryDir is the entry's folder in mods/, which carries a dot while the entry is switched off.
 func liveEntryDir(modsDir, key string) string {
 	dotted := filepath.Join(modsDir, "."+key)
 	if datadir.Exists(dotted) && !datadir.Exists(filepath.Join(modsDir, key)) {
 		return dotted
 	}
 	return filepath.Join(modsDir, key)
+}
+
+// entryDirExists reports whether the entry has a folder in mods/, switched on or off.
+func entryDirExists(modsDir, key string) bool {
+	return datadir.Exists(liveEntryDir(modsDir, key))
 }

@@ -868,7 +868,7 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 	known := map[string]bool{}
 	for _, e := range p.Entries {
 		known[e.Key], known["."+e.Key] = true, true
-		if datadir.Exists(filepath.Join(modsDir, e.Key)) || datadir.Exists(filepath.Join(modsDir, "."+e.Key)) {
+		if entryDirExists(modsDir, e.Key) {
 			continue
 		}
 		if err := s.finishInterrupted(modsDir, p.Name, e.Key); err != nil {
@@ -891,13 +891,8 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 		if e.IsOverlay() || !e.hasFolder() {
 			continue
 		}
-		if _, err := os.Stat(filepath.Join(modsDir, e.Key)); err == nil {
+		if entryDirExists(modsDir, e.Key) {
 			continue
-		}
-		if _, err := os.Stat(filepath.Join(modsDir, "."+e.Key)); err == nil {
-			continue
-		} else if !errors.Is(err, fs.ErrNotExist) {
-			return err
 		}
 		if err := s.placeEntry(game, dir, p, e); err != nil {
 			return fmt.Errorf("rebuild %s: %w", e.Key, err)

@@ -400,10 +400,7 @@ func (w swapped) undo() error {
 
 // replaceFolder moves the old entry folder aside and renames tmp into place, restoring the old folder if that fails.
 func replaceFolder(modsDir, oldKey, tmp, final string) (swapped, error) {
-	old := filepath.Join(modsDir, oldKey)
-	if !datadir.Exists(old) {
-		old = filepath.Join(modsDir, "."+oldKey)
-	}
+	old := liveEntryDir(modsDir, oldKey)
 	w := swapped{old: old, placed: filepath.Join(modsDir, final)}
 	if datadir.Exists(old) {
 		w.aside = filepath.Join(modsDir, asidePrefix+filepath.Base(old))
