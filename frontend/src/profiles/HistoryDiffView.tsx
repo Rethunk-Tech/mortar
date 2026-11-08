@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import type { HistoryDiff } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { space } from '../theme/density.ts'
-import { diffLines } from './historyDiff.ts'
+import { itemLabel } from './historyDiff.ts'
 
 export function HistoryDiffView({
   diff,
@@ -20,20 +20,21 @@ export function HistoryDiffView({
   busy: boolean
 }) {
   const { t } = useLingui()
-  const lines = diffLines(diff)
+  const items = (diff.items ?? []).filter((item) => itemLabel(item) !== '')
   return (
     <Box sx={{ mb: 2, p: space.pad, bgcolor: 'var(--mortar-paper-78)', borderRadius: '6px' }}>
       <Typography
         sx={{ fontWeight: 600, fontSize: 'base.fontSize' }}
       >{t`Snapshot diff`}</Typography>
-      {lines.length === 0 ? (
+      {items.length === 0 ? (
         <Typography
           sx={{ mt: space.gap, fontSize: 'base.fontSize', color: 'text.secondary' }}
         >{t`No differences.`}</Typography>
       ) : (
         <Box component="ul" sx={{ m: 0, mt: space.gap, pl: space.pad, fontSize: 'base.fontSize' }}>
-          {lines.map((line) => (
-            <li key={line}>{line}</li>
+          {items.map((item) => (
+            // The same mod changes twice in one entry: the row's kind, mod and file tell the lines apart.
+            <li key={`${item.kind}:${item.mod}:${item.file ?? ''}`}>{itemLabel(item)}</li>
           ))}
         </Box>
       )}

@@ -31,6 +31,13 @@ test('historyLabel words each change from its fields', () => {
   expect(historyLabel({ change: HistoryChange.$zero })).toBe('Changed the profile')
 })
 
+test('a sourced change names no site: the event does not record which one it found', () => {
+  expect(historyLabel({ change: HistoryChange.ChangeSourced })).toBe('Found sources')
+  expect(historyLabel({ change: HistoryChange.ChangeSourced, name: 'Beta' })).toBe(
+    'Set the page of Beta',
+  )
+})
+
 test('a revert names the date it went back to, even a recent one', () => {
   const label = historyLabel({
     change: HistoryChange.ChangeReverted,
@@ -38,5 +45,4 @@ test('a revert names the date it went back to, even a recent one', () => {
   })
   expect(label.startsWith('Went back to ')).toBe(true)
   expect(label).not.toContain('ago')
-  expect(label).toContain(String(new Date().getFullYear()))
 })

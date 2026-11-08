@@ -3,7 +3,6 @@ import {
   HistoryChange,
   type HistoryEvent,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'
 
@@ -46,9 +45,8 @@ export function historyLabel(ev: Worded): string {
         ? plural(count, { one: 'Changed # mod', other: 'Changed # mods' })
         : i18n._(msg`Changed mods`)
     case HistoryChange.ChangeSourced:
-      return name === ''
-        ? i18n._(msg`Found mods on ${{ source: sourceLabel('nexus') }}`)
-        : i18n._(msg`Set the ${{ source: sourceLabel('nexus') }} page of ${name}`)
+      // SetSources records a page found on any site, so the event itself does not name one.
+      return name === '' ? i18n._(msg`Found sources`) : i18n._(msg`Set the page of ${name}`)
     case HistoryChange.ChangeImported:
       return plural(count, { one: 'Imported # mod', other: 'Imported # mods' })
     case HistoryChange.ChangeMoved:
