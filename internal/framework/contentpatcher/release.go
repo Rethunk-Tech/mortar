@@ -9,8 +9,6 @@ import (
 // packGrace is how long the packs stay in memory after the last check ends, unless another check starts first.
 var packGrace = 30 * time.Second
 
-var freeOSMemory bool
-
 // A check reads every pack, then nothing reads them until the next one, which can be hours away; on a large profile
 // they hold around 100 MB, while reading them back from the disk caches costs the next check a fraction of a second.
 // So the packs leave memory once the last check holding them has been over for packGrace: a run of edits to one profile
