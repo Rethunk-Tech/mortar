@@ -13,6 +13,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { THUNDERSTORE_DESCRIPTION_MAX } from '../develop/uploadSites.ts'
 import { listNames } from '../i18n/list.ts'
 import { AppDialog, DialogFooter } from '../shell/dialog/AppDialog.tsx'
 import { Field, FieldRow, FormDialog, FormSection, TextInput } from '../shell/dialog/FormDialog.tsx'
@@ -28,7 +29,7 @@ import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { UploadModpackDialog } from './UploadModpackDialog.tsx'
 
-const DESCRIPTION_MAX = 250
+const DESCRIPTION_MAX = THUNDERSTORE_DESCRIPTION_MAX
 const SKELETON_FIELDS = 6
 const NAME_PATTERN = /^[A-Za-z0-9_]+$/
 const VERSION_PATTERN = /^\d+\.\d+\.\d+$/

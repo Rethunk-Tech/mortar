@@ -86,3 +86,6 @@ export async function uploadTo(
 }
 
 export const TEAMS_PAGE = 'https://thunderstore.io/settings/teams/'
+
+// Thunderstore refuses a package whose description is longer than this, so both forms stop the player at it.
+export const THUNDERSTORE_DESCRIPTION_MAX = 250

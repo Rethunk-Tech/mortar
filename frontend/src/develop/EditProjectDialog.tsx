@@ -33,8 +33,9 @@ import { ProjectDependencies } from './ProjectDependencies.tsx'
 import { saveDependencies, useDependencyRows } from './projectDependencies.ts'
 import { SiteIds } from './SiteIds.tsx'
 import { TestWith } from './TestWith.tsx'
+import { THUNDERSTORE_DESCRIPTION_MAX } from './uploadSites.ts'
 
-const MAX_DESCRIPTION = 250
+const MAX_DESCRIPTION = THUNDERSTORE_DESCRIPTION_MAX
 
 type EditTab = 'details' | 'mods' | 'sites'
 
