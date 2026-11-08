@@ -388,6 +388,55 @@ function ProjectControls({
   )
 }
 
+// The view switch and the projects it lays out: its own component, so changing the view redraws the toolbar and the
+// cards and leaves the tab's actions and dialogs alone.
+function ProjectsView({
+  game,
+  count,
+  sort,
+  onSort,
+  query,
+  onQuery,
+  projects,
+  filtering,
+  draggable,
+  onClear,
+}: {
+  game: string
+  count: number
+  sort: ProjectSort
+  onSort: (v: ProjectSort) => void
+  query: string
+  onQuery: (v: string) => void
+  projects: DevProject[]
+  filtering: boolean
+  draggable: boolean
+  onClear: () => void
+}) {
+  const [view, setView] = useStoredState<ViewMode>(`mortar.developView.${game}`, 'list', isViewMode)
+  return (
+    <>
+      <ProjectControls
+        count={count}
+        view={view}
+        onView={setView}
+        sort={sort}
+        onSort={onSort}
+        query={query}
+        onQuery={onQuery}
+      />
+      <ProjectGrid
+        game={game}
+        projects={projects}
+        filtering={filtering}
+        list={view === 'list'}
+        draggable={draggable}
+        onClear={onClear}
+      />
+    </>
+  )
+}
+
 /** The open profile's own mods in development: start one from the template, then build, test, pack and release it. */
 export function DevelopTab({ game }: { game: string }) {
   const { t } = useLingui()
@@ -399,7 +448,6 @@ export function DevelopTab({ game }: { game: string }) {
   const { anchor: addMenu, show: showAddMenu, hide: hideAddMenu } = usePopoverAnchor()
   const addFolder = useAddFolder(game, openId)
   const [query, setQuery] = useState('')
-  const [view, setView] = useStoredState<ViewMode>(`mortar.developView.${game}`, 'list', isViewMode)
   const [sort, setSort] = useStoredState<ProjectSort>(
     `mortar.developSort.${game}`,
     'manual',
@@ -494,24 +542,19 @@ export function DevelopTab({ game }: { game: string }) {
           {t`Start a mod from the template: Mortar sets up the project and installs each build into this profile.`}
         </EmptyState>
       ) : (
-        <ProjectControls
+        <ProjectsView
+          game={game}
           count={here.length}
-          view={view}
-          onView={setView}
           sort={sort}
           onSort={setSort}
           query={query}
           onQuery={setQuery}
+          projects={shown}
+          filtering={needle !== ''}
+          draggable={sort === 'manual' && needle === '' && here.length > 1}
+          onClear={clearQuery}
         />
       )}
-      <ProjectGrid
-        game={game}
-        projects={shown}
-        filtering={needle !== ''}
-        list={view === 'list'}
-        draggable={sort === 'manual' && needle === '' && here.length > 1}
-        onClear={clearQuery}
-      />
       {elsewhere.length > 0 ? (
         <Box sx={{ px: space.gutter, pb: space.gutter }}>
           <Typography sx={{ fontWeight: 600, mb: 0.5 }}>{t`In other profiles`}</Typography>
