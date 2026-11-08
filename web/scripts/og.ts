@@ -2,14 +2,7 @@
 // the address the page's og:image names (src/lib/seo.ts). Pictures are cached by their text, so a rebuild redraws only
 // the pages whose title or description changed.
 import { createHash } from 'node:crypto'
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  writeFileSync,
-} from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Resvg } from '@resvg/resvg-js'
@@ -192,9 +185,12 @@ export function og(): AstroIntegration {
               .digest('hex')
               .slice(0, 24)}.png`,
           )
-          if (existsSync(key)) {
+          // The cache is read rather than probed, so a picture another build wrote meanwhile is used as it is.
+          let png: Buffer
+          try {
+            png = readFileSync(key)
             cached += 1
-          } else {
+          } catch {
             const svg = await satori(
               card(w.title, w.description, icon) as Parameters<typeof satori>[0],
               {
@@ -204,14 +200,12 @@ export function og(): AstroIntegration {
               },
             )
             // Satori draws text as paths, so resvg needs no fonts; scanning the system's costs ~100 ms a picture.
-            writeFileSync(
-              key,
-              new Resvg(svg, { font: { loadSystemFonts: false } }).render().asPng(),
-            )
+            png = new Resvg(svg, { font: { loadSystemFonts: false } }).render().asPng()
+            writeFileSync(key, png)
             drawn += 1
           }
           mkdirSync(dirname(target), { recursive: true })
-          copyFileSync(key, target)
+          writeFileSync(target, png)
         }
         logger.info(`link-preview pictures: ${drawn} drawn, ${cached} from cache`)
       },
