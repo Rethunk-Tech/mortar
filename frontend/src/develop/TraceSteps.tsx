@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, IconButton, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { useEffect, useState } from 'react'
 import type { Assembly } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
@@ -97,14 +98,13 @@ export function TraceSteps({
   const total = trace.frames.length
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-      <IconButton
-        size="small"
-        aria-label={t`Previous frame`}
+      <TipIconButton
+        label={t`Previous frame`}
         disabled={at === 0}
         onClick={() => setAt(at - 1)}
       >
         <ChevronLeft size={16} />
-      </IconButton>
+      </TipIconButton>
       <Typography
         noWrap={true}
         title={`${dotted(frame.type)}.${frame.method}`}
@@ -114,14 +114,13 @@ export function TraceSteps({
           ? t`Frame ${n} of ${total}: ${name} is not in the listed assemblies`
           : t`Frame ${n} of ${total}`}
       </Typography>
-      <IconButton
-        size="small"
-        aria-label={t`Next frame`}
+      <TipIconButton
+        label={t`Next frame`}
         disabled={at === trace.frames.length - 1}
         onClick={() => setAt(at + 1)}
       >
         <ChevronRight size={16} />
-      </IconButton>
+      </TipIconButton>
     </Box>
   )
 }

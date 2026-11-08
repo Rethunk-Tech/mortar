@@ -1,11 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, IconButton, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import { Logo } from '../brand/Logo.tsx'
 import { modsLabel } from '../i18n/counts.ts'
 import { heading } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { BareDialog } from '../shell/dialog/BareDialog.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import type { ShownInfo } from './logic.ts'
 
@@ -34,9 +35,9 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
         <Typography sx={{ ...heading, display: 'flex', alignItems: 'center' }}>
           {t`What they see`}
         </Typography>
-        <IconButton size="small" aria-label={t`Close`} onClick={onClose}>
+        <TipIconButton label={t`Close`} onClick={onClose}>
           <X size={18} />
-        </IconButton>
+        </TipIconButton>
       </Box>
       <Box
         sx={{

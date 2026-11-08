@@ -23,7 +23,7 @@ export function TipIconButton({
   disabled?: boolean
   size?: IconButtonProps['size']
   fill?: boolean
-  onClick: (e: MouseEvent<HTMLButtonElement>) => void
+  onClick?: (e: MouseEvent<HTMLButtonElement>) => void
 } & Omit<IconButtonProps, 'aria-label' | 'children' | 'disabled' | 'onClick' | 'size'>) {
   const button = (
     <IconButton aria-label={label} size={size} disabled={disabled} onClick={onClick} {...rest}>

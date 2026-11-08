@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  IconButton,
   List,
   ListItem,
   ListItemButton,
@@ -25,6 +24,7 @@ import { useSettings } from '../settings/store.ts'
 import { includeAvailability } from '../share/methods.ts'
 import { type ShareInclude, toShareInclude } from '../share/shareDefaults.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { errorKind } from '../toasts/errorKind.ts'
 import { toastError } from '../toasts/report.ts'
@@ -394,9 +394,9 @@ export function SendPanel({
         <>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography sx={{ fontWeight: 600 }}>{t`Send to`}</Typography>
-            <IconButton aria-label={t`Refresh`} onClick={refresh} disabled={refreshing}>
+            <TipIconButton label={t`Refresh`} onClick={refresh} disabled={refreshing}>
               {refreshing ? <CircularProgress size={18} /> : <RefreshCw size={18} />}
-            </IconButton>
+            </TipIconButton>
           </Box>
           {list}
         </>

@@ -1,10 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, InputAdornment, TextField, Typography } from '@mui/material'
+import { Box, Button, InputAdornment, TextField, Typography } from '@mui/material'
 import { ClipboardPaste, FolderOpen } from 'lucide-react'
 import { GALE, R2MODMAN } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { liveHandoff, useHandoff } from '../install/handoff.ts'
-import { Tooltip } from '../shell/Tooltip.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import type { ImportFlow } from './useImportFlow.ts'
@@ -66,21 +66,16 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
-                    <Tooltip title={t`Paste`} describeChild={true}>
-                      <span>
-                        <IconButton
-                          edge="end"
-                          size="small"
-                          aria-label={t`Paste`}
-                          disabled={flow.busy}
-                          onClick={() => {
-                            flow.paste().catch(reportUnexpected)
-                          }}
-                        >
-                          <ClipboardPaste size={16} />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
+                    <TipIconButton
+                      label={t`Paste`}
+                      edge="end"
+                      disabled={flow.busy}
+                      onClick={() => {
+                        flow.paste().catch(reportUnexpected)
+                      }}
+                    >
+                      <ClipboardPaste size={16} />
+                    </TipIconButton>
                   </InputAdornment>
                 ),
               },

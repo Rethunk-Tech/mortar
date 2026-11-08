@@ -2,11 +2,11 @@ import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useLingui } from '@lingui/react/macro'
-import { alpha, Box, IconButton } from '@mui/material'
+import { alpha, Box } from '@mui/material'
 import { GripVertical } from 'lucide-react'
 import { createContext, useContext, useMemo } from 'react'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
-import { Tooltip } from '../shell/Tooltip.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { ProjectCard } from './ProjectCard.tsx'
 
 const DRAG_TINT_ALPHA = 0.24
@@ -28,24 +28,22 @@ function ProjectGrip() {
     return null
   }
   return (
-    <Tooltip title={grip.label}>
-      <IconButton
-        ref={grip.setActivatorNodeRef}
-        aria-label={grip.label}
-        {...grip.attributes}
-        {...grip.listeners}
-        sx={{
-          width: 28,
-          height: 40,
-          borderRadius: '6px',
-          color: 'text.secondary',
-          cursor: 'grab',
-          touchAction: 'none',
-        }}
-      >
-        <GripVertical size={16} />
-      </IconButton>
-    </Tooltip>
+    <TipIconButton
+      ref={grip.setActivatorNodeRef}
+      label={grip.label}
+      {...grip.attributes}
+      {...grip.listeners}
+      sx={{
+        width: 28,
+        height: 40,
+        borderRadius: '6px',
+        color: 'text.secondary',
+        cursor: 'grab',
+        touchAction: 'none',
+      }}
+    >
+      <GripVertical size={16} />
+    </TipIconButton>
   )
 }
 

@@ -1,6 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Button, IconButton, List, ListItem, ListItemText } from '@mui/material'
+import { Button, List, ListItem, ListItemText } from '@mui/material'
 import { LayoutTemplate, Pencil, Trash2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import type { Template } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/models.ts'
@@ -16,7 +16,7 @@ import { AppDialog, DialogFooter, ToneIcon } from '../shell/dialog/AppDialog.tsx
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
-import { Tooltip } from '../shell/Tooltip.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -99,24 +99,20 @@ function TemplateRow({
       disableGutters={true}
       secondaryAction={
         <>
-          <Tooltip title={t`Rename`}>
-            <IconButton
-              size="small"
-              aria-label={t`Rename ${{ name: template.name }}`}
-              onClick={onRename}
-            >
-              <Pencil size={16} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={t`Delete`}>
-            <IconButton
-              size="small"
-              aria-label={t`Delete ${{ name: template.name }}`}
-              onClick={onDelete}
-            >
-              <Trash2 size={16} />
-            </IconButton>
-          </Tooltip>
+          <TipIconButton
+            label={t`Rename ${{ name: template.name }}`}
+            tip={t`Rename`}
+            onClick={onRename}
+          >
+            <Pencil size={16} />
+          </TipIconButton>
+          <TipIconButton
+            label={t`Delete ${{ name: template.name }}`}
+            tip={t`Delete`}
+            onClick={onDelete}
+          >
+            <Trash2 size={16} />
+          </TipIconButton>
         </>
       }
     >

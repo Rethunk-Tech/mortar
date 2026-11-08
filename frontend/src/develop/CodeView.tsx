@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, IconButton } from '@mui/material'
+import { Box } from '@mui/material'
 import type { Theme } from '@mui/material/styles'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Copy } from 'lucide-react'
@@ -13,7 +13,7 @@ import {
   useRef,
 } from 'react'
 import { copyText } from '../share/copyText.ts'
-import { Tooltip } from '../shell/Tooltip.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { MONO } from '../theme/theme.ts'
 import { type TokenKind, tokenize } from './codeTokens.ts'
 import { type SymbolClick, symbolAt } from './symbolAt.ts'
@@ -136,22 +136,19 @@ export function CodeView({
   useEffect(() => (follow ? jump(follow.line, 'center') : undefined), [follow, jump])
   return (
     <Box sx={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex' }}>
-      <Tooltip title={t`Copy code`}>
-        <IconButton
-          size="small"
-          aria-label={t`Copy code`}
-          onClick={() => copyText(source, t`Code copied`)}
-          sx={{
-            position: 'absolute',
-            top: 8,
-            right: 20,
-            zIndex: 2,
-            bgcolor: 'var(--mortar-raised)',
-          }}
-        >
-          <Copy size={14} />
-        </IconButton>
-      </Tooltip>
+      <TipIconButton
+        label={t`Copy code`}
+        onClick={() => copyText(source, t`Code copied`)}
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 20,
+          zIndex: 2,
+          bgcolor: 'var(--mortar-raised)',
+        }}
+      >
+        <Copy size={14} />
+      </TipIconButton>
       <Box
         ref={scroller}
         role="region"

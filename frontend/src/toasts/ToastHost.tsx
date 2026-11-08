@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import {
   Check,
   ChevronDown,
@@ -16,6 +16,7 @@ import { LetterTile } from '../mods/LetterTile.tsx'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
 import { copyText } from '../share/copyText.ts'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from './report.ts'
 import { type Toast, type ToastKind, useToasts } from './store.ts'
@@ -215,13 +216,13 @@ const ToastCard = memo(function ToastCardView({ toast }: { toast: Toast }) {
           </Box>
         ) : null}
       </Box>
-      <IconButton
-        aria-label={t`Dismiss`}
+      <TipIconButton
+        label={t`Dismiss`}
         onClick={() => dismiss(toast.id)}
         sx={{ width: 32, height: 32, color: 'var(--mortar-ink-soft)' }}
       >
         <X size={14} />
-      </IconButton>
+      </TipIconButton>
     </Box>
   )
 })
