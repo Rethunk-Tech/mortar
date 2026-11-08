@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"iter"
 	"maps"
 	"os"
 	"path/filepath"
@@ -2413,19 +2414,29 @@ func conflictPart(kind, target string, hits []packHit, farm string) partEntry {
 
 // farmNeeds is, per pack in conflict order, the farm types every one of its clashing patches is limited to,
 // nil for a pack with one that applies on any farm; nil when no pack is limited.
+func (h packHit) clashing(kind string) iter.Seq[cpPatch] {
+	patches, clashes := h.edits, h.clashes
+	if kind == "load" {
+		patches, clashes = h.loads, h.loadClashes
+	}
+	return func(yield func(cpPatch) bool) {
+		for i, p := range patches {
+			if clashes != nil && !clashes[i] {
+				continue
+			}
+			if !yield(p) {
+				return
+			}
+		}
+	}
+}
+
 func farmNeeds(kind string, hits []packHit, farm string) [][]string {
 	out := make([][]string, len(hits))
 	limited := false
 	for i, h := range hits {
-		patches, clashes := h.edits, h.clashes
-		if kind == "load" {
-			patches, clashes = h.loads, h.loadClashes
-		}
 		var need []string
-		for j, p := range patches {
-			if len(clashes) > 0 && !clashes[j] {
-				continue
-			}
+		for p := range h.clashing(kind) {
 			types := farmTypesOf(p, farm)
 			if len(types) == 0 {
 				need = nil
@@ -2872,27 +2883,13 @@ func shapeCells(shape cpShape) map[string]bool {
 }
 
 func hitPriority(kind string, hit packHit) int {
-	best := -1
-	found := false
-	if kind == "load" {
-		for i, patch := range hit.loads {
-			if hit.loadClashes != nil && !hit.loadClashes[i] {
-				continue
-			}
-			rank := contentPatcherPriority(kind, patch.priority)
-			if !found || rank > best {
-				best, found = rank, true
-			}
-		}
-	} else {
-		for i, patch := range hit.edits {
-			if hit.clashes != nil && !hit.clashes[i] {
-				continue
-			}
-			rank := contentPatcherPriority(kind, patch.priority)
-			if !found || rank > best {
-				best, found = rank, true
-			}
+	best, found := 0, false
+	for patch := range hit.clashing(kind) {
+		rank := contentPatcherPriority(kind, patch.priority)
+		if !found {
+			best, found = rank, true
+		} else {
+			best = max(best, rank)
 		}
 	}
 	if found {
@@ -2902,10 +2899,7 @@ func hitPriority(kind string, hit packHit) int {
 }
 
 func hasExclusiveLoad(hit packHit) bool {
-	for i, patch := range hit.loads {
-		if hit.loadClashes != nil && !hit.loadClashes[i] {
-			continue
-		}
+	for patch := range hit.clashing("load") {
 		if exclusiveLoadPriority(patch.priority) {
 			return true
 		}
