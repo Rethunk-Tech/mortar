@@ -1,8 +1,10 @@
 package launchsvc
 
 import (
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -30,9 +32,7 @@ func (s *Service) sandboxSpec(gameID, profileID string, inst game.Install, plan 
 	if err != nil {
 		return nil, err
 	}
-	for _, dir := range roots {
-		spec.RW = append(spec.RW, dir)
-	}
+	spec.RW = slices.AppendSeq(spec.RW, maps.Values(roots))
 	if profileID != "" && s.profiles != nil {
 		dir, err := s.profiles.ProfileDir(gameID, profileID)
 		if err != nil {
