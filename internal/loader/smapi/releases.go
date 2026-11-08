@@ -46,11 +46,11 @@ func (l Loader) installerAsset(version string) string {
 			return strings.ReplaceAll(component.Asset, component.Version, version)
 		}
 	}
-	pattern := l.AssetPattern
-	if pattern == "" {
+	if l.AssetPattern == "" {
 		return ""
 	}
-	return strings.ReplaceAll(pattern, "{version}", version)
+	// The same expansion cmd/components writes the catalog's asset names with; the version stands in for the tag.
+	return components.SourceComponent{AssetPattern: l.AssetPattern}.AssetName(version)
 }
 
 // cache is CacheDir, else <datadir>/cache, as every meta lookup is: the registered Loader sets no folder.
@@ -84,7 +84,8 @@ func (l Loader) fetchLatest(ctx context.Context) (string, error) {
 	return "", errors.New("GitHub lists no stable SMAPI release with an installer")
 }
 
-const lastLoaderReleases = 10
+// LastLoaderReleases bounds the version list the picker offers; cmd/components pins the same number of releases.
+const LastLoaderReleases = 10
 
 // Versions returns the last GitHub SMAPI releases that look like versions, newest first.
 func (l Loader) Versions(ctx context.Context, _ components.GameInfo) ([]string, error) {
@@ -95,11 +96,11 @@ func (l Loader) Versions(ctx context.Context, _ components.GameInfo) ([]string, 
 	var out []string
 	for _, r := range all {
 		v := strings.TrimPrefix(r.Tag, "v")
-		if r.Draft || !versionPattern.MatchString(v) || !l.hasPin(v) {
+		if r.Draft || r.Prerelease || !versionPattern.MatchString(v) || !l.hasPin(v) {
 			continue
 		}
 		out = append(out, v)
-		if len(out) == lastLoaderReleases {
+		if len(out) == LastLoaderReleases {
 			break
 		}
 	}

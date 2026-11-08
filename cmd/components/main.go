@@ -239,8 +239,7 @@ func selectAsset(releases []github.Release, repo, version, pattern string) (gith
 			normalizeVersion(version) != normalizeVersion(release.Tag) {
 			continue
 		}
-		resolvedPattern := strings.ReplaceAll(pattern, "{version}", releaseVersion)
-		resolvedPattern = strings.ReplaceAll(resolvedPattern, "{tag}", release.Tag)
+		resolvedPattern := components.SourceComponent{AssetPattern: pattern}.AssetName(release.Tag)
 		for _, asset := range release.Assets {
 			matched, err := path.Match(resolvedPattern, asset.Name)
 			if err != nil {

@@ -18,8 +18,9 @@ const (
 	componentGame = "melonloader"
 	componentName = "loader"
 	asset         = "MelonLoader.x64.zip"
-	// listedReleases bounds the version list: older games need older loaders than the newest.
-	listedReleases = 40
+	// ListedReleases bounds the version list: older games need older loaders than the newest. cmd/components pins
+	// the same number of releases.
+	ListedReleases = 40
 	// maxPack bounds a release download.
 	maxPack = 256 << 20
 )
@@ -82,7 +83,7 @@ func (l Loader) Versions(ctx context.Context, _ components.GameInfo) ([]string, 
 		if v, ok := stable(r); ok && l.hasPin(v) {
 			out = append(out, v)
 		}
-		if len(out) == listedReleases {
+		if len(out) == ListedReleases {
 			break
 		}
 	}

@@ -84,6 +84,13 @@ type SourceComponent struct {
 	Accepted     string `json:"accepted,omitempty"`
 }
 
+// AssetName is the component's asset pattern with its placeholders filled for a release tag: {version} is the tag
+// without one leading v, {tag} is the tag as the release spells it.
+func (c SourceComponent) AssetName(tag string) string {
+	name := strings.ReplaceAll(c.AssetPattern, "{version}", strings.TrimPrefix(tag, "v"))
+	return strings.ReplaceAll(name, "{tag}", tag)
+}
+
 // SourceFile is the committed input read by cmd/components.
 type SourceFile struct {
 	Components []SourceComponent `json:"components"`

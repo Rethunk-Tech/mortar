@@ -22,13 +22,16 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/all"
+	"github.com/Rethunk-Tech/mortar/internal/loader/melonloader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 )
 
-// The version pickers' windows: internal/loader/smapi lastLoaderReleases and internal/loader/melonloader listedReleases.
-const (
-	smapiPicked = 10
-	melonPicked = 40
-)
+// The version pickers' windows, read from the loader packages so a pinned window cannot drift from an offered one.
+// Both count the same way: the newest stable, version-looking releases that ship the loader's asset.
+var pickerWindow = map[string]int{
+	"smapi":  smapi.LastLoaderReleases,
+	"loader": melonloader.ListedReleases,
+}
 
 var plainVersion = regexp.MustCompile(`^\d+(\.\d+)*$`)
 
@@ -113,18 +116,11 @@ func refreshPins(ctx context.Context, o options) error {
 		if item.Kind != "loader" {
 			continue
 		}
-		var window int
-		var asset string
-		switch item.Name {
-		case "smapi":
-			window = smapiPicked
-		case "loader":
-			window = melonPicked
-		default:
+		window, ok := pickerWindow[item.Name]
+		if !ok {
 			continue
 		}
-		asset = item.AssetPattern
-		if err := pinGitHubLoader(ctx, client, set, item, window, asset); err != nil {
+		if err := pinGitHubLoader(ctx, client, set, item, window); err != nil {
 			return err
 		}
 	}
@@ -135,7 +131,7 @@ func refreshPins(ctx context.Context, o options) error {
 	return nil
 }
 
-func pinGitHubLoader(ctx context.Context, client *github.Client, set *pinSet, item components.SourceComponent, window int, pattern string) error {
+func pinGitHubLoader(ctx context.Context, client *github.Client, set *pinSet, item components.SourceComponent, window int) error {
 	releases, err := client.Releases(ctx, item.Source.Owner, item.Source.Repo)
 	if err != nil {
 		return fmt.Errorf("look up %s/%s: %w", item.Source.Owner, item.Source.Repo, err)
@@ -146,7 +142,7 @@ func pinGitHubLoader(ctx context.Context, client *github.Client, set *pinSet, it
 		if r.Draft || r.Prerelease || !plainVersion.MatchString(version) {
 			continue
 		}
-		name := strings.ReplaceAll(strings.ReplaceAll(pattern, "{version}", version), "{tag}", r.Tag)
+		name := item.AssetName(r.Tag)
 		if !slices.ContainsFunc(r.Assets, func(a github.Asset) bool { return a.Name == name }) {
 			continue
 		}
