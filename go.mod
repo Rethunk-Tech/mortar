@@ -32,7 +32,6 @@ require (
 	github.com/Rethunk-Tech/go-winsym v0.2.1
 	github.com/andybalholm/brotli v1.2.8
 	github.com/fsnotify/fsnotify v1.10.1
-	github.com/go-ole/go-ole v1.3.0
 	github.com/godbus/dbus/v5 v5.2.4
 	github.com/google/pprof v0.0.0-20261105003125-4bf881d7fb0b
 	github.com/hashicorp/mdns v1.0.7
@@ -57,6 +56,7 @@ require (
 	github.com/danieljoos/wincred v1.2.3 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/ebitengine/purego v0.11.3 // indirect
+	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/gofrs/flock v0.13.1 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
