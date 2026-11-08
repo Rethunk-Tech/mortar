@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, AlertTitle, Box, Button, Typography } from '@mui/material'
 import { Gauge, Timer } from 'lucide-react'
-import { type ReactNode, memo, useRef, useState } from 'react'
+import { memo, type ReactNode, useRef, useState } from 'react'
 import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { BEPINEX, MONO_RUNTIME, SMAPI, UNITY } from '../brand/productNames.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
