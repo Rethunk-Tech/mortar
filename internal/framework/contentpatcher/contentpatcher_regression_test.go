@@ -911,6 +911,12 @@ func TestSameAuthorExplicitPriorityIsIntended(t *testing.T) {
 	if conflicts := assetConflicts([]framework.Mod{pack("Em", "", "1"), pack(" em ", `,"Priority":"Late"`, "2")}); len(conflicts) != 0 {
 		t.Fatalf("one author's Late edit is an intended override, got %#v", conflicts)
 	}
+	if conflicts := assetConflicts([]framework.Mod{pack("Em", "", "1"), pack(" em ", `,"Priority":"High"`, "2")}); len(conflicts) != 0 {
+		t.Fatalf("one author's High edit is an intended override, got %#v", conflicts)
+	}
+	if conflicts := assetConflicts([]framework.Mod{pack("Em", "", "1"), pack(" em ", `,"Priority":"500"`, "2")}); len(conflicts) != 0 {
+		t.Fatalf("one author's numeric-priority edit is an intended override, got %#v", conflicts)
+	}
 	if conflicts := assetConflicts([]framework.Mod{pack("Em", "", "1"), pack("Other", `,"Priority":"Late"`, "2")}); len(conflicts) != 1 {
 		t.Fatalf("another author's Late edit still conflicts, got %#v", conflicts)
 	}

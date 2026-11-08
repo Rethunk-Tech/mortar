@@ -1263,13 +1263,9 @@ func editsClashIndexed(a, b []cpPatch, bIndex []*shapeSet, sameAuthor bool) (cla
 	return clash, clash && minor, note.result()
 }
 
-// explicitOrder is an edit given a Late, Early or Low priority, set to run before or after the others.
+// explicitOrder is an edit given a non-default Content Patcher priority, set to run before or after the others.
 func explicitOrder(p cpPatch) bool {
-	base := strings.ToLower(strings.TrimSpace(p.priority))
-	if i := strings.IndexAny(base, "+-"); i > 0 {
-		base = strings.TrimSpace(base[:i])
-	}
-	return base == "late" || base == "early" || base == "low"
+	return contentPatcherPriority("edit", p.priority) != 0
 }
 
 // noteAgreement keeps a ConflictNote only while every harmless overlap gives the same one.
