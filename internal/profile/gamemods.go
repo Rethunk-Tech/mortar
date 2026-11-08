@@ -53,7 +53,7 @@ func (s *Store) SyncGameMods(ctx context.Context, game, id, modsDir string, fold
 	if err := s.unlocked(game, id); err != nil {
 		return GameModsResult{}, err
 	}
-	if s.GameRunning != nil && s.GameRunning(game) {
+	if move && s.GameRunning != nil && s.GameRunning(game) {
 		return GameModsResult{}, usererr.Wrap(usererr.Busy, errors.New("the game is running: close it before changing mods from its Mods folder"))
 	}
 	root, err := safefs.EvalSymlinks(modsDir)
@@ -170,6 +170,9 @@ func (s *Store) syncFolder(ctx context.Context, game, id string, f gameModFolder
 // heldBy returns the key and display name of the profile entry holding any mod of f, or "" when it holds none.
 func heldBy(p Profile, f gameModFolder) (key, name string) {
 	for _, e := range p.Entries {
+		if !holdsAny(e, f.mods) {
+			continue
+		}
 		for _, m := range e.Mods {
 			if slices.ContainsFunc(f.mods, func(x smapimanifest.Mod) bool { return mod.Equal(x.ModID(), m.ID) }) {
 				return e.Key, m.Name

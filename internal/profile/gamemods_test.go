@@ -47,6 +47,35 @@ func TestMoveGameModsMovesNewFoldersAndSkipsHeldOnes(t *testing.T) {
 	}
 }
 
+func TestGameRunningOnlyBlocksTakingModsOutOfTheGame(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.GameRunning = func(string) bool { return true }
+	copies := t.TempDir()
+	writeFile(t, copies, "New/manifest.json", manifestJSON("me.new"))
+	moved := t.TempDir()
+	writeFile(t, moved, "Kept/manifest.json", manifestJSON("me.kept"))
+	p := mustCreate(t, e, "P")
+
+	// A copy leaves the game's folder alone, so it may run while the game is up.
+	if res, err := e.SyncGameMods(t.Context(), "stardew", p.ID, copies, []string{"New"}, false, false); err != nil || res.Imported != 1 {
+		t.Fatalf("copy while running: %+v, %v", res, err)
+	}
+	if res, err := e.ImportGameMods(t.Context(), "stardew", copies, false); err != nil || res.Imported != 1 {
+		t.Fatalf("import while running: %+v, %v", res, err)
+	}
+	if _, err := e.SyncGameMods(t.Context(), "stardew", p.ID, copies, []string{"New"}, false, false); err != nil {
+		t.Fatalf("second copy while running: %v", err)
+	}
+	// Moving writes to the game's folder, which is what the running game would fight.
+	if _, err := e.SyncGameMods(t.Context(), "stardew", p.ID, moved, []string{"Kept"}, true, false); err == nil {
+		t.Fatal("moved a folder out while the game runs")
+	}
+	if got := names(t, moved); len(got) != 1 || got[0] != "Kept" {
+		t.Fatalf("refused move still changed the game's Mods folder: %v", got)
+	}
+}
+
 func modAt(id, version string) string {
 	return `{"Name":"` + id + `","Author":"me","Version":"` + version + `","UniqueID":"` + id + `"}`
 }
