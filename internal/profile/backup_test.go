@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 func TestBackupRestoresAnEqualProfileWithoutTheStore(t *testing.T) {
@@ -141,5 +143,89 @@ func TestRestoreKeepsEveryProgramAndPlaceFieldOfTheBackupLocal(t *testing.T) {
 		if q.Notes != "keep me" || q.LaunchOptions != "--log-mode" {
 			t.Fatalf("data fields lost: %+v", q)
 		}
+	}
+}
+
+// A pack or a restored backup may not smuggle a Windows separator in as a plain character of a name.
+func TestWriteFilesRefusesABackslashPath(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "Farm")
+	dir, err := e.ProfileDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := e.WriteFiles("stardew", p.ID, map[string][]byte{`BepInEx/config/a\b.cfg`: []byte("x")}); err == nil {
+		t.Fatal("a backslash path was written")
+	}
+	if _, err := os.Stat(filepath.Join(dir, "BepInEx", "config", `a\b.cfg`)); err == nil {
+		t.Fatal("the file landed under a name with a backslash in it")
+	}
+}
+
+func TestBackupPathRefusesAManifestAndAnOversizedConfig(t *testing.T) {
+	t.Parallel()
+	p := Profile{Entries: []Entry{{Key: "pack"}}}
+	small := 8
+	if !backupPath("mods/pack/A/config.json", p, small) {
+		t.Fatal("a mod's config.json was refused")
+	}
+	for _, rel := range []string{"mods/pack/A/manifest.json", "mods/pack/A/MANIFEST.JSON", `mods/pack/A/c\onfig.json`, "../escape.json"} {
+		if backupPath(rel, p, small) {
+			t.Errorf("%s was accepted", rel)
+		}
+	}
+	if backupPath("mods/pack/A/config.json", p, maxBackupConfig+1) {
+		t.Error("an oversized config was accepted")
+	}
+}
+
+// A backup names its entries, and a key that leaves the mods folder is refused rather than dropped.
+func TestRestoreBackupRefusesABadEntryKey(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	before, err := e.List("stardew")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bad := Profile{Name: "Bad", Entries: []Entry{{Key: "../x", Disabled: []mod.ID{}}}}
+	if _, _, err := e.RestoreBackup(t.Context(), "stardew", bad, nil, nil); err == nil {
+		t.Fatal("a backup with a key outside the mods folder was restored")
+	}
+	after, err := e.List("stardew")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(after) != len(before) {
+		t.Fatalf("a refused restore left %d profiles, want %d", len(after), len(before))
+	}
+}
+
+// The Mods tab's manual sort is the player's, like the profile's groups, so a restore keeps it.
+func TestRestoreKeepsTheModOrder(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	for _, key := range []string{"local-a", "local-b"} {
+		e.item(t, key, map[string]string{"A/manifest.json": manifestJSON("X." + key)})
+	}
+	p := mustCreate(t, e, "Farm")
+	for _, key := range []string{"local-a", "local-b"} {
+		if _, err := e.AddEntry("stardew", p.ID, key, Source{Kind: KindLocal, Name: key + ".zip"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := e.SetModOrder("stardew", p.ID, []string{"local-b", "local-a"}); err != nil {
+		t.Fatal(err)
+	}
+	src, files, err := e.Backup("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, _, err := e.RestoreBackup(t.Context(), "stardew", src, files, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(got.ModOrder, []string{"local-b", "local-a"}) {
+		t.Fatalf("mod order after a restore = %v", got.ModOrder)
 	}
 }

@@ -930,9 +930,15 @@ func (p Profile) WithoutDev() Profile {
 	return p
 }
 
+// isLocalRel reports a slash path that stays below the folder it is joined to: a clean relative path with no backslash,
+// which Windows reads as a separator where filepath.IsLocal reads it as one more character of a name.
+func isLocalRel(rel string) bool {
+	return filepath.IsLocal(filepath.FromSlash(rel)) && !strings.Contains(rel, `\`)
+}
+
 // localName reports a name that stays below the folder it is joined to; "" is allowed for the optional fields.
 func localName(name string) bool {
-	return name == "" || (filepath.IsLocal(filepath.FromSlash(name)) && !strings.Contains(name, `\`))
+	return name == "" || isLocalRel(name)
 }
 
 // namesLocal reports an entry whose key and the other names Mortar joins to a folder cannot leave it. Key is also a

@@ -287,7 +287,7 @@ func (s *Store) swapPackage(game, id string, e Entry, newKey string, mods []Comp
 // refused before anything is written.
 func (s *Store) WriteFiles(game, id string, files map[string][]byte) error {
 	_, _, err := s.writeProfileFiles(game, id, files, true, func(dir, rel string) error {
-		if !filepath.IsLocal(filepath.FromSlash(rel)) {
+		if !isLocalRel(rel) {
 			return fmt.Errorf("pack file %q leaves the profile", rel)
 		}
 		if linkOnPath(dir, rel) {

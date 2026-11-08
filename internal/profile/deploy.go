@@ -60,7 +60,7 @@ func (s *Store) packageFilesWith(gameID, id string, withDev bool) (files map[str
 				continue
 			}
 			rel := path.Join(targetPrefix(info, f.Target), path.Clean(f.Rel))
-			if !filepath.IsLocal(filepath.FromSlash(rel)) {
+			if !isLocalRel(rel) {
 				return nil, nil, fmt.Errorf("%s: %s leaves the profile", entryLabel(e), f.Rel)
 			}
 			// A later entry's file replaces an earlier one that differs only in case: both are one file on Windows.
@@ -503,14 +503,7 @@ func successors(p Profile) map[string]string {
 		if e.PreviousKey != "" {
 			out[e.PreviousKey] = e.Key
 		}
-		if e.Replaced == "" {
-			continue
-		}
-		var old []Entry
-		if json.Unmarshal([]byte(e.Replaced), &old) != nil {
-			continue
-		}
-		for _, o := range old {
+		for _, o := range e.replacedEntries() {
 			out[o.Key] = e.Key
 		}
 	}
@@ -660,11 +653,12 @@ func (s *Store) SeedConfigs(gameID, id string) error {
 	return nil
 }
 
-// seedSignature is what decides which packages' configs a seed copies: each entry and the mods switched off in it.
+// seedSignature is what decides which packages' configs a seed copies: each entry's key, the mods switched off in it and
+// everything else that decides whether packageFiles lays it out.
 func seedSignature(p Profile) string {
 	h := fnv.New64a()
 	for _, e := range p.Entries {
-		_, _ = fmt.Fprintf(h, "%s|%v|", e.Key, e.Disabled)
+		_, _ = fmt.Fprintf(h, "%s|%v|%v|%v|", e.Key, e.Disabled, e.DevOnly, e.HasPackageEnabled())
 	}
 	return strconv.FormatUint(h.Sum64(), 16)
 }

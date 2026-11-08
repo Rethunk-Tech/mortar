@@ -434,3 +434,53 @@ func TestSeedConfigsCopiesAPackagesConfigOnceUntilTheProfileChanges(t *testing.T
 		t.Fatalf("a changed profile was not seeded: %v", err)
 	}
 }
+
+// Marking a package DevOnly leaves it out of the layout, so the config seed must run again rather than trust the
+// signature of a profile whose only change was that switch.
+func TestSeedConfigsRunsAgainWhenAPackageBecomesDevOnly(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, zip := e.lcZip(t, "Ns-Foo-1.0.0.zip", map[string]string{
+		"manifest.json":  `{"name":"Foo","version_number":"1.0.0","dependencies":[]}`,
+		"Foo.dll":        "MZ",
+		"config/Foo.cfg": "x = 1\n",
+	})
+	res, err := e.InstallArchive(t.Context(), "lethal-company", p.ID, zip)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := e.SeedConfigs("lethal-company", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	dir, err := e.ProfileDir("lethal-company", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := filepath.Join(dir, "BepInEx", "config", "Foo.cfg")
+	if !safefs.IsFile(cfg) {
+		t.Fatal("the package's config was not seeded")
+	}
+	if err := os.Remove(cfg); err != nil {
+		t.Fatal(err)
+	}
+	// With the package a dev helper, packageFiles lays it out only for a test copy, so the seed lays nothing over the
+	// profile's live configs.
+	if _, err := e.SetDevOnly("lethal-company", p.ID, res.Profile.Entries[0].Key, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.SeedConfigs("lethal-company", p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if got := seedSignature(res.Profile); got == seedSignature(mustGet(t, e, "lethal-company", p.ID)) {
+		t.Fatal("a package switched to DevOnly left the seed signature unchanged")
+	}
+}
+
+func mustGet(t *testing.T, e env, game, id string) Profile {
+	t.Helper()
+	p, err := e.Get(game, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return p
+}

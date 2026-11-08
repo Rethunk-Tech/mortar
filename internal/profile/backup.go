@@ -11,12 +11,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -85,7 +85,7 @@ func (s *Store) Backup(game, id string) (Profile, map[string][]byte, error) {
 		}
 		folder := liveEntryDir(modsDir, e.Key)
 		err := walk(folder, "mods/"+e.Key+"/", func(rel string, size int64) bool {
-			return strings.EqualFold(filepath.Ext(rel), ".json") && !strings.EqualFold(filepath.Base(rel), smapimanifest.FileName) && size <= maxBackupConfig
+			return modConfigRel(rel) && size <= maxBackupConfig
 		})
 		if err != nil {
 			return Profile{}, nil, err
@@ -191,28 +191,15 @@ func ChangedFilesIn(game, dir string) ([]string, error) {
 	rec := readPlaced(dir)
 	var out []string
 	for _, root := range []string{t.ProfileFolder(), changedDir} {
-		err := filepath.WalkDir(filepath.Join(dir, filepath.FromSlash(root)), func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				if errors.Is(err, fs.ErrNotExist) {
-					return nil
-				}
-				return err
-			}
-			if !d.Type().IsRegular() {
-				return nil
-			}
-			rel, err := filepath.Rel(dir, path)
-			if err != nil {
-				return err
-			}
-			rel = filepath.ToSlash(rel)
-			if r, placed := rec[rel]; placed && !changedSince(r, path) {
+		err := safefs.WalkFiles(filepath.Join(dir, filepath.FromSlash(root)), func(rel, file string, _ int64) error {
+			rel = strings.TrimSuffix(root, "/") + "/" + rel
+			if r, placed := rec[rel]; placed && !changedSince(r, file) {
 				return nil
 			}
 			out = append(out, rel)
 			return nil
 		})
-		if err != nil {
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return nil, err
 		}
 	}
@@ -230,19 +217,18 @@ func (s *Store) restoreChangedFiles(game, id, from string) error {
 		return err
 	}
 	var written []string
-	err = filepath.WalkDir(from, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || !d.Type().IsRegular() {
-			return err
+	err = safefs.WalkFiles(from, func(rel, path string, _ int64) error {
+		rel = filepath.ToSlash(rel)
+		// A backup stages whatever a mod wrote during play, binary state included, so the location rule applies and the
+		// file-type one does not; a path outside changed/ or the content folder still never lands.
+		if !ValidChangedLocation(game, rel) || linkOnPath(dir, rel) {
+			return fmt.Errorf("the backup holds a changed file the profile cannot take: %s", rel)
 		}
-		rel, err := filepath.Rel(from, path)
-		if err != nil || !filepath.IsLocal(rel) {
-			return fmt.Errorf("the backup holds a changed file outside the profile")
-		}
-		to := filepath.Join(dir, rel)
+		to := filepath.Join(dir, filepath.FromSlash(rel))
 		if err := datadir.MkdirParent(to); err != nil {
 			return err
 		}
-		written = append(written, filepath.ToSlash(rel))
+		written = append(written, rel)
 		return datadir.CopyFile(path, to)
 	})
 	if err != nil {
@@ -265,8 +251,8 @@ func (s *Store) RestoreBackup(ctx context.Context, game string, p Profile, files
 			return Profile{}, nil, usererr.Wrap(usererr.Invalid, fmt.Errorf("the backup holds a mod named %q, which leaves the mods folder", e.Key))
 		}
 	}
-	for rel := range files {
-		if !backupPath(rel, p) {
+	for rel, data := range files {
+		if !backupPath(rel, p, len(data)) {
 			return Profile{}, nil, fmt.Errorf("the backup holds %q, which is not a profile file", rel)
 		}
 	}
@@ -316,6 +302,7 @@ func restoredFields(cur, p Profile) Profile {
 	out.IntentSince, out.IntentOffered, out.LastChange = p.IntentSince, p.IntentOffered, p.LastChange
 	out.Groups, out.Origin, out.ImportedFrom, out.Collection, out.CopyOf = p.Groups, p.Origin, p.ImportedFrom, p.Collection, p.CopyOf
 	out.Color, out.Icon, out.Favourite = p.Color, p.Icon, p.Favourite
+	out.ModOrder = slices.Clone(p.ModOrder)
 	out.LaunchOptions, out.DefaultLaunchPreset = p.LaunchOptions, p.DefaultLaunchPreset
 	out.LaunchPresets = slices.Clone(p.LaunchPresets)
 	for i := range out.LaunchPresets {
@@ -357,7 +344,7 @@ func (s *Store) restoreInto(game string, created, p Profile, files map[string][]
 		if err := datadir.MkdirParent(to); err != nil {
 			return Profile{}, nil, err
 		}
-		if err := safefs.WriteFile(to, data, 0o600); err != nil {
+		if err := safefs.WriteFileAtomic(to, data, 0o600); err != nil {
 			return Profile{}, nil, err
 		}
 	}
@@ -382,9 +369,15 @@ func (s *Store) restoreInto(game string, created, p Profile, files map[string][]
 	return out, missing, nil
 }
 
-// backupPath reports whether rel is a file a backup of p may carry.
-func backupPath(rel string, p Profile) bool {
-	if !filepath.IsLocal(filepath.FromSlash(rel)) || strings.Contains(rel, "\\") {
+// modConfigRel reports whether rel, below a mod's folder in the profile, is a config file a backup carries: a .json
+// that is not the package manifest.
+func modConfigRel(rel string) bool {
+	return strings.EqualFold(filepath.Ext(rel), ".json") && !strings.EqualFold(filepath.Base(rel), smapimanifest.FileName)
+}
+
+// backupPath reports whether rel, a file of size bytes, is a file a backup of p may carry.
+func backupPath(rel string, p Profile, size int) bool {
+	if !isLocalRel(rel) {
 		return false
 	}
 	if slices.Contains(backupFiles, rel) || (rel == p.Cover && coverType(rel) != "") {
@@ -394,7 +387,7 @@ func backupPath(rel string, p Profile) bool {
 		return true
 	}
 	key, rest, ok := strings.Cut(strings.TrimPrefix(rel, "mods/"), "/")
-	return ok && strings.HasPrefix(rel, "mods/") && rest != "" && strings.EqualFold(filepath.Ext(rest), ".json") &&
+	return ok && strings.HasPrefix(rel, "mods/") && rest != "" && modConfigRel(rest) && size <= maxBackupConfig &&
 		slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key })
 }
 
@@ -418,7 +411,7 @@ func applyRestored(dir, modsDir, key string) error {
 		if err := datadir.MkdirParent(to); err != nil {
 			return err
 		}
-		return safefs.WriteFile(to, b, 0o600)
+		return safefs.WriteFileAtomic(to, b, 0o600)
 	})
 	if err != nil {
 		return err
