@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync/atomic"
 	"testing"
 )
@@ -13,13 +14,21 @@ import (
 // liveServer answers hello on every accepted connection and counts the connections a probe opens.
 func liveServer(t *testing.T, token string) (dir string, accepts *atomic.Int32) {
 	t.Helper()
-	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	ln, err := new(net.ListenConfig).Listen(t.Context(), "tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = ln.Close() })
 	dir = t.TempDir()
-	b, err := json.Marshal(Discovery{Port: ln.Addr().(*net.TCPAddr).Port, Token: token, PID: 4242, Version: "test", Protocol: Protocol})
+	_, portText, err := net.SplitHostPort(ln.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	port, err := strconv.Atoi(portText)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := json.Marshal(Discovery{Port: port, Token: token, PID: 4242, Version: "test", Protocol: Protocol})
 	if err != nil {
 		t.Fatal(err)
 	}
