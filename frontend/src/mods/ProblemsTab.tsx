@@ -5,6 +5,7 @@ import { Copy, Map as MapIcon, Plus, ShieldCheck } from 'lucide-react'
 import { memo, useMemo, useState } from 'react'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { findCrashCause, useBisectBlockText } from '../commandPalette/crashBisect.ts'
+import { formatDuration } from '../console/startupView.ts'
 import { PageActions } from '../game/PageActions.tsx'
 import { useReasonText } from '../i18n/reasonText.ts'
 import { useOpenOverride } from '../profiles/openOverrides.ts'
@@ -308,7 +309,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
 // ProblemActions fills the tab header's action slot. Memoised with no props: it reads every store it needs itself, so a
 // redraw of the problem list under it (each check landing) leaves the header alone.
 const ProblemActions = memo(function ProblemActionsView() {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const result = useOpenProblems()
   const [mapOpen, setMapOpen] = useState(false)
   const hasAssetMap = useProfileLoader()?.assets
@@ -321,12 +322,18 @@ const ProblemActions = memo(function ProblemActionsView() {
   const compat = result?.compat ?? []
   const redundantRows = useRedundantRows()
   const redundant = redundantRows(result?.redundant ?? [])
+  const slowRows = useSlowStartups()
+  const fileConflicts = useFileConflicts()
+  const replaced = result?.replaced ?? []
   const harmlessCount = (result?.assetConflicts ?? []).filter((asset) => asset.cosmetic).length
   const nothing =
     result === null ||
     (sections.length === 0 &&
       cleanup.length + redundant.length + compat.length === 0 &&
-      harmlessCount === 0)
+      harmlessCount === 0 &&
+      slowRows.length === 0 &&
+      fileConflicts.length === 0 &&
+      replaced.length === 0)
   return (
     <PageActions>
       <Tooltip
@@ -421,6 +428,44 @@ const ProblemActions = memo(function ProblemActionsView() {
                         },
                       ]),
                   ...compatReportChunks(compat, t`Compatibility`),
+                  ...(slowRows.length === 0
+                    ? []
+                    : [
+                        {
+                          title: t`Slow startup`,
+                          count: slowRows.length,
+                          lines: slowRows.map((row) => {
+                            const time = formatDuration(row.ms, i18n.locale)
+                            return row.kind === 'pack'
+                              ? t`${{ name: row.name }} adds ${time} to startup (through ${{ framework: row.framework }})`
+                              : t`${{ name: row.name }} adds ${time} to startup`
+                          }),
+                        },
+                      ]),
+                  ...(fileConflicts.length === 0
+                    ? []
+                    : [
+                        {
+                          title: t`File conflicts`,
+                          count: fileConflicts.length,
+                          lines: fileConflicts.map((fileConflict) => {
+                            const { text: sentence, note } = rowText({
+                              kind: 'fileConflict',
+                              fileConflict,
+                            })
+                            return note === '' ? sentence : `${sentence} ${note}`
+                          }),
+                        },
+                      ]),
+                  ...(replaced.length === 0
+                    ? []
+                    : [
+                        {
+                          title: t`Replaced`,
+                          count: replaced.length,
+                          lines: replaced.map((file) => file.path),
+                        },
+                      ]),
                 ],
                 t`Harmless`,
                 harmlessCount,
