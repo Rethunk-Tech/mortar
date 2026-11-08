@@ -4,6 +4,7 @@ import { Copy, EyeOff } from 'lucide-react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { HideLogSource } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { copyText } from '../share/copyText.ts'
+import { baseName } from '../shell/baseName.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportError } from '../toasts/report.ts'
 import { formatAll } from './filter.ts'
@@ -43,7 +44,7 @@ export function LineMenu({
     onClose()
   }
   const object = source?.object ?? ''
-  const name = object.split('/').at(-1) ?? ''
+  const name = baseName(object)
   // A tagged line names its method; an engine message has none to widen to.
   const method = source?.source.startsWith('unity:') ? '' : (source?.source ?? '')
   return (

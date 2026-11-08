@@ -1,4 +1,5 @@
 import { i18n } from '@lingui/core'
+import { baseName } from '../shell/baseName.ts'
 import { msg } from '@lingui/core/macro'
 
 const lcSlot = /^LCSaveFile(\d+)$/
@@ -24,7 +25,7 @@ export function saveName(save: {
   if (save.folder === 'LCChallengeFile') {
     return i18n._(msg`Challenge moon`)
   }
-  return (save.folder.split('/').at(-1) ?? '').replace(extension, '')
+  return baseName(save.folder).replace(extension, '')
 }
 
 // What a save is: a Lethal Company slot or its weekly challenge (the game has three slots, so a fourth comes from a
