@@ -233,6 +233,13 @@ func Find(id string) Game {
 	return nil
 }
 
+func NameOf(id string) string {
+	if g := Find(id); g != nil {
+		return g.Name()
+	}
+	return id
+}
+
 // Implemented lists the ids of enabled catalog games that have a registered implementation.
 func Implemented() []string {
 	var ids []string

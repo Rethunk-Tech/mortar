@@ -264,6 +264,16 @@ func TestRequire(t *testing.T) {
 	}
 }
 
+func TestNameOf(t *testing.T) {
+	t.Parallel()
+	if got := NameOf("not-a-real-game-id"); got != "not-a-real-game-id" {
+		t.Fatalf("unknown = %q", got)
+	}
+	if g := Find("stardewvalley"); g != nil && NameOf("stardewvalley") != g.Name() {
+		t.Fatalf("named = %q, want %q", NameOf("stardewvalley"), g.Name())
+	}
+}
+
 func TestByR2modmanFolderNamesTheCatalogGame(t *testing.T) {
 	if id, ok := ByR2modmanFolder("LethalCompany"); !ok || id != "lethal-company" {
 		t.Fatalf("got %q %v", id, ok)
