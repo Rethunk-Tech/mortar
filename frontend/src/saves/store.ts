@@ -12,7 +12,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { sameId } from '../mods/lookup.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { inlineError, type InlineError, reportUnexpected } from '../toasts/report.ts'
+import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { dropMissing } from './dropMissing.ts'
 

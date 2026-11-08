@@ -9,7 +9,7 @@ import {
   RestoreBackup,
   SetBackupPinned,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
-import { inlineError, type InlineError, reportUnexpected } from '../toasts/report.ts'
+import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useSaves } from './store.ts'
 
 export type Status = 'idle' | 'loading' | 'ready' | 'error'

@@ -1,5 +1,5 @@
-import { I18nProvider } from '@lingui/react'
 import { expect, test } from 'bun:test'
+import { I18nProvider } from '@lingui/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { i18n } from '../i18n/index.ts'
 import { ErrorRetry } from './ErrorRetry.tsx'

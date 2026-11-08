@@ -36,7 +36,7 @@ function SavesList() {
   const { shown } = savesView(filterAndSortSaves(fits, ''))
   const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
   if (status === 'error' && error) {
-    return <ErrorRetry error={error} onRetry={() => void reload()} />
+    return <ErrorRetry error={error} onRetry={reload} />
   }
   if (shown.length === 0) {
     return status === 'loading' ? (

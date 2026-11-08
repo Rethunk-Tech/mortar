@@ -14,7 +14,7 @@ import {
   UsageProgress,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import { peekLast, putLast, subscribeLast } from '../../shell/lastGood.ts'
-import { inlineError, type InlineError, reportUnexpected } from '../../toasts/report.ts'
+import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
 import { beginUsageLoad } from '../usageLoad.ts'
 
 // Bytes counted so far while disk use is measured. Only the bar's Measuring line reads it, so a progress tick
