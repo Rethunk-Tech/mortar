@@ -316,5 +316,19 @@ export function gameSettingsCases(h: Helpers): Case[] {
         await p.getByText('Preferred source').scrollIntoViewIfNeeded()
       },
     },
+    {
+      // Ticking a level saves it: the setting once refused every change the checkboxes sent.
+      name: 'game-settings-console-levels',
+      setup: async (p) => {
+        await openGameSettings(p)
+        await p.getByRole('button', { name: 'Console', exact: true }).click()
+      },
+      run: async (p) => {
+        const trace = p.getByRole('checkbox', { name: 'Trace' })
+        await trace.click()
+        await expect(trace).toBeChecked()
+      },
+      teardown: (p) => p.getByRole('checkbox', { name: 'Trace' }).click(),
+    },
   ]
 }
