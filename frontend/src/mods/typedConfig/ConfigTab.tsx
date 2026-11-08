@@ -19,6 +19,7 @@ import { MenuButton } from '../../shell/MenuButton.tsx'
 import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { LetterTile } from '../LetterTile.tsx'
+import { OFF_OPACITY } from '../modListCells.ts'
 import { modId } from '../lookup.ts'
 import { GroupHeaderRow } from '../ModsGroupHeader.tsx'
 import { useMods } from '../store.ts'
@@ -46,7 +47,6 @@ const MIN_SETTING_QUERY = 2
 const SETTING_SEARCH_DELAY_MS = 300
 // One empty list for every query below the minimum, so typing those keys does not render the tab again.
 const NO_HITS: Hit[] = []
-const DIMMED = 0.55
 const SHOWS: ConfigShow[] = ['all', 'changed', 'menu', 'waiting']
 
 function ChipLabel({ chip }: { chip: NonNullable<ConfigChip> }) {
@@ -73,7 +73,7 @@ const ModRow = memo(function ConfigModRow({
     <ListItemButton
       selected={selected}
       onClick={() => onChoose(modSelection(config.id))}
-      sx={{ minHeight: space.row, gap: space.gap, opacity: config.enabled ? 1 : DIMMED }}
+      sx={{ minHeight: space.row, gap: space.gap, opacity: config.enabled ? 1 : OFF_OPACITY }}
     >
       <LetterTile
         mod={{ id: config.id, name: config.name, ...(picture ? { picture } : {}) }}
