@@ -45,7 +45,7 @@ func printAssetTargets(c *cmd, targets []cp.AssetTarget) {
 			name = cmp.Or(name, m.ModID.Local())
 			if m.Winner {
 				name += "*"
-				winner = m.ModName
+				winner = cmp.Or(m.ModName, m.ModID.Local())
 			}
 			mods = append(mods, fmt.Sprintf("%s %s", name, m.Action))
 		}
