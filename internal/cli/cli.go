@@ -696,6 +696,28 @@ func gameConfiguredLabel(ok bool) string {
 	return "Not set up"
 }
 
+// modsChangeSummary words a change to several mods from how many of each kind it touched, as the window does.
+func modsChangeSummary(ev profile.HistoryEvent) string {
+	if ev.Added+ev.Removed+ev.Updated == 0 {
+		if ev.Count > 1 {
+			return fmt.Sprintf("Changed %d mods", ev.Count)
+		}
+		return "Changed mods"
+	}
+	var parts []string
+	for _, p := range []struct {
+		n    int
+		verb string
+	}{{ev.Added, "Added"}, {ev.Removed, "Removed"}, {ev.Updated, "Updated"}} {
+		if p.n == 1 {
+			parts = append(parts, p.verb+" 1 mod")
+		} else if p.n > 1 {
+			parts = append(parts, fmt.Sprintf("%s %d mods", p.verb, p.n))
+		}
+	}
+	return strings.Join(parts, " · ")
+}
+
 // historySummary words a history event in English, as the window words it in the user's language.
 func historySummary(ev profile.HistoryEvent) string {
 	mods := func(n int) string {
@@ -732,10 +754,7 @@ func historySummary(ev profile.HistoryEvent) string {
 	case profile.ChangeNote:
 		return "Edited the note of " + ev.Name
 	case profile.ChangeMods:
-		if ev.Count > 1 {
-			return "Changed " + mods(ev.Count)
-		}
-		return "Changed mods"
+		return modsChangeSummary(ev)
 	case profile.ChangeSourced:
 		if ev.Name == "" {
 			return "Found mods on Nexus"
@@ -774,9 +793,9 @@ func historySummary(ev profile.HistoryEvent) string {
 		return fmt.Sprintf("Switched %s to the %s update channel", ev.Name, ev.Detail)
 	case profile.ChangeCollectionUnlinked:
 		if ev.Name != "" {
-			return "Unlinked the collection " + ev.Name
+			return "Unlinked collection " + ev.Name
 		}
-		return "Unlinked the collection"
+		return "Unlinked collection"
 	case profile.ChangeTrimmed:
 		return fmt.Sprintf("Trimmed history, dropped %d older changes", ev.Count)
 	case profile.ChangeUnscanned:
