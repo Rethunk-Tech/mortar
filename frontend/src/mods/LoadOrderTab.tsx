@@ -244,18 +244,20 @@ function OrderList({
       <ControlsRow>
         <SearchField value={query} onChange={setQuery} label={t`Filter load order`} grow={true} />
       </ControlsRow>
-      <OrderScroller rows={shown} names={names} scrollRef={scrollRef} move={move} />
+      <OrderScroller rows={rows} shown={shown} names={names} scrollRef={scrollRef} move={move} />
     </Box>
   )
 }
 
 function OrderScroller({
   rows,
+  shown,
   names,
   scrollRef,
   move,
 }: {
   rows: Row[]
+  shown: Row[]
   names: Map<string, string>
   scrollRef: RefObject<(id: string) => boolean>
   move: Move | null
@@ -263,14 +265,14 @@ function OrderScroller({
   const errorColor = useTheme().palette.error.main
   const parentRef = useRef<HTMLDivElement>(null)
   const virtualizer = useVirtualizer({
-    count: rows.length,
+    count: shown.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_ESTIMATE_PX,
     overscan: 8,
-    getItemKey: (index) => rows[index]?.id ?? index,
+    getItemKey: (index) => shown[index]?.id ?? index,
   })
   const onScroll = (id: string): boolean => {
-    const index = rows.findIndex((row) => sameId(row.id, id))
+    const index = shown.findIndex((row) => sameId(row.id, id))
     if (index < 0) {
       return false
     }
@@ -298,7 +300,7 @@ function OrderScroller({
       </Typography>
       <Box sx={{ position: 'relative', height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((item) => {
-          const row = rows[item.index]
+          const row = shown[item.index]
           return row ? (
             // A plain element: the list redraws on every row it measures, and a styled Box would redraw each row's
             // styling components with it.
