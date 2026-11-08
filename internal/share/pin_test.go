@@ -59,6 +59,20 @@ func zipFiles(t *testing.T, raw []byte) map[string]string {
 	return out
 }
 
+func TestPinDisabledMovesOntoDstAndClearsOthers(t *testing.T) {
+	id, keep := mod.ID("smapi:X.Off"), mod.ID("smapi:Y.Keep")
+	dst := []Ref{
+		{ModID: 1, FileID: 1, Disabled: []mod.ID{id, keep}},
+		{ModID: 2, FileID: 2, Disabled: []mod.ID{id}},
+		{ModID: 3, FileID: 3},
+	}
+	src := []Ref{{ModID: 2, FileID: 2, Disabled: []mod.ID{id}}}
+	got := pinDisabled(dst, src, []mod.ID{id})
+	if len(got) != 3 || !slices.Equal(got[0].Disabled, []mod.ID{keep}) || !slices.Equal(got[1].Disabled, []mod.ID{id}) || len(got[2].Disabled) != 0 {
+		t.Fatalf("pinDisabled = %+v", got)
+	}
+}
+
 // A pinned mod is the same mod under a case variant of its SMAPI id, so src's off state crosses to dst.
 func TestPinDisabledMatchesSmapiIDsByCase(t *testing.T) {
 	dst := []Ref{{ModID: 1, FileID: 2}}
