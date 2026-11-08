@@ -70,8 +70,8 @@ func Live(ctx context.Context, dir string) (int, bool) {
 	if err != nil {
 		return 0, false
 	}
-	_ = conn.Close()
-	if callDir(ctx, dir, "hello", nil, nil, 2*time.Second) != nil {
+	defer func() { _ = conn.Close() }()
+	if call(conn, d, "hello", nil, nil, 2*time.Second) != nil {
 		return 0, false
 	}
 	return d.PID, true
@@ -87,8 +87,9 @@ func Unanswering(dir string, wait time.Duration) (int, bool) {
 		if err != nil {
 			return 0, false
 		}
+		err = call(conn, d, "hello", nil, nil, 2*time.Second)
 		_ = conn.Close()
-		if CallDir(dir, "hello", nil, nil, 2*time.Second) == nil {
+		if err == nil {
 			return 0, false
 		}
 		if time.Now().After(deadline) {
@@ -140,6 +141,11 @@ func callDir(ctx context.Context, dir, method string, params, out any, timeout t
 		return err
 	}
 	defer func() { _ = conn.Close() }()
+	return call(conn, d, method, params, out, timeout)
+}
+
+// call sends one request on an already dialed connection.
+func call(conn net.Conn, d Discovery, method string, params, out any, timeout time.Duration) error {
 	_ = conn.SetDeadline(time.Now().Add(timeout))
 	req, err := json.Marshal(map[string]any{"token": d.Token, "method": method, "params": params})
 	if err != nil {
