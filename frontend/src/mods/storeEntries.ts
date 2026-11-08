@@ -106,10 +106,7 @@ function pushRemovedUndo(
         if (!(profile && first)) {
           return { disabled: true, reason: i18n._(msg`That profile is gone.`) }
         }
-        const state = changeStillLatest(profile, first.key, ids)
-        return state.disabled
-          ? { disabled: false }
-          : { disabled: true, reason: i18n._(msg`This is no longer the latest change.`) }
+        return changeStillLatest(profile, first.key, ids)
       },
     },
   })
@@ -368,7 +365,20 @@ export async function skipSource(mod: Mod, source: string, skip: boolean) {
   if (!target) {
     return
   }
-  useProfiles.getState().replace(await SetSkipSource(target.game, target.id, mod.key, source, skip))
+  try {
+    useProfiles
+      .getState()
+      .replace(await SetSkipSource(target.game, target.id, mod.key, source, skip))
+  } catch (e) {
+    reportError(
+      i18n._(
+        skip
+          ? msg`Could not ignore updates from ${source}`
+          : msg`Could not stop ignoring ${source} updates`,
+      ),
+    )(e)
+    return
+  }
   await useUpdates.getState().load()
 }
 
