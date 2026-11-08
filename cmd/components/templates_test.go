@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
 
@@ -42,5 +44,16 @@ func TestPinTemplatesRecordsTheTagsCommitAndRefusesAMovedTag(t *testing.T) {
 	missing[0].Loaders[0].DevTemplate.Ref = "v9.9.9"
 	if err := pinTemplates(t.Context(), srv.Client(), srv.URL, missing); err == nil {
 		t.Fatal("a tag GitHub does not know must stop the build")
+	}
+}
+
+func TestTagCommitRejectsABodyLargerThanAGitHubSHA(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(strings.Repeat("a", 129)))
+	}))
+	defer srv.Close()
+	_, err := tagCommit(t.Context(), srv.Client(), srv.URL, "Rethunk-Tech/mortar-bepinex5-template", "v0.2.2")
+	if !errors.Is(err, safefs.ErrTooLarge) {
+		t.Fatalf("a truncated SHA must not pin: %v", err)
 	}
 }

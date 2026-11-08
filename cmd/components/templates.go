@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
 
@@ -38,17 +38,9 @@ func tagCommit(ctx context.Context, client *http.Client, apiBase, repo, ref stri
 		return "", err
 	}
 	req.Header.Set("Accept", "application/vnd.github.sha")
-	resp, err := client.Do(req)
+	body, err := httpkit.DoCapped(client, req, 128, nil)
 	if err != nil {
 		return "", err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 128))
-	if err != nil {
-		return "", err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("resolve %s@%s: %s", repo, ref, resp.Status)
 	}
 	return strings.TrimSpace(string(body)), nil
 }
