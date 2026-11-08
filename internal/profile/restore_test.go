@@ -47,6 +47,12 @@ func TestRestoreEntriesReappliesEntryFields(t *testing.T) {
 	if !slices.Equal(restored.Tags, saved.Tags) || restored.CategoryOverride != saved.CategoryOverride {
 		t.Fatalf("tags/category = %+v, want %+v", restored, saved)
 	}
+	if len(saved.SwitchedOff) == 0 {
+		t.Fatal("saved switchedOff empty")
+	}
+	if !reflect.DeepEqual(restored.SwitchedOff, saved.SwitchedOff) {
+		t.Fatalf("switchedOff = %v, want %v", restored.SwitchedOff, saved.SwitchedOff)
+	}
 }
 
 func TestRestoreEntryFieldsWritesPreviousValues(t *testing.T) {

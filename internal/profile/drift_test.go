@@ -521,3 +521,16 @@ func TestSetWinnerThenScanReportsNoDrift(t *testing.T) {
 		t.Fatalf("after Mortar's own make-win: %#v", got)
 	}
 }
+
+func TestKnownEntryFoldersOmitsOverlayAndPackage(t *testing.T) {
+	t.Parallel()
+	p := Profile{Entries: []Entry{
+		{Key: "mod"},
+		{Key: "pkg", Package: true},
+		{Key: "ov", OverlayOf: "mod"},
+		{Key: ""},
+	}}
+	if got, want := knownEntryFolders(p), []string{"mod", ".mod"}; !slices.Equal(got, want) {
+		t.Fatalf("knownEntryFolders = %v, want %v", got, want)
+	}
+}

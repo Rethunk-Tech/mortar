@@ -582,6 +582,30 @@ func TestApplyBundledLeavesAProfileAlreadyOnTheBundleUnwritten(t *testing.T) {
 	}
 }
 
+func TestApplyBundledRecordsModsSnapshot(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "smapi-1.0.0", bundle())
+	e.item(t, "smapi-2.0.0", bundle())
+	a := mustCreate(t, e, "a")
+	if err := e.ApplyBundled("stardew", smapiBundle("smapi-1.0.0")); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.ApplyBundled("stardew", smapiBundle("smapi-2.0.0")); err != nil {
+		t.Fatal(err)
+	}
+	snap, err := loadSnapshot(filepath.Dir(e.mods(a.ID)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := snap.Folders["smapi-2.0.0"]; !ok {
+		t.Fatalf("snapshot = %+v, missing swapped bundle", snap.Folders)
+	}
+	if _, ok := snap.Folders["smapi-1.0.0"]; ok {
+		t.Fatalf("snapshot still has replaced bundle: %+v", snap.Folders)
+	}
+}
+
 func TestCreateGetsBundledEntry(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)

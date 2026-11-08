@@ -539,6 +539,15 @@ func entryKeys(p Profile) []string {
 	return keys
 }
 
+func knownEntryFolders(p Profile) []string {
+	keys := entryKeys(p)
+	out := make([]string, 0, len(keys)*2)
+	for _, key := range keys {
+		out = append(out, key, "."+key)
+	}
+	return out
+}
+
 func safeFolder(name string) (string, error) {
 	name = filepath.Base(strings.TrimSpace(name))
 	if name == "" || name == "." || name == ".." {
@@ -568,8 +577,8 @@ func (s *Store) missingEntryFolders(game, id string) ([]string, error) {
 
 func (s *Store) parkUnknownModsLocked(dir string, p Profile) error {
 	known := map[string]struct{}{}
-	for _, key := range entryKeys(p) {
-		known[key] = struct{}{}
+	for _, name := range knownEntryFolders(p) {
+		known[name] = struct{}{}
 	}
 	modsDir := datadir.ModsDirOf(dir)
 	ents, found, err := safefs.ReadDirIfExists(modsDir)
@@ -584,7 +593,7 @@ func (s *Store) parkUnknownModsLocked(dir string, p Profile) error {
 		if !e.IsDir() || strings.HasPrefix(e.Name(), tempPrefix) {
 			continue
 		}
-		if _, ok := known[entryFolderName(e.Name())]; ok {
+		if _, ok := known[e.Name()]; ok {
 			continue
 		}
 		if err := os.MkdirAll(hold, 0o700); err != nil {
@@ -891,7 +900,7 @@ func (s *Store) adoptDriftFolder(ctx context.Context, game, id, folder string) (
 	if err != nil {
 		return Profile{}, err
 	}
-	src := filepath.Join(dir, "mods", folder)
+	src := filepath.Join(datadir.ModsDirOf(dir), folder)
 	if !datadir.Exists(src) {
 		src = filepath.Join(holdDir(dir), folder)
 	}
@@ -930,7 +939,7 @@ func (s *Store) trashModsFolder(game, id, folder string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	src := filepath.Join(dir, "mods", folder)
+	src := filepath.Join(datadir.ModsDirOf(dir), folder)
 	if !datadir.Exists(src) {
 		src = filepath.Join(holdDir(dir), folder)
 	}
@@ -978,7 +987,7 @@ func (s *Store) RestoreModsFolder(game, id, token string) error {
 	if err != nil {
 		return err
 	}
-	dst := filepath.Join(dir, "mods", folder)
+	dst := filepath.Join(datadir.ModsDirOf(dir), folder)
 	if datadir.Exists(dst) {
 		return fmt.Errorf("mods already has a folder named %q", folder)
 	}
@@ -1005,12 +1014,7 @@ func (s *Service) KeepDriftChanges(game, id, key string) error {
 }
 
 func (s *Service) ForgetDriftEntry(game, id, key string) (Profile, error) {
-	p, err := s.store.RemoveEntry(game, id, key)
-	if err != nil {
-		return Profile{}, err
-	}
-	_ = s.store.refreshSnapshotKey(game, id, key)
-	return p, nil
+	return s.store.RemoveEntry(game, id, key)
 }
 
 func (s *Service) RestoreDriftEntry(game, id, key string) (Profile, error) {

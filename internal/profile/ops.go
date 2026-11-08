@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
@@ -531,6 +532,7 @@ func applyRestoredMeta(p *Profile, want Entry) {
 		p.Entries[i].Note = want.Note
 		p.Entries[i].Tags = slices.Clone(want.Tags)
 		p.Entries[i].CategoryOverride = want.CategoryOverride
+		p.Entries[i].SwitchedOff = maps.Clone(want.SwitchedOff)
 		if !want.Added.IsZero() {
 			p.Entries[i].Added = want.Added
 		}
@@ -572,20 +574,7 @@ func (s *Store) RestoreEntries(game, id string, entries []Entry) (Profile, error
 
 // RemoveEntry deletes the entry's folder and drops it from the profile.
 func (s *Store) RemoveEntry(game, id, key string) (Profile, error) {
-	var dropped []string
-	p, err := s.updateModsRecorded(game, id, func(p *Profile, dir string) (err error) {
-		if slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && e.Source.Bundled() }) {
-			return errors.New("the bundled mods are needed by every profile and cannot be removed")
-		}
-		dropped, err = s.removeFrom(game, p, dir, key)
-		return err
-	})
-	if err != nil {
-		return Profile{}, err
-	}
-	setConfigsAside(dropped)
-	s.syncDropped(game, id)
-	return p, nil
+	return s.RemoveEntries(game, id, []string{key})
 }
 
 func applyEnabled(p *Profile, dir, key string, uniqueID mod.ID, enabled bool) error {
@@ -633,24 +622,7 @@ func (s *Store) SetModEnabled(game, id, key string, uniqueID mod.ID, enabled boo
 }
 
 func (s *Store) enableMod(game, id, key string, uniqueID mod.ID, enabled bool) (Profile, []string, error) {
-	var also []string
-	overlay := false
-	p, err := s.updateMods(game, id, func(p *Profile, dir string) error {
-		if overlay = isOverlayKey(p, key); overlay {
-			return s.setOverlayLocked(game, p, dir, key, enabled)
-		}
-		if err := applyEnabled(p, dir, key, uniqueID, enabled); err != nil {
-			return err
-		}
-		if enabled && s.autoEnableRequirements(game, p.PrefOverrides()) {
-			also = enableRequired(p, dir, uniqueID)
-		}
-		return nil
-	})
-	if err == nil && overlay {
-		err = s.RecordModsSnapshot(game, id)
-	}
-	return p, also, err
+	return s.enableMods(game, id, []EnableRef{{Key: key, ID: uniqueID}}, enabled)
 }
 
 // SetModsEnabled switches each named mod on or off in one profile write.
@@ -788,9 +760,9 @@ func copyProfile(gdir, srcDir, dstDir string, dup Profile) error {
 	if err != nil {
 		return err
 	}
-	err = os.MkdirAll(filepath.Join(tmp, "mods"), 0o700)
+	err = os.MkdirAll(datadir.ModsDirOf(tmp), 0o700)
 	if err == nil {
-		err = datadir.MaterializeTreeExclusive(filepath.Join(srcDir, "mods"), filepath.Join(tmp, "mods"))
+		err = datadir.MaterializeTreeExclusive(datadir.ModsDirOf(srcDir), datadir.ModsDirOf(tmp))
 	}
 	if err == nil && coverType(dup.Cover) != "" {
 		err = datadir.CopyFile(filepath.Join(srcDir, dup.Cover), filepath.Join(tmp, dup.Cover))
@@ -866,8 +838,10 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 		return err
 	}
 	known := map[string]bool{}
+	for _, name := range knownEntryFolders(p) {
+		known[name] = true
+	}
 	for _, e := range p.Entries {
-		known[e.Key], known["."+e.Key] = true, true
 		if entryDirExists(modsDir, e.Key) {
 			continue
 		}
@@ -1063,6 +1037,7 @@ func (s *Store) applyBundledTo(game, id string, b Bundle) error {
 	}
 	if err == nil {
 		setConfigsAside(dropped)
+		err = s.RecordModsSnapshot(game, id)
 	}
 	return err
 }
