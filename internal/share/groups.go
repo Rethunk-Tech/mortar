@@ -2,7 +2,6 @@ package share
 
 import (
 	"slices"
-	"strconv"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -67,60 +66,14 @@ func collectFileGroups(p profile.Profile) []FileGroup {
 	return out
 }
 
+// identityOf names an entry the way a share does, so a group never names an identity no link could carry.
 func identityOf(e profile.Entry) (Ref, bool) {
-	switch e.Source.Kind {
-	case profile.KindNexus:
-		if e.Source.ModID <= 0 || e.Source.FileID <= 0 {
-			return Ref{}, false
-		}
-		return Ref{ModID: e.Source.ModID, FileID: e.Source.FileID}, true
-	case profile.KindGitHub:
-		if e.Source.Repo == "" || e.Source.Tag == "" || e.Source.Asset == "" {
-			return Ref{}, false
-		}
-		return Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset}, true
-	case profile.KindPatreon:
-		if e.Source.Name == "" {
-			return Ref{}, false
-		}
-		return Ref{Patreon: e.Source.Name}, true
-	case profile.KindItch:
-		if e.Source.Name == "" {
-			return Ref{}, false
-		}
-		return Ref{Itch: e.Source.Name}, true
-	case profile.KindCurseForge:
-		project, err := strconv.Atoi(e.Source.Name)
-		if err != nil || project <= 0 || e.Source.FileID <= 0 {
-			return Ref{}, false
-		}
-		return Ref{CurseForge: project, FileID: e.Source.FileID}, true
-	case profile.KindModio:
-		mod, err := strconv.Atoi(e.Source.Name)
-		if err != nil || mod <= 0 || e.Source.FileID <= 0 {
-			return Ref{}, false
-		}
-		return Ref{Modio: mod, FileID: e.Source.FileID}, true
-	case profile.KindVSModDB:
-		if e.Source.Name == "" || e.Source.FileID <= 0 {
-			return Ref{}, false
-		}
-		return Ref{VSModDB: e.Source.Name, FileID: e.Source.FileID, Version: e.Source.Version}, true
-	case profile.KindParadox:
-		if e.Source.Name == "" || e.Source.FileID <= 0 {
-			return Ref{}, false
-		}
-		return Ref{Paradox: e.Source.Name, FileID: e.Source.FileID, Version: e.Source.Version}, true
-	case profile.KindThunderstore:
-		if e.Source.Name == "" {
-			return Ref{}, false
-		}
-		return Ref{Package: e.Source.Name, Version: e.Source.Version}, true
-	case profile.KindLocal:
-		return Ref{Local: e.StoreKey(), LocalName: e.Source.Name}, true
-	default:
+	r, reason := refOf(e, Include{LocalFiles: true})
+	if reason != "" {
 		return Ref{}, false
 	}
+	r.Disabled, r.Overlay = nil, nil
+	return r, true
 }
 
 // ResolveGroupKeys maps a file group's refs onto the profile's current entry keys.
