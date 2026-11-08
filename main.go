@@ -21,7 +21,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/devsvc"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
-	"github.com/Rethunk-Tech/mortar/internal/folderwatch"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/lan"
@@ -95,10 +94,10 @@ func registerEvents() {
 	application.RegisterEvent[queue.EverywhereFailed](queue.EverywhereFailedEvent)
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
-	application.RegisterEvent[string](folderwatch.ModsFolderEvent)
-	application.RegisterEvent[folderwatch.Folder](folderwatch.ExtraFolderEvent)
-	application.RegisterEvent[string](folderwatch.DownloadsEvent)
-	application.RegisterEvent[folderwatch.Folder](devsvc.SourceEvent)
+	application.RegisterEvent[string](ModsFolderEvent)
+	application.RegisterEvent[Folder](ExtraFolderEvent)
+	application.RegisterEvent[string](DownloadsEvent)
+	application.RegisterEvent[Folder](devsvc.SourceEvent)
 	application.RegisterEvent[[]syncsvc.Offer](syncsvc.OffersEvent)
 	application.RegisterEvent[[]syncsvc.Stall](syncsvc.StalledEvent)
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)

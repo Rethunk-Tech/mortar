@@ -11,6 +11,7 @@ require (
 	github.com/Rethunk-Tech/go-curseforge v0.4.0
 	github.com/Rethunk-Tech/go-desktopenv v0.9.0
 	github.com/Rethunk-Tech/go-dotnet v0.3.0
+	github.com/Rethunk-Tech/go-folderwatch v0.1.0
 	github.com/Rethunk-Tech/go-fomod v0.1.2
 	github.com/Rethunk-Tech/go-gamelocator v0.4.0
 	github.com/Rethunk-Tech/go-gameproc v0.1.2
@@ -31,7 +32,6 @@ require (
 	github.com/Rethunk-Tech/go-tilemask v0.1.1
 	github.com/Rethunk-Tech/go-winsym v0.2.1
 	github.com/andybalholm/brotli v1.2.8
-	github.com/fsnotify/fsnotify v1.10.1
 	github.com/godbus/dbus/v5 v5.2.4
 	github.com/google/pprof v0.0.0-20261105003125-4bf881d7fb0b
 	github.com/hashicorp/mdns v1.0.7
@@ -48,10 +48,6 @@ require (
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
-	github.com/Rethunk-Tech/go-contentpatcher v0.1.0 // indirect
-	github.com/Rethunk-Tech/go-editorlocator v0.1.0 // indirect
-	github.com/Rethunk-Tech/go-folderwatch v0.1.0 // indirect
-	github.com/Rethunk-Tech/go-vintagestory v0.1.0 // indirect
 	github.com/Rethunk-Tech/vdf/v2 v2.1.0 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/sevenzip v1.6.5 // indirect
@@ -60,6 +56,7 @@ require (
 	github.com/danieljoos/wincred v1.2.3 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/ebitengine/purego v0.11.3 // indirect
+	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/gofrs/flock v0.13.1 // indirect
 	github.com/golang/snappy v1.0.0 // indirect

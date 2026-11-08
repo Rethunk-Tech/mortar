@@ -1,19 +1,32 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"log"
 	"path/filepath"
 	"slices"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-folderwatch"
 	"github.com/Rethunk-Tech/mortar/internal/devsvc"
 	"github.com/Rethunk-Tech/mortar/internal/dlwatch"
-	"github.com/Rethunk-Tech/mortar/internal/folderwatch"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/syncsvc"
 )
+
+const (
+	ModsFolderEvent  = "library:mods-folder"
+	ExtraFolderEvent = "library:extra-folder"
+	DownloadsEvent   = "library:downloads"
+)
+
+// Folder is the extra-mods-folder and WithDir payload; json tags match the window's event.data.
+type Folder struct {
+	Game string `json:"game"`
+	Dir  string `json:"dir"`
+}
 
 // downloadDirs are the folders new archives are offered from: Mortar's own download folder and the user's
 // Downloads folder, which is looked up once because it runs a command.
@@ -52,9 +65,9 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 			Changed: changed,
 			Holds:   holds,
 			Touched: walks.Touch,
-			Emit: func(name string, data any) {
-				log.Printf("folder watch: %s for %v", name, data)
-				emit(name, data)
+			Emit: func(t folderwatch.Target) {
+				log.Printf("folder watch: %s for %v", t.Key, t.Data)
+				emit(t.Key, t.Data)
 			},
 			Targets: func() []folderwatch.Target { return libraryWatchTargets(home, dataDir, store, walks) },
 		})
@@ -77,27 +90,27 @@ func libraryWatchTargets(home, dataDir string, store *settings.Store, walks *dev
 	}
 	var out []folderwatch.Target
 	for _, dir := range downloadDirs(store, dataDir) {
-		out = append(out, folderwatch.Target{Event: folderwatch.DownloadsEvent, Game: id, Dir: dir})
+		out = append(out, folderwatch.Target{Key: DownloadsEvent, Dir: dir, Data: id, Settle: true})
 	}
 	for _, g := range game.Implemented() {
 		for _, dir := range cur.GamePrefs(g).ExtraModsFolderList() {
-			out = append(out, folderwatch.Target{Event: folderwatch.ExtraFolderEvent, Game: g, Dir: dir})
+			out = append(out, folderwatch.Target{Key: ExtraFolderEvent, Dir: dir, Data: Folder{Game: g, Dir: dir}})
 		}
 		if dir := cur.SyncFolderFor(g); dir != "" {
-			out = append(out, folderwatch.Target{Event: syncsvc.FolderEvent, Game: g, Dir: filepath.Join(dir, g)})
+			out = append(out, folderwatch.Target{Key: syncsvc.FolderEvent, Dir: filepath.Join(dir, g), Data: g})
 		}
 	}
 	for _, f := range devsvc.AssetSubfolders(cur, game.Implemented(), walks) {
-		out = append(out, folderwatch.Target{Event: folderwatch.ExtraFolderEvent, Game: f.Game, Dir: f.Dir, Report: f.Root})
+		out = append(out, folderwatch.Target{Key: ExtraFolderEvent, Dir: f.Dir, Report: f.Root, Data: Folder{Game: f.Game, Dir: cmp.Or(f.Root, f.Dir)}})
 	}
 	for g, dirs := range devsvc.WatchedSources(cur, game.Implemented(), walks) {
 		for _, dir := range dirs {
-			out = append(out, folderwatch.Target{Event: devsvc.SourceEvent, Game: g, Dir: dir, WithDir: true})
+			out = append(out, folderwatch.Target{Key: devsvc.SourceEvent, Dir: dir, Data: Folder{Game: g, Dir: dir}})
 		}
 	}
 	if rel, ok := game.ManifestModsFolder(id); ok {
 		if dir, err := game.InstallDir(home, cur, id); err == nil && dir != "" {
-			out = append(out, folderwatch.Target{Event: folderwatch.ModsFolderEvent, Game: id, Dir: filepath.Join(dir, rel)})
+			out = append(out, folderwatch.Target{Key: ModsFolderEvent, Dir: filepath.Join(dir, rel), Data: id})
 		}
 	}
 	return out
