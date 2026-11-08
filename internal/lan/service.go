@@ -849,7 +849,6 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 	}
 	s.nonces[nonce] = nonceRecord{peer: peer, expires: now.Add(nonceTTL), challenge: challenge, callerID: callerID, host: r.Host}
 	s.mu.Unlock()
-	w.Header().Set("Content-Type", "application/json")
 	id, err := s.book.self()
 	if err != nil {
 		http.Error(w, "could not create handshake", http.StatusInternalServerError)
@@ -865,7 +864,7 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 		}
 		resp.Proof = helloProof(key, challenge, callerID, id, r.Host)
 	}
-	_ = json.NewEncoder(w).Encode(resp)
+	writeJSON(w, resp)
 }
 
 func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
@@ -972,8 +971,7 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 	if s.deps.Emit != nil {
 		s.deps.Emit(ArrivedEvent, arrival)
 	}
-	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(response)
+	writeJSON(w, response)
 }
 
 // expireShare drops an incoming share whose transfer window has closed and tells the window, unless the transfer is
