@@ -46,7 +46,7 @@ func (m mortarProton) Resolve(inst Install, t components.PathTemplate) (string, 
 	if err != nil {
 		return "", err
 	}
-	user := filepath.Join(root, "pfx", "drive_c", "users", "steamuser")
+	user := steam.ProtonUserDir(root)
 	return expand(t.Windows, userTokens(user, inst.Dir))
 }
 

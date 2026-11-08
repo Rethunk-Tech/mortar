@@ -197,7 +197,13 @@ func CompatDataDir(inst Install) (string, bool) {
 	if !ok {
 		return "", false
 	}
-	return steam.CompatData(inst.AppID, steamapps, steam.LocateAll(inst.Home, inst.SteamRoots...)...), true
+	return compatData(inst, steamapps), true
+}
+
+// compatData is inst's compatdata folder: Steam keeps it in the library of its default install, which need not be the
+// one holding the game files, so every library of every Steam root is searched.
+func compatData(inst Install, steamapps string) string {
+	return steam.CompatData(inst.AppID, steamapps, steam.LocateAll(inst.Home, inst.SteamRoots...)...)
 }
 
 // Version names the compatibility tool Steam runs inst with, or "" when it is not a Proton install or Steam has not
@@ -211,7 +217,7 @@ func Version(inst Install) string {
 	if !ok {
 		return ""
 	}
-	if v := steam.PrefixVersion(steam.CompatData(inst.AppID, steamapps, steam.LocateAll(inst.Home, inst.SteamRoots...)...)); v != "" {
+	if v := steam.PrefixVersion(compatData(inst, steamapps)); v != "" {
 		return v
 	}
 	// Steam keeps config/ only in its own root, so a game in a second library finds it there.
@@ -239,6 +245,6 @@ func (p proton) Resolve(inst Install, t components.PathTemplate) (string, error)
 	if !ok {
 		return "", fmt.Errorf("%q is not inside a Steam library", inst.Dir)
 	}
-	user := filepath.Join(steam.CompatData(inst.AppID, steamapps, steam.LocateAll(inst.Home, inst.SteamRoots...)...), "pfx", "drive_c", "users", "steamuser")
+	user := steam.ProtonUserDir(compatData(inst, steamapps))
 	return expand(tmpl, userTokens(user, inst.Dir))
 }
