@@ -5,6 +5,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 const { I18nProvider } = await import('@lingui/react')
 const { cleanup, render } = await import('@testing-library/react')
 const { i18n } = await import('../i18n/index.ts')
+const { useProfiles } = await import('../profiles/store.ts')
 const { useNexusDetails } = await import('./nexusDetails.ts')
 const { NexusDetails } = await import('./NexusDetails.tsx')
 
@@ -34,7 +35,9 @@ const details = {
 const mod = { version: '1.0' } as unknown as Mod
 
 const html = (inPanel: boolean) => {
-  useNexusDetails.setState({ byKey: { ':7': { details } } })
+  // Bun runs every test file in one process, so another file may have left a game selected: key the entry to that game.
+  const game = useProfiles.getState().game?.id ?? ''
+  useNexusDetails.setState({ byKey: { [`${game}:7`]: { details } } })
   const { container } = render(
     <I18nProvider i18n={i18n}>
       <NexusDetails mod={mod} modId={7} fileId={0} inPanel={inPanel} />
