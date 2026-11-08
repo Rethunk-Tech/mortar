@@ -502,6 +502,8 @@ cli() {
   env -u XDG_DATA_HOME -u XDG_CONFIG_HOME -u XDG_CACHE_HOME HOME="$SANDBOX_HOME" "$ROOT/mortar-server" "$@"
 }
 
+game_state() { cli status "$1" --json | jq -r .state; }
+
 # make_mod DIR ID NAME writes a tiny content-pack mod whose manifest is valid and needs no network.
 make_mod() {
   mkdir -p "$1"
@@ -553,7 +555,7 @@ seed_lc_project() {
 # BepInEx.cfg belongs to no mod.
 seed_lc_configs() {
   local fx=$1 pid cfg
-  pid=$(cli profiles lethal-company --json | python3 -c 'import json,sys; print(next(p["id"] for p in json.load(sys.stdin) if p["name"] == "Seed Lobby"))')
+  pid=$(cli profiles lethal-company --json | jq -r '.[] | select(.name == "Seed Lobby") | .id')
   cfg=$SANDBOX_HOME/.local/share/mortar/profiles/lethal-company/$pid/BepInEx/config
   mkdir -p "$cfg"
   printf '## Settings file was created by plugin E2E Alpha v1.0.0\n## Plugin GUID: com.e2e.alpha\n\n[General]\n\n## Turns the feature on.\n# Setting type: Boolean\n# Default value: true\nEnabled = false\n' >"$cfg/com.e2e.alpha.cfg"
@@ -624,7 +626,7 @@ seed() {
 
   # A failed download has no command that makes one, so it is written where the queue keeps its history.
   local pid data=$SANDBOX_HOME/.local/share/mortar
-  pid=$(cli profiles stardew --json | python3 -c 'import json,sys; print(next(p["id"] for p in json.load(sys.stdin) if p["name"] == "Seed Farm"))')
+  pid=$(cli profiles stardew --json | jq -r '.[] | select(.name == "Seed Farm") | .id')
   python3 - "$data/download-history.json" "$pid" <<'PY'
 import json, sys, time
 path, profile = sys.argv[1:]
@@ -777,7 +779,7 @@ regress() {
   build
   start
   cli settings set --game stardew defaultLaunchMethod direct >/dev/null
-  profile=${MORTAR_REGRESS_PROFILE:-$(cli profiles stardew --json | python3 -c 'import json,sys; print(json.load(sys.stdin)[0]["id"])')}
+  profile=${MORTAR_REGRESS_PROFILE:-$(cli profiles stardew --json | jq -r '.[0].id')}
   enabled=$(cli mods stardew "$profile" --json | python3 -c 'import json,sys; print(sum(1 for m in json.load(sys.stdin) if m["enabled"]))')
   tree_hash "$game" >"$ROOT/game-before.txt"
 
@@ -814,13 +816,13 @@ regress() {
     case "$(readlink "/proc/$pid/exe" 2>/dev/null)" in "$game"/*) kill "$pid" 2>/dev/null || true ;; esac
   done
   for _ in $(seq 1 60); do
-    [ "$(cli status stardew --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')" = idle ] && break
+    [ "$(game_state stardew)" = idle ] && break
     sleep 1
   done
   for pid in $gpids; do
     case "$(readlink "/proc/$pid/exe" 2>/dev/null)" in "$game"/*) kill -KILL "$pid" 2>/dev/null || true ;; esac
   done
-  [ "$(cli status stardew --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')" = idle ] || failures+=("Mortar never went idle after the game stopped")
+  [ "$(game_state stardew)" = idle ] || failures+=("Mortar never went idle after the game stopped")
   sleep 3
   tree_hash "$game" >"$ROOT/game-after.txt"
   diff_lines=$(diff "$ROOT/game-before.txt" "$ROOT/game-after.txt" | grep -c '^[<>]' || true)
@@ -1141,7 +1143,7 @@ PYEOF
     killed="$killed $(reap_prefix "$compat")"
     local state=""
     for _ in $(seq 1 60); do
-      state=$(cli status "$rg_id" --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')
+      state=$(game_state "$rg_id")
       [ "$state" = idle ] && break
       sleep 1
     done
@@ -1571,7 +1573,7 @@ PY
     cli stop "$id" >"$ROOT/stop.txt" 2>&1 || failures+=("mortar stop failed: $(head -c 300 "$ROOT/stop.txt")")
     local state=""
     for _ in $(seq 1 60); do
-      state=$(cli status "$id" --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')
+      state=$(game_state "$id")
       [ "$state" = idle ] && break
       sleep 1
     done
@@ -1648,7 +1650,7 @@ sims4_seen_ok() {
 sims4_wait_idle() {
   local state=""
   for _ in $(seq 1 90); do
-    state=$(cli status sims4 --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')
+    state=$(game_state sims4)
     [ "$state" = idle ] && return 0
     sleep 1
   done

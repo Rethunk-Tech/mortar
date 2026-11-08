@@ -49,8 +49,8 @@ mx_check() {
   if "$@"; then mx_pass "$id" "$evidence"; else mx_fail "$id" "$evidence"; fi
 }
 
-# mx_json FILE EXPR prints a Python expression over the JSON in FILE, bound to d.
-mx_json() { python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(eval(sys.argv[2]))' "$1" "$2"; }
+# mx_json FILE EXPR prints EXPR over the JSON in FILE.
+mx_json() { jq -cr "$2" "$1"; }
 
 # mx_wails METHOD ARG... calls a bound Go method the window uses (package path below internal/, then Service.Method),
 # through the server's Wails runtime, as the frontend does. Arguments are JSON values.
@@ -65,7 +65,7 @@ mx_wails() {
   curl -fsS -X POST "http://127.0.0.1:$PORT/wails/runtime" -H 'Content-Type: application/json' -H 'x-wails-client-id: matrix' \
     --data-binary "{\"object\":0,\"method\":0,\"args\":{\"call-id\":\"m$RANDOM\",\"methodName\":\"github.com/Rethunk-Tech/mortar/internal/$method\",\"args\":$args}}"
 }
-mx_q() { python3 -c 'import json,sys; print(json.dumps(sys.argv[1]))' "$1"; }
+mx_q() { jq -Rn --arg s "$1" '$s'; }
 
 mx_profile() { cli profile create lethal-company "$1" | cut -f1; }
 mx_dir() { echo "$mx_data/profiles/lethal-company/$1"; }
@@ -104,7 +104,7 @@ mx_game_pids() {
   done
 }
 
-mx_state() { cli status lethal-company --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])'; }
+mx_state() { game_state lethal-company; }
 
 # mx_launches prints how many games the matrix starts on top of the base run's launch (a): launches (c) and (b), the
 # two mx_launch calls below. The session's launch cap must have that many left before the run begins (need_launches).
@@ -245,7 +245,7 @@ mx_bridge_relay() {
   local state pid bport
   state="$(mx_dir "$1")/BepInEx/config/mortar-bepinex-bridge.json"
   pid=$(mx_game_pids | head -1)
-  bport=$(mx_json "$state" 'd["port"]' 2>/dev/null)
+  bport=$(mx_json "$state" '.port' 2>/dev/null)
   [ -n "$pid" ] && [ -n "$bport" ] || return 1
   python3 - "$bport" "$pid" >"$ROOT/relay-$1.log" 2>&1 <<'PY' &
 import socket, subprocess, sys
@@ -333,7 +333,7 @@ PY
   mx_check startup.patches "plugins with patch time, total patchMs, plugins with a share, total sampleMs, sampledOtherMs = $out" \
     python3 -c 'import sys; a=sys.argv[1].split(); sys.exit(not (len(a)==5 and int(a[0])>0 and int(a[1])>0 and int(a[4])>=0))' "$out"
   mx_wails launchsvc.Service.StartupReports '"lethal-company"' "$(mx_q "$1")" >"$ROOT/startup-mortar-a.json"
-  out=$(mx_json "$ROOT/startup-mortar-a.json" '(len(d[0]["mods"]), sum(m["id"].startswith("thunderstore:") for m in d[0]["mods"]), [m["id"] for m in d[0]["mods"] if not m["id"].startswith("thunderstore:")])' 2>&1)
+  out=$(mx_json "$ROOT/startup-mortar-a.json" '[(.[0].mods | length), (.[0].mods | map(select(.id | startswith("thunderstore:"))) | length), [.[0].mods[] | select(.id | startswith("thunderstore:") | not) | .id]]' 2>&1)
   mx_check startup.mortar "Mortar's newest startup report: (rows, rows named by a package, the rest) = $out" \
     python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); m=d[0]["mods"]; sys.exit(not (m and all(x["id"].startswith("thunderstore:") for x in m)))' "$ROOT/startup-mortar-a.json"
 }
@@ -714,12 +714,12 @@ regress_bepinex_prepare() {
   open=$(mx_wait_queue "$mx_base")
   cli mods lethal-company "$mx_base" --json >"$ROOT/pack-mods.json"
   local npack
-  npack=$(mx_json "$ROOT/pack-mods.json" 'len(d)')
+  npack=$(mx_json "$ROOT/pack-mods.json" 'length')
   mx_check modpack.install "${#MATRIX_MODPACK[@]} packages queued; profile holds $npack entries (dependencies, the base run's plugins and the bridge included); open: ${open:-none}" \
     test -z "$open" -a "$npack" -gt "${#MATRIX_MODPACK[@]}"
   cli profile load-order lethal-company "$mx_base" --json >"$ROOT/pack-order.json"
   out=$(mx_order_problems "$ROOT/pack-order.json")
-  mx_check modpack.loadorder "load order lists $(mx_json "$ROOT/pack-order.json" 'len(d)') plugins, each after what it needs${out:+: $out}" test -z "$out"
+  mx_check modpack.loadorder "load order lists $(mx_json "$ROOT/pack-order.json" 'length') plugins, each after what it needs${out:+: $out}" test -z "$out"
 
   # 3. The probe packages beside the modpack: layout edge cases, the Console's heartbeat and a duplicated GUID.
   if ! probe_err=$(mx_install_probes "$mx_base" Base Beat Nested Own Caps Flat Deep Patcher DupA DupB); then
@@ -727,8 +727,8 @@ regress_bepinex_prepare() {
   else
     mx_ready=1
     mx_problems "$mx_base" before
-    out=$(mx_json "$ROOT/problems-before.json" '[sorted(x["version"] for x in c["copies"]) for c in d.get("pluginClashes") or [] if c["guid"] == "tech.rethunk.mortar.matrix.dup"]')
-    mx_check mods.dupguid "Problems flags tech.rethunk.mortar.matrix.dup with copies at versions $out" test "$out" = "[['1.0.0', '1.0.0']]"
+    out=$(mx_json "$ROOT/problems-before.json" '[.pluginClashes // [] | .[] | select(.guid == "tech.rethunk.mortar.matrix.dup") | [.copies[].version] | sort]')
+    mx_check mods.dupguid "Problems flags tech.rethunk.mortar.matrix.dup with copies at versions $out" test "$out" = '[["1.0.0","1.0.0"]]'
     # The typed editor writes a string and a float before the launch; BepInEx reads every .cfg at startup and rewrites
     # it, so launch (a) logging both values and the file keeping them proves the edit is in BepInEx's own format.
     # Only a launch lays a package's plugins out in the profile; its shipped .cfg is seeded on the editor's first read.
@@ -823,10 +823,10 @@ regress_bepinex_after() {
       grep -q '^Ratio = 0.75' "$cfgdir/tech.rethunk.mortar.matrix.base.cfg"
   fi
   # settings.json keeps lastPlayed in its global block.
-  out=$(mx_json "$mx_data/settings.json" 'd.get("global", {}).get("lastPlayed", {}).get("lethal-company", {})' 2>&1)
+  out=$(mx_json "$mx_data/settings.json" '(.global // {} | .lastPlayed // {} | .["lethal-company"] // {})' 2>&1)
   mx_check lastplayed.version "lastPlayed[lethal-company] after launch (a) ($mx_base): $out" \
-    test "$(mx_json "$mx_data/settings.json" 'd.get("global", {}).get("lastPlayed", {}).get("lethal-company", {}).get("profile", "")' 2>/dev/null)" = "$mx_base" \
-    -a -n "$(mx_json "$mx_data/settings.json" 'd.get("global", {}).get("lastPlayed", {}).get("lethal-company", {}).get("gameVersion", "")' 2>/dev/null)"
+    test "$(mx_json "$mx_data/settings.json" '(.global // {} | .lastPlayed // {} | .["lethal-company"] // {} | .profile // "")' 2>/dev/null)" = "$mx_base" \
+    -a -n "$(mx_json "$mx_data/settings.json" '(.global // {} | .lastPlayed // {} | .["lethal-company"] // {} | .gameVersion // "")' 2>/dev/null)"
   if go -C "$REPO" test ./internal/dotnet -run '^TestRealBepInExRun$' -count=1 -v -bepinex-profile "$(mx_dir "$mx_base")" >"$ROOT/guid-test.txt" 2>&1; then
     mx_pass mods.guids "$(grep -o '[0-9]* plugins found.*' "$ROOT/guid-test.txt")"
   else
@@ -893,11 +893,11 @@ PY
     if mx_idle 90; then
       mx_keep_logs c
       cli runs lethal-company "$mx_crash" --json >"$ROOT/runs-c.json"
-      mx_check launch.exit "launch (c): the game quit by itself; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-c.json" 'd[0]["outcome"]'); game folder: $(mx_purged c || true)" \
-        test -z "$(mx_purged c)" -a "$(mx_json "$ROOT/runs-c.json" 'd[0]["outcome"]')" = ran
+      mx_check launch.exit "launch (c): the game quit by itself; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-c.json" '.[0].outcome'); game folder: $(mx_purged c || true)" \
+        test -z "$(mx_purged c)" -a "$(mx_json "$ROOT/runs-c.json" '.[0].outcome')" = ran
       mx_problems "$mx_crash" crash
-      out=$(mx_json "$ROOT/problems-crash.json" '[(f["name"], f["kind"], f["message"][:60]) for f in d.get("loadFailures") or []]')
-      mx_check launch.crash "Problems: $out; run: loader $(mx_json "$ROOT/runs-c.json" 'd[0]["loaderVersion"]'), $(mx_json "$ROOT/runs-c.json" 'd[0]["errors"]') errors" \
+      out=$(mx_json "$ROOT/problems-crash.json" '[.loadFailures // [] | .[] | [.name, .kind, .message[:60]]]')
+      mx_check launch.crash "Problems: $out; run: loader $(mx_json "$ROOT/runs-c.json" '.[0].loaderVersion'), $(mx_json "$ROOT/runs-c.json" '.[0].errors') errors" \
         python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); r=json.load(open(sys.argv[2]))[0]; sys.exit(not (any(f["name"]=="ProbeThrow" and "matrix probe failed in Awake" in f["message"] for f in d.get("loadFailures") or []) and r["loaderVersion"] and r["errors"]>0))' "$ROOT/problems-crash.json" "$ROOT/runs-c.json"
     else
       mx_fail launch.exit "launch (c): Mortar still reports $(mx_state) 90s after the game should have quit"
@@ -920,8 +920,8 @@ PY
     if mx_idle 90; then
       mx_keep_logs b
       cli runs lethal-company "$mx_pin" --json >"$ROOT/runs-b.json"
-      mx_check loader.pin-exit "launch (b): the game quit by itself on the pinned pack; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-b.json" 'd[0]["outcome"]'); game folder: $(mx_purged b || true)" \
-        test -z "$(mx_purged b)" -a "$(mx_json "$ROOT/runs-b.json" 'd[0]["outcome"]')" = ran
+      mx_check loader.pin-exit "launch (b): the game quit by itself on the pinned pack; Mortar went idle and recorded outcome $(mx_json "$ROOT/runs-b.json" '.[0].outcome'); game folder: $(mx_purged b || true)" \
+        test -z "$(mx_purged b)" -a "$(mx_json "$ROOT/runs-b.json" '.[0].outcome')" = ran
     else
       mx_fail loader.pin-exit "launch (b): Mortar still reports $(mx_state) 90s after the game should have quit"
       mx_stop b
@@ -952,17 +952,17 @@ PY
   cli update lethal-company "$mx_upd" --all >"$ROOT/update-all.txt" 2>&1
   mx_wait_queue "$mx_upd" >/dev/null
   cli mods lethal-company "$mx_upd" --json >"$ROOT/upd-mods.json"
-  mx_check updates.all "updates listed $(mx_json "$ROOT/updates.json" '[u["package"] + " " + u["installed"] + "->" + u["version"] for u in d["updates"]]'); after Update all: $(mx_json "$ROOT/upd-mods.json" '[m["name"] + " " + m["version"] for m in d if m["source"] == "thunderstore"]')" \
-    test "$(mx_json "$ROOT/upd-mods.json" 'sorted(m["version"] for m in d if m["source"] == "thunderstore")')" = "['0.7.13', '1.4.6', '1.5.7']"
+  mx_check updates.all "updates listed $(mx_json "$ROOT/updates.json" '[.updates[] | .package + " " + .installed + "->" + .version]'); after Update all: $(mx_json "$ROOT/upd-mods.json" '[.[] | select(.source == "thunderstore") | .name + " " + .version]')" \
+    test "$(mx_json "$ROOT/upd-mods.json" '[.[] | select(.source == "thunderstore") | .version] | sort')" = '["0.7.13","1.4.6","1.5.7"]'
   cli backups list --game lethal-company --json >"$ROOT/backups.json"
-  mx_check updates.backup "backups before $backups_before, after $(mx_json "$ROOT/backups.json" 'len(d)'); newest is $(mx_json "$ROOT/backups.json" '(d[0]["kind"], [s["folder"] for s in d[0]["saves"]])')" \
-    test "$(mx_json "$ROOT/backups.json" '(d[0]["kind"], [s["folder"] for s in d[0]["saves"]])')" = "('update', ['LCSaveFile1'])"
+  mx_check updates.backup "backups before $backups_before, after $(mx_json "$ROOT/backups.json" 'length'); newest is $(mx_json "$ROOT/backups.json" '[.[0].kind, [.[0].saves[].folder]]')" \
+    test "$(mx_json "$ROOT/backups.json" '[.[0].kind, [.[0].saves[].folder]]')" = '["update",["LCSaveFile1"]]'
   local undo
   undo=$(sed -n 's/^Undo all: mortar profile revert lethal-company "[^"]*" \(.*\)$/\1/p' "$ROOT/update-all.txt")
   if [ -n "$undo" ] && cli profile revert lethal-company "$mx_upd" "$undo" >/dev/null 2>&1; then
     cli mods lethal-company "$mx_upd" --json >"$ROOT/upd-reverted.json"
-    mx_check updates.rollback "Undo all ($undo) put back $(mx_json "$ROOT/upd-reverted.json" '[m["name"] + " " + m["version"] for m in d if m["source"] == "thunderstore"]')" \
-      test "$(mx_json "$ROOT/upd-reverted.json" 'sorted(m["version"] for m in d if m["source"] == "thunderstore")')" = "['0.7.12', '1.4.5', '1.5.6']"
+    mx_check updates.rollback "Undo all ($undo) put back $(mx_json "$ROOT/upd-reverted.json" '[.[] | select(.source == "thunderstore") | .name + " " + .version]')" \
+      test "$(mx_json "$ROOT/upd-reverted.json" '[.[] | select(.source == "thunderstore") | .version] | sort')" = '["0.7.12","1.4.5","1.5.6"]'
   else
     mx_fail updates.rollback "no undo id in: $(head -c 300 "$ROOT/update-all.txt")"
   fi
@@ -973,7 +973,7 @@ PY
     "$(cli mods lethal-company "$mx_upd" --json | python3 -c 'import json,sys; print([m["version"] for m in json.load(sys.stdin) if m["name"] == "BetterStamina"])')" = "['1.5.7']"
   head -c 64 /dev/urandom >"$mx_saves/LCSaveFile1"
   local newest
-  newest=$(mx_json "$ROOT/backups.json" 'd[0]["name"]')
+  newest=$(mx_json "$ROOT/backups.json" '.[0].name')
   cli backups restore "$newest" LCSaveFile1 >"$ROOT/backup-restore.txt" 2>&1
   mx_check updates.restore "restoring $newest gives LCSaveFile1 back byte for byte" test "$(sha256sum "$mx_saves/LCSaveFile1" | cut -d' ' -f1)" = "$save_sum"
 
@@ -981,8 +981,8 @@ PY
   cli queue add lethal-company "$mx_dep" VirusTLNR-MaskedFixes --source thunderstore --version 0.0.3 >/dev/null
   mx_wait_queue "$mx_dep" >/dev/null
   mx_problems "$mx_dep" dep
-  out=$(mx_json "$ROOT/problems-dep.json" '{x["name"]: x.get("replacement", "") for x in d.get("deprecated") or []}')
-  mx_check mods.deprecated "Problems: $out" test "$(mx_json "$ROOT/problems-dep.json" '{x["name"]: x.get("replacement", "") for x in d.get("deprecated") or []}.get("VirusTLNR-MaskedFixes")')" = VirusTLNR-MaskedInvisFix
+  out=$(mx_json "$ROOT/problems-dep.json" '.deprecated // [] | map({key: .name, value: (.replacement // "")}) | from_entries')
+  mx_check mods.deprecated "Problems: $out" test "$(mx_json "$ROOT/problems-dep.json" '.deprecated // [] | map({key: .name, value: (.replacement // "")}) | from_entries | .["VirusTLNR-MaskedFixes"] // ""')" = VirusTLNR-MaskedInvisFix
 
   # 7. Sharing the base profile, which holds Thunderstore packages and the local probe packages.
   regress_bepinex_sharing "$mx_base" "$name"
