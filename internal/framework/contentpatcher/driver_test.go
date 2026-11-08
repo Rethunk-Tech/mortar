@@ -1,10 +1,17 @@
 package contentpatcher
 
 import (
+	"os"
 	"slices"
+	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 )
+
+func TestMain(m *testing.M) {
+	loadCacheRoot()
+	os.Exit(m.Run())
+}
 
 // check analyzes mods as one profile.
 func check(mods []framework.Mod) framework.Findings {

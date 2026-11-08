@@ -27,9 +27,7 @@ var alphaPruned sync.Once
 
 // alphaDiskPath names the cache file of the image behind fileKey (see pngFileKey), or "" when there is no data folder.
 func alphaDiskPath(fileKey string) string {
-	packDiskState.Lock()
-	base := packDiskState.base
-	packDiskState.Unlock()
+	base := cacheRoot
 	abs, version, _ := strings.Cut(fileKey, "\x00")
 	if base == "" || abs == "" {
 		return ""

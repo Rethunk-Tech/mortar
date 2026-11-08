@@ -31,7 +31,6 @@ import (
 
 	"github.com/Rethunk-Tech/go-lenientjson"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
 
@@ -888,10 +887,10 @@ func unzipPackCache(raw []byte) ([]byte, bool) {
 }
 
 func loadPackDiskCache() string {
-	base, err := datadir.Dir()
-	if err != nil {
+	if cacheRoot == "" {
 		return ""
 	}
+	base := cacheRoot
 	path := filepath.Join(base, "cache", "problems-content-packs.json")
 	packDiskState.Lock()
 	defer packDiskState.Unlock()

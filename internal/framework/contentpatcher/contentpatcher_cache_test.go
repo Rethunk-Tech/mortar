@@ -281,6 +281,7 @@ func TestPackMemoryCacheDropsFoldersNotInCurrentMods(t *testing.T) {
 }
 
 func resetContentPackCaches() {
+	loadCacheRoot()
 	packCache = sync.Map{}
 	pngShapeCache = sync.Map{}
 	pngAlphaCache = sync.Map{}

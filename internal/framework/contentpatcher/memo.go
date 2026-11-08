@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 )
 
@@ -45,11 +44,10 @@ type analysisMemo struct {
 }
 
 func analysisMemoDir() (string, error) {
-	base, err := datadir.Dir()
-	if err != nil {
-		return "", err
+	if cacheRoot == "" {
+		return "", errNoCacheRoot
 	}
-	return filepath.Join(base, "cache", "problems-content-patcher"), nil
+	return filepath.Join(cacheRoot, "cache", "problems-content-patcher"), nil
 }
 
 // buildStamp ties a memo to the build that wrote it, so a changed analyzer never serves an older one's findings.

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 )
 
@@ -20,11 +19,10 @@ type diskMapScans struct {
 }
 
 func mapScanCachePath() (string, error) {
-	base, err := datadir.Dir()
-	if err != nil {
-		return "", err
+	if cacheRoot == "" {
+		return "", errNoCacheRoot
 	}
-	return filepath.Join(base, "cache", "problems-map-scans.json"), nil
+	return filepath.Join(cacheRoot, "cache", "problems-map-scans.json"), nil
 }
 
 // loadMapScans reads the saved scans once per process. Each entry is still checked against its file's size and

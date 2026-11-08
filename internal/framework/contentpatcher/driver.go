@@ -3,9 +3,11 @@
 package contentpatcher
 
 import (
+	"errors"
 	"maps"
 	"slices"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -14,6 +16,20 @@ import (
 var ID = mod.SMAPI("Pathoschild.ContentPatcher")
 
 func frameworkID(id ModID) mod.ID { return mod.ID(id) }
+
+var (
+	cacheRoot      string
+	errNoCacheRoot = errors.New("no cache root")
+)
+
+func loadCacheRoot() {
+	dir, err := datadir.Dir()
+	if err != nil {
+		cacheRoot = ""
+		return
+	}
+	cacheRoot = dir
+}
 
 var _ = framework.Register(Driver{})
 
@@ -32,6 +48,7 @@ func (Driver) Matches(m framework.Mod) bool {
 
 // Analyze reads every enabled pack once; tilesheet cleanup also covers disabled packs.
 func (Driver) Analyze(in framework.Input) framework.Findings {
+	loadCacheRoot()
 	key := analysisKey(in)
 	if found, ok := lookupAnalysis(key); ok {
 		return found

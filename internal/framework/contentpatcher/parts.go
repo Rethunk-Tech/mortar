@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 )
 
@@ -54,11 +53,10 @@ var parts = struct {
 }{entries: map[string]partEntry{}}
 
 func partsCachePath() (string, error) {
-	base, err := datadir.Dir()
-	if err != nil {
-		return "", err
+	if cacheRoot == "" {
+		return "", errNoCacheRoot
 	}
-	return filepath.Join(base, "cache", "problems-content-patcher-parts.json.gz"), nil
+	return filepath.Join(cacheRoot, "cache", "problems-content-patcher-parts.json.gz"), nil
 }
 
 func loadParts() {
