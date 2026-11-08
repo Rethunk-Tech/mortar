@@ -2,7 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress, Typography } from '@mui/material'
 import { Copy, Map as MapIcon, Plus, ShieldCheck } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { findCrashCause, useBisectBlockText } from '../commandPalette/crashBisect.ts'
@@ -227,7 +227,8 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
   )
   const redundantRows = useRedundantRows()
 
-  const sections = problemSections(result)
+  // Same section objects across renders, so the memoised ProblemRows of an unchanged section skips rendering.
+  const sections = useMemo(() => problemSections(result), [result])
   const cleanup = result.cleanup ?? []
   const replaced = result.replaced ?? []
   const compat = result.compat ?? []

@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link, Typography } from '@mui/material'
 import { Info, TriangleAlert } from 'lucide-react'
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import type { AssetConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
 import { useTab } from '../game/tab.ts'
 import { useReasonText } from '../i18n/reasonText.ts'
@@ -178,8 +178,9 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
   )
 }
 
-// ProblemRows lists one section's rows on one panel.
-function ProblemRows({ rows }: { rows: (Row | DismissedRow)[] }) {
+// ProblemRows lists one section's rows on one panel. Memoised: the tab redraws as each check lands, and a section whose
+// rows did not change skips rendering them again.
+const ProblemRows = memo(function ProblemRowsView({ rows }: { rows: (Row | DismissedRow)[] }) {
   const keys = rowKeys(rows)
   return (
     <Box
@@ -201,6 +202,6 @@ function ProblemRows({ rows }: { rows: (Row | DismissedRow)[] }) {
       )}
     </Box>
   )
-}
+})
 
 export { ProblemRows }
