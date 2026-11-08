@@ -346,6 +346,7 @@ func TestCompleteOffersVerbsGamesAndProfiles(t *testing.T) {
 		"games":        []control.GameRow{{ID: "stardew"}},
 		"profiles":     []profile.Profile{{ID: "1", Name: "Spring"}, {ID: "2", Name: "Winter"}},
 		"settings.get": [][2]string{{"onPlay", "stay"}, {"theme", "dark"}},
+		"tools":        []map[string]string{{"id": "tool-1"}},
 	}
 	if r := invoke(t, results, "__complete", "conf"); strings.TrimSpace(r.out) != "conflicts" {
 		t.Errorf("verb: %q", r.out)
@@ -379,6 +380,15 @@ func TestCompleteOffersVerbsGamesAndProfiles(t *testing.T) {
 	}
 	if r := invoke(t, results, "__complete", "tools", ""); !strings.Contains(r.out, "run") || !strings.Contains(r.out, "stardew") {
 		t.Errorf("tools position 1 should offer subverbs and games: %q", r.out)
+	}
+	if r := invoke(t, results, "__complete", "tools", "run", "stardew", "Spring", ""); !strings.Contains(r.out, "tool-1") {
+		t.Errorf("tools run tool: %q", r.out)
+	}
+	if r := invoke(t, results, "__complete", "problems", ""); !strings.Contains(r.out, "dismiss") || !strings.Contains(r.out, "stardew") {
+		t.Errorf("problems position 1 should offer subverbs and games: %q", r.out)
+	}
+	if r := invoke(t, results, "__complete", "templates", "apply", "stardew", "Base", ""); !strings.Contains(r.out, "Spring") {
+		t.Errorf("templates apply profile: %q", r.out)
 	}
 	if r := invoke(t, results, "__complete", "app", "update", ""); !strings.Contains(r.out, "check") || !strings.Contains(r.out, "install") {
 		t.Errorf("app update: %q", r.out)
@@ -541,7 +551,7 @@ func TestCacheAndDataUsageByMod(t *testing.T) {
 		t.Fatalf("data usage without --by-mod: %+v", r)
 	}
 	r = invoke(t, results, "data", "usage", "--by-mod")
-	if r.code != 0 || r.calls[0].method != "data.usageByMod" || !strings.Contains(r.out, "nexus-1-1") {
+	if r.code != 0 || r.calls[0].method != "data.usageByMod" || !strings.Contains(r.out, "nexus-1-1") || !strings.Contains(r.out, "Total 100 B") {
 		t.Fatalf("data usage --by-mod: %+v", r)
 	}
 	r = invoke(t, results, "data", "usage", "--by-mod", "--json")
@@ -657,6 +667,26 @@ func TestProfileListAndProblemsText(t *testing.T) {
 	r = invoke(t, results, "problems", "stardew", "Farm", "--format", "text")
 	if r.code != 0 || !strings.Contains(r.out, "missing: 1") || !strings.Contains(r.out, "conflicts: 1") || !strings.Contains(r.out, "harmless: 2") || !strings.Contains(r.out, "long paths: 1") || !strings.Contains(r.out, "counted: 3") {
 		t.Fatalf("problems text: %q", r.out)
+	}
+}
+
+func TestProblemsTextCountsMatchCount(t *testing.T) {
+	results := map[string]any{
+		"problems": problems.Result{
+			Broken: []problems.Broken{{Status: "smapi-unknown"}, {Status: "needs-smapi"}},
+			// Two asset conflicts on the same mods in the same shape are one row, as ConflictRows counts them.
+			AssetConflicts: []framework.AssetConflict{
+				{Kind: "load", Target: "x", Names: []string{"A"}},
+				{Kind: "load", Target: "y", Names: []string{"A"}},
+			},
+			RunErrors: []problems.RunError{{Severe: true}, {Severe: false}},
+		},
+	}
+	r := invoke(t, results, "problems", "stardew", "Farm", "--format", "text")
+	for _, want := range []string{"broken: 1\n", "conflicts: 1\n", "last-run errors: 1\n"} {
+		if r.code != 0 || !strings.Contains(r.out, want) {
+			t.Errorf("problems text %q lacks %q", r.out, want)
+		}
 	}
 }
 

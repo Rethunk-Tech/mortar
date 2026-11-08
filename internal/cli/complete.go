@@ -109,7 +109,7 @@ var subPositions = map[string]func(sub string) (gameAt, profileAt, modAt int){
 		}
 		return 0, 0, 0
 	},
-	"templates": libraryPositions,
+	"templates": templatesPositions,
 	"library":   libraryPositions,
 	"archive": func(s string) (int, int, int) {
 		if s == "preview" {
@@ -150,7 +150,8 @@ var subPositions = map[string]func(sub string) (gameAt, profileAt, modAt int){
 	"tools": func(s string) (int, int, int) {
 		switch {
 		case s == "run":
-			return 2, 3, 4
+			// The tool is completed by name at position 4, not as a mod id.
+			return 2, 3, 0
 		case slices.Contains(subverbs["tools"], s):
 			return 2, 0, 0
 		}
@@ -228,6 +229,17 @@ func libraryPositions(s string) (int, int, int) {
 	return 2, 0, 0
 }
 
+// templatesPositions: apply is <game> <template> <profile> and undo is <game> <profile> <file>.
+func templatesPositions(s string) (int, int, int) {
+	switch s {
+	case "apply":
+		return 2, 4, 0
+	case "undo":
+		return 2, 3, 0
+	}
+	return libraryPositions(s)
+}
+
 // gameAt and profileAt give the positions (1-based after the verb) where a verb takes a game and a profile.
 func positions(words []string) (gameAt, profileAt, modAt int) {
 	if p, ok := fixedPositions[words[0]]; ok {
@@ -271,9 +283,6 @@ func (c *cmd) candidates(words []string, cur string, pos int) []string {
 	if subs, ok := subverbs[words[0]]; ok && pos == 1 && !inList(words[0], "mods", "problems", "logs", "groups", "tools") {
 		return subs
 	}
-	if words[0] == "problems" && pos == 1 {
-		return slices.Clone(subverbs["problems"])
-	}
 	if words[0] == "trash" && pos == 2 && inList(words[1], "restore", "delete") {
 		return c.trashCands(words)
 	}
@@ -297,7 +306,7 @@ func wordCands(words []string, pos int) []string {
 	switch pos {
 	case 1:
 		switch words[0] {
-		case "mods", "logs", "groups", "tools":
+		case "mods", "logs", "groups", "tools", "problems":
 			return slices.Clone(subverbs[words[0]])
 		case "conflicts":
 			return []string{"map"}
@@ -374,6 +383,9 @@ func (c *cmd) positionalCands(words []string, pos int) []string {
 			}
 		}
 	case 4:
+		if words[0] != "tools" || len(words) < 2 || words[1] != "run" {
+			return cands
+		}
 		var rows []struct {
 			ID string `json:"id"`
 		}
