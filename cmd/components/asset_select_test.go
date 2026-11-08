@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"os"
@@ -32,14 +31,16 @@ func TestBearerTransportAuthorizationHost(t *testing.T) {
 		"https://github.com/o/r/releases/download/v1/a.zip",
 		"https://release-assets.githubusercontent.com/file",
 	} {
-		req, err := http.NewRequest(http.MethodGet, url, nil)
+		req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, url, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
 		req.Header.Set("Authorization", "Bearer leftover")
-		if _, err := rt.RoundTrip(req); err != nil {
+		resp, err := rt.RoundTrip(req)
+		if err != nil {
 			t.Fatal(err)
 		}
+		_ = resp.Body.Close()
 	}
 	if len(got) != 3 {
 		t.Fatalf("got %d requests", len(got))
@@ -95,7 +96,7 @@ func TestSelectAsset(t *testing.T) {
 }
 
 func TestResolveRejects(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	client := &github.Client{}
 	t.Run("missing field", func(t *testing.T) {
 		_, err := resolve(ctx, client, components.SourceComponent{Name: "smapi", Kind: "loader"})
@@ -150,8 +151,7 @@ func TestNextSerial(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		now := uint64(time.Now().Unix())
-		if got == 0 || got > now+1 {
+		if now := time.Now().Unix(); got == 0 || int64(got) > now+1 { //nolint:gosec // G115: a serial is a Unix time, far below int64's range
 			t.Fatalf("got serial %d", got)
 		}
 	})

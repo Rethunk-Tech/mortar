@@ -44,7 +44,7 @@ func TestWritePinsSorts(t *testing.T) {
 	if err := writePins(path, pins); err != nil {
 		t.Fatal(err)
 	}
-	body, err := os.ReadFile(path)
+	body, err := os.ReadFile(path) //nolint:gosec // G304: path is under t.TempDir
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +116,7 @@ func TestPackTargets(t *testing.T) {
 func TestPinPackVersionsStopsOnCanceledContext(t *testing.T) {
 	dir := t.TempDir()
 	set := &pinSet{file: filepath.Join(dir, "pins.json"), have: map[string]bool{}}
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	n := 0
 	target := packTarget{

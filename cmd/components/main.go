@@ -232,7 +232,7 @@ func hashURL(ctx context.Context, client *http.Client, rawURL string) (string, e
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return "", &httpkit.StatusError{Code: resp.StatusCode}
 	}

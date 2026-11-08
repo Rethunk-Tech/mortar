@@ -1,7 +1,6 @@
 package problems
 
 import (
-	"context"
 	"errors"
 	"slices"
 	"testing"
@@ -120,7 +119,7 @@ func TestDismissLoadFailureAndRunError(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc := &Service{settings: st, Runs: fakeRuns{id: runID}}
-	ctx := context.Background()
+	ctx := t.Context()
 	if err := svc.DismissLoadFailure(ctx, gameID, profileID, "crash", "A", "boom"); err != nil {
 		t.Fatal(err)
 	}
@@ -138,7 +137,7 @@ func TestDismissLoadFailureAndRunError(t *testing.T) {
 
 func TestDismissMissingInput(t *testing.T) {
 	svc := &Service{settings: openDismissSettings(t), Runs: fakeRuns{id: "run"}}
-	ctx := context.Background()
+	ctx := t.Context()
 	id := mod.ID("Some.Mod")
 	cases := []struct {
 		name string
@@ -169,7 +168,7 @@ func TestDismissMissingInput(t *testing.T) {
 }
 
 func TestDismissWritersAppend(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	id := mod.ID("Some.Mod")
 	cases := []struct {
 		name string
