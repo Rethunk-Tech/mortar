@@ -20,7 +20,7 @@ interface Helpers {
 }
 
 /** The news posts' scenes: 0.3.13's Change version, Add a game and Multiplayer mod list, and 0.3.14's Develop tab and
- * Preferred source, and 0.5.0's mod.io sign-in, Load order and Release everywhere. */
+ * Preferred source, 0.5.0's mod.io sign-in, Load order and Release everywhere, and 0.6.0's Manual sort. */
 // Asks every site once, so each row of the picture shows the site answering.
 async function testEveryAccount(page: Page, stepMs: number) {
   const main = page.getByRole('main')
@@ -170,6 +170,28 @@ export const releaseScenes = (h: Helpers) => [
   },
   accountsScene(h),
   requestCountsScene(h),
+  {
+    name: 'manual-sort',
+    file: 'manual-sort-0-6-0.png',
+    ...h.desk,
+    profile: h.profile,
+    steps: async (page) => {
+      await h.click(page, 'tab', 'Mods')
+      await h.click(page, 'button', 'List view')
+      await h.click(page, 'button', /^Sort$/u)
+      await h.click(page, 'menuitemradio', /^Manual/u)
+      // Mid-drag: a mod picked up by its handle and carried two rows down, with the line where it would land.
+      const handle = page.getByRole('button', { name: /^Move / }).nth(2)
+      await handle.focus({ timeout: h.stepMs })
+      await page.keyboard.press('Space')
+      await page.getByText(/^Picked up /u).waitFor({ state: 'attached', timeout: h.stepMs })
+      for (const _ of [1, 2]) {
+        await page.waitForTimeout(300)
+        await page.keyboard.press('ArrowDown')
+      }
+      await page.getByText(/ is over /u).waitFor({ state: 'attached', timeout: h.stepMs })
+    },
+  },
   {
     name: 'load-order',
     file: 'load-order-0-5-0.png',
