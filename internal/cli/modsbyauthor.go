@@ -9,7 +9,7 @@ import (
 )
 
 func (c *cmd) modsByAuthor() error {
-	a, err := c.need(3, "a game", "an author name")
+	a, err := c.need(2, "a game", "an author name")
 	if err != nil {
 		return err
 	}

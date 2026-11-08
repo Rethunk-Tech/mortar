@@ -8,7 +8,7 @@ import (
 )
 
 func (c *cmd) modsReport() error {
-	a, err := c.need(3, "a game", "a profile", "a mod id (SMAPI id)")
+	a, err := c.need(2, "a game", "a profile", "a mod id (SMAPI id)")
 	if err != nil {
 		return err
 	}
