@@ -72,7 +72,7 @@ func (s *Store) Delete(gameID, id string) error {
 	}
 	dst, _ := s.trashDir(gameID, id)
 	forgetProfile(filepath.Join(src, fileName))
-	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
+	if err := datadir.MkdirParent(dst); err != nil {
 		return err
 	}
 	if err := safefs.Rename(src, dst); err != nil {
@@ -154,7 +154,7 @@ func (s *Store) Restore(gameID, id string) (Profile, error) {
 	if datadir.Exists(dst) {
 		return Profile{}, fmt.Errorf("profile %s already exists", id)
 	}
-	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
+	if err := datadir.MkdirParent(dst); err != nil {
 		return Profile{}, err
 	}
 	if err := safefs.Rename(src, dst); err != nil {

@@ -290,7 +290,7 @@ func (p Place) put(m *Manifest, i int, log *opLog, carry bool) error {
 	switch {
 	case carry:
 		// The previous Play's copy goes before this one's arrives; a backup the first Play took stays where it is.
-		if err := os.MkdirAll(filepath.Dir(pl.Dst), 0o700); err != nil {
+		if err := datadir.MkdirParent(pl.Dst); err != nil {
 			return err
 		}
 		if err := safefs.Remove(pl.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -299,7 +299,7 @@ func (p Place) put(m *Manifest, i int, log *opLog, carry bool) error {
 		at("replaced:" + n)
 	case pl.Displaced != "":
 		if _, err := os.Lstat(pl.Dst); err == nil {
-			if err := os.MkdirAll(filepath.Dir(pl.Displaced), 0o700); err != nil {
+			if err := datadir.MkdirParent(pl.Displaced); err != nil {
 				return err
 			}
 			// Over a backup an earlier Play left: what stands at Dst now is newer than it, and is what a Purge gives back.

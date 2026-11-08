@@ -377,7 +377,7 @@ func (w swapped) commit() {
 	// The store keeps the previous version, so a file that fails to move aside is still recoverable by Roll back.
 	for _, h := range w.held {
 		dst := filepath.Join(w.heldDir, h.uniqueID, h.rel)
-		if os.MkdirAll(filepath.Dir(dst), 0o700) == nil {
+		if datadir.MkdirParent(dst) == nil {
 			_ = safefs.Rename(h.abs, dst)
 		}
 	}
@@ -492,7 +492,7 @@ func copyOver(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
+	if err := datadir.MkdirParent(dst); err != nil {
 		return err
 	}
 	if err := safefs.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {

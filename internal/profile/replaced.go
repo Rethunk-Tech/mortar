@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 // ReplacedFile is a file SyncPackages moved under replaced/ for a package's own: its path below the profile folder
@@ -63,7 +64,7 @@ func (s *Store) RestoreReplaced(game, id, rel string) error {
 		return fmt.Errorf("%s is not a replaced file", rel)
 	}
 	to := filepath.Join(dir, local)
-	if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+	if err := datadir.MkdirParent(to); err != nil {
 		return err
 	}
 	if err := safefs.Remove(to); err != nil && !errors.Is(err, fs.ErrNotExist) {

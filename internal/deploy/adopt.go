@@ -117,7 +117,7 @@ func adoptFile(ow Owned, path string, l *opLog) error {
 		return err
 	}
 	target := filepath.Join(ow.Src, rel)
-	if err := os.MkdirAll(filepath.Dir(target), 0o750); err != nil {
+	if err := datadir.MkdirParent(target); err != nil {
 		return err
 	}
 	if err := datadir.CopyFile(path, target); err != nil {

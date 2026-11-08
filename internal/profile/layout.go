@@ -92,7 +92,7 @@ func writeLayout(arch installer.Archive, l installer.Layout, dst string) error {
 			}
 			continue
 		}
-		if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
+		if err := datadir.MkdirParent(to); err != nil {
 			return err
 		}
 		if err := datadir.MaterializeFile(filepath.Join(arch.Dir, filepath.FromSlash(f.Src)), to, f.Rel); err != nil {
@@ -319,7 +319,7 @@ func (s *Store) writeProfileFiles(game, id string, files map[string][]byte, over
 		if _, err := os.Lstat(to); err == nil && !overwrite {
 			continue
 		}
-		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+		if err := datadir.MkdirParent(to); err != nil {
 			return "", nil, err
 		}
 		// Replaced, never written in place: the file there may be a hardlink to the store's copy.

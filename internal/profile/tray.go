@@ -169,7 +169,7 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 			}
 			continue
 		}
-		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
+		if err := datadir.MkdirParent(dst); err != nil {
 			return fail(err)
 		}
 		if err := datadir.CopyFile(src, dst); err != nil {

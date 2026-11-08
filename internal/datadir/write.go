@@ -61,6 +61,11 @@ func writeAtomic(path string, b []byte) error {
 	return safefs.WriteFileAtomic(path, b, 0o600)
 }
 
+// MkdirParent creates path's parent folder at 0o750, the mode for Mortar app-data folders that do not hold secrets.
+func MkdirParent(path string) error {
+	return os.MkdirAll(filepath.Dir(path), 0o750)
+}
+
 // WriteJSONCompact is WriteJSON without indentation, for a file rewritten whole often or never read by hand.
 func WriteJSONCompact(path string, v any) error {
 	b, err := json.Marshal(v)

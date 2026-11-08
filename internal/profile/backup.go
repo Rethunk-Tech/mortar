@@ -157,7 +157,7 @@ func (s *Store) stageChanged(game, id string) (string, error) {
 	}
 	for _, rel := range rels {
 		to := filepath.Join(stage, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+		if err := datadir.MkdirParent(to); err != nil {
 			return "", err
 		}
 		if err := datadir.CopyFile(filepath.Join(dir, filepath.FromSlash(rel)), to); err != nil {
@@ -239,7 +239,7 @@ func (s *Store) restoreChangedFiles(game, id, from string) error {
 			return fmt.Errorf("the backup holds a changed file outside the profile")
 		}
 		to := filepath.Join(dir, rel)
-		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+		if err := datadir.MkdirParent(to); err != nil {
 			return err
 		}
 		written = append(written, filepath.ToSlash(rel))
@@ -354,7 +354,7 @@ func (s *Store) restoreInto(game string, created, p Profile, files map[string][]
 			rel = restoreDir + "/" + key + "/" + rest
 		}
 		to := filepath.Join(dir, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
+		if err := datadir.MkdirParent(to); err != nil {
 			return Profile{}, nil, err
 		}
 		if err := safefs.WriteFile(to, data, 0o600); err != nil {
@@ -415,7 +415,7 @@ func applyRestored(dir, modsDir, key string) error {
 			return err
 		}
 		to := filepath.Join(dst, rel)
-		if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
+		if err := datadir.MkdirParent(to); err != nil {
 			return err
 		}
 		return safefs.WriteFile(to, b, 0o600)

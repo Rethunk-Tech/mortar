@@ -3,6 +3,7 @@ package datadir
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -41,6 +42,23 @@ func TestWriteOrRemoveWritesThenRemoves(t *testing.T) {
 	}
 	if err := WriteOrRemove(path, nil); err != nil {
 		t.Fatalf("removing a missing file: %v", err)
+	}
+}
+
+func TestMkdirParentCreatesAppDataMode(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX directory mode")
+	}
+	path := filepath.Join(t.TempDir(), "a", "b", "f")
+	if err := MkdirParent(path); err != nil {
+		t.Fatal(err)
+	}
+	st, err := os.Stat(filepath.Dir(path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := st.Mode().Perm(); got != 0o750 {
+		t.Fatalf("parent mode = %04o, want 0750", got)
 	}
 }
 

@@ -159,7 +159,7 @@ func (s *Store) trashOldFilesLocked(game, id, key string) (string, error) {
 	}
 	stamp := strconv.FormatInt(time.Now().UnixNano(), 10)
 	dst := filepath.Join(s.removedOldFilesDir(game, id), stamp, key)
-	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
+	if err := datadir.MkdirParent(dst); err != nil {
 		return "", err
 	}
 	if err := safefs.Rename(src, dst); err != nil {
@@ -193,7 +193,7 @@ func (s *Store) RestoreOldFiles(game, id, token string) error {
 	if datadir.Exists(dst) {
 		return fmt.Errorf("old files for %q are already pending", key)
 	}
-	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
+	if err := datadir.MkdirParent(dst); err != nil {
 		return err
 	}
 	if err := safefs.Rename(src, dst); err != nil {
@@ -252,7 +252,7 @@ func (s *Store) restoreOldFilesLocked(game, id, key, dir, set string) error {
 			if datadir.Exists(to) {
 				continue
 			}
-			if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
+			if err := datadir.MkdirParent(to); err != nil {
 				return err
 			}
 			if err := safefs.Rename(filepath.Join(src, rel), to); err != nil {

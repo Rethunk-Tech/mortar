@@ -415,7 +415,7 @@ func (r *syncRun) place(rel string) error {
 		}
 		return nil
 	}
-	if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
+	if err := datadir.MkdirParent(dst); err != nil {
 		return err
 	}
 	if statErr != nil && info == nil {
@@ -529,7 +529,7 @@ func asideKey(key string) string {
 // question finds it by its path in the profile.
 func setAsideDropped(dir, key, rel string) error {
 	to := filepath.Join(dir, oldFilesDir, key, droppedFilesDir, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
+	if err := datadir.MkdirParent(to); err != nil {
 		return err
 	}
 	return safefs.Rename(filepath.Join(dir, filepath.FromSlash(rel)), to)
@@ -573,7 +573,7 @@ func holdDropped(dir, key string) error {
 	}
 	for rel := range files {
 		to := filepath.Join(dir, changedDir, rel)
-		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+		if err := datadir.MkdirParent(to); err != nil {
 			return err
 		}
 		if err := safefs.Rename(filepath.Join(root, rel), to); err != nil {
@@ -590,7 +590,7 @@ func holdDropped(dir, key string) error {
 func holdChanged(dir, rel string) error {
 	from := filepath.Join(dir, filepath.FromSlash(rel))
 	to := filepath.Join(dir, changedDir, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+	if err := datadir.MkdirParent(to); err != nil {
 		return err
 	}
 	if err := safefs.Rename(from, to); err != nil {
@@ -603,7 +603,7 @@ func holdChanged(dir, rel string) error {
 // back, so removing and re-adding the package never brings the old bytes with it.
 func holdReplaced(dir, rel string) error {
 	to := filepath.Join(dir, replacedDir, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+	if err := datadir.MkdirParent(to); err != nil {
 		return err
 	}
 	if err := safefs.Rename(filepath.Join(dir, filepath.FromSlash(rel)), to); err != nil {
@@ -731,7 +731,7 @@ func takeConfig(dir, rel string, f packageFile, taken map[string]takenRec, adopt
 		// A copy set aside is the player's; switching the mod on brings it back.
 		return nil
 	}
-	if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
+	if err := datadir.MkdirParent(dst); err != nil {
 		return err
 	}
 	return datadir.CopyFile(f.src, dst)

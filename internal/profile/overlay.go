@@ -352,7 +352,7 @@ func (s *Store) layOverlays(game, id string, base Entry, entryDir string, was, o
 			if err := safefs.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 				return err
 			}
-			if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
+			if err := datadir.MkdirParent(dst); err != nil {
 				return err
 			}
 			if err := datadir.MaterializeFile(filepath.Join(l.root, filepath.FromSlash(f)), dst, rel); err != nil {
@@ -370,7 +370,7 @@ func restoreBaseFile(entryDir, baseSrc, rel string) error {
 	}
 	src := filepath.Join(baseSrc, filepath.FromSlash(rel))
 	if safefs.IsFile(src) {
-		if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
+		if err := datadir.MkdirParent(dst); err != nil {
 			return err
 		}
 		return datadir.MaterializeFile(src, dst, rel)
