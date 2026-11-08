@@ -12,8 +12,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-modmanagers/gale"
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	_ "modernc.org/sqlite"
@@ -39,7 +39,7 @@ var errBadProto = errors.New("the world's game data is not a protobuf message")
 // readWorld fills a Vintage Story world's name, play style, game version, play time and the mods it records from the one gamedata row of
 // its .vcdbs, a SQLite database holding a protobuf SaveGame.
 func readWorld(ctx context.Context, file string, info *Info) error {
-	conn, err := sql.Open("sqlite", datadir.ReadOnlySQLiteURI(file))
+	conn, err := sql.Open("sqlite", gale.ReadOnlySQLiteURI(file))
 	if err != nil {
 		return err
 	}
