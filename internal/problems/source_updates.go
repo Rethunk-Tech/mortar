@@ -361,14 +361,19 @@ func asksSource(id string, x framework.Mod) bool {
 	return id == profile.KindThunderstore || x.SourceKind == id
 }
 
+// sameMod reports whether the item is the mod. A Thunderstore install is its package id; a Nexus install is its page
+// id when that hits, and otherwise a twin listed under the same GitHub repo or the same name and author, as for an
+// install from anywhere else.
 func sameMod(x framework.Mod, it source.Item) bool {
-	switch {
-	case x.SourceKind == profile.KindThunderstore:
+	if x.SourceKind == profile.KindThunderstore {
 		return strings.EqualFold(it.ID, x.SourceName)
-	case x.SourceKind == profile.KindNexus:
-		page, _, ok := nexusFile(x.Key)
-		return ok && it.ID == strconv.Itoa(page)
-	case x.SourceRepo != "" && it.Repo != "":
+	}
+	if x.SourceKind == profile.KindNexus {
+		if page, _, ok := nexusFile(x.Key); ok && it.ID == strconv.Itoa(page) {
+			return true
+		}
+	}
+	if x.SourceRepo != "" && it.Repo != "" {
 		return strings.EqualFold(it.Repo, x.SourceRepo)
 	}
 	return mod.LooseName(it.Name) != "" && mod.LooseName(it.Name) == mod.LooseName(x.Name) && mod.LooseName(it.Author) != "" && mod.LooseName(it.Author) == mod.LooseName(x.Author)

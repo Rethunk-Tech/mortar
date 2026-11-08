@@ -34,6 +34,57 @@ func (f fakeThunderstore) Search(context.Context, source.Query) (source.Page, er
 	return source.Page{Items: f.items}, nil
 }
 
+func TestSameModMatchesANexusInstallByIDThenRepoThenName(t *testing.T) {
+	nexus := func(key, repo, name, author string) framework.Mod {
+		m := framework.Mod{Key: key, SourceKind: profile.KindNexus, SourceRepo: repo}
+		m.Name, m.Author = name, author
+		return m
+	}
+	cases := []struct {
+		name string
+		mod  framework.Mod
+		item source.Item
+		want bool
+	}{
+		{"page id", nexus("nexus-12-1", "elsewhere/repo", "Other", "Someone"), source.Item{ID: "12", Name: "Other", Author: "Someone"}, true},
+		{"repo", nexus("nexus-12-1", "Alice/Cool", "Other", "Someone"), source.Item{ID: "Alice-Cool", Repo: "alice/cool"}, true},
+		{"name and author", nexus("nexus-12-1", "", "Cool", "Alice"), source.Item{ID: "Alice-Cool", Name: "cool", Author: "ALICE"}, true},
+		{"repo wins over another name", nexus("nexus-12-1", "Alice/Cool", "Other", "Someone"), source.Item{ID: "Zed-Else", Name: "Other", Author: "Someone", Repo: "bob/other"}, false},
+		{"no id, repo or name", nexus("nexus-12-1", "", "Cool", "Alice"), source.Item{ID: "Zed-Else", Name: "Else", Author: "Bob"}, false},
+	}
+	for _, c := range cases {
+		if got := sameMod(c.mod, c.item); got != c.want {
+			t.Errorf("%s: sameMod = %v, want %v", c.name, got, c.want)
+		}
+	}
+}
+
+func TestNexusInstalledModsMatchAThunderstoreTwinByRepoOrName(t *testing.T) {
+	source.Register(fakeThunderstore{id: "nexus"})
+	source.Register(fakeThunderstore{id: "thunderstore", items: []source.Item{
+		{ID: "Alice-Cool", Name: "Cool", Author: "Alice", Version: "2.0.0", Repo: "Alice/Cool", URL: "https://t/cool"},
+		{ID: "Bob-Widget", Name: "Widget", Author: "Bob", Version: "3.0.0", URL: "https://t/widget"},
+	}})
+	t.Cleanup(func() {
+		source.Register(thunderstore.Driver{})
+		source.Register(nexussource.Driver{})
+	})
+	byRepo := framework.Mod{Key: "nexus-10-1", SourceKind: profile.KindNexus, SourceRepo: "alice/cool"}
+	byRepo.Name, byRepo.Version = "Nexus Name", "1.0.0"
+	byName := framework.Mod{Key: "nexus-11-1", SourceKind: profile.KindNexus}
+	byName.Name, byName.Author, byName.Version = "widget", "bob", "1.0.0"
+	got := (&Service{}).sourceUpdates(t.Context(), "lethal-company", []framework.Mod{byRepo, byName}, nil)
+	if len(got) != 2 {
+		t.Fatalf("updates = %+v", got)
+	}
+	if got[0].Key != byRepo.Key || got[0].Version != "2.0.0" || got[0].Package != "Alice-Cool" || !got[0].Switch {
+		t.Errorf("update by repo = %+v", got[0])
+	}
+	if got[1].Key != byName.Key || got[1].Version != "3.0.0" || got[1].Package != "Bob-Widget" || !got[1].Switch {
+		t.Errorf("update by name and author = %+v", got[1])
+	}
+}
+
 func TestThunderstoreUpdatesOfferNewerVersionsAndMarkSourceSwitches(t *testing.T) {
 	// The game's other sources answer nothing, so the test never reaches the network.
 	source.Register(fakeThunderstore{id: "nexus"})
