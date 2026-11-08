@@ -17,7 +17,15 @@ test('priming a mod Nexus does not know settles: one request, no store churn', a
   })
   useNexus.setState({ signedIn: true } as never)
   let wakes = 0
-  const unsub = useNexusDetails.subscribe(() => {
+  // Another test's reads can still land other mods' entries here; only a wake that changes nothing (churn) or touches
+  // this mod is this prime's doing.
+  const unsub = useNexusDetails.subscribe((s, prev) => {
+    const changed = [...new Set([...Object.keys(s.byKey), ...Object.keys(prev.byKey)])].filter(
+      (k) => s.byKey[k] !== prev.byKey[k],
+    )
+    if (changed.length > 0 && !changed.includes('stardew:9999')) {
+      return
+    }
     wakes += 1
     if (wakes < 50) {
       primeDetails('stardew', [9999]).catch(() => undefined)
