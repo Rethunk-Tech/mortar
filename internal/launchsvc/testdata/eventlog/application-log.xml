@@ -1,0 +1,5 @@
+<Events><Event><System><Provider Name=".NET Runtime"/><EventID>1026</EventID></System><EventData><Data>Application: Lethal Company.exe
+Exception Info: System.NullReferenceException: boom
+   at System.Linq.Enumerable.First(IEnumerable source)
+   at BetterRepair.Logic.CardboardStock.Refill(Int32 count)
+</Data></EventData></Event></Events>

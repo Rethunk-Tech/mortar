@@ -1,0 +1,12 @@
+A cozy heading
+
+Time: 2026-11-08 15:00:00
+Exit code: 0xC0000005, access violation
+Module: BetterRepair.dll + 0x1c, exception 0xc0000005
+Method: Refill
+Called from: UnityPlayer.dll + 0xdb437  Utils_CUSTOM_ForceCrash + 0x17, the first frame outside Windows and the C runtime
+Thread: 100, the game thread
+Game: 1.0, CatLib 0.9
+
+Mods:
+  BetterRepair 1.0.0
