@@ -39,7 +39,7 @@ func TestWriteCollectionRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer zr.Close()
+	defer func() { _ = zr.Close() }()
 	var raw []byte
 	for _, f := range zr.File {
 		if f.Name != collectionManifestName {

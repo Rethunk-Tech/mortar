@@ -35,8 +35,8 @@ func TestPackUnreadable(t *testing.T) {
 		t.Fatalf("kind = %s", usererr.KindOf(err))
 	}
 	other := errors.New("disk")
-	if packUnreadable(other) != other {
-		t.Fatalf("passthrough = %v", packUnreadable(other))
+	if got := packUnreadable(other); !errors.Is(got, other) || usererr.KindOf(got) == usererr.Damaged {
+		t.Fatalf("passthrough = %v kind=%s", got, usererr.KindOf(got))
 	}
 }
 
