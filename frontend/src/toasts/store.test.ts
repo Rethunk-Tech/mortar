@@ -3,6 +3,8 @@ import { setLatestChange, useToasts } from './store.ts'
 
 beforeEach(() => {
   jest.useFakeTimers()
+  // The store is one module instance for the whole bun run, and other test files push toasts into it.
+  useToasts.setState(useToasts.getInitialState(), true)
 })
 
 afterEach(() => {
