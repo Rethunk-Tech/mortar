@@ -123,11 +123,11 @@ func DiffSnapshots(a, b string, before, after []Entry, cfgA, cfgB map[string]map
 	}, func(id string, be, ae Entry) {
 		appendEntryPair(&out, uniqueIDOf(ae, id), be, ae, cfgA[id], cfgB[id])
 	})
-	slices.SortFunc(out.Added, cmpDiffMod)
-	slices.SortFunc(out.Removed, cmpDiffMod)
-	slices.SortFunc(out.Versions, cmpDiffVersion)
-	slices.SortFunc(out.Enabled, cmpDiffEnabled)
-	slices.SortFunc(out.Configs, cmpDiffConfig)
+	sortByID(out.Added, func(m DiffMod) mod.ID { return m.ID })
+	sortByID(out.Removed, func(m DiffMod) mod.ID { return m.ID })
+	sortByID(out.Versions, func(v DiffVersion) mod.ID { return v.ID })
+	sortByID(out.Enabled, func(e DiffEnabled) mod.ID { return e.ID })
+	sortByID(out.Configs, func(c DiffConfig) mod.ID { return c.ID })
 	out.Items = historyItems(out)
 	return out
 }
@@ -267,13 +267,11 @@ func enabledWord(on bool) string {
 	return "disabled"
 }
 
-func cmpDiffMod(a, b DiffMod) int { return strings.Compare(string(a.ID), string(b.ID)) }
-
-func cmpDiffVersion(a, b DiffVersion) int { return strings.Compare(string(a.ID), string(b.ID)) }
-
-func cmpDiffEnabled(a, b DiffEnabled) int { return strings.Compare(string(a.ID), string(b.ID)) }
-
-func cmpDiffConfig(a, b DiffConfig) int { return strings.Compare(string(a.ID), string(b.ID)) }
+func sortByID[T any](s []T, id func(T) mod.ID) {
+	slices.SortFunc(s, func(a, b T) int {
+		return strings.Compare(string(id(a)), string(id(b)))
+	})
+}
 
 func emptyConfigs() map[string]map[string][]byte {
 	return map[string]map[string][]byte{}
