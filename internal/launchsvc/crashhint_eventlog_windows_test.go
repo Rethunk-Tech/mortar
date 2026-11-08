@@ -21,20 +21,20 @@ import (
 // asked, and puts it first on PATH: EventLog reads the Application log only on Windows, through that program.
 func standInWevtutil(t *testing.T, fixture string) {
 	t.Helper()
-	xml, err := os.ReadFile(fixture)
-	if err != nil {
-		t.Fatal(err)
-	}
 	src := t.TempDir()
 	testfs.WriteFile(t, src, "go.mod", "module wevtutil\n\ngo 1.21\n")
 	testfs.WriteFile(t, src, "main.go", "package main\n\nimport (\n\t\"os\"\n)\n\nfunc main() {\n\tb, err := os.ReadFile(os.Getenv(\"MORTAR_TEST_EVENTLOG\"))\n\tif err != nil {\n\t\tos.Exit(1)\n\t}\n\t_, _ = os.Stdout.Write(b)\n}\n")
 	bin := t.TempDir()
-	build := exec.Command("go", "build", "-o", filepath.Join(bin, "wevtutil.exe"), ".")
+	build := exec.CommandContext(t.Context(), "go", "build", "-o", filepath.Join(bin, "wevtutil.exe"), ".") //nolint:gosec // G204: go build of the stand-in program into the test's own temp folder
 	build.Dir = src
 	if out, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("build the stand-in wevtutil: %v\n%s", err, out)
 	}
-	t.Setenv("MORTAR_TEST_EVENTLOG", testfs.WriteFile(t, t.TempDir(), "application-log.xml", string(xml)))
+	abs, err := filepath.Abs(fixture)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("MORTAR_TEST_EVENTLOG", abs)
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
 }
 
