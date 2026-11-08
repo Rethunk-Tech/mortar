@@ -2031,9 +2031,14 @@ func (s *Services) launch(ctx context.Context, gameID, id, installID, preset str
 func (s *Services) awaitStart(ctx context.Context, gameID, installID string) (launchsvc.Status, error) {
 	deadline := time.Now().Add(launchWait)
 	for {
-		st, err := s.Launches.Status(gameID)
+		var (
+			st  launchsvc.Status
+			err error
+		)
 		if installID != "" {
 			st, err = s.Launches.StatusInstall(gameID, installID)
+		} else {
+			st, err = s.Launches.Status(gameID)
 		}
 		if err != nil {
 			return st, err
