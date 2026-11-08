@@ -35,6 +35,9 @@ func TestWaveCommandsSendTheirArguments(t *testing.T) {
 		"data.location":             datasvc.DataLocation{Dir: "/d", Portable: true},
 		"archive.preview":           archive.Preview{Manifests: []archive.PreviewManifest{{ID: "smapi:A.B", Name: "Ab"}}},
 	}
+	// An absolute archive path the host OS agrees is absolute: "/tmp/a.zip" is drive-relative on Windows, so absPath
+	// resolves it against the test's current drive.
+	zip := filepath.Join(t.TempDir(), "a.zip")
 	cases := []struct {
 		args   []string
 		method string
@@ -61,7 +64,7 @@ func TestWaveCommandsSendTheirArguments(t *testing.T) {
 		{[]string{"queue", "resume-item", "q1"}, "queue.resume-item", func(p control.Params) bool { return p.Name == "q1" }, "resume-item"},
 		{[]string{"queue", "top", "q1"}, "queue.top", func(p control.Params) bool { return p.Name == "q1" }, "top"},
 		{[]string{"data", "location"}, "data.location", func(p control.Params) bool { return true }, "Portable"},
-		{[]string{"archive", "preview", "/tmp/a.zip"}, "archive.preview", func(p control.Params) bool { return p.Path == "/tmp/a.zip" }, "A.B"},
+		{[]string{"archive", "preview", zip}, "archive.preview", func(p control.Params) bool { return p.Path == zip }, "A.B"},
 		// A relative archive is resolved here, not against the running app's folder.
 		{[]string{"archive", "preview", "a.zip"}, "archive.preview", func(p control.Params) bool {
 			return filepath.IsAbs(p.Path) && filepath.Base(p.Path) == "a.zip"

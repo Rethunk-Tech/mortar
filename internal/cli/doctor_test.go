@@ -10,6 +10,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
@@ -31,9 +33,13 @@ func TestOfflineDoctorExitsOnFindings(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
 	t.Setenv("XDG_CONFIG_HOME", home)
-	data := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", data)
-	dir := filepath.Join(data, "mortar")
+	// Ask datadir for the folder: the name and location differ per OS (LOCALAPPDATA/Mortar on Windows), and only it
+	// knows where `mortar doctor` looks.
+	datadirtest.Use(t, t.TempDir())
+	dir, err := datadir.Dir()
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, p := range []string{"settings.json", "store/index.json"} {
 		if err := os.MkdirAll(filepath.Dir(filepath.Join(dir, p)), 0o700); err != nil {
 			t.Fatal(err)
@@ -82,13 +88,20 @@ func TestDoctorPrintsSharedChecks(t *testing.T) {
 		},
 		NxmHandled: true,
 	}
-	want := doctor.PlainText(doctor.LiveWithNativeHosts(doctor.Live{
+	wantReport := doctor.LiveWithNativeHosts(doctor.Live{
 		Version: d.Version, CommandVersion: "9.9.9", DataDir: d.DataDir,
 		Games: d.Games, Environment: d.Environment, NxmHandled: d.NxmHandled, NxmPrevious: d.NxmPrevious,
-	}))
+	})
+	want := doctor.PlainText(wantReport)
+	// Windows reads installed browsers from the registry, and an installed browser with no host manifest is a finding,
+	// so there the same report exits 1; this test is about the rows, and the exit code follows the report either way.
+	wantCode := 0
+	if findings, _ := doctor.Findings(wantReport); len(findings) > 0 {
+		wantCode = 1
+	}
 	r := invoke(t, map[string]any{"doctor": d}, "doctor")
-	if r.code != 0 {
-		t.Fatalf("code %d stderr %q", r.code, r.errOut)
+	if r.code != wantCode {
+		t.Fatalf("code %d want %d stderr %q", r.code, wantCode, r.errOut)
 	}
 	if r.out != want {
 		t.Fatalf("got %q want %q", r.out, want)
