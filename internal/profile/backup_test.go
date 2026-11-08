@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+
+	_ "github.com/Rethunk-Tech/mortar/internal/loader/melonloader"
 )
 
 func TestBackupRestoresAnEqualProfileWithoutTheStore(t *testing.T) {
@@ -163,19 +165,42 @@ func TestWriteFilesRefusesABackslashPath(t *testing.T) {
 	}
 }
 
+// A profile's backup carries the config folders of the loader it runs, not only BepInEx's.
+func TestBackupCarriesTheLoadersConfigFolders(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("beetleball", "ML")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(e.root, "beetleball", p.ID)
+	writeFile(t, dir, "UserData/Mod.cfg", "[General]\nA = 1\n")
+	writeFile(t, dir, "BepInEx/config/x.cfg", "[x]\n")
+
+	_, files, err := e.Backup("beetleball", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"UserData/Mod.cfg", "BepInEx/config/x.cfg"} {
+		if _, ok := files[want]; !ok {
+			t.Fatalf("backup lacks %s: %v", want, slices.Sorted(maps.Keys(files)))
+		}
+	}
+}
+
 func TestBackupPathRefusesAManifestAndAnOversizedConfig(t *testing.T) {
 	t.Parallel()
 	p := Profile{Entries: []Entry{{Key: "pack"}}}
 	small := 8
-	if !backupPath("mods/pack/A/config.json", p, small) {
+	if !backupPath("stardew", "mods/pack/A/config.json", p, small) {
 		t.Fatal("a mod's config.json was refused")
 	}
 	for _, rel := range []string{"mods/pack/A/manifest.json", "mods/pack/A/MANIFEST.JSON", `mods/pack/A/c\onfig.json`, "../escape.json"} {
-		if backupPath(rel, p, small) {
+		if backupPath("stardew", rel, p, small) {
 			t.Errorf("%s was accepted", rel)
 		}
 	}
-	if backupPath("mods/pack/A/config.json", p, maxBackupConfig+1) {
+	if backupPath("stardew", "mods/pack/A/config.json", p, maxBackupConfig+1) {
 		t.Error("an oversized config was accepted")
 	}
 }

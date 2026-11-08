@@ -277,7 +277,8 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 		return err
 	}
 	s.expireHeldCopies(dir)
-	if err := run.nameAhead(); err != nil {
+	roots := loaderConfigRoots(gameID, p)
+	if err := run.nameAhead(roots); err != nil {
 		return err
 	}
 	stampOwners(run.next, files)
@@ -285,14 +286,14 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 		return err
 	}
 	for _, rel := range slices.Sorted(maps.Keys(files)) {
-		if isConfig(rel) {
+		if isConfig(rel, roots) {
 			continue
 		}
 		if err := run.place(rel); err != nil {
 			return err
 		}
 	}
-	if err := seedConfigs(dir, p, files); err != nil {
+	if err := seedConfigs(dir, p, roots, files); err != nil {
 		return err
 	}
 	stampOwners(run.next, files)
@@ -360,9 +361,9 @@ func (r *syncRun) dropStale(p Profile, mode string) ([]string, error) {
 // nameAhead names every file this sync may place first, with the hash it will have, so one that stops part way is
 // still taken away by the next. A profile copy with no record that differs from the store is not named here: it is
 // replaced later, after it is moved aside.
-func (r *syncRun) nameAhead() error {
+func (r *syncRun) nameAhead(roots []string) error {
 	for rel := range r.files {
-		if isConfig(rel) {
+		if isConfig(rel, roots) {
 			continue
 		}
 		if _, known := r.next[rel]; known {
@@ -641,7 +642,7 @@ func (s *Store) SeedConfigs(gameID, id string) error {
 	if err != nil || files == nil {
 		return err
 	}
-	if err := seedConfigs(dir, p, files); err != nil {
+	if err := seedConfigs(dir, p, loaderConfigRoots(gameID, p), files); err != nil {
 		return err
 	}
 	s.seededMu.Lock()
@@ -663,7 +664,12 @@ func seedSignature(p Profile) string {
 	return strconv.FormatUint(h.Sum64(), 16)
 }
 
-func isConfig(rel string) bool { return strings.HasPrefix(rel, "BepInEx/config/") }
+// isConfig reports whether rel, a package file's slash path, lies in one of the profile's loader config folders.
+func isConfig(rel string, roots []string) bool {
+	return slices.ContainsFunc(roots, func(root string) bool {
+		return strings.HasPrefix(strings.ToLower(rel), strings.ToLower(strings.TrimSuffix(root, "/")+"/"))
+	})
+}
 
 // takenFile records, by slash path, the hash of each package config file the profile has taken, and the entry that
 // shipped it.
@@ -679,7 +685,7 @@ type takenRec struct {
 // theme pack's file for another mod overrides that mod's settings, and the player's later edits stay. The copy it
 // replaces is kept under `replaced/`. A profile seeded before this record existed takes nothing over files it already
 // has. Removing an entry forgets what it shipped, so adding it again applies its files again.
-func seedConfigs(dir string, p Profile, files map[string]packageFile) error {
+func seedConfigs(dir string, p Profile, roots []string, files map[string]packageFile) error {
 	path := filepath.Join(dir, takenFile)
 	taken := map[string]takenRec{}
 	raw, err := safefs.ReadFile(path)
@@ -693,7 +699,7 @@ func seedConfigs(dir string, p Profile, files map[string]packageFile) error {
 	}
 	maps.DeleteFunc(taken, func(_ string, r takenRec) bool { return r.Key != "" && !present[r.Key] })
 	for _, rel := range slices.Sorted(maps.Keys(files)) {
-		if !isConfig(rel) {
+		if !isConfig(rel, roots) {
 			continue
 		}
 		if err := takeConfig(dir, rel, files[rel], taken, adopting); err != nil {

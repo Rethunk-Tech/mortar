@@ -9,12 +9,39 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
-// ConfigAsideDir holds, by file name, the BepInEx config files of mods switched off in the profile; switching the mod
-// back on puts them back, so its settings survive the round trip.
+// ConfigAsideDir holds, by file name, the config files of mods switched off in the profile; switching the mod back on
+// puts them back, so its settings survive the round trip. They are filed by base name alone, whatever config folder
+// they came from, as 0.3.8 set them aside.
 const ConfigAsideDir = "config-aside"
+
+// bepInExConfigRoot is where BepInEx keeps mod settings, the only folder every release set aside and backed up: a
+// profile an older release wrote keeps reading it whatever loader it now runs.
+const bepInExConfigRoot = "BepInEx/config"
+
+// loaderConfigRoots are the folders the profile's loader keeps mod settings in, by slash path below the profile's
+// root: the loader's own, as a share carries them (share.LoaderConfigRoots), then BepInEx's, which an older release
+// and a loader that names no folder leave as the only one.
+func loaderConfigRoots(game string, p Profile) []string {
+	var out []string
+	if l, ok := gamereg.LoaderOf(game, p.LoaderFor(game)); ok {
+		if c, ok := l.(loader.WithConfig); ok {
+			for _, dir := range c.ConfigDirs() {
+				if dir != "" && !slices.Contains(out, dir) {
+					out = append(out, dir)
+				}
+			}
+		}
+	}
+	if !slices.Contains(out, bepInExConfigRoot) {
+		out = append(out, bepInExConfigRoot)
+	}
+	return out
+}
 
 // modConfigNames is what a mod's BepInEx config files are named after: its plugins' GUIDs and its package's name
 // (LethalLevelLoader.cfg for thunderstore:IAmBatby-LethalLevelLoader).
@@ -80,10 +107,12 @@ func (s *Store) withoutEnabledOwned(game string, p Profile, skip string, files [
 // is before the entry leaves.
 func (s *Store) modConfigPaths(game string, p Profile, dir string, e Entry) []string {
 	var out []string
-	folder := filepath.Join(dir, "BepInEx", "config")
-	for _, m := range e.Mods {
-		for _, f := range s.withoutEnabledOwned(game, p, e.Key, ownedConfigs(folder, s.modConfigNames(game, p, m.ID))) {
-			out = append(out, filepath.Join(folder, f))
+	for _, root := range loaderConfigRoots(game, p) {
+		folder := filepath.Join(dir, filepath.FromSlash(root))
+		for _, m := range e.Mods {
+			for _, f := range s.withoutEnabledOwned(game, p, e.Key, ownedConfigs(folder, s.modConfigNames(game, p, m.ID))) {
+				out = append(out, filepath.Join(folder, f))
+			}
 		}
 	}
 	return out
@@ -107,29 +136,31 @@ func setConfigsAside(profileDir string, paths []string) error {
 
 // parkModConfigs moves the config files of switched-off package mods aside and brings back those of mods switched on.
 func (s *Store) parkModConfigs(game string, p Profile, dir string) error {
-	live := filepath.Join(dir, "BepInEx", "config")
 	aside := filepath.Join(dir, ConfigAsideDir)
-	for _, e := range p.Entries {
-		if !e.Package {
-			continue
-		}
-		for _, m := range e.Mods {
-			from, to := aside, live
-			if !e.Enabled(m.ID) {
-				from, to = live, aside
-			}
-			files := ownedConfigs(from, s.modConfigNames(game, p, m.ID))
-			if to == aside {
-				files = s.withoutEnabledOwned(game, p, "", files)
-			}
-			if len(files) == 0 {
+	for _, root := range loaderConfigRoots(game, p) {
+		live := filepath.Join(dir, filepath.FromSlash(root))
+		for _, e := range p.Entries {
+			if !e.Package {
 				continue
 			}
-			if err := datadir.MkdirParent(filepath.Join(to, files[0])); err != nil {
-				return err
-			}
-			if err := moveConfigs(files, from, to, aside); err != nil {
-				return err
+			for _, m := range e.Mods {
+				from, to := aside, live
+				if !e.Enabled(m.ID) {
+					from, to = live, aside
+				}
+				files := ownedConfigs(from, s.modConfigNames(game, p, m.ID))
+				if to == aside {
+					files = s.withoutEnabledOwned(game, p, "", files)
+				}
+				if len(files) == 0 {
+					continue
+				}
+				if err := datadir.MkdirParent(filepath.Join(to, files[0])); err != nil {
+					return err
+				}
+				if err := moveConfigs(files, from, to, aside); err != nil {
+					return err
+				}
 			}
 		}
 	}

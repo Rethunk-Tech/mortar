@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	_ "github.com/Rethunk-Tech/mortar/internal/loader/melonloader"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -66,6 +67,70 @@ func TestModConfigFollowsTheMod(t *testing.T) {
 	}
 	if b, _ := safefs.ReadFile(live); string(b) != "[General]\nA = 1\n" || exists(aside) {
 		t.Fatalf("undone: live %q, aside %v", b, exists(aside))
+	}
+}
+
+// A MelonLoader profile keeps its mods' settings in UserData, so a mod's config there follows it off and back on, and a
+// backup of the profile carries it.
+func TestModConfigFollowsTheModInALoaderThatKeepsItElsewhere(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("beetleball", "ML")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := e.InstallSource(t.Context(), "beetleball", p.ID, tsZip(t, "1.0.0"), Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	en := res.Profile.Entries[0]
+	dir, _ := e.ProfileDir("beetleball", p.ID)
+	live := filepath.Join(dir, "UserData", "Mod.cfg")
+	aside := filepath.Join(dir, ConfigAsideDir, "Mod.cfg")
+	writeFile(t, dir, "UserData/Mod.cfg", "[General]\nA = 1\n")
+	exists := func(path string) bool {
+		_, err := safefs.Stat(path)
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+			t.Fatal(err)
+		}
+		return err == nil
+	}
+	toggle := func(on bool) {
+		t.Helper()
+		if _, _, err := e.enableMod("beetleball", p.ID, en.Key, en.Mods[0].ID, on); err != nil {
+			t.Fatal(err)
+		}
+		if err := e.SyncPackages("beetleball", p.ID); err != nil {
+			t.Fatal(err)
+		}
+	}
+	toggle(false)
+	if exists(live) || !exists(aside) {
+		t.Fatalf("switched off: live %v, aside %v", exists(live), exists(aside))
+	}
+	toggle(true)
+	if !exists(live) || exists(aside) {
+		t.Fatalf("switched on: live %v, aside %v", exists(live), exists(aside))
+	}
+	if _, err := e.RemoveEntries("beetleball", p.ID, []string{en.Key}); err != nil {
+		t.Fatal(err)
+	}
+	if exists(live) || !exists(aside) {
+		t.Fatalf("removed: live %v, aside %v", exists(live), exists(aside))
+	}
+}
+
+// A config file is one in any of the profile's loader config folders, not only BepInEx's.
+func TestAConfigFileIsOneInAnyLoaderConfigFolder(t *testing.T) {
+	t.Parallel()
+	roots := loaderConfigRoots("beetleball", Profile{})
+	for _, rel := range []string{"UserData/Mod.cfg", "BepInEx/config/Mod.cfg"} {
+		if !isConfig(rel, roots) {
+			t.Errorf("%s is not a config file in %v", rel, roots)
+		}
+	}
+	if isConfig("Mods/Mod.cfg", roots) {
+		t.Errorf("a plugin is a config file in %v", roots)
 	}
 }
 
@@ -147,7 +212,7 @@ func TestSeedConfigsSkipsAConfigSetAside(t *testing.T) {
 		t.Fatal(err)
 	}
 	writeFile(t, dir, ConfigAsideDir+"/Mod.cfg", "mine")
-	if err := seedConfigs(dir, Profile{}, map[string]packageFile{"BepInEx/config/Mod.cfg": {src: src}}); err != nil {
+	if err := seedConfigs(dir, Profile{}, []string{bepInExConfigRoot}, map[string]packageFile{"BepInEx/config/Mod.cfg": {src: src}}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Lstat(filepath.Join(dir, "BepInEx", "config", "Mod.cfg")); err == nil {
@@ -220,10 +285,10 @@ func TestAPackagesConfigIsTakenOnArrivalAndKeepsLaterEdits(t *testing.T) {
 	withTheme := Profile{Entries: []Entry{{Key: "theme"}}}
 	// The profile's first seed with this record adopts what it has: nothing is overwritten.
 	writeFile(t, dir, "BepInEx/config/Emblem.cfg", "emblem's own")
-	if err := seedConfigs(dir, Profile{}, nil); err != nil {
+	if err := seedConfigs(dir, Profile{}, []string{bepInExConfigRoot}, nil); err != nil {
 		t.Fatal(err)
 	}
-	if err := seedConfigs(dir, withTheme, ship("theme v1")); err != nil {
+	if err := seedConfigs(dir, withTheme, []string{bepInExConfigRoot}, ship("theme v1")); err != nil {
 		t.Fatal(err)
 	}
 	if read() != "theme v1" {
@@ -233,17 +298,17 @@ func TestAPackagesConfigIsTakenOnArrivalAndKeepsLaterEdits(t *testing.T) {
 		t.Fatalf("the replaced copy was not kept: %q, %v", b, err)
 	}
 	writeFile(t, dir, "BepInEx/config/Emblem.cfg", "player's edit")
-	if err := seedConfigs(dir, withTheme, ship("theme v1")); err != nil || read() != "player's edit" {
+	if err := seedConfigs(dir, withTheme, []string{bepInExConfigRoot}, ship("theme v1")); err != nil || read() != "player's edit" {
 		t.Fatalf("a later sync overwrote the player's edit: %q, %v", read(), err)
 	}
-	if err := seedConfigs(dir, withTheme, ship("theme v2")); err != nil || read() != "theme v2" {
+	if err := seedConfigs(dir, withTheme, []string{bepInExConfigRoot}, ship("theme v2")); err != nil || read() != "theme v2" {
 		t.Fatalf("an update's changed config was not taken: %q, %v", read(), err)
 	}
 	writeFile(t, dir, "BepInEx/config/Emblem.cfg", "player's edit")
-	if err := seedConfigs(dir, Profile{}, nil); err != nil {
+	if err := seedConfigs(dir, Profile{}, []string{bepInExConfigRoot}, nil); err != nil {
 		t.Fatal(err)
 	}
-	if err := seedConfigs(dir, withTheme, ship("theme v2")); err != nil || read() != "theme v2" {
+	if err := seedConfigs(dir, withTheme, []string{bepInExConfigRoot}, ship("theme v2")); err != nil || read() != "theme v2" {
 		t.Fatalf("adding the package again did not apply its config: %q, %v", read(), err)
 	}
 }
@@ -258,7 +323,7 @@ func TestAProfileWithoutARecordKeepsItsConfigs(t *testing.T) {
 	}
 	writeFile(t, dir, "BepInEx/config/Mod.cfg", "mine")
 	files := map[string]packageFile{"BepInEx/config/Mod.cfg": {src: src, key: "mod"}}
-	if err := seedConfigs(dir, Profile{Entries: []Entry{{Key: "mod"}}}, files); err != nil {
+	if err := seedConfigs(dir, Profile{Entries: []Entry{{Key: "mod"}}}, []string{bepInExConfigRoot}, files); err != nil {
 		t.Fatal(err)
 	}
 	if b, _ := os.ReadFile(filepath.Clean(filepath.Join(dir, "BepInEx", "config", "Mod.cfg"))); string(b) != "mine" {

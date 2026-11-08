@@ -27,8 +27,13 @@ const restoreDir = "restore"
 // maxBackupConfig caps one mod config file in a backup, as a share caps it.
 const maxBackupConfig = 1 << 20
 
-// backupTrees are the profile's own folders a backup carries whole: its history and the loader's config folder.
-var backupTrees = []string{snapshotsDir, historyFilesDir, "BepInEx/config"}
+// backupTrees are the profile's own folders a backup carries whole: its history and the loader's config folders.
+var backupTrees = []string{snapshotsDir, historyFilesDir}
+
+// backupTreeRoots are backupTrees plus the profile's loader config folders, which depend on the profile's loader.
+func backupTreeRoots(game string, p Profile) []string {
+	return append(slices.Clone(backupTrees), loaderConfigRoots(game, p)...)
+}
 
 // backupFiles are the profile's own files a backup carries.
 var backupFiles = []string{historyFile, snapshotKeysFile}
@@ -73,7 +78,7 @@ func (s *Store) Backup(game, id string) (Profile, map[string][]byte, error) {
 		}
 		return err
 	}
-	for _, tree := range backupTrees {
+	for _, tree := range backupTreeRoots(game, p) {
 		if err := walk(filepath.Join(dir, filepath.FromSlash(tree)), tree+"/", func(string, int64) bool { return true }); err != nil {
 			return Profile{}, nil, err
 		}
@@ -252,7 +257,7 @@ func (s *Store) RestoreBackup(ctx context.Context, game string, p Profile, files
 		}
 	}
 	for rel, data := range files {
-		if !backupPath(rel, p, len(data)) {
+		if !backupPath(game, rel, p, len(data)) {
 			return Profile{}, nil, fmt.Errorf("the backup holds %q, which is not a profile file", rel)
 		}
 	}
@@ -376,14 +381,14 @@ func modConfigRel(rel string) bool {
 }
 
 // backupPath reports whether rel, a file of size bytes, is a file a backup of p may carry.
-func backupPath(rel string, p Profile, size int) bool {
+func backupPath(game, rel string, p Profile, size int) bool {
 	if !isLocalRel(rel) {
 		return false
 	}
 	if slices.Contains(backupFiles, rel) || (rel == p.Cover && coverType(rel) != "") {
 		return true
 	}
-	if slices.ContainsFunc(backupTrees, func(t string) bool { return strings.HasPrefix(rel, t+"/") }) {
+	if slices.ContainsFunc(backupTreeRoots(game, p), func(t string) bool { return strings.HasPrefix(rel, t+"/") }) {
 		return true
 	}
 	key, rest, ok := strings.Cut(strings.TrimPrefix(rel, "mods/"), "/")
