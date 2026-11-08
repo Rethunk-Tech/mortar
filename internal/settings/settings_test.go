@@ -26,6 +26,14 @@ func open(t *testing.T) (*Store, string) {
 	return s, filepath.Dir(s.path)
 }
 
+func TestAntivirusConfig(t *testing.T) {
+	v := Settings{Antivirus: "clamd", AntivirusSocket: "/tmp/clamd", AntivirusCommand: "scan {path}"}
+	got := v.AntivirusConfig()
+	if got.Mode != v.Antivirus || got.Socket != v.AntivirusSocket || got.Command != v.AntivirusCommand {
+		t.Fatalf("%+v", got)
+	}
+}
+
 func TestDefaultsAndRoundTrip(t *testing.T) {
 	s, dir := open(t)
 	if got := s.Get(); !reflect.DeepEqual(got, Defaults()) {
