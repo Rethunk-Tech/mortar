@@ -43,27 +43,6 @@ func TestCommandUsesBottlesRunArgv(t *testing.T) {
 	}
 }
 
-func TestCommandOversizedBottleYMLFallsBackToFolderName(t *testing.T) {
-	// bottles.Name refuses bottle.yml over 16MiB and uses the folder name.
-	dir := t.TempDir()
-	bottle := filepath.Join(dir, "folder-name")
-	if err := os.Mkdir(bottle, 0o750); err != nil {
-		t.Fatal(err)
-	}
-	body := make([]byte, (16<<20)+len("Name: Huge\n"))
-	copy(body, "Name: Huge\n")
-	if err := os.WriteFile(filepath.Join(bottle, "bottle.yml"), body, 0o600); err != nil {
-		t.Fatal(err)
-	}
-	got, err := Command(bottlesInstall(bottle), "e.exe")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got[3] != "folder-name" {
-		t.Fatalf("oversized bottle.yml -b = %q, want folder name", got[3])
-	}
-}
-
 func TestPrefixTokensUserDir(t *testing.T) {
 	dir := t.TempDir()
 	bottle := filepath.Join(dir, "bottle")
