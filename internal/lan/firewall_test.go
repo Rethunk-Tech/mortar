@@ -2,41 +2,43 @@ package lan
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-desktopenv/firewall"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func TestRulesBlock(t *testing.T) {
 	t.Parallel()
 	const exe = `C:\Users\Zoë\AppData\Local\Programs\Mortar\mortar.exe`
-	rule := func(allow bool, profiles int32) fwRule {
-		return fwRule{App: `c:\users\zoë\appdata\local\programs\mortar\MORTAR.exe`, Inbound: true, Allow: allow, Enabled: true, Profiles: profiles}
+	rule := func(allow bool, profiles int32) firewall.Rule {
+		return firewall.Rule{App: `c:\users\zoë\appdata\local\programs\mortar\MORTAR.exe`, Inbound: true, Allow: allow, Enabled: true, Profiles: profiles}
 	}
-	local, publicBlock := rule(true, profilesLocal), rule(false, profilePublic)
+	local, publicBlock := rule(true, firewall.ProfilesLocal), rule(false, firewall.ProfilePublic)
 	for name, tc := range map[string]struct {
-		rules   []fwRule
+		rules   []firewall.Rule
 		anyAddr bool
 		want    bool
 	}{
 		"no rules":                     {nil, false, true},
-		"allow only":                   {[]fwRule{local}, false, true},
-		"allow and public block":       {[]fwRule{local, publicBlock}, false, false},
-		"allow covers private only":    {[]fwRule{rule(true, profilePrivate), publicBlock}, false, true},
-		"windows public block counts":  {[]fwRule{local, rule(false, profilePublic)}, false, false},
-		"block on private":             {[]fwRule{local, publicBlock, rule(false, profilePrivate)}, false, true},
-		"block on all profiles":        {[]fwRule{local, publicBlock, rule(false, profilesAll)}, false, true},
-		"disabled block ignored":       {[]fwRule{local, publicBlock, {App: exe, Inbound: true, Profiles: profilesAll}}, false, false},
-		"other program ignored":        {[]fwRule{{App: `C:\x.exe`, Inbound: true, Allow: true, Enabled: true, Profiles: profilesAll}}, false, true},
-		"outbound allow ignored":       {[]fwRule{{App: exe, Allow: true, Enabled: true, Profiles: profilesAll}}, false, true},
-		"any: all-profile allow":       {[]fwRule{rule(true, profilesAll)}, true, false},
-		"any: local allow is short":    {[]fwRule{local}, true, true},
-		"any: public block disallowed": {[]fwRule{rule(true, profilesAll), publicBlock}, true, true},
-		"lan: all-profile allow only":  {[]fwRule{rule(true, profilesAll)}, false, true},
+		"allow only":                   {[]firewall.Rule{local}, false, true},
+		"allow and public block":       {[]firewall.Rule{local, publicBlock}, false, false},
+		"allow covers private only":    {[]firewall.Rule{rule(true, firewall.ProfilePrivate), publicBlock}, false, true},
+		"windows public block counts":  {[]firewall.Rule{local, rule(false, firewall.ProfilePublic)}, false, false},
+		"block on private":             {[]firewall.Rule{local, publicBlock, rule(false, firewall.ProfilePrivate)}, false, true},
+		"block on all profiles":        {[]firewall.Rule{local, publicBlock, rule(false, firewall.ProfilesAll)}, false, true},
+		"disabled block ignored":       {[]firewall.Rule{local, publicBlock, {App: exe, Inbound: true, Profiles: firewall.ProfilesAll}}, false, false},
+		"other program ignored":        {[]firewall.Rule{{App: `C:\x.exe`, Inbound: true, Allow: true, Enabled: true, Profiles: firewall.ProfilesAll}}, false, true},
+		"outbound allow ignored":       {[]firewall.Rule{{App: exe, Allow: true, Enabled: true, Profiles: firewall.ProfilesAll}}, false, true},
+		"any: all-profile allow":       {[]firewall.Rule{rule(true, firewall.ProfilesAll)}, true, false},
+		"any: local allow is short":    {[]firewall.Rule{local}, true, true},
+		"any: public block disallowed": {[]firewall.Rule{rule(true, firewall.ProfilesAll), publicBlock}, true, true},
+		"lan: all-profile allow only":  {[]firewall.Rule{rule(true, firewall.ProfilesAll)}, false, true},
 	} {
-		if got := rulesBlock(tc.rules, exe, tc.anyAddr); got != tc.want {
-			t.Errorf("%s: rulesBlock = %v, want %v", name, got, tc.want)
+		if got := firewall.Blocked(tc.rules, exe, tc.anyAddr); got != tc.want {
+			t.Errorf("%s: Blocked = %v, want %v", name, got, tc.want)
 		}
 	}
 }
@@ -80,17 +82,19 @@ func TestOnlyANetworkSetToPublicAloneCountsAsPublic(t *testing.T) {
 	t.Parallel()
 	for name, tc := range map[string]struct {
 		current int32
+		err     error
 		want    bool
 	}{
-		"public only":        {profilePublic, true},
-		"private":            {profilePrivate, false},
-		"domain":             {profileDomain, false},
-		"public and private": {profilePublic | profilePrivate, false},
-		"public and domain":  {profilePublic | profileDomain, false},
-		"no network":         {0, false},
+		"public only":        {firewall.ProfilePublic, nil, true},
+		"private":            {firewall.ProfilePrivate, nil, false},
+		"domain":             {firewall.ProfileDomain, nil, false},
+		"public and private": {firewall.ProfilePublic | firewall.ProfilePrivate, nil, false},
+		"public and domain":  {firewall.ProfilePublic | firewall.ProfileDomain, nil, false},
+		"no network":         {0, nil, false},
+		"unread public bits": {firewall.ProfilePublic, errors.New("read Windows Firewall profile"), false},
 	} {
-		if got := onlyPublic(tc.current); got != tc.want {
-			t.Errorf("%s: onlyPublic = %v, want %v", name, got, tc.want)
+		if got := publicNetwork(tc.current, tc.err); got != tc.want {
+			t.Errorf("%s: publicNetwork = %v, want %v", name, got, tc.want)
 		}
 	}
 }
