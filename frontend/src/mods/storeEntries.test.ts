@@ -29,7 +29,11 @@ afterEach(() => {
 })
 
 test('remove-undo is disabled once the entry is gone or superseded', async () => {
-  const profile = testProfile({ id: 'p1', name: 'Farm', entries: [{ key: 'k1', mods: [mod] }] })
+  const profile = testProfile({
+    id: 'p1',
+    name: 'Farm',
+    entries: [{ key: 'k1', mods: [mod] } as never],
+  })
   useProfiles.setState({
     game: { id: 'stardew' } as never,
     openId: 'p1',
@@ -40,7 +44,7 @@ test('remove-undo is disabled once the entry is gone or superseded', async () =>
   const live = useToasts.getState().toasts.at(-1)?.action?.live
   expect(live?.()).toEqual(stale)
 
-  useProfiles.getState().replace({ ...profile, entries: [{ key: 'k2', mods: [mod] }] })
+  useProfiles.getState().replace({ ...profile, entries: [{ key: 'k2', mods: [mod] } as never] })
   expect(live?.()).toEqual(stale)
 
   useProfiles.getState().replace(profile)

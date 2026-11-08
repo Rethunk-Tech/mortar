@@ -42,7 +42,7 @@ test('revert undo goes stale when a later version keeps the same entry keys', as
   const restored = testProfile({
     id: 'p1',
     name: 'Farm',
-    entries: [{ key: 'k1', mods: [{ id: 'SpaceCore' }] }],
+    entries: [{ key: 'k1', mods: [{ id: 'SpaceCore' }] } as never],
   })
   stubBinding(profileService, 'Revert', () => restored)
   const before = useProfiles.getState()
@@ -52,10 +52,10 @@ test('revert undo goes stale when a later version keeps the same entry keys', as
       openId: 'p1',
       profiles: [restored],
     })
-    await revertHistoryEvent('stardew', 'p1', 'ev1', [{ id: 'before' }])
+    await revertHistoryEvent('stardew', 'p1', 'ev1', [{ id: 'before' } as never])
     useProfiles.getState().replace({
       ...restored,
-      entries: [{ key: 'k1', mods: [{ id: 'SpaceCore.2' }] }],
+      entries: [{ key: 'k1', mods: [{ id: 'SpaceCore.2' }] } as never],
     })
     expect(useToasts.getState().toasts.at(-1)?.action?.live?.()).toEqual({
       disabled: true,
