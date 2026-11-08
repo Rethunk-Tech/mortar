@@ -3,7 +3,6 @@ package profile
 import (
 	"errors"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -32,8 +31,8 @@ const loaderConfigName = "BepInEx"
 
 // ownedConfigs is the .cfg files in folder named after one of names.
 func ownedConfigs(folder string, names []string) []string {
-	ents, err := os.ReadDir(folder)
-	if err != nil || len(names) == 0 {
+	ents, found, err := safefs.ReadDirIfExists(folder)
+	if err != nil || !found || len(names) == 0 {
 		return nil
 	}
 	var out []string
@@ -126,7 +125,7 @@ func (s *Store) parkModConfigs(game string, p Profile, dir string) error {
 			if len(files) == 0 {
 				continue
 			}
-			if err := os.MkdirAll(to, 0o750); err != nil {
+			if err := datadir.MkdirParent(filepath.Join(to, files[0])); err != nil {
 				return err
 			}
 			if err := moveConfigs(files, from, to, aside); err != nil {

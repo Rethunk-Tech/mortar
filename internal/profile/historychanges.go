@@ -1,10 +1,11 @@
 package profile
 
 import (
-	"os"
 	"path/filepath"
 	"slices"
 	"time"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 type changesSinceCache struct {
@@ -59,7 +60,7 @@ func (s *Store) ChangesSince(game, id string, since time.Time) (HistoryDiff, err
 }
 
 func historyStamp(dir string) time.Time {
-	info, err := os.Stat(filepath.Join(dir, historyFile))
+	info, err := safefs.Stat(filepath.Join(dir, historyFile))
 	if err != nil {
 		return time.Time{}
 	}

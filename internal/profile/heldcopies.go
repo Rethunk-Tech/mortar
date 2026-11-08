@@ -1,7 +1,6 @@
 package profile
 
 import (
-	"encoding/json"
 	"errors"
 	"io/fs"
 	"log"
@@ -20,10 +19,8 @@ const heldIndex = ".mortar-held.json"
 
 func readHeld(dir string) map[string]int64 {
 	held := map[string]int64{}
-	if b, err := safefs.ReadFile(filepath.Join(dir, heldIndex)); err == nil {
-		if json.Unmarshal(b, &held) != nil {
-			return map[string]int64{}
-		}
+	if _, err := datadir.ReadJSON(filepath.Join(dir, heldIndex), &held); err != nil {
+		return map[string]int64{}
 	}
 	return held
 }

@@ -127,8 +127,6 @@ func (s *Store) ResolveOldFiles(game, id, key string, keep bool) error {
 		if err := s.restoreOldFilesLocked(game, id, key, dir, set); err != nil {
 			return err
 		}
-	}
-	if keep {
 		return safefs.RemoveAll(set)
 	}
 	_, err = s.trashOldFilesLocked(game, id, key)

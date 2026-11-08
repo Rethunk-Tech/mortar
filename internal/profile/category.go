@@ -3,7 +3,6 @@ package profile
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -59,9 +58,6 @@ func readCategories(root, game string) ([]CustomCategory, error) {
 func writeCategories(root, game string, cats []CustomCategory) error {
 	path, err := categoriesPath(root, game)
 	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
 	return datadir.WriteJSON(path, categoriesFile{Categories: cats})

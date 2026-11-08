@@ -68,7 +68,7 @@ func (s *Store) load(game, id string) (Profile, error) {
 }
 
 func destHasKey(p Profile, key string) bool {
-	return slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key })
+	return EntryIndex(p.Entries, key) >= 0
 }
 
 // CopyMods copies the named user mods from one profile into another by their store keys, with no download.
