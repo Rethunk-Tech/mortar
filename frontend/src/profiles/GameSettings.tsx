@@ -1,21 +1,19 @@
 import { useLingui } from '@lingui/react/macro'
 import {
   Button,
-  FormControl,
   FormControlLabel,
-  InputLabel,
   Menu,
   MenuItem,
-  Select,
   Slider,
   Stack,
   Switch,
   TextField,
   Typography,
 } from '@mui/material'
-import { type MouseEvent, memo, type ReactNode, useCallback, useId, useState } from 'react'
+import { type MouseEvent, memo, type ReactNode, useCallback, useState } from 'react'
 import { GameSettings as FetchGameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { cmpText } from '../mods/cmpText.ts'
+import { SelectField } from '../shell/dialog/FormDialog.tsx'
 import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
 import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -131,24 +129,42 @@ function CopyFromProfileMenu({ gameId, profileId, onCopy }: CopyFromProfileProps
   )
 }
 
+type NumberSettingsField =
+  | 'displayIndex'
+  | 'preferredResolutionX'
+  | 'preferredResolutionY'
+  | 'fullscreenResolutionX'
+  | 'fullscreenResolutionY'
+
 interface NumberFieldProps {
   disabled: boolean
   label: string
-  value: number | ''
-  onChange: (value: number | undefined) => void
+  field: NumberSettingsField
+  value: GameSettingsValues | null
+  onChange: (value: GameSettingsValues | null) => void
 }
 
-function NumberField({ disabled, label, value, onChange }: NumberFieldProps) {
+function NumberField({ disabled, label, field, value, onChange }: NumberFieldProps) {
+  const fieldValue = value?.[field]
   return (
     <TextField
       disabled={disabled}
       fullWidth={true}
       label={label}
       type="number"
-      value={value}
-      onChange={(event) =>
-        onChange(event.target.value === '' ? undefined : Number(event.target.value))
-      }
+      value={typeof fieldValue === 'number' ? fieldValue : ''}
+      onChange={(event) => {
+        if (event.target.value === '') {
+          if (value === null) {
+            return
+          }
+          const next = { ...value }
+          delete next[field]
+          onChange(Object.keys(next).length === 0 ? null : next)
+          return
+        }
+        onChange({ ...(value ?? {}), [field]: Number(event.target.value) })
+      }}
     />
   )
 }
@@ -171,48 +187,34 @@ function parseWindowMode(selected: string): WindowMode | undefined {
 
 function WindowModeField({ disabled, value, onChange }: WindowModeFieldProps) {
   const { t } = useLingui()
-  const labelId = useId()
   return (
-    <FormControl disabled={disabled} fullWidth={true}>
-      <InputLabel shrink={true} id={labelId}>{t`Window mode`}</InputLabel>
-      <Select
-        labelId={labelId}
-        displayEmpty={true}
-        notched={true}
-        label={t`Window mode`}
-        value={value ?? ''}
-        onChange={(event) => {
-          onChange(parseWindowMode(String(event.target.value)))
-        }}
-      >
-        <MenuItem value="">{t`Use default`}</MenuItem>
-        <MenuItem value="windowed">{t`Windowed`}</MenuItem>
-        <MenuItem value="fullscreen">{t`Fullscreen`}</MenuItem>
-        <MenuItem value="borderless">{t`Borderless`}</MenuItem>
-      </Select>
-    </FormControl>
+    <SelectField
+      disabled={disabled}
+      displayEmpty={true}
+      label={t`Window mode`}
+      value={value ?? ''}
+      onChange={(selected) => onChange(parseWindowMode(selected))}
+    >
+      <MenuItem value="">{t`Use default`}</MenuItem>
+      <MenuItem value="windowed">{t`Windowed`}</MenuItem>
+      <MenuItem value="fullscreen">{t`Fullscreen`}</MenuItem>
+      <MenuItem value="borderless">{t`Borderless`}</MenuItem>
+    </SelectField>
   )
 }
 
-type PercentageFieldKind = 'zoom' | 'uiScale' | 'music' | 'sound'
+type PercentageSettingsField = 'zoomLevel' | 'uiScale' | 'musicVolumeLevel' | 'soundVolumeLevel'
 
 interface PercentageFieldProps {
   disabled: boolean
-  kind: PercentageFieldKind
-  value: number
-  onChange: (value: number) => void
+  label: string
+  field: PercentageSettingsField
+  value: GameSettingsValues | null
+  onChange: (value: GameSettingsValues | null) => void
 }
 
-function PercentageField({ disabled, kind, value, onChange }: PercentageFieldProps) {
-  const { t } = useLingui()
-  let label = t`Sound volume (${value}%)`
-  if (kind === 'zoom') {
-    label = t`Zoom (${value}%)`
-  } else if (kind === 'uiScale') {
-    label = t`UI scale (${value}%)`
-  } else if (kind === 'music') {
-    label = t`Music volume (${value}%)`
-  }
+function PercentageField({ disabled, label, field, value, onChange }: PercentageFieldProps) {
+  const n = value?.[field] ?? PERCENT_DEFAULT
   return (
     <Stack spacing={1}>
       <Typography>{label}</Typography>
@@ -221,11 +223,11 @@ function PercentageField({ disabled, kind, value, onChange }: PercentageFieldPro
         disabled={disabled}
         min={PERCENT_MIN}
         max={PERCENT_MAX}
-        value={value}
+        value={n}
         valueLabelDisplay="auto"
         onChange={(_, nextValue) => {
           if (typeof nextValue === 'number') {
-            onChange(nextValue)
+            onChange({ ...(value ?? {}), [field]: nextValue })
           }
         }}
       />
@@ -264,11 +266,6 @@ const ProfileGameSettingsFields = memo(function ProfileGameSettingsFieldsView({
     onChange(Object.keys(next).length === 0 ? null : next)
   }
 
-  function numberValue(field: keyof GameSettingsValues) {
-    const fieldValue = value?.[field]
-    return typeof fieldValue === 'number' ? fieldValue : ''
-  }
-
   return (
     <>
       <FormControlLabel
@@ -289,67 +286,56 @@ const ProfileGameSettingsFields = memo(function ProfileGameSettingsFieldsView({
       />
       <NumberField
         disabled={disabled}
+        field="displayIndex"
         label={t`Display number`}
-        value={numberValue('displayIndex')}
-        onChange={(next) =>
-          next === undefined ? clearField('displayIndex') : updateField('displayIndex', next)
-        }
+        value={value}
+        onChange={onChange}
       />
       <Stack direction="row" spacing={2}>
         <NumberField
           disabled={disabled}
+          field="preferredResolutionX"
           label={t`Windowed resolution width`}
-          value={numberValue('preferredResolutionX')}
-          onChange={(next) =>
-            next === undefined
-              ? clearField('preferredResolutionX')
-              : updateField('preferredResolutionX', next)
-          }
+          value={value}
+          onChange={onChange}
         />
         <NumberField
           disabled={disabled}
+          field="preferredResolutionY"
           label={t`Windowed resolution height`}
-          value={numberValue('preferredResolutionY')}
-          onChange={(next) =>
-            next === undefined
-              ? clearField('preferredResolutionY')
-              : updateField('preferredResolutionY', next)
-          }
+          value={value}
+          onChange={onChange}
         />
       </Stack>
       <Stack direction="row" spacing={2}>
         <NumberField
           disabled={disabled}
+          field="fullscreenResolutionX"
           label={t`Fullscreen resolution width`}
-          value={numberValue('fullscreenResolutionX')}
-          onChange={(next) =>
-            next === undefined
-              ? clearField('fullscreenResolutionX')
-              : updateField('fullscreenResolutionX', next)
-          }
+          value={value}
+          onChange={onChange}
         />
         <NumberField
           disabled={disabled}
+          field="fullscreenResolutionY"
           label={t`Fullscreen resolution height`}
-          value={numberValue('fullscreenResolutionY')}
-          onChange={(next) =>
-            next === undefined
-              ? clearField('fullscreenResolutionY')
-              : updateField('fullscreenResolutionY', next)
-          }
+          value={value}
+          onChange={onChange}
         />
       </Stack>
       <PercentageField
         disabled={disabled}
-        kind="zoom"
-        value={value?.zoomLevel ?? PERCENT_DEFAULT}
-        onChange={(next) => updateField('zoomLevel', next)}
+        field="zoomLevel"
+        label={t`Zoom (${value?.zoomLevel ?? PERCENT_DEFAULT}%)`}
+        value={value}
+        onChange={onChange}
       />
       <PercentageField
         disabled={disabled}
-        kind="uiScale"
-        value={value?.uiScale ?? PERCENT_DEFAULT}
-        onChange={(next) => updateField('uiScale', next)}
+        field="uiScale"
+        label={t`UI scale (${value?.uiScale ?? PERCENT_DEFAULT}%)`}
+        value={value}
+        onChange={onChange}
       />
       <FormControlLabel
         control={
@@ -363,15 +349,17 @@ const ProfileGameSettingsFields = memo(function ProfileGameSettingsFieldsView({
       />
       <PercentageField
         disabled={disabled}
-        kind="music"
-        value={value?.musicVolumeLevel ?? PERCENT_DEFAULT}
-        onChange={(next) => updateField('musicVolumeLevel', next)}
+        field="musicVolumeLevel"
+        label={t`Music volume (${value?.musicVolumeLevel ?? PERCENT_DEFAULT}%)`}
+        value={value}
+        onChange={onChange}
       />
       <PercentageField
         disabled={disabled}
-        kind="sound"
-        value={value?.soundVolumeLevel ?? PERCENT_DEFAULT}
-        onChange={(next) => updateField('soundVolumeLevel', next)}
+        field="soundVolumeLevel"
+        label={t`Sound volume (${value?.soundVolumeLevel ?? PERCENT_DEFAULT}%)`}
+        value={value}
+        onChange={onChange}
       />
     </>
   )
