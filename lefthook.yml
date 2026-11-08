@@ -2,6 +2,10 @@ pre-commit:
   jobs:
     - name: gitleaks
       run: gitleaks git --pre-commit --staged --redact --no-banner --log-level warn
+    # A dependency change rewrites the credits in the same commit, so the gate's credits check never fails on a bump.
+    - name: credits
+      glob: "{go.mod,go.sum,bun.lock,package.json,frontend/package.json}"
+      run: bun scripts/gen-credits.ts && git add THIRD_PARTY_NOTICES
 pre-push:
   jobs:
     - name: gate
