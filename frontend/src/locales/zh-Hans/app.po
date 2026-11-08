@@ -31,6 +31,7 @@ msgid "Template"
 msgstr "模板"
 
 #: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Could not open the folder"
 msgstr "无法打开文件夹"
 
@@ -664,7 +665,7 @@ msgstr "使用 gh 登录以在 {source} 上创建仓库"
 msgid "Mortar chose this from the game's files."
 msgstr "Mortar 从游戏文件中选择了此项。"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Starting for debugging"
 msgstr "正在启动以进行调试"
 
@@ -788,7 +789,7 @@ msgstr "保存诊断信息…"
 msgid "From a shared link"
 msgstr "来自分享链接"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Also move its folder to the trash"
 msgstr "同时将其文件夹移入回收站"
 
@@ -853,7 +854,7 @@ msgid "Grid view"
 msgstr "网格视图"
 
 #: src/develop/DevelopTab.tsx
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Could not start the game"
 msgstr "无法启动游戏"
 
@@ -1255,7 +1256,7 @@ msgstr ""
 msgid "Could not save the tool"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Edit details…"
 msgstr ""
 
@@ -2004,7 +2005,7 @@ msgstr ""
 msgid "Disabled in this profile"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Show log"
 msgstr ""
 
@@ -3233,7 +3234,7 @@ msgstr ""
 msgid "Open the folder of {name}"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/projectSummary.ts
 msgid "{count, plural, one {# to push} other {# to push}}"
 msgstr ""
 
@@ -3405,6 +3406,7 @@ msgstr ""
 
 #: src/develop/DevelopTab.tsx
 #: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Could not remove the project"
 msgstr ""
 
@@ -3675,7 +3677,7 @@ msgstr ""
 msgid "This download's mod is not known to come from {repo}."
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Open in editor"
 msgstr ""
 
@@ -3883,7 +3885,7 @@ msgstr ""
 msgid "Reading the template"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "More actions"
 msgstr ""
 
@@ -4439,7 +4441,7 @@ msgstr ""
 msgid "Marked known good"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Could not open the editor"
 msgstr ""
 
@@ -4995,6 +4997,7 @@ msgstr ""
 
 #: src/develop/DevelopTab.tsx
 #: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Remove from list"
 msgstr ""
 
@@ -5246,7 +5249,7 @@ msgstr ""
 msgid "Clear history"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Remove {name} from the list?"
 msgstr ""
 
@@ -5487,7 +5490,7 @@ msgstr ""
 msgid "Include config files"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Start for debugging"
 msgstr ""
 
@@ -5536,7 +5539,7 @@ msgstr ""
 msgid "Search the game's code"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Open folder"
 msgstr ""
@@ -5711,7 +5714,7 @@ msgstr ""
 msgid "Could not upload to {site}"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Build on save"
 msgstr ""
 
@@ -5816,7 +5819,7 @@ msgstr ""
 msgid "{count, plural, one {# change} other {# changes}}"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/projectSummary.ts
 msgid "{count, plural, one {# changed} other {# changed}}"
 msgstr ""
 
@@ -5919,7 +5922,7 @@ msgstr ""
 msgid "Enabled"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Remove and move to trash"
 msgstr ""
 
@@ -6641,11 +6644,11 @@ msgstr ""
 msgid "Stop the game first"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Its folder stays where it is; Mortar stops building it and installing it into the profile."
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Attach your editor's debugger to {address}."
 msgstr ""
 
@@ -6874,7 +6877,7 @@ msgstr ""
 msgid "Use {manager} from another folder?"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Reading the project…"
 msgstr ""
 
@@ -7035,7 +7038,7 @@ msgstr ""
 msgid "Installing"
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Its folder moves to the trash, where you can restore it, and the mod leaves the profile."
 msgstr ""
 
@@ -7566,7 +7569,7 @@ msgstr ""
 msgid "Name the profile."
 msgstr ""
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Work that is only in this folder goes with it: {summary}."
 msgstr ""
 

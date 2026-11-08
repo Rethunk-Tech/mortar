@@ -88,11 +88,16 @@ function useEditChoices(game: string, dir: string, current: string[]) {
 // Thunderstore needs no ids, so Sites shows only when another site takes uploads.
 function useEditTabs(sites: string[]): { id: EditTab; label: string }[] {
   const { t } = useLingui()
-  return [
-    { id: 'details', label: t`Details` },
-    { id: 'mods', label: t`Mods` },
-    ...(sites.some((s) => s !== 'thunderstore') ? [{ id: 'sites' as const, label: t`Sites` }] : []),
-  ]
+  return useMemo(
+    () => [
+      { id: 'details', label: t`Details` },
+      { id: 'mods', label: t`Mods` },
+      ...(sites.some((s) => s !== 'thunderstore')
+        ? [{ id: 'sites' as const, label: t`Sites` }]
+        : []),
+    ],
+    [sites, t],
+  )
 }
 
 const editOf = (info: ProjectInfo): ProjectEdit => ({

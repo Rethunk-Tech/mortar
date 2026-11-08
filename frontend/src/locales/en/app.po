@@ -37,6 +37,7 @@ msgid "Template"
 msgstr "Template"
 
 #: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Could not open the folder"
 msgstr "Could not open the folder"
 
@@ -670,7 +671,7 @@ msgstr "Sign in with gh to create a repository on {source}"
 msgid "Mortar chose this from the game's files."
 msgstr "Mortar chose this from the game's files."
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Starting for debugging"
 msgstr "Starting for debugging"
 
@@ -794,7 +795,7 @@ msgstr "Save diagnostics…"
 msgid "From a shared link"
 msgstr "From a shared link"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Also move its folder to the trash"
 msgstr "Also move its folder to the trash"
 
@@ -859,7 +860,7 @@ msgid "Grid view"
 msgstr "Grid view"
 
 #: src/develop/DevelopTab.tsx
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Could not start the game"
 msgstr "Could not start the game"
 
@@ -1261,7 +1262,7 @@ msgstr "Switch to Browse"
 msgid "Could not save the tool"
 msgstr "Could not save the tool"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Edit details…"
 msgstr "Edit details…"
 
@@ -2010,7 +2011,7 @@ msgstr "Preview what they see"
 msgid "Disabled in this profile"
 msgstr "Disabled in this profile"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Show log"
 msgstr "Show log"
 
@@ -3239,7 +3240,7 @@ msgstr "What is new in {version}"
 msgid "Open the folder of {name}"
 msgstr "Open the folder of {name}"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/projectSummary.ts
 msgid "{count, plural, one {# to push} other {# to push}}"
 msgstr "{count, plural, one {# to push} other {# to push}}"
 
@@ -3411,6 +3412,7 @@ msgstr "Remove {name}"
 
 #: src/develop/DevelopTab.tsx
 #: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Could not remove the project"
 msgstr "Could not remove the project"
 
@@ -3681,7 +3683,7 @@ msgstr "That download is no longer waiting to retry."
 msgid "This download's mod is not known to come from {repo}."
 msgstr "This download's mod is not known to come from {repo}."
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Open in editor"
 msgstr "Open in editor"
 
@@ -3889,7 +3891,7 @@ msgstr "Decline"
 msgid "Reading the template"
 msgstr "Reading the template"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "More actions"
 msgstr "More actions"
 
@@ -4445,7 +4447,7 @@ msgstr "Add as dependency"
 msgid "Marked known good"
 msgstr "Marked known good"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Could not open the editor"
 msgstr "Could not open the editor"
 
@@ -5001,6 +5003,7 @@ msgstr "The game's Mods folder"
 
 #: src/develop/DevelopTab.tsx
 #: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Remove from list"
 msgstr "Remove from list"
 
@@ -5252,7 +5255,7 @@ msgstr "A profile with that name already exists, so this one is \"{name}\""
 msgid "Clear history"
 msgstr "Clear history"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Remove {name} from the list?"
 msgstr "Remove {name} from the list?"
 
@@ -5493,7 +5496,7 @@ msgstr "Switch to Performance"
 msgid "Include config files"
 msgstr "Include config files"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Start for debugging"
 msgstr "Start for debugging"
 
@@ -5542,7 +5545,7 @@ msgstr "You started this download on {source}, but you have no {game} profile ye
 msgid "Search the game's code"
 msgstr "Search the game's code"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Open folder"
 msgstr "Open folder"
@@ -5717,7 +5720,7 @@ msgstr "The system would not let Mortar end the game. Close it from its own wind
 msgid "Could not upload to {site}"
 msgstr "Could not upload to {site}"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Build on save"
 msgstr "Build on save"
 
@@ -5822,7 +5825,7 @@ msgstr "The antivirus flagged it, so Mortar did not install it."
 msgid "{count, plural, one {# change} other {# changes}}"
 msgstr "{count, plural, one {# change} other {# changes}}"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/projectSummary.ts
 msgid "{count, plural, one {# changed} other {# changed}}"
 msgstr "{count, plural, one {# changed} other {# changed}}"
 
@@ -5925,7 +5928,7 @@ msgstr "Without mods"
 msgid "Enabled"
 msgstr "Enabled"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Remove and move to trash"
 msgstr "Remove and move to trash"
 
@@ -6647,11 +6650,11 @@ msgstr "World"
 msgid "Stop the game first"
 msgstr "Stop the game first"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Its folder stays where it is; Mortar stops building it and installing it into the profile."
 msgstr "Its folder stays where it is; Mortar stops building it and installing it into the profile."
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Attach your editor's debugger to {address}."
 msgstr "Attach your editor's debugger to {address}."
 
@@ -6880,7 +6883,7 @@ msgstr "Could not trust the project"
 msgid "Use {manager} from another folder?"
 msgstr "Use {manager} from another folder?"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Reading the project…"
 msgstr "Reading the project…"
 
@@ -7041,7 +7044,7 @@ msgstr "FOMOD installer"
 msgid "Installing"
 msgstr "Installing"
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Its folder moves to the trash, where you can restore it, and the mod leaves the profile."
 msgstr "Its folder moves to the trash, where you can restore it, and the mod leaves the profile."
 
@@ -7572,7 +7575,7 @@ msgstr "Already the newest file"
 msgid "Name the profile."
 msgstr "Name the profile."
 
-#: src/develop/ProjectCard.tsx
+#: src/develop/ProjectMenu.tsx
 msgid "Work that is only in this folder goes with it: {summary}."
 msgstr "Work that is only in this folder goes with it: {summary}."
 

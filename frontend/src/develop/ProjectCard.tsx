@@ -1,66 +1,31 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, Chip, CircularProgress, Menu, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, CircularProgress, Typography } from '@mui/material'
 import { relativeWhen, useNowValue } from '@rethunk/react-load-hooks'
-import {
-  Bug,
-  Ellipsis,
-  FolderOpen,
-  FolderPlus,
-  Hammer,
-  PackagePlus,
-  Pencil,
-  ScrollText,
-  SquareCode,
-  Trash2,
-} from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
-import type {
-  GitState,
-  ProjectInfo,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
+import { FolderPlus, Hammer, PackagePlus } from 'lucide-react'
+import { type ReactNode, useEffect } from 'react'
+import type { ProjectInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/models.ts'
 import {
   Forget,
   OpenAssetFolder,
-  OpenEditor,
-  OpenProject,
-  SetWatch,
-  Trash as TrashProject,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/devsvc/service.ts'
-import { StartDebugging } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type { DevProject } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { errorsLabel } from '../i18n/counts.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { formatNumber } from '../i18n/numberFormat.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { useProfiles } from '../profiles/store.ts'
-import { persist, saveSetting } from '../settings/persist.ts'
-import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
-import { IconAction } from '../shell/IconAction.tsx'
-import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
+import { persist } from '../settings/persist.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
-import { MenuRule } from '../shell/TitleMenu.tsx'
-import { usePopoverAnchor } from '../shell/usePopoverAnchor.ts'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
-import {
-  buildProject,
-  refreshInfo,
-  runOf,
-  useDevRuns,
-  useProjectInfo,
-  useTrustAsk,
-} from './builds.ts'
+import { buildProject, refreshInfo, runOf, useDevRuns, useProjectInfo } from './builds.ts'
 import { outOfStep, useDependencySync } from './dependencySync.ts'
-import { EditProjectDialog } from './EditProjectDialog.tsx'
 import { useIsAsset } from './kinds.ts'
-import { showModLog, useModCosts } from './modCosts.ts'
+import { useModCosts } from './modCosts.ts'
 import { Outcome } from './Outcome.tsx'
-import { ReleaseDialog } from './ReleaseDialog.tsx'
-import { ReleaseItems } from './ReleaseItems.tsx'
-import { reportTrashFailed } from './trashFailed.ts'
-import { UploadDialog } from './UploadDialog.tsx'
+import { ProjectMenu } from './ProjectMenu.tsx'
+import { gitSummary } from './projectSummary.ts'
 
 // Whether the project's folder is in its profile: a mod removed there stays out until asked for again.
 function useInProfile(project: DevProject) {
@@ -153,21 +118,6 @@ const statusSx = {
   '& .MuiChip-label': { px: 0.75 },
 } as const
 
-// What the repository has not committed or pushed; nothing when both are clean.
-function gitSummary(git: GitState | null | undefined): string {
-  if (!git) {
-    return ''
-  }
-  return [
-    git.changed > 0 ? plural({ count: git.changed }, { one: '# changed', other: '# changed' }) : '',
-    git.unpushed > 0
-      ? plural({ count: git.unpushed }, { one: '# to push', other: '# to push' })
-      : '',
-  ]
-    .filter(Boolean)
-    .join(', ')
-}
-
 // The project's details from its own files, read when the card shows and kept current by refreshInfo.
 function useInfo(game: string, dir: string) {
   const info = useProjectInfo((s) => s.byDir[dir])
@@ -226,149 +176,6 @@ function MissingCard({ game, project }: { game: string; project: DevProject }) {
     >
       {t`${{ name: project.name }} is no longer in ${{ path: project.dir }}.`}
     </Alert>
-  )
-}
-
-function MoreMenu({
-  game,
-  project,
-  onRelease,
-  onUpload,
-  onEdit,
-}: {
-  game: string
-  project: DevProject
-  onRelease: () => void
-  onUpload: (version: string) => void
-  onEdit: () => void
-}) {
-  const { t } = useLingui()
-  const { anchor, show, hide } = usePopoverAnchor()
-  const [forgetting, setForgetting] = useState(false)
-  const [trashFolder, setTrashFolder] = useState(false)
-  const info = useProjectInfo((s) => s.byDir[project.dir])
-  // A project made only of files has no build, plugin or log.
-  const code = !useIsAsset(project.dir)
-  // One start with the game's Mono debugger open; the toast says where to attach.
-  const debug = () =>
-    StartDebugging(game, project.profile)
-      .then((address) =>
-        useToasts.getState().push({
-          kind: 'info',
-          title: t`Starting for debugging`,
-          body: t`Attach your editor's debugger to ${{ address }}.`,
-        }),
-      )
-      .catch(reportError(t`Could not start the game`))
-  const act = (fn: () => unknown) => () => {
-    hide()
-    fn()
-  }
-  return (
-    <>
-      <IconAction
-        label={t`More actions`}
-        icon={<Ellipsis size={18} />}
-        menu={true}
-        onClick={show}
-      />
-      <Menu anchorEl={anchor} open={anchor !== null} onClose={() => hide()}>
-        <MenuAction
-          icon={<Pencil size={16} aria-hidden={true} />}
-          label={t`Edit details…`}
-          disabled={!info}
-          reason={t`Reading the project…`}
-          onClick={act(onEdit)}
-        />
-        <MenuAction
-          icon={<SquareCode size={16} aria-hidden={true} />}
-          label={t`Open in editor`}
-          onClick={act(() =>
-            OpenEditor(game, project.dir).catch(reportError(t`Could not open the editor`)),
-          )}
-        />
-        <MenuAction
-          icon={<FolderOpen size={16} aria-hidden={true} />}
-          label={t`Open folder`}
-          onClick={act(() =>
-            OpenProject(game, project.dir).catch(reportError(t`Could not open the folder`)),
-          )}
-        />
-        {code ? <MenuRule /> : null}
-        {code ? (
-          <MenuAction
-            icon={<Bug size={16} aria-hidden={true} />}
-            label={t`Start for debugging`}
-            onClick={act(debug)}
-          />
-        ) : null}
-        {code ? (
-          <MenuAction
-            icon={<ScrollText size={16} aria-hidden={true} />}
-            label={t`Show log`}
-            disabled={!info}
-            onClick={act(() => info && showModLog(info))}
-          />
-        ) : null}
-        <MenuRule />
-        <ReleaseItems
-          act={act}
-          released={info?.released}
-          onRelease={onRelease}
-          onUpload={onUpload}
-        />
-        {code ? <MenuRule /> : null}
-        {code ? (
-          <MenuCheck
-            checked={Boolean(project.watch)}
-            label={t`Build on save`}
-            onClick={() => saveSetting(() => SetWatch(game, project.dir, !project.watch))}
-          />
-        ) : null}
-        <MenuRule />
-        <MenuAction
-          icon={<Trash2 size={16} aria-hidden={true} />}
-          label={t`Remove from list`}
-          tone="error"
-          onClick={act(() => setForgetting(true))}
-        />
-      </Menu>
-      <ConfirmationDialog
-        open={forgetting}
-        tone={trashFolder ? 'danger' : 'warning'}
-        title={t`Remove ${{ name: project.name }} from the list?`}
-        body={
-          trashFolder
-            ? t`Its folder moves to the trash, where you can restore it, and the mod leaves the profile.`
-            : t`Its folder stays where it is; Mortar stops building it and installing it into the profile.`
-        }
-        confirmLabel={trashFolder ? t`Remove and move to trash` : t`Remove from list`}
-        onCancel={() => {
-          setForgetting(false)
-          setTrashFolder(false)
-        }}
-        onConfirm={() => {
-          setForgetting(false)
-          setTrashFolder(false)
-          if (trashFolder) {
-            TrashProject(game, project.dir).catch(reportTrashFailed)
-          } else {
-            persist(() => Forget(game, project.dir), t`Could not remove the project`)
-          }
-        }}
-        checkbox={{
-          label: t`Also move its folder to the trash`,
-          checked: trashFolder,
-          onChange: setTrashFolder,
-        }}
-      >
-        {trashFolder && (info?.git?.unpushed || info?.git?.changed) ? (
-          <Alert variant="compact" severity="warning">
-            {t`Work that is only in this folder goes with it: ${{ summary: gitSummary(info.git) }}.`}
-          </Alert>
-        ) : null}
-      </ConfirmationDialog>
-    </>
   )
 }
 
@@ -462,10 +269,6 @@ export function ProjectCard({
 }) {
   const { t } = useLingui()
   const info = useInfo(game, project.dir)
-  const [releasing, setReleasing] = useState(false)
-  // The version a local release offers to upload; empty when none is open.
-  const [uploading, setUploading] = useState('')
-  const [editing, setEditing] = useState(false)
   if (info?.missing) {
     return <MissingCard game={game} project={project} />
   }
@@ -520,48 +323,9 @@ export function ProjectCard({
           ) : null}
         </Box>
         <BuildButton game={game} project={project} compact={!list} />
-        <MoreMenu
-          game={game}
-          project={project}
-          onRelease={() =>
-            project.untrusted
-              ? useTrustAsk.setState({ ask: { game, dir: project.dir, pack: false } })
-              : setReleasing(true)
-          }
-          onUpload={setUploading}
-          onEdit={() => setEditing(true)}
-        />
+        <ProjectMenu game={game} project={project} info={info} name={name} />
       </Box>
       <Outcome game={game} project={project} />
-      {editing && info ? (
-        <EditProjectDialog
-          game={game}
-          dir={project.dir}
-          info={info}
-          onClose={() => setEditing(false)}
-        />
-      ) : null}
-      {releasing ? (
-        <ReleaseDialog
-          game={game}
-          dir={project.dir}
-          name={name}
-          onClose={() => setReleasing(false)}
-          onLocal={(released) => {
-            setReleasing(false)
-            setUploading(released)
-          }}
-        />
-      ) : null}
-      {uploading ? (
-        <UploadDialog
-          game={game}
-          dir={project.dir}
-          name={name}
-          version={uploading}
-          onClose={() => setUploading('')}
-        />
-      ) : null}
     </Box>
   )
 }
