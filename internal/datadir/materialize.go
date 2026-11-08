@@ -10,8 +10,17 @@ import (
 // materializer shares a store file with a profile folder by the cheapest tier the disk allows, except the files a
 // mod or player writes, which never share an inode with the store.
 var materializer = safefs.Materializer{
-	Shareable: func(rel string) bool { return !WritableRel(rel) && !EditableText(rel) },
-	Copy:      mortarCopy,
+	Shareable: func(rel string) bool {
+		return !WritableRel(rel) && !EditableText(rel) && !scriptExts[strings.ToLower(filepath.Ext(rel))]
+	},
+	Copy: mortarCopy,
+}
+
+// scriptExts are scripts a player, a mod or a loader's install step rewrites in place. They are not EditableText (a
+// changed copy of one is never taken into a share), but an inode shared with the store would carry the edit into the
+// store and every other profile, so they are cloned or copied only.
+var scriptExts = map[string]bool{
+	".sh": true, ".bash": true, ".ps1": true, ".bat": true, ".cmd": true, ".py": true, ".lua": true,
 }
 
 // MaterializeTree puts src's files into dst using clone, hardlink, symlink, then copy.

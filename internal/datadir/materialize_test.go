@@ -174,6 +174,32 @@ func TestEditableTextNeverSharesAnInode(t *testing.T) {
 	}
 }
 
+// A script a player rewrites in place must keep the store's copy intact, so it is never hard-linked or symlinked even
+// where the disk allows it: the update's content comparison would otherwise read the store's own bytes back as the
+// "shipped" version and drop the player's edit instead of carrying it.
+func TestScriptsNeverShareAnInodeWithTheStore(t *testing.T) {
+	src := t.TempDir()
+	seedTree(t, src)
+	testfs.WriteAt(t, filepath.Join(src, "A", "tool.sh"), []byte("shipped"))
+	for _, tier := range []safefs.Tier{safefs.TierHardlink, safefs.TierSymlink} {
+		dst := t.TempDir()
+		if err := onTier(tier).Tree(src, dst); err != nil {
+			t.Fatal(err)
+		}
+		from := filepath.Join(src, "A", "tool.sh")
+		to := filepath.Join(dst, "A", "tool.sh")
+		if linked(t, from, to) {
+			t.Fatalf("tier %d linked a script", tier)
+		}
+		if err := os.WriteFile(to, []byte("mine"), 0o700); err != nil { //nolint:gosec // the edit is the point
+			t.Fatal(err)
+		}
+		if got := testfs.Read(t, from); got != "shipped" {
+			t.Fatalf("tier %d: the player's edit reached the store: %q", tier, got)
+		}
+	}
+}
+
 // onTier is Mortar's materializer limited to tier, falling back to a copy as every tier does.
 func onTier(tier safefs.Tier) safefs.Materializer {
 	m := materializer
