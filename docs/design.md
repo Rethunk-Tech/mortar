@@ -69,19 +69,11 @@ Done when: a pack with posters + boombox + tv in `plugins/mortar/`, suits in `pl
 
 ### Content Patcher analysis as go-contentpatcher
 
-`internal/framework/contentpatcher` splits into a usage-agnostic library (pack parsing, tokens and conditions, targets, footprints and overlap, shadowing, load-after winners, asset map, map/tilesheet scans, image crop, its caches) and Mortar's layer (`driver.go`, `settings.go`, `settings_recolour.go`, fix suggestions, cleanup and evidence wording, the `framework.*` adapters). Library-side today: all of `assetmap.go`, `parts.go`, `mapscans_disk.go`, `alphacache.go`, `release.go`, and most of `contentpatcher.go`, `footprint.go`, `tilesheets.go`, `shadowed.go`, `memo.go`, `conflict_evidence.go`, `winner.go`.
+`internal/framework/contentpatcher/cp` (package `cp`) is the usage-agnostic half of the Content Patcher analysis: pack parsing, tokens and conditions, targets, footprints and overlap, shadowing, load-after winners, asset map, map and tilesheet scans, image crop, and their caches. It imports nothing under `internal/` and owns its result types; `internal/framework/contentpatcher` keeps Mortar's layer (`driver.go`, settings, recolour and variant suggestions, evidence and cleanup wording) and `adapter.go`, which maps `cp` findings to `framework.*`.
 
-Decided shape:
+Left: `cp` moves to Rethunk-Tech/go-contentpatcher (package `contentpatcher`), scaffolded with the new-module skill, with its tests and fixtures; Mortar imports it, and `internal/problems` and `internal/cli` import its `AssetTouch`, `AssetTarget`, `WhoChangesPage`, `AssetMapPage` and `CropPackImage` from there. The cache root, SMAPI load order, `SkipImageOverlap` and freeing OS memory stay request options, and wording stays in Mortar. The module's package-level caches stay process-wide behind its exported `Reset`.
 
-- The library owns its result types (`Request`, `Mod`, `ModID` with `Fold`, `Findings`, `Conflict`, `Note`, `Evidence`, `Shadowed`, winner kinds); Mortar converts them to `framework.*` in one adapter beside `driver.go`. `AssetTouch`, `AssetTarget`, `WhoChangesPage`, `AssetMapPage` move to the library and `internal/problems` and `internal/cli` import them.
-- Injected, not imported: the cache root (today `datadir.Dir()`, which also keys packs relative to a moved data folder), the SMAPI load order (`Request.Order`, from `smapimanifest.Order`), `SkipImageOverlap` as a request option in every cache key, and freeing OS memory after a release (an option, off by default; Mortar turns it on). `modconfig.Entries`' schema reader is ported.
-- Wording stays in Mortar: reason codes, `cell (x, y)`, `Entry 301`, `HasMod …`, recolour and variant suggestions. The library returns facts (`Note{Kind, Value}`), never text.
-
-Built in three steps, each landing green: (1) in place, the library-bound code stops importing `internal/mod`, `internal/datadir`, `internal/modconfig` and `smapimanifest` (injected or ported), with every existing test unchanged; (2) still in Mortar, it moves to `internal/framework/contentpatcher/cp` (package `cp`) that imports nothing under `internal/`, with library-owned result types, `Request.Extend` for the caller's own pass over the same parsed packs, and `adapter.go` mapping its findings to `framework.*`; (3) the subpackage moves to Rethunk-Tech/go-contentpatcher with its tests (about 2,700 test lines; `incremental_real_test.go` and the settings/recolour tests stay). `analysis_test.go` checks step 2's boundary with `go list -deps`.
-
-Traps: twelve package-level caches (`packCache`, `pngAlphaCache`, `cellSetCache`, `reachableMemo`, …) become per-analyzer state or stay process-wide with an explicit reset; tests that mutate `packGrace` need an option; step 2 cannot go file by file, since `contentpatcher.go` and `footprint.go` each split internally.
-
-Done when: Mortar's contentpatcher package holds only the driver, settings, recolour and wording code plus the adapter; `go-contentpatcher` passes its own gate with the moved tests; Mortar's Problems tab shows the same conflicts on the maintainer's Stardew profile before and after (render case `problems-sections`).
+Done when: `go-contentpatcher` passes its own gate with the moved tests; Mortar's `internal/framework/contentpatcher` holds only its layer and the adapter; Mortar's Problems tab shows the same conflicts on the maintainer's Stardew profile before and after (render case `problems-sections`).
 
 ## Later
 
