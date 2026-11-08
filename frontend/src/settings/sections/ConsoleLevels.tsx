@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Checkbox, FormControlLabel } from '@mui/material'
-import { LEVELS, levelsFromFloor } from '../../console/filter.ts'
+import { LEVELS, levelSetting, levelsFromFloor } from '../../console/filter.ts'
 import { useLevelNames } from '../../console/logHooks.ts'
 import { gamePrefs } from '../gamePrefs.ts'
 import { saveSetting } from '../persist.ts'
@@ -18,7 +18,7 @@ export function ConsoleLevels({ game }: { game: string }) {
     useSettings((s) => gamePrefs(s, game).consoleLevel),
   )
   const shown = levelsFromFloor(scoped.value)
-  const save = (next: typeof shown) => saveSetting(() => scoped.save(next.join(',')))
+  const save = (next: typeof shown) => saveSetting(() => scoped.save(levelSetting(next)))
   return (
     <SettingRow label={t`Levels shown`} description={t`The Console opens showing these levels`}>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end' }}>

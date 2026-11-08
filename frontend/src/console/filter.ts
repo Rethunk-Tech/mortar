@@ -32,6 +32,12 @@ const LEVEL_IDS: Record<string, Level> = {
   alert: Level.Alert,
 }
 
+/** The consoleLevel setting naming these levels: the setting spells each level by its id, not the log's own name. */
+export function levelSetting(levels: readonly Level[]): string {
+  const ids = Object.entries(LEVEL_IDS)
+  return levels.map((l) => ids.find(([, level]) => level === l)?.[0] ?? '').join(',')
+}
+
 /** The levels the consoleLevel setting shows: a comma list of levels, or one level alone and every level above it. */
 export function levelsFromFloor(floor: string): Level[] {
   if (floor.includes(',') || floor === 'alert') {

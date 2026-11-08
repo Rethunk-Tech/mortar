@@ -12,6 +12,8 @@ import {
   hiddenBy,
   incompatibleSMAPI,
   isFiltered,
+  LEVELS,
+  levelSetting,
   levelsFromFloor,
   modsOf,
   repeatCount,
@@ -184,4 +186,11 @@ test('the console level is one level and those above, or the levels ticked', () 
   expect(levelsFromFloor('warn')).toEqual([Level.Warn, Level.Error, Level.Alert])
   expect(levelsFromFloor('info,error')).toEqual([Level.Info, Level.Error])
   expect(levelsFromFloor('alert')).toEqual([Level.Alert])
+})
+
+test('levelSetting names levels by the ids the setting accepts, and reads back as the same levels', () => {
+  const picked = [Level.Trace, Level.Info, Level.Alert]
+  expect(levelSetting(picked)).toBe('trace,info,alert')
+  expect(levelsFromFloor(levelSetting(picked))).toEqual(picked)
+  expect(levelSetting(LEVELS)).toBe('trace,debug,info,warn,error,alert')
 })
