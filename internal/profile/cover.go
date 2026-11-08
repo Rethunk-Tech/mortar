@@ -141,6 +141,15 @@ func (s *Store) Covers(gameID, id string) ([]string, error) {
 	return Covers(gameID, p), nil
 }
 
+// CoverFile is the picked cover on disk, if this profile has one.
+func (s *Store) CoverFile(game, id string) (string, bool) {
+	p, dir, err := s.readDir(game, id)
+	if err != nil || coverType(p.Cover) == "" {
+		return "", false
+	}
+	return filepath.Join(dir, p.Cover), true
+}
+
 // CoverMiddleware serves GET <CoverPath><game>/<profile id>: the profile's picked cover, from its own folder only.
 // store returns nil until the profile store is open.
 func CoverMiddleware(store func() *Store) func(http.Handler) http.Handler {

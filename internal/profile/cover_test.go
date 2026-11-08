@@ -44,6 +44,30 @@ func TestCoversOrder(t *testing.T) {
 	}
 }
 
+func TestCoverFile(t *testing.T) {
+	t.Parallel()
+	s := newStore(t)
+	p := mustCreate(t, s, "Farm")
+	if _, ok := s.CoverFile("stardew", p.ID); ok {
+		t.Fatal("empty cover")
+	}
+	src := filepath.Join(t.TempDir(), "mine.jpg")
+	if err := os.WriteFile(src, pngHeader, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.SetCover("stardew", p.ID, src); err != nil {
+		t.Fatal(err)
+	}
+	path, ok := s.CoverFile("stardew", p.ID)
+	want := filepath.Join(s.root, "stardew", p.ID, "cover.png")
+	if !ok || path != want {
+		t.Fatalf("CoverFile = %q, %v; want %q", path, ok, want)
+	}
+	if _, ok := s.CoverFile("stardew", "../x"); ok {
+		t.Fatal("accepted a bad id")
+	}
+}
+
 func TestSetCoverValidatesAndCopies(t *testing.T) {
 	t.Parallel()
 	s := newStore(t)
