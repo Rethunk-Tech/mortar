@@ -237,7 +237,7 @@ export interface ModView<T> {
 }
 
 // Scrolls the row into the virtual window, then focuses it once it has rendered.
-export function focusModAt<T>(view: ModView<T>, id: string) {
+function focusModAt<T>(view: ModView<T>, id: string) {
   const { items, idOf, virtualizer, parentRef } = view
   const idx = virtualIndexOf(items, id, idOf)
   if (idx >= 0) {
