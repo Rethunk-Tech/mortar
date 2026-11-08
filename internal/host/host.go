@@ -4,21 +4,16 @@ package host
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"path"
 	"path/filepath"
-	"time"
-
-	"github.com/Rethunk-Tech/go-httpkit"
 
 	ga "github.com/Rethunk-Tech/go-archive"
+	"github.com/Rethunk-Tech/go-httpkit/download"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -40,8 +35,8 @@ type Direct struct {
 	MaxBytes int64
 }
 
-// Fetch writes to a temp file beside the target and renames it into place, so a failed or oversize download leaves
-// nothing behind.
+// Fetch downloads to dstDir. download.File keeps a partial and a sidecar for resume; Remove on error keeps Fetch's
+// contract that a failed or oversize download leaves nothing behind.
 func (d *Direct) Fetch(ctx context.Context, rawURL, dstDir string) (string, error) {
 	u, ok := source.ParseHTTPSURL(rawURL)
 	if !ok {
@@ -52,35 +47,12 @@ func (d *Direct) Fetch(ctx context.Context, rawURL, dstDir string) (string, erro
 		limit = archive.DefaultMaxTotalBytes
 	}
 	hc := d.HTTP
-	if hc == nil {
-		hc = &http.Client{Timeout: 30 * time.Minute}
-	}
-	hc = httpkit.WithRedirect(hc, httpkit.NoDowngrade)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
-	if err != nil {
-		return "", err
-	}
-	resp, err := hc.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("could not reach %s: %w", u.Host, err)
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("server answered %s", resp.Status)
-	}
-	if resp.ContentLength > limit {
-		return "", fmt.Errorf("larger than %s", bytefmt.Format(limit))
-	}
 	dst := filepath.Join(dstDir, fileName(u))
-	err = safefs.WriteStreamAtomic(dst, 0o600, func(w io.Writer) error {
-		_, err := io.Copy(w, safefs.CapReader(resp.Body, limit))
-		if errors.Is(err, safefs.ErrTooLarge) {
-			err = fmt.Errorf("larger than %s", bytefmt.Format(limit))
-		}
-		return err
-	})
-	if err != nil {
+	if err := download.File(ctx, hc, rawURL, dst, download.Options{Limit: limit}); err != nil {
+		download.Remove(dst)
 		return "", err
 	}
+	// File leaves the resume sidecar next to a finished dest.
+	_ = safefs.Remove(download.Sidecar(dst))
 	return dst, nil
 }

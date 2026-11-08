@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-httpkit/download"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -42,6 +43,39 @@ func TestDirectFetch(t *testing.T) {
 	entries, _ := os.ReadDir(dir)
 	if len(entries) != 1 {
 		t.Fatalf("failed fetches left files behind: %v", entries)
+	}
+}
+
+func TestDirectFetchMidBodyCloseLeavesNothing(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Length", "1000")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("partial"))
+		if f, ok := w.(http.Flusher); ok {
+			f.Flush()
+		}
+		hj, ok := w.(http.Hijacker)
+		if !ok {
+			return
+		}
+		conn, _, err := hj.Hijack()
+		if err != nil {
+			return
+		}
+		_ = conn.Close()
+	}))
+	defer srv.Close()
+	dir := t.TempDir()
+	dest := filepath.Join(dir, "Mod.zip")
+	_, err := (&Direct{HTTP: srv.Client()}).Fetch(t.Context(), srv.URL+"/Mod.zip", dir)
+	if err == nil {
+		t.Fatal("mid-body close succeeded")
+	}
+	if _, err := os.Stat(dest); !os.IsNotExist(err) {
+		t.Fatalf("dest left behind: %v", err)
+	}
+	if _, err := os.Stat(download.Sidecar(dest)); !os.IsNotExist(err) {
+		t.Fatalf("sidecar left behind: %v", err)
 	}
 }
 
