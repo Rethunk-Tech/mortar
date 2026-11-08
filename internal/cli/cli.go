@@ -480,16 +480,17 @@ func (c *cmd) versionCmd() error {
 	})
 }
 
+var profileDispatchSubs = map[string]func(*cmd) error{
+	"set": (*cmd).profileSet, "shortcut": (*cmd).profileShortcut, "steam": (*cmd).profileSteam, "changes": (*cmd).profileChanges,
+	"good": (*cmd).profileGood, "import": (*cmd).profileImport, "export": (*cmd).profileExport, "farm": (*cmd).profileFarm,
+	"backup": (*cmd).profileBackup, "restore": (*cmd).profileRestore,
+}
+
 func (c *cmd) profileDispatch() error {
 	if len(c.args) > 1 {
 		sub := c.args[1]
-		subs := map[string]func() error{
-			"set": c.profileSet, "shortcut": c.profileShortcut, "steam": c.profileSteam, "changes": c.profileChanges,
-			"good": c.profileGood, "import": c.profileImport, "export": c.profileExport, "farm": c.profileFarm,
-			"backup": c.profileBackup, "restore": c.profileRestore,
-		}
-		if f, ok := subs[sub]; ok {
-			return f()
+		if f, ok := profileDispatchSubs[sub]; ok {
+			return f(c)
 		}
 		if inList(sub, "freeze", "unfreeze", "favourite", "unfavourite") {
 			return c.profileMark(sub)
@@ -498,18 +499,19 @@ func (c *cmd) profileDispatch() error {
 	return c.profile()
 }
 
+var modsDispatchSubs = map[string]func(*cmd) error{
+	"group": (*cmd).modsGroup, "channel": (*cmd).modsChannel, "win": (*cmd).modsWin, "files": (*cmd).modsFiles, "config": (*cmd).modsConfig,
+	"preset": (*cmd).modsPreset, "menu": (*cmd).modsMenu, "compat": (*cmd).modsCompat, "report": (*cmd).modsReport, "by-author": (*cmd).modsByAuthor,
+}
+
 // modsDispatch runs the `mods` subcommands that take no profile pair; handled is false for the rest.
 func (c *cmd) modsDispatch() (handled bool, err error) {
 	if len(c.args) < 2 {
 		return false, nil
 	}
 	sub := c.args[1]
-	subs := map[string]func() error{
-		"group": c.modsGroup, "channel": c.modsChannel, "win": c.modsWin, "files": c.modsFiles, "config": c.modsConfig,
-		"preset": c.modsPreset, "menu": c.modsMenu, "compat": c.modsCompat, "report": c.modsReport, "by-author": c.modsByAuthor,
-	}
-	if f, ok := subs[sub]; ok {
-		return true, f()
+	if f, ok := modsDispatchSubs[sub]; ok {
+		return true, f(c)
 	}
 	switch sub {
 	case "enable", "disable", "remove", "pin", "unpin", "tag", "untag", "category", "note", "skip-version", "split", "combine":
@@ -1137,15 +1139,15 @@ func (c *cmd) trash() error {
 		if err != nil {
 			return err
 		}
-		if !c.yesFlag {
-			return refusedError{"permanently deleting a profile needs --yes"}
+		if err := c.confirm("permanently deleting a profile", "Permanently delete this profile?"); err != nil {
+			return err
 		}
 		return show(c, "trash.delete", control.Params{Game: game, Profile: a[0]}, func(r control.Removed) {
 			fmt.Fprintf(c.out, "Permanently deleted %s.\n", strings.Join(r.Mods, ", "))
 		})
 	case "empty":
-		if !c.yesFlag {
-			return refusedError{"emptying trash needs --yes"}
+		if err := c.confirm("emptying trash", "Empty the trash?"); err != nil {
+			return err
 		}
 		if err := c.call("trash.empty", control.Params{Game: game}, nil, readTimeout); err != nil {
 			return err

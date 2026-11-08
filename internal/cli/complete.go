@@ -39,11 +39,21 @@ func completion(w io.Writer, shell string) error {
 	return err
 }
 
+func subverbsFrom(m map[string]func(*cmd) error, rest ...string) []string {
+	out := make([]string, 0, len(m)+len(rest))
+	for k := range m {
+		out = append(out, k)
+	}
+	out = append(out, rest...)
+	slices.Sort(out)
+	return out
+}
+
 // subverbs are the second words of the verbs that take one.
 var subverbs = map[string][]string{
-	"profile":    {"create", "from-save", "rename", "copy", "delete", "compare", "match", "collection", "history", "health", "revert", "load-order", "repair", "list", "shortcut", "steam", "changes", "good", "import", "export", "backup", "restore", "farm", "freeze", "unfreeze", "favourite", "unfavourite"},
+	"profile":    subverbsFrom(profileDispatchSubs, "create", "from-save", "rename", "copy", "delete", "compare", "match", "collection", "history", "health", "revert", "load-order", "repair", "list", "freeze", "unfreeze", "favourite", "unfavourite"),
 	"history":    {"diff", "revert", "usage", "trim"},
-	"mods":       {"enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "channel", "note", "skip-version", "split", "combine", "files", "config", "preset", "menu", "compat", "report", "by-author", "win", "group", "favourite", "unfavourite", "favourites"},
+	"mods":       subverbsFrom(modsDispatchSubs, "enable", "disable", "pin", "unpin", "remove", "tag", "untag", "category", "note", "skip-version", "split", "combine", "favourite", "unfavourite", "favourites"),
 	"game":       {"folder", "steam-launch-option", "launch-preset-templates", "reset-install", "steam-status"},
 	"groups":     {"apply", "create", "delete", "rename", "add", "remove"},
 	"lan":        {"peers", "send", "inbox", "accept", "decline", "pair", "paired", "unpair"},

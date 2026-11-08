@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"encoding/json"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -361,6 +362,9 @@ func TestCompleteOffersVerbsGamesAndProfiles(t *testing.T) {
 	if r := invoke(t, results, "__complete", "lan", "pa"); !strings.Contains(r.out, "pair") || !strings.Contains(r.out, "paired") {
 		t.Errorf("lan pair: %q", r.out)
 	}
+	if r := invoke(t, results, "__complete", "profile", "se"); strings.TrimSpace(r.out) != "set" {
+		t.Errorf("profile set: %q", r.out)
+	}
 	if r := invoke(t, results, "__complete", "profile", "fa"); strings.TrimSpace(r.out) != "farm\nfavourite" {
 		t.Errorf("profile farm: %q", r.out)
 	}
@@ -406,6 +410,14 @@ func TestCompleteOffersVerbsGamesAndProfiles(t *testing.T) {
 }
 
 func TestTrashListRestoreAndYes(t *testing.T) {
+	stdin := os.Stdin
+	t.Cleanup(func() { os.Stdin = stdin })
+	pr, pw, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = pr.Close(); _ = pw.Close() })
+	os.Stdin = pr
 	deleted := time.Now().Add(-3 * 24 * time.Hour).UTC()
 	results := map[string]any{
 		"trash.list":    []profile.TrashItem{{ID: "id1", Name: "Old Farm", DeletedAt: deleted, DaysLeft: 27}},
