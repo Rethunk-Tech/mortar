@@ -1787,6 +1787,7 @@ msgstr "Left empty, a README is written from what the profile holds."
 msgid "{os} removed the file as malware without saying which. If you trust it, restore it from {os} Security's protection history and add it again."
 msgstr "{os} removed the file as malware without saying which. If you trust it, restore it from {os} Security's protection history and add it again."
 
+#: src/develop/NewModDialog.tsx
 #: src/games/AddGameDialog.tsx
 #: src/install/store.ts
 #: src/share/ModpackDialog.tsx
@@ -4440,9 +4441,7 @@ msgstr "Marked known good"
 msgid "Could not open the editor"
 msgstr "Could not open the editor"
 
-#: src/game/Home.tsx
-#: src/saves/SaveDetails.tsx
-#: src/saves/SaveListRow.tsx
+#: src/game/homeView.ts
 msgid "Summer"
 msgstr "Summer"
 
@@ -5085,9 +5084,7 @@ msgstr "Hide which files they changed"
 msgid "Hide this game"
 msgstr "Hide this game"
 
-#: src/game/Home.tsx
-#: src/saves/SaveDetails.tsx
-#: src/saves/SaveListRow.tsx
+#: src/game/homeView.ts
 msgid "Winter"
 msgstr "Winter"
 
@@ -5156,9 +5153,7 @@ msgstr "revision {revision}"
 msgid "Cancel {name}"
 msgstr "Cancel {name}"
 
-#: src/game/Home.tsx
-#: src/saves/SaveDetails.tsx
-#: src/saves/SaveListRow.tsx
+#: src/game/homeView.ts
 msgid "Spring"
 msgstr "Spring"
 
@@ -5876,8 +5871,7 @@ msgstr "This runs the command below once for your user, so {launcher} can read M
 msgid "{peer} cancelled it"
 msgstr "{peer} cancelled it"
 
-#: src/game/Home.tsx
-#: src/saves/SaveListRow.tsx
+#: src/game/homeView.ts
 msgid "Year {year} {season}"
 msgstr "Year {year} {season}"
 
@@ -7234,9 +7228,7 @@ msgstr "Open a group's menu on the Mods tab and choose Save to library."
 msgid "Save…"
 msgstr "Save…"
 
-#: src/game/Home.tsx
-#: src/saves/SaveDetails.tsx
-#: src/saves/SaveListRow.tsx
+#: src/game/homeView.ts
 msgid "Fall"
 msgstr "Fall"
 

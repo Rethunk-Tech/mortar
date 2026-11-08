@@ -1781,6 +1781,7 @@ msgstr ""
 msgid "{os} removed the file as malware without saying which. If you trust it, restore it from {os} Security's protection history and add it again."
 msgstr ""
 
+#: src/develop/NewModDialog.tsx
 #: src/games/AddGameDialog.tsx
 #: src/install/store.ts
 #: src/share/ModpackDialog.tsx
@@ -4434,9 +4435,7 @@ msgstr ""
 msgid "Could not open the editor"
 msgstr ""
 
-#: src/game/Home.tsx
-#: src/saves/SaveDetails.tsx
-#: src/saves/SaveListRow.tsx
+#: src/game/homeView.ts
 msgid "Summer"
 msgstr ""
 
@@ -5079,9 +5078,7 @@ msgstr ""
 msgid "Hide this game"
 msgstr ""
 
-#: src/game/Home.tsx
-#: src/saves/SaveDetails.tsx
-#: src/saves/SaveListRow.tsx
+#: src/game/homeView.ts
 msgid "Winter"
 msgstr ""
 
@@ -5150,9 +5147,7 @@ msgstr ""
 msgid "Cancel {name}"
 msgstr ""
 
-#: src/game/Home.tsx
-#: src/saves/SaveDetails.tsx
-#: src/saves/SaveListRow.tsx
+#: src/game/homeView.ts
 msgid "Spring"
 msgstr ""
 
@@ -5870,8 +5865,7 @@ msgstr ""
 msgid "{peer} cancelled it"
 msgstr ""
 
-#: src/game/Home.tsx
-#: src/saves/SaveListRow.tsx
+#: src/game/homeView.ts
 msgid "Year {year} {season}"
 msgstr ""
 
@@ -7228,9 +7222,7 @@ msgstr ""
 msgid "Save…"
 msgstr ""
 
-#: src/game/Home.tsx
-#: src/saves/SaveDetails.tsx
-#: src/saves/SaveListRow.tsx
+#: src/game/homeView.ts
 msgid "Fall"
 msgstr ""
 

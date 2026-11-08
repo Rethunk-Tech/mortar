@@ -21,7 +21,7 @@ import { Hero } from './Hero.tsx'
 import { HomeButton } from './HomeButton.tsx'
 import { HomeNotes } from './HomeNotes.tsx'
 import { HomePanel } from './HomePanel.tsx'
-import { renameSurface, savesView } from './homeView.ts'
+import { renameSurface, savesView, yearSeasonLabel } from './homeView.ts'
 import { LaunchMenu } from './LaunchMenu.tsx'
 import { ProfileMenu } from './ProfileMenu.tsx'
 import { useRenameRequest } from './renameRequest.ts'
@@ -34,7 +34,6 @@ function SavesList() {
   const error = useSaves((s) => s.error)
   const reload = useSaves((s) => s.reload)
   const { shown } = savesView(filterAndSortSaves(fits, ''))
-  const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
   if (status === 'error' && error) {
     return <ErrorRetry error={error} onRetry={reload} />
   }
@@ -61,9 +60,7 @@ function SavesList() {
             color="text.secondary"
             sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
           >
-            {calendar
-              ? t`Year ${{ year: calendar.year }} ${{ season: seasons[calendar.season] ?? '' }}`
-              : ''}
+            {calendar ? yearSeasonLabel(calendar.year, calendar.season) : ''}
           </Typography>
         </ListItem>
       ))}

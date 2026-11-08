@@ -1,4 +1,19 @@
+import { msg } from '@lingui/core/macro'
+import { i18n } from '../i18n/index.ts'
+
 const CHANGES_COLLAPSED = 3
+
+const SEASONS = [msg`Spring`, msg`Summer`, msg`Fall`, msg`Winter`]
+
+// A stored save names its season by index; one out of range reads as no season rather than a crash.
+function seasonName(season: number): string {
+  const name = SEASONS[season]
+  return name ? i18n._(name) : ''
+}
+
+function yearSeasonLabel(year: number, season: number): string {
+  return i18n._(msg`Year ${{ year }} ${{ season: seasonName(season) }}`)
+}
 
 function changesView(lines: string[], expanded: boolean) {
   const shown = expanded ? lines : lines.slice(0, CHANGES_COLLAPSED)
@@ -40,4 +55,12 @@ function renameSurface(hero: string): 'inline' | 'dialog' {
   return hero === 'hidden' ? 'dialog' : 'inline'
 }
 
-export { changesView, renameSurface, saveCalendar, saveCalendarUnknown, savesView }
+export {
+  changesView,
+  renameSurface,
+  saveCalendar,
+  saveCalendarUnknown,
+  savesView,
+  seasonName,
+  yearSeasonLabel,
+}

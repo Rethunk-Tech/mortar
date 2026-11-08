@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import type { Backup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
-import { saveCalendar, saveCalendarUnknown } from '../game/homeView.ts'
+import { saveCalendar, saveCalendarUnknown, yearSeasonLabel } from '../game/homeView.ts'
 import { heading } from '../mods/paper.ts'
 import { visuallyHidden } from '../shell/visuallyHidden.ts'
 import { space } from '../theme/density.ts'
@@ -105,12 +105,11 @@ function SaveListRow({
   onBackupsChanged: () => Promise<void>
 }) {
   const { t } = useLingui()
-  const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
   const calendar = saveCalendar(fit)
   const unknown = saveCalendarUnknown(fit)
   let when = ''
   if (calendar) {
-    when = t`Year ${{ year: calendar.year }} ${{ season: seasons[calendar.season] ?? '' }}`
+    when = yearSeasonLabel(calendar.year, calendar.season)
   } else if (unknown) {
     when = t`Unknown`
   }

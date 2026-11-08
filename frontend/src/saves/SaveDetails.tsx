@@ -5,6 +5,7 @@ import { CalendarDays, Clock, Coins, Tag } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
+import { seasonName } from '../game/homeView.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { When } from '../i18n/When.tsx'
 import { useProfiles } from '../profiles/store.ts'
@@ -52,7 +53,6 @@ export function SaveDetails({
   const { t, i18n } = useLingui()
   // Redraws only when the label changes, not on every tick of the minute clock.
   const playedWhen = useNowValue(() => (fit.played ? formatWhen(fit.played) : ''))
-  const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
   const hours = hoursPlayed(fit.millisecondsPlayed)
   const missing = fit.missing ?? []
   return (
@@ -60,7 +60,7 @@ export function SaveDetails({
       <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2, rowGap: 0.75 }}>
         {fit.day > 0 ? (
           <Stat icon={<CalendarDays size={14} />}>
-            {t`${{ season: seasons[fit.season] ?? '' }} ${{ day: fit.day }}, year ${{ year: fit.year }}`}
+            {t`${{ season: seasonName(fit.season) }} ${{ day: fit.day }}, year ${{ year: fit.year }}`}
           </Stat>
         ) : null}
         {hours > 0 ? <Stat icon={<Clock size={14} />}>{t`${hours}h played`}</Stat> : null}
