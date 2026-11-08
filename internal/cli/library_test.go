@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -67,6 +68,14 @@ func TestWaveCommandsSendTheirArguments(t *testing.T) {
 			t.Errorf("%v: %+v", tc.args, r)
 		}
 	}
+	stdin := os.Stdin
+	t.Cleanup(func() { os.Stdin = stdin })
+	pr, pw, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = pr.Close(); _ = pw.Close() })
+	os.Stdin = pr
 	if r := invoke(t, results, "history", "trim", "stardew", "Farm"); r.code != 2 || len(r.calls) != 0 {
 		t.Errorf("trim without --keep: %+v", r)
 	}
@@ -77,15 +86,30 @@ func TestWaveCommandsSendTheirArguments(t *testing.T) {
 }
 
 func TestDestructiveVerbsNeedYes(t *testing.T) {
+	stdin := os.Stdin
+	t.Cleanup(func() { os.Stdin = stdin })
+	pr, pw, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = pr.Close(); _ = pw.Close() })
+	os.Stdin = pr
 	for _, args := range [][]string{
 		{"backups", "trim", "--keep", "1"},
 		{"history", "trim", "stardew", "Farm", "--keep", "2"},
 		{"data", "cleanup"},
 		{"store", "remove", "stardew", "k1"},
+		{"trash", "delete", "Old Farm"},
+		{"trash", "empty"},
+		{"game", "reset-install", "stardew"},
 	} {
 		r := invoke(t, nil, args...)
-		if r.code != 2 || len(r.calls) != 0 || !strings.Contains(r.errOut, "--yes") {
+		if r.code != 2 || len(r.calls) != 0 || !strings.Contains(r.errOut, "needs --yes when stdin is not a terminal") {
 			t.Errorf("%v: code %d, calls %v, stderr %q", args, r.code, r.calls, r.errOut)
 		}
+	}
+	r := invoke(t, map[string]any{"data.cleanup": map[string]any{}}, "data", "cleanup", "--preview")
+	if strings.Contains(r.errOut, "needs --yes") {
+		t.Errorf("preview skipped confirm: %q", r.errOut)
 	}
 }

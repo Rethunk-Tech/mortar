@@ -132,8 +132,10 @@ var moreVerbs = map[string]moreVerb{
 	"data cleanup": {
 		method: "data.cleanup", timeout: installTimeout,
 		params: func(_ []string, c *cmd) (control.Params, error) {
-			if !c.yesFlag && !c.previewFlag {
-				return control.Params{}, refusedError{"data cleanup deletes unused store items and caches; pass --yes (or --preview to list them)"}
+			if !c.previewFlag {
+				if err := c.confirm("data cleanup", "Delete unused store items and caches?"); err != nil {
+					return control.Params{}, err
+				}
 			}
 			return control.Params{Preview: c.previewFlag}, nil
 		},
@@ -146,8 +148,8 @@ var moreVerbs = map[string]moreVerb{
 	"game reset-install": {
 		method: "game.resetInstall", args: []string{"a game"}, msg: "Reset the install.", timeout: installTimeout,
 		params: func(a []string, c *cmd) (control.Params, error) {
-			if !c.yesFlag {
-				return control.Params{}, refusedError{"game reset-install deletes the game's install folder; pass --yes"}
+			if err := c.confirm("game reset-install", "Delete the game's install folder?"); err != nil {
+				return control.Params{}, err
 			}
 			return control.Params{Game: a[0]}, nil
 		},
