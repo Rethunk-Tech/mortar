@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, InputAdornment, TextField } from '@mui/material'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { Copy, Eye, EyeOff } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
 import {
@@ -400,12 +401,14 @@ function useOverlaySnapshot(enabled: boolean, port: number, token: string): Snap
         })
         .then((body) => {
           if (live) {
-            setSnapshot({ ok: true, body })
+            const next: Snapshot = { ok: true, body }
+            setSnapshot((cur) => (sameValue(cur, next) ? cur : next))
           }
         })
         .catch(() => {
+          // A first answer that cannot be read draws the same rows as no answer yet, so it keeps the state it has.
           if (live) {
-            setSnapshot({ ok: false })
+            setSnapshot((cur) => (cur === null || !cur.ok ? cur : { ok: false }))
           }
         })
     }
