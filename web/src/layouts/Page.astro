@@ -2,6 +2,7 @@
 // An inner page: breadcrumbs, a page head and a reading column, in the site frame.
 import '../styles/page.css'
 import '../styles/page-lists.css'
+import Crumbs from '../components/Crumbs.astro'
 import type { Crumb } from '../lib/seo.ts'
 import Base from './Base.astro'
 
@@ -36,22 +37,7 @@ const {
 
 <Base title={title} description={description} current={current} crumbs={crumbs} jsonLd={jsonLd} unlisted={unlisted}>
   <header class="wrap pagehead">
-    {
-      
-      
-      
-      crumbs && crumbs.length > 1 && (
-        <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore={true}>
-          <a href="/">Mortar</a>
-          {crumbs.slice(0, -1).map((c) => (
-            <>
-               › 
-              <a href={c.href}>{c.name}</a>
-            </>
-          ))}
-        </nav>
-      )
-    }
+    {crumbs && <Crumbs crumbs={crumbs} />}
     {kicker && <p class="kicker">{kicker}</p>}
     <h1>{heading}</h1>
     {lede && <p class="lede" set:html={lede} />}

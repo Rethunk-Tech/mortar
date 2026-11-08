@@ -1,5 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro'
+import Crumbs from '../../components/Crumbs.astro'
 import Base from '../../layouts/Base.astro'
 import { guideSections, type Section } from '../../lib/guide.ts'
 import '../../styles/page.css'
@@ -9,7 +10,7 @@ export const getStaticPaths = (() => {
   const all = guideSections()
   return all.map((section, i) => ({
     params: { slug: section.slug },
-    props: { s: section, prev: all[i - 1], next: all[i + 1] },
+    props: { s: section, prev: all[i - 1], next: all[i + 1], all },
   }))
 }) satisfies GetStaticPaths
 
@@ -17,29 +18,31 @@ interface Props {
   s: Section
   prev: Section | undefined
   next: Section | undefined
+  all: Section[]
 }
 
 const MIN_FIRST_LINE = 40
 const DESCRIPTION_MAX = 155
-const { s, prev, next } = Astro.props
-const title = s.title.replace(/<[^>]+>/g, '')
-const all = guideSections()
+const STRIP_TAGS = /<[^>]+>/g
+const { s, prev, next, all } = Astro.props
+const title = s.title.replace(STRIP_TAGS, '')
 const firstLine =
   /<p>(.*?)<\/p>/s
     .exec(s.html)?.[1]
-    ?.replace(/<[^>]+>/g, '')
+    ?.replace(STRIP_TAGS, '')
     .replace(/\s+/g, ' ')
     .trim() ?? ''
+const crumbs = [{ name: 'Guide', href: '/guide/' }, { name: title, href: `/guide/${s.slug}/` }]
 ---
 
 <Base
   title={`${title}: Mortar user guide`}
   description={firstLine.length > MIN_FIRST_LINE ? firstLine.slice(0, DESCRIPTION_MAX) : `${title} in Mortar, the free mod manager for Linux, Windows and Steam Deck.`}
   current="guide"
-  crumbs={[{ name: 'Guide', href: '/guide/' }, { name: title, href: `/guide/${s.slug}/` }]}
+  crumbs={crumbs}
 >
   <header class="wrap pagehead">
-    <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore><a href="/">Mortar</a> › <a href="/guide/">Guide</a></nav>
+    <Crumbs crumbs={crumbs} />
     <h1 set:html={s.title} />
   </header>
   <div class="wrap pagebody">

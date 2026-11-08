@@ -1,0 +1,21 @@
+---
+import type { Crumb } from '../lib/seo.ts'
+
+interface Props {
+  crumbs: Crumb[]
+}
+
+const { crumbs } = Astro.props
+---
+
+{crumbs.length > 1 && (
+  <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore={true}>
+    <a href="/">Mortar</a>
+    {crumbs.slice(0, -1).map((c) => (
+      <>
+        {' › '}
+        <a href={c.href}>{c.name}</a>
+      </>
+    ))}
+  </nav>
+)}

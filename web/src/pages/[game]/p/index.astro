@@ -1,4 +1,5 @@
 ---
+import Crumbs from '../../../components/Crumbs.astro'
 import Base from '../../../layouts/Base.astro'
 import { steamArt } from '../../../lib/art.ts'
 import { shareMarks } from '../../../lib/brands.ts'
@@ -17,16 +18,22 @@ interface Props {
 // profile never reaches a server.
 const { game } = Astro.props
 const hero = artOf(game, steamArt())?.hero
+const crumbs = [
+  { name: 'Games', href: '/games/' },
+  { name: game.name, href: `/${game.id}/` },
+  { name: `Shared ${game.name} profile`, href: `/${game.id}/p/` },
+]
 ---
 
 <Base
   title={`Mortar: shared ${game.name} profile`}
   description={`A ${game.name} mod profile shared from Mortar.`}
   unlisted
+  crumbs={crumbs}
 >
   <header slot="before" class:list={['banner', { plain: !hero }]} style={hero ? `--hero: url('${hero}')` : undefined}>
     <div class="wrap">
-      <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Mortar</a> › <a href="/games/">Games</a> › <a href={`/${game.id}/`}>{game.name}</a></nav>
+      <Crumbs crumbs={crumbs} />
       <h1>Shared {game.name} profile</h1>
     </div>
   </header>

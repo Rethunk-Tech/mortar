@@ -1,4 +1,5 @@
 ---
+import Crumbs from '../../components/Crumbs.astro'
 import FactIcon from '../../components/FactIcon.astro'
 import GameCard from '../../components/GameCard.astro'
 import TopMods from '../../components/TopMods.astro'
@@ -40,17 +41,18 @@ const install = f.loader
 const lists = topMods()[game.id] ?? {}
 const note = gameNote(game.id)
 const loaderText = f.loader ? `installs ${f.loader}, ` : ''
+const crumbs = [{ name: 'Games', href: '/games/' }, { name: game.name, href: `/${game.id}/` }]
 ---
 
 <Base
   title={`${game.name} mod manager: Mortar`}
   description={`Mortar is a free, open source mod manager for ${game.name} on Linux, Windows and Steam Deck: it ${loaderText}keeps each set of mods in its own profile and downloads from ${f.sources}.`}
   current="games"
-  crumbs={[{ name: 'Games', href: '/games/' }, { name: game.name, href: `/${game.id}/` }]}
+  crumbs={crumbs}
 >
   <header slot="before" class:list={['banner', { plain: !hero }]} style={hero ? `--hero: url('${hero}')` : undefined} data-pagefind-body>
     <div class="wrap">
-      <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore><a href="/">Mortar</a> › <a href="/games/">Games</a> › {game.name}</nav>
+      <Crumbs crumbs={crumbs} />
       <h1>{game.name}</h1>
       <p class="lede">Mod {game.name} with Mortar: free, open source, on Linux, Windows and Steam Deck.</p>
       <div class="cta">
