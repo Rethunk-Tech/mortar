@@ -2825,6 +2825,7 @@ msgid "Start from"
 msgstr "Start from"
 
 #: src/browse/BrowseFilters.tsx
+#: src/develop/DevelopTab.tsx
 msgid "Sort"
 msgstr "Sort"
 
@@ -6070,10 +6071,6 @@ msgstr "Quit"
 #: src/share/ImportPreview.tsx
 msgid "Needs your {source} access token in Settings, Accounts"
 msgstr "Needs your {source} access token in Settings, Accounts"
-
-#: src/develop/DevelopTab.tsx
-msgid "Sort: {by}"
-msgstr "Sort: {by}"
 
 #: src/lan/IncomingPrompt.tsx
 msgid "Update an existing profile"

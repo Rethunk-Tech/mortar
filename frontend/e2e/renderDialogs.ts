@@ -411,6 +411,13 @@ export function dialogCases(h: Helpers): Case[] {
         await p.getByRole('main').getByRole('button', { name: 'More actions' }).first().waitFor()
       },
     },
+    {
+      // The grid's cards share one height: the measured-run line shows only in the list.
+      name: 'develop-grid',
+      setup: kit.developTab,
+      run: (p) => p.getByRole('button', { name: 'Grid view' }).click(),
+      teardown: (p) => p.getByRole('button', { name: 'List view' }).click(),
+    },
     ...shareCases(kit),
     ...toolAndWizardCases(kit),
     ...stubbedCases(kit),

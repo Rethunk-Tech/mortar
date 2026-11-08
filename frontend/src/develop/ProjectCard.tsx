@@ -432,6 +432,23 @@ function BuildButton({
 }
 
 // One project: its name and state beside its actions; a grid card's narrower Build is an icon.
+function StatusChips({ game, project }: { game: string; project: DevProject }) {
+  return (
+    <>
+      <Status project={project} />
+      <OutOfStep game={game} dir={project.dir} />
+    </>
+  )
+}
+
+const rowSx = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: space.gap,
+  '& > .MuiTypography-root': { flexShrink: 1 },
+  '& > :not(.MuiTypography-root)': { flexShrink: 0 },
+} as const
+
 export function ProjectCard({
   game,
   project,
@@ -475,19 +492,32 @@ export function ProjectCard({
           size={40}
         />
         <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
-            <Typography sx={{ fontSize: 'large.fontSize', fontWeight: 600 }}>{name}</Typography>
-            <Status project={project} />
-            <OutOfStep game={game} dir={project.dir} />
+          {/* Each card is two lines in the grid, so a row's cards match: the status chips sit beside the version there,
+              leaving the name the whole first line. */}
+          <Box sx={rowSx}>
+            <Typography
+              noWrap={true}
+              title={name}
+              sx={{ fontSize: 'large.fontSize', fontWeight: 600, minWidth: 0 }}
+            >
+              {name}
+            </Typography>
+            {list ? <StatusChips game={game} project={project} /> : null}
           </Box>
-          <Typography
-            noWrap={true}
-            title={more}
-            sx={{ fontSize: 'small.fontSize', color: 'text.secondary' }}
-          >
-            {info ? details.join(' · ') : project.dir}
-          </Typography>
-          <Costs game={game} profile={project.profile} dir={project.dir} info={info} />
+          <Box sx={rowSx}>
+            {list ? null : <StatusChips game={game} project={project} />}
+            <Typography
+              noWrap={true}
+              title={more}
+              sx={{ fontSize: 'small.fontSize', color: 'text.secondary', minWidth: 0 }}
+            >
+              {info ? details.join(' · ') : project.dir}
+            </Typography>
+          </Box>
+          {/* Only some projects have a measured run, so in the grid the line would make cards of one row differ. */}
+          {list ? (
+            <Costs game={game} profile={project.profile} dir={project.dir} info={info} />
+          ) : null}
         </Box>
         <BuildButton game={game} project={project} compact={!list} />
         <MoreMenu

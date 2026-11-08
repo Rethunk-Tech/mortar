@@ -20,6 +20,7 @@ import { Box, Button, ButtonGroup, Menu, Typography } from '@mui/material'
 import { useStoredState } from '@rethunk/react-load-hooks'
 import {
   ArrowDownAZ,
+  ArrowUpDown,
   ChevronDown,
   Code,
   FolderPlus,
@@ -211,12 +212,11 @@ function SortControl({
     { id: 'manual' as const, label: t`Manual`, Icon: GripVertical },
     { id: 'name' as const, label: t`Name`, Icon: ArrowDownAZ },
   ]
-  const current = options.find((o) => o.id === value) ?? options[0]
   return (
     <MenuButton
       menu={menu}
-      icon={<ArrowDownAZ size={14} />}
-      label={t`Sort: ${{ by: current?.label ?? '' }}`}
+      icon={<ArrowUpDown size={14} />}
+      label={t`Sort`}
       ariaLabel={t`Sort projects`}
     >
       {options.map((o) => (
