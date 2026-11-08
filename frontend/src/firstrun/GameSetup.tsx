@@ -135,8 +135,10 @@ export function GameSetup({ game: id }: { game: GameId }) {
   const goToProfile = useCallback(() => setStep(PROFILE), [])
   const hasLoader = needsLoaderStep(game?.loaderId, game?.loaders)
   const signedIn = useNexus((s) => s.signedIn)
+  // The loader's chip only reads "done" once the setup is past the loader's step; reading it before then would redraw
+  // the whole step when the store's answer lands, for a chip that shows the same either way.
   const loaderInstalled = useLoader(
-    (s) => s.game === id && s.status?.installed === true && !s.status.broken,
+    (s) => step > LOADER && s.game === id && s.status?.installed === true && !s.status.broken,
   )
   const afterNexus = hasLoader ? LOADER : PROFILE
   // Nexus's Mod Manager Download button only matters to a game whose mods come from Nexus first; a Thunderstore
