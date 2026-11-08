@@ -51,16 +51,16 @@ function useStartupReports(game: string, profileId: string) {
       }),
     [load],
   )
-  const measureNext = (): void => {
+  const measureNext = useCallback((): void => {
     MeasureNextLaunch(game, profileId)
       .then(() => setPending(true))
       .catch(reportError(t`Could not ask for a measured launch`, measureNext))
-  }
-  const cancelMeasure = (): void => {
+  }, [game, profileId, setPending, t])
+  const cancelMeasure = useCallback((): void => {
     CancelMeasureNextLaunch(game, profileId)
       .then(() => setPending(false))
       .catch(reportError(t`Could not cancel the measured launch`, cancelMeasure))
-  }
+  }, [game, profileId, setPending, t])
   return { reports, reportsError, reportsAt, pending, measureNext, cancelMeasure, reload: load }
 }
 

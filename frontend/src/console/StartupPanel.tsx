@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, AlertTitle, Box, Button, Typography } from '@mui/material'
 import { Gauge, Timer } from 'lucide-react'
-import { type ReactNode, useRef, useState } from 'react'
+import { type ReactNode, memo, useRef, useState } from 'react'
 import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { BEPINEX, MONO_RUNTIME, SMAPI, UNITY } from '../brand/productNames.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
@@ -41,7 +41,9 @@ function MeasureBanner({ onCancel }: { onCancel: () => void }) {
   )
 }
 
-export function StartupPanel({
+// Memoised: the page's own state (a report picked, a measurement asked for) redraws its cards and actions, not the
+// report table, whose props change only when the reports or the ask do.
+export const StartupPanel = memo(function StartupPanelView({
   reports,
   pending,
   cancelMeasure,
@@ -127,4 +129,4 @@ export function StartupPanel({
       )}
     </Box>
   )
-}
+})
