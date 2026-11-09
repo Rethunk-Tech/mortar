@@ -85,10 +85,13 @@ type Source struct {
 	Digest string `json:"digest,omitempty"`
 	// Folder is the extra mods folder a local mod was installed from, so the next install from it replaces this entry
 	// even when the mod's id changed.
-	Folder   string `json:"folder,omitempty"`
-	fomod    *fomodChoices
-	disabled *disabledMods
-	overlay  *overlayPlace
+	Folder string `json:"folder,omitempty"`
+	// Component names which of Mortar's own bundles a source kind mortar entry holds (BundleBridge, BundleOverlay),
+	// since several can sit in one profile; empty reads as the bridge, which is all a build before the split wrote.
+	Component string `json:"component,omitempty"`
+	fomod     *fomodChoices
+	disabled  *disabledMods
+	overlay   *overlayPlace
 	// replacing is the Nexus file id of the file this one is a newer version of.
 	replacing int
 	// intent is why a new entry is being created, read only when it is.

@@ -27,6 +27,7 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/go-winsym"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -149,7 +150,9 @@ type session struct {
 	stoppedAt time.Time
 	// gameVersion is what the running game's companion reported, for a loader whose log names no version.
 	gameVersion string
-	progress    Progress
+	// features is what the running game's companion advertised in its status, nil until a status names one.
+	features bridge.Features
+	progress Progress
 	// readyMs is how long the launch took until its loader said it was done; zero until it has.
 	readyMs int64
 	// sandbox is the folders a sandboxed launch could write; empty for a launch that was not sandboxed.
@@ -1899,6 +1902,9 @@ func (s *Service) Send(ctx context.Context, gameID, command string) error {
 	if view.Companion == "" {
 		return fmt.Errorf("%s has no console bridge in this profile", g.Name())
 	}
+	if !s.companionServes(g, cur.Profile, bridge.FeatureConsole) {
+		return fmt.Errorf("this profile's companion has no console")
+	}
 	if _, err := console.Send(ctx, loader.Target{Game: gameID, InstallDir: inst.Dir}, view, command); err != nil {
 		return err
 	}
@@ -1923,7 +1929,7 @@ func (s *Service) bridgeFolder(g game.Game, profileID string) (string, error) {
 			continue
 		}
 		for _, e := range p.Entries {
-			if e.Source.Kind == profile.SourceMortar {
+			if e.Source.Kind == profile.SourceMortar && e.Source.BundleComponent() == profile.BundleBridge {
 				modsDir, err := s.profiles.ModsDir(g.ID(), profileID)
 				if err != nil {
 					return "", err

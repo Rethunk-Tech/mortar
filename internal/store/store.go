@@ -215,6 +215,15 @@ func BridgeKey(version string, hashes ...string) string {
 	return key
 }
 
+// OverlayKey is the key of the stream overlay mod Mortar bundles beside the bridge, in the bridge key's shape.
+func OverlayKey(version string, hashes ...string) string {
+	key := "overlay-" + version
+	if len(hashes) > 0 && len(hashes[0]) >= 12 {
+		key += "-" + strings.ToLower(hashes[0][:12])
+	}
+	return key
+}
+
 func checkGame(id string) error {
 	if !game.Valid(id) {
 		return usererr.Wrap(usererr.NotFound, fmt.Errorf("unknown game %q", id))
@@ -712,6 +721,10 @@ func describe(key string) (source, pkg, version string) {
 	if rest, ok := strings.CutPrefix(key, "bridge-"); ok {
 		v, _, _ := strings.Cut(rest, "-")
 		return "mortar", "bridge", v
+	}
+	if rest, ok := strings.CutPrefix(key, "overlay-"); ok {
+		v, _, _ := strings.Cut(rest, "-")
+		return "mortar", "overlay", v
 	}
 	if strings.HasPrefix(key, "local-") {
 		return "local", "", ""

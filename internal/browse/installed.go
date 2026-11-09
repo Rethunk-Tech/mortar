@@ -93,7 +93,8 @@ func (h Holdings) hold(kind, name string) {
 	h.named[kind][strings.ToLower(name)] = true
 }
 
-// addBridges notes the repositories of the game's loader companions, which Mortar installs itself.
+// addBridges notes the repositories of the game's loader companions and of its overlay component, which Mortar
+// installs itself.
 func (h Holdings) addBridges(info components.GameInfo) {
 	var comps []components.Component
 	if c := components.Active(); c != nil {
@@ -102,9 +103,15 @@ func (h Holdings) addBridges(info components.GameInfo) {
 		comps = m.Components
 	}
 	for _, l := range info.Loaders {
-		for _, c := range comps {
-			if l.Companion != "" && c.Game == info.ID && c.Name == l.Companion && c.Source.Owner != "" {
-				h.bridges[strings.ToLower(c.Source.Owner+"/"+c.Source.Repo)] = true
+		// The companion's own name and the overlay's, which is a second bundle Mortar keeps beside it.
+		for _, name := range []string{l.Companion, l.Overlay} {
+			if name == "" {
+				continue
+			}
+			for _, c := range comps {
+				if c.Game == info.ID && c.Name == name && c.Source.Owner != "" {
+					h.bridges[strings.ToLower(c.Source.Owner+"/"+c.Source.Repo)] = true
+				}
 			}
 		}
 	}

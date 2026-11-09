@@ -253,21 +253,35 @@ type rawXNBError struct{ Key string }
 
 func (e *rawXNBError) Error() string { return fmt.Sprintf("%q holds raw .xnb files", e.Key) }
 
-// SourceSMAPI marks the entry holding the loader's own mods, and SourceMortar the one holding Mortar's console
-// bridge. Both are in every profile and hidden from users.
+// SourceSMAPI marks the entry holding the loader's own mods, and SourceMortar the ones holding Mortar's console
+// bridge and the stream overlay beside it. Both are in every profile and hidden from users.
 const (
 	SourceSMAPI  = "smapi"
 	SourceMortar = "mortar"
 )
 
-// Bundle is a store item every profile of a game holds: the loader's own mods or Mortar's bridge.
+// Mortar's own bundles, the components a source kind mortar entry can hold.
+const (
+	BundleBridge  = "bridge"
+	BundleOverlay = "overlay"
+)
+
+// Bundle is a store item every profile of a game holds: the loader's own mods or one of Mortar's own components.
 type Bundle struct {
 	Key    string
 	Source Source
 }
 
-// Bundled reports whether the source is a loader or bridge entry every profile holds.
+// Bundled reports whether the source is a loader or Mortar bundle entry every profile holds.
 func (s Source) Bundled() bool { return s.Kind == SourceSMAPI || s.Kind == SourceMortar }
+
+// BundleComponent is which of Mortar's bundles s names; the bridge for a mortar entry a build before the split wrote.
+func (s Source) BundleComponent() string {
+	if s.Kind != SourceMortar {
+		return ""
+	}
+	return cmp.Or(s.Component, BundleBridge)
+}
 
 // addTo copies the store item key into the profile's mods/ and records its entry, switching off the
 // mods in disabled that it holds. placed is the new folder, for the caller to remove if a later step fails.
@@ -411,7 +425,9 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 	var errs []error
 	for _, prof := range all {
 		// A profile already on this bundle is left unwritten: a rewrite would mark it updated at every start.
-		if !slices.ContainsFunc(prof.Entries, func(e Entry) bool { return e.Source.Kind == b.Source.Kind && e.Key != b.Key }) &&
+		if !slices.ContainsFunc(prof.Entries, func(e Entry) bool {
+			return e.Source.Kind == b.Source.Kind && e.Source.BundleComponent() == b.Source.BundleComponent() && e.Key != b.Key
+		}) &&
 			slices.ContainsFunc(prof.Entries, func(e Entry) bool { return e.Key == b.Key }) {
 			continue
 		}
@@ -428,6 +444,70 @@ func (s *Store) applyBundled(game string, b Bundle, duringStart bool) error {
 		errs = append(errs, err)
 	}
 	return errors.Join(errs...)
+}
+
+// RemoveBundled takes a profile's bundle of b's source kind and component out of it, as when the overlay setting goes
+// off. Profiles that fail, including one the game is running, do not stop the others.
+func (s *Store) RemoveBundled(game string, b Bundle) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	all, err := s.listOK(game)
+	if err != nil {
+		return err
+	}
+	var errs []error
+	for _, prof := range all {
+		key := ""
+		for _, e := range prof.Entries {
+			if e.Source.Kind == b.Source.Kind && e.Source.BundleComponent() == b.Source.BundleComponent() {
+				key = e.Key
+			}
+		}
+		if key == "" {
+			continue
+		}
+		if err := s.unlocked(game, prof.ID); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		errs = append(errs, s.removeBundledFrom(game, prof.ID, b.Source.BundleComponent()))
+	}
+	return errors.Join(errs...)
+}
+
+// removeBundledFrom drops one profile's bundle of that component, folder and configs alike, quietly.
+func (s *Store) removeBundledFrom(game, id, component string) error {
+	if s.historyQuietIDs == nil {
+		s.historyQuietIDs = map[string]int{}
+	}
+	s.historyQuietIDs[id]++
+	var configs []string
+	var dir string
+	_, err := s.updateLocked(game, id, func(p *Profile, d string) error {
+		dir = d
+		for _, e := range slices.Backward(slices.Clone(p.Entries)) {
+			if e.Source.Kind != SourceMortar || e.Source.BundleComponent() != component {
+				continue
+			}
+			dropped, err := s.removeFrom(game, p, d, e.Key)
+			if err != nil {
+				return err
+			}
+			configs = append(configs, dropped...)
+		}
+		return nil
+	})
+	s.historyQuietIDs[id]--
+	if s.historyQuietIDs[id] <= 0 {
+		delete(s.historyQuietIDs, id)
+	}
+	if err == nil {
+		err = setConfigsAside(dir, configs)
+	}
+	if err == nil {
+		err = s.RecordModsSnapshot(game, id)
+	}
+	return err
 }
 
 // removeFrom deletes the entry's folder and drops it from the profile, with the optional files laid over it.
@@ -1003,8 +1083,9 @@ func (s *Store) PackageIcon(game, key string) (string, error) {
 	return icon, nil
 }
 
-// applyBundledTo swaps bundle b into one profile, replacing other bundles of the same kind and keeping their
-// switched-off mods off. The history is quiet meanwhile so the swap records no entry of its own.
+// applyBundledTo swaps bundle b into one profile, replacing other bundles of the same source kind and component and
+// keeping their switched-off mods off; a profile's other Mortar bundle (the overlay beside the bridge) stays. The
+// history is quiet meanwhile so the swap records no entry of its own.
 func (s *Store) applyBundledTo(game, id string, b Bundle) error {
 	var placed string
 	if s.historyQuietIDs == nil {
@@ -1017,7 +1098,7 @@ func (s *Store) applyBundledTo(game, id string, b Bundle) error {
 		droppedIn = dir
 		var disabled []mod.ID
 		for _, e := range slices.Backward(slices.Clone(p.Entries)) {
-			if e.Source.Kind != b.Source.Kind || e.Key == b.Key {
+			if e.Source.Kind != b.Source.Kind || e.Source.BundleComponent() != b.Source.BundleComponent() || e.Key == b.Key {
 				continue
 			}
 			disabled = append(disabled, e.Disabled...)
