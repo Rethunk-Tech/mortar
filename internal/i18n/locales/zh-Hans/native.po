@@ -1,178 +1,173 @@
 msgid ""
-msgstr ""
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Language: zh_Hans\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+msgstr "MIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nLanguage: zh-Hans\nPlural-Forms: nplurals=1; plural=0;\nPO-Revision-Date: 2026-11-10 12:51+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/native/zh_Hans/>\nX-Generator: Weblate 2026.11.2.dev0\n"
 
 msgid "Add archive"
-msgstr ""
+msgstr "添加压缩包"
 
 msgid "All files"
-msgstr ""
+msgstr "所有文件"
 
 msgid "Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lz4, lzma)"
-msgstr ""
+msgstr "压缩包（zip、RAR、7z、tar、gz、xz、zst、bz2、lz4、lzma）"
 
 msgid "Choose background image"
-msgstr ""
+msgstr "选择背景图片"
 
 msgid "Choose game folder"
-msgstr ""
+msgstr "选择游戏文件夹"
 
 msgid "Choose the Mortar data folder"
-msgstr ""
+msgstr "选择 Mortar 数据文件夹"
 
 msgid "Choose the data folder…"
-msgstr ""
+msgstr "选择数据文件夹…"
 
 msgid "Close"
-msgstr ""
+msgstr "关闭"
 
 msgid "Could not stop {game}"
-msgstr ""
+msgstr "无法停止 {game}"
 
 msgid "Download failed"
-msgstr ""
+msgstr "下载失败"
 
 msgid "Download finished"
-msgstr ""
+msgstr "下载完成"
 
 msgid "Downloads: {count}"
-msgstr ""
+msgstr "下载数：{count}"
 
 msgid "End it"
-msgstr ""
+msgstr "结束它"
 
 msgid "Exited with code {code}"
-msgstr ""
+msgstr "退出代码为 {code}"
 
 msgid "Exited with code {code} ({signal})"
-msgstr ""
+msgstr "退出代码为 {code}（{signal}）"
 
 msgid "Exited with {signal}"
-msgstr ""
+msgstr "因 {signal} 退出"
 
 msgid "Export settings"
-msgstr ""
+msgstr "导出设置"
 
 msgid "Images (PNG, JPEG, GIF, WebP)"
-msgstr ""
+msgstr "图片（PNG、JPEG、GIF、WebP）"
 
 msgid "Images (PNG, JPEG, WebP)"
-msgstr ""
+msgstr "图片（PNG、JPEG、WebP）"
 
 msgid "Import settings"
-msgstr ""
+msgstr "导入设置"
 
 msgid "Leave it"
-msgstr ""
+msgstr "保留它"
 
 msgid "Mod updates available: {count}"
-msgstr ""
+msgstr "有 {count} 个模组更新可用"
 
 msgid "Mods with errors: {count}"
-msgstr ""
+msgstr "有错误的模组：{count}"
 
 msgid "Mortar cannot edit this file: it is UTF-16 or holds a NUL byte."
-msgstr ""
+msgstr "Mortar 无法编辑此文件：它是 UTF-16 编码或包含 NUL 字节。"
 
 msgid "Mortar could not start:\n\n{error}\n\nThe details are in mortar.log in Mortar's data folder."
-msgstr ""
+msgstr "Mortar 无法启动：\n\n{error}\n\n详细信息见 Mortar 数据文件夹中的 mortar.log。"
 
 msgid "Mortar is already running but has not answered for {count} seconds.\n\nEnd it and start Mortar again? Anything it was doing stops."
-msgstr ""
+msgstr "Mortar 已在运行，但已 {count} 秒没有响应。\n\n要结束它并重新启动 Mortar 吗？它正在进行的任何操作都会停止。"
 
 msgid "Mortar needs the {runtime}, which does not seem to be installed.\n\nYes: Open the download page (install the {installer}, then start Mortar again)\nNo: Start anyway"
-msgstr ""
+msgstr "Mortar 需要 {runtime}，但似乎尚未安装。\n\n是：打开下载页面（安装 {installer}，然后重新启动 Mortar）\n否：仍然启动"
 
 msgid "Mortar profile (.mortar)"
-msgstr ""
+msgstr "Mortar 配置（.mortar）"
 
 msgid "Mortar profile backup"
-msgstr ""
+msgstr "Mortar 配置备份"
 
 msgid "Mortar profile backup (zip)"
-msgstr ""
+msgstr "Mortar 配置备份（zip）"
 
 msgid "Mortar stopped because of an error:\n\n{error}\n\nThe details are in crash.log in {path}."
-msgstr ""
+msgstr "Mortar 因错误而停止：\n\n{error}\n\n详细信息见 {path} 中的 crash.log。"
 
 msgid "Mortar stopped while starting:\n\n{error}\n\nThe details are in crash.log in Mortar's data folder."
-msgstr ""
+msgstr "Mortar 在启动时停止：\n\n{error}\n\n详细信息见 Mortar 数据文件夹中的 crash.log。"
 
 msgid "Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose Cancel, then start Mortar again, or choose here:\n\nYes: Use the default location\nNo: Choose the data folder…\nCancel: Quit"
-msgstr ""
+msgstr "未找到 Mortar 数据文件夹：\n\n{path}\n\n其所在驱动器可能已拔出。请插好驱动器并选择“取消”，然后重新启动 Mortar，或者在此选择：\n\n是：使用默认位置\n否：选择数据文件夹…\n取消：退出"
 
 msgid "Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose {quit}, then start Mortar again, or choose here."
-msgstr ""
+msgstr "未找到 Mortar 数据文件夹：\n\n{path}\n\n其所在驱动器可能已拔出。请插好驱动器并选择 {quit}，然后重新启动 Mortar，或者在此选择。"
 
 msgid "Open a profile export"
-msgstr ""
+msgstr "打开配置导出文件"
 
 msgid "Open a profile file"
-msgstr ""
+msgstr "打开配置文件"
 
 msgid "Open the folder that holds the log? (Ctrl+C copies this message.)"
-msgstr ""
+msgstr "打开包含日志的文件夹？（Ctrl+C 可复制此消息。）"
 
 msgid "Open the log folder"
-msgstr ""
+msgstr "打开日志文件夹"
 
 msgid "Play {game}"
-msgstr ""
+msgstr "启动 {game}"
 
 msgid "Profile (.mortar, .r2z, .zip)"
-msgstr ""
+msgstr "配置（.mortar、.r2z、.zip）"
 
 msgid "Quit"
-msgstr ""
+msgstr "退出"
 
 msgid "Save diagnostics"
-msgstr ""
+msgstr "保存诊断信息"
 
 msgid "Show Mortar"
-msgstr ""
+msgstr "显示 Mortar"
 
 msgid "Stop {game}"
-msgstr ""
+msgstr "停止 {game}"
 
 msgid "Stopped"
-msgstr ""
+msgstr "已停止"
 
 msgid "Text files"
-msgstr ""
+msgstr "文本文件"
 
 msgid "Use the default location"
-msgstr ""
+msgstr "使用默认位置"
 
 msgid "Zip archives"
-msgstr ""
+msgstr "Zip 压缩包"
 
 msgid "{app} export (.r2z)"
-msgstr ""
+msgstr "{app} 导出（.r2z）"
 
 msgid "{app} export (.r2z, .zip)"
-msgstr ""
+msgstr "{app} 导出（.r2z、.zip）"
 
 msgid "{app} profile (.r2z)"
-msgstr ""
+msgstr "{app} 配置（.r2z）"
 
 msgid "{errors}. {exit}"
-msgstr ""
+msgstr "{errors}。{exit}"
 
 msgid "{game} crashed"
-msgstr ""
+msgstr "{game} 崩溃了"
 
 msgid "{name} wants to share a profile"
-msgstr ""
+msgstr "{name} 想要分享一个配置"
 
 msgid "{source} collection draft (zip)"
-msgstr ""
+msgstr "{source} 合集草稿（zip）"
 
 msgid "{source} modpack (.zip)"
-msgstr ""
+msgstr "{source} 整合包（.zip）"
 
 msgid "{source} modpack (zip)"
-msgstr ""
+msgstr "{source} 整合包（zip）"
