@@ -28,8 +28,8 @@ func splitClient(t *testing.T, companionVersion string) (*components.Client, str
 		"MortarSmapiBridge/MortarSmapiBridge.dll": "bridge",
 	})
 	overlayHash := writeZip(t, &overlayZip, map[string]string{
-		"StreamOverlay/manifest.json":             `{"Name":"Stream Overlay","Version":"0.1.0","UniqueID":"tech.rethunk.mortar.StreamOverlay","EntryDll":"StreamOverlay.dll"}`,
-		"StreamOverlay/StreamOverlay.dll":         "overlay",
+		"StreamOverlay/manifest.json":     `{"Name":"Stream Overlay","Version":"0.1.0","UniqueID":"tech.rethunk.mortar.StreamOverlay","EntryDll":"StreamOverlay.dll"}`,
+		"StreamOverlay/StreamOverlay.dll": "overlay",
 	})
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if bytes.Contains([]byte(r.URL.Path), []byte("overlay")) {
