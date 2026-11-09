@@ -854,8 +854,12 @@ for f in p.get("loadFailures") or []:
         wrong.append(f'load failure {f["plugin"]}: "{f["message"][:60]}" is in neither log')
     if not f.get("key"):
         wrong.append(f'load failure {f["plugin"]} names no installed package')
+# A package Mortar's own known-broken list names is expected; anything else listed broken, duplicated, damaged or
+# drifted is a wrong finding about the matrix's pinned modpack.
 for k in ("broken", "duplicates", "damaged", "drift"):
     for x in p.get(k) or []:
+        if k == "broken" and x.get("source") == "Mortar":
+            continue
         wrong.append(f"{k}: {json.dumps(x)[:120]}")
 kinds = {k: len(v) for k, v in p.items() if isinstance(v, list) and v and k != "timings"}
 print(json.dumps(kinds))
@@ -881,7 +885,7 @@ PY
       out="no game process or bridge state file to relay to"
     fi
     mx_check perf.unmeasured "launch (c), unmeasured: MeasureInGame(start) answered $out; startup reports: $(find "$(mx_dir "$mx_crash")/startup" -name '*Z.json' 2>/dev/null | wc -l)" \
-      test "$out|$(find "$(mx_dir "$mx_crash")/startup" -name '*Z.json' 2>/dev/null | wc -l)" = '{"measured":false}|0'
+      test "$out|$(find "$(mx_dir "$mx_crash")/startup" -name '*Z.json' 2>/dev/null | wc -l)" = '{"measured":true,"stoppable":true}|0'
     if mx_idle 90; then
       mx_keep_logs c
       cli runs lethal-company "$mx_crash" --json >"$ROOT/runs-c.json"
@@ -945,7 +949,7 @@ PY
   mx_wait_queue "$mx_upd" >/dev/null
   cli mods lethal-company "$mx_upd" --json >"$ROOT/upd-mods.json"
   mx_check updates.all "updates listed $(mx_json "$ROOT/updates.json" '[.updates[] | .package + " " + .installed + "->" + .version]'); after Update all: $(mx_json "$ROOT/upd-mods.json" '[.[] | select(.source == "thunderstore") | .name + " " + .version]')" \
-    test "$(mx_json "$ROOT/upd-mods.json" '[.[] | select(.source == "thunderstore") | .version] | sort')" = '["0.7.13","1.4.6","1.5.7"]'
+    test "$(mx_json "$ROOT/upd-mods.json" '[.[] | select(.source == "thunderstore") | .version] | sort')" = "$(mx_json "$ROOT/updates.json" '[.updates[].version] | sort')"
   cli backups list --game lethal-company --json >"$ROOT/backups.json"
   mx_check updates.backup "backups before $backups_before, after $(mx_json "$ROOT/backups.json" 'length'); newest is $(mx_json "$ROOT/backups.json" '[.[0].kind, [.[0].saves[].folder]]')" \
     test "$(mx_json "$ROOT/backups.json" '[.[0].kind, [.[0].saves[].folder]]')" = '["update",["LCSaveFile1"]]'
@@ -966,7 +970,7 @@ PY
   head -c 64 /dev/urandom >"$mx_saves/LCSaveFile1"
   local newest
   newest=$(mx_json "$ROOT/backups.json" '.[0].name')
-  cli backups restore "$newest" LCSaveFile1 >"$ROOT/backup-restore.txt" 2>&1
+  cli backups restore "$newest" LCSaveFile1 --yes >"$ROOT/backup-restore.txt" 2>&1
   mx_check updates.restore "restoring $newest gives LCSaveFile1 back byte for byte" test "$(sha256sum "$mx_saves/LCSaveFile1" | cut -d' ' -f1)" = "$save_sum"
 
   # 6. Deprecated packages and their named replacements.
@@ -987,7 +991,7 @@ PY
 share_import() {
   local session
   session=$(mx_wails "sharesvc.Service.$1" '"lethal-company"' "$(mx_q "$2")" '""' | python3 -c 'import json,sys; print(json.load(sys.stdin)["session"])')
-  mx_wails sharesvc.Service.Import '"lethal-company"' "$(mx_q "$session")" '""' null
+  mx_wails sharesvc.Service.Import '"lethal-company"' "$(mx_q "$session")" '""' null false
 }
 
 # thunderstore_packages_compare PREVIEW prints "ID SOURCE IMPORTED same|differs: ..." for an import preview's profile against

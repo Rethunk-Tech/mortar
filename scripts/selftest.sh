@@ -996,20 +996,22 @@ regress_lc() {
   elif [ -x "$bridge_repo/scripts/package.sh" ]; then
     local bridge_dir=$ROOT/bridge built
     mkdir -p "$bridge_dir"
-    # package.sh prints a zip per build (core, each game, each with a -nexus twin): take the one the catalog's bridge
-    # asset template names for this game.
-    local asset prefix suffix zip name version
+    # package.sh prints a zip per build, each with a -nexus twin: take the one the catalog's bridge asset template
+    # names for this game, or the single runtime-detected DLL once the checkout builds no per-game zips.
+    local asset prefix suffix zip name version single=''
     asset=$(jq -r --arg g "$rg_id" '[.components[] | select(.kind == "bridge" and .game == $g) | .asset][0] // empty' "$REPO/components.source.json")
     prefix=${asset%%\{version\}*} suffix=${asset#*\{version\}}
     built=''
     if [ -n "$asset" ]; then
       while IFS= read -r zip; do
         name=${zip##*/}
+        [[ $name =~ ^MortarBepInExBridge-[0-9][^-]*\.zip$ ]] && single=$zip
         [[ $name == "$prefix"* && $name == *"$suffix" ]] || continue
         version=${name#"$prefix"}
         version=${version%"$suffix"}
         [[ -n $version && $version != *nexus* ]] && built=$zip
       done < <(DIST="$ROOT/bridge-dist" "$bridge_repo/scripts/package.sh" 2>"$ROOT/bridge-build.log")
+      [ -f "$built" ] || built=$single
     fi
     if [ -f "$built" ]; then
       cp "$built" "$bridge_dir/$rg_id.zip"
