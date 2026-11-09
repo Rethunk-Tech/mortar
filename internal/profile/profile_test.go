@@ -201,3 +201,9 @@ func TestNewServiceWithoutSettingsStartsNewModsEnabled(t *testing.T) {
 		t.Fatal("new mods start disabled without settings")
 	}
 }
+
+func TestOneLineStripsLineBreaks(t *testing.T) {
+	if got := oneLine("a\r\nb\nc"); got != "abc" {
+		t.Fatalf("oneLine = %q, want %q", got, "abc")
+	}
+}
