@@ -489,6 +489,10 @@ func (c *boot) startLaunches() error {
 	c.loaders = loadersvc.NewService(c.home, c.store, c.items, c.profiles, c.componentClient)
 	c.implemented = game.Implemented()
 	loadersvc.Attach(c.loaders)
+	// Flipping the overlay setting adds or removes each game's overlay bundle now, rather than at the next start.
+	c.app.Event.On(settings.ChangedEvent, func(*application.CustomEvent) {
+		c.loaders.SyncOverlaySettings(context.Background())
+	})
 	c.launches.EnsureLoader = func(ctx context.Context, id, loaderID string, fromStart bool) error {
 		_, err := c.loaders.Ensure(ctx, id, loaderID, fromStart)
 		return err

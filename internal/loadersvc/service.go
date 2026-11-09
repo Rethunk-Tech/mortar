@@ -10,8 +10,10 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"sync/atomic"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-semverish"
 	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 
@@ -72,6 +74,8 @@ type Service struct {
 	// releases holds the release lists ListVersions answered, by game and loader.
 	releasesMu sync.Mutex
 	releases   map[string]releaseList
+	// overlaySynced is the overlay setting the profiles last followed, so a save that did not touch it syncs nothing.
+	overlaySynced atomic.Bool
 }
 
 func NewService(home string, s *settings.Store, items *store.Store, profiles *profile.Store, clients ...*components.Client) *Service {
@@ -123,6 +127,11 @@ func (s *Service) bundles(ctx context.Context, id string) []profile.Bundle {
 	} else if b.Key != "" {
 		out = append(out, b)
 	}
+	if b, err := s.ensureOverlay(ctx, id); err != nil {
+		slog.Warn("overlay: install", "game", id, "err", err)
+	} else if b.Key != "" {
+		out = append(out, b)
+	}
 	return out
 }
 
@@ -130,8 +139,9 @@ func (s *Service) bundles(ctx context.Context, id string) []profile.Bundle {
 // would otherwise build the same missing bundle twice.
 var syncMu sync.Mutex
 
-// SyncBundled makes sure the game's bundled mods are in the store and in every profile. It never fails the
-// caller: the loader may be absent or the game not installed.
+// SyncBundled makes sure the game's bundled mods are in the store and in every profile, and takes the overlay mod out
+// of the profiles while it is not wanted. It never fails the caller: the loader may be absent or the game not
+// installed.
 func SyncBundled(ctx context.Context, s *Service, id string) {
 	syncMu.Lock()
 	defer syncMu.Unlock()
@@ -140,6 +150,149 @@ func SyncBundled(ctx context.Context, s *Service, id string) {
 			slog.Warn("bundled mods: install", "game", id, "err", err)
 		}
 	}
+	s.syncOverlayLocked(ctx, id)
+}
+
+// SyncOverlay brings the game's overlay bundle in line with the overlay setting without touching the other bundles,
+// for the moment the player flips it.
+func SyncOverlay(ctx context.Context, s *Service, id string) {
+	syncMu.Lock()
+	defer syncMu.Unlock()
+	s.syncOverlayLocked(ctx, id)
+}
+
+// SyncOverlaySettings is SyncOverlay for every game the overlay setting applies to, which runs when the settings are
+// saved. It runs with the settings store locked, so it reads the saved value and syncs in the background.
+func (s *Service) SyncOverlaySettings(ctx context.Context) {
+	go func() {
+		want := s.settings != nil && s.settings.Get().OverlayEnabled
+		if want == s.overlaySynced.Swap(want) {
+			return
+		}
+		for _, id := range game.Implemented() {
+			SyncOverlay(context.WithoutCancel(ctx), s, id)
+		}
+	}()
+}
+
+// syncOverlayLocked adds the overlay bundle to every profile while it is wanted and removes it otherwise; the caller
+// holds syncMu.
+func (s *Service) syncOverlayLocked(ctx context.Context, id string) {
+	if s.overlayWanted(id) {
+		if b, err := s.ensureOverlay(ctx, id); err != nil {
+			slog.Warn("overlay: install", "game", id, "err", err)
+		} else if b.Key != "" {
+			if err := s.profiles.ApplyBundled(id, b); err != nil {
+				slog.Warn("overlay: install", "game", id, "err", err)
+			}
+		}
+		return
+	}
+	overlay := profile.Bundle{Source: profile.Source{Kind: profile.SourceMortar, Component: profile.BundleOverlay}}
+	if err := s.profiles.RemoveBundled(id, overlay); err != nil {
+		slog.Warn("overlay: remove", "game", id, "err", err)
+	}
+}
+
+// companionName is the catalog name of the game's companion component: its loader's, else the "bridge" every build
+// before the split looked up.
+func companionName(id string) string {
+	if info, ok := components.Game(id); ok {
+		for _, l := range info.Loaders {
+			if l.Companion != "" {
+				return l.Companion
+			}
+		}
+	}
+	return "bridge"
+}
+
+// overlayComponent is the game's stream overlay component, when its catalog entry names one.
+func (s *Service) overlayComponent(id string) (components.Component, bool) {
+	info, ok := components.Game(id)
+	if !ok || s.components == nil {
+		return components.Component{}, false
+	}
+	for _, l := range info.Loaders {
+		if l.Overlay == "" {
+			continue
+		}
+		if c, ok := s.components.Component(id, l.Overlay); ok && c.Kind == "overlay" {
+			return c, true
+		}
+	}
+	return components.Component{}, false
+}
+
+// companionComponent is the catalog's companion entry for the game, the one every profile holds.
+func (s *Service) companionComponent(id string) (components.Component, bool) {
+	if s.components == nil {
+		return components.Component{}, false
+	}
+	c, ok := s.components.Component(id, companionName(id))
+	return c, ok && c.Kind == "bridge"
+}
+
+// overlayWanted reports whether the game's profiles should hold the overlay mod: the overlay setting is on, the
+// catalog lists an overlay component, and the companion is not a pre-split build that serves the overlay itself (both
+// bind the overlay port, so the two never load together).
+func (s *Service) overlayWanted(id string) bool {
+	if s.settings == nil || !s.settings.Get().OverlayEnabled {
+		return false
+	}
+	if _, ok := s.overlayComponent(id); !ok {
+		return false
+	}
+	companion, ok := s.companionComponent(id)
+	if !ok {
+		return false
+	}
+	return !preSplitCompanion(companion.Version)
+}
+
+// preSplitCompanion reports a companion release from before the stream overlay left the bridges (all of 0.5.x), which
+// serves the overlay from its own DLL; it answers an unknown version as post-split, since the catalog's entry says what
+// it is.
+func preSplitCompanion(version string) bool {
+	c, ok := semverish.Compare(version, "0.6.0")
+	return ok && c < 0
+}
+
+// ensureOverlay returns the overlay component as a profile bundle, adding it to the store first when it is missing.
+func (s *Service) ensureOverlay(ctx context.Context, id string) (profile.Bundle, error) {
+	if !s.overlayWanted(id) {
+		return profile.Bundle{}, nil
+	}
+	component, _ := s.overlayComponent(id)
+	key := store.OverlayKey(component.Version, component.SHA256)
+	b := bundleOfMortar(key, profile.BundleOverlay)
+	if _, err := s.items.Path(id, key); err == nil {
+		return b, nil
+	} else if !errors.Is(err, store.ErrNotFound) {
+		return profile.Bundle{}, err
+	}
+	tmp, err := scratch.Dir("mortar-overlay-")
+	if err != nil {
+		return profile.Bundle{}, err
+	}
+	defer func() { _ = safefs.RemoveAll(tmp) }()
+	archivePath := filepath.Join(tmp, "overlay.zip")
+	if err := s.components.Download(ctx, component, archivePath); err != nil {
+		return profile.Bundle{}, err
+	}
+	unpacked := filepath.Join(tmp, "unpacked")
+	if err := os.Mkdir(unpacked, 0o700); err != nil {
+		return profile.Bundle{}, err
+	}
+	if err := archive.Extract(archivePath, unpacked); err != nil {
+		return profile.Bundle{}, err
+	}
+	return b, s.items.AddDir(ctx, id, key, unpacked)
+}
+
+// bundleOfMortar is one of Mortar's own bundles under key: the bridge unless component names the overlay.
+func bundleOfMortar(key, component string) profile.Bundle {
+	return profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceMortar, Name: "Mortar", Component: component}}
 }
 
 // ensureBridge returns the manifest's console bridge entry, adding it to the store first when it is missing.
@@ -151,12 +304,12 @@ func (s *Service) ensureBridge(ctx context.Context, id string) (profile.Bundle, 
 			return profile.Bundle{}, nil
 		}
 		var ok bool
-		if component, ok = s.components.Component(id, "bridge"); !ok || component.Kind != "bridge" {
+		if component, ok = s.companionComponent(id); !ok {
 			return profile.Bundle{}, nil
 		}
 	}
 	key := store.BridgeKey(component.Version, component.SHA256)
-	b := profile.Bundle{Key: key, Source: profile.Source{Kind: profile.SourceMortar, Name: "Mortar"}}
+	b := bundleOfMortar(key, profile.BundleBridge)
 	if _, err := s.items.Path(id, key); err == nil {
 		return b, nil
 	} else if !errors.Is(err, store.ErrNotFound) {
