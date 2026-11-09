@@ -172,7 +172,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release download -R Rethunk-Tech/mortar-browser-extension -p mortar-browser-extension.zip -O "$RUNNER_TEMP/ext.zip"
+          for _ in 1 2 3 4 5; do
+            gh release download -R Rethunk-Tech/mortar-browser-extension -p mortar-browser-extension.zip -O "$RUNNER_TEMP/ext.zip" --clobber && break
+            sleep 10
+          done
+          [ -s "$RUNNER_TEMP/ext.zip" ]
           ext=$(unzip -p "$RUNNER_TEMP/ext.zip" plural.js | sed -n 's/^const mortarProtocolMax = \([0-9]*\)$/\1/p')
           min=$(sed -n 's/^\tMinProtocol = \([0-9]*\)$/\1/p' internal/nativehost/nativehost.go)
           max=$(sed -n 's/^\tMaxProtocol = \([0-9]*\)$/\1/p' internal/nativehost/nativehost.go)

@@ -60,7 +60,7 @@ gomod="$work/gomod"
       f="${f#./}"
       # Go rewrites .info files as it caches them; the proxy's own copy is what the build downloads.
       case "$f" in
-        *.info) sum="$(curl -fsSL "https://proxy.golang.org/$f" | sha256sum | cut -d' ' -f1)" ;;
+        *.info) sum="$(curl -fsSL --retry 18 --retry-delay 10 "https://proxy.golang.org/$f" | sha256sum | cut -d' ' -f1)" ;;
         *) sum="$(sha256sum "$f" | cut -d' ' -f1)" ;;
       esac
       jq -n --arg f "$f" --arg sum "$sum" \

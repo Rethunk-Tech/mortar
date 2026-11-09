@@ -13,7 +13,7 @@ esac
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 tgz="$tmp/syft.tar.gz"
-curl -fsSL --retry 3 -o "$tgz" "https://github.com/anchore/syft/releases/download/v$version/syft_${version}_linux_${arch}.tar.gz"
+curl -fsSL --retry 18 --retry-delay 10 -o "$tgz" "https://github.com/anchore/syft/releases/download/v$version/syft_${version}_linux_${arch}.tar.gz"
 echo "$sum  $tgz" | sha256sum -c - >/dev/null
 tar -xzf "$tgz" -C "$tmp" syft
 

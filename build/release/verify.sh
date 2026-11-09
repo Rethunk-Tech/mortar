@@ -26,7 +26,9 @@ public() { [ "$(gh api "repos/$1" --jq .private 2>/dev/null || true)" = false ];
 # anon URL: fetch the first byte of URL without credentials, as a stranger's Mortar would.
 anon() {
   local url="$1" owner_repo
-  if curl -fsL --retry 2 -r 0-0 -o /dev/null "$url"; then
+  # GitHub answers a release download with a 502 or 504 now and then, sometimes for minutes; curl retries those
+  # (and only those) every 10 seconds for three minutes.
+  if curl -fsL --retry 18 --retry-delay 10 -r 0-0 -o /dev/null "$url"; then
     return 0
   fi
   owner_repo="$(printf '%s\n' "$url" | sed -E 's#^https://(api\.)?github\.com/(repos/)?([^/]+/[^/]+)/.*#\3#')"
@@ -111,7 +113,7 @@ case "$mode" in
     dir="${2:?$usage}"
     dl="$(mktemp -d)"
     trap 'rm -rf "$dl"' EXIT
-    gh release download "$tag" --repo "$repo" --dir "$dl"
+    for _ in 1 2 3 4 5; do gh release download "$tag" --repo "$repo" --dir "$dl" --clobber && break; sleep 10; done
     for f in "$dir"/*; do
       name="$(basename "$f")"
       if [ ! -f "$dl/$name" ]; then
@@ -139,7 +141,7 @@ case "$mode" in
     anon "https://github.com/$repo/releases/latest/download/manifest.json"
     while IFS= read -r url; do
       anon "$url"
-    done < <(curl -fsSL "$base/manifest.json" 2>/dev/null | jq -r '.artifacts[].url' 2>/dev/null || true)
+    done < <(curl -fsSL --retry 18 --retry-delay 10 "$base/manifest.json" 2>/dev/null | jq -r '.artifacts[].url' 2>/dev/null || true)
     summary="release $tag is reachable without a token"
     ;;
 esac

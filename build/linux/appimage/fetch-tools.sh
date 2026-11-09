@@ -14,7 +14,7 @@ while read -r name sha url; do
   if [ -f "$dest" ] && echo "$sha  $dest" | sha256sum -c --status -; then continue; fi
   part="$(mktemp "$dest.XXXXXX")"
   trap 'rm -f "$part"' EXIT
-  curl -fsSL --retry 3 -o "$part" "$url"
+  curl -fsSL --retry 18 --retry-delay 10 -o "$part" "$url"
   echo "$sha  $part" | sha256sum -c --status - || { echo "$name: SHA-256 mismatch for $url" >&2; exit 1; }
   chmod 755 "$part"
   mv "$part" "$dest"
