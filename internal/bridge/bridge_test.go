@@ -2,6 +2,7 @@ package bridge
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -175,6 +176,38 @@ func TestQueryPerfStopSendsTheVerbAndReadsMeasured(t *testing.T) {
 	}
 	if line := <-got; line != tok+"\nperf stop\n" {
 		t.Fatalf("server saw %q", line)
+	}
+}
+
+// The overlay mods are Mortar's own too: Browse, import and share packs must not offer or copy them as a third party's.
+func TestIsOwnListingMatchesTheOverlayMods(t *testing.T) {
+	for name, want := range map[string]bool{
+		"Mortar-StreamOverlay": true, "Mortar_StreamOverlay": true, "tech.rethunk.mortar.StreamOverlay": true,
+		"Mortar-StreamOverlay-0.1.0": true,
+		"StreamOverlay":              false, "Someone-StreamOverlay": false, "Mortar-OtherMod": false,
+	} {
+		if got := IsOwnListing(name); got != want {
+			t.Errorf("IsOwnListing(%q) = %v, want %v", name, got, want)
+		}
+	}
+}
+
+// A status with no features is the 0.5.x companion, which served every feature there was.
+func TestAStatusWithoutFeaturesReadsAsThePreSplitSet(t *testing.T) {
+	var st Status
+	if err := json.Unmarshal([]byte(`{"gameVersion":"1","scene":"S","plugins":[]}`), &st); err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range Features05 {
+		if !st.Features.Serves(f) {
+			t.Errorf("a status without features does not serve %q", f)
+		}
+	}
+	if err := json.Unmarshal([]byte(`{"features":["console"]}`), &st); err != nil {
+		t.Fatal(err)
+	}
+	if !st.Features.Serves(FeatureConsole) || st.Features.Serves(FeatureOverlay) {
+		t.Fatalf("features = %v", st.Features)
 	}
 }
 

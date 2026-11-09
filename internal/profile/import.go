@@ -113,6 +113,8 @@ func bundledFolder(name string) string {
 		return "SMAPI's bundled Save Backup"
 	case "mortarsmapibridge":
 		return "Mortar's SMAPI bridge"
+	case "mortarstreamoverlay":
+		return "Mortar's stream overlay"
 	}
 	return ""
 }

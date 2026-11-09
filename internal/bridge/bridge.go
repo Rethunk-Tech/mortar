@@ -12,6 +12,7 @@ import (
 	"io"
 	"net"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -38,11 +39,23 @@ var SMAPI = Companion{ModFolder: "MortarSmapiBridge", ID: "Rethunk.MortarSmapiBr
 // BepInEx is the Mortar BepInEx Bridge, whose state file sits in BepInEx's config folder.
 var BepInEx = Companion{ModFolder: "MortarBepInExBridge", ID: "Rethunk.MortarBepInExBridge", StateFile: "BepInEx/config/mortar-bepinex-bridge.json", Package: "Rethunk-MortarBepInExBridge"}
 
-// IsOwnListing reports whether name is one of the bridges as a mod site or a folder spells it ("Mortar SMAPI Bridge",
-// "MortarBepInExBridge", "Mortar-MortarBepInExBridge", the per-game "MortarBepInExBridge_Valheim"): Mortar installs its own copy, so a second one from a site or
-// an import would load the bridge twice.
+// StreamOverlay is Mortar's stream overlay mod, which carries the overlay the companion used to.
+var StreamOverlay = struct{ GUID, Package string }{
+	GUID:    "tech.rethunk.mortar.StreamOverlay",
+	Package: "Mortar-StreamOverlay",
+}
+
+// IsOwnListing reports whether name is one of the bridges or stream overlays as a mod site or a folder spells it
+// ("Mortar SMAPI Bridge", "MortarBepInExBridge", "Mortar-MortarBepInExBridge", the per-game "MortarBepInExBridge_Valheim",
+// "Mortar-StreamOverlay", "tech.rethunk.mortar.StreamOverlay"): Mortar installs its own copy, so a second one from a
+// site or an import would load the bridge twice.
 func IsOwnListing(name string) bool {
 	n := strings.ToLower(strings.NewReplacer(" ", "", "_", "").Replace(name))
+	// The split overlays are matched before the namespace cut: "Mortar-StreamOverlay" would otherwise read as a
+	// package called StreamOverlay, which any publisher may have.
+	if compact := strings.ReplaceAll(n, "-", ""); strings.HasPrefix(compact, "mortarstreamoverlay") || strings.HasSuffix(n, strings.ToLower(StreamOverlay.GUID)) {
+		return true
+	}
 	if _, after, ok := strings.Cut(n, "-"); ok {
 		n = after
 	}
@@ -130,16 +143,44 @@ func Query(ctx context.Context, stateFile, what string) (json.RawMessage, error)
 
 // Status is a companion's `status` answer. Keys a bridge does not know are absent, not empty: the SMAPI bridge sends
 // no scene and no plugin location.
+// Status is a companion's status reply. Features is what the companion can do; a companion older than the split lists
+// none, which reads as the 0.5.x set.
 type Status struct {
-	GameVersion       string `json:"gameVersion"`
-	GameVersionSource string `json:"gameVersionSource"`
-	Scene             string `json:"scene"`
+	GameVersion       string   `json:"gameVersion"`
+	GameVersionSource string   `json:"gameVersionSource"`
+	Scene             string   `json:"scene"`
+	Features          Features `json:"features"`
 	Plugins           []struct {
 		GUID     string `json:"guid"`
 		Version  string `json:"version"`
 		Location string `json:"location"`
 	} `json:"plugins"`
 }
+
+// Feature names a capability a companion's status advertises.
+const (
+	FeatureOverlay    = "overlay"
+	FeatureConsole    = "console"
+	FeaturePerf       = "perf"
+	FeatureIntroSkip  = "intro"
+	FeatureStartup    = "startup"
+	FeatureConfigSync = "configsync"
+)
+
+// Features is the list a companion's status advertises. An empty list is the 0.5.x companion, which served every
+// feature there was, so it answers yes to each.
+type Features []string
+
+// Serves reports whether the companion can do feature.
+func (f Features) Serves(feature string) bool {
+	if len(f) == 0 {
+		return slices.Contains(Features05, feature)
+	}
+	return slices.Contains(f, feature)
+}
+
+// Features05 is the set a companion that advertises none still serves: everything the 0.5.x bridges did.
+var Features05 = Features{FeatureOverlay, FeatureConsole, FeaturePerf, FeatureIntroSkip, FeatureStartup, FeatureConfigSync}
 
 // send returns the JSON after `ok`, "" for a bare `ok`.
 func send(ctx context.Context, st State, command string) (string, error) {
