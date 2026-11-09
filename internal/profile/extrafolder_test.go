@@ -2,7 +2,7 @@ package profile
 
 import (
 	"bytes"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -195,13 +195,14 @@ func TestExtraFolderLogsWhatItFindsAndSkips(t *testing.T) {
 	writeFile(t, root, "Items/Thumbs.db", "x")
 	setPrefOf(t, st, "lethal-company", "extraModsFolder", root)
 	var buf bytes.Buffer
-	log.SetOutput(&buf)
-	t.Cleanup(func() { log.SetOutput(os.Stderr) })
+	old := slog.Default()
+	slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+	t.Cleanup(func() { slog.SetDefault(old) })
 	got, err := svc.ExtraFolderMods(t.Context(), "lethal-company")
 	if err != nil || len(got.Mods) != 0 {
 		t.Fatalf("listed = %+v, %v", got, err)
 	}
-	for _, want := range []string{"found 0 mods in " + root, "skipped " + filepath.Join(root, "Items") + ": it holds no files besides junk"} {
+	for _, want := range []string{"mods=0", "extra folder: skipped, it holds no files besides junk", "folder=" + filepath.Join(root, "Items")} {
 		if !strings.Contains(buf.String(), want) {
 			t.Errorf("log lacks %q:\n%s", want, buf.String())
 		}

@@ -4,7 +4,7 @@ package launchsvc
 
 import (
 	"bytes"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -71,8 +71,9 @@ func exists(p string) bool { _, err := os.Lstat(p); return err == nil }
 func captureLog(t *testing.T) *bytes.Buffer {
 	t.Helper()
 	var buf bytes.Buffer
-	log.SetOutput(&buf)
-	t.Cleanup(func() { log.SetOutput(os.Stderr) })
+	old := slog.Default()
+	slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+	t.Cleanup(func() { slog.SetDefault(old) })
 	return &buf
 }
 
@@ -89,7 +90,7 @@ func TestCachesClearOnceWhenTheModSetChangesAndPerProfile(t *testing.T) {
 	if !exists(filepath.Join(dir, "cachestr")) || !exists(filepath.Join(dir, "keep.ini")) {
 		t.Fatal("a named folder and other files stay")
 	}
-	if !strings.Contains(logs.String(), "cleared 3 cache files") {
+	if !strings.Contains(logs.String(), "files=3") {
 		t.Fatalf("log: %q", logs.String())
 	}
 	seedCaches(t, dir)
