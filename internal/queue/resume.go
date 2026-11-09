@@ -114,7 +114,7 @@ func (s *Service) fetchTicking(ctx context.Context, it Item, url, path string, t
 		if u, perr := neturl.Parse(url); perr == nil {
 			host = u.Host
 		}
-		slog.Info("download", "item", cmp.Or(it.Name, it.Package, it.FileName), "host", host)
+		slog.Info("download: resume", "item", cmp.Or(it.Name, it.Package, it.FileName), "host", host)
 	}
 	return s.diskError(err, p.total)
 }

@@ -111,7 +111,7 @@ func (s *Service) bundles(ctx context.Context, id string) []profile.Bundle {
 	if key, err := s.ensureBundled(ctx, id); errors.Is(err, errNotInstalled) {
 		return nil
 	} else if err != nil {
-		slog.Info("bundled mods", "game", id, "err", err)
+		slog.Warn("bundled mods: install", "game", id, "err", err)
 	} else if key != "" {
 		l, _ := game.PrimaryLoader(id)
 		if b, ok := bundleOf(l, key); ok {
@@ -119,7 +119,7 @@ func (s *Service) bundles(ctx context.Context, id string) []profile.Bundle {
 		}
 	}
 	if b, err := s.ensureBridge(ctx, id); err != nil {
-		slog.Info("bridge", "game", id, "err", err)
+		slog.Warn("bridge: install", "game", id, "err", err)
 	} else if b.Key != "" {
 		out = append(out, b)
 	}
@@ -137,7 +137,7 @@ func SyncBundled(ctx context.Context, s *Service, id string) {
 	defer syncMu.Unlock()
 	for _, b := range s.bundles(ctx, id) {
 		if err := s.profiles.ApplyBundled(id, b); err != nil {
-			slog.Info("bundled mods", "game", id, "err", err)
+			slog.Warn("bundled mods: install", "game", id, "err", err)
 		}
 	}
 }
@@ -188,7 +188,7 @@ func (s *Service) ensureBridge(ctx context.Context, id string) (profile.Bundle, 
 func (s *Service) ensureInBackground(id string) {
 	s.background.Go(func() {
 		if _, err := s.Ensure(context.Background(), id, "", false); err != nil {
-			slog.Info("loader", "game", id, "err", err)
+			slog.Warn("loader: install", "game", id, "err", err)
 		}
 	})
 }

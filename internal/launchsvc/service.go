@@ -285,7 +285,7 @@ func (s *Service) set(st Status) {
 		}
 		stored = Status{Game: st.Game, Install: st.Install, State: Idle}
 	case Launching, Running:
-		slog.Info("launch: profile state", "game", st.Game, "profile", st.Profile, "state", st.State)
+		slog.Info("launch: state", "game", st.Game, "profile", st.Profile, "state", st.State)
 	case Idle:
 	}
 	s.mu.Lock()
