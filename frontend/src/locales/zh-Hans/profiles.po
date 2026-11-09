@@ -1,29 +1,29 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-06 19:25+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/profiles/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-10 12:51+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/profiles/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/profiles/GameVersionRows.tsx
 msgid "This profile runs the game from this folder, an older copy, instead of the selected install."
-msgstr ""
+msgstr "此配置从此文件夹（较旧的副本）运行游戏，而不是所选安装。"
 
 #: src/profiles/GameSettings.tsx
 msgid "UI scale ({uiScale}%)"
-msgstr ""
+msgstr "界面缩放（{uiScale}%）"
 
 #: src/profiles/CompareDialog.tsx
 msgid "{count, plural, one {Copied # mod to {name}} other {Copied # mods to {name}}}"
-msgstr ""
+msgstr "{count, plural, one {已复制 # 个模组到 {name}} other {已复制 # 个模组到 {name}}}"
 
 #: src/profiles/historyLabel.ts
 msgid "Switched {name} to the {detail} update channel"
-msgstr ""
+msgstr "已将 {name} 切换到{detail}更新通道"
 
 #: src/profiles/ServerSettings.tsx
 msgid "Required before the server can start."
-msgstr ""
+msgstr "服务器启动前必须填写。"
 
 #: src/profiles/GameSettings.tsx
 msgid "Start muted"
-msgstr ""
+msgstr "启动时静音"
 
 #: src/profiles/store.ts
 msgid "Could not open the folder"
@@ -35,11 +35,11 @@ msgstr "选择…"
 
 #: src/profiles/ServerModeRow.tsx
 msgid "Client"
-msgstr ""
+msgstr "客户端"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Revert {name} to the installed copy?"
-msgstr ""
+msgstr "要将 {name} 还原为已安装的副本吗？"
 
 #: src/profiles/historyRevert.ts
 msgid "That profile is gone."
@@ -47,23 +47,23 @@ msgstr "该配置已不存在。"
 
 #: src/profiles/HistoryDiffView.tsx
 msgid "Snapshot diff"
-msgstr ""
+msgstr "快照差异"
 
 #: src/profiles/HealthDialog.tsx
 msgid "{name} is missing from the store"
-msgstr ""
+msgstr "存储库中缺少 {name}"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Command line"
-msgstr ""
+msgstr "命令行"
 
 #: src/profiles/historyLabel.ts
 msgid "Restored {detail} of {name}"
-msgstr ""
+msgstr "已还原 {name} 的{detail}"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Missing from the store"
-msgstr ""
+msgstr "存储库中缺失"
 
 #: src/profiles/HistoryPanel.tsx
 msgid "History"
@@ -75,24 +75,24 @@ msgstr "已删除配置文件"
 
 #: src/profiles/ProfileRow.tsx
 msgid "{chosen} chosen"
-msgstr ""
+msgstr "已选择 {chosen}"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "{count, plural, one {# imported} other {# imported}}"
-msgstr ""
+msgstr "{count, plural, one {已导入 # 个} other {已导入 # 个}}"
 
 #: src/profiles/MergeDialog.tsx
 msgid "{count, plural, one {{name} gets # new mod} other {{name} gets # new mods}}"
-msgstr ""
+msgstr "{count, plural, one {{name} 获得 # 个新模组} other {{name} 获得 # 个新模组}}"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "{name} is used after Save."
-msgstr ""
+msgstr "保存后将使用 {name}。"
 
 #: src/profiles/HealthDialog.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "Repair"
-msgstr ""
+msgstr "修复"
 
 #: src/profiles/LoaderPicker.tsx
 msgid "Mod loader"
@@ -104,27 +104,27 @@ msgstr "忽略"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Everything looks fine"
-msgstr ""
+msgstr "一切正常"
 
 #: src/profiles/MergeDialog.tsx
 msgid "Use the newer version ({count, plural, one {# mod updates} other {# mods update}})"
-msgstr ""
+msgstr "使用较新的版本（{count, plural, one {# 个模组可更新} other {# 个模组可更新}}）"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Copying…"
-msgstr ""
+msgstr "正在复制…"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Delete {name} permanently"
-msgstr ""
+msgstr "永久删除 {name}"
 
 #: src/profiles/useColorName.ts
 msgid "Pink"
-msgstr ""
+msgstr "粉色"
 
 #: src/profiles/HistoryToolbar.tsx
 msgid "Mark a known good point first."
-msgstr ""
+msgstr "请先标记一个已知的良好状态。"
 
 #: src/profiles/ProfileRow.tsx
 msgid "This profile"
@@ -132,11 +132,11 @@ msgstr "此配置文件"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "{mods} will be moved into a new profile and out of the game's Mods folder. Mortar puts the profile's mods there each time you play."
-msgstr ""
+msgstr "{mods} 将被移入新的配置档，并从游戏的 Mods 文件夹移出。每次游玩时，Mortar 会把该配置档的模组放到那里。"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Star"
-msgstr ""
+msgstr "星形"
 
 #: src/profiles/ProfileRow.tsx
 msgid "Rename"
@@ -144,211 +144,211 @@ msgstr "重命名"
 
 #: src/profiles/GameVersionRows.tsx
 msgid "Choose the game folder"
-msgstr ""
+msgstr "选择游戏文件夹"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "build {commit}"
-msgstr ""
+msgstr "构建 {commit}"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Choose a build"
-msgstr ""
+msgstr "选择构建"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "Rechecking the folder…"
-msgstr ""
+msgstr "正在重新检查文件夹…"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Find a mod in all profiles"
-msgstr ""
+msgstr "在所有配置档中查找模组"
 
 #: src/profiles/historyLabel.ts
 msgid "Restored {name} from the store"
-msgstr ""
+msgstr "已从存储库还原 {name}"
 
 #: src/profiles/SeparateSavesRow.tsx
 msgid "Keep this profile's saves separate?"
-msgstr ""
+msgstr "将此配置档的存档分开保存？"
 
 #: src/profiles/GameSettings.tsx
 msgid "Fullscreen"
-msgstr ""
+msgstr "全屏"
 
 #: src/profiles/ServerSettings.tsx
 msgid "{queued} to install."
-msgstr ""
+msgstr "{queued} 个待安装。"
 
 #: src/profiles/HistoryEventRow.tsx
 msgid "Revert this mod"
-msgstr ""
+msgstr "还原此模组"
 
 #: src/profiles/CrashHintCard.tsx
 msgid "Stack frame: {evidence}"
-msgstr ""
+msgstr "堆栈帧：{evidence}"
 
 #: src/profiles/useColorName.ts
 msgid "Orange"
-msgstr ""
+msgstr "橙色"
 
 #: src/profiles/ProfileRow.tsx
 msgid "{size} of saves"
-msgstr ""
+msgstr "存档 {size}"
 
 #: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Enabled {name}"
-msgstr ""
+msgstr "已启用 {name}"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Sprout"
-msgstr ""
+msgstr "嫩芽"
 
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Moving copies the whole profile, then removes the old copy, so it needs room for both. On another drive the mods are copies, not links to the shared store, so the profile takes its full size there. Stop the game first."
-msgstr ""
+msgstr "移动会先复制整个配置档，再删除旧副本，因此需要同时容纳两者的空间。在其他驱动器上，模组是副本而非指向共享存储库的链接，所以该配置档会占用其完整大小。请先停止游戏。"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Repair all"
-msgstr ""
+msgstr "全部修复"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "{mods} will be copied into a new profile. The game folder is left as it is."
-msgstr ""
+msgstr "{mods} 将被复制到新的配置档中。游戏文件夹保持原样。"
 
 #: src/profiles/historyLabel.ts
 msgid "Unpinned {name}"
-msgstr ""
+msgstr "已取消固定 {name}"
 
 #: src/profiles/HistoryPanel.tsx
 msgid "Could not restore {names}"
-msgstr ""
+msgstr "无法还原 {names}"
 
 #: src/profiles/HealthDialog.tsx
 msgid "{name} is missing from the store, and Mortar cannot download it again"
-msgstr ""
+msgstr "存储库中缺少 {name}，且 Mortar 无法再次下载它"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Saved {name} as a launch preset template"
-msgstr ""
+msgstr "已将 {name} 保存为启动预设模板"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Delete {name} permanently?"
-msgstr ""
+msgstr "永久删除 {name}？"
 
 #: src/profiles/EditProfileDialog.tsx
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Name"
-msgstr ""
+msgstr "名称"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "{count, plural, one {# day left} other {# days left}}"
-msgstr ""
+msgstr "{count, plural, one {剩余 # 天} other {剩余 # 天}}"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Could not add the launch preset"
-msgstr ""
+msgstr "无法添加启动预设"
 
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "New launch preset"
-msgstr ""
+msgstr "新建启动预设"
 
 #: src/profiles/historyLabel.ts
 msgid "Changed game install"
-msgstr ""
+msgstr "已更改游戏安装位置"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Launch presets"
-msgstr ""
+msgstr "启动预设"
 
 #: src/profiles/historyRevert.ts
 msgid "Mortar cannot download {names} again."
-msgstr ""
+msgstr "Mortar 无法再次下载 {names}。"
 
 #: src/profiles/GameVersionRows.tsx
 msgid "Mod versions up to"
-msgstr ""
+msgstr "模组版本截至"
 
 #: src/profiles/CompareDialog.tsx
 msgid "{count, plural, one {# difference} other {# differences}}"
-msgstr ""
+msgstr "{count, plural, one {# 处差异} other {# 处差异}}"
 
 #: src/profiles/VortexFolderPrompt.tsx
 msgid "This {manager} folder has no profiles for {game}: found {found}."
-msgstr ""
+msgstr "此 {manager} 文件夹中没有 {game} 的配置档：找到 {found}。"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "current"
-msgstr ""
+msgstr "当前"
 
 #: src/profiles/GameSettings.tsx
 msgid "Fullscreen resolution width"
-msgstr ""
+msgstr "全屏分辨率宽度"
 
 #: src/profiles/restoreBackup.ts
 msgid "Restored as {name}"
-msgstr ""
+msgstr "已还原为 {name}"
 
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/CompareTop.tsx
 msgid "Filter mods"
-msgstr ""
+msgstr "筛选模组"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Uses the options shown"
-msgstr ""
+msgstr "使用显示的选项"
 
 #: src/profiles/CompareDialog.tsx
 msgid "{count} selected"
-msgstr ""
+msgstr "已选择 {count} 个"
 
 #: src/profiles/HistoryToolbar.tsx
 msgid "Stop comparing"
-msgstr ""
+msgstr "停止比较"
 
 #: src/profiles/VortexFolderPrompt.tsx
 msgid "{manager} data folder"
-msgstr ""
+msgstr "{manager} 数据文件夹"
 
 #: src/profiles/ProfileRow.tsx
 msgid "Reorder {name}"
-msgstr ""
+msgstr "重新排序 {name}"
 
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Show"
-msgstr ""
+msgstr "显示"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Queued"
-msgstr ""
+msgstr "已排队"
 
 #: src/profiles/store.ts
 msgid "Repaired {name}"
-msgstr ""
+msgstr "已修复 {name}"
 
 #: src/profiles/GameVersionRows.tsx
 msgid "Game folder"
-msgstr ""
+msgstr "游戏文件夹"
 
 #: src/profiles/useColorName.ts
 msgid "Lime"
-msgstr ""
+msgstr "青柠色"
 
 #: src/profiles/ProfileRow.tsx
 msgid "Actions for {name}"
-msgstr ""
+msgstr "{name} 的操作"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Edit profile"
-msgstr ""
+msgstr "编辑配置档"
 
 #: src/profiles/compareTitle.ts
 msgid "Identical"
-msgstr ""
+msgstr "完全相同"
 
 #: src/profiles/MergeDialog.tsx
 msgid "For mods in both"
-msgstr ""
+msgstr "对于两者都有的模组"
 
 #: src/profiles/collectionUnlink.ts
 #: src/profiles/CompareDialog.tsx
@@ -356,1326 +356,1326 @@ msgstr ""
 #: src/profiles/MergeDialog.tsx
 #: src/profiles/store.ts
 msgid "Undo"
-msgstr ""
+msgstr "撤销"
 
 #: src/profiles/historyLabel.ts
 msgid "Changed loader"
-msgstr ""
+msgstr "已更改加载器"
 
 #: src/profiles/CompareTop.tsx
 msgid "Your profiles"
-msgstr ""
+msgstr "你的配置档"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "No mod matches"
-msgstr ""
+msgstr "没有匹配的模组"
 
 #: src/profiles/ProfileRow.tsx
 msgid "Share {name}"
-msgstr ""
+msgstr "分享 {name}"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Appearance"
-msgstr ""
+msgstr "外观"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Delete permanently"
-msgstr ""
+msgstr "永久删除"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Check this profile"
-msgstr ""
+msgstr "检查此配置"
 
 #: src/profiles/HistoryEventRow.tsx
 msgid "Compare {summary}"
-msgstr ""
+msgstr "比较 {summary}"
 
 #: src/profiles/HealthDialog.tsx
 msgid "{count, plural, one {# stored mod is} other {# stored mods are}} not used by any profile"
-msgstr ""
+msgstr "{count, plural, one {# 个已存储的模组} other {# 个已存储的模组}}未被任何配置档使用"
 
 #: src/profiles/CompareTop.tsx
 msgid "with"
-msgstr ""
+msgstr "与"
 
 #: src/profiles/MergeDialog.tsx
 msgid "Keep {name}'s versions"
-msgstr ""
+msgstr "保留 {name} 的版本"
 
 #: src/profiles/historyLabel.ts
 msgid "Before this change"
-msgstr ""
+msgstr "此更改之前"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Launch prefix"
-msgstr ""
+msgstr "启动前缀"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Left in the shared folder"
-msgstr ""
+msgstr "保留在共享文件夹中"
 
 #: src/profiles/GameSettings.tsx
 msgid "Music volume ({musicVolumeLevel}%)"
-msgstr ""
+msgstr "音乐音量（{musicVolumeLevel}%）"
 
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Could not open the file dialog"
-msgstr ""
+msgstr "无法打开文件对话框"
 
 #: src/profiles/GameVersionRows.tsx
 #: src/profiles/ManagerFolderPrompt.tsx
 msgid "Choose folder…"
-msgstr ""
+msgstr "选择文件夹…"
 
 #: src/profiles/compareTitle.ts
 msgid "Different version"
-msgstr ""
+msgstr "不同版本"
 
 #: src/profiles/useColorName.ts
 msgid "Sky"
-msgstr ""
+msgstr "天空"
 
 #: src/profiles/GameSettings.tsx
 msgid "Fullscreen resolution height"
-msgstr ""
+msgstr "全屏分辨率高度"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Save as template"
-msgstr ""
+msgstr "另存为模板"
 
 #: src/profiles/CompareDialog.tsx
 msgid "Neither profile has a mod that matches the filter."
-msgstr ""
+msgstr "两个配置档都没有符合筛选条件的模组。"
 
 #: src/profiles/GameSettings.tsx
 msgid "Game settings"
-msgstr ""
+msgstr "游戏设置"
 
 #: src/profiles/compareTitle.ts
 msgid "Only in {name}"
-msgstr ""
+msgstr "仅在 {name} 中"
 
 #: src/profiles/CompareDialog.tsx
 msgid "Pick what to compare {name} with"
-msgstr ""
+msgstr "选择要与 {name} 比较的对象"
 
 #: src/profiles/HistoryEventRow.tsx
 msgid "Revert this mod: {detail}"
-msgstr ""
+msgstr "还原此模组：{detail}"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "{count, plural, one {# skipped} other {# skipped}}"
-msgstr ""
+msgstr "{count, plural, one {已跳过 # 个} other {已跳过 # 个}}"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Your edits to its files are replaced with the installed copy."
-msgstr ""
+msgstr "你对其文件的修改将被已安装的副本替换。"
 
 #: src/profiles/CompareDialog.tsx
 msgid "Compare against a friend's profile or a multiplayer host's list."
-msgstr ""
+msgstr "与朋友的配置档或多人游戏主机的模组列表进行比较。"
 
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Edit launch preset"
-msgstr ""
+msgstr "编辑启动预设"
 
 #: src/profiles/HealthDialog.tsx
 #: src/profiles/LaunchPresetsBlock.tsx
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "Delete"
-msgstr ""
+msgstr "删除"
 
 #: src/profiles/CompareDialog.tsx
 msgid "{count, plural, one {Matched # version in {name}} other {Matched # versions in {name}}}"
-msgstr ""
+msgstr "{count, plural, one {在 {name} 中匹配了 # 个版本} other {在 {name} 中匹配了 # 个版本}}"
 
 #: src/profiles/historyLabel.ts
 msgid "Marked {name} implicit"
-msgstr ""
+msgstr "已将 {name} 标记为隐式"
 
 #: src/profiles/MergeDialog.tsx
 msgid "{count, plural, one {# mod is in both} other {# mods are in both}}"
-msgstr ""
+msgstr "{count, plural, one {# 个模组在两者中都有} other {# 个模组在两者中都有}}"
 
 #: src/profiles/store.ts
 msgid "Could not duplicate the profile"
-msgstr ""
+msgstr "无法复制配置档"
 
 #: src/profiles/CrashHintCard.tsx
 msgid "Find the cause…"
-msgstr ""
+msgstr "查找原因…"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Sun"
-msgstr ""
+msgstr "太阳"
 
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Could not move the profile"
-msgstr ""
+msgstr "无法移动配置档"
 
 #: src/profiles/HistoryTimeline.tsx
 msgid "Show older changes"
-msgstr ""
+msgstr "显示更早的更改"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Cover image"
-msgstr ""
+msgstr "封面图片"
 
 #: src/profiles/GameModsDialog.tsx
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "取消"
 
 #: src/profiles/HealthDialog.tsx
 msgid "The saved change {change} from {when} is missing its config files"
-msgstr ""
+msgstr "保存的更改 {change}（来自 {when}）缺少其配置文件"
 
 #: src/profiles/CrashHintCard.tsx
 msgid "The game crashed {when}"
-msgstr ""
+msgstr "游戏崩溃于 {when}"
 
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 msgid "Delete template"
-msgstr ""
+msgstr "删除模板"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Choose image…"
-msgstr ""
+msgstr "选择图片…"
 
 #: src/profiles/CrashHintCard.tsx
 msgid "Crashed in {nativeFrame}"
-msgstr ""
+msgstr "在 {nativeFrame} 中崩溃"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Depot"
-msgstr ""
+msgstr "仓库"
 
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Choose where {name} lives"
-msgstr ""
+msgstr "选择 {name} 的存放位置"
 
 #: src/profiles/CompareTable.tsx
 #: src/profiles/GameModsDialog.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "Disabled"
-msgstr ""
+msgstr "已禁用"
 
 #: src/profiles/HistoryPanel.tsx
 msgid "Profile changes will appear here."
-msgstr ""
+msgstr "配置档更改将显示在这里。"
 
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 msgid "Presets already copied into profiles stay."
-msgstr ""
+msgstr "已复制到配置档中的预设会保留。"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Manifest id of the version"
-msgstr ""
+msgstr "该版本的清单 ID"
 
 #: src/profiles/HistoryTimeline.tsx
 msgid "Today"
-msgstr ""
+msgstr "今天"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Could not open the {launcher} console"
-msgstr ""
+msgstr "无法打开 {launcher} 控制台"
 
 #: src/profiles/useColorName.ts
 msgid "Violet"
-msgstr ""
+msgstr "紫色"
 
 #: src/profiles/SinceLastRun.tsx
 msgid "History…"
-msgstr ""
+msgstr "历史记录…"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Wheat"
-msgstr ""
+msgstr "麦色"
 
 #: src/profiles/historyLabel.ts
 msgid "Moved {count, plural, one {# mod} other {# mods}} from the game's Mods folder"
-msgstr ""
+msgstr "已从游戏的 Mods 文件夹移动 {count, plural, one {# 个模组} other {# 个模组}}"
 
 #: src/profiles/HealthDialog.tsx
 msgid "{count, plural, one {Revert # mod?} other {Revert # mods?}}"
-msgstr ""
+msgstr "{count, plural, one {还原 # 个模组？} other {还原 # 个模组？}}"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Duplicate"
-msgstr ""
+msgstr "复制"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Changed outside Mortar"
-msgstr ""
+msgstr "在 Mortar 之外被更改"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Launch environment"
-msgstr ""
+msgstr "启动环境"
 
 #: src/profiles/CrashHintCard.tsx
 msgid "Open the crash report"
-msgstr ""
+msgstr "打开崩溃报告"
 
 #: src/profiles/ProfileRow.tsx
 msgid "Copy of {name}"
-msgstr ""
+msgstr "{name} 的副本"
 
 #: src/profiles/HistoryToolbar.tsx
 msgid "Restore known good"
-msgstr ""
+msgstr "还原已知良好状态"
 
 #: src/profiles/historyLabel.ts
 msgid "Applied the preset {detail} to {name}"
-msgstr ""
+msgstr "已将预设 {detail} 应用到 {name}"
 
 #: src/profiles/MergeDialog.tsx
 msgid "Add mods"
-msgstr ""
+msgstr "添加模组"
 
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Restored # mod from the store} other {Restored # mods from the store}}"
-msgstr ""
+msgstr "{count, plural, one {已从存储库还原 # 个模组} other {已从存储库还原 # 个模组}}"
 
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Move to a folder…"
-msgstr ""
+msgstr "移动到文件夹…"
 
 #: src/profiles/store.ts
 msgid "Could not permanently delete the profile"
-msgstr ""
+msgstr "无法永久删除配置档"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Heart"
-msgstr ""
+msgstr "心形"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Could not open the browser"
-msgstr ""
+msgstr "无法打开浏览器"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Files of {name} changed outside Mortar"
-msgstr ""
+msgstr "{name} 的文件在 Mortar 之外被更改"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 msgid "Delete {name}?"
-msgstr ""
+msgstr "删除 {name}？"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "No profile holds a mod by that name or id."
-msgstr ""
+msgstr "没有配置档包含该名称或 ID 的模组。"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "The fields above are the Standard preset. Play uses the default preset; the Play menu can launch with another one once. Templates are game-wide and copied in."
-msgstr ""
+msgstr "上面的字段是“标准”预设。游玩使用默认预设；“游玩”菜单可以一次性使用另一个预设启动。模板是游戏范围的，并会被复制进来。"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Empty trash?"
-msgstr ""
+msgstr "清空回收站？"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Hammer"
-msgstr ""
+msgstr "锤子"
 
 #: src/profiles/GameModsProgress.tsx
 msgid "{verb} {count} of {total}"
-msgstr ""
+msgstr "{verb} {count}/{total}"
 
 #: src/profiles/LaunchPreview.tsx
 msgid "Copy the command"
-msgstr ""
+msgstr "复制命令"
 
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/CompareTop.tsx
 msgid "A friend's link or file…"
-msgstr ""
+msgstr "朋友的链接或文件…"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Could not save the launch presets"
-msgstr ""
+msgstr "无法保存启动预设"
 
 #: src/profiles/ProfileMenu.tsx
 msgid "{game} profiles"
-msgstr ""
+msgstr "{game} 配置"
 
 #: src/profiles/useColorName.ts
 msgid "Gold"
-msgstr ""
+msgstr "金币"
 
 #: src/profiles/ServerSettings.tsx
 msgid "Saved. Type to change it."
-msgstr ""
+msgstr "已保存。输入以更改。"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "One VAR=value per line, for direct launches only; {launcher} launches ignore them."
-msgstr ""
+msgstr "每行一个 VAR=value，仅用于直接启动；{launcher} 启动会忽略它们。"
 
 #: src/profiles/historyLabel.ts
 msgid "Tagged {name} with {detail}"
-msgstr ""
+msgstr "已为 {name} 添加标签 {detail}"
 
 #: src/profiles/historyLabel.ts
 msgid "Changed profile settings"
-msgstr ""
+msgstr "更改了配置设置"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "If they stay, the game keeps loading them even when a profile disables them."
-msgstr ""
+msgstr "如果保留它们，即使配置禁用了它们，游戏仍会继续加载。"
 
 #: src/profiles/ProfileMenu.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "New profile…"
-msgstr ""
+msgstr "新建配置…"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Mortar found nothing to repair in this profile."
-msgstr ""
+msgstr "Mortar 在此配置中未找到需要修复的内容。"
 
 #: src/profiles/ProfileRow.tsx
 msgid "Profile name"
-msgstr ""
+msgstr "配置名称"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Add preset…"
-msgstr ""
+msgstr "添加预设…"
 
 #: src/profiles/useColorName.ts
 msgid "Rose"
-msgstr ""
+msgstr "玫瑰"
 
 #: src/profiles/GameModsProgress.tsx
 msgid "Moving"
-msgstr ""
+msgstr "移动中"
 
 #: src/profiles/SeparateSavesRow.tsx
 msgid "Keep this profile's saves separate"
-msgstr ""
+msgstr "将此配置的存档单独保留"
 
 #: src/profiles/HistoryPanel.tsx
 msgid "Download missing mods"
-msgstr ""
+msgstr "下载缺少的模组"
 
 #: src/profiles/historyLabel.ts
 msgid "Changed the profile"
-msgstr ""
+msgstr "更改了配置"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Launch options"
-msgstr ""
+msgstr "启动选项"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "The automatic cover is used after Save."
-msgstr ""
+msgstr "保存后将使用自动封面。"
 
 #: src/profiles/CompareDialog.tsx
 msgid "These profiles have the same mods"
-msgstr ""
+msgstr "这些配置具有相同的模组"
 
 #: src/profiles/HealthDialog.tsx
 msgid "The folder of {name} was deleted outside Mortar"
-msgstr ""
+msgstr "{name} 的文件夹在 Mortar 之外被删除"
 
 #: src/profiles/historyRevert.test.ts
 msgid "This is no longer the latest change to that mod."
-msgstr ""
+msgstr "这已不是该模组的最新更改。"
 
 #: src/profiles/CompareDialog.tsx
 msgid "Nothing selected would change {name}."
-msgstr ""
+msgstr "所选内容都不会更改 {name}。"
 
 #: src/profiles/collectionUnlink.ts
 msgid "Could not unlink the collection"
-msgstr ""
+msgstr "无法取消合集链接"
 
 #: src/profiles/store.ts
 msgid "Deleted {name}"
-msgstr ""
+msgstr "已删除 {name}"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "{count, plural, one {# failed} other {# failed}}"
-msgstr ""
+msgstr "{count, plural, one {# 个失败} other {# 个失败}}"
 
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Merged # mod from {name}} other {Merged # mods from {name}}}"
-msgstr ""
+msgstr "{count, plural, one {已合并来自 {name} 的 # 个模组} other {已合并来自 {name} 的 # 个模组}}"
 
 #: src/profiles/CrashHintCard.tsx
 msgid "Disable it and play"
-msgstr ""
+msgstr "禁用它并游玩"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Delete the unreadable changes from history?"
-msgstr ""
+msgstr "从历史记录中删除无法读取的更改？"
 
 #: src/profiles/historyRevert.ts
 msgid "Restored {name} to before that change"
-msgstr ""
+msgstr "已将 {name} 恢复到该更改之前"
 
 #: src/profiles/store.ts
 msgid "Could not save the profile order"
-msgstr ""
+msgstr "无法保存配置顺序"
 
 #: src/profiles/ProfileRow.tsx
 msgid "Edit profile…"
-msgstr ""
+msgstr "编辑配置…"
 
 #: src/profiles/MergeDialog.tsx
 msgid "Add {name}'s mods to"
-msgstr ""
+msgstr "将 {name} 的模组添加到"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "No profiles yet"
-msgstr ""
+msgstr "尚无配置"
 
 #: src/profiles/store.ts
 msgid "Could not save the open profile"
-msgstr ""
+msgstr "无法保存当前打开的配置"
 
 #: src/profiles/CrashHintCard.tsx
 msgid "named in the crash log"
-msgstr ""
+msgstr "崩溃日志中提到的"
 
 #: src/profiles/HistoryEventRow.tsx
 msgid "Undo these changes: {summary}"
-msgstr ""
+msgstr "撤销这些更改：{summary}"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Reached the title screen"
-msgstr ""
+msgstr "已到达标题画面"
 
 #: src/profiles/restoreBackup.ts
 msgid "{count, plural, one {# mod is downloading.} other {# mods are downloading.}}"
-msgstr ""
+msgstr "{count, plural, one {# 个模组正在下载。} other {# 个模组正在下载。}}"
 
 #: src/profiles/ProfileRow.tsx
 msgid "imported from a link"
-msgstr ""
+msgstr "从链接导入"
 
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/CompareTop.tsx
 msgid "A multiplayer host's list…"
-msgstr ""
+msgstr "多人游戏主机的列表…"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Back"
-msgstr ""
+msgstr "返回"
 
 #: src/profiles/historyRevert.ts
 msgid "Download missing"
-msgstr ""
+msgstr "下载缺少项"
 
 #: src/profiles/historyLabel.ts
 msgid "Deleted a custom category"
-msgstr ""
+msgstr "已删除自定义分类"
 
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Another preset already has this name."
-msgstr ""
+msgstr "另一个预设已使用此名称。"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Moon"
-msgstr ""
+msgstr "月亮"
 
 #: src/profiles/CompareDialog.tsx
 msgid "Could not change {name}"
-msgstr ""
+msgstr "无法更改 {name}"
 
 #: src/profiles/CrashHintCard.tsx
 msgid "The log does not name a mod."
-msgstr ""
+msgstr "日志未指明模组。"
 
 #: src/profiles/ProfileRow.tsx
 msgid "{store} in the store"
-msgstr ""
+msgstr "存储中的 {store}"
 
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Kept in Mortar's data folder."
-msgstr ""
+msgstr "保留在 Mortar 的数据文件夹中。"
 
 #: src/profiles/historyLabel.ts
 msgid "Edited the settings of {name}"
-msgstr ""
+msgstr "编辑了 {name} 的设置"
 
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Folder of {name}"
-msgstr ""
+msgstr "{name} 的文件夹"
 
 #: src/profiles/MergeDialog.tsx
 msgid "Updated {updated} in {name} from {profile}"
-msgstr ""
+msgstr "已从 {profile} 更新 {name} 中的 {updated}"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "Nothing to import"
-msgstr ""
+msgstr "没有可导入的内容"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Revert"
-msgstr ""
+msgstr "还原"
 
 #: src/profiles/LaunchPreview.tsx
 msgid "Direct launch preview"
-msgstr ""
+msgstr "直接启动预览"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Builds Mortar has seen"
-msgstr ""
+msgstr "Mortar 见过的构建"
 
 #: src/profiles/ProfileRow.tsx
 msgid "imported from the game's Mods folder"
-msgstr ""
+msgstr "从游戏的 Mods 文件夹导入"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Open the {launcher} console"
-msgstr ""
+msgstr "打开 {launcher} 控制台"
 
 #: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Updated {name} from {from} to {to}"
-msgstr ""
+msgstr "已将 {name} 从 {from} 更新到 {to}"
 
 #: src/profiles/historyLabel.ts
 msgid "Changed launch settings"
-msgstr ""
+msgstr "更改了启动设置"
 
 #: src/profiles/GameVersionRows.tsx
 msgid "Could not use that folder"
-msgstr ""
+msgstr "无法使用该文件夹"
 
 #: src/profiles/CompareTop.tsx
 msgid "Someone else's"
-msgstr ""
+msgstr "其他人的"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Get an older version"
-msgstr ""
+msgstr "获取较旧版本"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Colour"
-msgstr ""
+msgstr "颜色"
 
 #: src/profiles/GameVersionRows.tsx
 msgid "Could not save the date"
-msgstr ""
+msgstr "无法保存日期"
 
 #: src/profiles/EditProfileDialog.tsx
 #: src/profiles/GameSettings.tsx
 msgid "Use default"
-msgstr ""
+msgstr "使用默认"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Could not read the saved change {change} from {when}"
-msgstr ""
+msgstr "无法读取 {when} 保存的更改 {change}"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "Import"
-msgstr ""
+msgstr "导入"
 
 #: src/profiles/historyLabel.ts
 msgid "Pinned {name} at its version"
-msgstr ""
+msgstr "已将 {name} 固定在其版本"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Unfinished launch"
-msgstr ""
+msgstr "未完成的启动"
 
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Marked # mod explicit} other {Marked # mods explicit}}"
-msgstr ""
+msgstr "{count, plural, one {已将 # 个模组标记为显式} other {已将 # 个模组标记为显式}}"
 
 #: src/profiles/ProfileRow.tsx
 msgid "{store} in the store ({shared} shared with other profiles)"
-msgstr ""
+msgstr "存储中的 {store}（{shared} 与其他配置共享）"
 
 #: src/profiles/CompareTable.tsx
 msgid "Not in {name}"
-msgstr ""
+msgstr "不在 {name} 中"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Mountain"
-msgstr ""
+msgstr "山地"
 
 #: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Added {name}"
-msgstr ""
+msgstr "已添加 {name}"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Recently deleted"
-msgstr ""
+msgstr "最近删除"
 
 #: src/profiles/HealthDialog.tsx
 msgid "The profile itself stays as it is."
-msgstr ""
+msgstr "配置本身保持不变。"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "Created {name}"
-msgstr ""
+msgstr "已创建 {name}"
 
 #: src/profiles/SinceLastRun.tsx
 msgid "Show all"
-msgstr ""
+msgstr "显示全部"
 
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 msgid "Add"
-msgstr ""
+msgstr "添加"
 
 #: src/profiles/historyLabel.ts
 msgid "Found sources"
-msgstr ""
+msgstr "已找到来源"
 
 #: src/profiles/restoreBackup.ts
 msgid "Every mod is in place."
-msgstr ""
+msgstr "所有模组都已就位。"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Crashed: {cause}"
-msgstr ""
+msgstr "崩溃：{cause}"
 
 #: src/profiles/ProfileMenu.tsx
 msgid "No profile"
-msgstr ""
+msgstr "没有配置"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Checking the profile"
-msgstr ""
+msgstr "正在检查配置"
 
 #: src/profiles/CompareDialog.tsx
 msgid "{onlyA} only in {name}"
-msgstr ""
+msgstr "{onlyA} 仅在 {name} 中"
 
 #: src/profiles/LaunchPreview.tsx
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Command copied"
-msgstr ""
+msgstr "命令已复制"
 
 #: src/profiles/historyRevert.ts
 msgid "Could not undo. Missing from the store: {list}"
-msgstr ""
+msgstr "无法撤销。存储中缺少：{list}"
 
 #: src/profiles/collectionUnlink.ts
 msgid "Could not restore the collection link"
-msgstr ""
+msgstr "无法恢复合集链接"
 
 #: src/profiles/GameSettings.tsx
 msgid "Windowed"
-msgstr ""
+msgstr "窗口化"
 
 #: src/profiles/MergeDialog.tsx
 msgid "Reading the mods to add…"
-msgstr ""
+msgstr "正在读取要添加的模组…"
 
 #: src/profiles/store.ts
 msgid "Could not read profiles"
-msgstr ""
+msgstr "无法读取配置"
 
 #: src/profiles/GameSettings.tsx
 msgid "Windowed resolution width"
-msgstr ""
+msgstr "窗口化分辨率宽度"
 
 #: src/profiles/GameSettings.tsx
 msgid "No other profiles with overrides"
-msgstr ""
+msgstr "没有其他带覆盖的配置"
 
 #: src/profiles/collectionUnlink.ts
 #: src/profiles/historyLabel.ts
 msgid "Unlinked collection"
-msgstr ""
+msgstr "已取消合集链接"
 
 #: src/profiles/historyLabel.ts
 msgid "Reset the settings of {name}"
-msgstr ""
+msgstr "重置了 {name} 的设置"
 
 #: src/profiles/ServerSettings.tsx
 msgid "Use mods"
-msgstr ""
+msgstr "使用模组"
 
 #: src/profiles/HistoryEventRow.tsx
 msgid "Undo only this mod's change from this entry. Everything else stays as it is."
-msgstr ""
+msgstr "仅从此条目撤销此模组的更改。其他内容保持不变。"
 
 #: src/profiles/SeparateSavesRow.tsx
 msgid "This profile plays on its own saves. Your shared saves are untouched."
-msgstr ""
+msgstr "此配置使用自己的存档游玩。你的共享存档不受影响。"
 
 #: src/profiles/HealthDialog.tsx
 msgid "The unreadable changes are also deleted from history."
-msgstr ""
+msgstr "无法读取的更改也会从历史记录中删除。"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "This cannot be undone."
-msgstr ""
+msgstr "此操作无法撤销。"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Profile settings"
-msgstr ""
+msgstr "配置设置"
 
 #: src/profiles/MergeDialog.tsx
 msgid "{count, plural, one {Keeps # mod only {name} has} other {Keeps # mods only {name} has}}"
-msgstr ""
+msgstr "{count, plural, one {保留 # 个仅 {name} 拥有的模组} other {保留 # 个仅 {name} 拥有的模组}}"
 
 #: src/profiles/MergeDialog.tsx
 msgid "Nothing to add."
-msgstr ""
+msgstr "没有可添加的内容。"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Prefix for direct launches only (for example, gamemoderun mangohud)."
-msgstr ""
+msgstr "仅用于直接启动的前缀（例如 gamemoderun mangohud）。"
 
 #: src/profiles/HealthDialog.tsx
 #: src/profiles/store.ts
 msgid "Could not repair profile"
-msgstr ""
+msgstr "无法修复配置"
 
 #: src/profiles/GameVersionRows.tsx
 msgid "Get an older version…"
-msgstr ""
+msgstr "获取较旧版本…"
 
 #: src/profiles/HealthCheckBadge.tsx
 msgid "{count, plural, one {# thing to repair} other {# things to repair}}"
-msgstr ""
+msgstr "{count, plural, one {# 项需要修复} other {# 项需要修复}}"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Default"
-msgstr ""
+msgstr "默认"
 
 #: src/profiles/ServerModeRow.tsx
 msgid "Play as"
-msgstr ""
+msgstr "以…身份游玩"
 
 #: src/profiles/historyTimeline.ts
 msgid "{count, plural, one {Added # mod} other {Added # mods}}"
-msgstr ""
+msgstr "{count, plural, one {已添加 # 个模组} other {已添加 # 个模组}}"
 
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Imported # mod} other {Imported # mods}}"
-msgstr ""
+msgstr "{count, plural, one {已导入 # 个模组} other {已导入 # 个模组}}"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Edit…"
-msgstr ""
+msgstr "编辑…"
 
 #: src/profiles/historyTimeline.ts
 msgid "{count, plural, one {Updated # mod} other {Updated # mods}}"
-msgstr ""
+msgstr "{count, plural, one {已更新 # 个模组} other {已更新 # 个模组}}"
 
 #: src/profiles/SeparateSavesRow.tsx
 msgid "Enable"
-msgstr ""
+msgstr "启用"
 
 #: src/profiles/MergeDialog.tsx
 msgid "Added {added} from {profile} to {name}"
-msgstr ""
+msgstr "已将 {profile} 中的 {added} 添加到 {name}"
 
 #: src/profiles/GameVersionRows.tsx
 msgid "Installs from Browse and updates pick the newest version released on or before this date. Mods from sites that list no dates are not filtered."
-msgstr ""
+msgstr "从“浏览”安装和更新时，会选择在此日期或之前发布的最新版本。来自未列出日期的站点的模组不会被筛选。"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Set as default"
-msgstr ""
+msgstr "设为默认"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Damaged"
-msgstr ""
+msgstr "已损坏"
 
 #: src/profiles/HistoryEventRow.tsx
 msgid "Undo these changes"
-msgstr ""
+msgstr "撤销这些更改"
 
 #: src/profiles/ProfileFolderDialog.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "Open folder"
-msgstr ""
+msgstr "打开文件夹"
 
 #: src/profiles/GameSettings.tsx
 msgid "Loading…"
-msgstr ""
+msgstr "正在加载…"
 
 #: src/profiles/GameSettings.tsx
 msgid "Window mode"
-msgstr ""
+msgstr "窗口模式"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Create a profile to manage a set of mods."
-msgstr ""
+msgstr "创建配置以管理一组模组。"
 
 #: src/profiles/CompareDialog.tsx
 msgid "{identical} identical"
-msgstr ""
+msgstr "{identical} 个相同"
 
 #: src/profiles/GameSettings.tsx
 msgid "Zoom ({zoomLevel}%)"
-msgstr ""
+msgstr "缩放（{zoomLevel}%）"
 
 #: src/profiles/ServerSettings.tsx
 msgid "Queues the mods of a {clientName} profile into this server profile."
-msgstr ""
+msgstr "将 {clientName} 配置的模组排入此服务器配置。"
 
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Moving…"
-msgstr ""
+msgstr "正在移动…"
 
 #: src/profiles/MergeDialog.tsx
 msgid "Profile to add them to"
-msgstr ""
+msgstr "要添加到的配置"
 
 #: src/profiles/HealthDialog.tsx
 msgid "A launch ended without Mortar putting the game folder back as it was"
-msgstr ""
+msgstr "一次启动结束后，Mortar 未能将游戏文件夹恢复原状"
 
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "{loader} console window"
-msgstr ""
+msgstr "{loader} 控制台窗口"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Use this version"
-msgstr ""
+msgstr "使用此版本"
 
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Name the preset."
-msgstr ""
+msgstr "请为预设命名。"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "Move them out of the game's Mods folder"
-msgstr ""
+msgstr "将它们移出游戏的 Mods 文件夹"
 
 #: src/profiles/HistoryToolbar.tsx
 msgid "Pick two entries ({picked} of 2)"
-msgstr ""
+msgstr "选择两个条目（已选 {picked}/2）"
 
 #: src/profiles/historyLabel.ts
 msgid "Changed groups"
-msgstr ""
+msgstr "更改了分组"
 
 #: src/profiles/GameVersionRows.tsx
 msgid "Use the selected install"
-msgstr ""
+msgstr "使用所选安装"
 
 #: src/profiles/historyLabel.ts
 msgid "Marked {name} explicit"
-msgstr ""
+msgstr "已将 {name} 标记为显式"
 
 #: src/profiles/MergeDialog.tsx
 msgid "Added {added} and updated {updated} from {profile} to {name}"
-msgstr ""
+msgstr "已将 {profile} 中的 {added} 添加并更新 {updated} 到 {name}"
 
 #: src/profiles/VortexFolderPrompt.tsx
 msgid "The {manager} folder {path} has no profiles."
-msgstr ""
+msgstr "{manager} 文件夹 {path} 中没有配置。"
 
 #: src/profiles/GameVersionRows.tsx
 msgid "The selected install"
-msgstr ""
+msgstr "所选安装"
 
 #: src/profiles/GameSettings.tsx
 msgid "Use my normal settings"
-msgstr ""
+msgstr "使用我的常规设置"
 
 #: src/profiles/ShowModsToggle.tsx
 msgid "Show mods"
-msgstr ""
+msgstr "显示模组"
 
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Marked # mod implicit} other {Marked # mods implicit}}"
-msgstr ""
+msgstr "{count, plural, one {已将 # 个模组标记为隐式} other {已将 # 个模组标记为隐式}}"
 
 #: src/profiles/GameSettings.tsx
 msgid "Borderless"
-msgstr ""
+msgstr "无边框"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Add from game presets…"
-msgstr ""
+msgstr "从游戏预设添加…"
 
 #: src/profiles/GameSettings.tsx
 msgid "Copy from profile…"
-msgstr ""
+msgstr "从配置复制…"
 
 #: src/profiles/CompareDialog.tsx
 msgid "No matching mods"
-msgstr ""
+msgstr "没有匹配的模组"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Waiting for {source}…"
-msgstr ""
+msgstr "正在等待 {source}…"
 
 #: src/profiles/HealthDialog.tsx
 msgid "A file a mod wrote is too large to copy into the profile and stays in the shared folder"
-msgstr ""
+msgstr "模组写入的文件过大，无法复制到配置中，将保留在共享文件夹中"
 
 #: src/profiles/GameModsProgress.tsx
 msgid "Importing"
-msgstr ""
+msgstr "正在导入"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Not used by any profile"
-msgstr ""
+msgstr "未被任何配置使用"
 
 #: src/profiles/CompareTable.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "Enabled"
-msgstr ""
+msgstr "已启用"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Pickaxe"
-msgstr ""
+msgstr "镐"
 
 #: src/profiles/store.ts
 msgid "Could not empty the trash"
-msgstr ""
+msgstr "无法清空回收站"
 
 #: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Disabled {names}"
-msgstr ""
+msgstr "已禁用 {names}"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Could not set the default launch preset"
-msgstr ""
+msgstr "无法设置默认启动预设"
 
 #: src/profiles/CompareDialog.tsx
 msgid "Make {name} match {other}"
-msgstr ""
+msgstr "使 {name} 与 {other} 匹配"
 
 #: src/profiles/ServerSettings.tsx
 msgid "Server"
-msgstr ""
+msgstr "服务器"
 
 #: src/profiles/historyLabel.ts
 msgid "Changed separate saves"
-msgstr ""
+msgstr "更改了单独的存档"
 
 #: src/profiles/ProfileMenu.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "Import…"
-msgstr ""
+msgstr "导入…"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Empty trash"
-msgstr ""
+msgstr "清空回收站"
 
 #: src/profiles/store.ts
 msgid "Could not restore the profile"
-msgstr ""
+msgstr "无法恢复配置"
 
 #: src/profiles/HistoryPanel.tsx
 msgid "No changes yet"
-msgstr ""
+msgstr "尚无更改"
 
 #: src/profiles/historyLabel.ts
 msgid "Changed the tags of {name}"
-msgstr ""
+msgstr "更改了 {name} 的标签"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Sparkles"
-msgstr ""
+msgstr "闪光"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Could not copy the older version"
-msgstr ""
+msgstr "无法复制较旧版本"
 
 #: src/profiles/historyLabel.ts
 msgid "Set {detail} of {name} for the next start"
-msgstr ""
+msgstr "为下次启动设置 {name} 的 {detail}"
 
 #: src/profiles/ProfileMenu.tsx
 msgid "Manage profiles"
-msgstr ""
+msgstr "管理配置"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Stop the game to test a launch."
-msgstr ""
+msgstr "请停止游戏以测试启动。"
 
 #: src/profiles/CrashHintCard.tsx
 msgid "The game crashed"
-msgstr ""
+msgstr "游戏崩溃了"
 
 #: src/profiles/CompareTable.tsx
 msgid "Mod"
-msgstr ""
+msgstr "模组"
 
 #: src/profiles/EditProfileDialog.tsx
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Save"
-msgstr ""
+msgstr "保存"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs."
-msgstr ""
+msgstr "此配置的额外启动参数。Mortar 已添加模组加载器所需的参数。"
 
 #: src/profiles/historyLabel.ts
 msgid "Removed the tag {detail} from {name}"
-msgstr ""
+msgstr "已从 {name} 移除标签 {detail}"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Changed bytes of a mod file are kept beside it, since no profile could take them"
-msgstr ""
+msgstr "模组文件的更改字节保留在其旁边，因为没有配置可以接收它们"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Standard"
-msgstr ""
+msgstr "标准"
 
 #: src/profiles/GameVersionRows.tsx
 msgid "To run this profile on an older copy of the game, choose its folder."
-msgstr ""
+msgstr "要在较旧的游戏副本上运行此配置，请选择其文件夹。"
 
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Move back to the data folder"
-msgstr ""
+msgstr "移回数据文件夹"
 
 #: src/profiles/HealthDialog.tsx
 msgid "History that cannot be read"
-msgstr ""
+msgstr "无法读取的历史记录"
 
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Restored # mod} other {Restored # mods}}"
-msgstr ""
+msgstr "{count, plural, one {已恢复 # 个模组} other {已恢复 # 个模组}}"
 
 #: src/profiles/SinceLastRun.tsx
 msgid "Startup: {name} {version} added {duration}"
-msgstr ""
+msgstr "启动：{name} {version} 增加了 {duration}"
 
 #: src/profiles/ServerSettings.tsx
 msgid "Use mods from…"
-msgstr ""
+msgstr "使用来自…的模组"
 
 #: src/profiles/historyLabel.ts
 msgid "Trimmed history, dropped {count, plural, one {# older change} other {# older changes}}"
-msgstr ""
+msgstr "已裁剪历史记录，丢弃 {count, plural, one {# 项较早的更改} other {# 项较早的更改}}"
 
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Changed # mod} other {Changed # mods}}"
-msgstr ""
+msgstr "{count, plural, one {已更改 # 个模组} other {已更改 # 个模组}}"
 
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Follow the setting"
-msgstr ""
+msgstr "跟随设置"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "The {launcher} console downloads the version. Mortar never asks for your {launcher} login."
-msgstr ""
+msgstr "{launcher} 控制台会下载该版本。Mortar 绝不会索取你的 {launcher} 登录信息。"
 
 #: src/profiles/store.ts
 msgid "Could not delete the profile"
-msgstr ""
+msgstr "无法删除配置"
 
 #: src/profiles/HistoryDiffView.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "Restore {name}"
-msgstr ""
+msgstr "恢复 {name}"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "The automatic cover is already in use."
-msgstr ""
+msgstr "自动封面已在使用中。"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "Reading the Mods folder…"
-msgstr ""
+msgstr "正在读取 Mods 文件夹…"
 
 #: src/profiles/ShowModsToggle.tsx
 msgid "Hide mods"
-msgstr ""
+msgstr "隐藏模组"
 
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 msgid "No templates yet. Use Save as template on a launch preset."
-msgstr ""
+msgstr "尚无模板。请在启动预设上使用“另存为模板”。"
 
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 msgid "Launch preset templates"
-msgstr ""
+msgstr "启动预设模板"
 
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
-msgstr ""
+msgstr "模板由此游戏的所有配置共享。添加一个会将其复制到此配置的启动预设中。"
 
 #: src/profiles/CrashHintCard.tsx
 msgid "Most likely cause: {name} ({reason})"
-msgstr ""
+msgstr "最可能的原因：{name}（{reason}）"
 
 #: src/profiles/historyLabel.ts
 msgid "Edited the note of {name}"
-msgstr ""
+msgstr "编辑了 {name} 的备注"
 
 #: src/profiles/ServerSettings.tsx
 msgid "This value is not allowed."
-msgstr ""
+msgstr "不允许此值。"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Could not use that image"
-msgstr ""
+msgstr "无法使用该图片"
 
 #: src/profiles/ServerModeRow.tsx
 msgid "Play starts the server with this profile's mods and mod settings. Its config and saves stay in this profile's own folder."
-msgstr ""
+msgstr "“游玩”会使用此配置的模组和模组设置启动服务器。其配置和存档保留在此配置自己的文件夹中。"
 
 #: src/profiles/ProfileMenu.tsx
 msgid "Manage templates…"
-msgstr ""
+msgstr "管理模板…"
 
 #: src/profiles/SeparateSavesRow.tsx
 msgid "While this profile runs, Mortar sets your shared saves aside and shows the game the profile's own folder. When the game closes, your shared saves come back as they were. Nothing is deleted."
-msgstr ""
+msgstr "此配置运行时，Mortar 会将你的共享存档搁置，并向游戏显示该配置自己的文件夹。游戏关闭后，你的共享存档会恢复原状。不会删除任何内容。"
 
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Hide"
-msgstr ""
+msgstr "隐藏"
 
 #: src/profiles/MergeDialog.tsx
 msgid "{name} stays as it is."
-msgstr ""
+msgstr "{name} 保持不变。"
 
 #: src/profiles/ProfileMenu.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "Profiles"
-msgstr ""
+msgstr "配置"
 
 #: src/profiles/VortexFolderPrompt.tsx
 msgid "Use {manager} from another folder?"
-msgstr ""
+msgstr "使用其他文件夹中的 {manager}？"
 
 #: src/profiles/historyLabel.ts
 msgid "Set the page of {name}"
-msgstr ""
+msgstr "设置 {name} 的页面"
 
 #: src/profiles/restoreBackup.ts
 msgid "Could not restore the backup"
-msgstr ""
+msgstr "无法恢复备份"
 
 #: src/profiles/useColorName.ts
 msgid "Teal"
-msgstr ""
+msgstr "青色"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Could not read this profile"
-msgstr ""
+msgstr "无法读取此配置"
 
 #: src/profiles/store.ts
 msgid "Could not make a server profile"
-msgstr ""
+msgstr "无法创建服务器配置"
 
 #: src/profiles/HistoryToolbar.tsx
 msgid "Mark current as known good"
-msgstr ""
+msgstr "将当前标记为已知良好"
 
 #: src/profiles/compareTitle.ts
 msgid "Enabled in one only"
-msgstr ""
+msgstr "仅在其中一个中启用"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Icon"
-msgstr ""
+msgstr "图标"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Delete preset"
-msgstr ""
+msgstr "删除预设"
 
 #: src/profiles/MergeDialog.tsx
 msgid "Nothing to add: {name} already has every mod at the same or a newer version."
-msgstr ""
+msgstr "没有可添加的内容：{name} 已拥有每个模组的相同或更新版本。"
 
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/HistoryDiffView.tsx
 msgid "No differences."
-msgstr ""
+msgstr "没有差异。"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Test launch"
-msgstr ""
+msgstr "测试启动"
 
 #: src/profiles/historyDiff.ts
 msgid "Changed {fileName} of {name}"
-msgstr ""
+msgstr "更改了 {name} 的 {fileName}"
 
 #: src/profiles/historyLabel.ts
 msgid "Changed mods"
-msgstr ""
+msgstr "更改了模组"
 
 #: src/profiles/historyRevert.ts
 msgid "Could not undo: some mods are missing, and the change's record could not be read."
-msgstr ""
+msgstr "无法撤销：某些模组缺失，且无法读取该更改的记录。"
 
 #: src/profiles/GameSettings.tsx
 msgid "Display number"
-msgstr ""
+msgstr "显示编号"
 
 #: src/profiles/GameSettings.tsx
 msgid "Windowed resolution height"
-msgstr ""
+msgstr "窗口化分辨率高度"
 
 #: src/profiles/VortexFolderPrompt.tsx
 msgid "That folder has no {manager} data. Choose the one holding state.v2."
-msgstr ""
+msgstr "该文件夹中没有 {manager} 数据。请选择包含 state.v2 的文件夹。"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "Import from the game's Mods folder"
-msgstr ""
+msgstr "从游戏的 Mods 文件夹导入"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Leaf"
-msgstr ""
+msgstr "叶子"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "The download is done."
-msgstr ""
+msgstr "下载已完成。"
 
 #: src/profiles/HistoryTimeline.tsx
 msgid "Yesterday"
-msgstr ""
+msgstr "昨天"
 
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Kept in {path}."
-msgstr ""
+msgstr "保留在 {path} 中。"
 
 #: src/profiles/historyLabel.ts
 msgid "Went back to {when}"
-msgstr ""
+msgstr "已回到 {when}"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "The command is on your clipboard. Paste it into the {launcher} console and press Enter. Mortar waits for the download to finish."
-msgstr ""
+msgstr "命令已在剪贴板中。请将其粘贴到 {launcher} 控制台并按 Enter。Mortar 会等待下载完成。"
 
 #: src/profiles/ProfileRow.tsx
 msgid "imported from a .mortar file"
-msgstr ""
+msgstr "从 .mortar 文件导入"
 
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/HistoryToolbar.tsx
 msgid "Compare"
-msgstr ""
+msgstr "比较"
 
 #: src/profiles/SinceLastRun.tsx
 msgid "Changes since last run"
-msgstr ""
+msgstr "自上次运行以来的更改"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Deleted profiles stay here, mods and settings included."
-msgstr ""
+msgstr "已删除的配置会保留在这里，包括模组和设置。"
 
 #: src/profiles/compareTitle.ts
 msgid "Different source"
-msgstr ""
+msgstr "不同来源"
 
 #: src/profiles/ProfileRow.tsx
 msgid "{deployed} deployed"
-msgstr ""
+msgstr "已部署 {deployed}"
 
 #: src/profiles/HistoryEventRow.tsx
 #: src/profiles/historyLabel.ts
 msgid "Known good"
-msgstr ""
+msgstr "已知良好"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Fish"
-msgstr ""
+msgstr "鱼"
 
 #: src/profiles/ServerSettings.tsx
 msgid "Applied the next time the server starts. The password stays in this profile's folder."
-msgstr ""
+msgstr "将在服务器下次启动时应用。密码保留在此配置的文件夹中。"
 
 #: src/profiles/HealthDialog.tsx
 #: src/profiles/HistoryToolbar.tsx
@@ -1683,65 +1683,65 @@ msgstr ""
 #: src/profiles/OlderVersionDialog.tsx
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Close"
-msgstr ""
+msgstr "关闭"
 
 #: src/profiles/restoreBackup.ts
 msgid "Install by hand: {names}"
-msgstr ""
+msgstr "手动安装：{names}"
 
 #: src/profiles/historyTimeline.ts
 msgid "{count, plural, one {Removed # mod} other {Removed # mods}}"
-msgstr ""
+msgstr "{count, plural, one {已移除 # 个模组} other {已移除 # 个模组}}"
 
 #: src/profiles/GameSettings.tsx
 msgid "Sound volume ({soundVolumeLevel}%)"
-msgstr ""
+msgstr "音效音量（{soundVolumeLevel}%）"
 
 #: src/profiles/ProfileRow.tsx
 msgid "Share"
-msgstr ""
+msgstr "分享"
 
 #: src/profiles/historyLabel.ts
 msgid "Unlinked collection {name}"
-msgstr ""
+msgstr "已取消合集 {name} 的链接"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Launch"
-msgstr ""
+msgstr "启动"
 
 #: src/profiles/ServerModeRow.tsx
 msgid "Dedicated server"
-msgstr ""
+msgstr "专用服务器"
 
 #: src/profiles/SeparateSavesRow.tsx
 msgid "Start with a copy of my current saves"
-msgstr ""
+msgstr "以我当前存档的副本开始"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Look up manifests on SteamDB"
-msgstr ""
+msgstr "在 SteamDB 上查找清单"
 
 #: src/profiles/HistoryToolbar.tsx
 msgid "Compare two…"
-msgstr ""
+msgstr "比较两个…"
 
 #: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Removed {name}"
-msgstr ""
+msgstr "已移除 {name}"
 
 #: src/profiles/MergeDialog.tsx
 msgid "Could not add the mods to {name}"
-msgstr ""
+msgstr "无法将模组添加到 {name}"
 
 #: src/profiles/ProfileMenu.tsx
 msgid "Switch profile"
-msgstr ""
+msgstr "切换配置"
 
 #: src/profiles/historyLabel.ts
 msgid "Installed {name} although the antivirus flagged it: {detail}"
-msgstr ""
+msgstr "尽管杀毒软件标记了 {name}，仍已安装：{detail}"
 
 #: src/profiles/HistoryEventRow.tsx
 msgid "Put the profile back as it was before this entry. Newer entries are undone too."
-msgstr ""
+msgstr "将配置恢复到该条目之前的状态。较新的条目也会被撤销。"
