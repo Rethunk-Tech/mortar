@@ -14,7 +14,7 @@ import (
 	"errors"
 	"io"
 	"io/fs"
-	"log"
+	"log/slog"
 	"net"
 	"os"
 	"path/filepath"
@@ -265,7 +265,7 @@ func serveConn(ctx context.Context, conn net.Conn, token, version string, h Hand
 	if err != nil {
 		return
 	}
-	log.Printf("control: %s %s %s", req.Method, req.Params.Game, req.Params.Profile)
+	slog.Info("control: method", "method", req.Method, "game", req.Params.Game, "profile", req.Params.Profile)
 	var res any
 	if req.Method == "hello" {
 		res = controlwire.Hello{Version: version, Protocol: controlwire.Protocol}

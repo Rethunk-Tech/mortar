@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"maps"
 	"os"
 	"path/filepath"
@@ -1611,7 +1611,7 @@ func (s *Services) queueMissing(ctx context.Context, gameID string, p profile.Pr
 	}
 	result, err := s.Problems.Problems(ctx, gameID, p.ID)
 	if err != nil {
-		log.Printf("install: missing requirements of %s not checked: %v", p.ID, err)
+		slog.Warn("install: missing requirements not checked", "id", p.ID, "err", err)
 		return nil
 	}
 	reqs := missingRequests(gameID, p.ID, added, result.Missing)
@@ -1619,7 +1619,7 @@ func (s *Services) queueMissing(ctx context.Context, gameID string, p profile.Pr
 		return nil
 	}
 	if _, err := s.Queue.Add(ctx, reqs); err != nil {
-		log.Printf("install: missing requirements of %s not queued: %v", p.ID, err)
+		slog.Warn("install: missing requirements not queued", "id", p.ID, "err", err)
 		return nil
 	}
 	names := make([]string, len(reqs))

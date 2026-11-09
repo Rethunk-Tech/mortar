@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -127,7 +127,7 @@ func refreshPins(ctx context.Context, o options) error {
 	if err := pinPacks(ctx, set, source.Games); err != nil {
 		return err
 	}
-	log.Printf("pins: %d entries in %s", len(set.pins), o.pins)
+	slog.Info("pins: entries", "entries", len(set.pins), "path", o.pins)
 	return nil
 }
 
@@ -163,7 +163,7 @@ func pinGitHubLoader(ctx context.Context, client *github.Client, set *pinSet, it
 		if err := set.add(pin); err != nil {
 			return err
 		}
-		log.Printf("pins: %s %s %s", item.Game, item.Name, version)
+		slog.Info("pins: pack", "game", item.Game, "name", item.Name, "version", version)
 	}
 	return nil
 }
@@ -182,7 +182,7 @@ func pinPacks(ctx context.Context, set *pinSet, games []components.GameInfo) err
 			if ctx.Err() != nil {
 				return nil
 			}
-			log.Printf("pins: %s %s: %v", t.game.ID, t.game.LoaderPackage(), err)
+			slog.Info("pins: pin", "id", t.game.ID, "package", t.game.LoaderPackage(), "err", err)
 			continue
 		}
 		stop, err := pinPackVersions(ctx, set, scratch, t, versions)
@@ -232,11 +232,11 @@ func pinPackVersions(ctx context.Context, set *pinSet, scratch string, t packTar
 		dst := filepath.Join(scratch, "pack.zip")
 		if err := t.rel.Fetch(ctx, t.game, v, dst); err != nil {
 			if ctx.Err() != nil {
-				log.Printf("pins: budget used; run again to continue")
+				slog.Info("pins: budget used, run again to continue")
 				stop = true
 				break
 			}
-			log.Printf("pins: %s %s %s: %v", t.game.ID, pin.Name, v, err)
+			slog.Info("pins: pinned", "id", t.game.ID, "name", pin.Name, "version", v, "err", err)
 			continue
 		}
 		sum, err := safefs.HashFile(dst, sha256.New())
@@ -248,7 +248,7 @@ func pinPackVersions(ctx context.Context, set *pinSet, scratch string, t packTar
 		if err := set.add(pin); err != nil {
 			return false, err
 		}
-		log.Printf("pins: %s %s", pin.Name, v)
+		slog.Info("pins: pin", "name", pin.Name, "version", v)
 	}
 	return stop, nil
 }

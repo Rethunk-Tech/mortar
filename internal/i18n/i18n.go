@@ -6,7 +6,7 @@ package i18n
 
 import (
 	"embed"
-	"log"
+	"log/slog"
 	"maps"
 	"path"
 	"slices"
@@ -25,20 +25,20 @@ type catalog map[string]string
 var catalogs = sync.OnceValue(func() map[string]catalog {
 	dirs, err := files.ReadDir("locales")
 	if err != nil {
-		log.Printf("i18n: %v", err)
+		slog.Warn("i18n", "err", err)
 		return nil
 	}
 	out := make(map[string]catalog, len(dirs))
 	for _, d := range dirs {
 		f, err := files.Open(path.Join("locales", d.Name(), "native.po"))
 		if err != nil {
-			log.Printf("i18n: %v", err)
+			slog.Warn("i18n", "err", err)
 			continue
 		}
 		c, err := parsePO(f)
 		_ = f.Close()
 		if err != nil {
-			log.Printf("i18n: %s: %v", d.Name(), err)
+			slog.Warn("i18n", "name", d.Name(), "err", err)
 			continue
 		}
 		out[d.Name()] = c
@@ -52,7 +52,7 @@ var catalogs = sync.OnceValue(func() map[string]catalog {
 var Locales = sync.OnceValue(func() []string {
 	dirs, err := files.ReadDir("locales")
 	if err != nil {
-		log.Printf("i18n: %v", err)
+		slog.Warn("i18n", "err", err)
 		return []string{"en"}
 	}
 	out := []string{"en"}

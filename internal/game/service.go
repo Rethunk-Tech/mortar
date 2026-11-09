@@ -2,7 +2,7 @@ package game
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -156,7 +156,7 @@ type Service struct {
 func NewService(home string, store *settings.Store) *Service {
 	// The games the player added join the catalog before anything lists it.
 	if err := customgame.Load(); err != nil {
-		log.Printf("custom games: %v", err)
+		slog.Warn("custom games", "err", err)
 	}
 	return &Service{home: home, store: store}
 }

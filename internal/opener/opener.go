@@ -6,7 +6,7 @@ package opener
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"net/url"
 	"strings"
 	"unicode"
@@ -25,7 +25,7 @@ const maxURL = 2048
 // those, a missing host, a user name or password, control characters or spaces are refused.
 func Web(raw string) (string, error) {
 	if len(raw) > maxURL {
-		log.Printf("opener: refused a %d-character address: the limit is %d", len(raw), maxURL)
+		slog.Warn("opener: refused a character address over the limit", "length", len(raw), "max", maxURL)
 		return "", usererr.New(usererr.Invalid, "That link is too long to open.")
 	}
 	if raw == "" || strings.ContainsFunc(raw, func(r rune) bool { return unicode.IsControl(r) || unicode.IsSpace(r) }) {
@@ -42,7 +42,7 @@ func refused(raw string) error {
 	if len(raw) > 80 {
 		raw = raw[:80] + "…"
 	}
-	log.Printf("opener: refused %q: only http and https addresses open", raw)
+	slog.Warn("opener: refused, only http and https addresses open", "url", raw)
 	return usererr.New(usererr.Invalid, "Mortar only opens http and https links.")
 }
 

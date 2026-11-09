@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"maps"
 	"net/url"
 	"slices"
@@ -147,7 +147,7 @@ func (s *Service) Receive(args []string) bool {
 // receiveOne routes one link by the scheme a source claims.
 func (s *Service) receiveOne(arg string) {
 	if s.duplicate(arg) {
-		log.Printf("nxm: duplicate link ignored")
+		slog.Warn("nxm: duplicate link ignored")
 		s.reemitWaiting(arg)
 		return
 	}
@@ -155,7 +155,7 @@ func (s *Service) receiveOne(arg string) {
 		s.mu.Lock()
 		s.nextID++
 		a := Arrival{ID: s.nextID, Package: ref.Namespace + "-" + ref.Name, Version: ref.Version, Games: gamesWith("thunderstore"), raw: arg}
-		log.Printf("nxm: link %d arrived: package %s", a.ID, a.Package)
+		slog.Info("nxm: link arrived for a package", "id", a.ID, "package", a.Package)
 		s.arrivals = append(s.arrivals, a)
 		s.mu.Unlock()
 		s.emit(ArrivedEvent, a)
@@ -210,10 +210,10 @@ func (s *Service) forwardOtherGame(arg string) bool {
 	}
 	err := s.handler.ForwardOther(arg, previous)
 	if err == nil {
-		log.Printf("nxm: %s link forwarded to the previous handler", domain)
+		slog.Info("nxm: link forwarded to the previous handler", "domain", domain)
 		return true
 	}
-	log.Printf("nxm: forward %s link: %v", domain, err)
+	slog.Info("nxm: forward link", "domain", domain, "err", err)
 	return false
 }
 
@@ -221,7 +221,7 @@ func (s *Service) forwardOtherGame(arg string) bool {
 func (s *Service) receiveNexus(arg string) {
 	link, err := nexusmods.ParseNXM(arg, s.store.Get().NexusUserID, s.now(), game.ByNexusDomain)
 	if err == nil && s.Route != nil && s.Route(link) {
-		log.Printf("nxm: mod %d file %d resumed a waiting download", link.ModID, link.FileID)
+		slog.Info("nxm: mod file resumed a waiting download", "mod", link.ModID, "file", link.FileID)
 		return
 	}
 	s.mu.Lock()
@@ -232,14 +232,14 @@ func (s *Service) receiveNexus(arg string) {
 		s.forget(arg)
 		s.mu.Lock()
 		r := Rejection{ID: id, Reason: re.Reason}
-		log.Printf("nxm: link %d rejected: %s", id, re.Reason)
+		slog.Warn("nxm: link rejected", "game", id, "reason", re.Reason)
 		s.rejections = append(s.rejections, r)
 		s.mu.Unlock()
 		s.emit(RejectedEvent, r)
 		return
 	}
 	a := Arrival{ID: id, Link: link, raw: arg}
-	log.Printf("nxm: link %d arrived: mod %d file %d", id, link.ModID, link.FileID)
+	slog.Info("nxm: link arrived for a mod file", "id", id, "mod", link.ModID, "file", link.FileID)
 	s.arrivals = append(s.arrivals, a)
 	s.mu.Unlock()
 	s.emit(ArrivedEvent, a)
@@ -262,7 +262,7 @@ func (s *Service) receiveCurseForge(raw string, ref curseforge.Ref) {
 	cancel()
 	games := gamesWith("curseforge")
 	if err != nil {
-		log.Printf("nxm: curseforge project %d not read: %v", ref.Project, err)
+		slog.Warn("nxm: curseforge project not read", "project", ref.Project, "err", err)
 	} else {
 		games = nil
 		for _, g := range game.Catalog() {
@@ -280,15 +280,15 @@ func (s *Service) receiveCurseForge(raw string, ref curseforge.Ref) {
 	if len(games) == 0 {
 		if previous := s.store.Get().NxmPreviousHandlers[linkScheme(raw)]; previous != "" {
 			if err := s.handler.ForwardOther(raw, previous); err == nil {
-				log.Printf("nxm: curseforge project %d forwarded to the previous handler", ref.Project)
+				slog.Info("nxm: curseforge project forwarded to the previous handler", "project", ref.Project)
 				return
 			} else {
-				log.Printf("nxm: forward curseforge project %d: %v", ref.Project, err)
+				slog.Warn("nxm: forward curseforge project", "project", ref.Project, "err", err)
 			}
 		}
 		s.forget(raw)
 		r := Rejection{ID: id, Reason: nexusmods.ReasonGame}
-		log.Printf("nxm: link %d rejected: %s", id, r.Reason)
+		slog.Warn("nxm: link rejected", "game", id, "reason", r.Reason)
 		s.mu.Lock()
 		s.rejections = append(s.rejections, r)
 		s.mu.Unlock()
@@ -299,7 +299,7 @@ func (s *Service) receiveCurseForge(raw string, ref curseforge.Ref) {
 		// Mortar may not fetch this file, so the link is refused here instead of failing in the queue.
 		s.forget(raw)
 		r := Rejection{ID: id, Reason: nxm.ReasonRestricted, Name: name}
-		log.Printf("nxm: link %d rejected: %s", id, r.Reason)
+		slog.Warn("nxm: link rejected", "game", id, "reason", r.Reason)
 		s.mu.Lock()
 		s.rejections = append(s.rejections, r)
 		s.mu.Unlock()
@@ -307,7 +307,7 @@ func (s *Service) receiveCurseForge(raw string, ref curseforge.Ref) {
 		return
 	}
 	a := Arrival{ID: id, Source: "curseforge", Package: strconv.Itoa(ref.Project), Name: name, File: ref.File, Games: games, raw: raw}
-	log.Printf("nxm: link %d arrived: curseforge project %s file %d", a.ID, a.Package, a.File)
+	slog.Info("nxm: link arrived for a curseforge project file", "id", a.ID, "file", a.Package, "file2", a.File)
 	s.mu.Lock()
 	s.arrivals = append(s.arrivals, a)
 	s.mu.Unlock()
@@ -326,7 +326,7 @@ func (s *Service) receiveVSModDB(raw string, ref moddb.Ref) {
 	cancel()
 	a := Arrival{Source: "vsmoddb", Package: ref.ModID, Version: ref.Version, Name: ref.ModID, Games: gamesWith("vsmoddb"), raw: raw}
 	if err != nil {
-		log.Printf("nxm: mod db mod %s not read: %v", ref.ModID, err)
+		slog.Warn("nxm: mod db mod not read", "id", ref.ModID, "err", err)
 	} else {
 		a.Package, a.Name = found.ID, found.Name
 	}
@@ -335,7 +335,7 @@ func (s *Service) receiveVSModDB(raw string, ref moddb.Ref) {
 	a.ID = s.nextID
 	s.arrivals = append(s.arrivals, a)
 	s.mu.Unlock()
-	log.Printf("nxm: link %d arrived: mod db mod %s %s", a.ID, a.Package, a.Version)
+	slog.Info("nxm: link arrived for a mod db mod", "id", a.ID, "mod", a.Package, "version", a.Version)
 	s.emit(ArrivedEvent, a)
 }
 
@@ -413,11 +413,11 @@ func (s *Service) Assign(id int, game, profile string) error {
 		Link: s.arrivals[i].Link, Package: s.arrivals[i].Package, Version: s.arrivals[i].Version,
 		Source: s.arrivals[i].Source, File: s.arrivals[i].File, Game: game, Profile: profile,
 	}:
-		log.Printf("nxm: link %d assigned to profile %s", id, profile)
+		slog.Info("nxm: link assigned to a profile", "game", id, "profile", profile)
 		s.arrivals = slices.Delete(s.arrivals, i, i+1)
 		return nil
 	default:
-		log.Printf("nxm: link %d not assigned: download queue full", id)
+		slog.Warn("nxm: link not assigned, download queue full", "game", id)
 		return usererr.New(usererr.Busy, "too many downloads are waiting")
 	}
 }
@@ -435,7 +435,7 @@ func (s *Service) Ignore(id int) {
 	})
 	s.mu.Unlock()
 	s.forget(raw)
-	log.Printf("nxm: link %d ignored", id)
+	slog.Warn("nxm: link ignored", "game", id)
 }
 
 // Owner names the app that handles nxm links now, or is empty when none does or Mortar already does.

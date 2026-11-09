@@ -1,7 +1,7 @@
 package support
 
 import (
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime/pprof"
@@ -33,33 +33,33 @@ func StartStartupProfile(dataDir string) {
 	}
 	dir := filepath.Join(dataDir, StartupProfileDir)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
-		log.Printf("startup profile: %v", err)
+		slog.Warn("startup profile", "err", err)
 		return
 	}
 	cpu, err := safefs.Create(filepath.Join(dir, "cpu.pprof"))
 	if err != nil {
-		log.Printf("startup profile: %v", err)
+		slog.Warn("startup profile", "err", err)
 		return
 	}
 	tr, err := safefs.Create(filepath.Join(dir, "trace.out"))
 	if err != nil {
 		_ = cpu.Close()
-		log.Printf("startup profile: %v", err)
+		slog.Warn("startup profile", "err", err)
 		return
 	}
 	if err := pprof.StartCPUProfile(cpu); err != nil {
 		_, _ = cpu.Close(), tr.Close()
-		log.Printf("startup profile: %v", err)
+		slog.Warn("startup profile", "err", err)
 		return
 	}
 	if err := trace.Start(tr); err != nil {
-		log.Printf("startup profile: trace: %v", err)
+		slog.Warn("startup profile: trace", "err", err)
 	}
-	log.Printf("startup profile: recording %s into %s", startupProfileFor, dir)
+	slog.Info("startup profile: recording", "what", startupProfileFor, "dir", dir)
 	time.AfterFunc(startupProfileFor, func() {
 		pprof.StopCPUProfile()
 		trace.Stop()
 		_, _ = cpu.Close(), tr.Close()
-		log.Printf("startup profile: saved cpu.pprof and trace.out in %s", dir)
+		slog.Info("startup profile: saved cpu.pprof and trace.out", "dir", dir)
 	})
 }

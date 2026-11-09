@@ -2,7 +2,7 @@ package bepinex5
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/go-bepinex"
@@ -14,7 +14,7 @@ import (
 func placeUnityLibs(ctx context.Context, installDir, profileDir string) {
 	ver := bepinex.UnityVersion(installDir)
 	if ver == "" {
-		log.Printf("bepinex: no Unity version in %s; BepInEx fetches the Unity base libraries at first start", installDir)
+		slog.Warn("bepinex: no Unity version found, BepInEx fetches the Unity base libraries at first start", "dir", installDir)
 		return
 	}
 	base, err := datadir.Dir()
@@ -22,8 +22,8 @@ func placeUnityLibs(ctx context.Context, installDir, profileDir string) {
 		err = bepinex.PlaceUnityLibs(ctx, installDir, profileDir, filepath.Join(base, "cache"))
 	}
 	if err != nil {
-		log.Printf("bepinex: the Unity %s base libraries are left for BepInEx to fetch at first start: %v", ver, err)
+		slog.Warn("bepinex: the Unity base libraries are left for BepInEx to fetch at first start", "unity", ver, "err", err)
 		return
 	}
-	log.Printf("bepinex: placed the Unity %s base libraries in the profile", ver)
+	slog.Info("bepinex: placed the Unity base libraries in the profile", "unity", ver)
 }

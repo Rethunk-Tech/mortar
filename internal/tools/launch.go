@@ -2,7 +2,7 @@ package tools
 
 import (
 	"cmp"
-	"log"
+	"log/slog"
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
@@ -14,7 +14,7 @@ func launchTool(t Tool, ctx Context) error {
 	dir = cmp.Or(dir, ctx.Game)
 	args := expandArgs(t.Arguments, ctx)
 	exe := expand(t.Executable, ctx)
-	log.Printf("tools: starting %q (%s)", t.Name, exe)
+	slog.Info("tools: starting", "tool", t.Name, "exe", exe)
 	if err := refuseWindowsProgram(exe); err != nil {
 		return err
 	}

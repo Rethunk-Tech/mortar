@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -109,7 +109,7 @@ func (d *Driver) warm(ctx context.Context, q source.Query, terms []string) {
 	}
 	got, err := d.graphQL(ctx, q, want)
 	if err != nil {
-		log.Printf("github: GraphQL search of %d queries: %v", len(want), err)
+		slog.Warn("github: GraphQL search", "queries", len(want), "err", err)
 		return
 	}
 	for i, t := range want {

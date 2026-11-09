@@ -1,7 +1,7 @@
 package sharesvc
 
 import (
-	"log"
+	"log/slog"
 	"slices"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -38,7 +38,7 @@ func (s *Service) applySharedChoices(game, profileID string, c share.ProblemChoi
 			continue
 		}
 		if _, err := s.d.Profiles.SetWinner(game, profileID, key, w.Winner, w.Loser, true); err != nil {
-			log.Printf("share: %s/%s: could not make %s win over %s: %v", game, profileID, w.Winner, w.Loser, err)
+			slog.Warn("share: could not make a winner", "game", game, "profile", profileID, "winner", w.Winner, "loser", w.Loser, "err", err)
 		}
 	}
 	return nil

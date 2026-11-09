@@ -6,7 +6,7 @@ package larian
 import (
 	"errors"
 	"io/fs"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -69,7 +69,7 @@ func modules(p loader.ProfileView) ([]listed, error) {
 	for _, path := range paks {
 		mod, err := moduleOf(path)
 		if err != nil {
-			log.Printf("larian: %s could not read module info: %v", filepath.Base(path), err)
+			slog.Warn("larian: could not read module info", "path", filepath.Base(path), "err", err)
 			continue
 		}
 		if seen[strings.ToLower(mod.UUID)] {

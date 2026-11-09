@@ -10,7 +10,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"maps"
 	"net/url"
 	"os"
@@ -1581,7 +1581,7 @@ func (s *Service) advancePending(p *pending, st queue.State) (changed bool) {
 	}
 	if p.Follow && len(p.Refs) > 0 && seen != p.ordered && ready {
 		if placed, err := s.d.Profiles.PlaceArrivals(p.Game, p.Profile, refRank(p.Refs), p.Placed); err != nil {
-			log.Printf("share: order %s/%s as shared: %v", p.Game, p.Profile, err)
+			slog.Info("share: order the profile as shared", "game", p.Game, "profile", p.Profile, "err", err)
 		} else {
 			changed = changed || len(placed) != len(p.Placed)
 			p.Placed, p.ordered = placed, seen

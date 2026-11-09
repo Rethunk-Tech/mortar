@@ -10,7 +10,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
@@ -434,8 +434,7 @@ func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string,
 		next[best]++
 	}
 	if len(failed) > 0 {
-		log.Printf("curseforge: search of %d classes: %d answered with %d mods, %d failed (%s): %v",
-			len(classes), len(classes)-len(failed), len(all), len(failed), strings.Join(failed, ","), errors.Join(errs...))
+		slog.Warn("curseforge: search, some classes failed", "classes", len(classes), "answered", len(classes)-len(failed), "mods", len(all), "failed", len(failed), "which", strings.Join(failed, ","), "err", errors.Join(errs...))
 	}
 	if index >= len(all) {
 		return nil, total, failed, nil

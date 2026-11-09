@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"maps"
 	"slices"
 	"strconv"
@@ -455,8 +455,7 @@ func (c *Client) searchFilled(ctx context.Context, info components.GameInfo, id 
 	if !guessed {
 		storeEnds(key, ends)
 	}
-	log.Printf("browse: %s page %d (sort %q): %d hits from upstream pages %d to %d (resumed at %d+%d), %d hidden, %d dropped, total %d",
-		id, first, q.Sort, len(out.Items), pos.page, q.Page, pos.page, pos.offset, out.Hidden, dropped, out.Total)
+	slog.Info("browse: page", "game", id, "first", first, "sort", q.Sort, "hits", len(out.Items), "page", pos.page, "asked", q.Page, "offset", pos.offset, "hidden", out.Hidden, "dropped", dropped, "total", out.Total)
 	return out, nil
 }
 

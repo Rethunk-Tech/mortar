@@ -6,7 +6,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"slices"
@@ -319,7 +319,7 @@ func writeArt(w http.ResponseWriter, r *http.Request, b []byte, modTime time.Tim
 		out, outTyp, err := modpic.Shrink(b, typ, px)
 		if err != nil {
 			if _, seen := shrinkLogged.LoadOrStore(r.URL.Path, true); !seen {
-				log.Printf("game: a Steam hero did not shrink: %v", err)
+				slog.Warn("game: a Steam hero did not shrink", "err", err)
 			}
 			http.NotFound(w, r)
 			return

@@ -3,7 +3,7 @@ package nexussvc
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 
@@ -104,9 +104,9 @@ func (s *Service) fetchPages(ctx context.Context, domain string, ids []int) erro
 	infos, err := c.ModsByDomain(ctx, domain, ids)
 	err = nexus.Worded(err)
 	if err != nil {
-		log.Printf("nexus pages: %d of %d %s mods, then %v", len(infos), len(ids), domain, err)
+		slog.Warn("nexus pages: stopped early", "mods", len(infos), "asked", len(ids), "domain", domain, "err", err)
 	} else {
-		log.Printf("nexus pages: %d of %d %s mods in %d requests", len(infos), len(ids), domain, nexusmods.Requests(len(ids)))
+		slog.Info("nexus pages: fetched mods", "mods", len(infos), "asked", len(ids), "domain", domain, "requests", nexusmods.Requests(len(ids)))
 	}
 	for id, info := range infos {
 		_ = diskcache.Put(s.meta.Cache(), PageName(domain, id), Details{Page: info.Page(), Category: info.Category, Partial: true})

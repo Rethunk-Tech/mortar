@@ -6,7 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
+	"log/slog"
 	"maps"
 	"net/http"
 	"net/url"
@@ -283,8 +283,7 @@ func (d *Driver) searchTopics(ctx context.Context, q source.Query, topics []stri
 		return source.Page{}, errs[0]
 	}
 	if len(failed) > 0 {
-		log.Printf("github: search of %d topics: %d answered with %d repositories, %d failed (%s): %v",
-			len(topics), len(topics)-len(failed), len(all), len(failed), strings.Join(failed, ","), errors.Join(errs...))
+		slog.Warn("github: search, some topics failed", "topics", len(topics), "answered", len(topics)-len(failed), "repositories", len(all), "failed", len(failed), "which", strings.Join(failed, ","), "err", errors.Join(errs...))
 	}
 	by := sortParam(q.Sort, q.Text)
 	slices.SortStableFunc(all, func(a, b rankedRepo) int {
@@ -364,7 +363,7 @@ func (d *Driver) searchTopic(ctx context.Context, q source.Query, terms string, 
 	}
 	web, werr := d.scrape(ctx, q, terms, page)
 	if werr != nil {
-		log.Printf("github: search page for %q: %v", terms, werr)
+		slog.Warn("github: search page", "terms", terms, "err", werr)
 		return topicPage{}, err
 	}
 	d.remember(key, web)

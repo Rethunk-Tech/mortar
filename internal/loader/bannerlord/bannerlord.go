@@ -5,7 +5,7 @@ package bannerlord
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"maps"
 	"path/filepath"
 	"slices"
@@ -98,7 +98,7 @@ func readModules(root string) ([]bl.Module, error) {
 		mod, err := bl.ParseModule(f)
 		_ = f.Close()
 		if err != nil {
-			log.Printf("bannerlord: %s is not a module: %v", e.Name(), err)
+			slog.Warn("bannerlord: not a module", "name", e.Name(), "err", err)
 			continue
 		}
 		out = append(out, mod)

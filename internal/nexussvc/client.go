@@ -3,7 +3,7 @@ package nexussvc
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 
@@ -49,7 +49,7 @@ func bearer(ctx context.Context, o sso.OAuth) (string, error) {
 		return "", ErrSignedOut
 	}
 	if err != nil && t.Access != "" {
-		log.Printf("nexus: the refreshed sign-in could not be saved: %v", err)
+		slog.Warn("nexus: the refreshed sign-in could not be saved", "err", err)
 		return t.Access, nil
 	}
 	return t.Access, err

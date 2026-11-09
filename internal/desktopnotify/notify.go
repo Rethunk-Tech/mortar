@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/Rethunk-Tech/go-desktopenv/portal"
@@ -73,7 +73,7 @@ func Send(kind Kind, title, body string, data map[string]any) {
 		opts.Icon = iconPath()
 	}
 	if err := notifier.Notify(opts); err != nil {
-		log.Printf("desktop notification: %v", err)
+		slog.Warn("desktop notification", "err", err)
 	}
 }
 
@@ -118,7 +118,7 @@ func routeAction(a portal.NotificationAction, h ClickFunc) {
 	var data map[string]any
 	if a.Target != "" {
 		if err := json.Unmarshal([]byte(a.Target), &data); err != nil {
-			log.Printf("desktop notification click target: %v", err)
+			slog.Warn("desktop notification click target", "err", err)
 		}
 	}
 	h(a.ID, data)

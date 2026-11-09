@@ -1,7 +1,7 @@
 package support
 
 import (
-	"log"
+	"log/slog"
 	"strings"
 	"unicode/utf8"
 )
@@ -13,7 +13,7 @@ const maxRenderLog = 4000
 // that only shows in a user's build names its component. The window de-duplicates and caps the calls.
 func (s *Service) LogRenderError(message, componentStack string) {
 	msg := strings.TrimSpace(message + "\n" + componentStack)
-	log.Printf("frontend render error: %s", strings.ReplaceAll(clip(msg, maxRenderLog), "\n", " | "))
+	slog.Warn("frontend render error", "error", strings.ReplaceAll(clip(msg, maxRenderLog), "\n", " | "))
 }
 
 // clip is s cut to at most n bytes on a character boundary.

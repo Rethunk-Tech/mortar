@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"slices"
 	"strconv"
 
@@ -254,13 +254,13 @@ func (s *Services) lanAccept(ctx context.Context, id int) (sharesvc.Result, erro
 	}
 	res, err := s.Shares.ImportData(ctx, arrival.Game, arrival.Payload)
 	if err != nil {
-		log.Printf("lan: importing %q from %s failed: %v", arrival.ProfileName, arrival.Sender, err)
+		slog.Warn("lan: importing failed", "profile", arrival.ProfileName, "sender", arrival.Sender, "err", err)
 		if errors.Is(err, sharesvc.ErrSignedOut) {
 			err = usererr.Wrap(usererr.Invalid, err)
 		}
 		return sharesvc.Result{}, err
 	}
-	log.Printf("lan: imported %q from %s: placed %d mods, queued %d downloads", arrival.ProfileName, arrival.Sender, len(res.Profile.Entries), res.Queued)
+	slog.Info("lan: imported a profile", "profile", arrival.ProfileName, "sender", arrival.Sender, "mods", len(res.Profile.Entries), "downloads", res.Queued)
 	s.Lan.Dismiss(id)
 	return res, nil
 }

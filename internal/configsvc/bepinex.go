@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
+	"log/slog"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -167,7 +167,7 @@ func (s *Service) reloadInGame(ctx context.Context, game, profileID string, f Co
 	defer cancel()
 	err = bridge.Send(ctx, bridge.BepInEx.StatePath(dir), "config reload "+f.Name)
 	if err != nil && !errors.Is(err, bridge.ErrNotRunning) && !errors.Is(err, bridge.ErrNotReady) {
-		log.Printf("config: the game did not reload %s: %v", f.Name, err)
+		slog.Warn("config: the game did not reload", "file", f.Name, "err", err)
 	}
 }
 
@@ -283,7 +283,7 @@ func (s *Service) FlushKept() {
 		}
 		files, err := s.Files(k.game, k.profile, k.mod)
 		if err != nil {
-			log.Printf("config: kept values of %s: %v", k.file, err)
+			slog.Warn("config: kept values", "file", k.file, "err", err)
 			continue
 		}
 		for _, f := range files {
@@ -291,7 +291,7 @@ func (s *Service) FlushKept() {
 				continue
 			}
 			if _, err := s.writeKept(k.game, k.profile, k.mod, f); err != nil {
-				log.Printf("config: kept values of %s: %v", k.file, err)
+				slog.Warn("config: kept values", "file", k.file, "err", err)
 			}
 		}
 	}

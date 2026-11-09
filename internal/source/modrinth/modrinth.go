@@ -8,7 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"maps"
 	"net/http"
 	"net/url"
@@ -214,7 +214,7 @@ func (d Driver) primarySizes(ctx context.Context, ids []string, mortarVersion st
 	defer cancel()
 	versions, err := d.api(mortarVersion).Versions(ctx, ids)
 	if err != nil {
-		log.Printf("modrinth: file sizes: %v", apiErr(err))
+		slog.Warn("modrinth: file sizes", "err", apiErr(err))
 		return out
 	}
 	for _, v := range versions {

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -98,7 +98,7 @@ func (ad *adopter) visit(ow Owned, path string, d fs.DirEntry, err error) error 
 		return nil
 	}
 	if info.Size() > maxAdoptFile || ad.total+info.Size() > maxAdoptTotal {
-		log.Printf("deploy: %s stays shared: too large to adopt into the profile (%d bytes)", path, info.Size())
+		slog.Info("deploy: file stays shared, too large to adopt into the profile", "path", path, "bytes", info.Size())
 		ad.m.notes = append(ad.m.notes, Note{Path: path, Size: info.Size(), Kind: NoteTooLarge})
 		return nil
 	}

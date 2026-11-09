@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -131,7 +131,7 @@ func (r Releases) checkPin(pack, version, file string) error {
 	}
 	want, ok := client.Pin(components.PinPack, "", pack, version)
 	if !ok {
-		log.Printf("%s %s: the catalog pins no checksum for this package, so it is installed unverified", r.Name, version)
+		slog.Warn("thunderpack: the catalog pins no checksum for this package, so it is installed unverified", "name", r.Name, "version", version)
 		return nil
 	}
 	got, err := safefs.HashFile(file, sha256.New())

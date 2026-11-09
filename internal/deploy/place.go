@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
+	"log/slog"
 	"maps"
 	"os"
 	"path/filepath"
@@ -577,7 +577,7 @@ func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
 		return err
 	}
 	at(fmt.Sprintf("rescue-logged:%d", i))
-	log.Printf("deploy: %s could not go back into its profile; its bytes are kept as %s", o.Dst, rescue)
+	slog.Warn("deploy: could not go back into its profile; its bytes are kept", "dst", o.Dst, "rescue", rescue)
 	if err := safefs.Rename(o.Dst, rescue); err != nil {
 		return err
 	}
