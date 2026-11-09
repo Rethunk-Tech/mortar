@@ -8,7 +8,7 @@ v=$1; out=${2:-$(mktemp -d)}; dst=$out/manifests/r/RethunkTech/Mortar/$v
 old=$(awk '/^PackageVersion:/{print $2}' "$here/RethunkTech.Mortar.yaml")
 base=https://github.com/Rethunk-Tech/mortar/releases/download/v$v
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
-curl -fsSLo "$tmp/S" "$base/SHA256SUMS"; curl -fsSLo "$tmp/S.asc" "$base/SHA256SUMS.asc"
+curl -fsSL --retry 18 --retry-delay 10 -o "$tmp/S" "$base/SHA256SUMS"; curl -fsSL --retry 18 --retry-delay 10 -o "$tmp/S.asc" "$base/SHA256SUMS.asc"
 export GNUPGHOME=$tmp/g; install -d -m 700 "$GNUPGHOME"
 gpg --batch --quiet --import "$repo/build/linux/repo/mortar-archive-keyring.asc"
 gpg --batch --status-fd 1 --verify "$tmp/S.asc" "$tmp/S" 2>/dev/null | grep -q "VALIDSIG D8B1C4C205C5FB3633CB8B9900B75959B637DCB5"
