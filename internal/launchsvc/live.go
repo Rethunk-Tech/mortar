@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-bepinex/plugins"
 
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -88,7 +89,33 @@ func (s *Service) askLive(ctx context.Context, g game.Game, st Status, live load
 	if got.GameVersion != "" {
 		s.noteGameVersion(g, st.Profile, got.GameVersion)
 	}
+	s.noteCompanionFeatures(g, st.Profile, got.Features)
 	return LiveRun{Game: g.ID(), Profile: st.Profile, Scene: got.Scene, Mods: liveMods(packages(), got.Plugins)}, true
+}
+
+// noteCompanionFeatures keeps what the running game's companion advertised, for the decisions that need to know what
+// it can do. A status that names none stores none, which reads as the 0.5.x set.
+func (s *Service) noteCompanionFeatures(g game.Game, profileID string, features bridge.Features) {
+	key := keyOf(g)
+	s.mu.Lock()
+	sess, ok := s.logs[key]
+	if ok && sess.profile == profileID {
+		sess.features = features
+		s.logs[key] = sess
+	}
+	s.mu.Unlock()
+}
+
+// companionServes reports whether the running game's companion can do feature. Before its status has named one, and
+// for a companion from before the split that names none, it serves the 0.5.x set: a launch is never refused on a guess.
+func (s *Service) companionServes(g game.Game, profileID, feature string) bool {
+	s.mu.Lock()
+	sess, ok := s.logs[keyOf(g)]
+	s.mu.Unlock()
+	if !ok || sess.profile != profileID {
+		return true
+	}
+	return sess.features.Serves(feature)
 }
 
 func (s *Service) noteGameVersion(g game.Game, profileID, v string) {

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -137,6 +138,9 @@ func (s *Service) askPerf(gameID, profileID string, start bool) (bridgePerf, loa
 	perf, can := l.(loader.InGamePerf)
 	if !ok || !can {
 		return bridgePerf{}, nil, usererr.New(usererr.Invalid, "this profile's loader does not measure in game")
+	}
+	if g := game.Find(gameID); g.ID() != "" && !s.companionServes(g, profileID, bridge.FeaturePerf) {
+		return bridgePerf{}, nil, usererr.New(usererr.Invalid, "this profile's companion cannot measure in game")
 	}
 	view, err := s.bridgeView(gameID, profileID)
 	if err != nil {

@@ -299,11 +299,14 @@ type GameVersion interface {
 }
 
 // Live is what a running game's companion reports: the version the game itself shows ("" when the companion cannot
-// tell it), its current scene and the plugins that loaded, a set in no particular order.
+// tell it), its current scene and the plugins that loaded, a set in no particular order, and what it can do.
 type Live struct {
 	GameVersion string
 	Scene       string
 	Plugins     []LivePlugin
+	// Features is what the companion advertised in its status; a companion from before the split advertises none,
+	// which Features.Serves reads as the 0.5.x set.
+	Features bridge.Features
 }
 
 // LivePlugin is one loaded plugin. Location is its file's slash path below the loader's plugins folder, "" when the
@@ -314,7 +317,7 @@ type LivePlugin struct{ GUID, Version, Location string }
 // otherwise it is an engine default a game may never set (Unity's Application.version is 0.1 in Lethal Company), and
 // an older bridge says nothing.
 func LiveOf(st bridge.Status) Live {
-	live := Live{Scene: st.Scene, Plugins: make([]LivePlugin, 0, len(st.Plugins))}
+	live := Live{Scene: st.Scene, Plugins: make([]LivePlugin, 0, len(st.Plugins)), Features: st.Features}
 	if st.GameVersionSource == "game" {
 		live.GameVersion = st.GameVersion
 	}
