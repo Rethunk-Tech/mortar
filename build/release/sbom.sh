@@ -2,7 +2,7 @@
 # sbom.sh OUT writes a CycloneDX SBOM of the Go module and the bun workspaces (frontend and web) from go.mod and
 # bun.lock, so it needs no installed dependencies. syft is pinned by checksum; a different version means new sums.
 set -euo pipefail
-out="${1:?usage: sbom.sh OUT}"
+out="$(realpath -m "${1:?usage: sbom.sh OUT}")"
 root="$(cd "$(dirname "$0")/../.." && pwd)"
 version="1.57.0"
 case "$(uname -m)" in
