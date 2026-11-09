@@ -140,14 +140,16 @@ if ! grep -q "<release version=\"$version\"" "$metainfo"; then
   exit 1
 fi
 desc="$(description)"
-# Rewrites TAG's <release> as an open element holding only the new description, dropping any earlier one.
-awk -v ver="$version" -v desc="$desc" '
+# Rewrites TAG's <release> as an open element holding only the new description, dropping any earlier one, and dates it
+# today: notes are written on the day of the tag, so the commit the dry run builds is the one that gets tagged.
+awk -v ver="$version" -v desc="$desc" -v today="$(date +%F)" '
   skip && /<\/release>/ { skip = 0; next }
   skip { next }
   index($0, "<release version=\"" ver "\"") {
     line = $0
     open = (line !~ /\/>[[:space:]]*$/)
     sub(/[[:space:]]*\/>[[:space:]]*$/, ">", line)
+    sub(/date="[^"]*"/, "date=\"" today "\"", line)
     print line
     print desc
     match($0, /^[[:space:]]*/)

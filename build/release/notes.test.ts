@@ -205,7 +205,9 @@ describe('notes.sh', () => {
     run([script, '--metainfo', file, 'v0.2.0', 'HEAD'])
     run([script, '--metainfo', file, 'v0.2.0', 'HEAD'])
     const xml = readFileSync(file, 'utf8')
-    expect(xml).toContain('<release version="0.2.0" date="2026-10-04">\n      <description>')
+    // The release being written is dated today (the shell's local date, as `date +%F` gives it); others keep theirs.
+    const today = new Date().toLocaleDateString('sv')
+    expect(xml).toContain(`<release version="0.2.0" date="${today}">\n      <description>`)
     expect(xml).toContain('<li>Back up &lt;saves&gt; &amp; restore</li>')
     expect(xml.match(/<description>/g)?.length).toBe(1)
     expect(xml).toContain('    </release>\n    <release version="0.1.0" date="2026-01-01" />')
