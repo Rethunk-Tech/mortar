@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -197,7 +196,7 @@ func (c *boot) serveHandoffs() {
 	<-c.ready
 	for d := range c.handoffs {
 		if c.window == nil || c.nxmSvc == nil || c.shareSvc == nil {
-			log.Printf("second instance: dropped, Mortar did not finish starting")
+			slog.Warn("second instance: dropped, Mortar did not finish starting")
 			continue
 		}
 		// An nxm link leaves an open window where it is, minimised or behind the browser, so a burst of clicks
@@ -219,10 +218,10 @@ func (c *boot) showForHandoff(d application.SecondInstanceData) {
 		return
 	}
 	c.showWindow()
-	log.Printf("second instance: window shown (was closed %v, visible %v)", closed, visible)
+	slog.Info("second instance: window shown (was closed, visible)", "closed", closed, "visible", visible)
 	// A rebuilt window is still loading its page, so only one that was already there is asked.
 	if !closed && !c.pageAnswers() {
-		log.Printf("second instance: the page did not answer within %s; reloading it", pageAnswerWait)
+		slog.Warn("second instance: the page did not answer within; reloading it", "within", pageAnswerWait)
 		c.window.ForceReload()
 	}
 }
@@ -241,7 +240,7 @@ func (c *boot) preflight() (bool, error) {
 	if r, ok := shortcut.Parse(os.Args[1:]); ok && shortcut.SteamSession(os.Args[1:]) {
 		if _, running := controlwire.Live(context.Background(), c.dataDir); running {
 			if err := shortcut.Follow(c.dataDir, r, time.Second, steamSessionPatience); err != nil {
-				log.Printf("steam session: %v", err)
+				slog.Warn("steam session", "err", err)
 			}
 			return true, nil
 		}
@@ -303,7 +302,7 @@ func (c *boot) newApp() error {
 		SingleInstance: &application.SingleInstanceOptions{
 			UniqueID: singleInstanceID(c.dataDir),
 			OnSecondInstanceLaunch: func(d application.SecondInstanceData) {
-				log.Printf("second instance: %d args queued", len(d.Args)-1)
+				slog.Info("second instance: args queued", "args", len(d.Args)-1)
 				c.handoffs <- d
 			},
 		},
@@ -333,14 +332,13 @@ func (c *boot) openLogs() error {
 		// The file comes first: MultiWriter stops at the first failing writer, and a GUI launch can have a dead
 		// stderr, which would otherwise leave mortar.log without the clean-shutdown line crash detection reads.
 		out := io.MultiWriter(&cappedWriter{w: logFile, left: maxLogBytes}, os.Stderr)
-		log.SetOutput(out)
 		slog.SetDefault(slog.New(slog.NewTextHandler(out, nil)))
 		// Wails discards its own info lines without a logger, and those are the only trace of a WebView2 process
 		// failure it chose not to recover from.
 		c.app.Logger = slog.Default()
 	}
 	// A user's log is often the only report there is, so it starts by naming the build.
-	log.Printf("mortar %s (build %s) on %s/%s", version, cmp.Or(appversion.Commit(), "unknown"), runtime.GOOS, runtime.GOARCH)
+	slog.Info("mortar: started", "version", version, "build", cmp.Or(appversion.Commit(), "unknown"), "os", runtime.GOOS, "arch", runtime.GOARCH)
 	support.StartStartupProfile(c.dataDir)
 	startupStep("log open")
 	c.tidied = &tidy.Collector{}
@@ -372,7 +370,7 @@ func (c *boot) openStores() error {
 		return err
 	}
 	if removed, err := c.items.Cleanup(); err != nil {
-		log.Printf("store cleanup: %v", err)
+		slog.Warn("store cleanup", "err", err)
 	} else {
 		c.tidied.Add("tempFolders", "Removed leftover temporary folders", "store", "", 0, removed...)
 	}
@@ -388,7 +386,7 @@ func (c *boot) openStores() error {
 			if !tell {
 				return
 			}
-			log.Printf("antivirus scan of %s/%s did not finish: %s", game, key, why)
+			slog.Warn("antivirus scan did not finish", "game", game, "key", key, "why", why)
 			if c.app != nil {
 				c.app.Event.Emit("avscan:failed", map[string]string{"game": game, "key": key, "error": why})
 			}
@@ -400,12 +398,12 @@ func (c *boot) openStores() error {
 	}
 	startupStep("settings, mod store and profiles open")
 	if err := c.profiles.PurgeScratch(); err != nil {
-		log.Printf("profiles: remove leftover crash-check copies: %v", err)
+		slog.Info("profiles: remove leftover crash-check copies", "err", err)
 	}
 	if n, err := scratch.Sweep(24 * time.Hour); err != nil {
-		log.Printf("scratch: remove old unpack folders: %v", err)
+		slog.Info("scratch: remove old unpack folders", "err", err)
 	} else {
-		log.Printf("scratch: removed %d old unpack folders", n)
+		slog.Info("scratch: removed old unpack folders", "old", n)
 	}
 	c.profiles.Tidied = func(code, what, profileName, folder string) { c.tidied.Add(code, what, "", profileName, 1, folder) }
 	// Every Thunderstore Driver on this cache folder shares the one client made here, under Mortar's own user agent.
@@ -484,7 +482,7 @@ func (c *boot) startLaunches() error {
 	if c.componentClient.UseCached(c.modMeta, updateKey) {
 		catalogFrom = "cached"
 	}
-	log.Printf("catalog: starting with the %s copy, serial %d", catalogFrom, game.CatalogSerial())
+	slog.Info("catalog: starting", "source", catalogFrom, "serial", game.CatalogSerial())
 	components.UseSignedLists(c.componentClient, c.modMeta, updateKey)
 	go c.launches.PrimeHiddenMessages(context.Background())
 	game.CacheInstalls(installCacheTTL)
@@ -498,7 +496,7 @@ func (c *boot) startLaunches() error {
 	c.loaders.OnReady = func(id string) { c.launches.MaybeSweep(context.Background(), id) }
 	c.now = time.Now()
 	if err := c.profiles.PurgeTrash(c.now); err != nil {
-		log.Printf("purge trash: %v", err)
+		slog.Warn("purge trash", "err", err)
 	}
 
 	return nil
@@ -542,14 +540,14 @@ func (c *boot) nxmSetup() error {
 		return err
 	}
 	if err := nxmHandler.Refresh(); err != nil {
-		log.Printf("desktop entry: %v", err)
+		slog.Warn("desktop entry", "err", err)
 	}
 	if err := shortcut.Repoint(hostenv.Launchable(exe)); err != nil {
-		log.Printf("profile shortcuts: %v", err)
+		slog.Warn("profile shortcuts", "err", err)
 	}
 	if c.store.Get().NxmHandled {
 		if err := nxmHandler.WriteNativeHosts(); err != nil {
-			log.Printf("browser extension host: %v", err)
+			slog.Warn("browser extension host", "err", err)
 		}
 	}
 	c.nxmSvc = nxmsvc.NewService(c.store, nxmHandler)
@@ -808,7 +806,7 @@ func (c *boot) shareSync() error {
 		Dir: c.dataDir, Emit: c.emit,
 	})
 	if err := c.lanSvc.Apply(); err != nil {
-		log.Printf("LAN sharing: %v", err)
+		slog.Warn("LAN sharing", "err", err)
 	}
 	// Queue changes reach shareSvc, so links are routed only once both exist.
 	c.nxmSvc.Receive(os.Args[1:])
@@ -1064,7 +1062,7 @@ func (c *boot) serveControl(queueCtx context.Context) error {
 	}
 	go func() {
 		if err := control.Serve(queueCtx, c.dataDir, version, ctl.Handle); err != nil && !errors.Is(err, context.Canceled) {
-			log.Printf("control: %v", err)
+			slog.Info("control", "err", err)
 		}
 	}()
 	h := wailsHost{c.app}
@@ -1072,12 +1070,12 @@ func (c *boot) serveControl(queueCtx context.Context) error {
 	c.loaders.App = h
 	c.launches.App = h
 	if err := c.launches.RecoverGameSettings(); err != nil {
-		log.Printf("game settings restore: %v", err)
+		slog.Warn("game settings restore", "err", err)
 		c.app.Event.Emit(launchsvc.SettingsRestoreWarningEvent, launchsvc.SettingsRestoreWarning{Error: err.Error()})
 	}
 	recovered, err := c.launches.RecoverDeploys(queueCtx)
 	if err != nil {
-		log.Printf("deploy recovery: %v", err)
+		slog.Warn("deploy recovery", "err", err)
 	}
 	c.profileSvc.FlagHealth(recovered...)
 	return nil
@@ -1187,7 +1185,7 @@ func (c *boot) openWindow() error {
 		for _, id := range c.implemented {
 			loadersvc.SyncBundled(context.Background(), c.loaders, id)
 		}
-		log.Printf("bundled mods: %d games checked in %s", len(c.implemented), since(start))
+		slog.Info("bundled mods: games checked", "games", len(c.implemented), "took", since(start))
 	}()
 	return nil
 }
@@ -1213,7 +1211,7 @@ func (c *boot) playMode() error {
 		c.app.Event.On(launchsvc.StateEvent, func(e *application.CustomEvent) {
 			st, ok := e.Data.(launchsvc.Status)
 			if ok && (st.State == launchsvc.Running || st.State == launchsvc.Idle) && c.plays.Observe(st.Game, st.State == launchsvc.Running) {
-				log.Printf("play mode: %s closed; exiting", st.Game)
+				slog.Info("play mode: closed; exiting", "closed", st.Game)
 				c.quitSvc.ConfirmQuit()
 			}
 		})
@@ -1225,7 +1223,7 @@ func (c *boot) storeMaintenance() error {
 	go func() {
 		start := time.Now()
 		defer func() {
-			log.Printf("store maintenance: done in %s", since(start))
+			slog.Info("store maintenance: done", "took", since(start))
 			if c.tidied.Pending() > 0 {
 				c.emit(tidy.ReportEvent, nil)
 			}
@@ -1234,24 +1232,24 @@ func (c *boot) storeMaintenance() error {
 		// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
 		retention := c.store.Get().StoreUnusedFor()
 		if keys, err := datasvc.KeepSet(c.profiles, retention != 0, c.keepSources); err != nil {
-			log.Printf("store collect skipped: %v", err)
+			slog.Warn("store collect skipped", "err", err)
 		} else {
 			c.items.UnusedFor = retention
 			if retention == 0 {
 				c.items.UnusedFor = -1
 			}
 			if err := c.items.Collect(keys, c.now); err != nil {
-				log.Printf("store collect: %v", err)
+				slog.Warn("store collect", "err", err)
 			}
 			// Rollback snapshots count here whatever the retention setting, unlike for the age-based pass.
 			if withHistory, err := datasvc.KeepSet(c.profiles, true, c.keepSources); err != nil {
-				log.Printf("store drop superseded skipped: %v", err)
+				slog.Warn("store drop superseded skipped", "err", err)
 			} else if err := c.items.DropSuperseded(withHistory); err != nil {
-				log.Printf("store drop superseded: %v", err)
+				slog.Warn("store drop superseded", "err", err)
 			}
 			for g := range keys {
 				if err := c.profiles.RefreshDependencies(g); err != nil {
-					log.Printf("refresh dependencies: %s: %v", g, err)
+					slog.Warn("refresh dependencies", "game", g, "err", err)
 				}
 				// The window may have read the profiles before the refresh wrote them.
 				c.emit(control.ChangedEvent, g)
@@ -1277,18 +1275,18 @@ func (c *boot) catalogRefresh(ctx context.Context) error {
 		failurePath := filepath.Join(c.dataDir, "cache", "components-failure")
 		if b, err := safefs.ReadFile(failurePath); err == nil {
 			if at, err := time.Parse(time.RFC3339Nano, strings.TrimSpace(string(b))); err == nil && time.Since(at) < time.Hour {
-				log.Printf("catalog: not checked, the last check failed at %s; serial %d in use", at.Format(time.RFC3339), game.CatalogSerial())
+				slog.Warn("catalog: not checked, the last check failed", "at", at.Format(time.RFC3339), "serial", game.CatalogSerial())
 				return
 			}
 		}
 		start := time.Now()
 		m, err := c.componentClient.Load(ctx, c.modMeta, updateKey)
-		log.Printf("catalog: serial %d after %s", m.Serial, since(start))
+		slog.Info("catalog: checked", "serial", m.Serial, "took", since(start))
 		if err != nil {
 			if errors.Is(err, components.ErrBadSignature) || errors.Is(err, components.ErrRollback) {
 				slog.Warn("components manifest refused; keeping the last trusted copy", "err", err)
 			} else {
-				log.Printf("components manifest unavailable; using bundled copy: %v", err)
+				slog.Warn("components manifest unavailable; using bundled copy", "err", err)
 			}
 			_ = os.MkdirAll(filepath.Dir(failurePath), 0o700)
 			_ = safefs.WriteFile(failurePath, []byte(time.Now().Format(time.RFC3339Nano)), 0o600)
@@ -1298,7 +1296,7 @@ func (c *boot) catalogRefresh(ctx context.Context) error {
 		// What was built from the startup catalog follows the fetched one: save layouts, problems checked against it,
 		// a newer bridge than the one synced from the bundled copy, package looks, and the window's game list.
 		if err := c.savesSvc.Reload(); err != nil {
-			log.Printf("saves: reload after the catalog: %v", err)
+			slog.Info("saves: reload after the catalog", "err", err)
 		}
 		c.problemsSvc.ForgetCached()
 		for _, id := range game.Implemented() {
@@ -1490,7 +1488,7 @@ func (t *trayUI) addStops(v trayView, group func()) {
 		group()
 		t.menu.Add(i18n.T("Stop {game}", "game", trayGameName(id))).OnClick(func(*application.Context) {
 			if err := t.c.launches.Stop(context.Background(), id); err != nil {
-				log.Printf("tray: stop %s: %v", id, err)
+				slog.Info("tray: stop", "game", id, "err", err)
 				desktopnotify.Send(desktopnotify.KindOther, i18n.T("Could not stop {game}", "game", trayGameName(id)), err.Error(), nil)
 			}
 		})
@@ -1578,7 +1576,7 @@ func (t *trayUI) settingsChanged() {
 	}
 	applyLinkChoices(c.store.Get())
 	if err := c.lanSvc.Apply(); err != nil {
-		log.Printf("LAN sharing: %v", err)
+		slog.Warn("LAN sharing", "err", err)
 	}
 }
 
@@ -1601,7 +1599,7 @@ func (c *boot) nexusFiles1(ctx context.Context, t nexusmods.Title, modID int) ([
 func (c *boot) fillPackageLooks() {
 	for _, g := range game.Catalog() {
 		if err := c.profiles.FillPackageLooks(g.ID); err != nil {
-			log.Printf("package icons and categories: %s: %v", g.ID, err)
+			slog.Info("package icons and categories", "id", g.ID, "err", err)
 		}
 	}
 }

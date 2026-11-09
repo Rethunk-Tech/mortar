@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
@@ -72,7 +72,7 @@ func (n wailsNotifier) Notify(c desktopnotify.Notice) error {
 		if err == nil {
 			return nil
 		}
-		log.Printf("portal notification: %v", err)
+		slog.Warn("portal notification", "err", err)
 	}
 	opts := notifications.NotificationOptions{ID: c.ID, Title: c.Title, Body: c.Body, Data: c.Data}
 	if c.Icon != "" {

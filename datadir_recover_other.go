@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"os/exec"
 	"strings"
 	"time"
@@ -91,7 +91,7 @@ func askMissingLocation(path string) locationChoice {
 // tool it becomes a desktop notification, which every desktop with a notification daemon shows.
 func showStartupError(msg, folder string) {
 	if serverBuild {
-		log.Print(msg)
+		slog.Error("startup", "msg", msg)
 		return
 	}
 	tool := findDialogTool()
@@ -101,7 +101,7 @@ func showStartupError(msg, folder string) {
 	}
 	if exit, out := runDialog(tool, startupErrorArgs(tool, msg, folder)); folder != "" && opensLogFolder(tool, exit, out) {
 		if err := datadir.Open(folder); err != nil {
-			log.Printf("open %s: %v", folder, err)
+			slog.Warn("open the log folder", "folder", folder, "err", err)
 		}
 	}
 }
@@ -135,10 +135,10 @@ func notifyStartupError(msg string) {
 	if err == nil {
 		return
 	}
-	log.Printf("startup error notification through the portal: %v", err)
+	slog.Warn("startup error notification through the portal", "err", err)
 	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
-		log.Printf("startup error notification: %v", err)
+		slog.Warn("startup error notification", "err", err)
 		return
 	}
 	defer func() { _ = conn.Close() }()
@@ -146,7 +146,7 @@ func notifyStartupError(msg string) {
 	call := conn.Object("org.freedesktop.Notifications", "/org/freedesktop/Notifications").CallWithContext(ctx,
 		"org.freedesktop.Notifications.Notify", 0, "Mortar", uint32(0), "dialog-error", "Mortar", msg, []string{}, urgent, int32(0))
 	if call.Err != nil {
-		log.Printf("startup error notification: %v", call.Err)
+		slog.Warn("startup error notification", "err", call.Err)
 	}
 }
 

@@ -5,7 +5,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -134,7 +134,7 @@ func runShowingFailures() error {
 	}()
 	err := run()
 	if err != nil {
-		log.Print(err)
+		slog.Error("run", "err", err)
 		if _, shown := errors.AsType[shownError](err); !shown {
 			showStartupError(startupFailureText(err), logFolder())
 		}

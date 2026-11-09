@@ -3,7 +3,7 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
@@ -43,7 +43,7 @@ func askMissingLocation(path string) locationChoice {
 // its text with Ctrl+C, which the prompt says, so the error can be pasted into a report.
 func showStartupError(msg, folder string) {
 	if serverBuild {
-		log.Print(msg)
+		slog.Error("startup", "msg", msg)
 		return
 	}
 	if folder == "" {
@@ -53,7 +53,7 @@ func showStartupError(msg, folder string) {
 	text := msg + "\n\n" + i18n.T("Open the folder that holds the log? (Ctrl+C copies this message.)")
 	if w32.MessageBox(0, text, "Mortar", mbYesNo|mbIconError|mbTopmost) == idYes {
 		if err := datadir.Open(folder); err != nil {
-			log.Printf("open %s: %v", folder, err)
+			slog.Warn("open the log folder", "folder", folder, "err", err)
 		}
 	}
 }

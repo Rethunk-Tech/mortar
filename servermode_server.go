@@ -5,7 +5,7 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"net"
 	"os"
 	"path/filepath"
@@ -65,7 +65,7 @@ func forwardLaunch(dataDir string, args []string) bool {
 			}
 		}
 		if err := controlwire.CallDir(dataDir, control.OpenRequestMethod, map[string]string{"path": arg}, nil, 5*time.Second); err != nil {
-			log.Printf("open request: %v", err)
+			slog.Warn("open request", "err", err)
 		}
 	}
 	return true

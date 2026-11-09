@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"sync"
@@ -153,7 +153,7 @@ func (s *QuitService) armWatchdog() {
 			for s.busy() {
 				time.Sleep(watchdogPoll)
 			}
-			log.Printf("quit: graceful shutdown took over %s; finishing it directly", s.grace)
+			slog.Warn("quit: graceful shutdown took over; finishing it directly", "over", s.grace)
 			s.finish()
 			s.exit(0)
 		}()

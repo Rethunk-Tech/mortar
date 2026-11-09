@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 )
@@ -20,7 +20,7 @@ func startupStep(phase string) {
 	startupMu.Lock()
 	defer startupMu.Unlock()
 	now := time.Now()
-	log.Printf("startup: %s at +%s (step %s)", phase, now.Sub(processStart).Round(time.Millisecond), now.Sub(startupLast).Round(time.Millisecond))
+	slog.Info("startup: step done", "phase", phase, "sinceStart", now.Sub(processStart).Round(time.Millisecond), "sinceStep", now.Sub(startupLast).Round(time.Millisecond))
 	startupLast = now
 }
 

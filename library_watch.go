@@ -3,7 +3,7 @@ package main
 import (
 	"cmp"
 	"context"
-	"log"
+	"log/slog"
 	"path/filepath"
 	"slices"
 	"sync"
@@ -66,13 +66,13 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 			Holds:   holds,
 			Touched: walks.Touch,
 			Emit: func(t folderwatch.Target) {
-				log.Printf("folder watch: %s for %v", t.Key, t.Data)
+				slog.Warn("folder watch", "key", t.Key, "data", t.Data)
 				emit(t.Key, t.Data)
 			},
 			Targets: func() []folderwatch.Target { return libraryWatchTargets(home, dataDir, store, walks) },
 		})
 		if err != nil {
-			log.Printf("folder watch: %v", err)
+			slog.Warn("folder watch", "err", err)
 		}
 	}()
 }

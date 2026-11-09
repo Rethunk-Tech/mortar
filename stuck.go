@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -23,7 +23,7 @@ func endStuckInstance(dataDir string) {
 	if !stuck || pid == os.Getpid() || !runsMortar(pid) {
 		return
 	}
-	log.Printf("mortar (pid %d) holds the data folder but has not answered for %s", pid, stuckWait)
+	slog.Info("mortar holds the data folder but has not answered", "pid", pid, "stuckWait", stuckWait)
 	if !askEndStuck(i18n.T("Mortar is already running but has not answered for {count} seconds.\n\n"+
 		"End it and start Mortar again? Anything it was doing stops.", "count", strconv.Itoa(int(stuckWait/time.Second)))) {
 		return
@@ -35,11 +35,11 @@ func endStuckInstance(dataDir string) {
 		err = p.Kill()
 	}
 	if err != nil {
-		log.Printf("end mortar (pid %d): %v", pid, err)
+		slog.Info("end mortar", "pid", pid, "err", err)
 		return
 	}
 	waitGone(p)
-	log.Printf("ended mortar (pid %d)", pid)
+	slog.Info("ended mortar", "pid", pid)
 }
 
 // runsMortar reports whether pid runs a program with this one's name, so a pid the system gave to another program

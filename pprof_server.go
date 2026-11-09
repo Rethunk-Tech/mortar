@@ -4,7 +4,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -35,7 +35,7 @@ func servePprof() {
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      60 * time.Second,
 	}
-	go func() { log.Printf("pprof: %v", srv.ListenAndServe()) }()
+	go func() { slog.Warn("pprof", "err", srv.ListenAndServe()) }()
 }
 
 // serveRuntimeMetrics writes every scalar runtime/metrics sample as "name value" lines: the memory classes MemStats lacks
