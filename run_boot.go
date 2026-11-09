@@ -218,10 +218,10 @@ func (c *boot) showForHandoff(d application.SecondInstanceData) {
 		return
 	}
 	c.showWindow()
-	slog.Info("second instance: window shown (was closed, visible)", "closed", closed, "visible", visible)
+	slog.Info("second instance: window shown", "wasClosed", closed, "wasVisible", visible)
 	// A rebuilt window is still loading its page, so only one that was already there is asked.
 	if !closed && !c.pageAnswers() {
-		slog.Warn("second instance: the page did not answer within; reloading it", "within", pageAnswerWait)
+		slog.Warn("second instance: the page did not answer in time; reloading it", "waited", pageAnswerWait)
 		c.window.ForceReload()
 	}
 }
