@@ -22,7 +22,7 @@ interface UpdateNote {
 // SMAPI writes each update as "   Name 1.2.3: https://… (you have 1.2.0)".
 const LINE = /^\s*(.+?) (\S+): (https?:\/\/\S+)(?: \(you have ([^)]+)\))?\s*$/
 
-const OWN_SITES = /^https?:\/\/(?:[^/?#]+\.)*(nexusmods\.com|github\.com)(?:[/:?#]|$)/i
+const OWN_SITES = /^https?:\/\/(?:[^/?#.]+\.)*(nexusmods\.com|github\.com)(?:[/:?#]|$)/i
 
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
 
