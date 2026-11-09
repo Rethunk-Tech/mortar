@@ -3,7 +3,7 @@ package profile
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"path/filepath"
 	"slices"
 
@@ -105,7 +105,7 @@ func (s *Store) MergeInto(game, fromID, toID string, newerWins bool) (Profile, e
 	if err != nil {
 		if len(added) > 0 {
 			if _, undo := s.RemoveEntries(game, toID, added); undo != nil {
-				log.Printf("profile: taking back a failed merge into %s: %v", toID, undo)
+				slog.Warn("profile: taking back a failed merge", "target", toID, "err", undo)
 			}
 		}
 		return Profile{}, err

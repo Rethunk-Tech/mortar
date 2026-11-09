@@ -1,7 +1,7 @@
 package profile
 
 import (
-	"log"
+	"log/slog"
 	"slices"
 
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
@@ -16,7 +16,7 @@ func (s *Store) RefreshDependencies(game string) error {
 	}
 	for _, p := range profiles {
 		if err := s.refreshDependencies(game, p.ID); err != nil {
-			log.Printf("profile %s/%s: refresh dependencies: %v", game, p.ID, err)
+			slog.Warn("profile: refresh dependencies", "game", game, "id", p.ID, "err", err)
 		}
 	}
 	return nil

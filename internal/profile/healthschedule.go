@@ -3,7 +3,7 @@ package profile
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
@@ -73,11 +73,11 @@ func (s *Service) recordHealth(game, id string, findings []HealthFinding, now ti
 		return
 	}
 	if err := datadir.WriteJSON(healthCheckPath(dir), healthCheck{At: now, Findings: own, Build: appversion.Build()}); err != nil {
-		log.Printf("health check: %v", err)
+		slog.Warn("health check", "err", err)
 	}
 	if gdir, err := s.store.gameDir(game); err == nil {
 		if err := datadir.WriteJSON(healthCheckPath(gdir), healthCheck{At: now, Findings: wide, Build: appversion.Build()}); err != nil {
-			log.Printf("health check: %v", err)
+			slog.Warn("health check", "err", err)
 		}
 	}
 	if s.Emit != nil {
@@ -195,7 +195,7 @@ func (s *Service) healthPass(ctx context.Context, now time.Time) {
 				continue
 			}
 			if _, err := s.ProfileHealth(g, p.ID); err != nil && !errors.Is(err, os.ErrNotExist) {
-				log.Printf("health check %s/%s: %v", g, p.ID, err)
+				slog.Warn("health check", "game", g, "id", p.ID, "err", err)
 			}
 		}
 		if flagged {

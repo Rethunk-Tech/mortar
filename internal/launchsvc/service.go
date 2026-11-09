@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/exec"
@@ -281,11 +281,11 @@ func (s *Service) set(st Status) {
 	switch st.State {
 	case Failed, NoSteam:
 		if st.State == Failed {
-			log.Printf("launch: %s %s failed: %s", st.Game, st.Profile, st.Error)
+			slog.Warn("launch: failed", "game", st.Game, "profile", st.Profile, "err", st.Error)
 		}
 		stored = Status{Game: st.Game, Install: st.Install, State: Idle}
 	case Launching, Running:
-		log.Printf("launch: %s %s %s", st.Game, st.Profile, st.State)
+		slog.Info("launch: profile state", "game", st.Game, "profile", st.Profile, "state", st.State)
 	case Idle:
 	}
 	s.mu.Lock()
@@ -508,14 +508,14 @@ func (s *Service) poll(g game.Game) bool {
 		s.set(Status{Game: g.ID(), Install: installOf(g), State: Running, Since: sinceOr(procs[0].Start)})
 	case cur.State == Running && !alive:
 		// With no game process left the run is over, whatever the exit waiter is still waiting on.
-		log.Printf("launch: %s %s: poll found no game process of install %q (%s)", g.ID(), cur.Profile, installOf(g), s.describeProcs(g))
+		slog.Info("launch: poll found no game process of the install", "game", g.ID(), "profile", cur.Profile, "install", installOf(g), "processes", s.describeProcs(g))
 		s.awaitReap(g)
 		s.closed(g, cur, false)
 	case cur.State == Running && cur.Profile != "" && profileID == "":
 		if s.reapArmed(g) {
 			break
 		}
-		log.Printf("launch: %s %s: poll found the game running but not this profile (%s)", g.ID(), cur.Profile, s.describeProcs(g))
+		slog.Info("launch: poll found the game running but not this profile", "game", g.ID(), "profile", cur.Profile, "processes", s.describeProcs(g))
 		s.closed(g, cur, false)
 	}
 	return s.current(g).State != Idle
@@ -1248,7 +1248,7 @@ func (s *Service) armProfile(g game.Game, profileID, modsDir string) (measure, s
 	if sample {
 		startupBefore, err = s.startupBaseline(g.ID(), profileID)
 		if err != nil {
-			log.Printf("startup sampler: %s: %v", g.ID(), err)
+			slog.Info("startup sampler", "game", g.ID(), "err", err)
 			measure, sample = false, false
 		}
 	}
@@ -1815,7 +1815,7 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 		params["duration"] = ran
 	}
 	s.sayCode(g, cur.Profile, msg+".", code, params)
-	log.Printf("launch: %s %s: %s", g.ID(), cur.Profile, msg)
+	slog.Info("launch: progress", "game", g.ID(), "profile", cur.Profile, "msg", msg)
 	s.mu.Lock()
 	sess, ok := s.logs[keyOf(g)]
 	s.mu.Unlock()

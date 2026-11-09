@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -234,13 +234,13 @@ func (s *Service) applyRequiredSettings(gameID, own string) error {
 	text := string(b)
 	// A file Mortar cannot edit is left as the player has it; Problems lists its settings as in warn mode.
 	if err := ini.Check(text); err != nil {
-		log.Printf("launch: %s left unedited: %v", own, err)
+		slog.Warn("launch: left unedited", "path", own, "err", err)
 		return nil
 	}
 	for _, r := range info.RequiredSettings {
 		if r.Path == pathOptions {
 			if text, err = ini.Set(text, r.Section, r.Key, r.Value); err != nil {
-				log.Printf("launch: %s left unedited: %v", own, err)
+				slog.Warn("launch: left unedited", "path", own, "err", err)
 				return nil
 			}
 		}
@@ -475,22 +475,22 @@ func (dep *deployment) unwind(ctx context.Context) {
 	dep.once.Do(func() {
 		if dep.d != nil {
 			if err := dep.d.Purge(ctx, dep.m); err != nil {
-				log.Printf("launch: purge: %v", err)
+				slog.Warn("launch: purge", "err", err)
 			}
 		}
 		if dep.saves != nil {
 			if err := savesiso.Purge(*dep.saves); err != nil {
-				log.Printf("launch: restore saves: %v", err)
+				slog.Warn("launch: restore saves", "err", err)
 			}
 		}
 		if dep.options != nil {
 			if err := savesiso.PurgeFile(*dep.options); err != nil {
-				log.Printf("launch: restore options file: %v", err)
+				slog.Warn("launch: restore options file", "err", err)
 			}
 		}
 		if dep.modConfig != nil {
 			if err := savesiso.Purge(*dep.modConfig); err != nil {
-				log.Printf("launch: restore mod config folder: %v", err)
+				slog.Warn("launch: restore mod config folder", "err", err)
 			}
 		}
 	})

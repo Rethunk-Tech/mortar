@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -198,7 +198,7 @@ func (s *Store) removeFromGameMods(game, id, dir string) error {
 		}
 	}
 	if err := safefs.RemoveAll(aside); err != nil {
-		log.Printf("moved mods folder %s: clearing %s: %v", dir, aside, err)
+		slog.Warn("moved mods folder: clearing the old one", "dir", dir, "aside", aside, "err", err)
 	}
 	return nil
 }

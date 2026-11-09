@@ -1,7 +1,7 @@
 package launchsvc
 
 import (
-	"log"
+	"log/slog"
 	"runtime"
 	"time"
 
@@ -54,7 +54,7 @@ func (s *Service) finishWait(g game.Game, x launch.Exit) {
 	if cur.State != Running {
 		return
 	}
-	log.Printf("launch: %s %s: the started process exited (%s)", g.ID(), cur.Profile, launch.DescribeExit(x))
+	slog.Info("launch: the started process exited", "game", g.ID(), "profile", cur.Profile, "exit", launch.DescribeExit(x))
 	s.awaitGone(g)
 	s.closed(g, cur, x.Stopped)
 }

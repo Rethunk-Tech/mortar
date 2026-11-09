@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -695,7 +695,7 @@ func readAt(dir, id string) (Profile, error) {
 	}
 	p.Entries = slices.DeleteFunc(p.Entries, func(e Entry) bool {
 		if !e.namesLocal() {
-			log.Printf("profile %q: dropped entry %q, whose key or item leaves the mods folder", id, e.Key) //nolint:gosec // G706: both values are %q-quoted
+			slog.Info("profile: dropped entry, whose key or item leaves the mods folder", "profile", id, "entry", e.Key) //nolint:gosec // G706: the entry key is quoted and the id is a profile id
 			return true
 		}
 		return false
@@ -811,7 +811,7 @@ func (s *Store) Rename(gameID, id, name string) (Profile, error) {
 	}
 	// The rename has happened; a shortcut keeping the old name is logged, not a failed rename.
 	if err := s.ShortcutRenamed(gameID, id, p.Name, gameName); err != nil {
-		log.Printf("profile %s/%s: rename its shortcuts: %v", gameID, id, err)
+		slog.Warn("profile: rename its shortcuts", "game", gameID, "game", id, "err", err)
 	}
 	return p, nil
 }
@@ -878,12 +878,12 @@ func (s *Store) updateLockedCommit(game, id string, fn func(p *Profile, dir stri
 		key := historyBatchKey(game, id)
 		if batch, ok := s.historyBatches[key]; ok {
 			if err := s.recordHistoryBatch(dir, &batch, p.Entries); err != nil {
-				log.Printf("profile %s/%s: record history: %v", game, id, err)
+				slog.Warn("profile: record history", "game", game, "game", id, "err", err)
 			}
 			s.historyBatches[key] = batch
 			p.LastChange = batch.EventID
 		} else if evID, err := recordHistory(dir, before, p.Entries, stateChange(stateBefore, stateOf(p)), kind, note, configs, s.historyKeep()); err != nil {
-			log.Printf("profile %s/%s: record history: %v", game, id, err)
+			slog.Warn("profile: record history", "game", game, "game", id, "err", err)
 		} else {
 			p.LastChange = evID
 		}

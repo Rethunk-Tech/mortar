@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -104,17 +104,17 @@ func (s *Service) Transfer(ctx context.Context, id int) (err error) {
 	s.reportOutgoing(detached, incoming, outgoingReport{State: outgoingPlan, Keys: missing})
 	started := time.Now()
 	var bytes int64
-	log.Printf("lan: copying %d of %d files from %s", len(missing), len(incoming.Items), incoming.Sender)
+	slog.Info("lan: copying files", "files", len(missing), "total", len(incoming.Items), "sender", incoming.Sender)
 	defer func() {
 		switch {
 		case err == nil:
-			log.Printf("lan: copied %d files, %d bytes from %s in %s", len(missing), bytes, incoming.Sender, time.Since(started).Round(time.Millisecond))
+			slog.Info("lan: copied files", "files", len(missing), "bytes", bytes, "sender", incoming.Sender, "took", time.Since(started).Round(time.Millisecond))
 			s.reportOutgoing(detached, incoming, outgoingReport{State: OutgoingDone})
 		case errors.Is(err, context.Canceled):
-			log.Printf("lan: copying files from %s cancelled", incoming.Sender)
+			slog.Info("lan: copying files cancelled", "sender", incoming.Sender)
 			s.reportOutgoing(detached, incoming, outgoingReport{State: OutgoingCancelled})
 		default:
-			log.Printf("lan: copying files from %s failed: %v", incoming.Sender, err)
+			slog.Warn("lan: copying files failed", "sender", incoming.Sender, "err", err)
 			s.reportOutgoing(detached, incoming, outgoingReport{State: OutgoingFailed, Reason: err.Error()})
 		}
 	}()
@@ -234,7 +234,7 @@ func (s *Service) fetchEntry(
 		if err == nil || !retryable(err) || attempt == fetchAttempts {
 			return n, err
 		}
-		log.Printf("lan: retrying %s (%d/%d): %v", modName(item), attempt+1, fetchAttempts, err)
+		slog.Warn("lan: retrying a file", "item", modName(item), "attempt", attempt+1, "of", fetchAttempts, "err", err)
 		select {
 		case <-ctx.Done():
 			return 0, ctx.Err()
@@ -336,7 +336,7 @@ func (s *Service) fetchOnce(
 			return 0, installError("record", item, incoming.Sender, err)
 		}
 	}
-	log.Printf("lan: %s from %s", modName(item), incoming.Sender)
+	slog.Info("lan: received a file", "item", modName(item), "sender", incoming.Sender)
 	return received, nil
 }
 

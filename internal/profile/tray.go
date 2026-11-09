@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -198,7 +198,7 @@ func (s *Store) releaseTray(game string, p *Profile, files []TrayFile) {
 		}
 		dir, err := s.trayFolder(game, f.Role)
 		if err != nil {
-			log.Printf("profile: release shared files: %v", err)
+			slog.Warn("profile: release shared files", "err", err)
 			continue
 		}
 		dst := filepath.Join(dir, filepath.FromSlash(f.Rel))

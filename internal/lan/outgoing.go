@@ -3,7 +3,7 @@ package lan
 import (
 	"encoding/json"
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"slices"
 	"strings"
@@ -133,11 +133,11 @@ func logOutgoing(o OutgoingTransfer, took time.Duration) {
 	took = took.Round(time.Millisecond)
 	switch o.State {
 	case OutgoingDone:
-		log.Printf("lan: sent %q files to %s: %d files, %d bytes in %s", o.Profile, o.Peer, o.Total, o.Bytes, took)
+		slog.Info("lan: sent files", "profile", o.Profile, "peer", o.Peer, "files", o.Total, "bytes", o.Bytes, "took", took)
 	case OutgoingCancelled:
-		log.Printf("lan: %s cancelled copying %q after %d of %d files", o.Peer, o.Profile, o.Current, o.Total)
+		slog.Info("lan: cancelled copying", "peer", o.Peer, "profile", o.Profile, "copied", o.Current, "files", o.Total)
 	default:
-		log.Printf("lan: copying %q to %s failed after %d of %d files: %s", o.Profile, o.Peer, o.Current, o.Total, o.Reason)
+		slog.Warn("lan: copying failed", "profile", o.Profile, "peer", o.Peer, "copied", o.Current, "files", o.Total, "reason", o.Reason)
 	}
 }
 
@@ -191,7 +191,7 @@ func (s *Service) handleOutgoing(w http.ResponseWriter, r *http.Request) {
 			wanted++
 			bytes += s.entrySize(game, key)
 		}
-		log.Printf("lan: %s pulls %d of %d files, %d bytes", peer, wanted, len(report.Keys), bytes)
+		slog.Info("lan: peer pulls files", "peer", peer, "wanted", wanted, "files", len(report.Keys), "bytes", bytes)
 		s.updateOutgoing(token, func(o *OutgoingTransfer) {
 			o.Total, o.TotalBytes = wanted, bytes
 			if wanted == 0 {

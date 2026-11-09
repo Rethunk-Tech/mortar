@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
+	"log/slog"
 	"maps"
 	"os"
 	"path"
@@ -349,7 +349,7 @@ func commitPlaced(placed, final string) {
 		return
 	}
 	if err := safefs.Rename(placed, final); err != nil {
-		log.Printf("profile: could not move %s into place; the next rebuild will: %v", filepath.Base(placed), err)
+		slog.Warn("profile: could not move into place, the next rebuild will", "path", filepath.Base(placed), "err", err)
 	}
 }
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/Rethunk-Tech/go-gameproc"
@@ -84,7 +84,7 @@ func (s *Service) endLateStart(ctx context.Context, sl slot) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Printf("launch: %s: the launcher started no game in the %v after the launch was cancelled", sl.ID(), lateStartWindow)
+			slog.Info("launch: the launcher started no game after the launch was cancelled", "id", sl.ID(), "window", lateStartWindow)
 			return
 		case <-tick.C:
 		}
@@ -97,10 +97,10 @@ func (s *Service) endLateStart(ctx context.Context, sl slot) {
 		}
 		for _, p := range procs {
 			if err := s.terminate(sl, p); err != nil {
-				log.Printf("launch: %s: ending the game started after its launch was cancelled: %v", sl.ID(), err)
+				slog.Warn("launch: ending the game started after its launch was cancelled", "id", sl.ID(), "err", err)
 			}
 		}
-		log.Printf("launch: %s: ended the game its launcher started after the launch was cancelled", sl.ID())
+		slog.Info("launch: ended the game its launcher started after the launch was cancelled", "id", sl.ID())
 		return
 	}
 }

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
+	"log/slog"
 	"maps"
 	"os"
 	"path/filepath"
@@ -87,7 +87,7 @@ func (s *Store) Delete(gameID, id string) error {
 	// The profile is already in the trash; a shortcut left behind is logged, not a failed delete.
 	if s.ShortcutRemoved != nil {
 		if err := s.ShortcutRemoved(gameID, id); err != nil {
-			log.Printf("profile %s/%s: remove its shortcuts: %v", gameID, id, err)
+			slog.Warn("profile: remove its shortcuts", "game", gameID, "game", id, "err", err)
 		}
 	}
 	return nil
@@ -111,12 +111,12 @@ func (s *Store) trashed(gameID string) ([]TrashItem, error) {
 		// store items are never collected.
 		info, err := d.Info()
 		if err != nil {
-			log.Printf("trashed profile %s/%s skipped: %v", gameID, d.Name(), err)
+			slog.Warn("trashed profile skipped", "game", gameID, "skipped", d.Name(), "err", err)
 			continue
 		}
 		p, err := readAt(filepath.Join(dir, d.Name()), d.Name())
 		if err != nil {
-			log.Printf("trashed profile %s/%s skipped: %v", gameID, d.Name(), err)
+			slog.Warn("trashed profile skipped", "game", gameID, "skipped", d.Name(), "err", err)
 			continue
 		}
 		out = append(out, TrashItem{ID: p.ID, Name: p.Name, DeletedAt: info.ModTime().UTC()})
@@ -451,7 +451,7 @@ func historyStoreKeys(dir string) ([]string, error) {
 	keys = uniqueKeys(keys)
 	next := snapshotKeys{Format: snapshotKeysFormat, Snapshots: slices.Sorted(maps.Keys(current)), Keys: keys}
 	if err := datadir.WriteJSON(path, next); err != nil {
-		log.Printf("history key cache: %v", err)
+		slog.Warn("history key cache", "err", err)
 	}
 	return keys, nil
 }

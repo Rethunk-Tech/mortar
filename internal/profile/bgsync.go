@@ -1,7 +1,7 @@
 package profile
 
 import (
-	"log"
+	"log/slog"
 	"sync"
 )
 
@@ -99,7 +99,7 @@ func (s *Store) syncDropped(game, id string) {
 			return
 		}
 		if err := s.syncPackages(game, id, false); err != nil {
-			log.Printf("profile %s/%s: laying out files after a change: %v", game, id, err)
+			slog.Warn("profile: laying out files after a change", "game", game, "game", id, "err", err)
 		}
 	})
 }

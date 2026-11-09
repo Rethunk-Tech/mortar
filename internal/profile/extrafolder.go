@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/fs"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -36,10 +36,10 @@ func (s *Service) extraFolderMods(game string) (GameModsPreview, error) {
 		if err != nil {
 			return GameModsPreview{}, err
 		}
-		log.Printf("extra folder %s: found %d mods in %s", game, len(got.Mods), dir)
+		slog.Info("extra folder: found mods", "game", game, "mods", len(got.Mods), "dir", dir)
 		for _, m := range got.Mods {
 			if m.Status != outcomeImported {
-				log.Printf("extra folder %s: %s not offered (%s): %s", game, m.Folder, m.Status, m.Reason)
+				slog.Info("extra folder: not offered", "game", game, "folder2", m.Folder, "status", m.Status, "reason", m.Reason)
 			}
 		}
 		out.Mods = append(out.Mods, got.Mods...)
@@ -53,7 +53,7 @@ func (s *Service) extraFolderMods(game string) (GameModsPreview, error) {
 func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder string) (InstallResult, error) {
 	roots := s.extraModsFolders(game)
 	if len(roots) == 0 {
-		log.Printf("extra folder %s: install %s: no extra mods folder is set", game, folder)
+		slog.Warn("extra folder: cannot install, no extra mods folder is set", "game", game, "install", folder)
 		return InstallResult{}, errors.New("no extra mods folder is set")
 	}
 	for _, root := range roots {
@@ -71,14 +71,14 @@ func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder st
 		}
 		res, err := s.store.InstallExtraFolder(ctx, game, id, folder)
 		if _, same := errors.AsType[*DuplicateError](err); same {
-			log.Printf("extra folder %s: %s is already in profile %s unchanged", game, folder, id)
+			slog.Info("extra folder: already in the profile unchanged", "game", game, "folder2", folder, "unchanged", id)
 			p, err := s.store.Get(game, id)
 			return InstallResult{Profile: p}, err
 		}
-		log.Printf("extra folder %s: installed %s into profile %s: added %d, error %v", game, folder, id, len(res.Added), err)
+		slog.Warn("extra folder: installed into the profile", "game", game, "installed", folder, "profile", id, "added", len(res.Added), "error", err)
 		return res, err
 	}
-	log.Printf("extra folder %s: %s is not in any extra mods folder %v", game, folder, roots)
+	slog.Warn("extra folder: not in any extra mods folder", "game", game, "folder2", folder, "folder3", roots)
 	return InstallResult{}, errors.New("that folder is not in an extra mods folder")
 }
 
@@ -111,7 +111,7 @@ func (s *Store) previewExtraFolder(game, dir string) (GameModsPreview, error) {
 		return GameModsPreview{}, err
 	}
 	if !found {
-		log.Printf("extra folder %s: %s does not exist", game, dir)
+		slog.Warn("extra folder: does not exist", "game", game, "dir", dir)
 		return out, nil
 	}
 	for _, e := range entries {
@@ -121,7 +121,7 @@ func (s *Store) previewExtraFolder(game, dir string) (GameModsPreview, error) {
 		if p, ok := packagePreview(filepath.Join(dir, e.Name()), g, false); ok {
 			out.Mods = append(out.Mods, p)
 		} else {
-			log.Printf("extra folder %s: skipped %s: it holds no files besides junk, no plugin DLL and no BepInEx folder", game, filepath.Join(dir, e.Name()))
+			slog.Warn("extra folder: skipped, it holds no files besides junk, no plugin DLL and no BepInEx folder", "game", game, "folder", filepath.Join(dir, e.Name()))
 		}
 	}
 	return out, nil
@@ -144,21 +144,21 @@ func packagePreview(folder string, g installer.Game, top bool) (GameModPreview, 
 	}
 	if b, err := safefs.ReadFile(filepath.Join(arch.Dir, "manifest.json")); err == nil {
 		if m, err := tstore.ParseManifest(b); err == nil && m.Name != "" {
-			log.Printf("extra folder: %s is a package by its manifest.json (%s)", folder, m.Name)
+			slog.Info("extra folder: is a package by its manifest.json", "folder", folder, "package", m.Name)
 			id := mod.NewID(mod.FormatThunderstore, cmp.Or(m.Namespace, m.Author, unknownPublisher)+"-"+m.Name)
 			return GameModPreview{ID: id, Name: m.Name, Version: cmp.Or(m.Version, fallbackVersion), Status: outcomeImported, Folder: folder}, true
 		}
 	}
 	if content {
 		name := filepath.Base(folder)
-		log.Printf("extra folder: %s is a package of content files, named for the folder", folder)
+		slog.Info("extra folder: is a package of content files, named for the folder", "folder", folder)
 		id := mod.NewID(mod.FormatThunderstore, unknownPublisher+"-"+name)
 		return GameModPreview{ID: id, Name: name, Version: fallbackVersion, Status: outcomeImported, Folder: folder}, true
 	}
 	if top && !topDLL(folder) {
 		return GameModPreview{}, false
 	}
-	log.Printf("extra folder: %s is a plugin by its DLL or BepInEx folder", folder)
+	slog.Info("extra folder: is a plugin by its DLL or BepInEx folder", "folder", folder)
 	c := pluginComponent(filepath.Base(folder), folder)
 	return GameModPreview{ID: c.ID, Name: c.Name, Status: outcomeImported, Folder: folder}, true
 }

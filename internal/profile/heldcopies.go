@@ -3,7 +3,7 @@ package profile
 import (
 	"errors"
 	"io/fs"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
@@ -101,8 +101,8 @@ func (s *Store) expireHeldCopies(dir string) {
 	}
 	n, err := expireHeld(dir, s.trashKeep(), time.Now())
 	if err != nil {
-		log.Printf("held copies: %v", err)
+		slog.Warn("held copies", "err", err)
 		return
 	}
-	log.Printf("held copies: %d expired", n)
+	slog.Info("held copies: expiring", "count", n)
 }

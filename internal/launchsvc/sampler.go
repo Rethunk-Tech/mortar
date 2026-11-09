@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -40,17 +40,17 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 
 	process, err := s.waitForSampleProcess(ctx, g, profileID, modsDir)
 	if err != nil {
-		log.Printf("startup sampler: %s: %v", g.ID(), err)
+		slog.Info("startup sampler", "game", g.ID(), "err", err)
 		return
 	}
 	profileDir, err := s.profiles.ProfileDir(g.ID(), profileID)
 	if err != nil {
-		log.Printf("startup sampler: %s: %v", g.ID(), err)
+		slog.Info("startup sampler", "game", g.ID(), "err", err)
 		return
 	}
 	session, file, err := startSampler(ctx, process.PID)
 	if err != nil {
-		log.Printf("startup sampler: %s: %v", g.ID(), err)
+		slog.Info("startup sampler", "game", g.ID(), "err", err)
 		return
 	}
 	detached := context.WithoutCancel(ctx)
@@ -64,7 +64,7 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 		_ = safefs.Remove(file.Name())
 	}()
 	if stopErr != nil {
-		log.Printf("startup sampler: %s: %v", g.ID(), stopErr)
+		slog.Info("startup sampler", "game", g.ID(), "err", stopErr)
 		return
 	}
 	if !reportFound {
@@ -73,10 +73,10 @@ func (s *Service) sampleStartup(parent context.Context, g game.Game, profileID, 
 	defer pruneStartupReports(filepath.Join(profileDir, startupDir), keepStartupReports)
 	samples, err := writeStartupSamples(file, filepath.Join(profileDir, startupDir), reportID, modsDir)
 	if err != nil {
-		log.Printf("startup sampler: %s: %v", g.ID(), err)
+		slog.Info("startup sampler", "game", g.ID(), "err", err)
 		return
 	}
-	log.Printf("startup sampler: %s: %d main-thread samples, %d mods charged, %d ms other", g.ID(), samples.ThreadSamples, len(samples.Mods), samples.OtherMs)
+	slog.Info("startup sampler: main-thread samples charged", "game", g.ID(), "samples", samples.ThreadSamples, "mods", len(samples.Mods), "otherMs", samples.OtherMs)
 }
 
 // startSampler traces the game's startup into a temp file the caller closes and removes once the session has stopped.
@@ -159,7 +159,7 @@ func pruneStartupReports(dir string, keep int) {
 	for _, name := range names[keep:] {
 		for _, f := range []string{name, strings.TrimSuffix(name, ".json") + ".samples.json"} {
 			if err := safefs.Remove(f); err != nil && !errors.Is(err, os.ErrNotExist) {
-				log.Printf("startup sampler: prune %s: %v", f, err)
+				slog.Warn("startup sampler: prune", "file", f, "err", err)
 			}
 		}
 	}

@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"mime"
 	"net"
@@ -258,7 +257,7 @@ func (s *Service) Apply() error {
 		// Listening with the rules gone makes Windows prompt and write its own block rules, and a prompt at launch
 		// has no context for the user: forget the flag instead, so the next LAN use runs the elevated step.
 		if blocked, err := s.checkFirewall(context.Background(), cfg.LanAllowAnyAddress); err != nil || blocked {
-			log.Printf("LAN sharing: firewall rules are missing, so it stays off until it is used (%v)", err)
+			slog.Warn("LAN sharing: firewall rules are missing, so it stays off until it is used", "err", err)
 			_, uerr := s.deps.Settings.Update(func(v *settings.Settings) { v.LanStarted = false })
 			return uerr
 		}
@@ -291,7 +290,7 @@ func (s *Service) refreshRules(anyAddr bool) {
 	s.mu.Unlock()
 	if changed {
 		if err := fixFirewall(context.Background(), anyAddr); err != nil {
-			log.Printf("LAN sharing firewall: %v", err)
+			slog.Warn("LAN sharing firewall", "err", err)
 		}
 	}
 }
@@ -314,13 +313,13 @@ func (s *Service) ensureStarted(ctx context.Context) error {
 	blocked, err := firewallBlocked(ctx, anyAddr)
 	if err != nil || blocked {
 		if err := fixFirewall(ctx, anyAddr); err != nil {
-			log.Printf("LAN sharing firewall: %v", err)
+			slog.Warn("LAN sharing firewall", "err", err)
 		}
 		// Listening without the rule is what makes Windows raise its own prompt, so an unreadable firewall counts
 		// as blocked too.
 		if blocked, err = firewallBlocked(ctx, anyAddr); err != nil || blocked {
 			if err != nil {
-				log.Printf("LAN sharing firewall: %v", err)
+				slog.Warn("LAN sharing firewall", "err", err)
 			}
 			return usererr.New(usererr.Permission, "Mortar could not add its firewall rule, so nearby computers can't reach it")
 		}
@@ -428,7 +427,7 @@ func (s *Service) start(ctx context.Context) error {
 	go func() {
 		defer s.wg.Done()
 		if err := server.Serve(&lanListener{Listener: listener, allowAny: s.allowAnyAddress}); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Printf("LAN sharing server: %v", err)
+			slog.Warn("LAN sharing server", "err", err)
 		}
 	}()
 	go func() {
@@ -550,7 +549,7 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 	name := s.peerName(peerID)
 	defer func() {
 		if err != nil {
-			log.Printf("lan: send to %s failed: %v", name, err)
+			slog.Warn("lan: send failed", "peer", name, "err", err)
 		}
 	}()
 	hello, err := s.hello(ctx, peerID)
@@ -578,7 +577,7 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 	if err != nil {
 		return err
 	}
-	log.Printf("lan: sending %q (%s) to %s, paired %t, %d files, %d bytes", shared.Name, game, name, key != nil, len(transferItems(shared)), len(payload))
+	slog.Info("lan: sending a profile", "profile", shared.Name, "game", game, "peer", name, "paired", key != nil, "files", len(transferItems(shared)), "bytes", len(payload))
 	selfID, err := s.book.self()
 	if err != nil {
 		return err
@@ -649,7 +648,7 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 		s.rememberGrant(result.TransferToken, game, granted, tk)
 		s.startOutgoing(result.TransferToken, game, name, shared.Name, len(granted), tk)
 	}
-	log.Printf("lan: %s took %q, paired %t", name, shared.Name, result.Paired)
+	slog.Info("lan: sent a profile", "peer", name, "profile", shared.Name, "paired", result.Paired)
 	s.rememberAddress(peerID)
 	return nil
 }
@@ -928,10 +927,7 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	log.Printf("lan: received %q from %q, paired %t, %d files",
-		strings.ReplaceAll(strings.ReplaceAll(shared.Name, "\n", ""), "\r", ""),
-		strings.ReplaceAll(strings.ReplaceAll(request.Sender, "\n", ""), "\r", ""),
-		paired, len(items))
+	slog.Info("lan: received a profile", "profile", strings.ReplaceAll(strings.ReplaceAll(shared.Name, "\n", ""), "\r", ""), "sender", strings.ReplaceAll(strings.ReplaceAll(request.Sender, "\n", ""), "\r", ""), "paired", paired, "files", len(items))
 	response := shareResponse{Paired: paired}
 	var arrivalTransfer incomingTransfer
 	if paired {

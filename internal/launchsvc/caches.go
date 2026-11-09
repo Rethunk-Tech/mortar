@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,34 +33,34 @@ func (s *Service) clearCaches(gameID, profileID, installID string) {
 	}
 	hash, err := s.profiles.ModSetHash(gameID, profileID)
 	if err != nil {
-		log.Printf("launch: %s caches: read the mod set: %v", gameID, err)
+		slog.Warn("launch: caches: read the mod set", "game", gameID, "err", err)
 		return
 	}
 	if hash == s.profiles.CacheSet(gameID, profileID) {
-		log.Printf("launch: %s mod set unchanged, nothing cleared", gameID)
+		slog.Info("launch: mod set unchanged, nothing cleared", "game", gameID)
 		return
 	}
 	cleared, failed := 0, false
 	for _, c := range info.Caches {
 		root, err := game.PathFor(s.home, s.settings.Get(), gameID, s.pinOf(gameID, profileID, installID), c.Role)
 		if err != nil {
-			log.Printf("launch: %s cache %s: %v", gameID, c.Path, err)
+			slog.Warn("launch: cache", "game", gameID, "path", c.Path, "err", err)
 			failed = true
 			continue
 		}
 		n, err := clearCache(root, c.Path)
 		cleared += n
 		if err != nil {
-			log.Printf("launch: %s cache %s: %v", gameID, c.Path, err)
+			slog.Warn("launch: cache", "game", gameID, "path", c.Path, "err", err)
 			failed = true
 		}
 	}
-	log.Printf("launch: %s cleared %d cache files", gameID, cleared)
+	slog.Info("launch: cleared cache files", "game", gameID, "files", cleared)
 	if failed {
 		return
 	}
 	if err := s.profiles.SetCacheSet(gameID, profileID, hash); err != nil {
-		log.Printf("launch: %s caches: record the mod set: %v", gameID, err)
+		slog.Warn("launch: caches: record the mod set", "game", gameID, "err", err)
 	}
 }
 
