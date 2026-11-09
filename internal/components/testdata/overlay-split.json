@@ -1,0 +1,37 @@
+{
+  "serial": 1,
+  "components": [
+    {
+      "game": "lethal-company",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "tag": "v0.5.4",
+      "asset": "MortarBepInExBridge_LethalCompany-0.5.4.zip",
+      "version": "0.5.4",
+      "sha256": "8b13f97a9f20227336ff39cb94c2e68c9cc5fad86dc5e8605536b6f274bfeefd"
+    },
+    {
+      "game": "lethal-company",
+      "name": "overlay",
+      "kind": "overlay",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-overlay" },
+      "tag": "v0.1.0",
+      "asset": "MortarBepInExOverlay-0.1.0.zip",
+      "version": "0.1.0",
+      "sha256": "13ce7b1b73cb3faf49d893d7e2a5ce1a141bbd534ea03f239846be0e7ef833b0"
+    }
+  ],
+  "games": [
+    {
+      "id": "lethal-company",
+      "name": "Lethal Company",
+      "enabled": false,
+      "marker": "Lethal Company.exe",
+      "deploy": "profile",
+      "loaders": [
+        { "id": "bepinex5", "name": "BepInEx 5", "companion": "bridge", "overlay": "overlay" }
+      ]
+    }
+  ]
+}

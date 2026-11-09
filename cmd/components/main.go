@@ -177,7 +177,7 @@ func resolve(ctx context.Context, client *github.Client, source components.Sourc
 	if source.Game == "" || source.Name == "" || source.AssetPattern == "" || source.Version == "" {
 		return components.Component{}, fmt.Errorf("component %q is missing a required field", source.Name)
 	}
-	if source.Kind != "loader" && source.Kind != "bridge" {
+	if source.Kind != "loader" && source.Kind != "bridge" && source.Kind != "overlay" {
 		return components.Component{}, fmt.Errorf("component %q has unknown kind %q", source.Name, source.Kind)
 	}
 	if err := source.Source.Validate(); err != nil {

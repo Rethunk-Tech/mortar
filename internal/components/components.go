@@ -521,6 +521,9 @@ type GameLoader struct {
 	// Companion names the game's component (kind bridge) that Mortar installs alongside the loader so the running game
 	// can talk to Mortar.
 	Companion string `json:"companion,omitempty"`
+	// Overlay names the game's component (kind overlay) holding the stream overlay the companion no longer serves
+	// itself; empty for a game whose companion still serves it, whose Streaming settings hide.
+	Overlay string `json:"overlay,omitempty"`
 	// Console is whether the game has a command console its companion can run lines in (Valheim's), which the Console
 	// tab's input needs on a BepInEx game.
 	Console bool `json:"console,omitempty"`
@@ -1523,7 +1526,9 @@ func (c Component) Validate() error {
 	if c.Game == "" || c.Name == "" {
 		return errors.New("component game and name are required")
 	}
-	if c.Kind != "loader" && c.Kind != "bridge" {
+	switch c.Kind {
+	case "loader", "bridge", "overlay":
+	default:
 		return fmt.Errorf("component %q has unknown kind %q", c.Name, c.Kind)
 	}
 	if c.Version == "" || c.Asset == "" || c.Tag == "" {

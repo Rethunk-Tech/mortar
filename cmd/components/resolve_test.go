@@ -34,3 +34,15 @@ func TestResolveDownloadReportsTheLibraryStatus(t *testing.T) {
 		t.Fatalf("asset GET must keep the library status: %v", err)
 	}
 }
+
+// The generator accepts the overlay kind the client reads, so a source entry for the split overlay resolves.
+func TestResolveAcceptsAnOverlayComponent(t *testing.T) {
+	_, err := resolve(t.Context(), &github.Client{HTTP: http.DefaultClient, CacheDir: t.TempDir()}, components.SourceComponent{
+		Game: "lethal-company", Name: "overlay", Kind: "overlay",
+		Source:       components.Source{Host: "thunderstore.io", Namespace: "Mortar", Name: "StreamOverlay"},
+		AssetPattern: "overlay.zip", Version: "0.1.0",
+	})
+	if err == nil || strings.Contains(err.Error(), "unknown kind") {
+		t.Fatalf("an overlay source entry was refused by kind: %v", err)
+	}
+}
