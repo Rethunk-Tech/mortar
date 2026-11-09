@@ -1,7 +1,7 @@
 package queue
 
 import (
-	"log"
+	"log/slog"
 	"time"
 )
 
@@ -29,11 +29,11 @@ func (s *Service) StopWait(wait func(), limit time.Duration) {
 	for {
 		installing, others := s.inFlight()
 		if len(installing) == 0 {
-			log.Printf("queue: workers still running after %s at quit, abandoned: %v", limit, others)
+			slog.Warn("queue: workers still running at quit, abandoned", "limit", limit, "workers", others)
 			return
 		}
 		if !logged {
-			log.Printf("queue: finishing %d installs before quit", len(installing))
+			slog.Info("queue: finishing installs before quit", "installs", len(installing))
 			logged = true
 		}
 		select {

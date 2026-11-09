@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -104,11 +104,11 @@ func (s *Service) foldIntoStart(ctx context.Context, dir string, before map[stri
 		return
 	}
 	if _, err := s.run(ctx, dir, "git", append([]string{"add", "--"}, paths...)...); err != nil {
-		log.Printf("devsvc: staging %s's dependencies: %v", dir, err)
+		slog.Info("devsvc: staging dependencies", "dir", dir, "err", err)
 		return
 	}
 	if _, err := s.run(ctx, dir, "git", append([]string{"commit", "-q", "--amend", "--no-edit", "--"}, paths...)...); err != nil {
-		log.Printf("devsvc: folding dependencies into %s's first commit: %v", dir, err)
+		slog.Info("devsvc: folding dependencies into the first commit", "dir", dir, "err", err)
 	}
 }
 

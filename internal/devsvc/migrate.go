@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/fs"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -36,7 +36,7 @@ func (s *Service) MigrateRecords() {
 				changed, err := migrateFile(dir, m.name, m.update)
 				if err != nil {
 					skipped++
-					log.Printf("devsvc: leaving %s as it is: %v", filepath.Join(dir, ".mortar", m.name), err)
+					slog.Info("devsvc: leaving a file as it is", "path", filepath.Join(dir, ".mortar", m.name), "err", err)
 				} else if changed {
 					wrote++
 				}
@@ -46,12 +46,12 @@ func (s *Service) MigrateRecords() {
 			rec, ok := readTemplateRecord(dir)
 			if p.TemplateIcon != "" && (ok && rec.TemplateIcon != "" || !ok && hasNoTemplateRecord(dir)) {
 				if err := s.Settings.ClearDevProjectTemplateIcon(gameID, p.Dir); err != nil {
-					log.Printf("devsvc: clearing the icon kept for %s: %v", dir, err)
+					slog.Warn("devsvc: clearing the icon kept", "dir", dir, "err", err)
 				}
 			}
 		}
 	}
-	log.Printf("devsvc: project records: %d projects, %d files rewritten, %d skipped", seen, wrote, skipped)
+	slog.Warn("devsvc: project records rewritten", "projects", seen, "files", wrote, "skipped", skipped)
 }
 
 // migrateFile replaces .mortar/name with what update gives when the bytes differ; a missing file is not an error.

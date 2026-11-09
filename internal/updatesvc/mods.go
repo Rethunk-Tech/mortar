@@ -2,7 +2,7 @@ package updatesvc
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"strconv"
 	"time"
 
@@ -39,11 +39,11 @@ func StartModBackground(ctx context.Context, svc *settings.Service, source func(
 			}
 			profiles, err := source(ctx)
 			if err != nil {
-				log.Printf("mod update check: %v", err)
+				slog.Warn("mod update check", "err", err)
 				return
 			}
 			keys, summary := DigestFromProfiles(profiles)
-			log.Printf("mod update check: %d profiles, %d updates in %d of them", len(profiles), summary.TotalUpdates, summary.ProfilesWith)
+			slog.Info("mod update check: profiles with updates", "profiles", len(profiles), "updates", summary.TotalUpdates, "withUpdates", summary.ProfilesWith)
 			now := time.Now()
 			should, persist := DecideUpdateDigest(
 				cur.UpdateDigest,
@@ -57,7 +57,7 @@ func StartModBackground(ctx context.Context, svc *settings.Service, source func(
 				at = now.Format(time.RFC3339)
 			}
 			if err := svc.SetLastModUpdateDigest(persist, at); err != nil {
-				log.Printf("mod update digest save: %v", err)
+				slog.Warn("mod update digest save", "err", err)
 				return
 			}
 			if should && summary.TotalUpdates > 0 {

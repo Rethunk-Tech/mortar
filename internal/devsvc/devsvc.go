@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/exec"
@@ -789,7 +789,7 @@ func (s *Service) localTemplate(path string) (string, error) {
 	if _, err := os.Stat(filepath.Join(dir, filepath.FromSlash(templateFile))); err != nil {
 		return "", fmt.Errorf("%s (%s) is not a template: it has no %s", TemplateEnv, abs, templateFile)
 	}
-	log.Printf("dev template: using the local template copied to %s", dir)
+	slog.Info("dev template: using the local copy", "dir", dir)
 	return dir, nil
 }
 

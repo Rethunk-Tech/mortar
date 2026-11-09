@@ -4,7 +4,7 @@ package updatesvc
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"strings"
 	"sync"
@@ -175,14 +175,14 @@ func (s *Service) Check(ctx context.Context) (*Release, error) {
 		return &r, nil
 	}
 	if err != nil {
-		log.Printf("updater check: %v", err)
+		slog.Warn("updater check", "err", err)
 		s.found = nil
 		return nil, classifyCheckError(err)
 	}
 	if rel == nil {
 		s.found = nil
 		if missing != nil {
-			log.Printf("updater check: %v", missing)
+			slog.Warn("updater check", "missing", missing)
 			return nil, classifyCheckError(missing)
 		}
 		return nil, err
@@ -265,7 +265,7 @@ func (s *Service) WhatsNew(ctx context.Context) (WhatsNew, error) {
 	}
 	notes, noteErr := s.releaseNotes(ctx, cur)
 	if noteErr != nil {
-		log.Printf("what's new in %s: %v", cur, noteErr)
+		slog.Warn("what's new", "current", cur, "err", noteErr)
 		return none, nil
 	}
 	return WhatsNew{Version: cur, Notes: notes, Earlier: s.skippedReleases(ctx, last, cur)}, nil

@@ -3,7 +3,7 @@ package updatesvc
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"path/filepath"
 	"strings"
 
@@ -40,7 +40,7 @@ func (s *Service) skippedReleases(ctx context.Context, last, cur string) []Relea
 	owner, repo, _ := strings.Cut(mortarRepo, "/")
 	rels, err := s.ghClient().ReleasesBetween(ctx, owner, repo, last, cur)
 	if err != nil {
-		log.Printf("what's new since %s: %v", last, err)
+		slog.Warn("what's new", "last", last, "err", err)
 		return nil
 	}
 	var out []ReleaseNotes

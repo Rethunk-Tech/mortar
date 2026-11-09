@@ -3,7 +3,7 @@ package devsvc
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -34,7 +34,7 @@ func trashFailed(dir string, err error) error {
 	}
 	holders, herr := safefs.Holders(projectPaths(dir))
 	if herr != nil {
-		log.Printf("devsvc: finding what holds %s: %v", dir, herr)
+		slog.Info("devsvc: finding what holds a folder", "dir", dir, "err", herr)
 	}
 	names := []string{}
 	for _, h := range holders {
@@ -42,7 +42,7 @@ func trashFailed(dir string, err error) error {
 			names = append(names, h.Name)
 		}
 	}
-	log.Printf("devsvc: moving %s to the trash: %v; held by %v", dir, err, names)
+	slog.Info("devsvc: moving to the trash", "dir", dir, "err", err, "names", names)
 	return inUse(dir, names)
 }
 

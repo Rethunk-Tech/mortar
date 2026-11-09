@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/fs"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -527,7 +527,7 @@ func storeSizes(items *store.Store) ([]EntrySize, error) {
 	}
 	if len(measured) > 0 {
 		if err := items.RecordSizes(measured); err != nil {
-			log.Printf("record store sizes: %v", err)
+			slog.Warn("record store sizes", "err", err)
 		}
 	}
 	return out, nil

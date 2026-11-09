@@ -5,7 +5,7 @@ import (
 	"cmp"
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"maps"
 	"path/filepath"
 	"slices"
@@ -123,11 +123,11 @@ func (s *Service) buildScanners(base string) map[string]*saves.Scanner {
 		if err != nil {
 			// An enabled game that is not installed has no folder to resolve; it gets no scanner until a restart
 			// finds it, like any other change of the selected install.
-			log.Printf("saves: %s: %v", id, err)
+			slog.Warn("saves", "game", id, "err", err)
 			continue
 		}
 		l := game.SaveLayout(id, savesDir)
-		log.Printf("saves: %s: %s, files %v (catalog serial %d)", id, l.Dir, l.Files, game.CatalogSerial())
+		slog.Info("saves: layout", "game", id, "dir", l.Dir, "files", l.Files, "serial", game.CatalogSerial())
 		scanners[id] = &saves.Scanner{Dir: l.Dir, Files: l.Files, Companions: l.Companions, CompanionPaths: l.CompanionPaths, Copies: l.Copies, CopyFolders: l.CopyFolders, Linked: l.Linked, UserFolders: l.UserFolders, CacheDir: filepath.Join(base, "cache", id)}
 	}
 	return scanners
@@ -238,7 +238,7 @@ func (s *Service) Saves(ctx context.Context, game, profileID string) ([]Fit, err
 	present, enabled := haveMaps(mods)
 	infos, err := scanner.Scan(ctx, index)
 	if err != nil {
-		log.Printf("save scan: %v", err)
+		slog.Warn("save scan", "err", err)
 	}
 	dismissed := s.settings.Get().Dismissed
 	fits := make([]Fit, len(infos))

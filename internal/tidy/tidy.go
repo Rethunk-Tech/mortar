@@ -3,7 +3,7 @@ package tidy
 
 import (
 	"cmp"
-	"log"
+	"log/slog"
 	"sync"
 )
 
@@ -58,7 +58,7 @@ func (c *Collector) Add(code, what, area, profile string, count int, names ...st
 	if names == nil {
 		names = []string{}
 	}
-	log.Printf("tidied: %s (%s): %d %v", what, where, count, names)
+	slog.Info("tidied: names", "what", what, "where", where, "count", count, "names", names)
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.closed {

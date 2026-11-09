@@ -7,7 +7,7 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
-	"log"
+	"log/slog"
 	"slices"
 	"strconv"
 	"strings"
@@ -361,7 +361,7 @@ func runFrameworks(in framework.Input) (framework.Findings, []CheckTiming) {
 
 func logCheckTimings(profileID string, timings []CheckTiming) {
 	for _, t := range timings {
-		log.Printf("problems: %s %s %v (%d packs)", strconv.Quote(profileID), t.Name, time.Duration(t.Ms)*time.Millisecond, t.Count)
+		slog.Info("problems: check timing", "strconv", strconv.Quote(profileID), "name", t.Name, "millisecond", time.Duration(t.Ms)*time.Millisecond, "packs", t.Count)
 	}
 }
 

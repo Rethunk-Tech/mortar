@@ -2,7 +2,7 @@ package updatesvc
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
 )
 
@@ -50,7 +50,7 @@ func (s *Service) backgroundTick(ctx context.Context, emit func(string, any)) {
 		return
 	}
 	if err := s.Install(ctx); err != nil {
-		log.Printf("updater background install: %v", err)
+		slog.Warn("updater background install", "err", err)
 		return
 	}
 	s.lock()

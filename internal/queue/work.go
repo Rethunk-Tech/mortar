@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 	"sync"
 	"time"
@@ -166,10 +166,10 @@ func (s *Service) verifyMD5() bool { return s.d.VerifyNexusMD5 != nil && s.d.Ver
 func lookupMD5(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item) string {
 	files, err := c.Files(ctx, t, it.ModID)
 	if err != nil {
-		log.Printf("nexus md5: file list of mod %d: %v; installing file %d unchecked", it.ModID, err, it.FileID)
+		slog.Warn("nexus md5: no file list for the mod, installing the file unchecked", "mod", it.ModID, "err", err, "file", it.FileID)
 		return ""
 	}
-	log.Printf("nexus md5: looked up file %d of mod %d", it.FileID, it.ModID)
+	slog.Info("nexus md5: looked up file of mod", "file", it.FileID, "mod", it.ModID)
 	return nexus.FileByID(files, it.FileID).MD5
 }
 
@@ -278,7 +278,7 @@ func (s *Service) skipHeld() {
 	s.mu.Unlock()
 	for _, it := range cands {
 		if have := s.d.Newest(it.Game, it.Profile, it.ModID, it.Current); have >= it.FileID {
-			log.Printf("queue: mod %d file %d skipped as %s, profile %s already has file %d", it.ModID, it.FileID, it.ID, it.Profile, have)
+			slog.Warn("queue: mod file skipped, the profile already has the file", "mod", it.ModID, "file", it.FileID, "id", it.ID, "profile", it.Profile, "have", have)
 			s.endWith(it.ID, StateSkipped, AlreadyNewest, StateQueued, StateWaitingClick)
 		}
 	}
@@ -800,7 +800,7 @@ func (s *Service) finish(id string, err error, unverified bool, change string) e
 	// The batch's event is recorded before the item shows done, so a window summing up a settled batch has its id.
 	if s.d.HistoryBatch != nil && rec.BatchID != "" {
 		if bulk, batchErr := s.d.HistoryBatch(rec.Game, rec.Profile, rec.BatchID); batchErr != nil {
-			log.Printf("queue: record profile history batch %s: %v", rec.BatchID, batchErr)
+			slog.Info("queue: record profile history batch", "batch", rec.BatchID, "err", batchErr)
 		} else if bulk != "" {
 			change = bulk
 		}
@@ -808,7 +808,7 @@ func (s *Service) finish(id string, err error, unverified bool, change string) e
 	// After the batch is recorded, so the removal joins the install's event.
 	if rec.Replaces != "" && s.d.Remove != nil {
 		if rmErr := s.d.Remove(rec.Game, rec.Profile, rec.Replaces); rmErr != nil {
-			log.Printf("queue: remove %s replaced by %s: %v", rec.Replaces, rec.Name, rmErr)
+			slog.Warn("queue: remove the replaced item", "replaced", rec.Replaces, "name", rec.Name, "err", rmErr)
 		}
 	}
 	// Before the state changes, so whoever sees Done finds the download in the history.
@@ -822,7 +822,7 @@ func (s *Service) finish(id string, err error, unverified bool, change string) e
 	notifyDesktopDownload(rec.Name, rec.Game, rec.Profile, true)
 	if rec.Everywhere != "" && s.d.Everywhere != nil {
 		if failed := s.d.Everywhere(rec.Game, rec.Everywhere); len(failed) > 0 {
-			log.Printf("queue: update %s did not reach %d other profiles: %+v", rec.Everywhere, len(failed), failed)
+			slog.Warn("queue: update did not reach other profiles", "everywhere", rec.Everywhere, "profiles", len(failed), "failed", failed)
 			if s.d.Emit != nil {
 				s.d.Emit(EverywhereFailedEvent, EverywhereFailed{Mod: rec.Name, Failed: failed})
 			}
@@ -833,7 +833,7 @@ func (s *Service) finish(id string, err error, unverified bool, change string) e
 	}
 	if s.d.HistoryBatch != nil && (rec.BatchID == "" || s.batchFinished(rec)) {
 		if _, batchErr := s.d.HistoryBatch(rec.Game, rec.Profile, ""); batchErr != nil {
-			log.Printf("queue: close profile history batch %s: %v", rec.BatchID, batchErr)
+			slog.Info("queue: close profile history batch", "batch", rec.BatchID, "err", batchErr)
 		}
 	}
 	return nil
@@ -929,7 +929,7 @@ func (s *Service) installStored(ctx context.Context, c *nexusmods.Client, it Ite
 		return true, context.Canceled
 	}
 	key := store.NexusKey(it.ModID, it.FileID)
-	log.Printf("queue: mod %d file %d installs from the store (%s)", it.ModID, it.FileID, key)
+	slog.Info("queue: mod file installs from the store", "mod", it.ModID, "file", it.FileID, "key", key)
 	s.installMu.Lock()
 	res, err := s.d.InstallStaged(it.Game, it.Profile, key, nexusSource(it, im))
 	s.installMu.Unlock()

@@ -3,7 +3,7 @@ package updatesvc
 import (
 	"context"
 	"io"
-	"log"
+	"log/slog"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/wailsapp/wails/v3/pkg/updater"
@@ -33,7 +33,7 @@ func (p *channelProvider) Check(ctx context.Context, req updater.CheckRequest) (
 			return nil, err
 		}
 		// The updater counts an error as a failed check and would drop the stable release with it.
-		log.Printf("update: prerelease check: %v", err)
+		slog.Warn("update: prerelease check", "err", err)
 		return stampProvider(stable, p.stable.Name()), nil
 	}
 	chosen := preferRelease(true, stable, beta)

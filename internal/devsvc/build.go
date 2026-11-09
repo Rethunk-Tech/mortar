@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -132,7 +132,7 @@ func (s *Service) lockedBuild(ctx context.Context, gameID string, p settings.Dev
 		return p, nil, err
 	}
 	if err := s.wire(ctx, p, func() error { return s.syncDependencies(gameID, p) }); err != nil {
-		log.Printf("devsvc: declaring %s's dependencies: %v", p.Name, err)
+		slog.Info("devsvc: declaring dependencies", "project", p.Name, "err", err)
 	}
 	return p, unlock, nil
 }
@@ -148,7 +148,7 @@ func removeStaleBundles(p settings.DevProject) {
 	for _, b := range built {
 		if _, err := os.Stat(filepath.Join(assets, filepath.Base(b))); errors.Is(err, fs.ErrNotExist) {
 			if err := safefs.Remove(b); err != nil {
-				log.Printf("devsvc: removing stale bundle %s: %v", b, err)
+				slog.Warn("devsvc: removing a stale bundle", "bundle", b, "err", err)
 			}
 		}
 	}

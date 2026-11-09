@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -61,7 +61,7 @@ func (s *Service) remember(repo, asset string) {
 	m := s.choices()
 	m[strings.ToLower(repo)] = gh.Shape(asset)
 	if err := datadir.WriteJSON(filepath.Join(s.d.Dir, choicesFile), m); err != nil {
-		log.Printf("queue: remember the %s asset choice: %v", repo, err)
+		slog.Warn("queue: remember the asset choice", "repo", repo, "err", err)
 	}
 }
 
@@ -159,7 +159,7 @@ func (s *Service) backToNexus(id string) {
 		s.mu.Unlock()
 		return
 	}
-	log.Printf("queue: %s: the %s release does not contain %s; using Nexus", cur.Name, cur.Repo, cur.FallbackID)
+	slog.Warn("queue: the release does not contain the asset, using Nexus", "name", cur.Name, "repo", cur.Repo, "fallback", cur.FallbackID)
 	cur.Repo, cur.Tag, cur.Asset, cur.FileName = "", "", "", cur.nexusFileName
 	cur.State, cur.Progress, cur.fallbackTried = StateQueued, 0, true
 	s.mu.Unlock()

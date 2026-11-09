@@ -2,7 +2,7 @@ package meta
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -128,7 +128,7 @@ func (c *Client) askStale(ctx context.Context, req UpdateRequest, stale []int, n
 				unknown++
 			}
 		}
-		log.Printf("updates: smapi.io did not answer for %d of %d mods, pausing update checks for %s: %v", unknown, len(asked), updatesBackoff, err)
+		slog.Warn("updates: smapi.io did not answer, pausing update checks", "unknown", unknown, "mods", len(asked), "pause", updatesBackoff, "err", err)
 		c.updatesPause = now.Add(updatesBackoff)
 	}
 	return got

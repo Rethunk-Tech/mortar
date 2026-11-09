@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -217,7 +217,7 @@ func (s *Service) Usages(gameID, dir, target string) ([]Usage, error) {
 	for _, a := range all {
 		callers, err := dotnet.Usages(a.Path, target)
 		if err != nil {
-			log.Printf("devsvc: reading %s for usages: %v", a.Label, err)
+			slog.Warn("devsvc: reading for usages", "asset", a.Label, "err", err)
 			continue
 		}
 		for _, c := range callers {

@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
+	"log/slog"
 	"maps"
 	"math"
 	"os"
@@ -748,7 +748,7 @@ func (s *Store) viewIndex() (index, error) {
 		if !found {
 			return nil, err
 		}
-		log.Printf("store index is corrupt, starting a new one: %v", err)
+		slog.Warn("store: index is corrupt, starting a new one", "err", err)
 		if err := safefs.Rename(s.indexPath(), s.indexPath()+".corrupt"); err != nil {
 			return nil, err
 		}

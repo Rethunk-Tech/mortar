@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"regexp"
@@ -586,7 +586,7 @@ func Run(ctx context.Context, s *Service, assigned <-chan nxmsvc.Assignment) (wa
 // reject shows a link that could not be queued as a failed entry, since there is no item to blame. It keeps the
 // request so that Retry can download it once the cause is fixed.
 func (s *Service) reject(r Request, err error) {
-	log.Printf("queue: mod %d file %d could not be queued: %v", r.ModID, r.FileID, err)
+	slog.Warn("queue: mod file could not be queued", "mod", r.ModID, "file", r.FileID, "err", err)
 	it := &Item{
 		ID: ids.New(), Kind: r.Kind, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 		Package: r.Package, Source: r.Source, Version: r.Version, State: StateFailed, Error: err.Error(), key: r.key, expires: r.expires,
@@ -830,13 +830,13 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 		if i := slices.IndexFunc(s.items, func(it *Item) bool { return sameDownload(it, r) }); i >= 0 {
 			it := s.items[i]
 			joinExisting(it, r)
-			log.Printf("queue: mod %d file %d %s joined existing item %s (%s)", r.ModID, r.FileID, r.Repo, it.ID, it.State)
+			slog.Info("queue: mod file joined an existing item", "mod", r.ModID, "file", r.FileID, "joined", r.Repo, "item", it.ID, "state", it.State)
 			out = append(out, *it)
 			continue
 		}
 		it := newItem(r, known[i])
 		s.items = append(s.items, it)
-		log.Printf("queue: mod %d file %d %s queued as %s for profile %s", r.ModID, r.FileID, r.Repo, it.ID, r.Profile)
+		slog.Info("queue: mod file queued for a profile", "mod", r.ModID, "file", r.FileID, "queued", r.Repo, "id", it.ID, "profile", r.Profile)
 		out = append(out, *it)
 	}
 	s.mu.Unlock()

@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"io/fs"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -68,7 +68,7 @@ func (s *Store) manifestPath(game, key string) string {
 func (s *Store) loadVerify() verifyState {
 	st := verifyState{}
 	if _, err := datadir.ReadJSON(filepath.Join(s.root, verifyFile), &st); err != nil {
-		log.Printf("store verify state unreadable, starting over: %v", err)
+		slog.Warn("store verify state unreadable, starting over", "err", err)
 		st = verifyState{}
 	}
 	if st.Items == nil {
@@ -163,14 +163,14 @@ func (s *Store) recordInstalled(game, key, dir string) {
 		err = s.writeManifest(game, key, files)
 	}
 	if err != nil {
-		log.Printf("store %s/%s: record hashes: %v", game, key, err)
+		slog.Warn("store: record hashes", "game", game, "key", key, "err", err)
 		_ = safefs.Remove(s.manifestPath(game, key))
 	}
 	st := s.loadVerify()
 	if st.Items[game] != nil {
 		delete(st.Items[game], key)
 		if err := s.saveVerify(st); err != nil {
-			log.Printf("store %s/%s: clear verification: %v", game, key, err)
+			slog.Warn("store: clear verification", "game", game, "key", key, "err", err)
 		}
 	}
 }
@@ -190,7 +190,7 @@ func (s *Store) forget(game string, keys ...string) {
 	}
 	if changed {
 		if err := s.saveVerify(st); err != nil {
-			log.Printf("store verify state: %v", err)
+			slog.Warn("store verify state", "err", err)
 		}
 	}
 }
@@ -255,7 +255,7 @@ func (s *Store) Verify(ctx context.Context, game, key string) (Damage, error) {
 	var want hashRecord
 	found, rerr := datadir.ReadJSON(s.manifestPath(game, key), &want)
 	if rerr != nil {
-		log.Printf("store %s/%s: hash record unreadable, recording again: %v", game, key, rerr)
+		slog.Warn("store: hash record unreadable, recording again", "game", game, "key", key, "err", rerr)
 		found = false
 	}
 	d := Damage{}

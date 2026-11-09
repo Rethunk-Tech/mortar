@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"slices"
 	"strings"
 	"time"
@@ -273,7 +273,7 @@ func (s *Service) fetchPackage(ctx context.Context, it Item, path string) error 
 		if !cdnFailure(ctx, err) {
 			return err
 		}
-		log.Printf("queue: %s: %v; trying the next Thunderstore CDN", it.Package, err)
+		slog.Warn("queue: trying the next Thunderstore CDN", "package", it.Package, "err", err)
 	}
 	return err
 }
@@ -352,7 +352,7 @@ func (s *Service) queueRequired(ctx context.Context, it Item, p profile.Profile)
 	// Add takes the queue's lock, which the worker calling this may be inside of; the item's own context ends with it.
 	go func() {
 		if _, err := s.Add(context.WithoutCancel(ctx), reqs); err != nil {
-			log.Printf("queue: required mods of %s: %v", it.Package, err)
+			slog.Warn("queue: required mods", "package", it.Package, "err", err)
 		}
 	}()
 }

@@ -3,7 +3,7 @@ package savessvc
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"strconv"
 	"time"
 
@@ -49,7 +49,7 @@ func (s *Service) scheduledTickFor(ctx context.Context, gameID string, now time.
 	set := s.settings.Get()
 	l, backupsDir, err := s.backupDirs(gameID)
 	if err != nil {
-		log.Printf("scheduled save backup: %v", err)
+		slog.Warn("scheduled save backup", "err", err)
 		return
 	}
 	// The game's shared saves follow the game's schedule; a profile that keeps its own saves follows its own, which
@@ -64,7 +64,7 @@ func (s *Service) scheduledTickFor(ctx context.Context, gameID string, now time.
 		u.interval = time.Duration(hours) * time.Hour
 		last, err := s.lastScheduledAt(scheduleKey(gameID, u.profile), backupsDir, now)
 		if err != nil {
-			log.Printf("scheduled save backup: %v", err)
+			slog.Warn("scheduled save backup", "err", err)
 			return
 		}
 		if now.Sub(last) >= u.interval {
@@ -92,9 +92,9 @@ func (s *Service) scheduledTickFor(ctx context.Context, gameID string, now time.
 		s.schedMu.Unlock()
 		failed = errors.Join(failed, unitErr)
 	}
-	log.Printf("scheduled save backup: %d saved, %d unchanged, %d failed", run.Saved, run.Unchanged, run.Failed)
+	slog.Info("scheduled save backup: finished", "saved", run.Saved, "unchanged", run.Unchanged, "failed", run.Failed)
 	if failed != nil {
-		log.Printf("scheduled save backup: %v", failed)
+		slog.Warn("scheduled save backup", "failed", failed)
 	}
 	if s.Emit != nil {
 		ev := ScheduledRun{At: now.UnixMilli(), Saved: run.Saved, Unchanged: run.Unchanged, Failed: run.Failed}
@@ -180,7 +180,7 @@ func (s *Service) ownSaves(gameID string) []profileSaves {
 	}
 	all, err := s.profiles.List(gameID)
 	if err != nil {
-		log.Printf("scheduled save backup: %v", err)
+		slog.Warn("scheduled save backup", "err", err)
 		return nil
 	}
 	var out []profileSaves
@@ -190,7 +190,7 @@ func (s *Service) ownSaves(gameID string) []profileSaves {
 		}
 		sc, err := s.scannerFor(gameID, p.ID)
 		if err != nil {
-			log.Printf("scheduled save backup: %s: %v", p.ID, err)
+			slog.Warn("scheduled save backup", "id", p.ID, "err", err)
 			continue
 		}
 		out = append(out, profileSaves{profile: p.ID, layout: sc.Layout(), overrides: p.PrefOverrides()})

@@ -2,7 +2,7 @@ package updatesvc
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"golang.org/x/sys/windows/registry"
 )
@@ -23,7 +23,7 @@ func onApplied(version string) func(string) {
 			_ = k.Close()
 		}
 		if err != nil {
-			log.Printf("update: record version %s: %v", version, err)
+			slog.Warn("update: record version", "version", version, "err", err)
 		}
 	}
 }

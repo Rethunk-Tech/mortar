@@ -5,7 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"errors"
-	"log"
+	"log/slog"
 	"maps"
 	"os"
 	"path/filepath"
@@ -901,13 +901,13 @@ func (s *Service) fixStaleManifests(gameID, id string, held []Held) {
 			continue
 		}
 		if err := s.profiles.FixStaleManifest(gameID, id, h.Key, h.ID, h.Version); err != nil {
-			log.Printf("updates: %s: could not fix the manifest of %s: %v", id, h.ID, err)
+			slog.Warn("updates: could not fix the manifest", "game", id, "id2", h.ID, "err", err)
 			continue
 		}
 		fixed++
 	}
 	if fixed > 0 {
-		log.Printf("updates: %s: set %d stale manifest versions to their download's version", id, fixed)
+		slog.Info("updates: set stale manifest versions to their download's version", "game", id, "fixed", fixed)
 	}
 }
 

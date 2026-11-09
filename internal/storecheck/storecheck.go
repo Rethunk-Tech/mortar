@@ -6,7 +6,7 @@ import (
 	"cmp"
 	"context"
 	"crypto/sha256"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -138,7 +138,7 @@ func (s *Service) Check(ctx context.Context) (Summary, error) {
 			return sum, ctx.Err()
 		case err != nil:
 			sum.Failed++
-			log.Printf("store check %s/%s: %v", r.Game, r.Key, err)
+			slog.Warn("store check", "game", r.Game, "key", r.Key, "err", err)
 		case !d.Empty():
 			sum.Damaged = append(sum.Damaged, DamagedItem{
 				Game: r.Game, Key: r.Key, Name: cmp.Or(s.d.Source(r.Game, r.Key).Name, r.Key),
@@ -170,7 +170,7 @@ func Run(ctx context.Context, s *Service) {
 func (s *Service) pass(ctx context.Context) {
 	refs, err := s.d.Items.Refs(true, time.Now())
 	if err != nil {
-		log.Printf("store verify: %v", err)
+		slog.Warn("store verify", "err", err)
 		return
 	}
 	for _, r := range refs {
@@ -186,9 +186,9 @@ func (s *Service) pass(ctx context.Context) {
 			return
 		}
 		if err != nil {
-			log.Printf("store verify %s/%s: %v", r.Game, r.Key, err)
+			slog.Warn("store verify", "game", r.Game, "key", r.Key, "err", err)
 		} else if !d.Empty() {
-			log.Printf("store verify %s/%s: %d missing, %d changed, %d extra files", r.Game, r.Key, len(d.Missing), len(d.Changed), len(d.Extra))
+			slog.Warn("store verify: files differ", "game", r.Game, "key", r.Key, "missing", len(d.Missing), "changed", len(d.Changed), "extra", len(d.Extra))
 		}
 		if !sleep(ctx, max(minRest, restFactor*time.Since(start))) {
 			return
@@ -213,7 +213,7 @@ func (s *Service) baseline(ctx context.Context, r store.Ref) {
 		return
 	}
 	if err := s.d.Items.BaselineFromArchive(ctx, r.Game, r.Key, path); err != nil {
-		log.Printf("store check %s/%s: baseline from %s: %v", r.Game, r.Key, path, err)
+		slog.Warn("store check: baseline", "game", r.Game, "key", r.Key, "path", path, "err", err)
 	}
 }
 
@@ -349,7 +349,7 @@ func (s *Service) reextract(ctx context.Context, gameID, key string) (RepairResu
 
 func joinRestore(err error, restore func() error) error {
 	if rerr := restore(); rerr != nil {
-		log.Printf("store repair: put the damaged item back: %v", rerr)
+		slog.Warn("store repair: put the damaged item back", "err", rerr)
 	}
 	return err
 }
