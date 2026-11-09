@@ -9,6 +9,28 @@ const API = 'https://thunderstore.io/api'
 const MIN_PACKAGES = 20
 const PAGE_SIZE = 1000
 const NOT_FOUND = 404
+const TOO_MANY_REQUESTS = 429
+const SERVER_ERROR = 500
+const RETRY_DELAY_MS = 10_000
+const ATTEMPTS = 18
+
+// The sites answer a 429 or a 5xx now and then, sometimes for minutes, and a failed answer must not read as a missing
+// package: each request is tried every 10 seconds for three minutes before its answer counts.
+async function fetchRetry(url: string, init?: RequestInit): Promise<Response> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const res = await fetch(url, init)
+      if (attempt === ATTEMPTS || (res.status !== TOO_MANY_REQUESTS && res.status < SERVER_ERROR)) {
+        return res
+      }
+    } catch (err) {
+      if (attempt === ATTEMPTS) {
+        throw err
+      }
+    }
+    await Bun.sleep(RETRY_DELAY_MS)
+  }
+}
 
 interface Game {
   id: string
@@ -24,7 +46,7 @@ interface Community {
 }
 
 async function json<T>(url: string): Promise<T> {
-  const res = await fetch(url, { headers: { 'User-Agent': 'Mortar catalog audit' } })
+  const res = await fetchRetry(url, { headers: { 'User-Agent': 'Mortar catalog audit' } })
   if (!res.ok) {
     throw new Error(`${url}: ${res.status}`)
   }
@@ -33,10 +55,15 @@ async function json<T>(url: string): Promise<T> {
 
 async function packageExists(id: string): Promise<boolean> {
   const cut = id.indexOf('-')
-  const res = await fetch(`${API}/experimental/package/${id.slice(0, cut)}/${id.slice(cut + 1)}/`, {
-    method: 'HEAD',
-  })
-  return res.ok
+  const url = `${API}/experimental/package/${id.slice(0, cut)}/${id.slice(cut + 1)}/`
+  const res = await fetchRetry(url, { method: 'HEAD' })
+  if (res.status === NOT_FOUND) {
+    return false
+  }
+  if (!res.ok) {
+    throw new Error(`${url}: ${res.status}`)
+  }
+  return true
 }
 
 const games: Game[] = (await Bun.file(SOURCE).json()).games
@@ -53,7 +80,7 @@ const live = new Set(results.map((c) => c.identifier))
 // The list leaves out unlisted communities, which still serve their packages, so only the community's own page can say
 // it is gone.
 async function communityExists(community: string): Promise<boolean> {
-  const res = await fetch(`https://thunderstore.io/c/${community}/`, { method: 'HEAD' })
+  const res = await fetchRetry(`https://thunderstore.io/c/${community}/`, { method: 'HEAD' })
   return res.status !== NOT_FOUND
 }
 
@@ -174,7 +201,7 @@ const norm = (s: string) =>
 const has = (g: Game, site: string) => g.sources?.some((s) => s.id === site) ?? false
 
 async function nexus<T>(query: string): Promise<T> {
-  const res = await fetch('https://api.nexusmods.com/v2/graphql', {
+  const res = await fetchRetry('https://api.nexusmods.com/v2/graphql', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mortar catalog audit' },
     body: JSON.stringify({ query }),
@@ -238,7 +265,7 @@ for (const line of toAdd) {
 const key = process.env.MORTAR_CURSEFORGE_KEY
 if (key) {
   const cf = async <T>(path: string) => {
-    const res = await fetch(`https://api.curseforge.com/v1${path}`, {
+    const res = await fetchRetry(`https://api.curseforge.com/v1${path}`, {
       headers: { 'x-api-key': key },
     })
     if (!res.ok) {
