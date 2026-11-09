@@ -784,6 +784,12 @@ regress() {
   start
   cli settings set --game stardew defaultLaunchMethod direct >/dev/null
   profile=${MORTAR_REGRESS_PROFILE:-$(cli profiles stardew --json | jq -r '.[0].id')}
+  # A mod under test: MORTAR_REGRESS_EXTRA's local zips install into the profile, and SMAPI has to list each name in
+  # MORTAR_REGRESS_EXTRA_MODS (separated by ";") as loaded.
+  local zip
+  for zip in ${MORTAR_REGRESS_EXTRA:-}; do
+    cli install stardew "$profile" "$zip" >>"$ROOT/install.txt" 2>&1 || failures+=("installing $zip failed: $(tail -c 200 "$ROOT/install.txt")")
+  done
   enabled=$(cli mods stardew "$profile" --json | python3 -c 'import json,sys; print(sum(1 for m in json.load(sys.stdin) if m["enabled"]))')
   tree_hash "$game" >"$ROOT/game-before.txt"
 
@@ -811,6 +817,11 @@ regress() {
     # mod as "Name version by author", and a bridge it skipped is not in that list.
     bridge=$(sed -n 's/.*SMAPI\] *Mortar SMAPI Bridge \([0-9][^ ]*\) by .*/\1/p' "$log" | head -1)
     [ -n "$bridge" ] || failures+=("the Mortar SMAPI Bridge did not load")
+    local name names
+    IFS=';' read -ra names <<<"${MORTAR_REGRESS_EXTRA_MODS:-}"
+    for name in "${names[@]}"; do
+      grep -qF "SMAPI]" "$log" && grep -qE "SMAPI\] +$name [0-9][^ ]* by " "$log" || failures+=("$name did not load")
+    done
   fi
   [ -n "$gpids" ] && echo "$gpids" >"$ROOT/game.pid"
 
