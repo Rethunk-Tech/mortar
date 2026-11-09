@@ -211,12 +211,6 @@ jobs:
             exit 1
           fi
 
-      - name: Cache AppImage tools
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/mortar-build
-          key: appimage-tools-${{ matrix.appimage_arch }}-${{ hashFiles('build/linux/appimage/pins.txt') }}
-
       # Built in an ubuntu:22.04 container on this runner rather than on a second runner, so the leg's Go and Bun
       # setup and caches serve it too; the AppImage then runs on glibc 2.35 and newer.
       - name: Linux AppImage
