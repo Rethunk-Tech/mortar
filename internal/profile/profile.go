@@ -698,7 +698,7 @@ func readAt(dir, id string) (Profile, error) {
 	}
 	p.Entries = slices.DeleteFunc(p.Entries, func(e Entry) bool {
 		if !e.namesLocal() {
-			slog.Info("profile: dropped entry, whose key or item leaves the mods folder", "profile", id, "entry", strconv.Quote(e.Key))
+			slog.Info("profile: dropped entry, whose key or item leaves the mods folder", "profile", strconv.Quote(id), "entry", strconv.Quote(e.Key))
 			return true
 		}
 		return false

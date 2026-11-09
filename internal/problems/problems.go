@@ -361,7 +361,7 @@ func runFrameworks(in framework.Input) (framework.Findings, []CheckTiming) {
 
 func logCheckTimings(profileID string, timings []CheckTiming) {
 	for _, t := range timings {
-		slog.Info("problems: check timing", "strconv", strconv.Quote(profileID), "name", t.Name, "millisecond", time.Duration(t.Ms)*time.Millisecond, "packs", t.Count)
+		slog.Info("problems: check timing", "profile", strconv.Quote(profileID), "name", t.Name, "millisecond", time.Duration(t.Ms)*time.Millisecond, "packs", t.Count)
 	}
 }
 
