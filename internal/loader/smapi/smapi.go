@@ -238,7 +238,7 @@ func (Loader) Send(ctx context.Context, _ loader.Target, p loader.ProfileView, c
 // ReportsStartup is true: the Mortar SMAPI Bridge times each mod's startup.
 func (Loader) ReportsStartup() {}
 
-// FeedsOverlay is true: the Mortar SMAPI Bridge serves the stream overlay's values.
+// FeedsOverlay is true: the Stream Overlay mod, or a Mortar SMAPI Bridge from before the split, serves its values.
 func (Loader) FeedsOverlay() {}
 
 // SharesLog marks SMAPI's log as the one smapi.io's parser reads.
