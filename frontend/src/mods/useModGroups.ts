@@ -17,7 +17,7 @@ import {
   rowGroupKey,
   sanitizeListGroupBy,
 } from './group.ts'
-import { compareListRows, sanitizeListSort } from './listColumns.ts'
+import { compareListRows, MANUAL_SORT, sanitizeListSort } from './listColumns.ts'
 import { useProfileModFacts } from './listFigures.ts'
 import { toListRows, useEntrySizes, usePackageOverrides, useStartupCosts } from './listRows.ts'
 import { modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
@@ -27,7 +27,8 @@ import { primeDetails, useGameNexusDetails } from './nexusDetails.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
 
-// The list's and the cards' rows, grouped and sorted.
+// The list's and the cards' rows, grouped and sorted. With nested, an implicit mod sits beneath the first mod that
+// requires it; with fold, it rides on that mod's card instead of having a row of its own.
 export function buildModGroups(
   mods: Mod[],
   profile: Profile,
@@ -37,11 +38,13 @@ export function buildModGroups(
     sort: Parameters<typeof compareListRows>[2]
     problems: Parameters<typeof modStatusProblem>[0]
     updates: Parameters<typeof updateFor>[0]
+    nested?: boolean
+    fold?: boolean
   },
 ) {
   const names = installedNames(mods)
   const rank = manualRank(profile.modOrder)
-  return groupSorted(
+  const built = groupSorted(
     toListRows(mods, profile, data),
     view.groupBy,
     (row) =>
@@ -53,6 +56,12 @@ export function buildModGroups(
       }),
     (a, b) => compareListRows(a, b, view.sort, rank),
   )
+  // A hand-arranged order is the player's own: nesting would lift a library back above the row it was dragged past,
+  // so the list would not show the order the drag saved.
+  if (!view.nested || view.sort.column === MANUAL_SORT) {
+    return built
+  }
+  return view.fold ? foldLibraries(nestImplicit(built)) : nestImplicit(built)
 }
 
 // buildModGroups by the user's settings, rebuilt only when an input changes.
@@ -94,33 +103,31 @@ export function useModGroups(mods: Mod[], profile: Profile, fold = false) {
       reportUnexpected,
     )
   }, [gameId, nexusIds])
-  const groups = useMemo(() => {
-    const built = buildModGroups(
+  const groups = useMemo(
+    () =>
+      buildModGroups(
+        mods,
+        profile,
+        { byId, customById, sizes, costs, wins, facts },
+        { groupBy, sort, problems, updates, nested, fold },
+      ),
+    [
       mods,
       profile,
-      { byId, customById, sizes, costs, wins, facts },
-      { groupBy, sort, problems, updates },
-    )
-    if (!nested) {
-      return built
-    }
-    return fold ? foldLibraries(nestImplicit(built)) : nestImplicit(built)
-  }, [
-    mods,
-    profile,
-    byId,
-    groupBy,
-    problems,
-    updates,
-    customById,
-    sort,
-    sizes,
-    costs,
-    wins,
-    facts,
-    nested,
-    fold,
-  ])
+      byId,
+      groupBy,
+      problems,
+      updates,
+      customById,
+      sort,
+      sizes,
+      costs,
+      wins,
+      facts,
+      nested,
+      fold,
+    ],
+  )
   // Rows are memoised on this list's identity, so an unchanged order keeps the previous array.
   const lastIds = useRef<string[]>([])
   const orderedIds = useMemo(() => {
