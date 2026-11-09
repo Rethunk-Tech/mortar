@@ -1,13 +1,13 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-06 19:25+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/console/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-10 12:51+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/console/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/console/StartupSections.tsx
 msgid "What to do"
-msgstr ""
+msgstr "做什么"
 
 #: src/console/PerformancePanel.tsx
 msgid "Each plugin's main-thread time per frame: its {app} prefixes, postfixes and finalizers and its own Update, LateUpdate and FixedUpdate, less any timed call inside them. Code a transpiler rewrote and work on other threads are not counted."
-msgstr ""
+msgstr "每个插件每帧的主线程耗时：其 {app} 前缀、后缀与终结器，以及自身的 Update、LateUpdate 与 FixedUpdate，并扣除其中被计时的调用。被转译器重写的代码以及其他线程上的工作不计入。"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Performance"
@@ -15,11 +15,11 @@ msgstr "性能"
 
 #: src/console/PerformanceCards.tsx
 msgid "Play this profile, then time each mod per frame"
-msgstr ""
+msgstr "启动此配置游玩，然后逐帧统计每个模组的耗时"
 
 #: src/console/CrashDialog.tsx
 msgid "{game} crashed"
-msgstr ""
+msgstr "{game} 崩溃了"
 
 #: src/console/LinkedLog.tsx
 msgid "Could not open the folder"
@@ -27,11 +27,11 @@ msgstr "无法打开文件夹"
 
 #: src/console/PerformancePanel.tsx
 msgid "Each mod's time in its per-frame event handlers (update, render and one-second ticks), summed per frame, averaged over every frame. The 95th percentile and peak are per frame. {app} patches and work outside events are in the baseline, not in a mod's row."
-msgstr ""
+msgstr "每个模组在逐帧事件处理（update、render 和每秒 tick）中的耗时，按帧累加后对所有帧取平均。第 95 百分位与峰值均按帧计。{app} 补丁及事件之外的工作计入基线，不计入模组行。"
 
 #: src/console/BisectConfirm.tsx
 msgid "Could not start the crash check"
-msgstr ""
+msgstr "无法启动崩溃检查"
 
 #: src/console/BisectDialog.tsx
 msgid "Open profile"
@@ -39,47 +39,47 @@ msgstr "打开配置"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Unofficial build"
-msgstr ""
+msgstr "非官方构建"
 
 #: src/console/useStartupReports.ts
 msgid "Could not ask for a measured launch"
-msgstr ""
+msgstr "无法请求进行测量启动"
 
 #: src/console/LevelToggles.tsx
 msgid "More levels"
-msgstr ""
+msgstr "更多层级"
 
 #: src/console/PerformanceCards.tsx
 msgid "Not measured yet"
-msgstr ""
+msgstr "尚未测量"
 
 #: src/console/lineText.ts
 msgid "{game} closed."
-msgstr ""
+msgstr "{game} 已关闭。"
 
 #: src/console/SearchRunsDialog.tsx
 msgid "Search all runs"
-msgstr ""
+msgstr "搜索所有运行"
 
 #: src/console/StartupTable.tsx
 msgid "Assets and packs"
-msgstr ""
+msgstr "资源与整合包"
 
 #: src/console/shareLog.ts
 msgid "This log is {size}. Sharing uploads it to smapi.io as a public link."
-msgstr ""
+msgstr "此日志大小为 {size}。分享时会将其上传至 smapi.io 并生成公开链接。"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Show a report first."
-msgstr ""
+msgstr "请先显示报告。"
 
 #: src/console/PerformanceCards.tsx
 msgid "The game is running: measure it now"
-msgstr ""
+msgstr "游戏正在运行：立即测量"
 
 #: src/console/ConsoleTab.tsx
 msgid "Remove filter {name}"
-msgstr ""
+msgstr "移除筛选条件 {name}"
 
 #: src/console/RunProblems.tsx
 msgid "Mod loader"
@@ -92,7 +92,7 @@ msgstr "忽略"
 
 #: src/console/ConsoleTab.tsx
 msgid "{count, plural, one {is shown} other {are shown}}"
-msgstr ""
+msgstr "{count, plural, one {已显示} other {已显示}}"
 
 #: src/console/HelpDialog.tsx
 msgid "Open"
@@ -100,1185 +100,1185 @@ msgstr "打开"
 
 #: src/console/ConsoleTab.tsx
 msgid "Type a command, for example help"
-msgstr ""
+msgstr "输入命令，例如 help"
 
 #: src/console/RunProblems.tsx
 msgid "Resolve"
-msgstr ""
+msgstr "解析"
 
 #: src/console/CrashDialog.tsx
 msgid "More"
-msgstr ""
+msgstr "更多"
 
 #: src/console/StartupPanel.tsx
 msgid "Mods' Entry is timed only on a measured launch."
-msgstr ""
+msgstr "仅在测量启动时才会统计模组的 Entry 耗时。"
 
 #: src/console/StartupPanel.tsx
 msgid "Measure a launch. The {loader} Bridge records how long each plugin takes to load before the main menu."
-msgstr ""
+msgstr "测量一次启动。{loader} Bridge 会记录每个插件在主菜单之前加载所需的时间。"
 
 #: src/console/PerformanceComparison.tsx
 msgid "gone"
-msgstr ""
+msgstr "已消失"
 
 #: src/console/PerformanceCards.tsx
 msgid "{count, plural, one {# measurement saved} other {# measurements saved}}"
-msgstr ""
+msgstr "{count, plural, one {已保存 # 条测量记录} other {已保存 # 条测量记录}}"
 
 #: src/console/lineText.ts
 msgid "{game} crashed; exited with code {code} ({signal}) after {duration}."
-msgstr ""
+msgstr "{game} 崩溃；在 {duration} 后以代码 {code}（{signal}）退出。"
 
 #: src/console/PerformanceTab.tsx
 msgid "Measure next launch"
-msgstr ""
+msgstr "测量下次启动"
 
 #: src/console/startupHooks.ts
 msgid "slow load {ms}"
-msgstr ""
+msgstr "加载缓慢 {ms}"
 
 #: src/console/StartupSections.tsx
 msgid "{loader} loads mods for {ms}."
-msgstr ""
+msgstr "{loader} 加载模组耗时 {ms}。"
 
 #: src/console/StartupSections.tsx
 msgid "Mods start"
-msgstr ""
+msgstr "模组启动"
 
 #: src/console/SearchRunsDialog.tsx
 msgid "No matches"
-msgstr ""
+msgstr "无匹配结果"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Play this profile to measure."
-msgstr ""
+msgstr "启动此配置以进行测量。"
 
 #: src/console/CrashDialog.tsx
 #: src/console/LogActions.tsx
 msgid "Share log…"
-msgstr ""
+msgstr "分享日志…"
 
 #: src/console/StartupSections.tsx
 msgid "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as the Online or LAN choice in {game}."
-msgstr ""
+msgstr "从第一个场景到主菜单。插件在 Start、协程和场景钩子中的工作会归到这里，而不是归到插件上；任何等待点击的时间（例如 {game} 中的在线或局域网选择）也会归到这里。"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "This mod is one of your Develop projects, so Mortar does not offer its updates."
-msgstr ""
+msgstr "此模组属于你的 Develop 项目，因此 Mortar 不提供其更新。"
 
 #: src/console/PerformanceCards.tsx
 msgid "Waiting for the first results"
-msgstr ""
+msgstr "正在等待首批结果"
 
 #: src/console/ConsoleTab.tsx
 msgid "Play this profile and the game's log shows here as it runs. Every run is kept."
-msgstr ""
+msgstr "启动此配置，游戏日志会在运行过程中显示在此处。每次运行都会被保留。"
 
 #: src/console/PerformanceCards.tsx
 msgid "Startup"
-msgstr ""
+msgstr "启动"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Peak ms"
-msgstr ""
+msgstr "峰值 ms"
 
 #: src/console/LineMenu.tsx
 msgid "Selected lines copied"
-msgstr ""
+msgstr "已复制选中的行"
 
 #: src/console/StartupTable.tsx
 msgid "Total"
-msgstr ""
+msgstr "总计"
 
 #: src/console/startupHooks.ts
 msgid "time in game {ms}"
-msgstr ""
+msgstr "游戏内耗时 {ms}"
 
 #: src/console/StartupSections.tsx
 msgid "{loader} patches"
-msgstr ""
+msgstr "{loader} 补丁"
 
 #: src/console/outcome.ts
 msgid "Failed"
-msgstr ""
+msgstr "失败"
 
 #: src/console/PerformanceCards.tsx
 msgid "Mods add {mods}. Nothing stands out in this start."
-msgstr ""
+msgstr "模组新增 {mods}。本次启动没有明显异常。"
 
 #: src/console/lineText.ts
 msgid "Could not back up saves before playing: {error}."
-msgstr ""
+msgstr "游玩前无法备份存档：{error}。"
 
 #: src/console/RunsPicker.tsx
 msgid "Runs: {button}"
-msgstr ""
+msgstr "运行：{button}"
 
 #: src/console/StartupTable.tsx
 msgid "Entry, event handlers and asset work the {loader} Bridge timed before the title screen"
-msgstr ""
+msgstr "{loader} Bridge 在标题画面之前计时的 Entry、事件处理与资源工作"
 
 #: src/console/StartupTable.tsx
 msgid "Each plugin's load (constructor and Awake) the {loader} Bridge timed; a package's plugins add up. Work a plugin does later, in Start or scene hooks, is not charged to it."
-msgstr ""
+msgstr "{loader} Bridge 计时的每个插件加载（构造函数与 Awake）；同一包内的插件累加。插件之后在 Start 或场景钩子中所做的工作不计入其内。"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Prerelease"
-msgstr ""
+msgstr "预发布"
 
 #: src/console/ConsoleTab.tsx
 msgid "Follow new lines"
-msgstr ""
+msgstr "跟随新行"
 
 #: src/console/StartupSections.tsx
 msgid "Each plugin's constructor and Awake, run one after another"
-msgstr ""
+msgstr "每个插件的构造函数与 Awake，依次执行"
 
 #: src/console/StartupTable.tsx
 msgid "Why?"
-msgstr ""
+msgstr "为什么？"
 
 #: src/console/HelpDialog.tsx
 msgid "Upload log"
-msgstr ""
+msgstr "上传日志"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Calls"
-msgstr ""
+msgstr "调用"
 
 #: src/console/BisectDialog.tsx
 #: src/console/disableWithUndo.ts
 msgid "Undo"
-msgstr ""
+msgstr "撤销"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "% of frame"
-msgstr ""
+msgstr "帧占比"
 
 #: src/console/RunProblems.tsx
 msgid "Fix all"
-msgstr ""
+msgstr "全部修复"
 
 #: src/console/outcome.ts
 msgid "Ran"
-msgstr ""
+msgstr "已运行"
 
 #: src/console/BisectDialog.tsx
 msgid "A mod's files are missing from this profile's folder, so Mortar cannot disable it for the test."
-msgstr ""
+msgstr "此配置的文件夹中缺少某个模组的文件，因此 Mortar 无法在测试中禁用它。"
 
 #: src/console/LevelToggles.tsx
 msgid "{level} ({count})"
-msgstr ""
+msgstr "{level}（{count}）"
 
 #: src/console/LevelToggles.tsx
 msgid "{count, plural, one {{level} {shown} line} other {{level} {shown} lines}}"
-msgstr ""
+msgstr "{count, plural, one {{level} {shown} 行} other {{level} {shown} 行}}"
 
 #: src/console/PerformanceCards.tsx
 msgid "{total} to the title screen"
-msgstr ""
+msgstr "到标题画面共 {total}"
 
 #: src/console/ConsoleTab.tsx
 msgid "The console fills when the game runs."
-msgstr ""
+msgstr "游戏运行时控制台会填充内容。"
 
 #: src/console/StartupTable.tsx
 msgid "Load"
-msgstr ""
+msgstr "加载"
 
 #: src/console/StartupSections.tsx
 msgid "{app} starts"
-msgstr ""
+msgstr "{app} 启动"
 
 #: src/console/RunsPicker.tsx
 msgid "No recorded runs yet"
-msgstr ""
+msgstr "尚无记录的运行"
 
 #: src/console/ConsoleTab.tsx
 msgid "Filter by level or mod, and use Share log to copy this run and paste it on a paste site."
-msgstr ""
+msgstr "按级别或模组筛选，并使用“分享日志”复制此次运行并粘贴到粘贴站点。"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Start measuring"
-msgstr ""
+msgstr "开始测量"
 
 #: src/console/LogActions.tsx
 msgid "Search all runs…"
-msgstr ""
+msgstr "搜索所有运行…"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Clear comparison"
-msgstr ""
+msgstr "清除比较"
 
 #: src/console/ConsoleTab.tsx
 msgid "only {mods} {verb}"
-msgstr ""
+msgstr "仅 {mods} {verb}"
 
 #: src/console/HelpDialog.tsx
 msgid "Reading the log…"
-msgstr ""
+msgstr "正在读取日志…"
 
 #: src/console/useBridgePerf.ts
 msgid "Could not read the measurement"
-msgstr ""
+msgstr "无法读取测量结果"
 
 #: src/console/HelpDialog.tsx
 msgid "No log for this profile yet. Play it once, then try again."
-msgstr ""
+msgstr "此配置尚无日志。请先游玩一次，然后重试。"
 
 #: src/console/StartupTable.tsx
 msgid "Show details"
-msgstr ""
+msgstr "显示详情"
 
 #: src/console/ConsoleTab.tsx
 msgid "{count, plural, one {is hidden} other {are hidden}}"
-msgstr ""
+msgstr "{count, plural, one {已隐藏} other {已隐藏}}"
 
 #: src/console/BisectConfirm.tsx
 msgid "Mortar starts the game on a copy of this profile, turning half the mods off each time, until one mod is left. Your profile stays as it is."
-msgstr ""
+msgstr "Mortar 会在此配置的副本上启动游戏，每次关闭一半模组，直到只剩一个。你的配置保持不变。"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Not downloadable here"
-msgstr ""
+msgstr "无法在此下载"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Start measuring to see which mods take the most time per frame."
-msgstr ""
+msgstr "开始测量以查看哪些模组每帧耗时最多。"
 
 #: src/console/StartupSections.tsx
 msgid "First updates"
-msgstr ""
+msgstr "首次更新"
 
 #: src/console/logHooks.ts
 msgid "Info"
-msgstr ""
+msgstr "信息"
 
 #: src/console/StartupSections.tsx
 msgid "Show packs"
-msgstr ""
+msgstr "显示包"
 
 #: src/console/RunsPicker.tsx
 msgid "Past run"
-msgstr ""
+msgstr "之前的运行"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "95th ms"
-msgstr ""
+msgstr "95 分位毫秒"
 
 #: src/console/PerformancePanel.tsx
 #: src/console/PerformancePanelParts.tsx
 msgid "Measuring stopped: {reason}"
-msgstr ""
+msgstr "测量已停止：{reason}"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "This version is only on a site Mortar cannot download from yet; open the link to get it."
-msgstr ""
+msgstr "此版本仅存在于 Mortar 尚无法下载的站点；请打开链接获取。"
 
 #: src/console/lineText.ts
 msgid "{game} crashed; exited with code {code} after {duration}."
-msgstr ""
+msgstr "{game} 崩溃了；在 {duration} 后以代码 {code} 退出。"
 
 #: src/console/HelpDialog.tsx
 #: src/console/store.ts
 msgid "Could not read the game log"
-msgstr ""
+msgstr "无法读取游戏日志"
 
 #: src/console/BisectDialog.tsx
 #: src/console/CrashDialog.tsx
 #: src/console/RunProblems.tsx
 msgid "Disable"
-msgstr ""
+msgstr "禁用"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "No performance data was returned."
-msgstr ""
+msgstr "未返回性能数据。"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Stop measuring"
-msgstr ""
+msgstr "停止测量"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "In Mortar's updates"
-msgstr ""
+msgstr "在 Mortar 的更新中"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "This profile skips this version, so Mortar does not offer it."
-msgstr ""
+msgstr "此配置跳过此版本，因此 Mortar 不提供它。"
 
 #: src/console/HelpDialog.tsx
 #: src/console/VirtualLog.tsx
 msgid "Game log"
-msgstr ""
+msgstr "游戏日志"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Performance report"
-msgstr ""
+msgstr "性能报告"
 
 #: src/console/HelpDialog.tsx
 #: src/console/StartupPanel.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "取消"
 
 #: src/console/StartupPanel.tsx
 msgid "Press Play. The {loader} Bridge times each plugin's load and the start up to the main menu, and shows the results here. {app}'s {otherApp} runtime cannot be sampled, so there is no Sampled column."
-msgstr ""
+msgstr "按“开始游戏”。{loader} Bridge 会记录每个插件的加载时间以及启动到主菜单的时间，并在此显示结果。{app} 的 {otherApp} 运行时无法采样，因此没有“采样”列。"
 
 #: src/console/startupHooks.ts
 msgid "time in its patches {ms}"
-msgstr ""
+msgstr "其补丁耗时 {ms}"
 
 #: src/console/StartupTable.tsx
 msgid "Patches"
-msgstr ""
+msgstr "补丁"
 
 #: src/console/BisectDialog.tsx
 msgid "Stopping…"
-msgstr ""
+msgstr "正在停止…"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Measuring… the first results show in a few seconds."
-msgstr ""
+msgstr "正在测量…首批结果将在几秒后显示。"
 
 #: src/console/SearchRunsDialog.tsx
 msgid "L{lineNumber}"
-msgstr ""
+msgstr "L{lineNumber}"
 
 #: src/console/BisectDialog.tsx
 msgid "{names} seems to cause the crash"
-msgstr ""
+msgstr "{names} 似乎是导致崩溃的原因"
 
 #: src/console/startupHooks.ts
 msgid "slow Entry {ms}"
-msgstr ""
+msgstr "缓慢的 Entry {ms}"
 
 #: src/console/StartupTable.tsx
 msgid "Mortar"
-msgstr ""
+msgstr "Mortar"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "This profile skips updates from this source for this mod."
-msgstr ""
+msgstr "此配置跳过此模组来自此来源的更新。"
 
 #: src/console/BisectDialog.tsx
 msgid "The original profile was not changed."
-msgstr ""
+msgstr "原始配置未被更改。"
 
 #: src/console/HelpDialog.tsx
 msgid "Link copied"
-msgstr ""
+msgstr "链接已复制"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "This mod is pinned in this profile, so Mortar does not offer updates for it."
-msgstr ""
+msgstr "此模组已在此配置中固定，因此 Mortar 不提供其更新。"
 
 #: src/console/LineMenu.tsx
 msgid "Hide this message"
-msgstr ""
+msgstr "隐藏此消息"
 
 #: src/console/RunProblems.tsx
 msgid "Update"
-msgstr ""
+msgstr "更新"
 
 #: src/console/LogActions.tsx
 msgid "Jump to previous error"
-msgstr ""
+msgstr "跳转到上一个错误"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Before"
-msgstr ""
+msgstr "之前"
 
 #: src/console/SearchRunsDialog.tsx
 msgid "Enter text to search stored runs."
-msgstr ""
+msgstr "输入文本以搜索已存储的运行。"
 
 #: src/console/LineMenu.tsx
 msgid "Could not hide that message"
-msgstr ""
+msgstr "无法隐藏该消息"
 
 #: src/console/PerformanceCards.tsx
 msgid "Measuring stopped"
-msgstr ""
+msgstr "测量已停止"
 
 #: src/console/lineText.ts
 msgid "startup_preferences is missing; skipped profile game settings."
-msgstr ""
+msgstr "缺少 startup_preferences；已跳过配置的游戏设置。"
 
 #: src/console/HelpDialog.tsx
 #: src/console/LogActions.tsx
 msgid "Log copied"
-msgstr ""
+msgstr "日志已复制"
 
 #: src/console/SandboxNote.tsx
 msgid "{count, plural, one {This run was sandboxed: the game could write # folder} other {This run was sandboxed: the game could write # folders}}"
-msgstr ""
+msgstr "{count, plural, one {此次运行已沙盒化：游戏可写入 # 个文件夹} other {此次运行已沙盒化：游戏可写入 # 个文件夹}}"
 
 #: src/console/ConsoleTab.tsx
 msgid "Filter by level or mod, and use Save log or Copy log to pass this run on."
-msgstr ""
+msgstr "按级别或模组筛选，并使用“保存日志”或“复制日志”传递此次运行。"
 
 #: src/console/lineText.ts
 msgid "{game} was stopped from Mortar."
-msgstr ""
+msgstr "{game} 已从 Mortar 中停止。"
 
 #: src/console/logHooks.ts
 msgid "Warn"
-msgstr ""
+msgstr "警告"
 
 #: src/console/CrashDialog.tsx
 msgid "The game log has errors."
-msgstr ""
+msgstr "游戏日志中有错误。"
 
 #: src/console/StartupSections.tsx
 msgid "{name} takes {own} of your {total} start; {count, plural, one {# content pack causes} other {# content packs cause}} most of it."
-msgstr ""
+msgstr "{name} 占用了你 {total} 启动时间中的 {own}；其中大部分由 {count, plural, one {# 个内容包} other {# 个内容包}}造成。"
 
 #: src/console/ConsoleTab.tsx
 msgid "Filter by level or mod, and use Share log to upload this run to smapi.io."
-msgstr ""
+msgstr "按级别或模组筛选，并使用“分享日志”将此次运行上传到 smapi.io。"
 
 #: src/console/HelpDialog.tsx
 msgid "Uploading…"
-msgstr ""
+msgstr "正在上传…"
 
 #: src/console/store.ts
 msgid "Could not run the command"
-msgstr ""
+msgstr "无法运行命令"
 
 #: src/console/CrashDialog.tsx
 msgid "Open console"
-msgstr ""
+msgstr "打开控制台"
 
 #: src/console/useBridgePerf.ts
 msgid "Could not start measuring"
-msgstr ""
+msgstr "无法开始测量"
 
 #: src/console/StartupSections.tsx
 msgid "The title screen's intro animation (Mortar skips it on measured launches)"
-msgstr ""
+msgstr "标题画面的开场动画（Mortar 在测量启动时会跳过它）"
 
 #: src/console/StartupSections.tsx
 msgid "Title intro"
-msgstr ""
+msgstr "标题开场"
 
 #: src/console/StartupSections.tsx
 msgid "{loader} loads mods"
-msgstr ""
+msgstr "{loader} 加载模组"
 
 #: src/console/lineText.ts
 msgid "{loader} exited with code {code}."
-msgstr ""
+msgstr "{loader} 以代码 {code} 退出。"
 
 #: src/console/StartupSections.tsx
 msgid "Show slowest mods"
-msgstr ""
+msgstr "显示最慢的模组"
 
 #: src/console/HelpDialog.tsx
 msgid "Copy"
-msgstr ""
+msgstr "复制"
 
 #: src/console/lineText.ts
 msgid "{game} was stopped from Mortar after {duration}."
-msgstr ""
+msgstr "{game} 在 {duration} 后已从 Mortar 中停止。"
 
 #: src/console/logHooks.ts
 msgid "Trace"
-msgstr ""
+msgstr "跟踪"
 
 #: src/console/StartupTable.tsx
 msgid "{count, plural, one {Show all # mod} other {Show all # mods}}"
-msgstr ""
+msgstr "{count, plural, one {显示全部 # 个模组} other {显示全部 # 个模组}}"
 
 #: src/console/StartupTable.tsx
 msgid "Startup time by mod"
-msgstr ""
+msgstr "各模组启动时间"
 
 #: src/console/VirtualLog.tsx
 msgid "Written {repeat} times in a row"
-msgstr ""
+msgstr "连续写入 {repeat} 次"
 
 #: src/console/SandboxNote.tsx
 msgid "{count, plural, one {and # more} other {and # more}}"
-msgstr ""
+msgstr "{count, plural, one {以及另外 # 个} other {以及另外 # 个}}"
 
 #: src/console/LineMenu.tsx
 msgid "Hide this message from {name}"
-msgstr ""
+msgstr "隐藏来自 {name} 的此消息"
 
 #: src/console/ConsoleTab.tsx
 msgid "Console command"
-msgstr ""
+msgstr "控制台命令"
 
 #: src/console/StartupTable.tsx
 msgid "{count, plural, one {# other mod} other {# other mods}}"
-msgstr ""
+msgstr "{count, plural, one {# 个其他模组} other {# 个其他模组}}"
 
 #: src/console/PerformanceComparison.tsx
 msgid "New"
-msgstr ""
+msgstr "新建"
 
 #: src/console/shareLog.ts
 msgid "This log is {size}. Sharing copies it and opens {host}; paste it there to get a public link."
-msgstr ""
+msgstr "此日志大小为 {size}。分享会复制它并打开 {host}；粘贴到那里即可获得公开链接。"
 
 #: src/console/LevelToggles.tsx
 msgid "Levels"
-msgstr ""
+msgstr "级别"
 
 #: src/console/useStartupReports.ts
 msgid "Could not cancel the measured launch"
-msgstr ""
+msgstr "无法取消测量启动"
 
 #: src/console/useBridgePerf.ts
 msgid "Could not stop measuring"
-msgstr ""
+msgstr "无法停止测量"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Start the game with this profile, then measure here while you play."
-msgstr ""
+msgstr "使用此配置启动游戏，然后在游玩时在此测量。"
 
 #: src/console/StartupTable.tsx
 msgid "Time in this start minus time in the one before"
-msgstr ""
+msgstr "此次启动时间减去上一次启动时间"
 
 #: src/console/ConsoleTab.tsx
 msgid "Search the log"
-msgstr ""
+msgstr "搜索日志"
 
 #: src/console/ConsoleTab.tsx
 msgid "Mods"
-msgstr ""
+msgstr "模组"
 
 #: src/console/StartupPanel.tsx
 msgid "Slowest mods"
-msgstr ""
+msgstr "最慢的模组"
 
 #: src/console/CrashDialog.tsx
 msgid "Mortar could not tell which mod caused this. Finding the mod tries halves of your mods until the crash stops; your profile is not changed."
-msgstr ""
+msgstr "Mortar 无法判断是哪个模组导致的。查找模组会每次尝试一半的模组，直到崩溃停止；你的配置不会更改。"
 
 #: src/console/HelpDialog.tsx
 msgid "Copy log and open {pasteHost}"
-msgstr ""
+msgstr "复制日志并打开 {pasteHost}"
 
 #: src/console/ConsoleTab.tsx
 msgid "Stop the game before reinstalling."
-msgstr ""
+msgstr "重新安装前请停止游戏。"
 
 #: src/console/SearchRunsDialog.tsx
 msgid "Showing the first 500 matches."
-msgstr ""
+msgstr "正在显示前 500 个匹配项。"
 
 #: src/console/ConsoleTab.tsx
 msgid "Mod: {name}"
-msgstr ""
+msgstr "模组：{name}"
 
 #: src/console/BisectDialog.tsx
 msgid "Finding the mod that crashes the game"
-msgstr ""
+msgstr "正在查找导致游戏崩溃的模组"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Save report"
-msgstr ""
+msgstr "保存报告"
 
 #: src/console/CrashDialog.tsx
 msgid "Find the mod that crashes the game…"
-msgstr ""
+msgstr "查找导致游戏崩溃的模组…"
 
 #: src/console/HelpDialog.tsx
 msgid "Hide my user name"
-msgstr ""
+msgstr "隐藏我的用户名"
 
 #: src/console/lineText.ts
 msgid "{game} crashed; exited with code {code}."
-msgstr ""
+msgstr "{game} 崩溃了；以代码 {code} 退出。"
 
 #: src/console/StartupSections.tsx
 msgid "Each mod's Entry method, run one after another"
-msgstr ""
+msgstr "每个模组的 Entry 方法，依次运行"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Pinned"
-msgstr ""
+msgstr "已固定"
 
 #: src/console/RunProblems.tsx
 msgid "Update {loader}"
-msgstr ""
+msgstr "更新 {loader}"
 
 #: src/console/SandboxNote.tsx
 msgid "The sandbox hid folders from the game or a mod"
-msgstr ""
+msgstr "沙盒向游戏或模组隐藏了一些文件夹"
 
 #: src/console/PerformanceCards.tsx
 msgid "Play this profile to time how long each mod adds to the start"
-msgstr ""
+msgstr "使用此配置游玩，以测量每个模组为启动增加的时间"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Mortar: {name}"
-msgstr ""
+msgstr "Mortar：{name}"
 
 #: src/console/HelpDialog.tsx
 msgid "Could not upload the log"
-msgstr ""
+msgstr "无法上传日志"
 
 #: src/console/SearchRunsDialog.tsx
 msgid "Search every run"
-msgstr ""
+msgstr "搜索所有运行"
 
 #: src/console/StartupSections.tsx
 msgid "Plugins load"
-msgstr ""
+msgstr "插件加载"
 
 #: src/console/outcome.ts
 msgid "Crashed"
-msgstr ""
+msgstr "已崩溃"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Your download is already {have}; the mod's manifest still carries the old number, so {loader} keeps asking."
-msgstr ""
+msgstr "你的下载已经是 {have}；该模组的清单仍携带旧编号，因此 {loader} 会一直询问。"
 
 #: src/console/RunProblems.tsx
 msgid "Add"
-msgstr ""
+msgstr "添加"
 
 #: src/console/RunProblems.tsx
 msgid "Search in Browse"
-msgstr ""
+msgstr "在“浏览”中搜索"
 
 #: src/console/BisectDialog.tsx
 msgid "Crash finding was stopped."
-msgstr ""
+msgstr "崩溃查找已停止。"
 
 #: src/console/BisectConfirm.tsx
 msgid "Find the mod that crashes the game?"
-msgstr ""
+msgstr "查找导致游戏崩溃的模组？"
 
 #: src/console/ConsoleTab.tsx
 msgid "the search is \"{search}\""
-msgstr ""
+msgstr "搜索为“{search}”"
 
 #: src/console/LogActions.tsx
 msgid "Copy log"
-msgstr ""
+msgstr "复制日志"
 
 #: src/console/LineMenu.tsx
 msgid "Copy this message"
-msgstr ""
+msgstr "复制此消息"
 
 #: src/console/lineText.ts
 msgid "{game} crashed; exited with {signal}."
-msgstr ""
+msgstr "{game} 崩溃了；以 {signal} 退出。"
 
 #: src/console/StartupTable.tsx
 msgid "Show in Mods"
-msgstr ""
+msgstr "在模组中显示"
 
 #: src/console/PerformanceComparison.tsx
 msgid "Performance comparison"
-msgstr ""
+msgstr "性能比较"
 
 #: src/console/LogActions.tsx
 msgid "Save log"
-msgstr ""
+msgstr "保存日志"
 
 #: src/console/RunProblems.tsx
 msgid "Problems in this run"
-msgstr ""
+msgstr "此次运行中的问题"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "After"
-msgstr ""
+msgstr "之后"
 
 #: src/console/RunsPicker.tsx
 msgid "This session"
-msgstr ""
+msgstr "此会话"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Mortar offers this update in the profile's update list."
-msgstr ""
+msgstr "Mortar 会在配置的更新列表中提供此更新。"
 
 #: src/console/startupHooks.ts
 msgid "applying its patches {ms}"
-msgstr ""
+msgstr "应用其补丁 {ms}"
 
 #: src/console/StartupSections.tsx
 msgid "The title screen is up while the game still loads its own content, including content packs from mods. The menu is unusable until this ends"
-msgstr ""
+msgstr "标题画面已显示，但游戏仍在加载自身内容（包括来自模组的内容包）。在此之前菜单无法使用"
 
 #: src/console/StartupTable.tsx
 msgid "Click a mod to show it in Mods"
-msgstr ""
+msgstr "点击模组以在模组中显示"
 
 #: src/console/StartupTable.tsx
 msgid "This mod's part of the time all mods add"
-msgstr ""
+msgstr "此模组占所有模组增加时间的部分"
 
 #: src/console/ConsoleTab.tsx
 msgid "No mods have logged yet"
-msgstr ""
+msgstr "尚无模组记录日志"
 
 #: src/console/LogActions.tsx
 msgid "Jump to next error"
-msgstr ""
+msgstr "跳转到下一个错误"
 
 #: src/console/PerformanceComparison.tsx
 #: src/console/StartupTable.tsx
 msgid "Change"
-msgstr ""
+msgstr "更改"
 
 #: src/console/StartupSections.tsx
 msgid "{name} takes {own} of your {total} start."
-msgstr ""
+msgstr "{name} 占用了你 {total} 启动时间中的 {own}。"
 
 #: src/console/LineMenu.tsx
 msgid "Message copied"
-msgstr ""
+msgstr "消息已复制"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Mod or event"
-msgstr ""
+msgstr "模组或事件"
 
 #: src/console/useBridgePerf.ts
 msgid "The game stopped measuring."
-msgstr ""
+msgstr "游戏停止了测量。"
 
 #: src/console/BisectDialog.tsx
 msgid "Step {step} of ~{total}, {count, plural, one {# mod left} other {# mods left}}"
-msgstr ""
+msgstr "第 {step} 步，约共 {total} 步，{count, plural, one {剩 # 个模组} other {剩 # 个模组}}"
 
 #: src/console/logHooks.ts
 msgid "Debug"
-msgstr ""
+msgstr "调试"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Source skipped"
-msgstr ""
+msgstr "已跳过来源"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Mortar offers prereleases only when Settings allows them."
-msgstr ""
+msgstr "仅当设置允许时，Mortar 才会提供预发布版本。"
 
 #: src/console/ConsoleTab.tsx
 msgid "{mods} {verb}"
-msgstr ""
+msgstr "{mods} {verb}"
 
 #: src/console/PerformancePanel.tsx
 msgid "Report copied"
-msgstr ""
+msgstr "报告已复制"
 
 #: src/console/ConsoleTab.tsx
 msgid "the {levels} {off}"
-msgstr ""
+msgstr "{levels} {off}"
 
 #: src/console/PerformanceCards.tsx
 #: src/console/PerformancePanelParts.tsx
 msgid "Measuring"
-msgstr ""
+msgstr "正在测量"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "This profile ignores updates for this mod."
-msgstr ""
+msgstr "此配置忽略此模组的更新。"
 
 #: src/console/StartupPanel.tsx
 msgid "Play now"
-msgstr ""
+msgstr "立即游玩"
 
 #: src/console/SearchRunsDialog.tsx
 msgid "Search run logs"
-msgstr ""
+msgstr "搜索运行日志"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Copy report"
-msgstr ""
+msgstr "复制报告"
 
 #: src/console/LineMenu.tsx
 msgid "Copy the selected lines"
-msgstr ""
+msgstr "复制选中的行"
 
 #: src/console/StartupPanel.tsx
 msgid "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
-msgstr ""
+msgstr "按“开始游戏”。Mortar 会采样游戏直到标题画面，跳过开场动画，并在此显示结果，带有“采样”列。"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Updates ignored"
-msgstr ""
+msgstr "已忽略更新"
 
 #: src/console/StartupTable.tsx
 msgid "Mortar's own {loader} mod; it records these timings"
-msgstr ""
+msgstr "Mortar 自带的 {loader} 模组；它会记录这些计时"
 
 #: src/console/HelpDialog.tsx
 msgid "Log link"
-msgstr ""
+msgstr "日志链接"
 
 #: src/console/startupHooks.ts
 msgid "assets and packs {ms}"
-msgstr ""
+msgstr "资源和包 {ms}"
 
 #: src/console/HelpDialog.tsx
 msgid "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
-msgstr ""
+msgstr "日志包含此电脑的文件夹路径，可能包括你的用户名。任何拥有链接的人都可以读取。"
 
 #: src/console/StartupTable.tsx
 msgid "Share of mod time"
-msgstr ""
+msgstr "模组时间占比"
 
 #: src/console/lineText.ts
 msgid "Could not restore profile game settings: {error}."
-msgstr ""
+msgstr "无法恢复配置的游戏设置：{error}。"
 
 #: src/console/LineMenu.tsx
 msgid "Hide this message from every object"
-msgstr ""
+msgstr "从所有对象中隐藏此消息"
 
 #: src/console/StartupPanel.tsx
 msgid "The next launch will be measured"
-msgstr ""
+msgstr "下次启动将被测量"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "You skipped this version"
-msgstr ""
+msgstr "你跳过了此版本"
 
 #: src/console/PerformancePanel.tsx
 msgid "{fps} fps over {seconds} s. Frame ms: average {avg}, 95th {p95}, 99th {p99}, worst {max}. Managed heap {monoUsed} of {monoHeap}, {gcCollections} garbage collections."
-msgstr ""
+msgstr "{seconds} 秒内 {fps} fps。帧耗时：平均 {avg} 毫秒，95 分位 {p95}，99 分位 {p99}，最差 {max}。托管堆 {monoUsed}/{monoHeap}，垃圾回收 {gcCollections} 次。"
 
 #: src/console/StartupTable.tsx
 msgid "Slowest event"
-msgstr ""
+msgstr "最慢的事件"
 
 #: src/console/RunProblems.tsx
 msgid "Mortar does not know where to get {id}"
-msgstr ""
+msgstr "Mortar 不知道从哪里获取 {id}"
 
 #: src/console/StartupSections.tsx
 msgid "Loading after the title"
-msgstr ""
+msgstr "标题后加载"
 
 #: src/console/BisectDialog.tsx
 msgid "The crash check could not finish."
-msgstr ""
+msgstr "崩溃检查未能完成。"
 
 #: src/console/SearchRunsDialog.tsx
 msgid "Searching…"
-msgstr ""
+msgstr "正在搜索…"
 
 #: src/console/BisectDialog.tsx
 #: src/console/disableWithUndo.ts
 msgid "Disabled {names}"
-msgstr ""
+msgstr "已禁用 {names}"
 
 #: src/console/StartupPanel.tsx
 msgid "Play this profile. The {loader} Bridge records how long each mod adds before the title screen."
-msgstr ""
+msgstr "使用此配置游玩。{loader} Bridge 会记录每个模组在标题画面前增加的时间。"
 
 #: src/console/StartupTable.tsx
 msgid "What costs this mod the most; open the row for every timing"
-msgstr ""
+msgstr "此模组耗时最多的部分；展开行以查看所有计时"
 
 #: src/console/RunProblems.tsx
 msgid "{hidden, plural, one {# problem in this run is dismissed} other {# problems in this run are dismissed}}"
-msgstr ""
+msgstr "{hidden, plural, one {此次运行中有 # 个问题被忽略} other {此次运行中有 # 个问题被忽略}}"
 
 #: src/console/logHooks.ts
 msgid "Error"
-msgstr ""
+msgstr "错误"
 
 #: src/console/lineText.ts
 msgid "{game} crashed; exited with {signal} after {duration}."
-msgstr ""
+msgstr "{game} 崩溃了；在 {duration} 后以 {signal} 退出。"
 
 #: src/console/StartupSections.tsx
 msgid "This start was {by} slower than the one before."
-msgstr ""
+msgstr "此次启动比上次慢了 {by}。"
 
 #: src/console/StartupSections.tsx
 msgid "The game's first frames; mods doing setup work in update events show up here"
-msgstr ""
+msgstr "游戏的最初几帧；在更新事件中进行设置工作的模组会显示在这里"
 
 #: src/console/ConsoleTab.tsx
 msgid "{count, plural, one {Show it} other {Show all # lines}}"
-msgstr ""
+msgstr "{count, plural, one {显示它} other {显示全部 # 行}}"
 
 #: src/console/RunProblems.tsx
 msgid "Remove"
-msgstr ""
+msgstr "移除"
 
 #: src/console/PerformancePanel.tsx
 msgid "Start the game, then start measuring here to time each plugin per frame."
-msgstr ""
+msgstr "启动游戏，然后在此开始测量，以统计每个插件每帧的耗时。"
 
 #: src/console/PerformanceComparison.tsx
 #: src/console/StartupTable.tsx
 msgid "Mod"
-msgstr ""
+msgstr "模组"
 
 #: src/console/StartupPanel.tsx
 msgid "Reading startup reports…"
-msgstr ""
+msgstr "正在读取启动报告…"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Average ms"
-msgstr ""
+msgstr "平均毫秒"
 
 #: src/console/StartupPanel.tsx
 msgid "No startup measured yet"
-msgstr ""
+msgstr "尚无启动测量"
 
 #: src/console/StartupSections.tsx
 msgid "First scene"
-msgstr ""
+msgstr "第一个场景"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Already installed"
-msgstr ""
+msgstr "已安装"
 
 #: src/console/BisectConfirm.tsx
 msgid "Start"
-msgstr ""
+msgstr "开始"
 
 #: src/console/ConsoleTab.tsx
 msgid "Clear filters"
-msgstr ""
+msgstr "清除筛选条件"
 
 #: src/console/RunsPicker.tsx
 msgid "{count, plural, one {# log line Mortar could not classify} other {# log lines Mortar could not classify}}"
-msgstr ""
+msgstr "{count, plural, one {# 行日志 Mortar 无法分类} other {# 行日志 Mortar 无法分类}}"
 
 #: src/console/PerformanceCards.tsx
 msgid "Mods add {mods}."
-msgstr ""
+msgstr "模组增加 {mods}。"
 
 #: src/console/LogActions.tsx
 msgid "Errors"
-msgstr ""
+msgstr "错误"
 
 #: src/console/StartupSections.tsx
 msgid "The game loads its own content"
-msgstr ""
+msgstr "游戏加载自身内容"
 
 #: src/console/StartupSections.tsx
 msgid "The game was still loading after the title screen showed"
-msgstr ""
+msgstr "标题画面显示后游戏仍在加载"
 
 #: src/console/PerformanceCards.tsx
 #: src/console/StartupTable.tsx
 msgid "In game"
-msgstr ""
+msgstr "游戏内"
 
 #: src/console/SandboxNote.tsx
 msgid "If a mod needs one of these folders, allow its folder here, or disable \"Sandbox the game\" on the Play page."
-msgstr ""
+msgstr "如果某个模组需要这些文件夹之一，请在此允许其文件夹，或在“游玩”页面关闭“沙盒化游戏”。"
 
 #: src/console/StartupSections.tsx
 msgid "{loader}'s preloader patches the game, then {app} starts it"
-msgstr ""
+msgstr "{loader} 的预加载器修补游戏，然后由 {app} 启动游戏"
 
 #: src/console/PerformancePanel.tsx
 msgid "Start the game, then start measuring here to time each mod's event handlers per frame."
-msgstr ""
+msgstr "启动游戏，然后在此开始测量，以统计每个模组的事件处理程序每帧的耗时。"
 
 #: src/console/StartupSections.tsx
 msgid "Until the game's first scene has loaded"
-msgstr ""
+msgstr "直到游戏第一个场景加载完成"
 
 #: src/console/lineText.ts
 msgid "{game} closed after {duration}."
-msgstr ""
+msgstr "{game} 在 {duration} 后关闭。"
 
 #: src/console/PerformancePanel.tsx
 msgid "This {loader} Bridge measures in game only on a measured launch. Use Measure next launch under Startup and play again."
-msgstr ""
+msgstr "此 {loader} Bridge 仅在测量启动时才在游戏内测量。请在“启动”下使用“测量下次启动”，然后再次游玩。"
 
 #: src/console/StartupTable.tsx
 msgid "Entry"
-msgstr ""
+msgstr "Entry"
 
 #: src/console/StartupTable.tsx
 msgid "Hide details"
-msgstr ""
+msgstr "隐藏详情"
 
 #: src/console/BisectDialog.tsx
 msgid "Preparing a temporary copy of this profile…"
-msgstr ""
+msgstr "正在准备此配置的临时副本…"
 
 #: src/console/PerformanceCards.tsx
 msgid "Live: {top} takes the most time per frame"
-msgstr ""
+msgstr "实时：{top} 每帧耗时最多"
 
 #: src/console/ConsoleTab.tsx
 msgid "{count, plural, one {level is off} other {levels are off}}"
-msgstr ""
+msgstr "{count, plural, one {级别已关闭} other {级别已关闭}}"
 
 #: src/console/StartupTable.tsx
 msgid "Sampled"
-msgstr ""
+msgstr "已采样"
 
 #: src/console/BisectDialog.tsx
 msgid "Every mod in this profile is already disabled, so there is nothing to disable and test."
-msgstr ""
+msgstr "此配置中的每个模组都已禁用，因此没有可禁用和测试的内容。"
 
 #: src/console/ConsoleTab.tsx
 msgid "No game output yet"
-msgstr ""
+msgstr "尚无游戏输出"
 
 #: src/console/LineMenu.tsx
 msgid "Hide every message from {method}"
-msgstr ""
+msgstr "隐藏来自 {method} 的所有消息"
 
 #: src/console/PerformancePanel.tsx
 msgid "Baseline: the mods' timed code is {mods} ms of the {avg} ms average frame; the game and loader alone take about {withoutMods} ms."
-msgstr ""
+msgstr "基线：模组的计时代码占 {avg} 毫秒平均帧中的 {mods} 毫秒；仅游戏和加载器约占 {withoutMods} 毫秒。"
 
 #: src/console/LogActions.tsx
 msgid "Jump to first error"
-msgstr ""
+msgstr "跳转到第一个错误"
 
 #: src/console/ConsoleTab.tsx
 msgid "{count, plural, one {# line is} other {# lines are}} hidden by the filters: {why}."
-msgstr ""
+msgstr "{count, plural, one {# 行被} other {# 行被}}筛选条件隐藏：{why}。"
 
 #: src/console/lineText.ts
 msgid "Started without mods"
-msgstr ""
+msgstr "未使用模组启动"
 
 #: src/console/StartupSections.tsx
 msgid "Show mod"
-msgstr ""
+msgstr "显示模组"
 
 #: src/console/PerformanceCards.tsx
 msgid "{total} to the main menu"
-msgstr ""
+msgstr "到主菜单共 {total}"
 
 #: src/console/PerformanceComparison.tsx
 msgid "Now ms"
-msgstr ""
+msgstr "当前毫秒"
 
 #: src/console/StartupSections.tsx
 msgid "Game content"
-msgstr ""
+msgstr "游戏内容"
 
 #: src/console/SandboxNote.tsx
 msgid "Allow {folder}"
-msgstr ""
+msgstr "允许 {folder}"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Compare saved reports"
-msgstr ""
+msgstr "比较已保存的报告"
 
 #: src/console/LogActions.tsx
 msgid "Clear"
-msgstr ""
+msgstr "清除"
 
 #: src/console/StartupTable.tsx
 msgid "Game and {loader}"
-msgstr ""
+msgstr "游戏与 {loader}"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "You develop this"
-msgstr ""
+msgstr "你开发了此模组"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Compare with…"
-msgstr ""
+msgstr "与…比较"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Unofficial {loader}-compatible builds are off in Settings."
-msgstr ""
+msgstr "非官方 {loader} 兼容版本已在设置中关闭。"
 
 #: src/console/lineText.ts
 msgid "{game} crashed; exited with code {code} ({signal})."
-msgstr ""
+msgstr "{game} 崩溃了；以代码 {code}（{signal}）退出。"
 
 #: src/console/startupHooks.ts
 msgid "slow {event} {ms}"
-msgstr ""
+msgstr "缓慢的 {event} {ms}"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "See which mods slow the game"
-msgstr ""
+msgstr "查看哪些模组拖慢游戏"
 
 #: src/console/ConsoleTab.tsx
 msgid "Show times"
-msgstr ""
+msgstr "显示时间"
 
 #: src/console/LogActions.tsx
 msgid "Save log…"
-msgstr ""
+msgstr "保存日志…"
 
 #: src/console/SearchRunsDialog.tsx
 msgid "No stored run contains that text."
-msgstr ""
+msgstr "没有已存储的运行包含该文本。"
 
 #: src/console/StartupSections.tsx
 msgid "To the main menu"
-msgstr ""
+msgstr "到主菜单"
 
 #: src/console/BisectDialog.tsx
 msgid "Stop"
-msgstr ""
+msgstr "停止"
 
 #: src/console/ConsoleTab.tsx
 msgid "Reinstall"
-msgstr ""
+msgstr "重新安装"
 
 #: src/console/StartupSections.tsx
 msgid "Compare"
-msgstr ""
+msgstr "比较"
 
 #: src/console/RunProblems.tsx
 msgid "Restore"
-msgstr ""
+msgstr "恢复"
 
 #: src/console/StartupSections.tsx
 msgid "From launch until {loader} has loaded every mod's code"
-msgstr ""
+msgstr "从启动到 {loader} 加载完所有模组的代码"
 
 #: src/console/CrashDialog.tsx
 msgid "{game} closed with errors"
-msgstr ""
+msgstr "{game} 因错误关闭"
 
 #: src/console/StartupTable.tsx
 msgid "{count, plural, one {# more pack} other {# more packs}}"
-msgstr ""
+msgstr "{count, plural, one {另有 # 个包} other {另有 # 个包}}"
 
 #: src/console/HelpDialog.tsx
 msgid "Share log"
-msgstr ""
+msgstr "分享日志"
 
 #: src/console/BisectDialog.tsx
 #: src/console/HelpDialog.tsx
 #: src/console/SearchRunsDialog.tsx
 msgid "Close"
-msgstr ""
+msgstr "关闭"
 
 #: src/console/ConsoleTab.tsx
 #: src/console/CrashDialog.tsx
 msgid "Caused by {name}"
-msgstr ""
+msgstr "由 {name} 导致"
 
 #: src/console/PerformanceComparison.tsx
 msgid "Before ms"
-msgstr ""
+msgstr "之前毫秒"
 
 #: src/console/logHooks.ts
 msgid "Alert"
-msgstr ""
+msgstr "警报"
 
 #: src/console/StartupSections.tsx
 msgid "From launch until {loader}'s preloader runs"
-msgstr ""
+msgstr "从启动到 {loader} 的预加载器运行"
 
 #: src/console/PerformanceTab.tsx
 msgid "Launch"
-msgstr ""
+msgstr "启动"
 
 #: src/console/lineText.ts
 msgid "Launch cancelled."
-msgstr ""
+msgstr "启动已取消。"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Measure while you play, then report the mods that take the most time per frame."
-msgstr ""
+msgstr "在游玩时测量，然后报告每帧耗时最多的模组。"
