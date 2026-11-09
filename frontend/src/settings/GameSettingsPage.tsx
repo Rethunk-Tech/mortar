@@ -36,6 +36,7 @@ import { HiddenMods } from './sections/HiddenMods.tsx'
 import { LoaderProfileSettings, ProfileGameOptions } from './sections/ProfileScopeSections.tsx'
 import { SourceOrder } from './sections/SourceOrder.tsx'
 import { StreamOverlay } from './sections/StreamOverlay.tsx'
+import { showsStreaming } from './streamingPage.ts'
 import { useSettingsScope } from './settingsScope.ts'
 import { useSettings } from './store.ts'
 import { usePerProfileRelated } from './usePerProfileRelated.tsx'
@@ -187,7 +188,7 @@ function GamePages({
     ...(loader?.console
       ? [{ id: 'console' as const, label: t`Console`, icon: SquareTerminal }]
       : []),
-    ...(loader?.overlay
+    ...(showsStreaming(loader)
       ? [{ id: 'streaming' as const, label: t`Streaming`, icon: RadioIcon }]
       : []),
   ]
@@ -260,7 +261,7 @@ function GamePages({
           </>
         )
       default:
-        return loader?.overlay ? (
+        return showsStreaming(loader) ? (
           <SharedOnProfile>
             <StreamOverlay game={game} />
           </SharedOnProfile>

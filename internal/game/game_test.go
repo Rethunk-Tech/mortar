@@ -9,9 +9,11 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/opener"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -274,6 +276,49 @@ func TestNameOf(t *testing.T) {
 	}
 }
 
+// A game whose catalog names an overlay component beside the companion offers the overlay settings; that is the
+// switch the split needs, and today's catalog names one for no game.
+func TestTheOverlaySettingsNeedAnOverlayComponent(t *testing.T) {
+	st := testStore(t)
+	mono := t.TempDir()
+	cur := st.Get()
+	cur.GameFolders = map[string]string{"stardew": mono, "lethal-company": mono}
+	m, err := components.BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range m.Games {
+		if m.Games[i].ID != "stardew" {
+			continue
+		}
+		m.Games[i].Loaders = slices.Clone(m.Games[i].Loaders)
+		m.Games[i].Loaders[0].Overlay = "overlay"
+	}
+	sum := strings.Repeat("ab", 32)
+	m.Components = append(slices.Clone(m.Components), components.Component{
+		Game: "stardew", Name: "overlay", Kind: "overlay",
+		Source: components.Source{Host: "github.com", Owner: "Rethunk-Tech", Repo: "mortar-smapi-overlay"},
+		Tag:    "v0.1.0", Asset: "overlay.zip", Version: "0.1.0", SHA256: sum,
+	})
+	c := components.NewClient(nil)
+	c.SetManifest(m)
+	ConfigureComponents(c)
+	t.Cleanup(func() { ConfigureComponents(nil) })
+
+	games, err := List(t.TempDir(), cur)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, g := range games {
+		if g.ID == "stardew" && !g.Loaders[0].Overlay {
+			t.Fatalf("Stardew offers no overlay settings with an overlay component: %+v", g.Loaders[0])
+		}
+		if g.ID == "lethal-company" && g.Loaders[0].Overlay {
+			t.Fatalf("Lethal Company offers the overlay settings with no overlay component: %+v", g.Loaders[0])
+		}
+	}
+}
+
 func TestByR2modmanFolderNamesTheCatalogGame(t *testing.T) {
 	if id, ok := ByR2modmanFolder("LethalCompany"); !ok || id != "lethal-company" {
 		t.Fatalf("got %q %v", id, ok)
@@ -301,14 +346,16 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 	for _, g := range games {
 		caps[g.ID] = g.Loaders[0]
 	}
-	if s := caps["stardew"]; !s.Order || !s.Console || !s.Commands || !s.Startup || !s.Assets || !s.Frameworks || !s.Overlay || !s.IntroSkip {
+	// The overlay settings need a mod of their own, which today's catalog lists for no game: they stay off everywhere,
+	// where they used to show and do nothing.
+	if s := caps["stardew"]; !s.Order || !s.Console || !s.Commands || !s.Startup || !s.Assets || !s.Frameworks || s.Overlay || !s.IntroSkip {
 		t.Fatalf("SMAPI = %+v", s)
 	}
-	if b := caps["lethal-company"]; !b.Order || !b.Console || b.Commands || !b.Startup || b.Assets || b.Frameworks || !b.Overlay || !b.IntroSkip {
+	if b := caps["lethal-company"]; !b.Order || !b.Console || b.Commands || !b.Startup || b.Assets || b.Frameworks || b.Overlay || !b.IntroSkip {
 		t.Fatalf("BepInEx = %+v", b)
 	}
 	// PEAK gets the core bridge build: everything the bridge offers, but no console commands, which need game hooks.
-	if p := caps["peak"]; !p.Console || !p.Startup || !p.Overlay || !p.IntroSkip || p.Commands {
+	if p := caps["peak"]; !p.Console || !p.Startup || p.Overlay || !p.IntroSkip || p.Commands {
 		t.Fatalf("BepInEx with the core bridge = %+v", p)
 	}
 	// Core Keeper installs the IL2CPP bridge, which only lists plugins: none of the tabs that need the Mono build.
@@ -322,6 +369,13 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 	// Valheim's console is the one a BepInEx bridge can run lines in.
 	if v := caps["valheim"]; !v.Commands {
 		t.Fatalf("Valheim's BepInEx = %+v", v)
+	}
+	// REPO and Content Warning serve no overlay of their own, and their catalog entries name no overlay component, so
+	// the toggle no longer appears for them.
+	for _, id := range []string{"repo", "content-warning", "riskofrain2"} {
+		if c := caps[id]; c.Overlay {
+			t.Fatalf("%s offers the overlay settings with no overlay component: %+v", id, c)
+		}
 	}
 	if _, err := opener.Web(caps["lethal-company"].Paste); err != nil || caps["stardew"].Paste != "" {
 		t.Fatalf("paste sites: BepInEx %q (%v), SMAPI %q", caps["lethal-company"].Paste, err, caps["stardew"].Paste)

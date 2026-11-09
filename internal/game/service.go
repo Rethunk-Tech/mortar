@@ -121,8 +121,13 @@ func loaderRef(gameID, installDir string, l components.GameLoader) LoaderRef {
 		ref.Commands = bridge && hasConsole && hasCompanion && (l.Console || !strings.HasPrefix(l.ID, "bepinex"))
 		_, ref.Startup = d.(loader.StartupTimings)
 		_, ref.Perf = d.(loader.InGamePerf)
-		_, ref.Overlay = d.(loader.StreamOverlay)
 		_, ref.IntroSkip = d.(loader.IntroSkipper)
+		// The overlay settings drive a mod of their own, which only a game whose catalog names an overlay component
+		// beside the companion has; a game whose companion serves the overlay itself (before the split) names none.
+		_, ref.Overlay = d.(loader.StreamOverlay)
+		if l.Overlay == "" || !components.HasComponent(gameID, l.Overlay) {
+			ref.Overlay = false
+		}
 		ref.Startup, ref.Perf, ref.Overlay, ref.IntroSkip = mono && ref.Startup, mono && ref.Perf, mono && ref.Overlay, mono && ref.IntroSkip
 		_, ref.Builtin = d.(loader.Builtin)
 		ref.Share = loader.SharesLog(d)
