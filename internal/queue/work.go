@@ -494,7 +494,7 @@ func (s *Service) resolve(ctx context.Context, it Item) error {
 }
 
 func (s *Service) fetchSlot(ctx context.Context, it Item) (func(), error) {
-	if it.Repo == "" && it.Package == "" && (s.d.Premium == nil || !s.d.Premium()) {
+	if it.Repo == "" && it.Package == "" && !s.d.Premium() {
 		select {
 		case s.freeFetch <- struct{}{}:
 			return func() { <-s.freeFetch }, nil

@@ -495,6 +495,9 @@ func New(d Deps) (*Service, error) {
 	if d.Now == nil {
 		d.Now = time.Now
 	}
+	if d.Premium == nil {
+		d.Premium = func() bool { return false }
+	}
 	if d.HTTP == nil {
 		d.HTTP = &http.Client{Transport: downloadTransport(http.DefaultTransport), Timeout: 30 * time.Minute}
 	}
