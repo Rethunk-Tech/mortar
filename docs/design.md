@@ -55,7 +55,6 @@ Parked; take up when asked.
 - **Runs that need an outside tester:** a launch from a real GOG install and from Flatpak Steam; a Linux launch with Stardew's launch method set to Steam, confirming SMAPI loads the profile's mods; Import from Vortex against a long-lived Vortex folder; timings with the data folder under OneDrive.
 - **Translate a mod's description** into the player's language (as StarModsManager does for Stardew), optional and per description; revisit together with the app's own translations.
 - **Hosted share service** with short codes and share versioning.
-- **Structured logging:** move the `log.Print*`/`log.Fatal*` calls (heaviest in `main.go` and `internal/nxmsvc/service.go`) to `slog` with attributes. `slog.SetDefault` in `main.go` already routes `log.*` through the handler as plain messages, so the change is how lines read in run logs and support bundles; plain calls convert by codemod, formatted ones by hand.
 - **Add to Mortar** button on Nexus listing tiles, which needs Nexus's approval first ([nexus-application.md](nexus-application.md)).
 - **Windows code signing** with Azure Trusted Signing.
 - **GitHub topic-search fallback** (`internal/source/github/fallback.go`) into go-github, once a second consumer needs it.
