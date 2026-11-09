@@ -313,8 +313,26 @@ func TestTheOverlaySettingsNeedAnOverlayComponent(t *testing.T) {
 		if g.ID == "stardew" && !g.Loaders[0].Overlay {
 			t.Fatalf("Stardew offers no overlay settings with an overlay component: %+v", g.Loaders[0])
 		}
+		// Lethal Company has no overlay component, but its catalog companion is a build that still serves the overlay.
+		if g.ID == "lethal-company" && !g.Loaders[0].Overlay {
+			t.Fatalf("Lethal Company hides the overlay its companion serves: %+v", g.Loaders[0])
+		}
+	}
+
+	// Once its companion is a split build, a game with no overlay component offers no overlay settings.
+	for i := range m.Components {
+		if m.Components[i].Game == "lethal-company" && m.Components[i].Kind == "bridge" {
+			m.Components[i].Version = "0.7.0"
+		}
+	}
+	c.SetManifest(m)
+	games, err = List(t.TempDir(), cur)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, g := range games {
 		if g.ID == "lethal-company" && g.Loaders[0].Overlay {
-			t.Fatalf("Lethal Company offers the overlay settings with no overlay component: %+v", g.Loaders[0])
+			t.Fatalf("Lethal Company offers the overlay settings with a split companion and no overlay component: %+v", g.Loaders[0])
 		}
 	}
 }
@@ -346,16 +364,16 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 	for _, g := range games {
 		caps[g.ID] = g.Loaders[0]
 	}
-	// The overlay settings need a mod of their own, which today's catalog lists for no game: they stay off everywhere,
-	// where they used to show and do nothing.
-	if s := caps["stardew"]; !s.Order || !s.Console || !s.Commands || !s.Startup || !s.Assets || !s.Frameworks || s.Overlay || !s.IntroSkip {
+	// Today's catalog companions are builds that still serve the overlay, so both offer the overlay settings.
+	if s := caps["stardew"]; !s.Order || !s.Console || !s.Commands || !s.Startup || !s.Assets || !s.Frameworks || !s.Overlay || !s.IntroSkip {
 		t.Fatalf("SMAPI = %+v", s)
 	}
-	if b := caps["lethal-company"]; !b.Order || !b.Console || b.Commands || !b.Startup || b.Assets || b.Frameworks || b.Overlay || !b.IntroSkip {
+	if b := caps["lethal-company"]; !b.Order || !b.Console || b.Commands || !b.Startup || b.Assets || b.Frameworks || !b.Overlay || !b.IntroSkip {
 		t.Fatalf("BepInEx = %+v", b)
 	}
 	// PEAK gets the core bridge build: everything the bridge offers, but no console commands, which need game hooks.
-	if p := caps["peak"]; !p.Console || !p.Startup || p.Overlay || !p.IntroSkip || p.Commands {
+	// Its companion is still a pre-split build, so the overlay settings stay until the catalog moves it to a split one.
+	if p := caps["peak"]; !p.Console || !p.Startup || !p.Overlay || !p.IntroSkip || p.Commands {
 		t.Fatalf("BepInEx with the core bridge = %+v", p)
 	}
 	// Core Keeper installs the IL2CPP bridge, which only lists plugins: none of the tabs that need the Mono build.
@@ -369,13 +387,6 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 	// Valheim's console is the one a BepInEx bridge can run lines in.
 	if v := caps["valheim"]; !v.Commands {
 		t.Fatalf("Valheim's BepInEx = %+v", v)
-	}
-	// REPO and Content Warning serve no overlay of their own, and their catalog entries name no overlay component, so
-	// the toggle no longer appears for them.
-	for _, id := range []string{"repo", "content-warning", "riskofrain2"} {
-		if c := caps[id]; c.Overlay {
-			t.Fatalf("%s offers the overlay settings with no overlay component: %+v", id, c)
-		}
 	}
 	if _, err := opener.Web(caps["lethal-company"].Paste); err != nil || caps["stardew"].Paste != "" {
 		t.Fatalf("paste sites: BepInEx %q (%v), SMAPI %q", caps["lethal-company"].Paste, err, caps["stardew"].Paste)

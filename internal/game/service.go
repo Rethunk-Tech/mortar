@@ -122,12 +122,11 @@ func loaderRef(gameID, installDir string, l components.GameLoader) LoaderRef {
 		_, ref.Startup = d.(loader.StartupTimings)
 		_, ref.Perf = d.(loader.InGamePerf)
 		_, ref.IntroSkip = d.(loader.IntroSkipper)
-		// The overlay settings drive a mod of their own, which only a game whose catalog names an overlay component
-		// beside the companion has; a game whose companion serves the overlay itself (before the split) names none.
+		// The overlay settings apply where the catalog names an overlay mod beside the companion, or where the
+		// companion is a build from before the split that still serves the overlay itself.
 		_, ref.Overlay = d.(loader.StreamOverlay)
-		if l.Overlay == "" || !components.HasComponent(gameID, l.Overlay) {
-			ref.Overlay = false
-		}
+		companion, _ := components.ActiveComponent(gameID, l.Companion)
+		ref.Overlay = ref.Overlay && (l.Overlay != "" && components.HasComponent(gameID, l.Overlay) || components.ServesOverlay(companion))
 		ref.Startup, ref.Perf, ref.Overlay, ref.IntroSkip = mono && ref.Startup, mono && ref.Perf, mono && ref.Overlay, mono && ref.IntroSkip
 		_, ref.Builtin = d.(loader.Builtin)
 		ref.Share = loader.SharesLog(d)

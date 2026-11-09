@@ -9,6 +9,8 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -32,7 +34,7 @@ func splitClient(t *testing.T, companionVersion string) (*components.Client, str
 		"StreamOverlay/StreamOverlay.dll": "overlay",
 	})
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if bytes.Contains([]byte(r.URL.Path), []byte("overlay")) {
+		if strings.Contains(r.URL.Path, "overlay") {
 			_, _ = w.Write(overlayZip.Bytes())
 			return
 		}
@@ -117,7 +119,7 @@ func TestTheOverlayBundleJoinsTheProfilesWithTheSettingOn(t *testing.T) {
 		t.Fatal(err)
 	}
 	overlay := store.OverlayKey("0.1.0", overlayHash)
-	if !equalKeys(overlayEntries(got), []string{overlay}) {
+	if !slices.Equal(overlayEntries(got), []string{overlay}) {
 		t.Fatalf("overlay entries = %v, want %s", overlayEntries(got), overlay)
 	}
 	if _, err := os.Stat(filepath.Join(dirOf(t, items, overlay), "StreamOverlay", "StreamOverlay.dll")); err != nil {
@@ -147,7 +149,7 @@ func TestTheOverlayBundleFollowsItsSetting(t *testing.T) {
 	}
 	SyncBundled(t.Context(), svc, "stardew")
 	got, _ := profiles.Get("stardew", created.ID)
-	if want := []string{store.OverlayKey("0.1.0", overlayHash)}; !equalKeys(overlayEntries(got), want) {
+	if want := []string{store.OverlayKey("0.1.0", overlayHash)}; !slices.Equal(overlayEntries(got), want) {
 		t.Fatalf("overlay entries = %v, want %v", overlayEntries(got), want)
 	}
 	if _, err := set.Update(func(v *settings.Settings) { v.OverlayEnabled = false }); err != nil {
@@ -170,7 +172,7 @@ func TestAPreSplitCompanionKeepsTheOverlayOut(t *testing.T) {
 		t.Fatal(err)
 	}
 	items, profiles := testenv.Stores(t)
-	client, _ := splitClient(t, "0.5.4")
+	client, _ := splitClient(t, "0.2.10")
 	svc := testService(t, set, items, profiles, client)
 	created, err := profiles.Create("stardew", "Main")
 	if err != nil {
@@ -179,7 +181,7 @@ func TestAPreSplitCompanionKeepsTheOverlayOut(t *testing.T) {
 	SyncBundled(t.Context(), svc, "stardew")
 	got, _ := profiles.Get("stardew", created.ID)
 	if len(overlayEntries(got)) != 0 {
-		t.Fatalf("a 0.5.x companion got an overlay mod beside it: %v", overlayEntries(got))
+		t.Fatalf("a companion that still serves the overlay got an overlay mod beside it: %v", overlayEntries(got))
 	}
 	for _, e := range got.Entries {
 		if e.Source.BundleComponent() == profile.BundleOverlay {
@@ -213,7 +215,7 @@ func TestTheOverlayBundleIsReplacedInPlaceAndOnlyItsOwn(t *testing.T) {
 	client.SetManifest(newerOverlayManifest(t, client.Manifest(), secondHash))
 	SyncBundled(t.Context(), svc, "stardew")
 	after, _ := profiles.Get("stardew", created.ID)
-	if want := []string{store.OverlayKey("0.2.0", secondHash)}; !equalKeys(overlayEntries(after), want) {
+	if want := []string{store.OverlayKey("0.2.0", secondHash)}; !slices.Equal(overlayEntries(after), want) {
 		t.Fatalf("overlay entries = %v, want %v", overlayEntries(after), want)
 	}
 	if countComponent(after, profile.BundleBridge) != bridgesBefore {
@@ -275,18 +277,6 @@ func tempSettings(t *testing.T) (*settings.Store, error) {
 	t.Setenv("XDG_DATA_HOME", data)
 	t.Setenv("LOCALAPPDATA", data)
 	return settings.OpenIn(data)
-}
-
-func equalKeys(got, want []string) bool {
-	if len(got) != len(want) {
-		return false
-	}
-	for i := range got {
-		if got[i] != want[i] {
-			return false
-		}
-	}
-	return true
 }
 
 func dirOf(t *testing.T, items *store.Store, key string) string {

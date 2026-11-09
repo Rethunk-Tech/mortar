@@ -13,7 +13,6 @@ import (
 	"sync/atomic"
 
 	"github.com/Rethunk-Tech/go-safefs"
-	"github.com/Rethunk-Tech/go-semverish"
 	"github.com/Rethunk-Tech/mortar/internal/scratch"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 
@@ -247,15 +246,7 @@ func (s *Service) overlayWanted(id string) bool {
 	if !ok {
 		return false
 	}
-	return !preSplitCompanion(companion.Version)
-}
-
-// preSplitCompanion reports a companion release from before the stream overlay left the bridges (all of 0.5.x), which
-// serves the overlay from its own DLL; it answers an unknown version as post-split, since the catalog's entry says what
-// it is.
-func preSplitCompanion(version string) bool {
-	c, ok := semverish.Compare(version, "0.6.0")
-	return ok && c < 0
+	return !components.ServesOverlay(companion)
 }
 
 // ensureOverlay returns the overlay component as a profile bundle, adding it to the store first when it is missing.

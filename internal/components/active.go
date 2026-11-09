@@ -4,6 +4,8 @@ import (
 	"slices"
 	"strings"
 	"sync/atomic"
+
+	"github.com/Rethunk-Tech/go-semverish"
 )
 
 // active is the client whose verified manifest the whole process reads the game catalog from; every service that
@@ -93,16 +95,35 @@ func Game(id string) (GameInfo, bool) {
 // HasComponent reports whether the catalog in use (else the bundled one) has the game's component of that name, which
 // is what Mortar installs for a loader's companion.
 func HasComponent(game, name string) bool {
+	_, ok := ActiveComponent(game, name)
+	return ok
+}
+
+// ActiveComponent returns the game's component by name from the active catalog, or from the bundled one before Load.
+func ActiveComponent(game, name string) (Component, bool) {
 	if c := active.Load(); c != nil {
-		_, ok := c.Component(game, name)
-		return ok
+		return c.Component(game, name)
 	}
 	m, err := BundledManifest()
 	if err != nil {
+		return Component{}, false
+	}
+	return findComponent(m.Components, game, name)
+}
+
+// splitCompanions names, per companion repo, its first release without the stream overlay, which moved into a mod of
+// its own.
+var splitCompanions = map[string]string{"mortar-bepinex-bridge": "0.7.0", "mortar-smapi-bridge": "0.3.0"}
+
+// ServesOverlay reports a companion build from before that split: it binds the overlay port itself, so the overlay
+// setting still applies to it and the overlay mod must never load beside it.
+func ServesOverlay(c Component) bool {
+	first, ok := splitCompanions[c.Source.Repo]
+	if !ok {
 		return false
 	}
-	_, ok := findComponent(m.Components, game, name)
-	return ok
+	order, ok := semverish.Compare(c.Version, first)
+	return ok && order < 0
 }
 
 // GameByNexusDomain is the catalog game whose Nexus source key (the v1 URL segment) is domain; the browser extension
