@@ -76,6 +76,14 @@ func TestPreviewArchiveTruncatesEntries(t *testing.T) {
 	}
 }
 
+func TestPreviewArchiveRefusesANonArchive(t *testing.T) {
+	t.Parallel()
+	p := testfs.WriteFile(t, t.TempDir(), "x.zip", "plain text")
+	if _, err := PreviewArchive(p); err == nil {
+		t.Fatal("a text file previewed")
+	}
+}
+
 func TestFacadeRefusesAnUnsupportedFormat(t *testing.T) {
 	t.Parallel()
 	p := testfs.WriteFile(t, t.TempDir(), "x.zip", "plain text")
@@ -115,6 +123,33 @@ func TestExtractNamesFromTheOriginalName(t *testing.T) {
 	}
 	if got, _ := os.ReadDir(dest); len(got) != 0 {
 		t.Fatalf("an empty tar unpacked %d entries", len(got))
+	}
+}
+
+// A missing archive, a destination that is not there and a handle already closed each fail as the file system
+// reports it, rather than as a panic or a silent success.
+func TestExtractReportsTheFileSystemError(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	zipPath := zipAt(t, map[string]string{"a.txt": "aa"})
+	if err := Extract(filepath.Join(dir, "missing.zip"), t.TempDir()); err == nil {
+		t.Fatal("a missing archive extracted")
+	}
+	if err := Extract(zipPath, filepath.Join(dir, "no-such-dest")); err == nil {
+		t.Fatal("a missing destination extracted")
+	}
+	if _, err := List(filepath.Join(dir, "missing.zip"), 0); err == nil {
+		t.Fatal("a missing archive listed")
+	}
+	f, err := safefs.Open(zipPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := f.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := ExtractOpened(f, zipPath, t.TempDir()); err == nil {
+		t.Fatal("a closed handle extracted")
 	}
 }
 
