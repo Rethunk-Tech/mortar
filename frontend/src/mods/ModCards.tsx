@@ -431,17 +431,19 @@ export function Cards({
   shown,
   profile,
   filtering,
+  searching,
 }: {
   shown: Mod[]
   profile: Profile
   filtering: boolean
+  // The settled search `shown` was filtered by, which asks for the implicit mods themselves so they keep their own
+  // cards. The raw query leads it, and folding on that would redraw every card before the list narrows.
+  searching: boolean
 }) {
-  // A search asks for the implicit mods themselves, so they keep their own cards.
-  const wanted = useMods((s) => (s.queries[profile.id] ?? '') !== '')
   const { groupBy, sort, gameId, collapsed, setCollapsed, groups, orderedIds } = useModGroups(
     shown,
     profile,
-    !wanted,
+    !searching,
   )
   const heading = useListHeading(groupBy)
   const manual = sort.column === MANUAL_SORT && !filtering

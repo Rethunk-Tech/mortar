@@ -1,4 +1,5 @@
 import { msg } from '@lingui/core/macro'
+import { sameValue } from '@rethunk/react-load-hooks'
 import { create } from 'zustand'
 import type { ConfigFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/configsvc/models.ts'
 import { Files as ReadConfigFiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/configsvc/service.ts'
@@ -95,7 +96,9 @@ export const useDetail = create<{
         ReadConfigFiles(target.game, target.id, mod.id),
       ])
       if (get().detailId === modId(mod)) {
-        set({ extras: { id: modId(mod), relations, state, configFiles: configFiles ?? [] } })
+        // Reloaded whenever the mod list is, so an unchanged answer keeps the object the panel's sections read.
+        const next = { id: modId(mod), relations, state, configFiles: configFiles ?? [] }
+        set((s) => (sameValue(s.extras, next) ? s : { extras: next }))
       }
     } catch (e) {
       fail(i18n._(msg`Could not read the details of ${{ name: mod.name }}`))(e)

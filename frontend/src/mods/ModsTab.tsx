@@ -103,6 +103,7 @@ const ModsBody = memo(function ModsBodyView({
   shown,
   view,
   filtering,
+  searching,
   onlyFavourites,
   onClear,
 }: {
@@ -110,6 +111,7 @@ const ModsBody = memo(function ModsBodyView({
   shown: Mod[]
   view: View
   filtering: boolean
+  searching: boolean
   onlyFavourites: boolean
   onClear: () => void
 }) {
@@ -164,7 +166,7 @@ const ModsBody = memo(function ModsBodyView({
         {view === 'list' ? (
           <ModList profile={profile} mods={shown} filtering={filtering} />
         ) : (
-          <Cards shown={shown} profile={profile} filtering={filtering} />
+          <Cards shown={shown} profile={profile} filtering={filtering} searching={searching} />
         )}
       </Box>
       <ModSidebar profile={profile} />
@@ -328,6 +330,7 @@ function FilteredMods({ profile }: { profile: Profile }) {
         shown={shown}
         view={view}
         filtering={q !== '' || filter !== 'all' || selectedTags.length > 0}
+        searching={q !== ''}
         onlyFavourites={filter === 'favourite' && q === '' && selectedTags.length === 0}
         onClear={onClear}
       />
