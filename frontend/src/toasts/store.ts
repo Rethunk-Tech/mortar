@@ -11,6 +11,11 @@ const DONE_MS = 8000
 const timers = new Map<number, ReturnType<typeof setTimeout>>()
 
 let nextId = 1
+// The newest notification a repeat still folds into. A timer closes that window, never a second Date.now() read: the
+// clock's resolution makes two pushes in one millisecond the same, and a step either way would merge a repeat that
+// arrived later into the older entry, or start a second entry for a repeat that is still within the window.
+let repeatOf: number | undefined
+let repeatTimer: ReturnType<typeof setTimeout> | undefined
 
 const SAVED_KEY = 'mortar.toastHistory'
 const SAVED_CAP = 100
@@ -87,6 +92,7 @@ export interface Toast extends ToastInput {
 
 export interface ToastHistoryItem {
   id: number
+  // Shown in the panel only. The order of the list is the store's own push order, never this clock reading.
   at: number
   // The history events this notification reports, so the panel lists each change once.
   changes?: string[]
@@ -144,6 +150,14 @@ export const useToasts = create<{
       setTimeout(() => get().dismiss(id), ms),
     )
   }
+  const openRepeat = (id: number) => {
+    clearTimeout(repeatTimer)
+    repeatOf = id
+    repeatTimer = setTimeout(() => {
+      repeatOf = undefined
+      repeatTimer = undefined
+    }, QUICK_MS)
+  }
   return {
     toasts: [],
     history: loadSaved(),
@@ -152,7 +166,7 @@ export const useToasts = create<{
     push: (input) => {
       const now = Date.now()
       const [previous] = get().history
-      if (previous && previous.title === input.title && now - previous.at < QUICK_MS) {
+      if (previous && previous.id === repeatOf && previous.title === input.title) {
         const count = (previous.count ?? 1) + 1
         const changes = changesOf(input, previous.changes)
         const merged = { ...previous, at: now, count, ...(changes.length > 0 ? { changes } : {}) }
@@ -167,6 +181,7 @@ export const useToasts = create<{
         if (!(shown || input.sticky)) {
           arm(previous.id, input.kind)
         }
+        openRepeat(previous.id)
         return previous.id
       }
       const id = nextId
@@ -188,6 +203,7 @@ export const useToasts = create<{
       if (!input.sticky) {
         arm(id, input.kind)
       }
+      openRepeat(id)
       return id
     },
     update: (id, input) => {

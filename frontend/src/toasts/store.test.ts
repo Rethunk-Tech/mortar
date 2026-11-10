@@ -184,6 +184,30 @@ test('a repeat right after the toast was dismissed shows it again and times out'
   expect(useToasts.getState().toasts).toHaveLength(0)
 })
 
+test('history order is push order even when the clock stands still or steps back', () => {
+  const { push } = useToasts.getState()
+  const at = Date.now()
+  push({ kind: 'error', title: 'first' })
+  jest.setSystemTime(at + 30_000)
+  push({ kind: 'error', title: 'second' })
+  jest.setSystemTime(at - 30_000)
+  push({ kind: 'error', title: 'third' })
+  expect(useToasts.getState().history.map((h) => h.title)).toEqual(['third', 'second', 'first'])
+})
+
+test('a repeat after the window is a new entry even when the clock stepped back', () => {
+  const { push } = useToasts.getState()
+  const at = Date.now()
+  push({ kind: 'success', title: 'Saved' })
+  jest.advanceTimersByTime(6000)
+  // A clock that stepped back would make the repeat look like it came inside the window.
+  jest.setSystemTime(at - 60_000)
+  push({ kind: 'success', title: 'Saved' })
+  const { history } = useToasts.getState()
+  expect(history.map((h) => h.title)).toEqual(['Saved', 'Saved'])
+  expect(history[0]?.count).toBeUndefined()
+})
+
 test('a notice on a standing topic replaces the older one in the history', () => {
   const { push } = useToasts.getState()
   push({ kind: 'info', title: '4 mod updates available', topic: 'mod-updates' })
