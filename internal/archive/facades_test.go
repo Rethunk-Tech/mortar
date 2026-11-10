@@ -62,7 +62,7 @@ func TestExtractReaderUnpacksAStreamAndFailsOneCutShort(t *testing.T) {
 	if err := ExtractReader(bytes.NewReader(gz.Bytes()), "notes.txt.gz", root, Options{}); err != nil {
 		t.Fatal(err)
 	}
-	if got, err := os.ReadFile(filepath.Join(dest, "notes.txt")); err != nil || string(got) != "notes" {
+	if got, err := root.ReadFile("notes.txt"); err != nil || string(got) != "notes" {
 		t.Fatalf("notes.txt = %q, %v", got, err)
 	}
 
