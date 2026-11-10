@@ -106,6 +106,20 @@ func recordedCsproj(dir string) (string, bool) {
 	return filepath.Join(dir, filepath.FromSlash(rec.Csproj)), true
 }
 
+// CategoriesOfBuild is the Thunderstore category slugs declared by the project of the game that builds into folder, in
+// the project's order; nil when no project does.
+func (s *Service) CategoriesOfBuild(gameID, folder string) []string {
+	for _, p := range s.Settings.Get().GamePrefs(gameID).DevProjects {
+		if p.Output == "" || folder != p.Output && !strings.HasPrefix(folder, p.Output+string(filepath.Separator)) && !strings.HasPrefix(folder, p.Output+"/") {
+			continue
+		}
+		if info, err := projectInfo(p); err == nil {
+			return info.Categories
+		}
+	}
+	return nil
+}
+
 // csprojOf is the project's project file, which names it: the one its record names, else the one under src/. False
 // when the project is gone.
 func csprojOf(dir string) (string, bool) {

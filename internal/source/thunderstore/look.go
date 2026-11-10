@@ -28,6 +28,42 @@ func lookOf(p *tstore.Package) Look {
 	return Look{Icon: p.Icon, Category: Category(p.Categories), Categories: slices.Clone(p.Categories)}
 }
 
+// CategoryNames is the community's category name of each slug a project declares for its upload ("clientside" is
+// "Client-side"), read from the stored listing without the network. A slug the listing has no name for reads as its
+// own words, capitalised.
+func (d Driver) CategoryNames(key string, slugs []string) []string {
+	var known []string
+	if communityKey.MatchString(key) {
+		known = readDerived(filepath.Join(d.cacheRoot(), "thunderstore"), key).Categories
+	}
+	out := make([]string, 0, len(slugs))
+	for _, slug := range slugs {
+		i := slices.IndexFunc(known, func(n string) bool { return categoryFold(n) == categoryFold(slug) })
+		if i >= 0 {
+			out = append(out, known[i])
+			continue
+		}
+		words := strings.Fields(strings.ReplaceAll(slug, "-", " "))
+		for j, w := range words {
+			words[j] = strings.ToUpper(w[:1]) + w[1:]
+		}
+		out = append(out, strings.Join(words, " "))
+	}
+	return out
+}
+
+// categoryFold is a category name or slug with case, punctuation and spacing dropped, so the name and the slug the
+// site derives from it compare equal.
+func categoryFold(s string) string {
+	s = strings.ReplaceAll(strings.ToLower(s), "&", "and")
+	return strings.Map(func(r rune) rune {
+		if r >= 'a' && r <= 'z' || r >= '0' && r <= '9' {
+			return r
+		}
+		return -1
+	}, s)
+}
+
 // broadCategories fit nearly every package of a community, or say where it runs rather than what it is.
 var broadCategories = []string{"mods", "bepinex", "melonloader", "client-side", "server-side", "ai generated"}
 

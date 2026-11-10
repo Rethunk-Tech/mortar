@@ -732,6 +732,13 @@ func (c *boot) wireQueue() error {
 	c.savedGroupsSvc = savedgroups.NewService(c.profiles, c.dataDir)
 	c.watchHolds = folderwatch.NewHolds()
 	c.devSvc = &devsvc.Service{Version: version, Home: c.home, Settings: c.svc, Profiles: c.profileSvc, CacheDir: c.cacheDir(), BuildLogDir: filepath.Join(c.dataDir, datadir.BuildLogs), Unwatch: c.watchHolds.Hold}
+	c.profiles.DevCategories = func(gameID, folder string) []string {
+		slugs := c.devSvc.CategoriesOfBuild(gameID, folder)
+		if len(slugs) == 0 {
+			return nil
+		}
+		return c.tsDriver().CategoryNames(share.SourceKeys(gameID)["thunderstore"], slugs)
+	}
 	c.devSvc.MigrateRecords()
 	c.problemsSvc = problems.NewService(c.home, c.store, c.profiles, c.modMeta)
 	c.problemsSvc.Runs = c.launches

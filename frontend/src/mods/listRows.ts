@@ -190,7 +190,7 @@ function toListRow(
   const source = sourceText(entry, { pageless, fileless, developed })
   const nexusId = entry?.source.kind === 'nexus' ? (entry.source.modId ?? 0) : 0
   const details = byId[nexusId]?.details
-  const picked = siteCategory(entry, details?.category)
+  const picked = siteCategory(entry, details?.category) ?? (facts[m.id]?.category || undefined)
   const categoryLabel = resolvedCategoryLabel(entry?.categoryOverride, picked, customById)
   const siteCats = siteCategories(entry, facts[m.id]?.categories)
   const hint = siteTagHint(entry, picked, siteCats)

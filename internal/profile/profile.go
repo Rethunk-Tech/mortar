@@ -360,6 +360,9 @@ type Store struct {
 	// PackageLooks is the icon and category of each named Thunderstore package (Namespace-Name) the game's cached
 	// index holds, keyed by the lower-case name, read without the network. Nil means no index.
 	PackageLooks func(game string, names []string) map[string]thunderstore.Look
+	// DevCategories is the site categories (names, in the project's order) of the Develop project that builds into
+	// folder; nil when no project does or the hook is unset.
+	DevCategories func(game, folder string) []string
 	// SourceFacts is the cached facts of one source kind on each of its installed packages (their refs, see factRef, to
 	// the installed version), read without the network. Nil means no caches.
 	SourceFacts func(game, kind string, installed map[string]string) map[string]source.Facts

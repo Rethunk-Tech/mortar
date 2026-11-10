@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
 // What a BepInEx package ships, as ModFact.Kind says it.
@@ -51,6 +52,9 @@ type ModFact struct {
 	Rating     int      `json:"rating"`
 	Downloads  int      `json:"downloads"`
 	Categories []string `json:"categories,omitempty"`
+	// Category is the one of Categories the Category column shows for a mod no source page records one for (a Develop
+	// project's build).
+	Category string `json:"category,omitempty"`
 }
 
 // packageScan is what the DLLs of one store item declare.
@@ -185,6 +189,15 @@ func lastBuilt(e Entry) string {
 	return newest.UTC().Format(time.RFC3339)
 }
 
+// withDevCategories gives f the categories of the Develop project that builds e, when e is a project's build folder.
+func (s *Store) withDevCategories(game string, e Entry, f *ModFact) {
+	if e.Source.Kind != KindLocal || e.Source.Folder == "" || s.DevCategories == nil {
+		return
+	}
+	f.Categories = s.DevCategories(game, e.Source.Folder)
+	f.Category = thunderstore.Category(f.Categories)
+}
+
 func (s *Store) ModFacts(game, id string) (map[string]ModFact, error) {
 	p, err := s.read(game, id)
 	if err != nil {
@@ -216,6 +229,7 @@ func (s *Store) ModFacts(game, id string) (map[string]ModFact, error) {
 				f.Kind, f.HardDeps = sc.kind, slices.Clone(sc.hardDeps)
 			}
 			f.Updated = built
+			s.withDevCategories(game, e, &f)
 			out[string(c.ID)] = f
 			if ref != "" {
 				if installed[e.Source.Kind] == nil {

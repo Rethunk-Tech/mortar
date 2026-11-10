@@ -40,13 +40,13 @@ export function siteCategory(
 }
 
 /** Every site category an installed Thunderstore package has, in the site's order: those the cached listing gives, else
- * the one recorded when it was installed. Nothing for any other source. */
+ * the one recorded when it was installed. Any other source has the ones its facts carry (a Develop project's declared categories). */
 export function siteCategories(
   entry: Entry | undefined,
   listed: readonly string[] | null | undefined,
 ): string[] | undefined {
   if (entry?.source.kind !== 'thunderstore') {
-    return undefined
+    return listed && listed.length > 0 ? [...listed] : undefined
   }
   if (listed && listed.length > 0) {
     return [...listed]

@@ -238,3 +238,36 @@ func TestPluginDLLsPreferAPackagesStoreCopyOverTheDeployedOne(t *testing.T) {
 		t.Fatalf("plugin = %+v, want the store copy under %s", got, store)
 	}
 }
+
+func TestModFactsGivesADevelopBuildItsProjectsCategories(t *testing.T) {
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "Dev")
+	if err != nil {
+		t.Fatal(err)
+	}
+	build := filepath.Join(t.TempDir(), "out")
+	writeFile(t, build, "Mod.dll", "x")
+	if _, err := e.update("lethal-company", p.ID, func(p *Profile, _ string) error {
+		p.Entries = append(p.Entries, Entry{
+			Key: "dev", Source: Source{Kind: KindLocal, Folder: build},
+			Mods: []Component{{ID: "local:Dev", Name: "Dev", Version: "1.0.0"}},
+		})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	e.DevCategories = func(game, folder string) []string {
+		if game == "lethal-company" && folder == build {
+			return []string{"Mods", "Equipment"}
+		}
+		return nil
+	}
+	facts, err := e.ModFacts("lethal-company", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := facts["local:Dev"]
+	if !slices.Equal(got.Categories, []string{"Mods", "Equipment"}) || got.Category != "Equipment" {
+		t.Fatalf("categories = %v, category = %q", got.Categories, got.Category)
+	}
+}
