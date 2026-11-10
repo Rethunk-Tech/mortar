@@ -1,6 +1,8 @@
 reconciled = "canon v0.1.0-poc"
 
 [deviations]
+# Root scripts interleave Go and bun steps (wails bindings before typecheck, go test -race beside bun test), which a turbo task graph over the two JS packages cannot express.
+"ts-patterns-workspace-turbo-00001" = "root scripts chain Go and bun steps (wails bindings, go test -race) that a turbo graph over frontend/ and web/ cannot model"
 # go.mod replaces github.com/wailsapp/wails/v3 with the Rethunk-AI fork (fixes offered upstream as wailsapp/wails#6200,
 # #6201, #6202 and #6239; docs/design.md); gomoddirectives.replace-allow-list names it. A non-local replace is the only
 # way to consume that fork until those PRs ship in a tagged v3 beta; a local replace would mean vendoring Wails.
