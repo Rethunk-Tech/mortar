@@ -13,6 +13,9 @@ import (
 // open fails with "Access is denied"; directories cannot be flushed this way and NTFS journals their
 // metadata, so they are skipped.
 func syncPath(path string) error {
+	if !syncWrites {
+		return nil
+	}
 	info, err := os.Stat(path)
 	if err != nil {
 		return err

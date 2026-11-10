@@ -10,6 +10,9 @@ import (
 
 // syncPath flushes a file or directory to disk; a read-only handle is enough here.
 func syncPath(path string) error {
+	if !syncWrites {
+		return nil
+	}
 	f, err := safefs.Open(path)
 	if err != nil {
 		return err

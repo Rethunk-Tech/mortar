@@ -25,6 +25,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"testing"
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -45,6 +46,9 @@ const retention = 30 * 24 * time.Hour
 const CompleteMarker = ".complete"
 
 const tempPrefix = ".tmp-"
+
+// syncWrites is off under go test, as in go-safefs: a test cannot observe an fsync.
+var syncWrites = !testing.Testing()
 
 var (
 	keyPattern  = regexp.MustCompile(`^[a-z0-9][a-z0-9.-]*$`)
