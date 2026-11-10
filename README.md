@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Licence](https://img.shields.io/badge/licence-AGPL--3.0-blue) ![Stack](https://img.shields.io/badge/stack-Go%20%7C%20Wails%20v3%20%7C%20React%20%7C%20MUI-blue) [![Translation status](https://hosted.weblate.org/widget/mortar/svg-badge.svg)](https://hosted.weblate.org/projects/mortar/)
+![Licence](https://img.shields.io/badge/licence-AGPL--3.0-blue) [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16544/badge)](https://www.bestpractices.dev/projects/16544) ![Stack](https://img.shields.io/badge/stack-Go%20%7C%20Wails%20v3%20%7C%20React%20%7C%20MUI-blue) [![Translation status](https://hosted.weblate.org/widget/mortar/svg-badge.svg)](https://hosted.weblate.org/projects/mortar/)
 
 </div>
 
