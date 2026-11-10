@@ -49,6 +49,14 @@ func TestAMissingDataFolderWithNoDialogIsReported(t *testing.T) {
 	if dir != "" || err == nil || !strings.Contains(err.Error(), missing) {
 		t.Fatalf("dataDirOrRecover = %q, %v; want the missing folder named", dir, err)
 	}
+	// The log inside the data folder may be what is missing, so the failure also reaches the default location.
+	def, err := datadir.DefaultDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := testfs.Read(t, filepath.Join(def, "startup.log")); !strings.Contains(got, missing) {
+		t.Fatalf("startup.log = %q, want the missing folder", got)
+	}
 }
 
 // Answering "use the default location" drops the relocation pointer and starts on the default folder again.

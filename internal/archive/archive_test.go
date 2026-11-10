@@ -141,6 +141,9 @@ func TestExtractReportsTheFileSystemError(t *testing.T) {
 	if _, err := List(filepath.Join(dir, "missing.zip"), 0); err == nil {
 		t.Fatal("a missing archive listed")
 	}
+	if _, err := List(testfs.WriteFile(t, dir, "text.zip", "plain text"), 0); !errors.Is(err, ErrUnsupportedFormat) {
+		t.Fatalf("a text file listed: %v", err)
+	}
 	f, err := safefs.Open(zipPath)
 	if err != nil {
 		t.Fatal(err)

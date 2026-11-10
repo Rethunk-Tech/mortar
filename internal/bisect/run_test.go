@@ -105,40 +105,33 @@ func TestModIDFallsBackToTheEntryKey(t *testing.T) {
 	}
 }
 
-// One package's group is found whole: a framework switched with its pack never leaves the other half convicted alone.
-func TestFindFindsAGroupTogether(t *testing.T) {
-	mods := []Mod{
-		{ID: "pack", Group: "g"},
-		{ID: "framework", Group: "g"},
-		{ID: "other"},
-	}
+// A launch failure ends the check at once with that error, never as "no mod is to blame"; one package's group is
+// found whole, a framework switched with its pack never leaving the other half convicted alone.
+func TestFindNamesAGroupAndReturnsTheRunnerError(t *testing.T) {
+	mods := []Mod{{ID: "pack", Group: "g"}, {ID: "framework", Group: "g"}, {ID: "other"}}
 	got, err := find(t.Context(), mods, func(_ context.Context, off []string) (bool, error) {
 		return !slices.Contains(off, "pack"), nil
 	}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	ids := make([]string, 0, len(got))
+	var ids []string
 	for _, m := range got {
 		ids = append(ids, m.ID)
 	}
 	if !slices.Contains(ids, "pack") || !slices.Contains(ids, "framework") || slices.Contains(ids, "other") {
 		t.Fatalf("found %v, want the group without the clean mod", ids)
 	}
-}
-
-// A launch failure ends the check at once with that error, never as "no mod is to blame".
-func TestFindReturnsTheRunnerError(t *testing.T) {
 	boom := errors.New("boom")
-	_, err := find(t.Context(), []Mod{{ID: "a"}}, func(context.Context, []string) (bool, error) {
+	if _, err := find(t.Context(), []Mod{{ID: "a"}}, func(context.Context, []string) (bool, error) {
 		return false, boom
-	}, nil)
-	if !errors.Is(err, boom) {
-		t.Fatalf("err = %v, want the runner's", err)
+	}, nil); !errors.Is(err, boom) {
+		t.Fatalf("a failing launch: err = %v, want the runner's", err)
 	}
 }
 
-// A check with nothing to test names that, and a cancelled context stops before the next run.
+// A check with nothing to test names that, and a cancelled context stops before the next run; a launch that fails
+// ends the check at once with that error, never as "no mod is to blame".
 func TestFindRefusesNoModsAndStopsWhenCancelled(t *testing.T) {
 	if _, err := find(t.Context(), nil, func(context.Context, []string) (bool, error) { return true, nil }, nil); err == nil {
 		t.Error("no mods to test was accepted")
@@ -148,6 +141,13 @@ func TestFindRefusesNoModsAndStopsWhenCancelled(t *testing.T) {
 	_, err := find(ctx, []Mod{{ID: "a"}, {ID: "b"}}, func(context.Context, []string) (bool, error) { return true, nil }, nil)
 	if !errors.Is(err, context.Canceled) {
 		t.Fatalf("err = %v, want context.Canceled", err)
+	}
+	boom := errors.New("boom")
+	_, err = find(t.Context(), []Mod{{ID: "a"}}, func(context.Context, []string) (bool, error) {
+		return false, boom
+	}, nil)
+	if !errors.Is(err, boom) {
+		t.Fatalf("a failing launch: err = %v, want the runner's", err)
 	}
 }
 
@@ -170,9 +170,12 @@ func TestFindReportsProgressEachStep(t *testing.T) {
 	}
 }
 
-func TestStatusOfAKnownCheckCopiesItsResult(t *testing.T) {
+// A cancelled check stops rather than failing: Stop cancels the job it names, and Status returns a copy so a caller
+// editing the result does not change what the next reader sees.
+func TestStopCancelsAndStatusCopiesTheResult(t *testing.T) {
 	s := NewService(nil, nil)
-	j := &job{id: "bisect-7", game: "stardew", profile: "p", cancel: func() {}}
+	cancelled := false
+	j := &job{id: "bisect-7", game: "stardew", profile: "p", cancel: func() { cancelled = true }}
 	s.jobs = map[string]*job{j.id: j}
 	s.setStatus(Status{ID: j.id, State: StateDone, Result: &Result{Mods: []ModResult{{Key: "k", Name: "N"}}}})
 	first, err := s.Status(j.id)
@@ -186,6 +189,12 @@ func TestStatusOfAKnownCheckCopiesItsResult(t *testing.T) {
 	}
 	if second.Result.Mods[0].Name != "N" {
 		t.Fatalf("a caller's edit reached the stored result: %+v", second.Result)
+	}
+	if err := s.Stop(j.id); err != nil {
+		t.Fatal(err)
+	}
+	if !cancelled {
+		t.Error("Stop did not cancel the check")
 	}
 	if !strings.Contains(func() string {
 		_, err := s.Status("bisect-none")

@@ -1,14 +1,11 @@
 package main
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
-	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -37,21 +34,6 @@ func TestLogFolderIsTheDataFolderOrEmpty(t *testing.T) {
 	t.Setenv("HOME", "")
 	if got := logFolder(); got != "" {
 		t.Errorf("logFolder with no home = %q, want empty", got)
-	}
-}
-
-// A start that cannot find its data folder still records why in the default location's startup.log, since the log
-// inside the data folder is the thing that is missing.
-func TestLogStartupFailureWritesTheDefaultStartupLog(t *testing.T) {
-	testfs.DataHome(t)
-	def, err := datadir.DefaultDir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	logStartupFailure(errors.New("the drive is unplugged"))
-	got := testfs.Read(t, filepath.Join(def, "startup.log"))
-	if !strings.Contains(got, "the drive is unplugged") {
-		t.Fatalf("startup.log = %q", got)
 	}
 }
 

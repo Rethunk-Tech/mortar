@@ -124,26 +124,6 @@ func TestDeclaredSizeReadsTheHeaders(t *testing.T) {
 	}
 }
 
-// A file-backed listing closes both the walk and the file, and one that cannot open the format closes the file it
-// opened rather than leaking it.
-func TestListOpensAndClosesAnArchiveFile(t *testing.T) {
-	t.Parallel()
-	dir := t.TempDir()
-	l, err := List(testfs.WriteZip(t, filepath.Join(dir, "a.zip"), map[string]string{"a.txt": "aa"}), 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := l.Next(); err != nil {
-		t.Fatal(err)
-	}
-	if err := l.Close(); err != nil {
-		t.Fatalf("Close: %v", err)
-	}
-	if _, err := List(testfs.WriteFile(t, dir, "text.zip", "plain text"), 0); !errors.Is(err, ErrUnsupportedFormat) {
-		t.Fatalf("a text file listed: %v", err)
-	}
-}
-
 // The dialog's pattern and the saved-name test cover every ending the reader takes, so a new format is offered and
 // recognised without a second list.
 func TestPickerPatternAndIsSavedCoverTheArchiveEndings(t *testing.T) {
