@@ -1409,7 +1409,7 @@ For more information, please refer to <https://unlicense.org/>
 
 --------------------------------------------------------------------------------
 
-github.com/andybalholm/brotli@v1.2.8
+github.com/andybalholm/brotli@v1.3.0
 licence: MIT
 https://github.com/andybalholm/brotli
 
@@ -5126,7 +5126,7 @@ Apache License
 
 --------------------------------------------------------------------------------
 
-golang.org/x/image@v0.47.0
+golang.org/x/image@v0.48.0
 licence: BSD-3-Clause
 https://pkg.go.dev/golang.org/x/image
 
@@ -5228,7 +5228,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-golang.org/x/sys@v0.49.0
+golang.org/x/sys@v0.50.0
 licence: BSD-3-Clause
 https://pkg.go.dev/golang.org/x/sys
 
@@ -5296,7 +5296,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-golang.org/x/text@v0.43.0
+golang.org/x/text@v0.44.0
 licence: BSD-3-Clause
 https://pkg.go.dev/golang.org/x/text
 
