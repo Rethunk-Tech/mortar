@@ -202,11 +202,12 @@ describe('notes.sh', () => {
       file,
       '<releases>\n    <release version="0.2.0" date="2026-10-04" />\n    <release version="0.1.0" date="2026-01-01" />\n</releases>\n',
     )
-    run([script, '--metainfo', file, 'v0.2.0', 'HEAD'])
-    run([script, '--metainfo', file, 'v0.2.0', 'HEAD'])
+    // Both clocks in UTC: bun test runs in UTC while the script's `date +%F` would read the local zone.
+    run([script, '--metainfo', file, 'v0.2.0', 'HEAD'], { TZ: 'UTC' })
+    run([script, '--metainfo', file, 'v0.2.0', 'HEAD'], { TZ: 'UTC' })
     const xml = readFileSync(file, 'utf8')
-    // The release being written is dated today (the shell's local date, as `date +%F` gives it); others keep theirs.
-    const today = new Date().toLocaleDateString('sv')
+    // The release being written is dated today; others keep theirs.
+    const today = new Date().toISOString().slice(0, 10)
     expect(xml).toContain(`<release version="0.2.0" date="${today}">\n      <description>`)
     expect(xml).toContain('<li>Back up &lt;saves&gt; &amp; restore</li>')
     expect(xml.match(/<description>/g)?.length).toBe(1)
