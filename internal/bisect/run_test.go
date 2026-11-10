@@ -3,12 +3,14 @@ package bisect
 import (
 	"context"
 	"errors"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -43,7 +45,11 @@ func TestACheckThatCannotLaunchReportsFailed(t *testing.T) {
 			t.Fatal(err)
 		}
 		if status.State == StateFailed {
-			if status.Error == "" || status.Result != nil || status.ModsLeft != 0 {
+			// The launch's own failure, not "no mod is to blame": reporting the latter would hide that the game is missing.
+			if !strings.Contains(status.Error, "not installed") || strings.Contains(status.Error, "did not crash") {
+				t.Fatalf("failed status = %+v, want the missing install named", status)
+			}
+			if status.Result != nil || status.ModsLeft != 0 {
 				t.Fatalf("failed status = %+v", status)
 			}
 			break
@@ -69,7 +75,8 @@ func TestSwitchOffDisablesTheModInTheRealProfile(t *testing.T) {
 	}
 	entry := res.Profile.Entries[0]
 	s := NewService(profiles, nil)
-	if err := s.SwitchOff("stardew", p.ID, entry.Key, entry.Mods[0].ID); err != nil {
+	// An empty key still names the mod when its id is given: the first entry holding it is switched off.
+	if err := s.SwitchOff("stardew", p.ID, "", entry.Mods[0].ID); err != nil {
 		t.Fatal(err)
 	}
 	mods, err := profiles.UserMods("stardew", p.ID)
@@ -78,6 +85,11 @@ func TestSwitchOffDisablesTheModInTheRealProfile(t *testing.T) {
 	}
 	if len(mods) != 1 || mods[0].Enabled {
 		t.Fatalf("mods after SwitchOff = %+v", mods)
+	}
+	// Neither names the mod, so the guard refuses rather than letting the store answer for some entry.
+	err = s.SwitchOff("stardew", p.ID, "", "")
+	if err == nil || !strings.Contains(err.Error(), "identity is required") {
+		t.Fatalf("SwitchOff with no identity = %v, want the guard's refusal", err)
 	}
 }
 
@@ -102,6 +114,61 @@ func TestModIDFallsBackToTheEntryKey(t *testing.T) {
 	}
 	if got := modID(profile.Mod{Key: "Folder"}); got != "Folder" {
 		t.Errorf("modID without an id = %q", got)
+	}
+}
+
+// A content pack's graph entry depends on the framework it is written for as well as what its manifest needs, since
+// switching that framework off takes the pack with it.
+func TestCheckModsAddsTheContentPackFramework(t *testing.T) {
+	got := checkMods([]profile.Mod{
+		{Key: "Pack-1", ID: "smapi:Pack", Needs: []mod.ID{"smapi:Needed"}, ContentPackFor: "smapi:Framework"},
+		{Key: "Plain-1", ID: "smapi:Plain"},
+	})
+	want := []Mod{
+		{ID: "smapi:Pack", Dependencies: []string{"smapi:Needed", "smapi:Framework"}, Group: "Pack-1"},
+		{ID: "smapi:Plain", Dependencies: []string{}, Group: "Plain-1"},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("checkMods = %#v, want %#v", got, want)
+	}
+}
+
+// A step switches on every mod of the check before switching off the ones it names, so a mod a previous step
+// cleared is on again for this launch.
+func TestSetCheckModsEnablesAllThenDisablesTheNamed(t *testing.T) {
+	testfs.DataHome(t)
+	_, profiles := testenv.Env(t)
+	p := testenv.Profile(t, profiles, "stardew", "Farm")
+	for _, uniqueID := range []string{"Me.One", "Me.Two"} {
+		if _, err := profiles.InstallLocalFolder(t.Context(), "stardew", p.ID, modFolder(t, uniqueID), true); err != nil {
+			t.Fatal(err)
+		}
+	}
+	userMods, err := profiles.UserMods("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	j := &job{game: "stardew", tempID: p.ID, mods: userMods}
+	for _, pm := range userMods {
+		j.refs = append(j.refs, profile.EnableRef{Key: pm.Key, ID: pm.ID})
+	}
+	s := NewService(profiles, nil)
+	if err := s.setCheckMods(j, nil); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.setCheckMods(j, []string{modID(userMods[0])}); err != nil {
+		t.Fatal(err)
+	}
+	mods, err := profiles.UserMods("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	enabled := map[mod.ID]bool{}
+	for _, m := range mods {
+		enabled[m.ID] = m.Enabled
+	}
+	if len(enabled) != 2 || enabled[userMods[0].ID] || !enabled[userMods[1].ID] {
+		t.Fatalf("after the step = %v, want %s off and %s on", enabled, userMods[0].ID, userMods[1].ID)
 	}
 }
 
@@ -131,7 +198,8 @@ func TestFindNamesAGroupAndReturnsTheRunnerError(t *testing.T) {
 }
 
 // A check with nothing to test names that, and a cancelled context stops before the next run; a launch that fails
-// ends the check at once with that error, never as "no mod is to blame".
+// ends the check at once with that error, never as "no mod is to blame". A cancel that lands on the step narrowing
+// the suspects to one finishes the check instead, since that mod is already the answer.
 func TestFindRefusesNoModsAndStopsWhenCancelled(t *testing.T) {
 	if _, err := find(t.Context(), nil, func(context.Context, []string) (bool, error) { return true, nil }, nil); err == nil {
 		t.Error("no mods to test was accepted")
@@ -149,9 +217,23 @@ func TestFindRefusesNoModsAndStopsWhenCancelled(t *testing.T) {
 	if !errors.Is(err, boom) {
 		t.Fatalf("a failing launch: err = %v, want the runner's", err)
 	}
+
+	lastCtx, stopLast := context.WithCancel(t.Context())
+	defer stopLast()
+	got, err := find(lastCtx, []Mod{{ID: "a"}, {ID: "b"}}, func(_ context.Context, off []string) (bool, error) {
+		if len(off) == 0 {
+			return true, nil
+		}
+		stopLast()
+		return false, nil
+	}, nil)
+	if err != nil || len(got) != 1 || got[0].ID != "a" {
+		t.Fatalf("found %v, %v; want a with no error", got, err)
+	}
 }
 
-// Progress is reported once per step, counting down the suspects, so the window can show how far the check is.
+// Progress is reported once per step, counting down the suspects, so the window can show how far the check is: the
+// step count is the number of halvings it will take, not one per suspect.
 func TestFindReportsProgressEachStep(t *testing.T) {
 	var steps []Progress
 	mods := []Mod{{ID: "a"}, {ID: "b"}, {ID: "c"}, {ID: "d"}}
@@ -160,13 +242,9 @@ func TestFindReportsProgressEachStep(t *testing.T) {
 	}, func(p Progress) { steps = append(steps, p) }); err != nil {
 		t.Fatal(err)
 	}
-	if len(steps) == 0 || steps[0].Step != 1 || steps[0].Total < 1 || steps[0].ModsLeft != len(mods) {
-		t.Fatalf("steps = %+v", steps)
-	}
-	for i, p := range steps {
-		if p.Step != i+1 || p.ModsLeft > len(mods) {
-			t.Fatalf("step %d = %+v", i, p)
-		}
+	want := []Progress{{Step: 1, Total: 2, ModsLeft: 4}, {Step: 2, Total: 2, ModsLeft: 2}}
+	if !slices.Equal(steps, want) {
+		t.Fatalf("steps = %+v, want %+v", steps, want)
 	}
 }
 

@@ -49,8 +49,11 @@ func TestFindUsesFakeRunnerToNarrowFailingGroup(t *testing.T) {
 	if want := []string{"framework", "pack"}; !reflect.DeepEqual(ids, want) {
 		t.Fatalf("found = %#v, want %#v", ids, want)
 	}
-	if len(tested) != 3 || len(tested[0]) != 0 {
-		t.Fatalf("runs = %v, want every mod on first, then two halves", tested)
+	// Each step switches off half the suspects, the group whole, so the first off carries the pack with it and the
+	// second the half nothing needs.
+	want := [][]string{nil, {"a", "b", "framework", "pack"}, {"a", "b"}}
+	if !reflect.DeepEqual(tested, want) {
+		t.Fatalf("runs = %v, want %v", tested, want)
 	}
 }
 

@@ -125,36 +125,13 @@ func (s *Service) run(ctx context.Context, j *job) {
 		_ = s.profiles.DropScratch(j.game, j.tempID)
 	}()
 
-	mods := make([]Mod, 0, len(j.mods))
+	mods := checkMods(j.mods)
 	byID := make(map[string]profile.Mod, len(j.mods))
 	for _, pm := range j.mods {
-		id := modID(pm)
-		deps := mod.Strings(pm.Needs)
-		if pm.ContentPackFor != "" {
-			deps = append(deps, string(pm.ContentPackFor))
-		}
-		mods = append(mods, Mod{
-			ID:           id,
-			Dependencies: deps,
-			Group:        pm.Key,
-		})
-		byID[id] = pm
+		byID[modID(pm)] = pm
 	}
 	found, err := find(ctx, mods, func(ctx context.Context, disabled []string) (bool, error) {
-		if _, err := s.profiles.SetModsEnabled(j.game, j.tempID, j.refs, true); err != nil {
-			return false, err
-		}
-		closure := make(map[string]bool, len(disabled))
-		for _, id := range disabled {
-			closure[id] = true
-		}
-		refs := make([]profile.EnableRef, 0, len(disabled))
-		for _, pm := range j.mods {
-			if closure[modID(pm)] {
-				refs = append(refs, profile.EnableRef{Key: pm.Key, ID: pm.ID})
-			}
-		}
-		if _, err := s.profiles.SetModsEnabled(j.game, j.tempID, refs, false); err != nil {
+		if err := s.setCheckMods(j, disabled); err != nil {
 			return false, err
 		}
 		healthy, _, err := s.launches.RunForBisect(ctx, j.game, j.tempID)
@@ -252,4 +229,38 @@ func modID(pm profile.Mod) string {
 		return string(pm.ID)
 	}
 	return pm.Key
+}
+
+// checkMods is the graph find narrows: each mod's dependencies are what its manifest needs plus the framework a
+// content pack is written for, and one package's mods share a group so they are found together.
+func checkMods(mods []profile.Mod) []Mod {
+	out := make([]Mod, 0, len(mods))
+	for _, pm := range mods {
+		deps := mod.Strings(pm.Needs)
+		if pm.ContentPackFor != "" {
+			deps = append(deps, string(pm.ContentPackFor))
+		}
+		out = append(out, Mod{ID: modID(pm), Dependencies: deps, Group: pm.Key})
+	}
+	return out
+}
+
+// setCheckMods switches on every mod of the check, then off exactly the ones named, so a step's launch runs with
+// nothing of a cleared mod left loaded.
+func (s *Service) setCheckMods(j *job, disabled []string) error {
+	if _, err := s.profiles.SetModsEnabled(j.game, j.tempID, j.refs, true); err != nil {
+		return err
+	}
+	off := make(map[string]bool, len(disabled))
+	for _, id := range disabled {
+		off[id] = true
+	}
+	refs := make([]profile.EnableRef, 0, len(disabled))
+	for _, pm := range j.mods {
+		if off[modID(pm)] {
+			refs = append(refs, profile.EnableRef{Key: pm.Key, ID: pm.ID})
+		}
+	}
+	_, err := s.profiles.SetModsEnabled(j.game, j.tempID, refs, false)
+	return err
 }
