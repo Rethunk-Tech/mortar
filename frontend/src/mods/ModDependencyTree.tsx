@@ -42,7 +42,7 @@ import { useDetail } from './detail.ts'
 import { modById, problemsOf, sameId } from './lookup.ts'
 import { openPage } from './menu.ts'
 import { heading } from './paper.ts'
-import { useRequirementName } from './requirementName.ts'
+import { byRequirementName, useRequirementName } from './requirementName.ts'
 import { useMods } from './store.ts'
 
 const noWrap = { whiteSpace: 'nowrap' } as const
@@ -141,14 +141,20 @@ function Mark({ icon: Icon, label, color }: { icon: LucideIcon; label: string; c
 function NodeList({ nodes, depth }: { nodes: DepViewNode[]; depth: number }) {
   const { t } = useLingui()
   const [all, setAll] = useState(false)
-  const total = nodes.length
-  const shown = all ? nodes : nodes.slice(0, firstRows)
+  const mods = useMods((s) => s.mods)
+  const problems = useMods((s) => s.problems)
+  const sorted = useMemo(
+    () => byRequirementName(nodes, { mods, problems }),
+    [nodes, mods, problems],
+  )
+  const total = sorted.length
+  const shown = all ? sorted : sorted.slice(0, firstRows)
   return (
     <>
       {shown.map((n) => (
         <NodeRow key={`${n.id}:${n.required}`} node={n} depth={depth} />
       ))}
-      {shown.length < nodes.length ? (
+      {shown.length < total ? (
         <Button
           size="small"
           onClick={() => setAll(true)}

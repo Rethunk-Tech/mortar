@@ -1,5 +1,6 @@
 import type { Result } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { cmpText } from './cmpText.ts'
 import { localId } from './dependents.ts'
 import { problemsOf, sameId } from './lookup.ts'
 import { useMods } from './store.ts'
@@ -15,6 +16,17 @@ export function requirementNameIn(s: { mods: Mod[]; problems: Result | null }, i
   )
   const page = hit?.kind === 'missing' ? (hit.missing.where?.pageName?.trim() ?? '') : ''
   return page || localId(id)
+}
+
+// Ordered by the name each row shows, so a level reads alphabetically whatever order the manifests list them in.
+export function byRequirementName<T extends { id: string }>(
+  nodes: T[],
+  s: { mods: Mod[]; problems: Result | null },
+): T[] {
+  const names = new Map(nodes.map((n) => [n.id, requirementNameIn(s, n.id)]))
+  return nodes.toSorted(
+    (a, b) => cmpText(names.get(a.id) ?? '', names.get(b.id) ?? '') || cmpText(a.id, b.id),
+  )
 }
 
 export function useRequirementName(id: string): string {
