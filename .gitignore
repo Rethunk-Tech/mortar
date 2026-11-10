@@ -20,3 +20,6 @@ web/.astro/
 # Claude Code agent worktrees: full nested checkouts of this repo.
 /.claude/worktrees/
 *.tsbuildinfo
+
+# The share page's Brotli decoder, copied out of its package by web/scripts/vendor.ts.
+web/public/vendor/

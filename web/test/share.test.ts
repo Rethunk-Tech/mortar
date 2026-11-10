@@ -1,11 +1,14 @@
 import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { brotliCompressSync, constants } from 'node:zlib'
-import { decodeShare, newer, type ShareError } from '../public/share/share.js'
+import type { ShareError } from '../public/share/share.js'
+// share.js imports the decoder from public/vendor, which the site writes there when it vends the package; the test's
+// import of share.js waits for that write, the wasm read below takes the package's own copy.
+import '../scripts/vendor.ts'
 
-const wasm = readFileSync(
-  new URL('../public/vendor/brotli-dec-wasm/brotli_dec_wasm_bg.wasm', import.meta.url),
-)
+const { decodeShare, newer } = await import('../public/share/share.js')
+const wasm = readFileSync(fileURLToPath(import.meta.resolve('brotli-dec-wasm/web/bg.wasm')))
 const encode = (v: unknown) =>
   brotliCompressSync(Buffer.from(JSON.stringify(v)), {
     params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
