@@ -52,6 +52,27 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.7.0" date="2026-11-10">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>The stream overlay is its own small mod, Mortar Stream Overlay, for Lethal Company and Stardew Valley. Mortar adds it to a profile while the overlay setting is on and removes it when the setting is off; the companion mod no longer carries it</li>
+          <li>A Develop project shows the categories it declares, in the Mods list and the mod's details</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>Notices that something finished go to the notification list without popping up. Settings › Notifications › Something finishes well turns the pop-ups back on</li>
+          <li>A mod's Dependencies list is alphabetical at each level</li>
+          <li>Change version and Pin sit on the version's own line in a mod's details</li>
+          <li>An Update all summary that still needs your choice pops up, even with success pop-ups off</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Show times in the console shows a time on BepInEx lines</li>
+          <li>Switching games no longer shows the previous game's profile views while the new game's profiles load</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.6.0" date="2026-11-08">
       <description>
         <p>New</p>
