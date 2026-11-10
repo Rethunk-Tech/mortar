@@ -149,8 +149,6 @@ async function settings(page: Page, section: string) {
 
 const STARDEW = { game: 'Stardew Valley', name: 'Main' }
 const LETHAL = { game: 'Lethal Company', name: 'Lethal Company Development' }
-// The maintainer's measured profile, whose runs logged patch errors.
-const LETHAL_MEASURED = { game: 'Lethal Company', name: 'Guided Test' }
 
 // The served sandbox has no Wails environment, so a Linux-only setting needs the runtime told which system it is on.
 const AS_LINUX = `window._wails = { environment: { OS: 'linux' } }`
@@ -183,6 +181,8 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url))
 
 const SITE: Scene[] = [
   { name: 'profile', ...DESK, profile: STARDEW, steps: (page) => click(page, 'tab', 'Home') },
+  // The features page's BepInEx games picture: a Lethal Company profile's Thunderstore mods.
+  { name: 'lethal-company', ...WIDE, profile: LETHAL, steps: (page) => click(page, 'tab', 'Mods') },
   {
     name: 'mods',
     ...DESK,
@@ -228,7 +228,7 @@ const SITE: Scene[] = [
   {
     name: 'performance',
     ...DESK,
-    profile: LETHAL_MEASURED,
+    profile: LETHAL,
     steps: async (page) => {
       await click(page, 'tab', 'Performance')
       await page.getByText('Slowest mods').waitFor({ timeout: STEP_MS })
@@ -237,7 +237,7 @@ const SITE: Scene[] = [
   {
     name: 'patch-errors',
     ...DESK,
-    profile: LETHAL_MEASURED,
+    profile: LETHAL,
     steps: async (page) => {
       await click(page, 'tab', 'Problems')
       // Copied data may hold these errors dismissed; restoring them touches only the sandbox.
@@ -346,7 +346,7 @@ const SITE: Scene[] = [
     openGameSelect,
     desk: DESK,
     wide: WIDE,
-    profile: LETHAL_MEASURED,
+    profile: LETHAL,
     developing: LETHAL,
     baldurs: { game: "Baldur's Gate 3", name: 'Main' },
     coreKeeper: { game: 'Core Keeper', name: 'Main' },
