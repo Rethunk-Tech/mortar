@@ -8,12 +8,16 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 const logFile = "deploy.log"
+
+// syncWrites is off under go test, as in go-safefs: a test cannot observe an fsync.
+var syncWrites = !testing.Testing()
 
 // syncEvery is how many appended lines may wait for a flush to disk. A process that dies loses nothing (each line is a
 // single write), so the flush guards against power loss; a folder line is flushed at once, since the folder follows.
@@ -67,6 +71,9 @@ func (l *opLog) add(s step, now bool) error {
 	}
 	if l.pending++; now || l.pending >= syncEvery {
 		l.pending = 0
+		if !syncWrites {
+			return nil
+		}
 		return l.f.Sync()
 	}
 	return nil
@@ -75,6 +82,9 @@ func (l *opLog) add(s step, now bool) error {
 func (l *opLog) close() error {
 	if l == nil {
 		return nil
+	}
+	if !syncWrites {
+		return l.f.Close()
 	}
 	return errors.Join(l.f.Sync(), l.f.Close())
 }
