@@ -19,8 +19,7 @@ jobs:
     # Dependabot PRs are never merged (the bump is applied by hand on main, where this runs), so a gate on them is spent minutes.
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
-    # A cold run measured 6 min of apt on a slow mirror, 5.5 min of cache restores and builds, an 11.5 min gate and 5 min of
-    # post-step cache saves.
+    # Sized for a cold run: a new runner image or lockfile misses every cache, and the post-step saves count against it.
     timeout-minutes: 35
     steps:
       - name: Checkout
