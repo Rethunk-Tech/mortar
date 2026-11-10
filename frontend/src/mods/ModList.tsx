@@ -47,6 +47,7 @@ import {
 } from './listColumns.ts'
 import { figureNumber, figureText } from './listFigures.ts'
 import { persistColumns } from './listPrefs.ts'
+import { sameRowFields } from './listRowSame.ts'
 import { entryOf, modId, useLocalMark } from './lookup.ts'
 import { ManualHandle, ManualOrder } from './ManualOrder.tsx'
 import { ModListTable } from './ModListVirtual.tsx'
@@ -312,41 +313,13 @@ interface ModRowProps {
   onArrow: (id: string, dir: -1 | 1) => void
 }
 
-// List rows are rebuilt whenever the mods, the profile or the problems change, so a row compares their fields, not
-// their identity; tags and figures are built fresh each time and compare by content.
-function sameRowFields(a: ListRow, b: ListRow) {
-  const keys = Object.keys(a) as (keyof ListRow)[]
-  return keys.length === Object.keys(b).length && keys.every((k) => sameField(k, a, b))
-}
-
-function sameField(k: keyof ListRow, a: ListRow, b: ListRow) {
-  // The pin shows through VersionPin and PinBadge, which read the store themselves.
-  if (k === 'pinned') {
-    return true
-  }
-  if (k === 'tags') {
-    return a.tags.join('\0') === b.tags.join('\0')
-  }
-  if (k === 'figures' && a.figures && b.figures) {
-    const [x, y] = [a.figures, b.figures]
-    return (
-      x.latest === y.latest &&
-      x.released === y.released &&
-      x.updated === y.updated &&
-      x.rating === y.rating &&
-      x.downloads === y.downloads
-    )
-  }
-  return a[k] === b[k]
-}
-
 type CellProps = Pick<ModRowProps, 'locale' | 'cols' | 'row' | 'profile'>
 
 // What a row's cells show: a profile change elsewhere leaves the row's own slice alone.
 const sameCells = (a: CellProps, b: CellProps) =>
   a.locale === b.locale &&
   a.cols.join() === b.cols.join() &&
-  sameRowFields(a.row, b.row) &&
+  sameRowFields(a.row, b.row, a.cols) &&
   (a.profile === b.profile ||
     cardSlice(a.profile, a.row.mod.key) === cardSlice(b.profile, b.row.mod.key))
 
