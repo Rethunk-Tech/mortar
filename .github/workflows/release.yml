@@ -251,7 +251,9 @@ jobs:
           # which fails on the GNOME 51 SDK.
           flatpak install --user -y --noninteractive flathub org.flatpak.Builder
           mkdir -p "$RUNNER_TEMP/bin"
-          printf '#!/bin/sh\nexec flatpak run --filesystem=home --filesystem=/var/tmp org.flatpak.Builder "$@"\n' > "$RUNNER_TEMP/bin/flatpak-builder"
+          # From inside its sandbox the builder cannot hand ubuntu-26.04's fusermount the FUSE fd, so rofiles-fuse
+          # never starts ("file descriptor 4 is not a socket"); a throwaway CI build needs no hardlink guard.
+          printf '#!/bin/sh\nexec flatpak run --filesystem=home --filesystem=/var/tmp org.flatpak.Builder --disable-rofiles-fuse "$@"\n' > "$RUNNER_TEMP/bin/flatpak-builder"
           chmod +x "$RUNNER_TEMP/bin/flatpak-builder"
           # The sandboxed builder installs the SDK through the host's flatpak over the session bus, which a headless
           # runner does not have.
