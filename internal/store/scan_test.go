@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"testing"
 
-	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
+	goavscan "github.com/Totative/go-avscan"
 )
 
 type fakeScanner struct {

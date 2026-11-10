@@ -15,10 +15,10 @@ import (
 	"testing"
 	"time"
 
-	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	goavscan "github.com/Totative/go-avscan"
 
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/game"

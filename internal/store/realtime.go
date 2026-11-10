@@ -6,9 +6,9 @@ import (
 	"runtime"
 	"syscall"
 
-	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
+	goavscan "github.com/Totative/go-avscan"
 )
 
 // RealTimeScanner names the antivirus that blocks a file as Mortar writes or reads it, as opposed to one Mortar

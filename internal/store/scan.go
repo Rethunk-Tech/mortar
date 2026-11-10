@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
+	goavscan "github.com/Totative/go-avscan"
 )
 
 // scanTimeout bounds one item's scan; a scan that has not finished by then is an error, not a detection.

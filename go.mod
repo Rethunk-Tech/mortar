@@ -4,11 +4,9 @@ go 1.27.3
 
 require (
 	github.com/Rethunk-Tech/go-archive v0.3.0
-	github.com/Rethunk-Tech/go-avscan v0.2.2
 	github.com/Rethunk-Tech/go-bannerlord v0.1.2
 	github.com/Rethunk-Tech/go-bepinex v0.2.2
 	github.com/Rethunk-Tech/go-cfgedit v0.4.0
-	github.com/Rethunk-Tech/go-codepair v0.1.0
 	github.com/Rethunk-Tech/go-contentpatcher v0.1.0
 	github.com/Rethunk-Tech/go-curseforge v0.4.0
 	github.com/Rethunk-Tech/go-desktopenv v0.9.0
@@ -21,7 +19,6 @@ require (
 	github.com/Rethunk-Tech/go-github v0.3.0
 	github.com/Rethunk-Tech/go-httpkit v0.3.0
 	github.com/Rethunk-Tech/go-itchio v0.1.0
-	github.com/Rethunk-Tech/go-keyring v0.2.0
 	github.com/Rethunk-Tech/go-larian v0.1.2
 	github.com/Rethunk-Tech/go-lenientjson v0.1.1
 	github.com/Rethunk-Tech/go-modio v0.1.1
@@ -37,6 +34,9 @@ require (
 	github.com/Rethunk-Tech/go-thunderstore v0.4.1
 	github.com/Rethunk-Tech/go-vintagestory v0.1.0
 	github.com/Rethunk-Tech/go-winsym v0.2.1
+	github.com/Totative/go-avscan v0.3.0
+	github.com/Totative/go-codepair v0.2.0
+	github.com/Totative/go-keyring v0.3.0
 	github.com/andybalholm/brotli v1.2.8
 	github.com/godbus/dbus/v5 v5.2.4
 	github.com/google/pprof v0.0.0-20261105003125-4bf881d7fb0b

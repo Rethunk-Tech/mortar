@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/go-safefs"
+	goavscan "github.com/Totative/go-avscan"
 )
 
 const productTimeout = 5 * time.Second

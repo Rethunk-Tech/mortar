@@ -155,11 +155,6 @@
     "url": "https://github.com/Rethunk-Tech/go-archive"
   },
   {
-    "name": "github.com/Rethunk-Tech/go-avscan",
-    "licence": "MIT",
-    "url": "https://github.com/Rethunk-Tech/go-avscan"
-  },
-  {
     "name": "github.com/Rethunk-Tech/go-bannerlord",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-bannerlord"
@@ -173,11 +168,6 @@
     "name": "github.com/Rethunk-Tech/go-cfgedit",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-cfgedit"
-  },
-  {
-    "name": "github.com/Rethunk-Tech/go-codepair",
-    "licence": "MIT",
-    "url": "https://github.com/Rethunk-Tech/go-codepair"
   },
   {
     "name": "github.com/Rethunk-Tech/go-contentpatcher",
@@ -238,11 +228,6 @@
     "name": "github.com/Rethunk-Tech/go-itchio",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-itchio"
-  },
-  {
-    "name": "github.com/Rethunk-Tech/go-keyring",
-    "licence": "MIT",
-    "url": "https://github.com/Rethunk-Tech/go-keyring"
   },
   {
     "name": "github.com/Rethunk-Tech/go-larian",
@@ -318,6 +303,21 @@
     "name": "github.com/Rethunk-Tech/go-winsym",
     "licence": "MIT",
     "url": "https://github.com/Rethunk-Tech/go-winsym"
+  },
+  {
+    "name": "github.com/Totative/go-avscan",
+    "licence": "Apache-2.0",
+    "url": "https://github.com/Totative/go-avscan"
+  },
+  {
+    "name": "github.com/Totative/go-codepair",
+    "licence": "Apache-2.0",
+    "url": "https://github.com/Totative/go-codepair"
+  },
+  {
+    "name": "github.com/Totative/go-keyring",
+    "licence": "Apache-2.0",
+    "url": "https://github.com/Totative/go-keyring"
   },
   {
     "name": "github.com/andybalholm/brotli",

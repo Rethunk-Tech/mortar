@@ -126,7 +126,7 @@ Extraction stops at the first failure and leaves its output in a temp folder the
 
 ## Antivirus scanners
 
-Mortar's `avscan` picks the scanner the settings name; [go-avscan](https://github.com/Rethunk-Tech/go-avscan) runs Windows AMSI, clamd over a unix socket, a custom command (no shell; `{path}` replaced by the folder; exit 0 clean, any other code a detection named by the first stdout line) or nothing. A scan that fails, times out or meets a file over clamd's stream limit is not a detection: the mod installs and an `avscan:failed` event says so. So is a configured scanner that cannot be reached (a clamd socket that does not answer, a command that will not start): the event names it (`avscan.Config.Notice`, `TestAScannerThePlayerSetUpThatCannotBeReachedIsReported`). With no scanner set up, nothing is reported. A file Windows blocks while Mortar writes it reaches the same refusal through `store.RealTimeBlock`.
+Mortar's `avscan` picks the scanner the settings name; [go-avscan](https://github.com/Totative/go-avscan) runs Windows AMSI, clamd over a unix socket, a custom command (no shell; `{path}` replaced by the folder; exit 0 clean, any other code a detection named by the first stdout line) or nothing. A scan that fails, times out or meets a file over clamd's stream limit is not a detection: the mod installs and an `avscan:failed` event says so. So is a configured scanner that cannot be reached (a clamd socket that does not answer, a command that will not start): the event names it (`avscan.Config.Notice`, `TestAScannerThePlayerSetUpThatCannotBeReachedIsReported`). With no scanner set up, nothing is reported. A file Windows blocks while Mortar writes it reaches the same refusal through `store.RealTimeBlock`.
 
 ## Out of scope
 

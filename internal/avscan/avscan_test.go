@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+	goavscan "github.com/Totative/go-avscan"
 )
 
 // fakeClamd answers zVERSION like clamd and nothing else.

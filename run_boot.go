@@ -27,7 +27,6 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 
-	goavscan "github.com/Rethunk-Tech/go-avscan"
 	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-desktopenv/wallpaper"
 	"github.com/Rethunk-Tech/go-folderwatch"
@@ -92,6 +91,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/tools"
 	"github.com/Rethunk-Tech/mortar/internal/updatesvc"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
+	goavscan "github.com/Totative/go-avscan"
 )
 
 // boot holds what Mortar's startup builds, shared by the phases run calls in order.

@@ -16,9 +16,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Rethunk-Tech/go-codepair"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Totative/go-codepair"
 )
 
 // Pairing makes two of the user's own machines trust each other. One shows a short code, the other types it, and both

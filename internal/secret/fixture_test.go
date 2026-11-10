@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/go-keyring"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
+	"github.com/Totative/go-keyring"
 	zkeyring "github.com/zalando/go-keyring"
 )
 

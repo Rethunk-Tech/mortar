@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"runtime"
 
-	goavscan "github.com/Rethunk-Tech/go-avscan"
+	goavscan "github.com/Totative/go-avscan"
 )
 
 // Modes of Config, as the antivirus setting names them.

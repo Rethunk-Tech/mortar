@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Rethunk-Tech/go-keyring"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
+	"github.com/Totative/go-keyring"
 )
 
 // The service, HKDF info and folder name where Mortar 0.3.8+ keeps every secret. Changing any of them makes every
