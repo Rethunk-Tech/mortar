@@ -20,7 +20,8 @@ interface Helpers {
 }
 
 /** The news posts' scenes: 0.3.13's Change version, Add a game and Multiplayer mod list, and 0.3.14's Develop tab and
- * Preferred source, 0.5.0's mod.io sign-in, Load order and Release everywhere, and 0.6.0's Manual sort. */
+ * Preferred source, 0.5.0's mod.io sign-in, Load order and Release everywhere, 0.6.0's Manual sort, and 0.7.0's
+ * Notifications and mod details. */
 // Asks every site once, so each row of the picture shows the site answering.
 async function testEveryAccount(page: Page, stepMs: number) {
   const main = page.getByRole('main')
@@ -90,6 +91,36 @@ const requestCountsScene = (h: Helpers) => ({
       .getByText('GitHub', { exact: true })
       .first()
       .evaluate((el) => el.scrollIntoView({ block: 'start' }))
+  },
+})
+
+const notificationsScene = (h: Helpers) => ({
+  name: 'notifications',
+  file: 'notifications-0-7-0.png',
+  ...h.desk,
+  profile: h.profile,
+  steps: async (page: Page) => {
+    await h.settings(page, 'Notifications')
+    await page
+      .getByText('Something finishes well', { exact: true })
+      .first()
+      .evaluate((el) => el.scrollIntoView({ block: 'center' }))
+  },
+})
+
+// A mod's details with Change version and Pin on the version's own line.
+const modDetailsScene = (h: Helpers) => ({
+  name: 'mod-details',
+  file: 'mod-details-0-7-0.png',
+  ...h.desk,
+  profile: h.profile,
+  steps: async (page: Page) => {
+    await h.click(page, 'tab', 'Mods')
+    await page
+      .getByRole('button', { name: /^Details of /u })
+      .nth(5)
+      .click({ timeout: h.stepMs })
+    await page.getByRole('button', { name: /^Change version…/u }).waitFor({ timeout: h.stepMs })
   },
 })
 
@@ -199,6 +230,8 @@ export const releaseScenes = (h: Helpers) => [
   accountsScene(h),
   requestCountsScene(h),
   manualSortScene(h),
+  notificationsScene(h),
+  modDetailsScene(h),
   {
     name: 'load-order',
     file: 'load-order-0-5-0.png',
