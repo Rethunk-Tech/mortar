@@ -31,7 +31,7 @@
         "repo": "mortar-smapi-bridge"
       },
       "asset": "MortarSmapiBridge-{version}.zip",
-      "version": "latest"
+      "version": "0.2.10"
     },
     {
       "game": "lethal-company",
@@ -43,7 +43,7 @@
         "repo": "mortar-bepinex-bridge"
       },
       "asset": "MortarBepInExBridge_LethalCompany-{version}.zip",
-      "version": "latest"
+      "version": "0.6.0"
     },
     {
       "game": "valheim",
@@ -55,7 +55,7 @@
         "repo": "mortar-bepinex-bridge"
       },
       "asset": "MortarBepInExBridge_Valheim-{version}.zip",
-      "version": "latest"
+      "version": "0.6.0"
     },
     {
       "game": "core-keeper",
@@ -67,7 +67,7 @@
         "repo": "mortar-bepinex-bridge"
       },
       "asset": "MortarBepInExBridge_IL2CPP-{version}.zip",
-      "version": "latest"
+      "version": "0.6.0"
     },
     {
       "game": "repo",
@@ -79,7 +79,7 @@
         "repo": "mortar-bepinex-bridge"
       },
       "asset": "MortarBepInExBridge-{version}.zip",
-      "version": "latest"
+      "version": "0.6.0"
     },
     {
       "game": "peak",
@@ -91,7 +91,7 @@
         "repo": "mortar-bepinex-bridge"
       },
       "asset": "MortarBepInExBridge-{version}.zip",
-      "version": "latest"
+      "version": "0.6.0"
     },
     {
       "game": "riskofrain2",
@@ -103,7 +103,7 @@
         "repo": "mortar-bepinex-bridge"
       },
       "asset": "MortarBepInExBridge-{version}.zip",
-      "version": "latest"
+      "version": "0.6.0"
     },
     {
       "game": "content-warning",
@@ -115,7 +115,7 @@
         "repo": "mortar-bepinex-bridge"
       },
       "asset": "MortarBepInExBridge-{version}.zip",
-      "version": "latest"
+      "version": "0.6.0"
     }
   ],
   "games": [
