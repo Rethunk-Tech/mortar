@@ -43,8 +43,8 @@ export function Section({ title, children }: { title: string; children: ReactNod
 
 type Confirming = 'rollback' | 'reset' | null
 
-// The installed version with what changes it: another version, the pin, a rollback and the update channel. notices
-// (an update on offer, a skipped one) sit under the version they are about.
+// The installed version with what changes it: another version and the pin on its line, then a rollback and the update
+// channel. notices (an update on offer, a skipped one) sit under the version they are about.
 export function ModVersion({
   mod,
   profile,
@@ -67,9 +67,10 @@ export function ModVersion({
   const game = useProfiles((s) => s.game?.id ?? '')
   return (
     <Section title={t`Version`}>
-      <Typography sx={{ ...text, overflowWrap: 'anywhere' }}>{mod.version}</Typography>
-      {notices}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: space.gap }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: space.gap }}>
+        <Typography sx={{ ...text, overflowWrap: 'anywhere', mr: 'auto' }}>
+          {mod.version}
+        </Typography>
         {target && entry ? (
           <LockedReason locked={locked}>
             <Button
@@ -99,6 +100,7 @@ export function ModVersion({
           </Button>
         </Tooltip>
       </Box>
+      {notices}
       {pinned ? (
         <Typography sx={{ ...row, color: 'text.secondary' }}>{t`Pinned: ${pinned}`}</Typography>
       ) : null}
