@@ -34,9 +34,11 @@ function SavesFollower({ game }: { game: string }) {
 }
 
 export function Detail() {
-  const loaded = useProfiles((s) => s.loaded)
-  const failed = useProfiles((s) => s.failed)
   const game = useCurrentGame()
+  // The game changes a render before its profiles load, so until the store holds this game's list its open profile
+  // is the last game's, and every view below would ask this game for it.
+  const loaded = useProfiles((s) => s.loaded && s.game?.id === game)
+  const failed = useProfiles((s) => s.failed)
   const gameName = useGameName()
   // Whether one is open, not the profile: a save of it re-renders only what reads the fields that changed.
   const open = useProfiles((s) => openProfileOf(s) !== undefined)
