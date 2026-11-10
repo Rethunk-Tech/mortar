@@ -35,8 +35,9 @@ runs:
         echo "key=apt-${RUNNER_OS}-${RUNNER_ARCH}-${ImageVersion:-unknown}-${list}" >> "$GITHUB_OUTPUT"
 
     - name: Restore apt packages
+      id: apt-cache
       if: inputs.native == 'true'
-      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/apt-archives/*.deb
         key: ${{ steps.apt-key.outputs.key }}
@@ -56,6 +57,15 @@ runs:
         mkdir -p ~/apt-archives/partial
         apt=(-o "Dir::Cache::archives=$HOME/apt-archives" -o APT::Keep-Downloaded-Packages=true -o Acquire::Retries=3 -o Acquire::http::Timeout=30)
         sudo apt-get "${apt[@]}" update && sudo apt-get "${apt[@]}" install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev "${pkgs[@]}"
+
+    # Saved here rather than in a post step: post steps run after the whole job, and a job that hits its timeout there
+    # cancels them, so a cold run on a new runner image would never keep the packages it spent minutes downloading.
+    - name: Save apt packages
+      if: inputs.native == 'true' && steps.apt-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/apt-archives/*.deb
+        key: ${{ steps.apt-key.outputs.key }}
 
     # A key with no date hits forever and never saves, which leaves the build cache at its first compile; once a day on
     # main keeps it near the code.
