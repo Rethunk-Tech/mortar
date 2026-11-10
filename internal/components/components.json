@@ -1,5 +1,5 @@
 {
-  "serial": 1794101118,
+  "serial": 1794339064,
   "components": [
     {
       "game": "melonloader",
@@ -45,6 +45,34 @@
       "sha256": "13ce7b1b73cb3faf49d893d7e2a5ce1a141bbd534ea03f239846be0e7ef833b0"
     },
     {
+      "game": "stardew",
+      "name": "companion",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-smapi-bridge"
+      },
+      "tag": "v0.3.0",
+      "asset": "MortarSmapiBridge-0.3.0.zip",
+      "version": "0.3.0",
+      "sha256": "805dee34b61e5f550c1b958ec3256716e1e6edf44b149c632dd54bbc44d28a95"
+    },
+    {
+      "game": "stardew",
+      "name": "overlay",
+      "kind": "overlay",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-sdv-streamoverlay"
+      },
+      "tag": "v0.1.0",
+      "asset": "MortarStreamOverlay-0.1.0.zip",
+      "version": "0.1.0",
+      "sha256": "0f19fc45d5b7acc8b477ba63b0110655b6e56841af71089d176880f870c60702"
+    },
+    {
       "game": "lethal-company",
       "name": "bridge",
       "kind": "bridge",
@@ -57,6 +85,34 @@
       "asset": "MortarBepInExBridge_LethalCompany-0.6.0.zip",
       "version": "0.6.0",
       "sha256": "8b13f97a9f20227336ff39cb94c2e68c9cc5fad86dc5e8605536b6f274bfeefd"
+    },
+    {
+      "game": "lethal-company",
+      "name": "companion",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.0",
+      "asset": "MortarBepInExBridge-0.7.0.zip",
+      "version": "0.7.0",
+      "sha256": "0e6c5accbd6f7298c2ee6e27d216d80a64d68771fff72d126cbd396242a60883"
+    },
+    {
+      "game": "lethal-company",
+      "name": "overlay",
+      "kind": "overlay",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-lc-streamoverlay"
+      },
+      "tag": "v0.1.0",
+      "asset": "Mortar-StreamOverlay-0.1.0.zip",
+      "version": "0.1.0",
+      "sha256": "92de2f6d8acb0b1e11503f7c22c72187b072faacee044256a77fe1bd21f2ef3d"
     },
     {
       "game": "valheim",
@@ -73,6 +129,20 @@
       "sha256": "58790e4d08e180fe03f5f096dc764f100e326edde151b76722e66dc10680a328"
     },
     {
+      "game": "valheim",
+      "name": "companion",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.0",
+      "asset": "MortarBepInExBridge-0.7.0.zip",
+      "version": "0.7.0",
+      "sha256": "0e6c5accbd6f7298c2ee6e27d216d80a64d68771fff72d126cbd396242a60883"
+    },
+    {
       "game": "core-keeper",
       "name": "bridge",
       "kind": "bridge",
@@ -85,6 +155,20 @@
       "asset": "MortarBepInExBridge_IL2CPP-0.6.0.zip",
       "version": "0.6.0",
       "sha256": "8d1562a899e44ebb66e9a56d794d0baa4d47e317907cbe9bffa2162ba8c5f4eb"
+    },
+    {
+      "game": "core-keeper",
+      "name": "companion",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.0",
+      "asset": "MortarBepInExBridge_IL2CPP-0.7.0.zip",
+      "version": "0.7.0",
+      "sha256": "78bed2d899ef2d7eeb2fc2ef5c33e3d38903557aa90a6e85545d5b6e8ed87ec4"
     },
     {
       "game": "repo",
@@ -101,6 +185,20 @@
       "sha256": "9273de184691b5e62cf71bc8b3eb50b5b6874f08690478053ecfd29fa037d877"
     },
     {
+      "game": "repo",
+      "name": "companion",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.0",
+      "asset": "MortarBepInExBridge-0.7.0.zip",
+      "version": "0.7.0",
+      "sha256": "0e6c5accbd6f7298c2ee6e27d216d80a64d68771fff72d126cbd396242a60883"
+    },
+    {
       "game": "peak",
       "name": "bridge",
       "kind": "bridge",
@@ -113,6 +211,20 @@
       "asset": "MortarBepInExBridge-0.6.0.zip",
       "version": "0.6.0",
       "sha256": "9273de184691b5e62cf71bc8b3eb50b5b6874f08690478053ecfd29fa037d877"
+    },
+    {
+      "game": "peak",
+      "name": "companion",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.0",
+      "asset": "MortarBepInExBridge-0.7.0.zip",
+      "version": "0.7.0",
+      "sha256": "0e6c5accbd6f7298c2ee6e27d216d80a64d68771fff72d126cbd396242a60883"
     },
     {
       "game": "riskofrain2",
@@ -129,6 +241,20 @@
       "sha256": "9273de184691b5e62cf71bc8b3eb50b5b6874f08690478053ecfd29fa037d877"
     },
     {
+      "game": "riskofrain2",
+      "name": "companion",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.0",
+      "asset": "MortarBepInExBridge-0.7.0.zip",
+      "version": "0.7.0",
+      "sha256": "0e6c5accbd6f7298c2ee6e27d216d80a64d68771fff72d126cbd396242a60883"
+    },
+    {
       "game": "content-warning",
       "name": "bridge",
       "kind": "bridge",
@@ -141,6 +267,20 @@
       "asset": "MortarBepInExBridge-0.6.0.zip",
       "version": "0.6.0",
       "sha256": "9273de184691b5e62cf71bc8b3eb50b5b6874f08690478053ecfd29fa037d877"
+    },
+    {
+      "game": "content-warning",
+      "name": "companion",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.0",
+      "asset": "MortarBepInExBridge-0.7.0.zip",
+      "version": "0.7.0",
+      "sha256": "0e6c5accbd6f7298c2ee6e27d216d80a64d68771fff72d126cbd396242a60883"
     }
   ],
   "games": [
@@ -203,7 +343,8 @@
           "id": "smapi",
           "name": "SMAPI",
           "nexusModId": 2400,
-          "companion": "bridge"
+          "companion": "companion",
+          "overlay": "overlay"
         }
       ],
       "sources": [
@@ -294,7 +435,8 @@
           "id": "bepinex5",
           "name": "BepInEx 5",
           "nexusModId": 42,
-          "companion": "bridge",
+          "companion": "companion",
+          "overlay": "overlay",
           "devTemplate": {
             "repo": "Rethunk-Tech/mortar-bepinex5-template",
             "ref": "v0.2.2",
@@ -562,7 +704,7 @@
           "id": "bepinex5",
           "name": "BepInEx 5",
           "nexusModId": 3605,
-          "companion": "bridge",
+          "companion": "companion",
           "console": true,
           "package": "denikson-BepInExPack_Valheim"
         }
@@ -648,7 +790,7 @@
         {
           "id": "bepinex5",
           "name": "BepInEx 5",
-          "companion": "bridge"
+          "companion": "companion"
         }
       ],
       "sources": [
@@ -696,7 +838,7 @@
         {
           "id": "bepinex5",
           "name": "BepInEx 5",
-          "companion": "bridge",
+          "companion": "companion",
           "package": "bbepis-BepInExPack"
         }
       ],
@@ -755,7 +897,7 @@
         {
           "id": "bepinex5",
           "name": "BepInEx 5",
-          "companion": "bridge",
+          "companion": "companion",
           "package": "BepInEx-BepInExPack_PEAK"
         }
       ],
@@ -802,7 +944,7 @@
         {
           "id": "bepinex5",
           "name": "BepInEx 5",
-          "companion": "bridge"
+          "companion": "companion"
         }
       ],
       "sources": [
@@ -2744,7 +2886,7 @@
         {
           "id": "bepinex5",
           "name": "BepInEx 6 (IL2CPP)",
-          "companion": "bridge",
+          "companion": "companion",
           "package": "BepInEx-BepInExPack_Core_Keeper",
           "major": 2
         }

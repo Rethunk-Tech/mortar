@@ -425,7 +425,7 @@ func TestBundledGamesCarryTargetsAndCompanions(t *testing.T) {
 	if tgt, ok := s.Target("mods"); !ok || tgt.Root != "{profileMods}" {
 		t.Fatalf("stardew mods target = %+v", tgt)
 	}
-	if s.Loaders[0].Companion != "bridge" {
+	if s.Loaders[0].Companion != "companion" {
 		t.Fatalf("smapi companion = %q", s.Loaders[0].Companion)
 	}
 	lc, _ := bundledGame("lethal-company")
@@ -565,7 +565,7 @@ func TestACommunityBepInExPackIsTheLoaderPackage(t *testing.T) {
 }
 
 // Core Keeper takes Thunderstore's BepInEx 6 IL2CPP plugins through the loader and mod.io's SDK mods whole in the game's
-// own Mods folder, with the IL2CPP bridge as the loader's companion.
+// own Mods folder, with the IL2CPP bridge build as the loader's companion.
 func TestCoreKeeperTakesBothChannels(t *testing.T) {
 	g, ok := Game("core-keeper")
 	modio, hasModio := g.Source("modio")
@@ -573,16 +573,16 @@ func TestCoreKeeperTakesBothChannels(t *testing.T) {
 	if !ok || g.SteamAppID() != "1621690" || !hasModio || modio.Key != "5289" || !hasThunder || g.MinVersion != "0.5.0" {
 		t.Fatalf("core-keeper = %+v", g)
 	}
-	if len(g.Loaders) != 1 || g.Loaders[0].ID != "bepinex5" || g.Loaders[0].Major != 2 || g.LoaderPackage() != "BepInEx-BepInExPack_Core_Keeper" || g.Loaders[0].Companion != "bridge" {
+	if len(g.Loaders) != 1 || g.Loaders[0].ID != "bepinex5" || g.Loaders[0].Major != 2 || g.LoaderPackage() != "BepInEx-BepInExPack_Core_Keeper" || g.Loaders[0].Companion != "companion" {
 		t.Fatalf("loaders = %+v", g.Loaders)
 	}
 	m, err := BundledManifest()
 	if err != nil {
 		t.Fatal(err)
 	}
-	c, ok := findComponent(m.Components, "core-keeper", "bridge")
+	c, ok := findComponent(m.Components, "core-keeper", "companion")
 	if !ok || c.Asset != "MortarBepInExBridge_IL2CPP-"+c.Version+".zip" {
-		t.Fatalf("bridge component = %+v", c)
+		t.Fatalf("companion component = %+v", c)
 	}
 }
 

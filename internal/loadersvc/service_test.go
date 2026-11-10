@@ -60,7 +60,7 @@ func bridgeClient(t *testing.T) (*components.Client, string) {
 	client.SetManifest(components.Manifest{
 		Serial: 1,
 		Components: []components.Component{{
-			Game: "stardew", Name: "bridge", Kind: "bridge",
+			Game: "stardew", Name: "companion", Kind: "bridge",
 			Source: components.Source{Host: "github.com", Owner: "Rethunk-Tech", Repo: "mortar-smapi-bridge"},
 			Tag:    "v1.1.0", Asset: "MortarSmapiBridge-1.1.0.zip", Version: "1.1.0", SHA256: hash,
 		}},

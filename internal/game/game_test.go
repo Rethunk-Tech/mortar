@@ -313,26 +313,12 @@ func TestTheOverlaySettingsNeedAnOverlayComponent(t *testing.T) {
 		if g.ID == "stardew" && !g.Loaders[0].Overlay {
 			t.Fatalf("Stardew offers no overlay settings with an overlay component: %+v", g.Loaders[0])
 		}
-		// Lethal Company has no overlay component, but its catalog companion is a build that still serves the overlay.
 		if g.ID == "lethal-company" && !g.Loaders[0].Overlay {
-			t.Fatalf("Lethal Company hides the overlay its companion serves: %+v", g.Loaders[0])
+			t.Fatalf("Lethal Company offers no overlay settings with an overlay component: %+v", g.Loaders[0])
 		}
-	}
-
-	// Once its companion is a split build, a game with no overlay component offers no overlay settings.
-	for i := range m.Components {
-		if m.Components[i].Game == "lethal-company" && m.Components[i].Kind == "bridge" {
-			m.Components[i].Version = "0.7.0"
-		}
-	}
-	c.SetManifest(m)
-	games, err = List(t.TempDir(), cur)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, g := range games {
-		if g.ID == "lethal-company" && g.Loaders[0].Overlay {
-			t.Fatalf("Lethal Company offers the overlay settings with a split companion and no overlay component: %+v", g.Loaders[0])
+		// PEAK's companion is a split build and no catalog names an overlay component for it.
+		if g.ID == "peak" && g.Loaders[0].Overlay {
+			t.Fatalf("PEAK offers the overlay settings with a split companion and no overlay component: %+v", g.Loaders[0])
 		}
 	}
 }
@@ -364,7 +350,7 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 	for _, g := range games {
 		caps[g.ID] = g.Loaders[0]
 	}
-	// Today's catalog companions are builds that still serve the overlay, so both offer the overlay settings.
+	// Both have an overlay component, so both offer the overlay settings.
 	if s := caps["stardew"]; !s.Order || !s.Console || !s.Commands || !s.Startup || !s.Assets || !s.Frameworks || !s.Overlay || !s.IntroSkip {
 		t.Fatalf("SMAPI = %+v", s)
 	}
@@ -372,8 +358,8 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 		t.Fatalf("BepInEx = %+v", b)
 	}
 	// PEAK gets the core bridge build: everything the bridge offers, but no console commands, which need game hooks.
-	// Its companion is still a pre-split build, so the overlay settings stay until the catalog moves it to a split one.
-	if p := caps["peak"]; !p.Console || !p.Startup || !p.Overlay || !p.IntroSkip || p.Commands {
+	// Its companion is a split build and it has no overlay component, so it offers no overlay settings.
+	if p := caps["peak"]; !p.Console || !p.Startup || p.Overlay || !p.IntroSkip || p.Commands {
 		t.Fatalf("BepInEx with the core bridge = %+v", p)
 	}
 	// Core Keeper installs the IL2CPP bridge, which only lists plugins: none of the tabs that need the Mono build.
