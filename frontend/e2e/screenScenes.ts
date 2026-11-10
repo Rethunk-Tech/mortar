@@ -98,9 +98,14 @@ const notificationsScene = (h: Helpers) => ({
   name: 'notifications',
   file: 'notifications-0-7-0.png',
   ...h.desk,
-  profile: h.profile,
+  profile: h.developing,
   steps: async (page: Page) => {
-    await h.settings(page, 'Notifications')
+    // The title bar's bell is also a Notifications button, so the section is the last one.
+    await h.settings(page, 'General')
+    await page
+      .getByRole('button', { name: 'Notifications', exact: true })
+      .last()
+      .click({ timeout: h.stepMs })
     await page
       .getByText('Something finishes well', { exact: true })
       .first()
@@ -113,7 +118,7 @@ const modDetailsScene = (h: Helpers) => ({
   name: 'mod-details',
   file: 'mod-details-0-7-0.png',
   ...h.desk,
-  profile: h.profile,
+  profile: h.developing,
   steps: async (page: Page) => {
     await h.click(page, 'tab', 'Mods')
     await page
