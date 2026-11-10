@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Rethunk-Tech/go-smapi/logline"
 )
@@ -65,9 +66,24 @@ func LogOwnedBy(log, home, modsDir string) bool {
 
 // Parser turns log lines into entries, remembering the last header so continuation lines can inherit it.
 type Parser struct {
+	// Now, when set, times a header its loader wrote without one (stock BepInEx) as it arrives, so a live console can
+	// show when each line came. A log read back from disk leaves it nil: its arrival time is not known.
+	Now    func() time.Time
 	last   Entry
 	seen   bool
 	hidden bool
+}
+
+// arrivalStamp is the shape AsyncLoggers stamps BepInEx lines with: never SMAPI's bare HH:MM:SS, which FormatLog
+// would write back as a SMAPI header.
+const arrivalStamp = "15:04:05.0000000"
+
+func (p *Parser) header(e Entry) Entry {
+	if e.Time == "" && p.Now != nil {
+		e.Time = p.Now().Format(arrivalStamp)
+	}
+	p.last, p.seen = e, true
+	return e
 }
 
 func smapiModsLoaded(e Entry) bool {
@@ -103,23 +119,22 @@ func smapiHeader(line string) (Entry, bool) {
 // a header continues the previous entry; with none yet it stands alone as an INFO line.
 func (p *Parser) Parse(line string) (Entry, bool) {
 	if e, ok := smapiHeader(line); ok {
-		p.last = e
-		p.seen = true
+		p.header(e)
 		p.hidden = isHidden(p.last.Mod, p.last.Message)
 		return p.last, !p.hidden
 	}
 	if e, ok := parseBepInEx(line); ok {
-		p.last, p.seen, p.hidden = e, true, false
-		return e, true
+		p.hidden = false
+		return p.header(e), true
 	}
 	if e, ok := parseVintageStory(line); ok {
-		p.last, p.seen, p.hidden = e, true, false
-		return e, true
+		p.hidden = false
+		return p.header(e), true
 	}
 	for _, parse := range []func(string) (Entry, bool){parseLovely, parseSerilog, parseROM, parseNorthstar} {
 		if e, ok := parse(line); ok {
-			p.last, p.seen, p.hidden = e, true, false
-			return e, true
+			p.hidden = false
+			return p.header(e), true
 		}
 	}
 	if !p.seen {

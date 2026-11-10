@@ -172,3 +172,22 @@ func TestThunderpackLogLinesParse(t *testing.T) {
 		}
 	}
 }
+
+// Stock BepInEx writes no time, so a live console times each header and its wrapped lines as they arrive, in a shape
+// FormatLog keeps as a BepInEx stamp rather than a SMAPI header. A logger mod's own stamp wins.
+func TestParserTimesUnstampedHeadersAsTheyArrive(t *testing.T) {
+	p := Parser{Now: func() time.Time { return time.Date(2026, 11, 9, 16, 27, 5, 123_456_700, time.Local) }}
+	head, _ := p.Parse("[Error  : Unity Log] NullReferenceException")
+	cont, _ := p.Parse("  at Foo.Bar () [0x00000] in <abc>:0")
+	stamped, _ := p.Parse("[14:35:39.1344735] [Info   :SlendermanMod] Registered spawn rate")
+	if head.Time != "16:27:05.1234567" || cont.Time != head.Time || stamped.Time != "14:35:39.1344735" {
+		t.Fatalf("times = %q, %q, %q", head.Time, cont.Time, stamped.Time)
+	}
+	if got := FormatLog([]Entry{head}); got != "[16:27:05.1234567] [Error  : Unity Log] NullReferenceException" {
+		t.Fatalf("FormatLog = %q", got)
+	}
+	var disk Parser
+	if e, _ := disk.Parse("[Info   :   BepInEx] hi"); e.Time != "" {
+		t.Fatalf("a parser without a clock invented a time: %q", e.Time)
+	}
+}

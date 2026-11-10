@@ -1485,7 +1485,7 @@ func changedSinceLastRun(events []profile.HistoryEvent, lastRun time.Time) bool 
 
 // collect parses log lines into buf and announces them, unless a newer launch has replaced buf.
 func (s *Service) collect(g game.Game, profileID string, buf *launch.Buffer) func([]string) {
-	var p launch.Parser
+	p := launch.Parser{Now: time.Now}
 	ldr, hasLoader := s.loaderOf(g.ID(), profileID)
 	return func(lines []string) {
 		loads := make([]bool, len(lines))
