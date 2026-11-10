@@ -15,3 +15,5 @@ highlights:
 ---
 
 Mortar's stream overlay now lives in its own small mod, Mortar Stream Overlay, for Lethal Company and Stardew Valley. Mortar adds it to a profile while the overlay setting is on and removes it when you turn the setting off, so the companion mod carries only what Mortar needs to talk to the game. Older versions of Mortar keep the companion they already use.
+
+Mortar also speaks Simplified Chinese now, translated by volunteers on [Hosted Weblate](https://hosted.weblate.org/projects/mortar/). Pick it under Settings › General › Language.
