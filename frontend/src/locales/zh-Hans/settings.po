@@ -1,37 +1,37 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-06 19:25+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/settings/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-10 12:51+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/settings/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/settings/sections/Notifications.tsx
 msgid "{name}: desktop notification"
-msgstr ""
+msgstr "{name}：桌面通知"
 
 #: src/settings/sections/ProfileScopeSections.tsx
 msgid "{name} in this profile"
-msgstr ""
+msgstr "此配置中的 {name}"
 
 #: src/settings/sections/ModsProfiles.tsx
 msgid "Set Sidebar badge counts, in Appearance, to something other than Off first."
-msgstr ""
+msgstr "请先在“外观”中将侧边栏徽标计数设置为“关闭”以外的选项。"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Gentle violet"
-msgstr ""
+msgstr "柔紫色"
 
 #: src/settings/sections/ProfileScopeSections.tsx
 msgid "Saved in the profile's config folder and applied the next time the game starts."
-msgstr ""
+msgstr "已保存到该配置的 config 文件夹，将在游戏下次启动时生效。"
 
 #: src/settings/usePerProfileRelated.tsx
 msgid "Start muted"
-msgstr ""
+msgstr "启动时静音"
 
 #: src/settings/sections/General.tsx
 msgid "Interface tour"
-msgstr ""
+msgstr "界面导览"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Other"
-msgstr ""
+msgstr "其他"
 
 #: src/settings/sections/ALVRProgram.tsx
 #: src/settings/sections/GameSync.tsx
@@ -41,11 +41,11 @@ msgstr "选择…"
 
 #: src/settings/prefCopy.ts
 msgid "Auto-track installed mods"
-msgstr ""
+msgstr "自动跟踪已安装的模组"
 
 #: src/settings/prefCopy.ts
 msgid "Sidebar badge counts"
-msgstr ""
+msgstr "侧边栏徽标计数"
 
 #: src/settings/sections/ExtraModsFolders.tsx
 msgid "Open profile"
@@ -53,72 +53,72 @@ msgstr "打开配置"
 
 #: src/settings/GameSettingsPage.tsx
 msgid "Streaming"
-msgstr ""
+msgstr "直播"
 
 #: src/settings/sections/Updates.tsx
 msgid "Mod updates show on each profile's mod list."
-msgstr ""
+msgstr "模组更新会显示在每个配置的模组列表中。"
 
 #: src/settings/sections/DataImport.tsx
 msgid "Settings imported"
-msgstr ""
+msgstr "设置已导入"
 
 #: src/settings/prefCopyGraphics.ts
 msgid "Graphics"
-msgstr ""
+msgstr "图形"
 
 #: src/settings/prefCopy.ts
 msgid "Folders of unpacked mods, or your own build's output, whose mods install into a profile and again whenever they change"
-msgstr ""
+msgstr "未打包模组的文件夹，或你自己构建的输出目录；其中的模组会安装到配置中，并在其变化时重新安装"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Move data folder…"
-msgstr ""
+msgstr "移动数据文件夹…"
 
 #: src/settings/prefCopy.ts
 msgid "Allow shows {source} pages what Mortar has. Off hides that; download links still arrive"
-msgstr ""
+msgstr "开启后，{source} 页面可看到 Mortar 拥有的内容。关闭则会隐藏这些信息；下载链接仍可正常接收"
 
 #: src/settings/sections/About.tsx
 msgid "Startup profile"
-msgstr ""
+msgstr "启动配置"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Connected from {browser}, last seen "
-msgstr ""
+msgstr "已从 {browser} 连接，上次活动： "
 
 #: src/settings/sections/Appearance.tsx
 msgid "Sand"
-msgstr ""
+msgstr "沙色"
 
 #: src/settings/prefCopyGame.ts
 msgid "Starts the game directly, without the {launcher} overlay or playtime, and hides your home folder from it and its mods. The game keeps its install, saves and this profile. {os} only; needs bubblewrap."
-msgstr ""
+msgstr "直接启动游戏，不使用 {launcher} 叠加层或游玩时间统计，并向游戏及其模组隐藏你的主文件夹。游戏会保留其安装、存档和此配置。仅限 {os}；需要 bubblewrap。"
 
 #: src/settings/sections/Notifications.tsx
 msgid "{name}: in Mortar"
-msgstr ""
+msgstr "{name}：在 Mortar 中"
 
 #: src/settings/shortcutLabels.ts
 msgid "Duplicate the open profile"
-msgstr ""
+msgstr "复制当前打开的配置"
 
 #: src/settings/sections/ProfileScopeSections.tsx
 msgid "Log level"
-msgstr ""
+msgstr "日志级别"
 
 #: src/settings/prefCopy.ts
 msgid "Mortar leaves the taskbar and waits in the tray until the game exits."
-msgstr ""
+msgstr "Mortar 会从任务栏隐藏，在托盘中等待直到游戏退出。"
 
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyRequirements.ts
 msgid "Always"
-msgstr ""
+msgstr "始终"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Clean up…"
-msgstr ""
+msgstr "清理…"
 
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Console"
@@ -126,11 +126,11 @@ msgstr "切换至控制台"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Run checks…"
-msgstr ""
+msgstr "运行检查…"
 
 #: src/settings/sections/HiddenMods.tsx
 msgid "Left out of Browse. Links and imports still install them."
-msgstr ""
+msgstr "不会出现在“浏览”中。链接和导入仍可安装它们。"
 
 #: src/settings/sections/ExtraModsFolders.tsx
 msgid "Deleted profile"
@@ -138,11 +138,11 @@ msgstr "已删除配置文件"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Untrack mods"
-msgstr ""
+msgstr "取消跟踪模组"
 
 #: src/settings/prefCopy.ts
 msgid "Density"
-msgstr ""
+msgstr "密度"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Mod store"
@@ -150,11 +150,11 @@ msgstr "模组商店"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Older copies of the same mod"
-msgstr ""
+msgstr "同一模组的旧副本"
 
 #: src/settings/prefCopy.ts
 msgid "How many times to retry a failed download"
-msgstr ""
+msgstr "下载失败后的重试次数"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "{name} {latest} is available"
@@ -162,147 +162,147 @@ msgstr "{name} {latest} 已可更新"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "In {app}: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
-msgstr ""
+msgstr "在 {app} 中：来源，+，浏览器，粘贴该 URL。宽度 400，高度 80。使用自定义 CSS 设置样式。"
 
 #: src/settings/sections/WatchFolders.tsx
 msgid "Folder to watch"
-msgstr ""
+msgstr "监视的文件夹"
 
 #: src/settings/prefCopy.ts
 msgid "Back up saves every time the game starts."
-msgstr ""
+msgstr "每次游戏启动时备份存档。"
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "{name} now opens {source} \"Mod Manager Download\" links."
-msgstr ""
+msgstr "{name} 现在会打开 {source} 的“模组管理器下载”链接。"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Show token"
-msgstr ""
+msgstr "显示令牌"
 
 #: src/settings/sections/General.tsx
 msgid "Allow through firewall"
-msgstr ""
+msgstr "允许通过防火墙"
 
 #: src/settings/SettingsNav.tsx
 msgid "Search settings"
-msgstr ""
+msgstr "搜索设置"
 
 #: src/settings/sections/General.tsx
 msgid "Startup and window"
-msgstr ""
+msgstr "启动与窗口"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Repair"
-msgstr ""
+msgstr "修复"
 
 #: src/settings/prefCopy.ts
 msgid "This computer"
-msgstr ""
+msgstr "本机"
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "{name} now opens {source} \"1-click install\" links."
-msgstr ""
+msgstr "{name} 现在会打开 {source} 的“一键安装”链接。"
 
 #: src/settings/prefCopy.ts
 msgid "Light"
-msgstr ""
+msgstr "浅色"
 
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Engine"
-msgstr ""
+msgstr "引擎"
 
 #: src/settings/sections/Notifications.tsx
 msgid "When"
-msgstr ""
+msgstr "时间"
 
 #: src/settings/prefCopyRequirements.ts
 msgid "Disable dependencies"
-msgstr ""
+msgstr "禁用依赖项"
 
 #: src/settings/prefCopy.ts
 msgid "How timestamps are shown"
-msgstr ""
+msgstr "时间戳的显示方式"
 
 #: src/settings/prefCopyGraphics.ts
 msgid "Try this if scrolling is slow or the fans spin up."
-msgstr ""
+msgstr "如果滚动缓慢或风扇加速，请尝试此操作。"
 
 #: src/settings/prefCopyModsView.ts
 msgid "List"
-msgstr ""
+msgstr "列表"
 
 #: src/settings/sections/Updates.tsx
 msgid "Installed: Mortar {version}"
-msgstr ""
+msgstr "已安装：Mortar {version}"
 
 #: src/settings/sections/Updates.tsx
 msgid "Mod loader updates"
-msgstr ""
+msgstr "模组加载器更新"
 
 #: src/settings/prefCopy.ts
 msgid "Use the system title bar"
-msgstr ""
+msgstr "使用系统标题栏"
 
 #: src/settings/prefCopy.ts
 msgid "A ripple spreads from where you press a button. Off, the button only changes shade."
-msgstr ""
+msgstr "按下按钮时会有涟漪从点击处扩散。关闭后，按钮只会改变色调。"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Opening a {scheme}:// link, such as Install with Mod Manager, installs the mod in Mortar."
-msgstr ""
+msgstr "打开 {scheme}:// 链接（例如“使用模组管理器安装”）会在 Mortar 中安装该模组。"
 
 #: src/settings/sections/Downloads.tsx
 msgid "and open it in {app}. If that release has none, unzip the download, open about:debugging, choose This {app}, then Load Temporary Add-on and pick manifest.json; {app} removes it when it restarts."
-msgstr ""
+msgstr "并在 {app} 中打开。如果该版本没有扩展，请解压下载内容，打开 about:debugging，选择“此 {app}”，然后点击“临时载入附加组件”并选择 manifest.json；{app} 重启时会将其移除。"
 
 #: src/settings/prefCopy.ts
 msgid "Start the game without a backup."
-msgstr ""
+msgstr "不备份直接启动游戏。"
 
 #: src/settings/sections/Accounts.tsx
 msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
-msgstr ""
+msgstr "尚未登录，因此适用较低的速率限制。运行 gh auth login 可提高限制。"
 
 #: src/settings/prefCopyGraphics.ts
 msgid "Compatible"
-msgstr ""
+msgstr "兼容"
 
 #: src/settings/NexusMeter.tsx
 msgid "{remaining} of {limit} this hour"
-msgstr ""
+msgstr "本小时剩余 {remaining}/{limit}"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Tabs"
-msgstr ""
+msgstr "标签页"
 
 #: src/settings/sections/About.tsx
 msgid "build {commit}"
-msgstr ""
+msgstr "构建 {commit}"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Clear cache…"
-msgstr ""
+msgstr "清除缓存…"
 
 #: src/settings/sections/DismissedFolders.tsx
 msgid "Not offered for moving into a profile."
-msgstr ""
+msgstr "移入配置时不提供此选项。"
 
 #: src/settings/sections/Notifications.tsx
 msgid "Mod updates are found"
-msgstr ""
+msgstr "发现模组更新"
 
 #: src/settings/shortcutLabels.ts
 msgid "Find a mod in all profiles"
-msgstr ""
+msgstr "在所有配置档中查找模组"
 
 #: src/settings/sections/SourceOrder.tsx
 msgid "Move down"
-msgstr ""
+msgstr "下移"
 
 #: src/settings/prefCopy.ts
 msgid "Tell me when a new mod loader version is out"
-msgstr ""
+msgstr "有新模组加载器版本发布时通知我"
 
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Problems"
@@ -310,68 +310,68 @@ msgstr "切换到“问题”页"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Year"
-msgstr ""
+msgstr "年"
 
 #: src/settings/sections/DataMove.tsx
 msgid "{count, plural, one {{files}/# file} other {{files}/# files}}"
-msgstr ""
+msgstr "{count, plural, one {{files}/# 个文件} other {{files}/# 个文件}}"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "Used with Custom command. {path} stands for the folder to scan; exit code 0 means clean, any other code a detection, and the first line it prints names it."
-msgstr ""
+msgstr "与自定义命令配合使用。{path} 表示要扫描的文件夹；退出码 0 表示干净，其他任何代码表示检测到问题，其输出的第一行会给出名称。"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Follows your desktop"
-msgstr ""
+msgstr "跟随桌面"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "Recheck"
-msgstr ""
+msgstr "重新检查"
 
 #: src/settings/prefCopy.ts
 msgid "Shorter animations. Honour the OS unless you override it."
-msgstr ""
+msgstr "更短的动画。默认遵循系统设置，除非你另行指定。"
 
 #: src/settings/prefCopy.ts
 #: src/settings/sections/Downloads.tsx
 msgid "Last opened profile"
-msgstr ""
+msgstr "上次打开的配置"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Untrack every {game} mod on {source}"
-msgstr ""
+msgstr "取消跟踪 {source} 上所有 {game} 模组"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "Scan command"
-msgstr ""
+msgstr "扫描命令"
 
 #: src/settings/prefCopy.ts
 msgid "How thoroughly Mortar analyses overlapping files"
-msgstr ""
+msgstr "Mortar 分析重叠文件的彻底程度"
 
 #: src/settings/shortcutLabels.ts
 msgid "Select all mods"
-msgstr ""
+msgstr "全选模组"
 
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "{count, plural, one {# mod checked} other {# mods checked}}"
-msgstr ""
+msgstr "{count, plural, one {已检查 # 个模组} other {已检查 # 个模组}}"
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Take them back for Mortar?"
-msgstr ""
+msgstr "要将它们收回给 Mortar 吗？"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Move the data folder?"
-msgstr ""
+msgstr "移动数据文件夹？"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Fishing skill"
-msgstr ""
+msgstr "钓鱼技能"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Enable scheduled save backups first."
-msgstr ""
+msgstr "请先启用定时存档备份。"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Save diagnostics…"
@@ -379,63 +379,63 @@ msgstr "保存诊断信息…"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Small"
-msgstr ""
+msgstr "小"
 
 #: src/settings/prefCopy.ts
 msgid "Notify when updates are found"
-msgstr ""
+msgstr "发现更新时通知"
 
 #: src/settings/store.ts
 msgid "Your settings could not be read"
-msgstr ""
+msgstr "无法读取你的设置"
 
 #: src/settings/prefCopy.ts
 msgid "At most once a day"
-msgstr ""
+msgstr "每天最多一次"
 
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "{checked}; {bad}. Repair them from each profile's Problems tab."
-msgstr ""
+msgstr "{checked}；{bad}。请在每个配置的“问题”标签页中修复。"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "No scanning. The mod sites' own scans still apply."
-msgstr ""
+msgstr "不进行扫描。模组网站自身的扫描仍然有效。"
 
 #: src/settings/prefCopy.ts
 msgid "Off, a share names only the mods you chose, and the receiver gets what they need. Default for Share and Export."
-msgstr ""
+msgstr "关闭时，分享只列出你选择的模组，接收方会获得所需内容。这是分享和导出的默认设置。"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "the connection failed"
-msgstr ""
+msgstr "连接失败"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Solid"
-msgstr ""
+msgstr "纯色"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Font"
-msgstr ""
+msgstr "字体"
 
 #: src/settings/prefCopy.ts
 msgid "Mortar's colours. Follow system matches your computer."
-msgstr ""
+msgstr "Mortar 的配色。跟随系统会与你的电脑一致。"
 
 #: src/settings/sections/General.tsx
 msgid "{os} Firewall blocks incoming sends to Mortar"
-msgstr ""
+msgstr "{os} 防火墙阻止了向 Mortar 的传入发送"
 
 #: src/settings/prefCopy.ts
 msgid "Newest lines kept in the Console"
-msgstr ""
+msgstr "控制台中保留的最新行数"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Reset all"
-msgstr ""
+msgstr "全部重置"
 
 #: src/settings/sections/DataMods.tsx
 msgid "Clear cache?"
-msgstr ""
+msgstr "清除缓存？"
 
 #: src/settings/sections/Updates.tsx
 msgid "Review"
@@ -443,334 +443,334 @@ msgstr "复查"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "Could not trim save backups"
-msgstr ""
+msgstr "无法裁剪存档备份"
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "{name} now opens {source} \"Install with Mod Manager\" links."
-msgstr ""
+msgstr "{name} 现在会打开 {source} 的“使用模组管理器安装”链接。"
 
 #: src/settings/sections/Launchers.tsx
 msgid "Looking for launchers…"
-msgstr ""
+msgstr "正在查找启动器…"
 
 #: src/settings/sections/DataHistory.tsx
 msgid "Trimmed {profile}'s history, freed {size}"
-msgstr ""
+msgstr "已裁剪 {profile} 的历史记录，释放了 {size}"
 
 #: src/settings/SettingsShell.tsx
 msgid "Search results"
-msgstr ""
+msgstr "搜索结果"
 
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "{checked}. All files are intact."
-msgstr ""
+msgstr "{checked}。所有文件完好。"
 
 #: src/settings/sections/About.tsx
 msgid "Could not restart Mortar"
-msgstr ""
+msgstr "无法重启 Mortar"
 
 #: src/settings/prefCopy.ts
 #: src/settings/sections/Appearance.tsx
 msgid "Default sort"
-msgstr ""
+msgstr "默认排序"
 
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
-msgstr ""
+msgstr "将每个已存储模组的文件与添加时保存的内容进行比较。Mortar 还会在后台缓慢执行此操作，大约每周一次。"
 
 #: src/settings/prefCopy.ts
 msgid "What Mortar does while the game runs."
-msgstr ""
+msgstr "游戏运行时 Mortar 的行为。"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Copper"
-msgstr ""
+msgstr "铜色"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Mortar's data"
-msgstr ""
+msgstr "Mortar 的数据"
 
 #: src/settings/prefCopy.ts
 msgid "Share disabled mods"
-msgstr ""
+msgstr "分享已禁用的模组"
 
 #: src/settings/sections/DataBackups.tsx
 #: src/settings/sections/DataHistory.tsx
 msgid "Trim…"
-msgstr ""
+msgstr "裁剪…"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "Trim"
-msgstr ""
+msgstr "裁剪"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Not connected yet"
-msgstr ""
+msgstr "尚未连接"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Copied"
-msgstr ""
+msgstr "已复制"
 
 #: src/settings/prefCopy.ts
 msgid "Name"
-msgstr ""
+msgstr "名称"
 
 #: src/settings/prefCopyGame.ts
 msgid "Dependency versions"
-msgstr ""
+msgstr "依赖项版本"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "Could not recheck {source}"
-msgstr ""
+msgstr "无法重新检查 {source}"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Usage"
-msgstr ""
+msgstr "使用情况"
 
 #: src/settings/prefCopy.ts
 msgid "Start screen"
-msgstr ""
+msgstr "开始屏幕"
 
 #: src/settings/sections/NexusSSO.tsx
 msgid "Could not sign in with {source}"
-msgstr ""
+msgstr "无法使用 {source} 登录"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game}: not installed"
-msgstr ""
+msgstr "{game}：未安装"
 
 #: src/settings/prefCopy.ts
 msgid "Launch Mortar at login"
-msgstr ""
+msgstr "登录时启动 Mortar"
 
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Browse"
-msgstr ""
+msgstr "切换到浏览"
 
 #: src/settings/sections/Updates.tsx
 msgid "Mortar is up to date"
-msgstr ""
+msgstr "Mortar 已是最新版本"
 
 #: src/settings/prefCopy.ts
 msgid "Remember window size and position"
-msgstr ""
+msgstr "记住窗口大小和位置"
 
 #: src/settings/prefCopy.ts
 msgid "Console timestamps"
-msgstr ""
+msgstr "控制台时间戳"
 
 #: src/settings/prefCopy.ts
 msgid "Skip the game's boot animations on Play. Choices the game asks at start-up stay yours."
-msgstr ""
+msgstr "点击“开始游戏”时跳过游戏的开机动画。游戏启动时询问的选项仍由你决定。"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "A game update replaced {name}'s launcher"
-msgstr ""
+msgstr "一次游戏更新替换了 {name} 的启动器"
 
 #: src/settings/loaderToast.ts
 msgid "Your profiles have {version}. Update replaces each profile's copy."
-msgstr ""
+msgstr "你的配置为 {version}。更新会替换每个配置的副本。"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "{count} selected"
-msgstr ""
+msgstr "已选择 {count} 个"
 
 #: src/settings/prefCopyGame.ts
 msgid "Enable them in this profile's own copy of the file before each launch. Your own file is never changed."
-msgstr ""
+msgstr "在每次启动前，在此配置自己的文件副本中启用它们。你自己的文件永远不会被更改。"
 
 #: src/settings/sections/General.tsx
 msgid "Show the first-run tips again"
-msgstr ""
+msgstr "再次显示首次运行提示"
 
 #: src/settings/prefCopy.ts
 #: src/settings/sections/Updates.tsx
 msgid "Show"
-msgstr ""
+msgstr "显示"
 
 #: src/settings/prefCopyGame.ts
 msgid "Leave the caches alone."
-msgstr ""
+msgstr "保持缓存不变。"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Scales text, controls and spacing together"
-msgstr ""
+msgstr "同时缩放文本、控件和间距"
 
 #: src/settings/sections/NexusMods.tsx
 #: src/settings/sections/TokenAccount.tsx
 msgid "Not signed in"
-msgstr ""
+msgstr "未登录"
 
 #: src/settings/sections/GameSettings.tsx
 #: src/settings/sections/Launchers.tsx
 msgid "Game folder"
-msgstr ""
+msgstr "游戏文件夹"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Boss names"
-msgstr ""
+msgstr "首领名称"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Data folder has free space"
-msgstr ""
+msgstr "数据文件夹有可用空间"
 
 #: src/settings/NexusMeter.tsx
 msgid "{remaining} of {limit} requests left today"
-msgstr ""
+msgstr "今天还剩 {remaining}/{limit} 次请求"
 
 #: src/settings/prefCopy.ts
 msgid "List mods inside a folder whose name starts with a dot, which {loader} skips"
-msgstr ""
+msgstr "列出名称以点开头的文件夹中的模组（{loader} 会跳过）"
 
 #: src/settings/prefCopy.ts
 msgid "Shared by all downloads, and applied to running ones. 0 is unlimited."
-msgstr ""
+msgstr "由所有下载共享，并应用于正在进行的下载。0 表示不限制。"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Writes a zip with logs and settings, personal paths removed, to attach to a bug report."
-msgstr ""
+msgstr "写入一个包含日志和设置的 zip（已移除个人路径），用于附加到错误报告。"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Downloading"
-msgstr ""
+msgstr "正在下载"
 
 #: src/settings/sections/ScheduledStatus.tsx
 msgid "No scheduled backup has run yet."
-msgstr ""
+msgstr "尚无计划备份运行过。"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "Run your own scanner with the command below."
-msgstr ""
+msgstr "使用以下命令运行你自己的扫描器。"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Could not prepare the data folder move"
-msgstr ""
+msgstr "无法准备数据文件夹移动"
 
 #: src/settings/prefCopy.ts
 msgid "Compact"
-msgstr ""
+msgstr "紧凑"
 
 #: src/settings/sections/GameSync.tsx
 msgid "No folder chosen"
-msgstr ""
+msgstr "未选择文件夹"
 
 #: src/settings/prefCopy.ts
 msgid "Pre-releases and unofficial {loader} updates. Show lists them; Include lets Update all install them."
-msgstr ""
+msgstr "预发布版本和非官方 {loader} 更新。“显示”会列出它们；“包含”允许“全部更新”安装它们。"
 
 #: src/settings/sections/About.tsx
 msgid "Open-source licences"
-msgstr ""
+msgstr "开源许可证"
 
 #: src/settings/prefCopy.ts
 msgid "Scan the mods folder for changes Mortar did not make"
-msgstr ""
+msgstr "扫描模组文件夹以查找非 Mortar 所做的更改"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Check Mortar"
-msgstr ""
+msgstr "检查 Mortar"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{count} settings temporary or copy file is present"
-msgstr ""
+msgstr "存在 {count} 个设置临时文件或副本文件"
 
 #: src/settings/sections/DataImport.tsx
 #: src/settings/SettingsPage.tsx
 msgid "Appearance"
-msgstr ""
+msgstr "外观"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Outline mods added from a file or folder, which no site updates, in cards and the list"
-msgstr ""
+msgstr "在卡片和列表中突出显示从文件或文件夹添加、无站点更新的模组"
 
 #: src/settings/sections/Appearance.tsx
 #: src/settings/usePerProfileRelated.tsx
 msgid "Zoom"
-msgstr ""
+msgstr "缩放"
 
 #: src/settings/SettingsPage.tsx
 msgid "Mods and profiles"
-msgstr ""
+msgstr "模组与配置"
 
 #: src/settings/sections/Updates.tsx
 msgid "Mortar {version} is available."
-msgstr ""
+msgstr "Mortar {version} 已可用。"
 
 #: src/settings/prefCopy.ts
 msgid "Offer to add new mod archives that land in your Downloads folder or Mortar's download folder"
-msgstr ""
+msgstr "当新的模组压缩包出现在你的下载文件夹或 Mortar 的下载文件夹时，提示添加"
 
 #: src/settings/prefCopy.ts
 msgid "Empty follows the latest release"
-msgstr ""
+msgstr "留空则跟随最新正式版"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Every key returns to its default."
-msgstr ""
+msgstr "每个按键都会恢复默认。"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Medium"
-msgstr ""
+msgstr "中等"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Mods no profile uses"
-msgstr ""
+msgstr "没有配置使用的模组"
 
 #: src/settings/sections/DismissedFolders.tsx
 msgid "Dismissed folders"
-msgstr ""
+msgstr "已忽略的文件夹"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "{game} save backups: {size}"
-msgstr ""
+msgstr "{game} 存档备份：{size}"
 
 #: src/settings/prefCopy.ts
 msgid "Live log starts at this level and above"
-msgstr ""
+msgstr "实时日志从此级别及以上开始"
 
 #: src/settings/sections/Updates.tsx
 msgid "Downloading and verifying Mortar {version}…"
-msgstr ""
+msgstr "正在下载并验证 Mortar {version}…"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Load a save to see values"
-msgstr ""
+msgstr "加载存档以查看数值"
 
 #: src/settings/sections/General.tsx
 msgid "Nearby computers cannot reach Mortar. Set the network to Private in {os} network settings."
-msgstr ""
+msgstr "附近的电脑无法访问 Mortar。请在 {os} 网络设置中将网络设为“专用”。"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game} with {loader} {version} in {path} ({where})"
-msgstr ""
+msgstr "{path} 中的 {game}，带有 {loader} {version}（{where}）"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Measuring… {size}"
-msgstr ""
+msgstr "正在测量…{size}"
 
 #: src/settings/sections/Accounts.tsx
 msgid "Your gh login"
-msgstr ""
+msgstr "你的 gh 登录"
 
 #: src/settings/shortcutLabels.ts
 msgid "Get help"
-msgstr ""
+msgstr "获取帮助"
 
 #: src/settings/prefCopyGame.ts
 msgid "Instances"
-msgstr ""
+msgstr "实例"
 
 #: src/settings/sections/nxmHandler.tsx
 msgid "Should Mortar open {source} \"Mod Manager Download\" links, so a click on {source} starts the download here?"
-msgstr ""
+msgstr "Mortar 是否应打开 {source} 的“模组管理器下载”链接，以便在 {source} 上点击即可在此开始下载？"
 
 #: src/settings/usePerProfileRelated.tsx
 msgid "Sound volume"
-msgstr ""
+msgstr "音效音量"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "Only versions in Mortar's signed catalog are listed; a newer release appears with the next weekly catalog."
-msgstr ""
+msgstr "仅列出 Mortar 签名目录中的版本；更新的版本会随下周的目录出现。"
 
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyAntivirus.ts
@@ -778,370 +778,370 @@ msgstr ""
 #: src/settings/sections/SyncFolder.tsx
 #: src/settings/vrPrefCopy.ts
 msgid "Off"
-msgstr ""
+msgstr "关闭"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Default grouping"
-msgstr ""
+msgstr "默认分组"
 
 #: src/settings/shortcutLabels.ts
 msgid "Toggle downloads"
-msgstr ""
+msgstr "切换下载"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Data folder"
-msgstr ""
+msgstr "数据文件夹"
 
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Mods"
-msgstr ""
+msgstr "切换到模组"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "The local port {app} reads the overlay from"
-msgstr ""
+msgstr "{app} 读取叠加层的本地端口"
 
 #: src/settings/shortcutLabels.ts
 msgid "Open the next profile"
-msgstr ""
+msgstr "打开下一个配置"
 
 #: src/settings/shortcutLabels.ts
 msgid "Enable or disable the focused mod"
-msgstr ""
+msgstr "启用或禁用当前聚焦的模组"
 
 #: src/settings/sections/Appearance.tsx
 #: src/settings/sections/Notifications.tsx
 msgid "Desktop"
-msgstr ""
+msgstr "桌面"
 
 #: src/settings/prefCopy.ts
 #: src/settings/sections/ExtraModsFolders.tsx
 msgid "Extra mods folders"
-msgstr ""
+msgstr "额外的模组文件夹"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Copy token"
-msgstr ""
+msgstr "复制令牌"
 
 #: src/settings/prefCopy.ts
 msgid "Comfortable"
-msgstr ""
+msgstr "舒适"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Scale"
-msgstr ""
+msgstr "缩放"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Sky"
-msgstr ""
+msgstr "天空"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Shared by every game"
-msgstr ""
+msgstr "所有游戏共享"
 
 #: src/settings/nexus.ts
 msgid "{source} API requests are running low"
-msgstr ""
+msgstr "{source} API 请求即将用尽"
 
 #: src/settings/shortcutLabels.ts
 msgid "Check mods and Mortar for updates, or refresh Browse"
-msgstr ""
+msgstr "检查模组和 Mortar 的更新，或刷新“浏览”"
 
 #: src/settings/sections/About.tsx
 msgid "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. Save diagnostics below zips them with personal paths removed, for a bug report."
-msgstr ""
+msgstr "Mortar 数据文件夹中的 mortar.log、上次运行的 mortar.prev.log 和 crash.log。下方的“保存诊断信息”会将它们打包为 zip 并移除个人路径，用于错误报告。"
 
 #: src/settings/SettingsPage.tsx
 msgid "Accounts"
-msgstr ""
+msgstr "账户"
 
 #: src/settings/prefCopy.ts
 msgid "Download and stage a found update without asking"
-msgstr ""
+msgstr "无需询问即可下载并暂存找到的更新"
 
 #: src/settings/sections/DataImport.tsx
 #: src/settings/sections/DataUsage.tsx
 #: src/settings/SettingsPage.tsx
 msgid "Storage"
-msgstr ""
+msgstr "存储"
 
 #: src/settings/sections/About.tsx
 msgid "Licence"
-msgstr ""
+msgstr "许可证"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "Unreachable"
-msgstr ""
+msgstr "无法访问"
 
 #: src/settings/prefCopy.ts
 msgid "Update mods before Play on new profiles"
-msgstr ""
+msgstr "在新配置上于游玩前更新模组"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "a newer copy is kept"
-msgstr ""
+msgstr "保留了较新的副本"
 
 #: src/settings/prefCopy.ts
 msgid "Manual"
-msgstr ""
+msgstr "手动"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Install reason"
-msgstr ""
+msgstr "安装原因"
 
 #: src/settings/prefCopy.ts
 msgid "History events kept"
-msgstr ""
+msgstr "保留的历史事件"
 
 #: src/settings/prefCopyGame.ts
 msgid "Exact"
-msgstr ""
+msgstr "精确"
 
 #: src/settings/prefCopy.ts
 msgid "Downloaded mods no profile uses"
-msgstr ""
+msgstr "已下载但没有配置使用的模组"
 
 #: src/settings/prefCopyGame.ts
 msgid "Keep mods in the game folder"
-msgstr ""
+msgstr "将模组保留在游戏文件夹中"
 
 #: src/settings/sections/General.tsx
 msgid "Help"
-msgstr ""
+msgstr "帮助"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Use it anyway; {name} becomes unbound"
-msgstr ""
+msgstr "仍然使用；{name} 将变为未绑定"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "Ask a {app} daemon at the socket path below."
-msgstr ""
+msgstr "询问下方套接字路径中的 {app} 守护进程。"
 
 #: src/settings/usePerProfileRelated.tsx
 msgid "Music volume"
-msgstr ""
+msgstr "音乐音量"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Grid or list for new sessions"
-msgstr ""
+msgstr "新会话使用网格或列表"
 
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "Check store files"
-msgstr ""
+msgstr "检查存储文件"
 
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Lines about every object"
-msgstr ""
+msgstr "关于每个对象的行"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Found in {path}"
-msgstr ""
+msgstr "在 {path} 中找到"
 
 #: src/settings/startupChecks.ts
 msgid "Report a bug"
-msgstr ""
+msgstr "报告错误"
 
 #: src/settings/sections/DataMods.tsx
 msgid "{size} in {path}"
-msgstr ""
+msgstr "{path} 中的 {size}"
 
 #: src/settings/prefCopy.ts
 msgid "Info"
-msgstr ""
+msgstr "信息"
 
 #: src/settings/sections/General.tsx
 msgid "Display language"
-msgstr ""
+msgstr "显示语言"
 
 #: src/settings/shortcutLabels.ts
 msgid "Open notification history"
-msgstr ""
+msgstr "打开通知历史记录"
 
 #: src/settings/sections/Downloads.tsx
 msgid "The browser extension is too old for this Mortar"
-msgstr ""
+msgstr "浏览器扩展对此 Mortar 来说过旧"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Grid card size"
-msgstr ""
+msgstr "网格卡片大小"
 
 #: src/settings/GameSettingsPage.tsx
 msgid "Console"
-msgstr ""
+msgstr "控制台"
 
 #: src/settings/prefCopy.ts
 msgid "Device name"
-msgstr ""
+msgstr "设备名称"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Pet"
-msgstr ""
+msgstr "宠物"
 
 #: src/settings/sections/DataMoveRun.ts
 msgid "Data folder moved"
-msgstr ""
+msgstr "数据文件夹已移动"
 
 #: src/settings/prefCopy.ts
 msgid "Keep downloaded archives"
-msgstr ""
+msgstr "保留已下载的压缩包"
 
 #: src/settings/prefCopyGame.ts
 msgid "Delay seconds"
-msgstr ""
+msgstr "延迟秒数"
 
 #: src/settings/prefCopy.ts
 msgid "Collapsed"
-msgstr ""
+msgstr "已折叠"
 
 #: src/settings/prefCopyModsView.ts
 msgid "How mods Mortar brought in for other mods appear in the mod list"
-msgstr ""
+msgstr "Mortar 为其他模组引入的模组在模组列表中的显示方式"
 
 #: src/settings/vrPrefCopy.ts
 msgid "{name} program"
-msgstr ""
+msgstr "{name} 程序"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Size"
-msgstr ""
+msgstr "大小"
 
 #: src/settings/usePerProfileRelated.tsx
 msgid "Show for {name}"
-msgstr ""
+msgstr "为 {name} 显示"
 
 #: src/settings/shortcutLabels.ts
 msgid "Go back"
-msgstr ""
+msgstr "返回"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Unfinished downloads and temporary files"
-msgstr ""
+msgstr "未完成的下载和临时文件"
 
 #: src/settings/prefCopyGame.ts
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Delete"
-msgstr ""
+msgstr "删除"
 
 #: src/settings/sections/Updates.tsx
 msgid "Not checked yet."
-msgstr ""
+msgstr "尚未检查。"
 
 #: src/settings/sections/SyncFolder.tsx
 msgid "Disable"
-msgstr ""
+msgstr "禁用"
 
 #: src/settings/prefCopy.ts
 msgid "Card details in Browse"
-msgstr ""
+msgstr "“浏览”中的卡片详情"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Could not copy"
-msgstr ""
+msgstr "无法复制"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Browser extension cannot reach Mortar in {app} (manifest missing)"
-msgstr ""
+msgstr "浏览器扩展无法在 {app} 中连接 Mortar（缺少清单）"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Ask me to endorse mods I keep using"
-msgstr ""
+msgstr "对我持续使用的模组提示认可"
 
 #: src/settings/SettingsPage.tsx
 msgid "Shortcuts"
-msgstr ""
+msgstr "快捷键"
 
 #: src/settings/sections/nxmHandler.tsx
 msgid "Take {source} links from {owner}?"
-msgstr ""
+msgstr "是否从 {owner} 接管 {source} 链接？"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Grid"
-msgstr ""
+msgstr "网格"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Copy CSS"
-msgstr ""
+msgstr "复制 CSS"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Browser extension cannot reach Mortar in {app} (manifest unreadable)"
-msgstr ""
+msgstr "浏览器扩展无法在 {app} 中连接 Mortar（清单无法读取）"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "{game} save backups"
-msgstr ""
+msgstr "{game} 存档备份"
 
 #: src/settings/sections/Appearance.tsx
 msgid "System"
-msgstr ""
+msgstr "系统"
 
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyModsView.ts
 msgid "Hidden"
-msgstr ""
+msgstr "已隐藏"
 
 #: src/settings/sections/Updates.tsx
 msgid "Review mod updates"
-msgstr ""
+msgstr "查看模组更新"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Download the extension"
-msgstr ""
+msgstr "下载扩展"
 
 #: src/settings/sections/ConsoleLevels.tsx
 msgid "Levels shown"
-msgstr ""
+msgstr "显示的级别"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Reset game install?"
-msgstr ""
+msgstr "重置游戏安装？"
 
 #: src/settings/shortcutLabels.ts
 msgid "Play the open profile"
-msgstr ""
+msgstr "启动当前配置"
 
 #: src/settings/prefCopy.ts
 msgid "Days a deleted profile stays restorable"
-msgstr ""
+msgstr "已删除配置可恢复的天数"
 
 #: src/settings/sections/DataHistory.tsx
 msgid "Could not trim history"
-msgstr ""
+msgstr "无法裁剪历史记录"
 
 #: src/settings/sections/NexusSSO.tsx
 #: src/settings/sections/nxmHandler.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "取消"
 
 #: src/settings/prefCopyGame.ts
 msgid "Extra folders for the sandboxed game"
-msgstr ""
+msgstr "沙盒游戏的额外文件夹"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "Custom command"
-msgstr ""
+msgstr "自定义命令"
 
 #: src/settings/sections/DataMods.tsx
 msgid "Cache cleared"
-msgstr ""
+msgstr "缓存已清除"
 
 #: src/settings/prefCopy.ts
 msgid "Parallel downloads"
-msgstr ""
+msgstr "并行下载"
 
 #: src/settings/prefCopy.ts
 msgid "The stats each Browse card shows under its summary; choose them from Browse's Show menu"
-msgstr ""
+msgstr "每张“浏览”卡片在摘要下方显示的统计数据；可从“浏览”的“显示”菜单中选择"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Choose image…"
-msgstr ""
+msgstr "选择图片…"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "By game"
-msgstr ""
+msgstr "按游戏"
 
 #: src/settings/prefCopyGame.ts
 msgid "This game's folder"
-msgstr ""
+msgstr "此游戏的文件夹"
 
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyAntivirus.ts
@@ -1149,1808 +1149,1808 @@ msgstr ""
 #: src/settings/sections/CodeEditor.tsx
 #: src/settings/sections/Downloads.tsx
 msgid "Automatic"
-msgstr ""
+msgstr "自动"
 
 #: src/settings/sections/checkDetail.ts
 msgid "settings.json is corrupt"
-msgstr ""
+msgstr "settings.json 已损坏"
 
 #: src/settings/ProtonRow.tsx
 msgid "The newest {launcher} has"
-msgstr ""
+msgstr "最新的 {launcher} 具有"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Biome"
-msgstr ""
+msgstr "生物群系"
 
 #: src/settings/GameSettingsPage.tsx
 msgid "Back to {name}"
-msgstr ""
+msgstr "返回 {name}"
 
 #: src/settings/prefCopyGame.ts
 msgid "Newest"
-msgstr ""
+msgstr "最新"
 
 #: src/settings/prefCopy.ts
 msgid "Share libraries and supporting mods"
-msgstr ""
+msgstr "分享库和辅助模组"
 
 #: src/settings/SettingsPage.tsx
 msgid "Search {game} settings"
-msgstr ""
+msgstr "搜索 {game} 设置"
 
 #: src/settings/vrPrefCopy.ts
 msgid "Start first"
-msgstr ""
+msgstr "最先启动"
 
 #: src/settings/prefCopyGame.ts
 msgid "Which version of a {source} mod's dependency to install when the mod names one"
-msgstr ""
+msgstr "当模组指定依赖项时，安装 {source} 模组依赖项的哪个版本"
 
 #: src/settings/prefCopy.ts
 msgid "Download speed limit (MB/s)"
-msgstr ""
+msgstr "下载速度限制（MB/s）"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Store index.json is readable"
-msgstr ""
+msgstr "存储 index.json 可读"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Delete the game folder, then reinstall {game} from your launcher."
-msgstr ""
+msgstr "删除游戏文件夹，然后从启动器重新安装 {game}。"
 
 #: src/settings/sections/About.tsx
 #: src/settings/sections/Updates.tsx
 msgid "Mortar"
-msgstr ""
+msgstr "Mortar"
 
 #: src/settings/shortcutLabels.ts
 msgid "Focus the next mod"
-msgstr ""
+msgstr "聚焦下一个模组"
 
 #: src/settings/prefCopy.ts
 msgid "Offer new downloads"
-msgstr ""
+msgstr "提示新的下载"
 
 #: src/settings/sections/ExtraModsFolders.tsx
 msgid "Extra mods folder"
-msgstr ""
+msgstr "额外的模组文件夹"
 
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Hidden by default"
-msgstr ""
+msgstr "默认隐藏"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Links for games Mortar does not manage open in the app that had them before."
-msgstr ""
+msgstr "Mortar 不管理的游戏链接会在之前处理它们的应用中打开。"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Get the extension"
-msgstr ""
+msgstr "获取扩展"
 
 #: src/settings/prefCopyModsView.ts
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #: src/settings/sections/Updates.tsx
 msgid "This is a development build of Mortar {version}, so it does not check for updates."
-msgstr ""
+msgstr "这是 Mortar {version} 的开发版本，因此不会检查更新。"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 #: src/settings/sections/Downloads.tsx
 msgid "Browser extension"
-msgstr ""
+msgstr "浏览器扩展"
 
 #: src/settings/loaderToast.ts
 #: src/settings/sections/LoaderRow.tsx
 msgid "Update"
-msgstr ""
+msgstr "更新"
 
 #: src/settings/sections/ModioAccount.tsx
 msgid "Remove token"
-msgstr ""
+msgstr "移除令牌"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Send other games' links to {name}"
-msgstr ""
+msgstr "将其他游戏的链接发送给 {name}"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "{count, plural, one {# file} other {# files}}"
-msgstr ""
+msgstr "{count, plural, one {# 个文件} other {# 个文件}}"
 
 #: src/settings/prefCopy.ts
 msgid "Accept connections from any network address"
-msgstr ""
+msgstr "接受来自任何网络地址的连接"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game} in {path} ({where})"
-msgstr ""
+msgstr "{path} 中的 {game}（{where}）"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "Scan every mod after extraction and before it enters Mortar's store. Applies to every game."
-msgstr ""
+msgstr "在解压后、进入 Mortar 存储前扫描每个模组。适用于所有游戏。"
 
 #: src/settings/prefCopyGame.ts
 msgid "Edit"
-msgstr ""
+msgstr "编辑"
 
 #: src/settings/prefCopy.ts
 #: src/settings/ProtonRow.tsx
 #: src/settings/sections/LoaderRow.tsx
 msgid "{name} version"
-msgstr ""
+msgstr "{name} 版本"
 
 #: src/settings/persist.ts
 msgid "Could not save that setting"
-msgstr ""
+msgstr "无法保存该设置"
 
 #: src/settings/sections/ItchAccount.tsx
 msgid "API key in your system keyring"
-msgstr ""
+msgstr "系统密钥环中的 API 密钥"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "No backups to delete"
-msgstr ""
+msgstr "没有可删除的备份"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "A portable copy keeps its data beside the program."
-msgstr ""
+msgstr "便携副本会将数据保存在程序旁边。"
 
 #: src/settings/sections/General.tsx
 msgid "Save these settings to a file, or load them on another computer."
-msgstr ""
+msgstr "将这些设置保存到文件，或在另一台电脑上加载。"
 
 #: src/settings/sections/Updates.tsx
 msgid "Include beta releases"
-msgstr ""
+msgstr "包含测试版"
 
 #: src/settings/sections/Accounts.tsx
 #: src/settings/sections/Downloads.tsx
 #: src/settings/sections/SourceConnection.tsx
 msgid "Connection"
-msgstr ""
+msgstr "连接"
 
 #: src/settings/prefCopyGame.ts
 #: src/settings/prefCopyRequirements.ts
 msgid "Ask"
-msgstr ""
+msgstr "询问"
 
 #: src/settings/sections/ExtraModsFolders.tsx
 msgid "Folders of unpacked mods, or your own build's output. Their mods install into the profile beside each folder, and again whenever their files change."
-msgstr ""
+msgstr "解压模组的文件夹，或你自己构建的输出。其模组会安装到每个文件夹旁的配置中，并在文件更改时再次安装。"
 
 #: src/settings/prefCopy.ts
 msgid "Per profile"
-msgstr ""
+msgstr "每个配置"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "All checks passed"
-msgstr ""
+msgstr "所有检查均已通过"
 
 #: src/settings/sections/General.tsx
 msgid "Export…"
-msgstr ""
+msgstr "导出…"
 
 #: src/settings/prefCopyGame.ts
 msgid "Seconds to wait between those processes"
-msgstr ""
+msgstr "这些进程之间等待的秒数"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Reset {name}"
-msgstr ""
+msgstr "重置 {name}"
 
 #: src/settings/sections/General.tsx
 msgid "This network is set to Public in {os}"
-msgstr ""
+msgstr "此网络在 {os} 中被设为“公用”"
 
 #: src/settings/prefCopy.ts
 msgid "The banner at the top of a profile"
-msgstr ""
+msgstr "配置顶部的横幅"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Sign out"
-msgstr ""
+msgstr "退出登录"
 
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "Could not check the store files"
-msgstr ""
+msgstr "无法检查存储文件"
 
 #: src/settings/prefCopy.ts
 #: src/settings/sections/Appearance.tsx
 msgid "Theme"
-msgstr ""
+msgstr "主题"
 
 #: src/settings/prefCopy.ts
 msgid "When Mortar makes a save backup before launching"
-msgstr ""
+msgstr "Mortar 在启动前何时进行存档备份"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Settings backups"
-msgstr ""
+msgstr "设置备份"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Untrack all…"
-msgstr ""
+msgstr "全部取消跟踪…"
 
 #: src/settings/prefCopy.ts
 msgid "Pause downloads while the game runs"
-msgstr ""
+msgstr "游戏运行时暂停下载"
 
 #: src/settings/SettingsShell.tsx
 msgid "Try another word, or clear the search."
-msgstr ""
+msgstr "请尝试其他词，或清除搜索。"
 
 #: src/settings/prefCopy.ts
 msgid "Automatic tries {source}'s hosts in turn when one fails or stalls; choosing one uses only that host."
-msgstr ""
+msgstr "自动会在某个主机失败或停滞时依次尝试 {source} 的主机；选择某个主机则只使用该主机。"
 
 #: src/settings/sections/About.tsx
 msgid "Open log folder"
-msgstr ""
+msgstr "打开日志文件夹"
 
 #: src/settings/SettingsPage.tsx
 msgid "Downloads"
-msgstr ""
+msgstr "下载"
 
 #: src/settings/prefCopyGame.ts
 msgid "Delete them; rolling back still restores the old version."
-msgstr ""
+msgstr "删除它们；回滚仍会恢复旧版本。"
 
 #: src/settings/sections/Updates.tsx
 msgid "Could not read this Mortar build's version: {failed}"
-msgstr ""
+msgstr "无法读取此 Mortar 构建的版本：{failed}"
 
 #: src/settings/usePerProfileRelated.tsx
 msgid "Resolution"
-msgstr ""
+msgstr "分辨率"
 
 #: src/settings/sections/Notifications.tsx
 msgid "Mod updates"
-msgstr ""
+msgstr "模组更新"
 
 #: src/settings/nexus.ts
 msgid "{remaining} of {limit} left this hour; the count resets {when}."
-msgstr ""
+msgstr "本小时还剩 {remaining}/{limit} 次；计数将在 {when} 重置。"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "clamd socket path"
-msgstr ""
+msgstr "clamd 套接字路径"
 
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "{name}: {missing} missing, {changed} changed, {extra} extra"
-msgstr ""
+msgstr "{name}：{missing} 个缺失，{changed} 个已更改，{extra} 个多余"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "Stop the game to install {name}."
-msgstr ""
+msgstr "请停止游戏以安装 {name}。"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Background preview"
-msgstr ""
+msgstr "背景预览"
 
 #: src/settings/sections/Updates.tsx
 msgid "Restarting…"
-msgstr ""
+msgstr "正在重启…"
 
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyGame.ts
 msgid "Warn"
-msgstr ""
+msgstr "警告"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Browser extension cannot reach Mortar in {app} (manifest points elsewhere)"
-msgstr ""
+msgstr "浏览器扩展无法在 {app} 中连接 Mortar（清单指向别处）"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{launcher} library {path} is not reachable: unmounted, or outside the folders Mortar's {app} may read"
-msgstr ""
+msgstr "{launcher} 库 {path} 无法访问：未挂载，或在 Mortar 的 {app} 可读取的文件夹之外"
 
 #: src/settings/sections/SourceOrder.tsx
 msgid "Search {source}"
-msgstr ""
+msgstr "搜索 {source}"
 
 #: src/settings/GameSettingsPage.tsx
 msgid "{name} profile history"
-msgstr ""
+msgstr "{name} 配置历史记录"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Values"
-msgstr ""
+msgstr "值"
 
 #: src/settings/prefCopy.ts
 msgid "Direct"
-msgstr ""
+msgstr "直接"
 
 #: src/settings/sections/General.tsx
 msgid "LAN port"
-msgstr ""
+msgstr "局域网端口"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Stop the game before moving the data folder."
-msgstr ""
+msgstr "移动数据文件夹前请停止游戏。"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Earthy green"
-msgstr ""
+msgstr "土绿色"
 
 #: src/settings/prefCopy.ts
 msgid "Show hidden mods"
-msgstr ""
+msgstr "显示隐藏的模组"
 
 #: src/settings/prefCopy.ts
 msgid "Full"
-msgstr ""
+msgstr "完整"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Cache"
-msgstr ""
+msgstr "缓存"
 
 #: src/settings/prefCopy.ts
 msgid "Browse hides mods their site marks as adult unless this is on. Installed mods are never hidden."
-msgstr ""
+msgstr "除非开启此项，“浏览”会隐藏其站点标记为成人的模组。已安装的模组永远不会被隐藏。"
 
 #: src/settings/sections/Downloads.tsx
 msgid "It marks {source} pages with what your profile already has and sends Mod Manager Download links to Mortar."
-msgstr ""
+msgstr "它会用你的配置已有的内容标记 {source} 页面，并将“模组管理器下载”链接发送给 Mortar。"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "{name} {version}"
-msgstr ""
+msgstr "{name} {version}"
 
 #: src/settings/prefCopy.ts
 msgid "How this Mortar appears to nearby installations"
-msgstr ""
+msgstr "此 Mortar 在附近安装中的显示方式"
 
 #: src/settings/prefCopy.ts
 msgid "Show {loader}'s own window on a direct launch"
-msgstr ""
+msgstr "直接启动时显示 {loader} 自己的窗口"
 
 #: src/settings/prefCopy.ts
 msgid "Cosmetic overlaps on the Problems tab"
-msgstr ""
+msgstr "“问题”标签页中的外观重叠"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Signed out of {source}"
-msgstr ""
+msgstr "已退出 {source}"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Lavender"
-msgstr ""
+msgstr "薰衣草色"
 
 #: src/settings/prefCopy.ts
 msgid "Start minimised to tray"
-msgstr ""
+msgstr "启动时最小化到托盘"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Show live game info in {app}. Changes apply the next time you press Play."
-msgstr ""
+msgstr "在 {app} 中显示实时游戏信息。更改将在下次按“开始游戏”时生效。"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Gamescope session: {launcher} starts {app} games here, so a direct launch from Mortar may not show a window"
-msgstr ""
+msgstr "Gamescope 会话：{launcher} 在此启动 {app} 游戏，因此从 Mortar 直接启动可能不显示窗口"
 
 #: src/settings/updates.ts
 msgid "Could not check for updates"
-msgstr ""
+msgstr "无法检查更新"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Rose"
-msgstr ""
+msgstr "玫瑰"
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "{names} took over mod links"
-msgstr ""
+msgstr "{names} 接管了模组链接"
 
 #: src/settings/ScopeSwitch.tsx
 msgid "All {game} profiles"
-msgstr ""
+msgstr "所有 {game} 配置"
 
 #: src/settings/prefCopy.ts
 msgid "Skip the installer wizard when saved choices still fit"
-msgstr ""
+msgstr "当保存的选择仍适用时跳过安装向导"
 
 #: src/settings/sections/Appearance.tsx
 msgid "This image is {size}, which costs memory and GPU while Mortar is open. The same picture or animation saved as WebP is often a tenth of the size."
-msgstr ""
+msgstr "此图片为 {size}，在 Mortar 打开时会占用内存和 GPU。同一图片或动画保存为 WebP 通常只有十分之一大小。"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game} in {path}"
-msgstr ""
+msgstr "{path} 中的 {game}"
 
 #: src/settings/sections/About.tsx
 msgid "Libraries, icons and artwork built into Mortar, with their licences."
-msgstr ""
+msgstr "Mortar 内置的库、图标和艺术作品及其许可证。"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "{count, plural, one {# {game} mod tracked on {source}} other {# {game} mods tracked on {source}}}"
-msgstr ""
+msgstr "{count, plural, one {在 {source} 上跟踪了 # 个 {game} 模组} other {在 {source} 上跟踪了 # 个 {game} 模组}}"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Portable copy: data is kept in {portableDir}"
-msgstr ""
+msgstr "便携副本：数据保存在 {portableDir}"
 
 #: src/settings/sections/General.tsx
 msgid "Players translate Mortar on {app}, and any language can be added there."
-msgstr ""
+msgstr "玩家在 {app} 上翻译 Mortar，可在那里添加任何语言。"
 
 #: src/settings/PrefRow.tsx
 msgid "Every profile of this game shares this one."
-msgstr ""
+msgstr "此游戏的每个配置都共享此项。"
 
 #: src/settings/sections/SourceOrder.tsx
 msgid "When a mod is on several sites, its card installs from the first one here. Browse leaves out a source that is off."
-msgstr ""
+msgstr "当模组存在于多个站点时，其卡片会从此处的第一个站点安装。“浏览”会排除已关闭的来源。"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Crew"
-msgstr ""
+msgstr "船员"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "{size} saved by sharing files"
-msgstr ""
+msgstr "通过共享文件节省了 {size}"
 
 #: src/settings/sections/Updates.tsx
 msgid "What is new in {version}"
-msgstr ""
+msgstr "{version} 的新内容"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "{source} mod {id}"
-msgstr ""
+msgstr "{source} 模组 {id}"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Background"
-msgstr ""
+msgstr "背景"
 
 #: src/settings/NexusMeter.tsx
 #: src/settings/sections/SourceConnection.tsx
 msgid "Request counts appear after Mortar talks to {source}."
-msgstr ""
+msgstr "请求计数会在 Mortar 与 {source} 通信后显示。"
 
 #: src/settings/sections/ExtraModsFolders.tsx
 msgid "Profile {path} installs into"
-msgstr ""
+msgstr "配置安装到 {path}"
 
 #: src/settings/prefCopy.ts
 msgid "{source} download host"
-msgstr ""
+msgstr "{source} 下载主机"
 
 #: src/settings/prefCopy.ts
 #: src/settings/sections/Downloads.tsx
 msgid "Download folder"
-msgstr ""
+msgstr "下载文件夹"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "{remaining} of {limit} requests left"
-msgstr ""
+msgstr "还剩 {remaining}/{limit} 次请求"
 
 #: src/settings/startupChecks.ts
 msgid "Mortar closed unexpectedly last time"
-msgstr ""
+msgstr "Mortar 上次意外关闭"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Stream overlay"
-msgstr ""
+msgstr "直播叠加层"
 
 #: src/settings/shortcutLabels.ts
 msgid "Remove the focused mod"
-msgstr ""
+msgstr "移除当前聚焦的模组"
 
 #: src/settings/prefCopy.ts
 msgid "Logs of past runs stored per profile"
-msgstr ""
+msgstr "按配置存储的过去运行日志"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Backup location"
-msgstr ""
+msgstr "备份位置"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Day"
-msgstr ""
+msgstr "天"
 
 #: src/settings/prefCopy.ts
 msgid "Allow"
-msgstr ""
+msgstr "允许"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "{game} was not found. Browse to its folder."
-msgstr ""
+msgstr "未找到 {game}。请浏览到其文件夹。"
 
 #: src/settings/prefCopy.ts
 msgid "Scheduled save backups"
-msgstr ""
+msgstr "计划存档备份"
 
 #: src/settings/ScopeSwitch.tsx
 msgid "This profile: {profile}"
-msgstr ""
+msgstr "此配置：{profile}"
 
 #: src/settings/sections/General.tsx
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Show again"
-msgstr ""
+msgstr "再次显示"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Farming skill"
-msgstr ""
+msgstr "耕种技能"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{app}: Desktop Mode launches games from Mortar"
-msgstr ""
+msgstr "{app}：桌面模式从 Mortar 启动游戏"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Cached {source} mod details"
-msgstr ""
+msgstr "缓存的 {source} 模组详情"
 
 #: src/settings/sections/Downloads.tsx
 msgid "download the signed add-on"
-msgstr ""
+msgstr "下载已签名的附加组件"
 
 #: src/settings/prefCopy.ts
 msgid "Conflict scan depth"
-msgstr ""
+msgstr "冲突扫描深度"
 
 #: src/settings/sections/Updates.tsx
 msgid "No release is published yet."
-msgstr ""
+msgstr "尚未发布任何版本。"
 
 #: src/settings/prefCopyRequirements.ts
 msgid "When you enable a mod, also enable its required mods already in the profile"
-msgstr ""
+msgstr "启用模组时，同时启用配置中已有的其必需模组"
 
 #: src/settings/prefCopyGame.ts
 msgid "What happens to files the new version of a mod leaves out"
-msgstr ""
+msgstr "模组新版本省略的文件如何处理"
 
 #: src/settings/SettingsShell.tsx
 msgid "No settings match"
-msgstr ""
+msgstr "没有匹配的设置"
 
 #: src/settings/shortcutLabels.ts
 msgid "Open the command palette"
-msgstr ""
+msgstr "打开命令面板"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Image"
-msgstr ""
+msgstr "图片"
 
 #: src/settings/prefCopy.ts
 msgid "Trace"
-msgstr ""
+msgstr "跟踪"
 
 #: src/settings/sections/ItchAccount.tsx
 msgid "{source} rejected your API key"
-msgstr ""
+msgstr "{source} 拒绝了你的 API 密钥"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "{count, plural, one {Untracked # mod} other {Untracked # mods}}"
-msgstr ""
+msgstr "{count, plural, one {已取消跟踪 # 个模组} other {已取消跟踪 # 个模组}}"
 
 #: src/settings/prefCopy.ts
 msgid "Absolute"
-msgstr ""
+msgstr "绝对"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "Enter 1 or more"
-msgstr ""
+msgstr "请输入 1 或更大"
 
 #: src/settings/sections/FolderListRow.tsx
 msgid "Remove {name}"
-msgstr ""
+msgstr "移除 {name}"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Mortar {version} (this command {otherVersion})"
-msgstr ""
+msgstr "Mortar {version}（此命令为 {otherVersion}）"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "{os}' antivirus through AMSI; clamd on {otherOs} when it is running."
-msgstr ""
+msgstr "通过 AMSI 使用 {os} 的杀毒软件；在 {otherOs} 上运行时使用 clamd。"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Reset install"
-msgstr ""
+msgstr "重置安装"
 
 #: src/settings/prefCopy.ts
 msgid "Honour OS"
-msgstr ""
+msgstr "遵循操作系统"
 
 #: src/settings/prefCopy.ts
 msgid "Relative"
-msgstr ""
+msgstr "相对"
 
 #: src/settings/shortcutLabels.ts
 msgid "Rename the open profile"
-msgstr ""
+msgstr "重命名当前打开的配置"
 
 #: src/settings/sections/Notifications.tsx
 msgid "In Mortar"
-msgstr ""
+msgstr "在 Mortar 中"
 
 #: src/settings/GameSettingsPage.tsx
 msgid "{name} settings"
-msgstr ""
+msgstr "{name} 设置"
 
 #: src/settings/prefCopy.ts
 msgid "When you press Play"
-msgstr ""
+msgstr "按“开始游戏”时"
 
 #: src/settings/prefCopy.ts
 msgid "Console level"
-msgstr ""
+msgstr "控制台级别"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "All values"
-msgstr ""
+msgstr "所有值"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Port"
-msgstr ""
+msgstr "端口"
 
 #: src/settings/prefCopy.ts
 msgid "Skip image overlap analysis"
-msgstr ""
+msgstr "跳过图像重叠分析"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Token regenerated"
-msgstr ""
+msgstr "令牌已重新生成"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Read from the game's install."
-msgstr ""
+msgstr "从游戏安装中读取。"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Start the game to see values"
-msgstr ""
+msgstr "启动游戏以查看数值"
 
 #: src/settings/sections/DataImport.tsx
 #: src/settings/SettingsPage.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "通知"
 
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "{checked}. {count, plural, one {# could not be read.} other {# could not be read.}}"
-msgstr ""
+msgstr "{checked}。{count, plural, one {# 个无法读取。} other {# 个无法读取。}}"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Stamina"
-msgstr ""
+msgstr "体力"
 
 #: src/settings/sections/DataMove.tsx
 msgid "There is not enough free space at the destination."
-msgstr ""
+msgstr "目标位置没有足够的可用空间。"
 
 #: src/settings/store.ts
 msgid "Mortar started with default settings. The damaged file was kept at {path}."
-msgstr ""
+msgstr "Mortar 已使用默认设置启动。损坏的文件保留在 {path}。"
 
 #: src/settings/SettingsPage.tsx
 msgid "Back"
-msgstr ""
+msgstr "返回"
 
 #: src/settings/prefCopyGame.ts
 msgid "Install the newest version; the mod's version is a minimum."
-msgstr ""
+msgstr "安装最新版本；模组的版本是最低要求。"
 
 #: src/settings/prefCopy.ts
 msgid "Modified outside Mortar"
-msgstr ""
+msgstr "在 Mortar 之外修改"
 
 #: src/settings/sections/DataImport.tsx
 msgid "Nothing would change."
-msgstr ""
+msgstr "不会有任何更改。"
 
 #: src/settings/prefCopyGraphics.ts
 msgid "Applies after Mortar restarts."
-msgstr ""
+msgstr "在 Mortar 重启后应用。"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Premium account"
-msgstr ""
+msgstr "高级账户"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Move…"
-msgstr ""
+msgstr "移动…"
 
 #: src/settings/prefCopy.ts
 msgid "Harmless conflicts"
-msgstr ""
+msgstr "无害冲突"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Open recently deleted"
-msgstr ""
+msgstr "打开最近删除"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Moon"
-msgstr ""
+msgstr "月亮"
 
 #: src/settings/sections/ItchAccount.tsx
 msgid "API key"
-msgstr ""
+msgstr "API 密钥"
 
 #: src/settings/prefCopy.ts
 msgid "Share FOMOD choices"
-msgstr ""
+msgstr "分享 FOMOD 选项"
 
 #: src/settings/prefCopyGame.ts
 msgid "Delete the caches once after the mod set changes; the game rebuilds them."
-msgstr ""
+msgstr "模组集更改后删除一次缓存；游戏会重建它们。"
 
 #: src/settings/sections/CodeEditor.tsx
 msgid "Choose a code editor"
-msgstr ""
+msgstr "选择代码编辑器"
 
 #: src/settings/sections/NexusSSO.tsx
 msgid "Sign in to {source}"
-msgstr ""
+msgstr "登录 {source}"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Chosen by you"
-msgstr ""
+msgstr "由你选择"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Days left"
-msgstr ""
+msgstr "剩余天数"
 
 #: src/settings/sections/Downloads.tsx
 msgid "{name} ({game})"
-msgstr ""
+msgstr "{name}（{game}）"
 
 #: src/settings/NexusMeter.tsx
 msgid "Daily count resets {when}"
-msgstr ""
+msgstr "每日计数将在 {when} 重置"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game}: {app} {launcher} cannot see the library that holds its {otherApp} prefix"
-msgstr ""
+msgstr "{game}：{app} {launcher} 看不到包含其 {otherApp} 前缀的库"
 
 #: src/settings/sections/Appearance.tsx
 msgid "App font"
-msgstr ""
+msgstr "应用字体"
 
 #: src/settings/sections/DataMods.tsx
 msgid "Clear cache"
-msgstr ""
+msgstr "清除缓存"
 
 #: src/settings/sections/Downloads.tsx
 msgid "{owner} opens these links now."
-msgstr ""
+msgstr "{owner} 现在会打开这些链接。"
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "{name} now opens {source} \"Install\" links."
-msgstr ""
+msgstr "{name} 现在会打开 {source} 的“安装”链接。"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Clicking these links on {source} starts the download in Mortar."
-msgstr ""
+msgstr "在 {source} 上点击这些链接会在 Mortar 中开始下载。"
 
 #: src/settings/GameSettingsPage.tsx
 #: src/settings/sections/Updates.tsx
 msgid "Mods"
-msgstr ""
+msgstr "模组"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Free account"
-msgstr ""
+msgstr "免费账户"
 
 #: src/settings/prefCopy.ts
 msgid "Auto-retry failed downloads"
-msgstr ""
+msgstr "自动重试失败的下载"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Stopped at the API limit; {remaining} left"
-msgstr ""
+msgstr "已达到 API 限制而停止；还剩 {remaining} 次"
 
 #: src/settings/sections/About.tsx
 msgid "Source code"
-msgstr ""
+msgstr "源代码"
 
 #: src/settings/sections/Appearance.tsx
 msgid "color"
-msgstr ""
+msgstr "颜色"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Compatibility tool"
-msgstr ""
+msgstr "兼容性工具"
 
 #: src/settings/sections/NexusSSO.tsx
 msgid "Connecting…"
-msgstr ""
+msgstr "正在连接…"
 
 #: src/settings/prefCopy.ts
 msgid "Console log cap"
-msgstr ""
+msgstr "控制台日志上限"
 
 #: src/settings/prefCopy.ts
 msgid "Pick up where you left off."
-msgstr ""
+msgstr "从上次中断处继续。"
 
 #: src/settings/prefCopyGame.ts
 msgid "Do not sync this game's profiles."
-msgstr ""
+msgstr "不同步此游戏的配置。"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Other cached data"
-msgstr ""
+msgstr "其他缓存数据"
 
 #: src/settings/usePerProfileRelated.tsx
 msgid "UI scale"
-msgstr ""
+msgstr "界面缩放"
 
 #: src/settings/prefCopy.ts
 msgid "Auto-accept from paired computers"
-msgstr ""
+msgstr "自动接受来自已配对电脑的请求"
 
 #: src/settings/prefCopy.ts
 msgid "Default for a profile you just created"
-msgstr ""
+msgstr "刚创建的配置的默认值"
 
 #: src/settings/sections/ItchAccount.tsx
 msgid "Kept in your system keyring. Create one on {source} under Settings, API keys."
-msgstr ""
+msgstr "保存在系统密钥环中。请在 {source} 的“设置 › API 密钥”中创建。"
 
 #: src/settings/prefCopyRequirements.ts
 msgid "Download them"
-msgstr ""
+msgstr "下载它们"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "Installed and up to date"
-msgstr ""
+msgstr "已安装且为最新"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Already used by {name}"
-msgstr ""
+msgstr "已被 {name} 使用"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Regenerate token"
-msgstr ""
+msgstr "重新生成令牌"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Nested"
-msgstr ""
+msgstr "嵌套"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Large"
-msgstr ""
+msgstr "大"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Category"
-msgstr ""
+msgstr "分类"
 
 #: src/settings/prefCopyGame.ts
 msgid "Clear game caches"
-msgstr ""
+msgstr "清除游戏缓存"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Warm and bold"
-msgstr ""
+msgstr "温暖而醒目"
 
 #: src/settings/sections/DataImport.tsx
 msgid "{count, plural, one {Import # change} other {Import # changes}}"
-msgstr ""
+msgstr "{count, plural, one {导入 # 项更改} other {导入 # 项更改}}"
 
 #: src/settings/sections/ProfileScopeSections.tsx
 msgid "Show the console window"
-msgstr ""
+msgstr "显示控制台窗口"
 
 #: src/settings/prefCopy.ts
 msgid "Badge checks for other profiles"
-msgstr ""
+msgstr "为其他配置显示徽章检查"
 
 #: src/settings/prefCopyGame.ts
 msgid "Folders the sandboxed game may also write, separated by a colon. Each must be an absolute path to a folder that exists, and not your home folder itself."
-msgstr ""
+msgstr "沙盒游戏还可写入的文件夹，用冒号分隔。每个都必须是存在文件夹的绝对路径，且不能是你的主文件夹本身。"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Browser extension can reach Mortar in {app}"
-msgstr ""
+msgstr "浏览器扩展可以在 {app} 中连接 Mortar"
 
 #: src/settings/shortcutLabels.ts
 msgid "Export or share the open profile"
-msgstr ""
+msgstr "导出或分享当前打开的配置"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "{count, plural, one {Untrack all # tracked {game} mod} other {Untrack all # tracked {game} mods}} on {source}? {source} has no undo for this."
-msgstr ""
+msgstr "是否在 {source} 上取消跟踪全部 {count, plural, one {# 个已跟踪的 {game} 模组} other {# 个已跟踪的 {game} 模组}}？{source} 无法撤销此操作。"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Untrack on {source}"
-msgstr ""
+msgstr "在 {source} 上取消跟踪"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "Backups to keep per save"
-msgstr ""
+msgstr "每个存档保留的备份数"
 
 #: src/settings/sections/Updates.tsx
 msgid "Update ready: applies when you close Mortar."
-msgstr ""
+msgstr "更新已就绪：关闭 Mortar 后应用。"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Default mods view"
-msgstr ""
+msgstr "默认模组视图"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "Reachable"
-msgstr ""
+msgstr "可访问"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Colour"
-msgstr ""
+msgstr "颜色"
 
 #: src/settings/prefCopyGame.ts
 msgid "What Mortar does about game settings that mods need enabled in the game's options file"
-msgstr ""
+msgstr "Mortar 如何处理模组需要在游戏选项文件中启用的游戏设置"
 
 #: src/settings/sections/General.tsx
 msgid "Enable Share profiles on the local network first."
-msgstr ""
+msgstr "请先启用局域网内的“分享配置”。"
 
 #: src/settings/sections/SyncFolder.tsx
 msgid "Sync folder"
-msgstr ""
+msgstr "同步文件夹"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Not found"
-msgstr ""
+msgstr "未找到"
 
 #: src/settings/sections/Appearance.tsx
 #: src/settings/sections/GameSettings.tsx
 msgid "Use default"
-msgstr ""
+msgstr "使用默认"
 
 #: src/settings/sections/ALVRProgram.tsx
 msgid "Choose the {alvr} dashboard"
-msgstr ""
+msgstr "选择 {alvr} 仪表板"
 
 #: src/settings/sections/Updates.tsx
 msgid "Open game settings"
-msgstr ""
+msgstr "打开游戏设置"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Handle {name} links"
-msgstr ""
+msgstr "处理 {name} 链接"
 
 #: src/settings/prefCopy.ts
 msgid "Check for mod updates when Mortar starts"
-msgstr ""
+msgstr "Mortar 启动时检查模组更新"
 
 #: src/settings/sections/About.tsx
 msgid "Restart and record"
-msgstr ""
+msgstr "重启并记录"
 
 #: src/settings/sections/Appearance.tsx
 msgid "{name}, ascending"
-msgstr ""
+msgstr "{name}，升序"
 
 #: src/settings/prefCopy.ts
 msgid "Game select"
-msgstr ""
+msgstr "游戏选择"
 
 #: src/settings/prefCopy.ts
 msgid "Days to keep downloaded mods that no profile uses. 0 keeps them forever."
-msgstr ""
+msgstr "保留没有配置使用的已下载模组的天数。0 表示永久保留。"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Run again"
-msgstr ""
+msgstr "再次运行"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Remove {loader} from {launcher}'s launch options"
-msgstr ""
+msgstr "从 {launcher} 的启动选项中移除 {loader}"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "resets {when}"
-msgstr ""
+msgstr "于 {when} 重置"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Group"
-msgstr ""
+msgstr "分组"
 
 #: src/settings/sections/About.tsx
 msgid "Version {version}"
-msgstr ""
+msgstr "版本 {version}"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Credits"
-msgstr ""
+msgstr "致谢"
 
 #: src/settings/prefCopy.ts
 msgid "Skip the intro"
-msgstr ""
+msgstr "跳过开场"
 
 #: src/settings/prefCopy.ts
 msgid "Run logs kept"
-msgstr ""
+msgstr "保留的运行日志"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Time"
-msgstr ""
+msgstr "时间"
 
 #: src/settings/sections/General.tsx
 msgid "Mortar follows the system language unless you pick one"
-msgstr ""
+msgstr "除非你选择语言，否则 Mortar 跟随系统语言"
 
 #: src/settings/sections/DataImport.tsx
 msgid "{name}: {from} to {to}"
-msgstr ""
+msgstr "{name}：{from} 到 {to}"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Mod list"
-msgstr ""
+msgstr "模组列表"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "{source} download links"
-msgstr ""
+msgstr "{source} 下载链接"
 
 #: src/settings/vrPrefCopy.ts
 msgid "The {alvr} dashboard program, started before a game set to start it first"
-msgstr ""
+msgstr "{alvr} 仪表板程序，在设为最先启动的游戏之前启动"
 
 #: src/settings/sections/Notifications.tsx
 msgid "A download fails"
-msgstr ""
+msgstr "下载失败时"
 
 #: src/settings/sections/FolderListRow.tsx
 msgid "Add folder…"
-msgstr ""
+msgstr "添加文件夹…"
 
 #: src/settings/sections/Updates.tsx
 msgid "Download and install"
-msgstr ""
+msgstr "下载并安装"
 
 #: src/settings/prefCopy.ts
 msgid "Check interval"
-msgstr ""
+msgstr "检查间隔"
 
 #: src/settings/prefCopy.ts
 msgid "Default launch"
-msgstr ""
+msgstr "默认启动"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Profiles are readable"
-msgstr ""
+msgstr "配置可读"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Recently deleted"
-msgstr ""
+msgstr "最近删除"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Game"
-msgstr ""
+msgstr "游戏"
 
 #: src/settings/prefCopy.ts
 msgid "Minutes between background update checks"
-msgstr ""
+msgstr "后台更新检查之间的分钟数"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Could not run diagnostics"
-msgstr ""
+msgstr "无法运行诊断"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Bosses defeated"
-msgstr ""
+msgstr "击败的首领数"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Reduce motion keeps ripples off. Set Reduce motion to Never to use them."
-msgstr ""
+msgstr "“减少动态效果”会关闭波纹。将“减少动态效果”设为“从不”即可使用它们。"
 
 #: src/settings/prefCopyGame.ts
 msgid "Game settings file"
-msgstr ""
+msgstr "游戏设置文件"
 
 #: src/settings/sections/NexusSSO.tsx
 msgid "Approve Mortar in your browser…"
-msgstr ""
+msgstr "在浏览器中批准 Mortar…"
 
 #: src/settings/prefCopy.ts
 msgid "Spacing of buttons and lists"
-msgstr ""
+msgstr "按钮和列表的间距"
 
 #: src/settings/SharedOnProfile.tsx
 msgid "Every profile of this game shares these. Switch to all profiles to change them."
-msgstr ""
+msgstr "此游戏的每个配置都共享这些。切换到所有配置以更改它们。"
 
 #: src/settings/updates.ts
 msgid "Check your connection and try again."
-msgstr ""
+msgstr "请检查你的连接后重试。"
 
 #: src/settings/prefCopy.ts
 msgid "How many backups to keep of each kind: before Play, before a mod update, before a restore. Pinned backups are never deleted."
-msgstr ""
+msgstr "每种类型保留多少备份：游玩前、模组更新前、恢复前。固定的备份永远不会被删除。"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Weather"
-msgstr ""
+msgstr "天气"
 
 #: src/settings/prefCopyGraphics.ts
 msgid "Try this if the window stays blank or white."
-msgstr ""
+msgstr "如果窗口保持空白或白色，请尝试此操作。"
 
 #: src/settings/usePerProfileRelated.tsx
 msgid "{name} is set per profile"
-msgstr ""
+msgstr "{name} 按配置设置"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Free space at destination: {size}"
-msgstr ""
+msgstr "目标位置可用空间：{size}"
 
 #: src/settings/sections/ScheduledStatus.tsx
 msgid "next in {next} h"
-msgstr ""
+msgstr "下次在 {next} 小时后"
 
 #: src/settings/sections/checkDetail.ts
 msgid "settings.json is unreadable or missing"
-msgstr ""
+msgstr "settings.json 无法读取或缺失"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Data to copy: {size}"
-msgstr ""
+msgstr "要复制的数据：{size}"
 
 #: src/settings/sections/HiddenMods.tsx
 msgid "Everything by {a}"
-msgstr ""
+msgstr "{a} 的所有内容"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "{name} is not installed"
-msgstr ""
+msgstr "{name} 未安装"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "{launcher} build"
-msgstr ""
+msgstr "{launcher} 构建"
 
 #: src/settings/sections/Updates.tsx
 msgid "Restart now"
-msgstr ""
+msgstr "立即重启"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Not set"
-msgstr ""
+msgstr "未设置"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Premium downloads come from this {source} server when it offers the file."
-msgstr ""
+msgstr "当此 {source} 服务器提供文件时，高级下载会从其进行。"
 
 #: src/settings/prefCopy.ts
 msgid "Mortar minimises while you play and comes back when the game exits."
-msgstr ""
+msgstr "Mortar 会在你游玩时最小化，并在游戏退出后恢复。"
 
 #: src/settings/sections/DataHistory.tsx
 msgid "No changes to trim"
-msgstr ""
+msgstr "没有可裁剪的更改"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Date"
-msgstr ""
+msgstr "日期"
 
 #: src/settings/sections/Downloads.tsx
 msgid "The browser extension is too new for this Mortar"
-msgstr ""
+msgstr "浏览器扩展对此 Mortar 来说过新"
 
 #: src/settings/sections/DismissedFolders.tsx
 msgid "Could not offer the folder again"
-msgstr ""
+msgstr "无法再次提示该文件夹"
 
 #: src/settings/prefCopy.ts
 msgid "Problems and updates"
-msgstr ""
+msgstr "问题和更新"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Store"
-msgstr ""
+msgstr "存储"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Download"
-msgstr ""
+msgstr "下载"
 
 #: src/settings/shortcutLabels.ts
 msgid "Create a new profile"
-msgstr ""
+msgstr "创建新配置"
 
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Load order"
-msgstr ""
+msgstr "切换到加载顺序"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Nothing to clean up."
-msgstr ""
+msgstr "没有可清理的内容。"
 
 #: src/settings/sections/checkDetail.ts
 msgid "control.json is current"
-msgstr ""
+msgstr "control.json 是最新的"
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Take back"
-msgstr ""
+msgstr "收回"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Friend"
-msgstr ""
+msgstr "朋友"
 
 #: src/settings/prefCopy.ts
 msgid "How often background checks report new mod updates. The In Mortar and desktop switches choose where."
-msgstr ""
+msgstr "后台检查报告新模组更新的频率。“在 Mortar 中”和桌面开关决定报告位置。"
 
 #: src/settings/sections/Storage.tsx
 msgid "Retention"
-msgstr ""
+msgstr "保留"
 
 #: src/settings/sections/ScheduledStatus.tsx
 msgid "next one is due"
-msgstr ""
+msgstr "下一次即将到期"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "Install {name} {version}?"
-msgstr ""
+msgstr "安装 {name} {version}？"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Hide token"
-msgstr ""
+msgstr "隐藏令牌"
 
 #: src/settings/nexus.ts
 msgid "{remaining} of {limit} left today; the count resets {when}."
-msgstr ""
+msgstr "今天还剩 {remaining}/{limit} 次；计数将在 {when} 重置。"
 
 #: src/settings/sections/Launchers.tsx
 #: src/settings/SettingsPage.tsx
 msgid "Launchers"
-msgstr ""
+msgstr "启动器"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Implicit mods"
-msgstr ""
+msgstr "隐式模组"
 
 #: src/settings/sections/General.tsx
 msgid "Let the operating system choose a free port"
-msgstr ""
+msgstr "让操作系统选择空闲端口"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Damaged profile.json: {path}"
-msgstr ""
+msgstr "profile.json 已损坏：{path}"
 
 #: src/settings/prefCopy.ts
 msgid "Reduce motion"
-msgstr ""
+msgstr "减少动态效果"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Untrack the {game} mods none of your profiles use, out of {trackedCount} tracked? {source} has no undo for this."
-msgstr ""
+msgstr "是否在 {trackedCount} 个已跟踪模组中取消跟踪没有配置使用的 {game} 模组？{source} 无法撤销此操作。"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Show the author line on grid cards"
-msgstr ""
+msgstr "在网格卡片上显示作者行"
 
 #: src/settings/prefCopyGame.ts
 msgid "Sandbox the game"
-msgstr ""
+msgstr "沙盒化游戏"
 
 #: src/settings/sections/TokenAccount.tsx
 msgid "Test"
-msgstr ""
+msgstr "测试"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "Keep the newest backups of each save and delete the rest. Pinned backups are never deleted."
-msgstr ""
+msgstr "保留每个存档的最新备份并删除其余备份。固定的备份永远不会被删除。"
 
 #: src/settings/sections/WatchFolders.tsx
 msgid "New archives in these folders are offered for install. Subfolders are not watched. For a mod's build output, use the game's Extra mods folders."
-msgstr ""
+msgstr "这些文件夹中的新压缩包会提示安装。不会监视子文件夹。对于模组的构建输出，请使用游戏的“额外模组文件夹”。"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "An install is already running."
-msgstr ""
+msgstr "已有一个安装正在运行。"
 
 #: src/settings/sections/Notifications.tsx
 msgid "Enable Check for mod updates when Mortar starts, in Updates, first."
-msgstr ""
+msgstr "请先在“更新”中启用“Mortar 启动时检查模组更新”。"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Money"
-msgstr ""
+msgstr "金钱"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Regenerate token?"
-msgstr ""
+msgstr "重新生成令牌？"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Could not untrack mods"
-msgstr ""
+msgstr "无法取消跟踪模组"
 
 #: src/settings/sections/ScheduledStatus.tsx
 msgid "Last scheduled backup {when}"
-msgstr ""
+msgstr "上次计划备份 {when}"
 
 #: src/settings/sections/Accounts.tsx
 msgid "Mortar cannot reach a keyring, so your account keys are stored unencrypted on this computer."
-msgstr ""
+msgstr "Mortar 无法访问密钥环，因此你的账户密钥会以未加密形式存储在此电脑上。"
 
 #: src/settings/prefCopy.ts
 msgid "What Mortar shows when it opens."
-msgstr ""
+msgstr "Mortar 打开时显示的内容。"
 
 #: src/settings/sections/checkDetail.ts
 msgid "control.json is stale"
-msgstr ""
+msgstr "control.json 已过期"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game}: {app} {launcher} can reach the {otherApp} prefix"
-msgstr ""
+msgstr "{game}：{app} {launcher} 可以访问 {otherApp} 前缀"
 
 #: src/settings/shortcutLabels.ts
 msgid "Open the import dialog"
-msgstr ""
+msgstr "打开导入对话框"
 
 #: src/settings/prefCopy.ts
 msgid "Empty uses the default."
-msgstr ""
+msgstr "留空则使用默认值。"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Press a key"
-msgstr ""
+msgstr "请按键"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Could not update {launcher}'s launch options"
-msgstr ""
+msgstr "无法更新 {launcher} 的启动选项"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Reset"
-msgstr ""
+msgstr "重置"
 
 #: src/settings/sections/checkDetail.ts
 msgid "No settings temporary or copy files"
-msgstr ""
+msgstr "没有设置临时文件或副本文件"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "its address could not be looked up"
-msgstr ""
+msgstr "无法查找其地址"
 
 #: src/settings/shortcutLabels.ts
 msgid "Play the game without mods"
-msgstr ""
+msgstr "不使用模组游玩游戏"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Signed in to {source}"
-msgstr ""
+msgstr "已登录 {source}"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Reset…"
-msgstr ""
+msgstr "重置…"
 
 #: src/settings/sections/Updates.tsx
 msgid "A game's mod loader version and its update notice are in that game's settings."
-msgstr ""
+msgstr "游戏的模组加载器版本及其更新通知在该游戏的设置中。"
 
 #: src/settings/prefCopy.ts
 #: src/settings/sections/ProfileScopeSections.tsx
 msgid "Debug"
-msgstr ""
+msgstr "调试"
 
 #: src/settings/prefCopyModsView.ts
 msgid "On a wide window, each config setting's control sits mid-row, nearer its name"
-msgstr ""
+msgstr "在宽窗口中，每项配置设置的控件位于行中部，靠近其名称"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Default"
-msgstr ""
+msgstr "默认"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Moss"
-msgstr ""
+msgstr "苔藓"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Combat skill"
-msgstr ""
+msgstr "战斗技能"
 
 #: src/settings/sections/General.tsx
 msgid "Tips will show again"
-msgstr ""
+msgstr "提示将再次显示"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Untrack every mod you track on {source}"
-msgstr ""
+msgstr "取消跟踪你在 {source} 上跟踪的每个模组"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Grant access"
-msgstr ""
+msgstr "授予访问权限"
 
 #: src/settings/sections/CodeEditor.tsx
 msgid "Default app for the project"
-msgstr ""
+msgstr "项目的默认应用"
 
 #: src/settings/prefCopy.ts
 msgid "Install Mortar updates automatically"
-msgstr ""
+msgstr "自动安装 Mortar 更新"
 
 #: src/settings/prefCopy.ts
 msgid "Share notes"
-msgstr ""
+msgstr "分享备注"
 
 #: src/settings/prefCopyGraphics.ts
 msgid "Smoother scrolling"
-msgstr ""
+msgstr "更流畅的滚动"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Data folder has no free space"
-msgstr ""
+msgstr "数据文件夹没有可用空间"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Freed {size}"
-msgstr ""
+msgstr "已释放 {size}"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "Free accounts click Download on {source} for each file; Mortar opens each page in turn."
-msgstr ""
+msgstr "免费账户需在 {source} 上为每个文件点击“下载”；Mortar 会依次打开每个页面。"
 
 #: src/settings/prefCopy.ts
 msgid "Check updates and problems in the background for profiles you are not looking at"
-msgstr ""
+msgstr "在后台检查你未查看的配置的更新和问题"
 
 #: src/settings/sections/nxmHandler.tsx
 msgid "Not now"
-msgstr ""
+msgstr "现在不"
 
 #: src/settings/GraphicsApiRow.tsx
 msgid "Graphics API"
-msgstr ""
+msgstr "图形 API"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Skills"
-msgstr ""
+msgstr "技能"
 
 #: src/settings/sections/ModsProfiles.tsx
 msgid "Enable mods when installed"
-msgstr ""
+msgstr "安装后启用模组"
 
 #: src/settings/sections/DataImport.tsx
 msgid "Downloads and updates"
-msgstr ""
+msgstr "下载和更新"
 
 #: src/settings/prefCopy.ts
 msgid "Mortar stays on screen beside the game."
-msgstr ""
+msgstr "Mortar 会留在屏幕上、位于游戏旁边。"
 
 #: src/settings/prefCopyGame.ts
 msgid "Where this game's profiles are shared between your computers"
-msgstr ""
+msgstr "此游戏的配置在你的电脑之间共享的位置"
 
 #: src/settings/sections/General.tsx
 msgid "The port Mortar uses for local sharing"
-msgstr ""
+msgstr "Mortar 用于本地分享的端口"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "No answer {when}: {reason}"
-msgstr ""
+msgstr "{when} 无响应：{reason}"
 
 #: src/settings/prefCopy.ts
 msgid "Default for Share and Export. You can change it per share."
-msgstr ""
+msgstr "“分享”和“导出”的默认值。你可以按每次分享更改。"
 
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Performance"
-msgstr ""
+msgstr "切换到性能"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{count} settings temporary or copy files are present"
-msgstr ""
+msgstr "存在 {count} 个设置临时文件或副本文件"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Report copied"
-msgstr ""
+msgstr "报告已复制"
 
 #: src/settings/prefCopy.ts
 msgid "Problems only"
-msgstr ""
+msgstr "仅问题"
 
 #: src/settings/prefCopy.ts
 msgid "Restore the last window bounds on startup"
-msgstr ""
+msgstr "启动时恢复上次窗口位置和大小"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game} with {loader} {version} in {path}"
-msgstr ""
+msgstr "{path} 中的 {game}，带有 {loader} {version}"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "Trim save backups"
-msgstr ""
+msgstr "裁剪存档备份"
 
 #: src/settings/prefCopy.ts
 msgid "Expanded"
-msgstr ""
+msgstr "已展开"
 
 #: src/settings/prefCopy.ts
 msgid "Dark"
-msgstr ""
+msgstr "深色"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Open folder"
-msgstr ""
+msgstr "打开文件夹"
 
 #: src/settings/sections/SyncFolder.tsx
 msgid "Profile settings, mod lists and configs sync through this folder (with {app}, {otherApp} or a NAS); each computer downloads the mod files itself. Each game has its own subfolder, or its own folder or no sync, set in the game's settings."
-msgstr ""
+msgstr "配置设置、模组列表和配置通过此文件夹同步（使用 {app}、{otherApp} 或 NAS）；每台电脑自行下载模组文件。每个游戏都有自己的子文件夹，或在游戏设置中设置自己的文件夹或不同步。"
 
 #: src/settings/sections/Accounts.tsx
 #: src/settings/sections/SourceConnection.tsx
 msgid "Requests"
-msgstr ""
+msgstr "请求"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Reset every shortcut?"
-msgstr ""
+msgstr "重置所有快捷键？"
 
 #: src/settings/usePerProfileRelated.tsx
 msgid "Window mode"
-msgstr ""
+msgstr "窗口模式"
 
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "{done} of {total}"
-msgstr ""
+msgstr "{done}/{total}"
 
 #: src/settings/sections/General.tsx
 msgid "Allow Mortar through the firewall so nearby users can send profiles."
-msgstr ""
+msgstr "允许 Mortar 通过防火墙，以便附近用户发送配置。"
 
 #: src/settings/sections/nxmHandler.tsx
 msgid "Handle {source} download links?"
-msgstr ""
+msgstr "处理 {source} 下载链接？"
 
 #: src/settings/prefCopyGame.ts
 msgid "Keep"
-msgstr ""
+msgstr "保留"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 #: src/settings/sections/General.tsx
 msgid "Settings file"
-msgstr ""
+msgstr "设置文件"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Store index.json is unreadable or corrupt"
-msgstr ""
+msgstr "存储 index.json 无法读取或已损坏"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Copy report"
-msgstr ""
+msgstr "复制报告"
 
 #: src/settings/sections/nxmHandler.tsx
 msgid "Mortar downloads and installs a mod when you click Mod Manager Download on {source}."
-msgstr ""
+msgstr "当你在 {source} 上点击“模组管理器下载”时，Mortar 会下载并安装模组。"
 
 #: src/settings/NexusMeter.tsx
 msgid "Hourly count resets {when}"
-msgstr ""
+msgstr "每小时计数将在 {when} 重置"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game}: {name} is overridden to native in the {app} prefix"
-msgstr ""
+msgstr "{game}：{name} 在 {app} 前缀中被覆盖为原生"
 
 #: src/settings/sections/DataHistory.tsx
 msgid "Changes to keep"
-msgstr ""
+msgstr "要保留的更改"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Always shown"
-msgstr ""
+msgstr "始终显示"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Change shortcut for {name}, currently {shown}"
-msgstr ""
+msgstr "更改 {name} 的快捷键，当前为 {shown}"
 
 #: src/settings/prefCopy.ts
 msgid "{loader} console window"
-msgstr ""
+msgstr "{loader} 控制台窗口"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Slate"
-msgstr ""
+msgstr "石板色"
 
 #: src/settings/SettingsPage.tsx
 msgid "Updates"
-msgstr ""
+msgstr "更新"
 
 #: src/settings/prefCopy.ts
 msgid "What the sidebar shows on profile badges"
-msgstr ""
+msgstr "侧边栏在配置徽章上显示的内容"
 
 #: src/settings/sections/DataImport.tsx
 #: src/settings/sections/General.tsx
 msgid "Sharing"
-msgstr ""
+msgstr "分享"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "{name} is pinned to one version. Set its version to Latest first."
-msgstr ""
+msgstr "{name} 已固定到一个版本。请先将其版本设为“最新”。"
 
 #: src/settings/prefCopy.ts
 msgid "Follow system"
-msgstr ""
+msgstr "跟随系统"
 
 #: src/settings/prefCopy.ts
 msgid "Every Play"
-msgstr ""
+msgstr "每次游玩"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Reset game install"
-msgstr ""
+msgstr "重置游戏安装"
 
 #: src/settings/prefCopy.ts
 msgid "Save backup folder"
-msgstr ""
+msgstr "存档备份文件夹"
 
 #: src/settings/sections/HiddenMods.tsx
 msgid "Unhide"
-msgstr ""
+msgstr "取消隐藏"
 
 #: src/settings/prefCopy.ts
 msgid "Where Mod Manager Download links install. Empty uses the last opened profile."
-msgstr ""
+msgstr "“模组管理器下载”链接的安装位置。留空则使用上次打开的配置。"
 
 #: src/settings/sections/CodeEditor.tsx
 msgid "Other program…"
-msgstr ""
+msgstr "其他程序…"
 
 #: src/settings/sections/Updates.tsx
 msgid "Updated by your package manager"
-msgstr ""
+msgstr "由你的包管理器更新"
 
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyRequirements.ts
 msgid "Never"
-msgstr ""
+msgstr "从不"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{app} Game Mode: {otherApp} games start through {launcher} here, not from Mortar's Play"
-msgstr ""
+msgstr "{app} 游戏模式：{otherApp} 游戏在此通过 {launcher} 启动，而不是从 Mortar 的“开始游戏”"
 
 #: src/settings/shortcutLabels.ts
 msgid "Focus the search"
-msgstr ""
+msgstr "聚焦搜索"
 
 #: src/settings/sections/Downloads.tsx
 msgid "No app opens these links now."
-msgstr ""
+msgstr "现在没有应用会打开这些链接。"
 
 #: src/settings/sections/ScheduledStatus.tsx
 msgid "Scheduled backup status"
-msgstr ""
+msgstr "计划备份状态"
 
 #: src/settings/sections/Downloads.tsx
 #: src/settings/sections/nxmHandler.tsx
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Could not change how mod links open"
-msgstr ""
+msgstr "无法更改模组链接的打开方式"
 
 #: src/settings/sections/Storage.tsx
 msgid "Integrity"
-msgstr ""
+msgstr "完整性"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Move"
-msgstr ""
+msgstr "移动"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Copy {app} URL"
-msgstr ""
+msgstr "复制 {app} URL"
 
 #: src/settings/prefCopy.ts
 msgid "Hide to tray"
-msgstr ""
+msgstr "隐藏到托盘"
 
 #: src/settings/prefCopyGame.ts
 msgid "Use the sync folder set under Mods and profiles, if any."
-msgstr ""
+msgstr "使用在“模组和配置”下设置的同步文件夹（如果有）。"
 
 #: src/settings/sections/SourceOrder.tsx
 msgid "Move up"
-msgstr ""
+msgstr "上移"
 
 #: src/settings/sections/Launchers.tsx
 msgid "Mortar finds your games through these launchers. Choose a folder for a game it missed or you moved."
-msgstr ""
+msgstr "Mortar 通过这些启动器找到你的游戏。对于它遗漏或你移动过的游戏，请选择文件夹。"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Could not reset the game install"
-msgstr ""
+msgstr "无法重置游戏安装"
 
 #: src/settings/sections/Notifications.tsx
 msgid "A download finishes"
-msgstr ""
+msgstr "下载完成时"
 
 #: src/settings/prefCopy.ts
 msgid "Download failed"
-msgstr ""
+msgstr "下载失败"
 
 #: src/settings/PrefRow.tsx
 msgid "This profile's own value"
-msgstr ""
+msgstr "此配置自己的值"
 
 #: src/settings/prefCopyGame.ts
 msgid "Auto"
-msgstr ""
+msgstr "自动"
 
 #: src/settings/prefCopy.ts
 msgid "Follow live log"
-msgstr ""
+msgstr "跟随实时日志"
 
 #: src/settings/sections/checkDetail.ts
 msgid "nxm:// links: Mortar"
-msgstr ""
+msgstr "nxm:// 链接：Mortar"
 
 #: src/settings/prefCopy.ts
 msgid "Save backups kept"
-msgstr ""
+msgstr "保留的存档备份"
 
 #: src/settings/prefCopy.ts
 msgid "Keep the zip after installing"
-msgstr ""
+msgstr "安装后保留 zip"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Links"
-msgstr ""
+msgstr "链接"
 
 #: src/settings/sections/ConsoleLevels.tsx
 msgid "The Console opens showing these levels"
-msgstr ""
+msgstr "控制台打开时显示这些级别"
 
 #: src/settings/sections/DataHistory.tsx
 msgid "{count, plural, one {# change} other {# changes}}"
-msgstr ""
+msgstr "{count, plural, one {# 项更改} other {# 项更改}}"
 
 #: src/settings/sections/CodeEditor.tsx
 msgid "Developing mods"
-msgstr ""
+msgstr "开发模组"
 
 #: src/settings/prefCopyGame.ts
 msgid "Delete the game's rebuildable cache files on the first launch after this profile's mods change"
-msgstr ""
+msgstr "此配置的模组更改后，在首次启动时删除游戏可重建的缓存文件"
 
 #: src/settings/startupChecks.ts
 msgid "Report it so it can be fixed."
-msgstr ""
+msgstr "报告它以便修复。"
 
 #: src/settings/sections/General.tsx
 msgid "Checking…"
-msgstr ""
+msgstr "正在检查…"
 
 #: src/settings/prefCopyGame.ts
 msgid "Skip pre-Play check"
-msgstr ""
+msgstr "跳过游玩前检查"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "Install {version}…"
-msgstr ""
+msgstr "安装 {version}…"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Mortar bridge"
-msgstr ""
+msgstr "Mortar 桥接"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "Mortar has not asked {source} this session."
-msgstr ""
+msgstr "Mortar 本次会话尚未询问 {source}。"
 
 #: src/settings/PrefControls.tsx
 msgid "Enter a number from {min} to {max}"
-msgstr ""
+msgstr "请输入 {min} 到 {max} 之间的数字"
 
 #: src/settings/shortcutLabels.ts
 msgid "Open focused mod details"
-msgstr ""
+msgstr "打开当前聚焦模组的详情"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Typeface"
-msgstr ""
+msgstr "字体"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "Latest (recommended)"
-msgstr ""
+msgstr "最新（推荐）"
 
 #: src/settings/prefCopyRequirements.ts
 msgid "Auto-enable requirements"
-msgstr ""
+msgstr "自动启用要求"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game}: the {app} prefix does not load {name} natively, so its loader will not start"
-msgstr ""
+msgstr "{game}：{app} 前缀未以原生方式加载 {name}，因此其加载器不会启动"
 
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Hidden messages"
-msgstr ""
+msgstr "隐藏的消息"
 
 #: src/settings/prefCopy.ts
 #: src/settings/sections/Notifications.tsx
@@ -2959,918 +2959,918 @@ msgstr ""
 
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Every message"
-msgstr ""
+msgstr "每条消息"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Existing {app} sources stop working until their URLs are copied again."
-msgstr ""
+msgstr "现有的 {app} 源在再次复制其 URL 之前将停止工作。"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Game version"
-msgstr ""
+msgstr "游戏版本"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Handle \"Mod Manager Download\" links"
-msgstr ""
+msgstr "处理“模组管理器下载”链接"
 
 #: src/settings/sections/HiddenMods.tsx
 msgid "Hidden mods"
-msgstr ""
+msgstr "隐藏的模组"
 
 #: src/settings/sections/Storage.tsx
 msgid "Could not inspect the destination folder"
-msgstr ""
+msgstr "无法检查目标文件夹"
 
 #: src/settings/prefCopyGame.ts
 msgid "With this on, the profile's mods stay in the game's folder after the game exits, so starting the game outside Mortar loads them too. Turn it off to have Mortar remove them each time."
-msgstr ""
+msgstr "开启后，配置的模组会在游戏退出后保留在游戏文件夹中，因此从 Mortar 之外启动游戏时也会加载它们。关闭后，Mortar 每次都会移除它们。"
 
 #: src/settings/prefCopy.ts
 msgid "Hold the download queue until the game exits; a download under way continues afterwards. Pauses you made yourself stay paused."
-msgstr ""
+msgstr "在游戏退出前暂停下载队列；正在进行的下载会在之后继续。你自己设置的暂停会保持暂停。"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Files"
-msgstr ""
+msgstr "文件"
 
 #: src/settings/sections/DataStoreCheck.tsx
 msgid "{count, plural, one {# has damaged files} other {# have damaged files}}"
-msgstr ""
+msgstr "{count, plural, one {# 个有损坏的文件} other {# 个有损坏的文件}}"
 
 #: src/settings/GraphicsApiRow.tsx
 msgid "{name} (recommended)"
-msgstr ""
+msgstr "{name}（推荐）"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Measured {when}"
-msgstr ""
+msgstr "测量于 {when}"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Show labels"
-msgstr ""
+msgstr "显示标签"
 
 #: src/settings/sections/DataStoreCheck.tsx
 #: src/settings/sections/Updates.tsx
 msgid "Check now"
-msgstr ""
+msgstr "立即检查"
 
 #: src/settings/prefCopy.ts
 msgid "How Play starts the game. Direct skips {launcher}'s overlay and playtime."
-msgstr ""
+msgstr "“开始游戏”如何启动游戏。直接启动会跳过 {launcher} 的叠加层和游玩时间统计。"
 
 #: src/settings/sections/General.tsx
 msgid "Import…"
-msgstr ""
+msgstr "导入…"
 
 #: src/settings/sections/ModioAccount.tsx
 msgid "Access token"
-msgstr ""
+msgstr "访问令牌"
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game}: {app} has not created its prefix yet, so a {launcher} launch cannot load the loader"
-msgstr ""
+msgstr "{game}：{app} 尚未创建其前缀，因此 {launcher} 启动无法加载加载器"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Delete the selected items?"
-msgstr ""
+msgstr "删除选中的项目？"
 
 #: src/settings/prefCopyGame.ts
 #: src/settings/sections/GameSync.tsx
 msgid "Sync folder for this game"
-msgstr ""
+msgstr "此游戏的同步文件夹"
 
 #: src/settings/prefCopy.ts
 msgid "Error"
-msgstr ""
+msgstr "错误"
 
 #: src/settings/sections/Notifications.tsx
 msgid "Enable a notification for Mod updates are found first."
-msgstr ""
+msgstr "请先为“发现模组更新”启用通知。"
 
 #: src/settings/prefCopyGame.ts
 msgid "Sync into a folder chosen for this game alone."
-msgstr ""
+msgstr "同步到仅为此游戏选择的文件夹。"
 
 #: src/settings/prefCopy.ts
 msgid "3 times"
-msgstr ""
+msgstr "3 次"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "{size} used"
-msgstr ""
+msgstr "已使用 {size}"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Author on cards"
-msgstr ""
+msgstr "卡片上的作者"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Window background"
-msgstr ""
+msgstr "窗口背景"
 
 #: src/settings/prefCopyGame.ts
 msgid "Carry them into the new version's folder."
-msgstr ""
+msgstr "将它们带入新版本的文件夹。"
 
 #: src/settings/prefCopy.ts
 msgid "Ask before removing mods from a profile"
-msgstr ""
+msgstr "从配置中移除模组前询问"
 
 #: src/settings/sections/General.tsx
 msgid "Lets nearby Mortar users find this installation and exchange profile links."
-msgstr ""
+msgstr "让附近的 Mortar 用户找到此安装并交换配置链接。"
 
 #: src/settings/prefCopy.ts
 msgid "Premium and {source} downloads at once"
-msgstr ""
+msgstr "同时进行高级下载和 {source} 下载"
 
 #: src/settings/sections/Downloads.tsx
 msgid "{app}:"
-msgstr ""
+msgstr "{app}："
 
 #: src/settings/store.ts
 msgid "Show file"
-msgstr ""
+msgstr "显示文件"
 
 #: src/settings/GameSettingsPage.tsx
 #: src/settings/sections/DataUsage.tsx
 #: src/settings/sections/GameSettings.tsx
 msgid "Save backups"
-msgstr ""
+msgstr "保存备份"
 
 #: src/settings/prefCopyGame.ts
 msgid "Set them aside and ask whether to keep or delete them."
-msgstr ""
+msgstr "将它们搁置，并询问是保留还是删除。"
 
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Saves"
-msgstr ""
+msgstr "切换到存档"
 
 #: src/settings/sections/FolderListRow.tsx
 msgid "Remove"
-msgstr ""
+msgstr "移除"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Pet watered"
-msgstr ""
+msgstr "宠物已浇水"
 
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Config"
-msgstr ""
+msgstr "切换到配置"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "{count, plural, one {Deleted # backup} other {Deleted # backups}}, freed {size}"
-msgstr ""
+msgstr "{count, plural, one {已删除 # 个备份} other {已删除 # 个备份}}，释放了 {size}"
 
 #: src/settings/GameSettingsPage.tsx
 msgid "Play"
-msgstr ""
+msgstr "开始游戏"
 
 #: src/settings/sections/General.tsx
 msgid "Open {name}"
-msgstr ""
+msgstr "打开 {name}"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Luck skill"
-msgstr ""
+msgstr "幸运技能"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "the connection was refused"
-msgstr ""
+msgstr "连接被拒绝"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Regenerate…"
-msgstr ""
+msgstr "重新生成…"
 
 #: src/settings/sections/General.tsx
 msgid "Keep Mortar in the tray"
-msgstr ""
+msgstr "将 Mortar 保留在托盘中"
 
 #: src/settings/sections/ProfileScopeSections.tsx
 msgid "Standard"
-msgstr ""
+msgstr "标准"
 
 #: src/settings/GameSettingsPage.tsx
 #: src/settings/sections/LoaderRow.tsx
 msgid "Install"
-msgstr ""
+msgstr "安装"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Centre config controls"
-msgstr ""
+msgstr "配置控件居中"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Token"
-msgstr ""
+msgstr "令牌"
 
 #: src/settings/sections/checkDetail.ts
 msgid "nxm:// links: Mortar (other games go to {app})"
-msgstr ""
+msgstr "nxm:// 链接：Mortar（其他游戏转到 {app}）"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Mining skill"
-msgstr ""
+msgstr "采矿技能"
 
 #: src/settings/sections/DataImport.tsx
 msgid "Import settings?"
-msgstr ""
+msgstr "导入设置？"
 
 #: src/settings/vrPrefCopy.ts
 msgid "Starts a VR runtime before the game; the {alvr} dashboard opens {runtime} itself. Leave it off in a profile that plays the game on a flat screen."
-msgstr ""
+msgstr "在游戏前启动 VR 运行时；{alvr} 仪表板会自行打开 {runtime}。在使用平面屏幕游玩该游戏的配置中请将其关闭。"
 
 #: src/settings/GraphicsApiRow.tsx
 msgid "Ask when I press Play"
-msgstr ""
+msgstr "按“开始游戏”时询问"
 
 #: src/settings/prefCopy.ts
 msgid "Include"
-msgstr ""
+msgstr "包含"
 
 #: src/settings/SettingsPage.tsx
 msgid "Settings"
-msgstr ""
+msgstr "设置"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Cached {source} release lists"
-msgstr ""
+msgstr "缓存的 {source} 发布列表"
 
 #: src/settings/sections/About.tsx
 msgid "View licences…"
-msgstr ""
+msgstr "查看许可证…"
 
 #: src/settings/ScopeSwitch.tsx
 msgid "Settings for"
-msgstr ""
+msgstr "设置范围"
 
 #: src/settings/sections/SourceOrder.tsx
 msgid "Preferred source"
-msgstr ""
+msgstr "首选来源"
 
 #: src/settings/sections/Updates.tsx
 msgid "Include pre-release mod versions"
-msgstr ""
+msgstr "包含预发布模组版本"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Status"
-msgstr ""
+msgstr "状态"
 
 #: src/settings/prefCopy.ts
 msgid "Dates"
-msgstr ""
+msgstr "日期"
 
 #: src/settings/prefCopy.ts
 msgid "When mods changed"
-msgstr ""
+msgstr "模组更改时"
 
 #: src/settings/prefCopy.ts
 msgid "Accept profiles sent from computers you paired, and copy their mod files"
-msgstr ""
+msgstr "接受你已配对电脑发送的配置，并复制其模组文件"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Tag"
-msgstr ""
+msgstr "标签"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Diagnostics"
-msgstr ""
+msgstr "诊断信息"
 
 #: src/settings/sections/General.tsx
 msgid "Automatic port"
-msgstr ""
+msgstr "自动端口"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Health"
-msgstr ""
+msgstr "健康状态"
 
 #: src/settings/prefCopyGame.ts
 msgid "Leave the file alone and list the settings under Problems."
-msgstr ""
+msgstr "保持文件不变，并在“问题”下列出这些设置。"
 
 #: src/settings/sections/nxmHandler.tsx
 msgid "{owner} opens these links now. Mortar takes them over and gives them back when you disable this in Settings."
-msgstr ""
+msgstr "{owner} 现在会打开这些链接。Mortar 会接管它们，并在你在设置中关闭此项时归还。"
 
 #: src/settings/prefCopy.ts
 msgid "Minimise"
-msgstr ""
+msgstr "最小化"
 
 #: src/settings/sections/ModioAccount.tsx
 msgid "Kept in your system keyring. Create a read-only personal access token at {page}."
-msgstr ""
+msgstr "保存在系统密钥环中。请在 {page} 创建只读个人访问令牌。"
 
 #: src/settings/sections/checkDetail.ts
 msgid "settings.json is readable"
-msgstr ""
+msgstr "settings.json 可读"
 
 #: src/settings/sections/DataHistory.tsx
 msgid "Older changes are dropped and can no longer be undone."
-msgstr ""
+msgstr "较旧的更改将被丢弃，且无法再撤销。"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "Used with clamd. Empty tries the usual places, such as /run/clamav/clamd.ctl."
-msgstr ""
+msgstr "与 clamd 一起使用。留空则尝试常见位置，例如 /run/clamav/clamd.ctl。"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Game install deleted"
-msgstr ""
+msgstr "游戏安装已删除"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Sidebar"
-msgstr ""
+msgstr "侧边栏"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Cool and calm"
-msgstr ""
+msgstr "冷静而平静"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Navigation"
-msgstr ""
+msgstr "导航"
 
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Only lines about {object}"
-msgstr ""
+msgstr "仅关于 {object} 的行"
 
 #: src/settings/SettingsPage.tsx
 msgid "About"
-msgstr ""
+msgstr "关于"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "it took too long to answer"
-msgstr ""
+msgstr "响应时间过长"
 
 #: src/settings/sections/ALVRProgram.tsx
 msgid "Not chosen"
-msgstr ""
+msgstr "未选择"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "World"
-msgstr ""
+msgstr "世界"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Fresh and clear"
-msgstr ""
+msgstr "清新而清晰"
 
 #: src/settings/sections/DataMods.tsx
 msgid "Clears cached {source} and {loader} details and problem scans, for a revoked sign-in or wrong details. Mortar fetches them again, so the next problem check is slower."
-msgstr ""
+msgstr "清除缓存的 {source} 和 {loader} 详情及问题扫描，用于登录被撤销或详情错误的情况。Mortar 会重新获取它们，因此下次问题检查会更慢。"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Author"
-msgstr ""
+msgstr "作者"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Reinstall {game} from your game launcher."
-msgstr ""
+msgstr "从游戏启动器重新安装 {game}。"
 
 #: src/settings/sections/ProfileScopeSections.tsx
 msgid "Warnings and errors"
-msgstr ""
+msgstr "警告和错误"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Chosen in the game's {launcher} properties."
-msgstr ""
+msgstr "在游戏的 {launcher} 属性中选择。"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Quota"
-msgstr ""
+msgstr "配额"
 
 #: src/settings/sections/Downloads.tsx
 #: src/settings/sections/GameSettings.tsx
 msgid "Change folder…"
-msgstr ""
+msgstr "更改文件夹…"
 
 #: src/settings/sections/DismissedFolders.tsx
 msgid "Offer again"
-msgstr ""
+msgstr "再次提示"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Mark local mods"
-msgstr ""
+msgstr "标记本地模组"
 
 #: src/settings/sections/ModioAccount.tsx
 msgid "{source} rejected your access token"
-msgstr ""
+msgstr "{source} 拒绝了你的访问令牌"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Mortar version"
-msgstr ""
+msgstr "Mortar 版本"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Clean up storage"
-msgstr ""
+msgstr "清理存储"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Mods view"
-msgstr ""
+msgstr "模组视图"
 
 #: src/settings/prefCopy.ts
 msgid "Where Open in editor and compiler errors open a mod project"
-msgstr ""
+msgstr "“在编辑器中打开”和编译器错误打开模组项目的位置"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Accent colour"
-msgstr ""
+msgstr "强调色"
 
 #: src/settings/sections/checkDetail.ts
 msgid "control.json is absent"
-msgstr ""
+msgstr "control.json 不存在"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Player"
-msgstr ""
+msgstr "玩家"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 #: src/settings/sections/DataUsage.tsx
 #: src/settings/sections/Shortcuts.tsx
 msgid "Profiles"
-msgstr ""
+msgstr "配置"
 
 #: src/settings/PrefRow.tsx
 msgid "Reset to the game's: {value}"
-msgstr ""
+msgstr "重置为游戏的：{value}"
 
 #: src/settings/prefCopy.ts
 msgid "Update digest notification"
-msgstr ""
+msgstr "更新摘要通知"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 #: src/settings/sections/DataImport.tsx
 msgid "Games"
-msgstr ""
+msgstr "游戏"
 
 #: src/settings/sections/General.tsx
 msgid "Language"
-msgstr ""
+msgstr "语言"
 
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Right-click a Console line to hide everything from its source, in every profile of this game. The game stops writing them where its bridge can. Messages Mortar hides by default for this game are listed too."
-msgstr ""
+msgstr "右键点击控制台某一行，可在该游戏的所有配置中隐藏来自其来源的所有内容。游戏会在其桥接可及之处停止写入它们。此处还会列出 Mortar 默认为此游戏隐藏的消息。"
 
 #: src/settings/ProtonRow.tsx
 msgid "The {app} build from {launcher} that runs this copy, which {launcher} does not start"
-msgstr ""
+msgstr "运行此副本的 {launcher} 提供的 {app} 构建，{launcher} 不会启动它"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Part of the {app} address; regenerate it if it leaks"
-msgstr ""
+msgstr "{app} 地址的一部分；如果泄露请重新生成"
 
 #: src/settings/sections/Notifications.tsx
 msgid "Set Update digest notification to something other than Off first."
-msgstr ""
+msgstr "请先将“更新摘要通知”设为非“关闭”。"
 
 #: src/settings/sections/About.tsx
 msgid "Logs"
-msgstr ""
+msgstr "日志"
 
 #: src/settings/shortcutLabels.ts
 msgid "Go forward"
-msgstr ""
+msgstr "前进"
 
 #: src/settings/prefCopy.ts
 msgid "How profiles are ordered in the sidebar"
-msgstr ""
+msgstr "配置在侧边栏中的排序方式"
 
 #: src/settings/sections/General.tsx
 msgid "Help translate Mortar"
-msgstr ""
+msgstr "帮助翻译 Mortar"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Weekday"
-msgstr ""
+msgstr "星期"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Framework"
-msgstr ""
+msgstr "框架"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Source"
-msgstr ""
+msgstr "来源"
 
 #: src/settings/sections/DataImport.tsx
 #: src/settings/sections/Shortcuts.tsx
 #: src/settings/SettingsPage.tsx
 msgid "General"
-msgstr ""
+msgstr "常规"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Teal"
-msgstr ""
+msgstr "青色"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Select all"
-msgstr ""
+msgstr "全选"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Foraging skill"
-msgstr ""
+msgstr "采集技能"
 
 #: src/settings/sections/General.tsx
 msgid "Closing the window hides Mortar instead of quitting."
-msgstr ""
+msgstr "关闭窗口会隐藏 Mortar 而不是退出。"
 
 #: src/settings/sections/DataUsage.tsx
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Location"
-msgstr ""
+msgstr "位置"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Game install"
-msgstr ""
+msgstr "游戏安装"
 
 #: src/settings/sections/GameSettings.tsx
 msgid "This deletes the game folder at {path}, with every file in it, including {loader} and mods placed there. Your saves and your profiles' mods are stored elsewhere and are kept."
-msgstr ""
+msgstr "这会删除 {path} 处的游戏文件夹及其中的所有文件，包括 {loader} 和放置在那里的模组。你的存档和配置的模组存储在其他位置，会被保留。"
 
 #: src/settings/sections/General.tsx
 msgid "System default"
-msgstr ""
+msgstr "系统默认"
 
 #: src/settings/shortcutLabels.ts
 msgid "Open the previous profile"
-msgstr ""
+msgstr "打开上一个配置"
 
 #: src/settings/sections/ProfileScopeSections.tsx
 msgid "Everything"
-msgstr ""
+msgstr "全部"
 
 #: src/settings/prefCopy.ts
 msgid "Share problem choices"
-msgstr ""
+msgstr "分享问题选项"
 
 #: src/settings/sections/WatchFolders.tsx
 msgid "Also watch these folders"
-msgstr ""
+msgstr "同时监视这些文件夹"
 
 #: src/settings/prefCopy.ts
 msgid "Share config files"
-msgstr ""
+msgstr "分享配置文件"
 
 #: src/settings/sections/ModsProfiles.tsx
 msgid "Installing"
-msgstr ""
+msgstr "正在安装"
 
 #: src/settings/prefCopy.ts
 msgid "Back up saves before Play"
-msgstr ""
+msgstr "游玩前备份存档"
 
 #: src/settings/prefCopy.ts
 msgid "Run crashed"
-msgstr ""
+msgstr "运行崩溃"
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Leave them"
-msgstr ""
+msgstr "保留它们"
 
 #: src/settings/sections/Accounts.tsx
 msgid "higher rate limit"
-msgstr ""
+msgstr "更高的速率限制"
 
 #: src/settings/sections/Updates.tsx
 msgid "Check only enabled mods"
-msgstr ""
+msgstr "仅检查已启用的模组"
 
 #: src/settings/shortcutLabels.ts
 msgid "Close dialog or clear selection"
-msgstr ""
+msgstr "关闭对话框或清除选择"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "Every profile of this game runs the {name} installed for it, so they all switch to {version}."
-msgstr ""
+msgstr "此游戏的每个配置都会运行为其安装的 {name}，因此它们都会切换到 {version}。"
 
 #: src/settings/sections/General.tsx
 msgid "Tips"
-msgstr ""
+msgstr "提示"
 
 #: src/settings/prefCopy.ts
 msgid "Off, only computers on your local network can connect. Enable to allow others, such as over a VPN."
-msgstr ""
+msgstr "关闭时，只有本地网络中的电脑可以连接。启用后可允许其他连接，例如通过 VPN。"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Quiet grey-blue"
-msgstr ""
+msgstr "安静的灰蓝色"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Data folder: {path}"
-msgstr ""
+msgstr "数据文件夹：{path}"
 
 #: src/settings/sections/nxmHandler.tsx
 msgid "Handle links"
-msgstr ""
+msgstr "处理链接"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Season"
-msgstr ""
+msgstr "季节"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Soft and warm"
-msgstr ""
+msgstr "柔和而温暖"
 
 #: src/settings/NexusMeter.tsx
 msgid "{source} is throttling requests until the window resets."
-msgstr ""
+msgstr "{source} 正在限制请求，直到时间窗口重置。"
 
 #: src/settings/shortcutLabels.ts
 msgid "Collapse or expand the sidebar"
-msgstr ""
+msgstr "折叠或展开侧边栏"
 
 #: src/settings/prefCopyGame.ts
 msgid "Profile sync"
-msgstr ""
+msgstr "配置同步"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Command-line control"
-msgstr ""
+msgstr "命令行控制"
 
 #: src/settings/prefCopyGame.ts
 msgid "Mortar-wide folder"
-msgstr ""
+msgstr "Mortar 全局文件夹"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Display"
-msgstr ""
+msgstr "显示"
 
 #: src/settings/prefCopy.ts
 msgid "Show adult mods in browse"
-msgstr ""
+msgstr "在浏览中显示成人模组"
 
 #: src/settings/prefCopyRequirements.ts
 msgid "Missing requirements on install"
-msgstr ""
+msgstr "安装时缺少要求"
 
 #: src/settings/sections/DataBackups.tsx
 #: src/settings/sections/DataUsage.tsx
 msgid "Measuring…"
-msgstr ""
+msgstr "正在测量…"
 
 #: src/settings/prefCopy.ts
 msgid "Hours between backups of saves that changed, while Mortar is open (24 is daily, 0 is Off). Waits until the game closes."
-msgstr ""
+msgstr "Mortar 打开时，对已更改存档进行备份的间隔小时数（24 为每天，0 为关闭）。会等到游戏关闭。"
 
 #: src/settings/prefCopyRequirements.ts
 msgid "What to do when an installed mod still needs other mods"
-msgstr ""
+msgstr "已安装模组仍需要其他模组时如何处理"
 
 #: src/settings/sections/General.tsx
 msgid "Scanner in use"
-msgstr ""
+msgstr "扫描器使用中"
 
 #: src/settings/prefCopy.ts
 msgid "Code editor"
-msgstr ""
+msgstr "代码编辑器"
 
 #: src/settings/prefCopy.ts
 msgid "After each check"
-msgstr ""
+msgstr "每次检查后"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Save…"
-msgstr ""
+msgstr "保存…"
 
 #: src/settings/sections/General.tsx
 msgid "Walk through profiles, Play, mods, and the command palette"
-msgstr ""
+msgstr "介绍配置、游玩、模组和命令面板"
 
 #: src/settings/prefCopy.ts
 msgid "Verify downloads with {source} MD5"
-msgstr ""
+msgstr "使用 {source} MD5 验证下载"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "clamd socket"
-msgstr ""
+msgstr "clamd 套接字"
 
 #: src/settings/prefCopy.ts
 msgid "Touch ripples"
-msgstr ""
+msgstr "触摸波纹"
 
 #: src/settings/sections/Updates.tsx
 msgid "Enable Check for mod updates when Mortar starts first."
-msgstr ""
+msgstr "请先启用“Mortar 启动时检查模组更新”。"
 
 #: src/settings/SettingsNav.tsx
 msgid "Settings sections"
-msgstr ""
+msgstr "设置分区"
 
 #: src/settings/prefCopy.ts
 msgid "Default profile for {source} links"
-msgstr ""
+msgstr "{source} 链接的默认配置"
 
 #: src/settings/prefCopyGame.ts
 msgid "How many game processes a direct Play starts. Hidden for {launcher} and store URL launches."
-msgstr ""
+msgstr "直接游玩会启动多少个游戏进程。对 {launcher} 和商店 URL 启动隐藏。"
 
 #: src/settings/prefCopyAntivirus.ts
 #: src/settings/sections/General.tsx
 msgid "Antivirus"
-msgstr ""
+msgstr "杀毒软件"
 
 #: src/settings/prefCopyGame.ts
 msgid "Files an update no longer includes"
-msgstr ""
+msgstr "更新不再包含的文件"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Moving data"
-msgstr ""
+msgstr "正在移动数据"
 
 #: src/settings/sections/Appearance.tsx
 msgid "{name}, descending"
-msgstr ""
+msgstr "{name}，降序"
 
 #: src/settings/prefCopy.ts
 msgid "Scheduled backups kept per save"
-msgstr ""
+msgstr "每个存档保留的计划备份数"
 
 #: src/settings/sections/LoaderRow.tsx
 msgid "Reinstall"
-msgstr ""
+msgstr "重新安装"
 
 #: src/settings/sections/Updates.tsx
 msgid "Checking for updates…"
-msgstr ""
+msgstr "正在检查更新…"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Leftover files"
-msgstr ""
+msgstr "遗留文件"
 
 #: src/settings/prefCopy.ts
 msgid "Stay open"
-msgstr ""
+msgstr "保持打开"
 
 #: src/settings/sections/About.tsx
 msgid "Restarts Mortar and records its first 30 seconds, for a slow start."
-msgstr ""
+msgstr "重启 Mortar 并记录其前 30 秒，用于排查启动缓慢。"
 
 #: src/settings/shortcutLabels.ts
 msgid "Open settings"
-msgstr ""
+msgstr "打开设置"
 
 #: src/settings/sections/nxmHandler.tsx
 msgid "Take over"
-msgstr ""
+msgstr "接管"
 
 #: src/settings/updates.ts
 msgid "Could not reach {source}"
-msgstr ""
+msgstr "无法连接 {source}"
 
 #: src/settings/sections/ModioAccount.tsx
 msgid "Access token in your system keyring"
-msgstr ""
+msgstr "系统密钥环中的访问令牌"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Untrack unused…"
-msgstr ""
+msgstr "取消跟踪未使用的…"
 
 #: src/settings/sections/Notifications.tsx
 msgid "The game crashes"
-msgstr ""
+msgstr "游戏崩溃时"
 
 #: src/settings/prefCopy.ts
 msgid "Back up saves only if the profile's mods changed since the last run."
-msgstr ""
+msgstr "仅当配置的模组自上次运行以来发生更改时才备份存档。"
 
 #: src/settings/sections/checkDetail.ts
 msgid "nxm:// links: off"
-msgstr ""
+msgstr "nxm:// 链接：关闭"
 
 #: src/settings/loaderToast.ts
 msgid "{name} {latest} is out"
-msgstr ""
+msgstr "{name} {latest} 已发布"
 
 #: src/settings/prefCopy.ts
 msgid "Browser extension connection"
-msgstr ""
+msgstr "浏览器扩展连接"
 
 #: src/settings/prefCopy.ts
 msgid "Downloads finished"
-msgstr ""
+msgstr "下载完成"
 
 #: src/settings/sections/About.tsx
 #: src/settings/sections/AboutDiagnostics.tsx
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Close"
-msgstr ""
+msgstr "关闭"
 
 #: src/settings/sections/DataHistory.tsx
 msgid "Trim history of {profile}"
-msgstr ""
+msgstr "裁剪 {profile} 的历史记录"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Bundled font"
-msgstr ""
+msgstr "捆绑字体"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "Stop the game to change save backups."
-msgstr ""
+msgstr "请停止游戏以更改存档备份。"
 
 #: src/settings/prefCopyGame.ts
 msgid "Install the version the mod's author named, as {manager} does."
-msgstr ""
+msgstr "安装模组作者指定的版本，如同 {manager} 所做的那样。"
 
 #: src/settings/prefCopyRequirements.ts
 msgid "When you disable a mod, also disable the mods that need it and the libraries only it needed"
-msgstr ""
+msgstr "禁用模组时，同时禁用需要它的模组以及仅它需要的库"
 
 #: src/settings/sections/DataImport.tsx
 msgid "Ignored fields Mortar does not import: {names}"
-msgstr ""
+msgstr "Mortar 不导入的已忽略字段：{names}"
 
 #: src/settings/prefCopy.ts
 msgid "{loader} unofficial builds"
-msgstr ""
+msgstr "{loader} 非官方构建"
 
 #: src/settings/prefCopy.ts
 msgid "Profile hero"
-msgstr ""
+msgstr "配置主图"
 
 #: src/settings/prefCopy.ts
 msgid "1 time"
-msgstr ""
+msgstr "1 次"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Checks the data folder, games, {source} download links and the browser extension."
-msgstr ""
+msgstr "检查数据文件夹、游戏、{source} 下载链接和浏览器扩展。"
 
 #: src/settings/sections/Downloads.tsx
 msgid "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, enable Developer mode and choose Load unpacked on the unzipped folder."
-msgstr ""
+msgstr "{app}、{otherApp} 或其他 {thirdApp} 浏览器：解压下载内容，打开 chrome://extensions，启用开发者模式，然后在解压后的文件夹上选择“加载已解压的扩展程序”。"
 
 #: src/settings/sections/ItchAccount.tsx
 msgid "Remove key"
-msgstr ""
+msgstr "移除密钥"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Save diagnostics"
-msgstr ""
+msgstr "保存诊断信息"
 
 #: src/settings/prefCopy.ts
 msgid "Choose a game and profile each time."
-msgstr ""
+msgstr "每次选择游戏和配置。"
 
 #: src/settings/prefCopy.ts
 msgid "Confirm removals"
-msgstr ""
+msgstr "确认移除"
 
 #: src/settings/prefCopy.ts
 msgid "Recently deleted retention"
-msgstr ""
+msgstr "最近删除保留期"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "Could not be reached: {reason}"
-msgstr ""
+msgstr "无法访问：{reason}"
 
 #: src/settings/updates.ts
 msgid "Could not update: {error}"
-msgstr ""
+msgstr "无法更新：{error}"
 
 #: src/settings/sections/General.tsx
 msgid "Share profiles on the local network"
-msgstr ""
+msgstr "在局域网中分享配置"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 #: src/settings/sections/DataUsage.tsx
 msgid "Disk space"
-msgstr ""
+msgstr "磁盘空间"
 
 #: src/settings/prefCopy.ts
 msgid "Reuse FOMOD choices"
-msgstr ""
+msgstr "重用 FOMOD 选项"
 
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Show {name} again"
-msgstr ""
+msgstr "再次显示 {name}"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "This frees {size}. Deleted mods download again if a profile needs them later."
-msgstr ""
+msgstr "这将释放 {size}。如果之后有配置需要，已删除的模组会重新下载。"
 
 #: src/settings/prefCopy.ts
 msgid "Last played"
-msgstr ""
+msgstr "上次游玩"
 
 #: src/settings/sections/DataBackups.tsx
 #: src/settings/sections/DataHistory.tsx
 msgid "Nothing to trim yet."
-msgstr ""
+msgstr "尚无需要裁剪的内容。"
 
 #: src/settings/shortcutLabels.ts
 msgid "Focus the previous mod"
-msgstr ""
+msgstr "聚焦上一个模组"
 
 #: src/settings/prefCopyGame.ts
 msgid "The folder this game's profiles sync into"
-msgstr ""
+msgstr "此游戏的配置同步到的文件夹"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Untrack mods?"
-msgstr ""
+msgstr "取消跟踪模组？"
 
 #: src/settings/prefCopy.ts
 msgid "Sidebar profile order"
-msgstr ""
+msgstr "侧边栏配置顺序"
 
 #: src/settings/sections/SourceConnection.tsx
 msgid "Last answered {when}"
-msgstr ""
+msgstr "上次响应 {when}"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Preferred download server"
-msgstr ""
+msgstr "首选下载服务器"
