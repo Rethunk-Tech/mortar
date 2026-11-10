@@ -1,0 +1,27 @@
+Architectures: amd64 arm64
+Codename: stable
+Components: main
+Date: Tue, 10 Nov 2026 21:42:10 +0000
+Label: Mortar
+Origin: Mortar
+Suite: stable
+MD5Sum:
+ a27df234b90e4bc469e8a8bca7555167              670 main/binary-amd64/Packages
+ dae764fd3281358cf5f538c7353e2d91              484 main/binary-amd64/Packages.gz
+ cce72998637ed15818d8fb87e8371b6d              670 main/binary-arm64/Packages
+ ed8ce7afc1b34041debcf293560923a4              485 main/binary-arm64/Packages.gz
+SHA1:
+ 04c9e4aa9206ac614f57a97118e9ab350b6e317c              670 main/binary-amd64/Packages
+ 410de8aced479f4d768b85234eb17baf34cfbbb4              484 main/binary-amd64/Packages.gz
+ 4b11ca653954415c70914db4b46ce506ed366b26              670 main/binary-arm64/Packages
+ f0650035aa9f74ac7819d4b7fd55a07cb3ee4f69              485 main/binary-arm64/Packages.gz
+SHA256:
+ e473fb299798a5d521b96cf78e3f133bcf85649d3a7e71e28086af80bf0be7b5              670 main/binary-amd64/Packages
+ 5e80307ea48be7a1762c337c3102885d8018b3aff6bf84c450751dd3386e999b              484 main/binary-amd64/Packages.gz
+ 854deda81e27f23c55490d3f630509c47010f180ecb7e4117799d4a2678e7a22              670 main/binary-arm64/Packages
+ f173eaa2e153f6047304445a598f5269e8e9e6cf8ed5920a1b6de85b8111a190              485 main/binary-arm64/Packages.gz
+SHA512:
+ ac7f189964f74ac4bcee442721a512ecb62a729fee343f9c22418dc4433bacc8e2868f64550e165c210842214120934bce118e86e811859fe6e7a397a1cdea8b              670 main/binary-amd64/Packages
+ 62299c81e6f3641b8215725b9372a96ed5d2f878cc58af95d347db06a00c4a0eee7df33c6c73a1abe2dc13db8ee0018cce531ef5b3a18aea370b427768dfd848              484 main/binary-amd64/Packages.gz
+ 177094f44d05ff8fc84ed67bac0fac822968062b86fa7d1208433d949e9624702b1fd5ff1c4815991263a2e6e7b9d7124a310bd036c0df2e0d55a5b882262aba              670 main/binary-arm64/Packages
+ 943926d2712a9148d6fa3ee94404671180147b65fb9bd3a3fe04a1924f1044e3c2372b0d105cddbee0eb2bbfdd97b18329c7625b5a7f578ee0b8ec8302e72855              485 main/binary-arm64/Packages.gz

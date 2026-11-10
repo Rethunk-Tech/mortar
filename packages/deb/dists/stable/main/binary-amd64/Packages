@@ -1,0 +1,17 @@
+Package: mortar
+Architecture: amd64
+Version: 0.7.0-1
+Priority: optional
+Section: games
+Maintainer: Rethunk.Tech <opensource@rethunk.tech>
+Installed-Size: 47588
+Depends: libwebkitgtk-6.0-4 (>= 2.44), xdg-utils
+Filename: pool/main/m/mortar/mortar_0.7.0_amd64.deb
+Size: 19036364
+MD5sum: 389e869ab4e5d61b518e66e2761d92a8
+SHA1: 565ddcf455e434d92a902f7f11cc11be3de60cb8
+SHA256: feed81d1256ee626ea9a661e8d38bb71a9c314ab39c19883476de774440f988a
+SHA512: c2e99793877fb2927318bb6d376fe919c7924f436bd77b6a78b3a7640184ff53c332acfbe9211315e047c5dcfb5107b147447927ec6c085c7f03420e71679f6f
+Homepage: https://github.com/Rethunk-Tech/mortar
+Description: Desktop mod manager for PC games
+
