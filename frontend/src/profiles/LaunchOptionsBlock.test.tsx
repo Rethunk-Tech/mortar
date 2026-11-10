@@ -15,11 +15,14 @@ beforeEach(() => {
   cleanup()
   useLaunch.setState(useLaunch.getInitialState(), true)
   stubBinding(launchsvc, 'PreviewCommand', () => ({ env: [], argv: [], error: '' }))
-  stubBinding(launchsvc, 'TestLaunchWith', () => {
-    return new Promise<{ reachedTitle: boolean; cause: string }>((resolve) => {
-      release = resolve
-    })
-  })
+  stubBinding(
+    launchsvc,
+    'TestLaunchWith',
+    () =>
+      new Promise<{ reachedTitle: boolean; cause: string }>((resolve) => {
+        release = resolve
+      }),
+  )
 })
 
 afterEach(() => {

@@ -20,7 +20,7 @@ test('reopening Edit profile starts on the tab the caller asked for', () => {
         profile={profile}
         open={open}
         onClose={() => undefined}
-        {...(initialTab !== undefined ? { initialTab } : {})}
+        {...(initialTab === undefined ? {} : { initialTab })}
       />
     </I18nProvider>
   )
