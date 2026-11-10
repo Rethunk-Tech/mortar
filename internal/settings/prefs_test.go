@@ -112,7 +112,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"listSortColumn": "version", "listSortDir": "desc", "confirmRemovals": "false",
 		"cosmeticConflicts": "hidden", "backgroundBadgeChecks": "false", "startScreen": "gameselect", "antivirus": "clamd", "antivirusSocket": "/var/tmp/clamd.sock", "antivirusCommand": "scan {path}",
 		"dates": "absolute", "graphics": "smooth", "trashRetentionDays": "10", "historyEventsKept": "50",
-		"notifyDownloadFinished": "false", "notifyDownloadFailed": "false", "notifyRunCrashed": "false",
+		"notifyDownloadFinished": "false", "notifyDownloadFailed": "false", "notifyRunCrashed": "false", "notifySuccess": "true",
 		"desktopDownloadFinished": "true", "desktopDownloadFailed": "false", "desktopRunCrashed": "false",
 		"desktopModUpdates": "true",
 		"density":           "compact", "uiScale": "125", "theme": "light", "gridCardSize": "large", "showAuthorOnCards": "false", "markLocalMods": "false", "centerConfigControls": "true", "touchRipples": "true", "browseCardStats": "size,updated",

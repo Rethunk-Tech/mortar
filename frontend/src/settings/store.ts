@@ -10,7 +10,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { follow } from '../shell/follow.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { setPopSuccess, useToasts } from '../toasts/store.ts'
 import { loadPrefSpecs } from './prefSpecs.ts'
 
 const defaults: Settings = {
@@ -92,6 +92,7 @@ const defaults: Settings = {
   notifyDownloadFinished: false,
   notifyDownloadFailed: true,
   notifyRunCrashed: true,
+  notifySuccess: false,
   desktopDownloadFinished: false,
   desktopDownloadFailed: true,
   desktopRunCrashed: true,
@@ -134,6 +135,8 @@ const defaults: Settings = {
 } as Settings
 
 export const useSettings = create<Settings>(() => defaults)
+
+setPopSuccess(() => useSettings.getState().notifySuccess === true)
 
 export const initSettings = async () => {
   await loadPrefSpecs()

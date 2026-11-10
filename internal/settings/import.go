@@ -28,7 +28,7 @@ var sectionFields = map[string][]string{
 		"listColumns", "listSortColumn", "listSortDir", "listGroupBy", "defaultModsView", "implicitModsView", "profileOrder", "sidebarBadges",
 	},
 	SectionNotifications: {
-		"notifyModUpdates", "notifyDownloadFinished", "notifyDownloadFailed", "notifyRunCrashed",
+		"notifyModUpdates", "notifyDownloadFinished", "notifyDownloadFailed", "notifyRunCrashed", "notifySuccess",
 		"desktopDownloadFinished", "desktopDownloadFailed", "desktopRunCrashed", "desktopModUpdates", "updateDigest",
 	},
 	SectionDownloads: {

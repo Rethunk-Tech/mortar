@@ -176,6 +176,7 @@ var registry = withDefaults([]pref{
 	ptrPref("notifyDownloadFinished", ScopeApp, func(s Settings, _ string) *bool { return s.NotifyDownloadFinished }, func(s *Settings, _ string, on bool) { s.NotifyDownloadFinished = &on }),
 	ptrPref("notifyDownloadFailed", ScopeApp, func(s Settings, _ string) *bool { return s.NotifyDownloadFailed }, func(s *Settings, _ string, on bool) { s.NotifyDownloadFailed = &on }),
 	ptrPref("notifyRunCrashed", ScopeApp, func(s Settings, _ string) *bool { return s.NotifyRunCrashed }, func(s *Settings, _ string, on bool) { s.NotifyRunCrashed = &on }),
+	ptrPref("notifySuccess", ScopeApp, func(s Settings, _ string) *bool { return s.NotifySuccess }, func(s *Settings, _ string, on bool) { s.NotifySuccess = &on }),
 	ptrPref("desktopDownloadFinished", ScopeApp, func(s Settings, _ string) *bool { return s.DesktopDownloadFinished }, func(s *Settings, _ string, on bool) { s.DesktopDownloadFinished = &on }),
 	ptrPref("desktopDownloadFailed", ScopeApp, func(s Settings, _ string) *bool { return s.DesktopDownloadFailed }, func(s *Settings, _ string, on bool) { s.DesktopDownloadFailed = &on }),
 	ptrPref("desktopRunCrashed", ScopeApp, func(s Settings, _ string) *bool { return s.DesktopRunCrashed }, func(s *Settings, _ string, on bool) { s.DesktopRunCrashed = &on }),

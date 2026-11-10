@@ -187,6 +187,8 @@ type Settings struct {
 	NotifyDownloadFinished *bool  `json:"notifyDownloadFinished"`
 	NotifyDownloadFailed   *bool  `json:"notifyDownloadFailed"`
 	NotifyRunCrashed       *bool  `json:"notifyRunCrashed"`
+	// NotifySuccess pops up a notice that something finished well; off, it goes to the notification list only. Nil means off.
+	NotifySuccess *bool `json:"notifySuccess"`
 	// DesktopDownloadFinished sends a desktop notification when a download finishes. Nil means off.
 	DesktopDownloadFinished *bool `json:"desktopDownloadFinished"`
 	// DesktopDownloadFailed sends a desktop notification when a download fails. Nil means on.

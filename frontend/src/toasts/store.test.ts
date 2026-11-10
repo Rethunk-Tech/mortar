@@ -1,13 +1,15 @@
 import { afterEach, beforeEach, expect, jest, test } from 'bun:test'
-import { setLatestChange, useToasts } from './store.ts'
+import { setLatestChange, setPopSuccess, useToasts } from './store.ts'
 
 beforeEach(() => {
   jest.useFakeTimers()
   // The store is one module instance for the whole bun run, and other test files push toasts into it.
   useToasts.setState(useToasts.getInitialState(), true)
+  setPopSuccess(() => true)
 })
 
 afterEach(() => {
+  setPopSuccess(() => true)
   jest.useRealTimers()
   useToasts.setState(useToasts.getInitialState(), true)
 })
@@ -219,4 +221,29 @@ test('a notice on a standing topic replaces the older one in the history', () =>
     '5 mod updates available',
     'Could not check the mods for problems',
   ])
+})
+
+test('a success with nothing to act on goes to the list only, unless pop-ups are on', () => {
+  setPopSuccess(() => false)
+  const { push } = useToasts.getState()
+  push({ kind: 'success', title: 'Installed A' })
+  push({ kind: 'success', title: 'Installed A' })
+  push({ kind: 'success', title: 'Removed B', action: { label: 'Undo', run: () => undefined } })
+  push({ kind: 'success', title: 'Building', sticky: true })
+  push({ kind: 'error', title: 'Failed C' })
+  expect(useToasts.getState().toasts.map((t) => t.title)).toEqual([
+    'Removed B',
+    'Building',
+    'Failed C',
+  ])
+  expect(useToasts.getState().history.map((h) => [h.title, h.count ?? 1])).toEqual([
+    ['Failed C', 1],
+    ['Building', 1],
+    ['Removed B', 1],
+    ['Installed A', 2],
+  ])
+  expect(useToasts.getState().unread).toBe(4)
+  setPopSuccess(() => true)
+  push({ kind: 'success', title: 'Installed D' })
+  expect(useToasts.getState().toasts.map((t) => t.title)).toContain('Installed D')
 })

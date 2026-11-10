@@ -2958,6 +2958,11 @@ msgstr "{game}: the {app} prefix does not load {name} natively, so its loader wi
 msgid "Hidden messages"
 msgstr "Hidden messages"
 
+#: src/settings/prefCopy.ts
+#: src/settings/sections/Notifications.tsx
+msgid "Something finishes well"
+msgstr "Something finishes well"
+
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Every message"
 msgstr "Every message"

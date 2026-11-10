@@ -101,6 +101,8 @@ export function Notifications() {
     { label: t`A download fails`, toast: 'notifyDownloadFailed', desktop: 'desktopDownloadFailed' },
     { label: t`The game crashes`, toast: 'notifyRunCrashed', desktop: 'desktopRunCrashed' },
     { label: t`Mod updates are found`, toast: 'notifyModUpdates', desktop: 'desktopModUpdates' },
+    // Off, these still reach the notification list; only the pop-up is skipped. There is no desktop channel for them.
+    { label: t`Something finishes well`, toast: 'notifySuccess', desktop: '' },
   ]
   return (
     <>

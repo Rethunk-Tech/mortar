@@ -49,6 +49,14 @@ const lifetime = (kind: ToastKind) => (kind === 'info' || kind === 'success' ? Q
 
 // The profiles store answers with the history event its last change returned; toasts cannot import it back.
 let latestChange: (profileId: string) => string = () => ''
+// The settings store answers whether a success pops up; it imports this store, so it cannot be imported back.
+let popSuccess: () => boolean = () => false
+
+// A success with nothing to do about it only goes to the notification list unless the player asked for pop-ups. One
+// with an action (Undo, Open) still pops, since the action is worth most right away, and so does a sticky progress
+// notice, which the player is watching.
+const pops = (input: ToastInput) =>
+  input.kind !== 'success' || input.action !== undefined || input.sticky === true || popSuccess()
 
 const changesOf = (
   input: Pick<ToastInput, 'action' | 'changes'>,
@@ -171,14 +179,20 @@ export const useToasts = create<{
         const changes = changesOf(input, previous.changes)
         const merged = { ...previous, at: now, count, ...(changes.length > 0 ? { changes } : {}) }
         const shown = get().toasts.some((toast) => toast.title === input.title)
-        set((s) => ({
-          history: [merged, ...s.history.slice(1)],
-          toasts: shown
-            ? s.toasts.map((toast) => (toast.title === input.title ? { ...toast, count } : toast))
-            : [...s.toasts, { ...input, id: previous.id, count }].slice(-MAX_SHOWN),
-        }))
+        const popped = shown || pops(input)
+        set((s) => {
+          let toasts = s.toasts
+          if (shown) {
+            toasts = s.toasts.map((toast) =>
+              toast.title === input.title ? { ...toast, count } : toast,
+            )
+          } else if (popped) {
+            toasts = [...s.toasts, { ...input, id: previous.id, count }].slice(-MAX_SHOWN)
+          }
+          return { history: [merged, ...s.history.slice(1)], toasts }
+        })
         saveHistory(get().history)
-        if (!(shown || input.sticky)) {
+        if (popped && !(shown || input.sticky)) {
           arm(previous.id, input.kind)
         }
         openRepeat(previous.id)
@@ -186,7 +200,8 @@ export const useToasts = create<{
       }
       const id = nextId
       nextId += 1
-      const kept = [...get().toasts, { ...input, id }]
+      const popped = pops(input)
+      const kept = popped ? [...get().toasts, { ...input, id }] : get().toasts
       for (const gone of kept.slice(0, -MAX_SHOWN)) {
         clearTimeout(timers.get(gone.id))
         timers.delete(gone.id)
@@ -200,7 +215,7 @@ export const useToasts = create<{
         unread: Math.min(HISTORY_CAP, get().unread + 1),
       })
       saveHistory(get().history)
-      if (!input.sticky) {
+      if (popped && !input.sticky) {
         arm(id, input.kind)
       }
       openRepeat(id)
@@ -251,4 +266,8 @@ export const useToasts = create<{
 
 export function setLatestChange(f: (profileId: string) => string) {
   latestChange = f
+}
+
+export function setPopSuccess(f: () => boolean) {
+  popSuccess = f
 }

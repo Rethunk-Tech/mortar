@@ -19,7 +19,7 @@ var portableFields = []string{
 	"notifyModUpdates", "keepDownloadArchives", "storeRetentionDays",
 	"defaultModsView", "implicitModsView", "confirmRemovals", "backgroundBadgeChecks",
 	"startScreen", "antivirus", "dates", "graphics", "trashRetentionDays", "historyEventsKept",
-	"notifyDownloadFinished", "notifyDownloadFailed", "notifyRunCrashed",
+	"notifyDownloadFinished", "notifyDownloadFailed", "notifyRunCrashed", "notifySuccess",
 	"desktopDownloadFinished", "desktopDownloadFailed", "desktopRunCrashed", "desktopModUpdates",
 	"density", "uiScale", "theme", "gridCardSize", "showAuthorOnCards", "markLocalMods", "centerConfigControls", "browseCardStats", "reduceMotion", "touchRipples", "profileHero",
 	"reuseFomodChoices", "driftChecks",

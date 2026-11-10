@@ -180,6 +180,7 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
     notifyDownloadFinished: { label: i18n._(msg`Downloads finished`) },
     notifyDownloadFailed: { label: i18n._(msg`Download failed`) },
     notifyRunCrashed: { label: i18n._(msg`Run crashed`) },
+    notifySuccess: { label: i18n._(msg`Something finishes well`) },
     backupBeforePlay: {
       label: i18n._(msg`Back up saves before Play`),
       description: i18n._(msg`When Mortar makes a save backup before launching`),

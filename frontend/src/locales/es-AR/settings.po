@@ -2958,6 +2958,11 @@ msgstr ""
 msgid "Hidden messages"
 msgstr ""
 
+#: src/settings/prefCopy.ts
+#: src/settings/sections/Notifications.tsx
+msgid "Something finishes well"
+msgstr ""
+
 #: src/settings/sections/HiddenLogSources.tsx
 msgid "Every message"
 msgstr ""
