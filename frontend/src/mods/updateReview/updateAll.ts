@@ -6,7 +6,7 @@ import { i18n } from '../../i18n/index.ts'
 import { queueWants, type Want } from '../../queue/actions.ts'
 import { useQueue } from '../../queue/store.ts'
 import { summarizeBatch, watchBatch } from '../../share/importCompletion.ts'
-import { useToasts } from '../../toasts/store.ts'
+import { type ToastKind, useToasts } from '../../toasts/store.ts'
 import { installableUpdate } from '../lookup.ts'
 import { undoAll } from './undoAll.ts'
 
@@ -42,8 +42,15 @@ function summarize(
     ...(counts.failed > 0 ? [i18n._(msg`${{ failed: counts.failed }} failed`)] : []),
     ...(needChoice > 0 ? [i18n._(msg`${needChoice} need your choice`)] : []),
   ]
+  let kind: ToastKind = 'success'
+  if (counts.failed > 0) {
+    kind = 'warning'
+  } else if (needChoice > 0) {
+    // Not a quiet success: the player still has updates to pick, so it pops up even with success pop-ups off.
+    kind = 'info'
+  }
   toasts.push({
-    kind: counts.failed > 0 ? 'warning' : 'success',
+    kind,
     title: parts.join('; '),
     changes: counts.changes,
     ...(counts.installed > 0
