@@ -413,9 +413,9 @@ func (s *Store) AddDir(ctx context.Context, game, key, srcDir string) error {
 	return s.addDir(ctx, game, key, srcDir, false)
 }
 
-// AddBackupDir is AddDir for an item a profile backup carries. Its hash is vouched for by the backup itself, so the
-// item is marked: it serves the restored profile, no other profile or update takes it as the source's file
-// (Unverified), and the next archive added under the key replaces it. A key already held is left as it is.
+// AddBackupDir is AddDir for an item a profile backup or a LAN peer carries. Its hash is vouched for by whoever sent
+// it, so the item is marked: it serves the profile it came with, no other profile or update takes it as the source's
+// file (Unverified), and the next archive added under the key replaces it. A key already held is left as it is.
 func (s *Store) AddBackupDir(ctx context.Context, game, key, srcDir string) error {
 	if _, _, ok := LoaderOf(key); ok {
 		return fmt.Errorf("store key %q names a loader bundle", key)
@@ -423,12 +423,16 @@ func (s *Store) AddBackupDir(ctx context.Context, game, key, srcDir string) erro
 	return s.addDir(ctx, game, key, srcDir, true)
 }
 
-// Unverified reports whether key holds bytes only a backup vouched for.
+// Unverified reports whether key holds bytes only a backup or a peer vouched for.
 func (s *Store) Unverified(game, key string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	idx, err := s.loadIndex()
-	return err == nil && idx[game][key].FromBackup
+	idx, err := s.viewIndex()
+	if err != nil {
+		return false
+	}
+	r, ok := idx[game][key]
+	return ok && r.unverified(key)
 }
 
 // AddLoaderDir is AddDir for a loader bundle, which Mortar builds from a checked download or the installed game.
@@ -467,7 +471,7 @@ func (s *Store) admit(ctx context.Context, game, key string, fromBackup bool, ha
 	}
 	if ok, err := s.ready(game, key, idx); err != nil {
 		return err
-	} else if ok && (fromBackup || !idx[game][key].FromBackup) {
+	} else if ok && (fromBackup || !idx[game][key].unverified(key)) {
 		return s.touch(game, key)
 	}
 	blob, err := hash()
@@ -704,11 +708,18 @@ type record struct {
 	// Asset is the release asset name of a GitHub item, which its key hashes.
 	Asset string    `json:"asset,omitempty"`
 	Used  time.Time `json:"used"`
-	// FromBackup marks an item a profile backup supplied: the hash that vouched for it came from the same file, so
-	// nothing else may rely on it, and the next verified add under the key replaces it.
+	// FromBackup marks an item a profile backup or a LAN peer supplied: the hash that vouched for it came from the same
+	// sender, so nothing else may rely on it, and the next verified add under the key replaces it.
 	FromBackup bool `json:"fromBackup,omitempty"`
 	// Size is the folder's size on disk, measured once: an item never changes after it is added.
 	Size int64 `json:"size,omitempty"`
+}
+
+// unverified reports a record nothing but its sender vouched for. Every verified writer of a local key stores the
+// archive's own hash as its blob, so a local key holding any other blob is one a peer sent, which also flags what
+// releases before the peer flag wrote, unmigrated.
+func (r record) unverified(key string) bool {
+	return r.FromBackup || strings.HasPrefix(key, "local-") && r.Blob != strings.TrimPrefix(key, "local-")
 }
 
 // index maps game -> key -> record.

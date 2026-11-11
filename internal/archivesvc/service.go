@@ -39,7 +39,9 @@ type Deps struct {
 	// memory for one listing only.
 	HashCache string
 	Keys      func(game string) ([]string, error)
-	Profiles  func(game string) ([]profile.Profile, error)
+	// Unverified reports a store key whose content only a backup or a peer vouched for, which accounts for no archive.
+	Unverified func(game, key string) bool
+	Profiles   func(game string) ([]profile.Profile, error)
 	// NexusMods is the set of Nexus mod ids in the download history.
 	NexusMods func() map[int]bool
 	// Offer reports whether the game's "Offer new downloads" setting is on; Seen and SetSeen keep the newest archive
@@ -73,7 +75,7 @@ func (s *Service) ArchivePreview(path string) (archive.Preview, error) {
 
 // DownloadsArchives lists archives in the download folder that are not installed for the game, newest first. An
 // archive counts as installed when its content key is in the store, or a profile holds a local entry of the same
-// file name.
+// file name; a key only a backup or a peer vouched for counts for neither, since its content may not be the archive.
 func (s *Service) DownloadsArchives(game string) ([]DownloadArchive, error) {
 	out, err := s.scanDownloads()
 	if err != nil {
@@ -296,7 +298,7 @@ func (s *Service) storeKeys(game string) (map[string]bool, error) {
 	}
 	keys, err := s.d.Keys(game)
 	for _, k := range keys {
-		out[k] = true
+		out[k] = !s.unverified(game, k)
 	}
 	return out, err
 }
@@ -312,12 +314,16 @@ func (s *Service) profileNames(game string) (map[string]bool, error) {
 	}
 	for _, p := range all {
 		for _, e := range p.Entries {
-			if e.Source.Kind == profile.KindLocal {
+			if e.Source.Kind == profile.KindLocal && !s.unverified(game, e.StoreKey()) {
 				out[e.Source.Name] = true
 			}
 		}
 	}
 	return out, nil
+}
+
+func (s *Service) unverified(game, key string) bool {
+	return s.d.Unverified != nil && s.d.Unverified(game, key)
 }
 
 func isArchive(name string) bool { return ga.HasExtension(name) }

@@ -254,10 +254,9 @@ func TestLoopbackTransfer(t *testing.T) {
 	if err := senderStore.AddDir(t.Context(), "stardew", ghKey, source); err != nil {
 		t.Fatal(err)
 	}
-	// So does an archive the sender installed from disk, which exists nowhere else; its key names the archive's hash,
-	// not the folder's.
-	localKey := store.LocalKey(strings.Repeat("cd", 32))
-	if err := senderStore.AddDir(t.Context(), "stardew", localKey, source); err != nil {
+	// So does an item the sender installed from disk, which exists nowhere else.
+	localKey, err := senderStore.AddHashedDir(t.Context(), "stardew", source)
+	if err != nil {
 		t.Fatal(err)
 	}
 
@@ -333,8 +332,8 @@ func TestLoopbackTransfer(t *testing.T) {
 	if string(got) != "from sender" {
 		t.Fatalf("installed contents = %q", got)
 	}
-	if !receiverStore.Unverified("stardew", key) || receiverStore.Unverified("stardew", localKey) {
-		t.Error("a file taken from a computer is vouched for by it alone, except a local archive")
+	if !receiverStore.Unverified("stardew", key) || !receiverStore.Unverified("stardew", localKey) {
+		t.Error("a file taken from a computer is vouched for by it alone, a local archive's included")
 	}
 	if src, pkg, _, ok := receiverStore.Meta("stardew", localKey); !ok || src != profile.KindLocal || pkg != "Mine.zip" {
 		t.Fatalf("local entry meta = %q %q %v", src, pkg, ok)

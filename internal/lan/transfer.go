@@ -20,7 +20,6 @@ import (
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/scratch"
 
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -323,14 +322,10 @@ func (s *Service) fetchOnce(
 	if item.Hash == "" || got != item.Hash {
 		return 0, usererr.New(usererr.Damaged, fmt.Sprintf("%s from %s arrived damaged: it does not match what they vouched for", modName(item), incoming.Sender))
 	}
-	// The hash the sender vouched for is the check: a local key names the archive it came from, not this folder.
-	// Any other key names a source's file, which the sender's word does not prove, so that item serves this share
-	// only and every other install fetches from the source.
-	add := s.deps.Store.AddBackupDir
-	if item.Source == profile.KindLocal {
-		add = s.deps.Store.AddDir
-	}
-	if err := add(ctx, incoming.Game, key, temp); err != nil {
+	// The sender's hash proves this folder, not the key: a key names a source's file or, for a local item, the
+	// archive it came from, neither of which the sender's word proves. So the item serves this share only, and the
+	// real file replaces it when it is added.
+	if err := s.deps.Store.AddBackupDir(ctx, incoming.Game, key, temp); err != nil {
 		return 0, installError("install", item, incoming.Sender, err)
 	}
 	if item.Source != "" {

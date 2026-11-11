@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -66,11 +65,15 @@ func smapiFolder(t *testing.T, id string) string {
 func TestPairedSendPlacesEverySourceWithoutDownloading(t *testing.T) {
 	const game = "stardew"
 	senderStore := store.OpenAt(t.TempDir())
-	nexusKey, ghKey, localKey := store.NexusKey(7, 2), gh.Key("o", "r", "v1", "m.zip"), store.LocalKey(strings.Repeat("cd", 32))
-	for key, id := range map[string]string{nexusKey: "Me.Nexus", ghKey: "Me.GitHub", localKey: "Me.Local"} {
+	nexusKey, ghKey := store.NexusKey(7, 2), gh.Key("o", "r", "v1", "m.zip")
+	for key, id := range map[string]string{nexusKey: "Me.Nexus", ghKey: "Me.GitHub"} {
 		if err := senderStore.AddDir(t.Context(), game, key, smapiFolder(t, id)); err != nil {
 			t.Fatal(err)
 		}
+	}
+	localKey, err := senderStore.AddHashedDir(t.Context(), game, smapiFolder(t, "Me.Local"))
+	if err != nil {
+		t.Fatal(err)
 	}
 	var payload bytes.Buffer
 	if _, err := share.Write(&payload, game, profile.Profile{Name: "Farm friends", Entries: []profile.Entry{
@@ -149,5 +152,8 @@ func TestPairedSendPlacesEverySourceWithoutDownloading(t *testing.T) {
 	slices.Sort(kinds)
 	if want := []string{profile.KindGitHub, profile.KindLocal, profile.KindNexus}; !slices.Equal(kinds, want) {
 		t.Fatalf("placed entries = %v, want %v", kinds, want)
+	}
+	if !items.Unverified(game, localKey) {
+		t.Fatal("a local item a peer sent is trusted beyond the profile it came with")
 	}
 }

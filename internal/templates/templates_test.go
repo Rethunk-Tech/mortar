@@ -25,17 +25,18 @@ func TestTemplateRoundTripFromProfileToNewProfile(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(src, "manifest.json"), []byte(`{"Name":"One","UniqueID":"A.One","Version":"1.0.0"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := items.AddDir(t.Context(), "stardew", "local-a", src); err != nil {
+	key, err := items.AddHashedDir(t.Context(), "stardew", src)
+	if err != nil {
 		t.Fatal(err)
 	}
 	from, err := profiles.Create("stardew", "Source")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := profiles.AddEntry("stardew", from.ID, "local-a", profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
+	if _, err := profiles.AddEntry("stardew", from.ID, key, profile.Source{Kind: profile.KindLocal, Name: "a.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := profiles.SetImplicitMany("stardew", from.ID, []string{"local-a"}, true); err != nil {
+	if _, err := profiles.SetImplicitMany("stardew", from.ID, []string{key}, true); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := profiles.SetLaunchOptions("stardew", from.ID, "--no-gui"); err != nil {

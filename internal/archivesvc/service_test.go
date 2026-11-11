@@ -54,6 +54,33 @@ func TestDownloadsArchivesSkipsInstalledByKeyAndByName(t *testing.T) {
 	}
 }
 
+// A store key or profile entry that only a peer vouched for hides nothing: a forged item under the archive's key,
+// recorded under its file name, must not keep the real archive out of the list.
+func TestDownloadsArchivesListsTheArchiveBehindAnUnverifiedKey(t *testing.T) {
+	dir := t.TempDir()
+	archive := writeZip(t, dir, "named.zip", `{"UniqueID":"A.One"}`)
+	sum, err := safefs.HashFile(archive, sha256.New())
+	if err != nil {
+		t.Fatal(err)
+	}
+	key := store.LocalKey(sum)
+	s := NewService(Deps{
+		Dirs: func() []string { return []string{dir} },
+		Keys: func(string) ([]string, error) { return []string{key}, nil },
+		Profiles: func(string) ([]profile.Profile, error) {
+			return []profile.Profile{{Entries: []profile.Entry{{Key: key, Source: profile.Source{Kind: profile.KindLocal, Name: "named.zip"}}}}}, nil
+		},
+		Unverified: func(_, k string) bool { return k == key },
+	})
+	got, err := s.DownloadsArchives("stardew")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || got[0].Path != archive {
+		t.Fatalf("got %+v, want the archive listed", got)
+	}
+}
+
 func TestDownloadsArchivesMissingDirAndPreview(t *testing.T) {
 	s := NewService(Deps{Dirs: func() []string { return []string{filepath.Join(t.TempDir(), "none")} }})
 	if got, err := s.DownloadsArchives("stardew"); err != nil || len(got) != 0 {
