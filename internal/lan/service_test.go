@@ -833,3 +833,17 @@ func TestHelloProvesPairingKey(t *testing.T) {
 		t.Fatalf("a replayed proof for a new challenge: key %v, err %v", key, err)
 	}
 }
+
+// A computer still on 0.7.0's LAN protocol answers /hello with that version: a send to it is refused with the update
+// message, not as a pairing whose proof failed.
+func TestAPeerOnTheOlderProtocolIsToldToUpdateMortar(t *testing.T) {
+	t.Parallel()
+	old := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, helloResponse{ID: "old", Name: "Old", Version: "6", Nonce: "n", Proof: "p"})
+	}))
+	t.Cleanup(old.Close)
+	s, _ := pairedService(t, nil, nil)
+	if _, err := s.hello(t.Context(), strings.TrimPrefix(old.URL, "http://")); err == nil || !strings.Contains(err.Error(), "update Mortar on both computers") {
+		t.Fatalf("hello from an older peer: %v", err)
+	}
+}
