@@ -158,3 +158,13 @@ func TestPairingRefusesAnIDAlreadyPairedOrOwn(t *testing.T) {
 		t.Errorf("host book = %v, want only the first pairing", ids)
 	}
 }
+
+// The /hello proof is keyed apart from entry MACs: a caller picks the hello challenge, so under one key and one
+// construction it could have a store entry's MAC signed for it.
+func TestHelloProofIsNotAnEntryMAC(t *testing.T) {
+	t.Parallel()
+	key := bytes.Repeat([]byte{7}, 32)
+	if helloProof(key, "store|stardew|k", "a", "b", "h") == entryMAC(key, "stardew", "k", "hello|a|b|h") {
+		t.Fatal("a hello answer doubles as an entry MAC")
+	}
+}

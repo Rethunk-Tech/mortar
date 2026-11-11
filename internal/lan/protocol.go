@@ -16,7 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
 
-const protocolVersion = "6"
+const protocolVersion = "7"
 
 type nonceRecord struct {
 	peer    string
@@ -40,9 +40,12 @@ type helloResponse struct {
 }
 
 // helloProof binds a /hello answer to the caller's challenge, both ids in a fixed order (caller, then answerer) and
-// the address the caller dialed, so an answer relayed from another computer fails.
+// the address the caller dialed, so an answer relayed from another computer fails. The caller picks the challenge,
+// so the proof is keyed by a subkey of the pair key: under the pair key itself it would be an entryMAC on demand.
 func helloProof(key []byte, challenge, callerID, answererID, host string) string {
-	return hmacProof(key, challenge, "hello|"+callerID+"|"+answererID+"|"+host)
+	sub := hmac.New(sha256.New, key)
+	_, _ = sub.Write([]byte("mortar-lan-hello"))
+	return hmacProof(sub.Sum(nil), challenge, "hello|"+callerID+"|"+answererID+"|"+host)
 }
 
 type shareResponse struct {
@@ -57,13 +60,6 @@ func hmacProof(key []byte, nonce, payload string) string {
 	_, _ = mac.Write([]byte(nonce))
 	_, _ = mac.Write(payloadHash[:])
 	return hex.EncodeToString(mac.Sum(nil))
-}
-
-func proofMatches(key []byte, nonce, payload, proof string) bool {
-	if len(key) == 0 || nonce == "" || proof == "" {
-		return false
-	}
-	return hmac.Equal([]byte(hmacProof(key, nonce, payload)), []byte(proof))
 }
 
 // entryDigest is a store entry's content hash and the sender's MAC over it.

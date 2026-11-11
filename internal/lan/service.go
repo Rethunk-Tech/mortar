@@ -692,7 +692,7 @@ func (s *Service) provenKey(hello helloResponse) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !proofMatches(key, hello.challenge, "hello|"+selfID+"|"+hello.ID+"|"+hello.host, hello.Proof) {
+	if hello.challenge == "" || hello.Proof == "" || !hmac.Equal([]byte(helloProof(key, hello.challenge, selfID, hello.ID, hello.host)), []byte(hello.Proof)) {
 		return nil, errUnproven
 	}
 	return key, nil
