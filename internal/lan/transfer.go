@@ -286,7 +286,9 @@ func (s *Service) fetchOnce(
 		return 0, usererr.Wrap(usererr.Network, fmt.Errorf("%s went away before sending a file: %w", incoming.Sender, err))
 	}
 	defer func() { _ = response.Body.Close() }()
-	if response.StatusCode == http.StatusNotFound {
+	// A reply status is not authenticated, so a 404 counts as "missing" only for an item the sender never vouched
+	// for; a vouched item that 404s fails the transfer rather than leaving it Done without that file.
+	if response.StatusCode == http.StatusNotFound && item.Hash == "" {
 		return 0, errRemoteStoreEntryMissing
 	}
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
