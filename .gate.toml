@@ -1,7 +1,12 @@
 # `bun run test` backgrounds its Go half inside bash -c, which gate cannot see into, so left alone both gates
 # compile and run the race tests at once.
 [gates.go]
-run = "go test -race ./... && golangci-lint run --allow-parallel-runners"
+run = "go test -race ./..."
+timeout = "3m"
+
+# Its own gate, so it runs beside the race tests rather than after them.
+[gates.lint-go]
+run = "golangci-lint run --allow-parallel-runners"
 timeout = "3m"
 
 [gates.test]
