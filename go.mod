@@ -35,7 +35,7 @@ require (
 	github.com/Rethunk-Tech/go-vintagestory v0.1.0
 	github.com/Rethunk-Tech/go-winsym v0.2.1
 	github.com/Totative/go-avscan v0.3.0
-	github.com/Totative/go-codepair v0.2.0
+	github.com/Totative/go-codepair v0.3.0
 	github.com/Totative/go-keyring v0.3.0
 	github.com/andybalholm/brotli v1.3.0
 	github.com/godbus/dbus/v5 v5.2.4
@@ -52,6 +52,7 @@ require (
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/Rethunk-Tech/go-tilemask v0.1.1 // indirect
@@ -68,6 +69,7 @@ require (
 	github.com/gofrs/flock v0.13.2 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/gtank/ristretto255 v0.2.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/klauspost/compress v1.20.3 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect

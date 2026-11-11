@@ -33,7 +33,6 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	pairIterations = 1_000
 	retryDelay = time.Millisecond
 	testmain.RunInTempData(m, "lan")
 }

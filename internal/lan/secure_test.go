@@ -299,9 +299,13 @@ func TestOneHostCannotHoldEveryPairingSession(t *testing.T) {
 	if _, err := host.PairCode(t.Context()); err != nil {
 		t.Fatal(err)
 	}
-	body, _ := json.Marshal(pairBeginRequest{ID: "x", Name: "x", A: base64.RawStdEncoding.EncodeToString(bytes.Repeat([]byte{9}, 32))})
 	codes := map[int]int{}
 	for range maxSessionsPerPeer + 3 {
+		_, msg, err := pairConfig().NewJoiner("AAAAAAAA", "x", "x")
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, _ := json.Marshal(pairBeginRequest{Msg: base64.RawStdEncoding.EncodeToString(msg)})
 		resp, err := postJSON(t, "http://"+addr+"/pair/begin", body)
 		if err != nil {
 			t.Fatal(err)
@@ -324,9 +328,11 @@ func TestGuessesAreCountedBeforeTheyAreChecked(t *testing.T) {
 	host.pairing.mu.Lock()
 	defer host.pairing.mu.Unlock()
 	for range maxFailures {
-		host.pairChargeLocked("192.0.2.9", now)
+		if err := host.pairChargeLocked("192.0.2.9", now); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if err := host.pairOpen("192.0.2.9", now); err == nil {
+	if err := host.pairChargeLocked("192.0.2.9", now); err == nil {
 		t.Fatal("a sixth guess was allowed")
 	}
 }

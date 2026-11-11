@@ -21,11 +21,15 @@ func FuzzHandshake(f *testing.F) {
 		f.Fatal(err)
 	}
 	payload := base64.RawStdEncoding.EncodeToString(buf.Bytes())
+	_, joinerMsg, err := pairConfig().NewJoiner("AAAAAAAA", "joiner", "Laptop")
+	if err != nil {
+		f.Fatal(err)
+	}
 	for _, v := range []any{
 		shareRequest{Sender: "Alex", Game: "stardew", Payload: payload, Version: protocolVersion, SenderID: "id", SenderPort: 9, Digests: map[string]entryDigest{"k": {Hash: "h", MAC: "m"}}},
 		shareRequest{Sender: " Alex", Game: "lethal-company", Payload: payload + " ", Version: protocolVersion},
-		pairBeginRequest{ID: "joiner", Name: "Laptop", A: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},
-		pairFinishRequest{Session: "s", Proof: "p"},
+		pairBeginRequest{Msg: base64.RawStdEncoding.EncodeToString(joinerMsg)},
+		pairFinishRequest{Session: "s", Confirm: "AAAA"},
 	} {
 		b, err := json.Marshal(v)
 		if err != nil {
