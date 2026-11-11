@@ -10,6 +10,13 @@ import (
 	"testing"
 )
 
+// setSelf gives a service a chosen pairing id, as a second computer copied from or posing as another would have.
+func setSelf(s *Service, id string) {
+	s.book.mu.Lock()
+	s.book.file.Self, s.book.loaded = id, true
+	s.book.mu.Unlock()
+}
+
 func pairedIDs(t *testing.T, s *Service) []string {
 	t.Helper()
 	peers, err := s.Paired()
@@ -97,5 +104,57 @@ func TestAnOlderMortarIsToldToUpdateBeforePairing(t *testing.T) {
 		if resp.StatusCode != http.StatusNotFound || !bytes.Contains(msg, []byte("update Mortar")) {
 			t.Fatalf("%s from an older joiner = %d %q", path, resp.StatusCode, msg)
 		}
+	}
+}
+
+// A pairing never replaces one the computer already holds, nor pairs it with its own id: either would let a computer
+// that learned the code take over a paired computer's identity.
+func TestPairingRefusesAnIDAlreadyPairedOrOwn(t *testing.T) {
+	t.Parallel()
+	a, aAddr := pairedService(t, nil, nil)
+	b, _ := pairedService(t, nil, nil)
+	pair(t, a, b, aAddr)
+	aID, _ := a.book.self()
+	bID, _ := b.book.self()
+	aKey, bKey := a.book.key(bID), b.book.key(aID)
+
+	// The host refuses a joiner claiming a paired id.
+	posingAsB, _ := pairedService(t, nil, nil)
+	setSelf(posingAsB, bID)
+	code, err := a.PairCode(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := posingAsB.Pair(t.Context(), aAddr, code); err == nil {
+		t.Error("the host replaced a paired computer's key")
+	}
+	if !bytes.Equal(a.book.key(bID), aKey) || len(pairedIDs(t, posingAsB)) != 0 {
+		t.Error("a refused pairing changed a book")
+	}
+
+	// The joiner refuses a host claiming a paired id.
+	posingAsA, posingAddr := pairedService(t, nil, nil)
+	setSelf(posingAsA, aID)
+	if code, err = posingAsA.PairCode(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	if err := b.Pair(t.Context(), posingAddr, code); err == nil {
+		t.Error("the joiner replaced a paired computer's key")
+	}
+	if !bytes.Equal(b.book.key(aID), bKey) || len(pairedIDs(t, posingAsA)) != 0 {
+		t.Error("a refused pairing changed a book")
+	}
+
+	// Neither side pairs with its own id.
+	twin, _ := pairedService(t, nil, nil)
+	setSelf(twin, aID)
+	if code, err = a.PairCode(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	if err := twin.Pair(t.Context(), aAddr, code); err == nil {
+		t.Error("a computer paired with its own id")
+	}
+	if ids := pairedIDs(t, a); len(ids) != 1 {
+		t.Errorf("host book = %v, want only the first pairing", ids)
 	}
 }

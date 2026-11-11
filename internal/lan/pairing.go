@@ -147,13 +147,36 @@ func (b *peerBook) key(id string) []byte {
 	return nil
 }
 
+// errAlreadyPaired refuses a pairing under an id the book already holds, or under this computer's own: a computer
+// that learned a code would otherwise take over a paired computer's identity by replacing its key.
+var errAlreadyPaired = errors.New("already paired with a computer using that id; unpair it first")
+
+func (b *peerBook) checkNewLocked(id string) error {
+	if id == b.file.Self || slices.ContainsFunc(b.file.Peers, func(r pairedRecord) bool { return r.ID == id }) {
+		return errAlreadyPaired
+	}
+	return nil
+}
+
+// checkNew reports whether id may be paired, before either side commits to the run.
+func (b *peerBook) checkNew(id string) error {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	if err := b.loadLocked(); err != nil {
+		return err
+	}
+	return b.checkNewLocked(id)
+}
+
 func (b *peerBook) add(peer PairedPeer, key []byte) error {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	if err := b.loadLocked(); err != nil {
 		return err
 	}
-	b.file.Peers = slices.DeleteFunc(b.file.Peers, func(r pairedRecord) bool { return r.ID == peer.ID })
+	if err := b.checkNewLocked(peer.ID); err != nil {
+		return err
+	}
 	b.file.Peers = append(b.file.Peers, pairedRecord{PairedPeer: peer, Key: base64.RawStdEncoding.EncodeToString(key)})
 	return b.saveLocked()
 }
@@ -348,6 +371,13 @@ func (s *Service) handlePairFinish(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid pairing request", http.StatusBadRequest)
 		return
 	}
+	if err := s.book.checkNew(p.PeerID); err != nil {
+		h.mu.Lock()
+		s.pairRefundLocked(remote)
+		h.mu.Unlock()
+		pairSaveError(w, err)
+		return
+	}
 	h.mu.Lock()
 	if h.code != sess.code || s.pairOpen(now) != nil {
 		h.mu.Unlock()
@@ -359,13 +389,22 @@ func (s *Service) handlePairFinish(w http.ResponseWriter, r *http.Request) {
 	h.mu.Unlock()
 	peer := PairedPeer{ID: p.PeerID, Name: cleanName(p.PeerName)}
 	if err := s.book.add(peer, p.PeerKey); err != nil {
-		http.Error(w, "could not save the pairing", http.StatusInternalServerError)
+		pairSaveError(w, err)
 		return
 	}
 	if s.deps.Emit != nil {
 		s.deps.Emit(PairedEvent, peer)
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// pairSaveError answers a pairing the book refused; a held or own id is for the joiner's user to resolve.
+func pairSaveError(w http.ResponseWriter, err error) {
+	if errors.Is(err, errAlreadyPaired) {
+		http.Error(w, "that computer is already paired with one using your id; unpair it there first", http.StatusConflict)
+		return
+	}
+	http.Error(w, "could not save the pairing", http.StatusInternalServerError)
 }
 
 // pairChargeLocked counts one guess from remote, or refuses it when remote is locked out or the code's budget is
@@ -416,6 +455,10 @@ func (s *Service) Pair(ctx context.Context, peerID, code string) error {
 	}
 	if err != nil || !validPeer(p) {
 		return errors.New("the other computer sent an invalid pairing reply")
+	}
+	// Refused before the confirmation goes out, so the host never completes a pairing this side will not store.
+	if err := s.book.checkNew(p.PeerID); err != nil {
+		return err
 	}
 	if err := s.postJSON(ctx, peerID, pairFinishPath, pairFinishRequest{Session: begin.Session, Confirm: base64.RawStdEncoding.EncodeToString(confirm)}, nil); err != nil {
 		return err
