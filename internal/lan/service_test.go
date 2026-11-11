@@ -10,6 +10,7 @@ import (
 	"io"
 	"maps"
 	"net"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -768,6 +769,27 @@ func TestShareRequestsInFlightAreLimited(t *testing.T) {
 	}
 }
 
+// An unsealed share is charged whatever sender it names, so naming a paired id neither skips the limit nor answers
+// differently from naming a stranger.
+func TestUnsealedShareNamingAPairedSenderIsCharged(t *testing.T) {
+	service := NewService(Deps{})
+	if err := service.book.add(PairedPeer{ID: "laptop", Name: "Laptop"}, make([]byte, 32)); err != nil {
+		t.Fatal(err)
+	}
+	codes := make([]int, 0, 2)
+	for range 2 {
+		request := httptest.NewRequestWithContext(t.Context(), "POST", "http://mortar.test/share", strings.NewReader("{"))
+		request.RemoteAddr = "192.0.2.21:4000"
+		request.Header.Set(senderHeader, "laptop")
+		response := httptest.NewRecorder()
+		service.handleShare(response, request)
+		codes = append(codes, response.Code)
+	}
+	if codes[0] != http.StatusBadRequest || codes[1] != http.StatusTooManyRequests {
+		t.Fatalf("answers = %v, want [400 429]", codes)
+	}
+}
+
 // A peer inside its rate limit is refused before its body is read, even when it names a paired device.
 func TestRateLimitedPeerNamingAPairedSenderIsRefusedBeforeItsBody(t *testing.T) {
 	service := NewService(Deps{})
@@ -804,12 +826,12 @@ func TestHelloProvesPairingKey(t *testing.T) {
 	// Claiming the paired id without the key: no proof, or a proof recorded for another challenge.
 	spoof := hello
 	spoof.Proof = ""
-	if key, _ := sender.provenKey(spoof); key != nil {
-		t.Fatal("a peer sending no proof was treated as paired")
+	if key, err := sender.provenKey(spoof); key != nil || !errors.Is(err, errUnproven) {
+		t.Fatalf("a peer sending no proof: key %v, err %v", key, err)
 	}
 	replay := hello
 	replay.challenge = "another-challenge"
-	if key, _ := sender.provenKey(replay); key != nil {
-		t.Fatal("a replayed proof was accepted for a new challenge")
+	if key, err := sender.provenKey(replay); key != nil || !errors.Is(err, errUnproven) {
+		t.Fatalf("a replayed proof for a new challenge: key %v, err %v", key, err)
 	}
 }

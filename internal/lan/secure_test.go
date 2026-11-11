@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io"
 	"maps"
 	"net/http"
@@ -155,12 +156,9 @@ func TestARelayThatChangesTheDialedHostFailsTheHandshake(t *testing.T) {
 		_, _ = io.Copy(w, resp.Body)
 	}))
 	t.Cleanup(srv.Close)
-	paired, err := rig.send(t, strings.TrimPrefix(srv.URL, "http://"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if paired {
-		t.Fatal("a relay was proven paired")
+	// The relay cannot prove the pairing, and the send must not fall back to an unsealed one.
+	if _, err := rig.send(t, strings.TrimPrefix(srv.URL, "http://")); !errors.Is(err, errUnproven) {
+		t.Fatalf("send through a host-changing relay = %v, want errUnproven", err)
 	}
 }
 

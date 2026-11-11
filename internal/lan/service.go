@@ -556,6 +556,13 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 	if err != nil {
 		return err
 	}
+	// A peer listed as paired (by the instance it advertised) must answer as that paired id.
+	s.mu.Lock()
+	record, listed := s.peers[peerID]
+	s.mu.Unlock()
+	if listed && hello.ID != record.instance && s.book.key(record.instance) != nil {
+		return errUnproven
+	}
 	key, err := s.provenKey(hello)
 	if err != nil {
 		return err
@@ -686,10 +693,14 @@ func (s *Service) provenKey(hello helloResponse) ([]byte, error) {
 		return nil, err
 	}
 	if !proofMatches(key, hello.challenge, "hello|"+selfID+"|"+hello.ID+"|"+hello.host, hello.Proof) {
-		return nil, nil
+		return nil, errUnproven
 	}
 	return key, nil
 }
+
+// errUnproven refuses a send to a computer that claims a paired id without proving it holds that pairing's key:
+// sending it unsealed instead would hand a paired profile to whoever answered.
+var errUnproven = errors.New("that computer did not prove it is the paired computer; pair the two again if one was reinstalled")
 
 func (s *Service) hello(ctx context.Context, peerID string) (helloResponse, error) {
 	endpoint, err := shareEndpoint(peerID, "/hello")
@@ -875,10 +886,10 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	peer := remotePeer(r)
-	// A peer inside its rate limit is refused whatever sender it names. Only a sender naming a paired device can prove
-	// itself paired, so any other has its rate limit charged before its body is read. The body's own proof still
-	// decides pairing.
-	charged := s.book.key(r.Header.Get(senderHeader)) == nil
+	// A peer inside its rate limit is refused whatever sender it names. Only a sealed request has proved it is paired,
+	// so any other is charged before its body is read: the sender header alone is unauthenticated.
+	_, isSealed := r.Context().Value(sealedCtxKey{}).(*sealedPeer)
+	charged := !isSealed
 	if s.receiveLimited(peer) || charged && !s.allowReceive(peer) {
 		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
 		return
