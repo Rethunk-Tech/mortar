@@ -306,7 +306,7 @@ func TestOneHostCannotHoldEveryPairingSession(t *testing.T) {
 			t.Fatal(err)
 		}
 		body, _ := json.Marshal(pairBeginRequest{Msg: base64.RawStdEncoding.EncodeToString(msg)})
-		resp, err := postJSON(t, "http://"+addr+"/pair/begin", body)
+		resp, err := postJSON(t, "http://"+addr+pairBeginPath, body)
 		if err != nil {
 			t.Fatal(err)
 		}

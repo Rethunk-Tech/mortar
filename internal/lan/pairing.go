@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/Totative/go-codepair"
 )
 
@@ -42,7 +43,9 @@ const (
 	maxFailures        = 5
 	burnFailures       = 15
 	lockout            = 10 * time.Minute
-	pairProtocolInfo   = "mortar-lan-pair-v1"
+	pairProtocolInfo   = "mortar-lan-pair-v2"
+	pairBeginPath      = "/pair/v2/begin"
+	pairFinishPath     = "/pair/v2/finish"
 
 	// PairedEvent tells the window a computer finished pairing with this one.
 	PairedEvent = "lan:paired"
@@ -400,7 +403,7 @@ func (s *Service) Pair(ctx context.Context, peerID, code string) error {
 		return pairLibErr(err)
 	}
 	var begin pairBeginResponse
-	if err := s.postJSON(ctx, peerID, "/pair/begin", pairBeginRequest{Msg: base64.RawStdEncoding.EncodeToString(msg)}, &begin); err != nil {
+	if err := s.postJSON(ctx, peerID, pairBeginPath, pairBeginRequest{Msg: base64.RawStdEncoding.EncodeToString(msg)}, &begin); err != nil {
 		return err
 	}
 	reply, err := base64.RawStdEncoding.DecodeString(begin.Reply)
@@ -414,7 +417,7 @@ func (s *Service) Pair(ctx context.Context, peerID, code string) error {
 	if err != nil || !validPeer(p) {
 		return errors.New("the other computer sent an invalid pairing reply")
 	}
-	if err := s.postJSON(ctx, peerID, "/pair/finish", pairFinishRequest{Session: begin.Session, Confirm: base64.RawStdEncoding.EncodeToString(confirm)}, nil); err != nil {
+	if err := s.postJSON(ctx, peerID, pairFinishPath, pairFinishRequest{Session: begin.Session, Confirm: base64.RawStdEncoding.EncodeToString(confirm)}, nil); err != nil {
 		return err
 	}
 	return s.book.add(PairedPeer{ID: p.PeerID, Name: cleanName(p.PeerName)}, p.PeerKey)
@@ -447,6 +450,10 @@ func (s *Service) postJSON(ctx context.Context, peerID, endpointPath string, bod
 		return fmt.Errorf("contact LAN peer: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
+	// Only a Mortar from before this pairing protocol lacks its routes.
+	if resp.StatusCode == http.StatusNotFound {
+		return usererr.New(usererr.Outdated, "update Mortar on the other computer to pair")
+	}
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
 		message, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))
 		return fmt.Errorf("the other computer refused: %s", strings.TrimSpace(string(message)))

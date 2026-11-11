@@ -808,8 +808,14 @@ func (s *Service) handler() http.Handler {
 	mux.HandleFunc("POST /share", jsonOnly(withDeadline(s.sealed(s.resolveShare, true, s.handleShare))))
 	mux.HandleFunc("GET /store/", s.sealed(s.resolveGrant, false, s.handleStore))
 	mux.HandleFunc("POST /outgoing", jsonOnly(withDeadline(s.sealed(s.resolveOutgoing, false, s.handleOutgoing))))
-	mux.HandleFunc("POST /pair/begin", jsonOnly(withDeadline(s.handlePairBegin)))
-	mux.HandleFunc("POST /pair/finish", jsonOnly(withDeadline(s.handlePairFinish)))
+	mux.HandleFunc("POST "+pairBeginPath, jsonOnly(withDeadline(s.handlePairBegin)))
+	mux.HandleFunc("POST "+pairFinishPath, jsonOnly(withDeadline(s.handlePairFinish)))
+	// An older Mortar pairs on these routes and shows whatever body a refusal carries.
+	for _, old := range []string{"POST /pair/begin", "POST /pair/finish"} {
+		mux.HandleFunc(old, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "update Mortar on both computers to pair", http.StatusNotFound)
+		})
+	}
 	return mux
 }
 

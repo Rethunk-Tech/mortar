@@ -675,7 +675,7 @@ func TestListenerRefusesNonJSONPostsAndCapsHandshakes(t *testing.T) {
 	t.Parallel()
 	service := NewService(Deps{Dir: t.TempDir()})
 	handler := service.handler()
-	for _, path := range []string{"/share", "/outgoing", "/pair/begin", "/pair/finish"} {
+	for _, path := range []string{"/share", "/outgoing", pairBeginPath, pairFinishPath} {
 		for _, contentType := range []string{"text/plain", "", "application/jsonx"} {
 			request := httptest.NewRequestWithContext(t.Context(), "POST", "http://mortar.test"+path, strings.NewReader("{}"))
 			request.Header.Set("Content-Type", contentType)

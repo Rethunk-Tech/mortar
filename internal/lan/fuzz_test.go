@@ -47,7 +47,7 @@ func FuzzHandshake(f *testing.F) {
 	}
 	handler := service.handler()
 	f.Fuzz(func(t *testing.T, body []byte) {
-		for _, endpoint := range []string{"/share", "/pair/begin", "/pair/finish"} {
+		for _, endpoint := range []string{"/share", pairBeginPath, pairFinishPath} {
 			w := httptest.NewRecorder()
 			post := httptest.NewRequestWithContext(t.Context(), http.MethodPost, endpoint, bytes.NewReader(body))
 			post.Header.Set("Content-Type", "application/json")
