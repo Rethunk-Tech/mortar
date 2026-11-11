@@ -1,15 +1,22 @@
-import { afterEach, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import * as netstate from '../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/service.ts'
 import * as nexussvc from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { stubBinding } from '../testing/stubBinding.ts'
-import { nexusChanged, primeDetails, useNexusDetails } from './nexusDetails.ts'
+import {
+  nexusChanged,
+  primeDetails,
+  resetNexusDetailsForTest,
+  useNexusDetails,
+} from './nexusDetails.ts'
 
 const asked: number[][] = []
 let offline = true
 const page = { page: { name: 'Mod' }, partial: true }
+beforeEach(resetNexusDetailsForTest)
 afterEach(() => {
   mock.restore()
+  useNexus.setState(useNexus.getInitialState(), true)
 })
 
 test('a prime keeps what arrived and asks for the rest when Nexus is reachable again', async () => {

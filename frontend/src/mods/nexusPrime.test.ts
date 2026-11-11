@@ -1,12 +1,14 @@
-import { afterEach, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import * as nexussvc from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { stubBinding } from '../testing/stubBinding.ts'
-import { primeDetails, useNexusDetails } from './nexusDetails.ts'
+import { primeDetails, resetNexusDetailsForTest, useNexusDetails } from './nexusDetails.ts'
 
 let primeCalls = 0
+beforeEach(resetNexusDetailsForTest)
 afterEach(() => {
   mock.restore()
+  useNexus.setState(useNexus.getInitialState(), true)
 })
 
 test('priming a mod Nexus does not know settles: one request, no store churn', async () => {
