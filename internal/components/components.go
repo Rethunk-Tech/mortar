@@ -463,6 +463,8 @@ func PlainFlatpakApp(app string) bool { return len(app) <= 255 && flatpakApp.Mat
 // XboxStore names a game to the Xbox app: the Name of the Windows app package it installs (Get-AppxPackage -Name).
 type XboxStore struct {
 	Package string `json:"package"`
+	// Marker is GOGStore.Marker for an Xbox build.
+	Marker string `json:"marker,omitempty"`
 }
 
 var plainPackage = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9.-]{0,99}$`)
@@ -480,6 +482,8 @@ func PlainAppName(name string) bool { return plainAppName.MatchString(name) }
 // install list gives the game's installs.
 type EpicStore struct {
 	AppNames []string `json:"appNames"`
+	// Marker is GOGStore.Marker for an Epic build.
+	Marker string `json:"marker,omitempty"`
 }
 
 // EAStore names a game to the EA App: the folder under an EA library folder (`EA Games`) its installer gives it, and
@@ -499,10 +503,26 @@ type SteamStore struct {
 	AppID string `json:"appId"`
 }
 
+// StoreMarker is the executable path the catalog gives the store's build ("gog", "epic" or "xbox"), "" for none.
+func (s GameStores) StoreMarker(store string) string {
+	switch {
+	case store == "gog" && s.GOG != nil:
+		return s.GOG.Marker
+	case store == "epic" && s.Epic != nil:
+		return s.Epic.Marker
+	case store == "xbox" && s.Xbox != nil:
+		return s.Xbox.Marker
+	}
+	return ""
+}
+
 // GOGStore names a game to GOG: its product id and the folder GOG installers give it.
 type GOGStore struct {
 	ProductID string `json:"productId"`
 	Folder    string `json:"folder"`
+	// Marker is the slash path below the install of the executable this store's build holds, where it is not the
+	// game's MarkerPath. An older Mortar ignores the field.
+	Marker string `json:"marker,omitempty"`
 }
 
 // LutrisStore names a game to Lutris: its slug and a word its executable paths contain.
@@ -1081,7 +1101,7 @@ func (g GameInfo) validateNames() error {
 	if g.MarkerDir != "" && unsafeRel(g.MarkerDir) {
 		return fmt.Errorf("game %q has an unsafe marker folder %q", g.ID, g.MarkerDir)
 	}
-	for _, p := range []string{g.LinuxStart, g.DarwinMarker, g.Art} {
+	for _, p := range []string{g.LinuxStart, g.DarwinMarker, g.Art, g.Stores.StoreMarker("gog"), g.Stores.StoreMarker("epic"), g.Stores.StoreMarker("xbox")} {
 		if p != "" && unsafeRel(p) {
 			return fmt.Errorf("game %q has an unsafe install file %q", g.ID, p)
 		}

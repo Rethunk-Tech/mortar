@@ -1,6 +1,7 @@
 package gamestore
 
 import (
+	"cmp"
 	"path/filepath"
 	"slices"
 
@@ -101,7 +102,7 @@ func (gogStore) Launchers(goos string) []LauncherSpec {
 
 func (gogStore) Discover(home string, roots map[string][]string, g components.GameInfo) []Install {
 	var out []Install
-	game := gog.Game{ProductID: g.Stores.GOG.ProductID, Folder: g.Stores.GOG.Folder, Marker: g.MarkerPath()}
+	game := gog.Game{ProductID: g.Stores.GOG.ProductID, Folder: g.Stores.GOG.Folder, Marker: MarkerPath(g, StoreGOG)}
 	r := gog.Roots{Heroic: roots[LauncherHeroic], Games: roots[LauncherGOG], Minigalaxy: roots[LauncherMinigalaxy]}
 	for _, in := range gog.Locate(home, game, r) {
 		inst := Install{Store: gogStoreID(in.Source), Dir: in.Dir}
@@ -234,7 +235,7 @@ func (epicStore) Discover(home string, roots map[string][]string, g components.G
 			if !slices.Contains(g.Stores.Epic.AppNames, in.AppName) {
 				continue
 			}
-			if found := gamelocator.GameDir(in.Dir, g.MarkerPath()); found != "" {
+			if found := gamelocator.GameDir(in.Dir, MarkerPath(g, StoreEpic)); found != "" {
 				inst := Install{Store: store, Dir: found}
 				if heroicCfg != "" {
 					inst.Prefix, inst.Launcher = heroicPrefix(heroicCfg, in.AppName), "heroic:legendary:"+in.AppName
@@ -290,9 +291,21 @@ func (xboxStore) Discover(_ string, _ map[string][]string, g components.GameInfo
 		return nil
 	}
 	for _, d := range []string{dir, filepath.Join(dir, "Content")} {
-		if found := gamelocator.GameDir(d, g.MarkerPath()); found != "" {
+		if found := gamelocator.GameDir(d, MarkerPath(g, StoreXbox)); found != "" {
 			return []Install{{Store: StoreXbox, Dir: found}}
 		}
 	}
 	return nil
+}
+
+// MarkerPath is the executable path below an install of g from store: the catalog's marker for that store's build,
+// else the game's own.
+func MarkerPath(g components.GameInfo, store string) string {
+	switch store {
+	case StoreGOG, StoreGOGHeroic, StoreMinigalaxy:
+		store = "gog"
+	case StoreEpic, StoreEpicHeroic:
+		store = "epic"
+	}
+	return cmp.Or(g.Stores.StoreMarker(store), g.MarkerPath())
 }

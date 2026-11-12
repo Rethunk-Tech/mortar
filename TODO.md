@@ -112,84 +112,45 @@ and macOS.
 - `bun run gate` stays clean. No seccomp, network namespace, Windows or macOS
   sandbox ships in this change.
 
-## Owned games cannot be detected on GOG, Epic and Xbox without extra markers
+## Darkest Dungeon's native Linux build is not in the catalog
 
-GOG for The Witcher 3 and Cyberpunk 2077, the EA app for Titanfall 2 and Hogwarts Legacy on Epic are built. Darkest Dungeon on GOG and Epic and Starbound on Xbox are sourced but still cannot be detected: their install holds the executable in a folder the catalog's one `markerDir` does not name, and `ValidInstall` rejects the folder. Both need a second marker as a new catalog field.
+Steam launches `_linux/darkest.bin.x86_64` for the 64-bit Linux build (Steam app info for `262060`, `config.launch`; [docs/games.md](docs/games.md#darkest-dungeon)). `GameInfo.LinuxMarker` holds a file name that `GameInfo.Validate` rejects with a path separator, so the entry cannot name it and a native Linux install is read as the Windows build or missed.
 
-The decided shape is a per-store marker (a new field with `minVersion` and the oldest-tag decode check), then each store id below. Sourced values:
-
-- Darkest Dungeon on GOG: product `1450711444`, marker `_windowsnosteam/win64/Darkest.exe` (Vortex `Nexus-Mods/vortex-games` `game-darkestdungeon/index.js:12,18`).
-- Darkest Dungeon on Epic: AppName `36cbf259e631478eaac6ea244e55a709`, same marker as GOG (`index.js:14,18`, comment "Epic exe is same as GOG").
-- Starbound on Xbox: package Name `Chucklefish.StarboundWindows10Edition` (Microsoft's display catalog, `displaycatalog.mp.microsoft.com/v7.0/products?bigIds=9MTSBWPWPQVQ`, `PackageFamilyName` `Chucklefish.StarboundWindows10Edition_ywkyrypjzhpx8`; Vortex `game-starbound/index.js:4`), executable `win/starbound.exe` (`index.js:14`).
-
-Still unsourced: Darkest Dungeon's native Linux executable name, and the GOG install folder name Mortar's GOG locator needs. Rejected: shipping guessed names or a GOG second marker as a Mortar-only heuristic.
+The decided shape is `LinuxMarker` as a slash path below the install, validated with `unsafeRel` like `DarwinMarker`, then `linuxMarker` and a `linux` mods path (`{install}/mods`) on the Darkest Dungeon entry. Rejected: a second field for subfolder Linux executables.
 
 ### Read
 
-- [docs/design.md](docs/design.md#from-later-picked-2026-11-01) — the remaining
-  store ids and the minVersion rule.
-- The catalog decode path used by the oldest supported tag's
-  `components.Decode` — a new field value an older build cannot read must be
-  skipped, not fatal.
-- [AGENTS.md](AGENTS.md) — signed catalog release rules (`minVersion` from
-  0.3.6).
+- `internal/components/components.go` — `LinuxMarker` and the file-name check in `Validate` (the "unsafe file or folder name" error).
+- `internal/game/install.go` `platformOf`, `internal/game/start.go` `directExe` and `internal/gamestore/drivers.go` (Lutris marker loop) — every reader of `LinuxMarker`.
 
 ### Traps
 
-- **A new catalog field without `minVersion` breaks old Decodes.** Darkest
-  Dungeon's second GOG marker is a new field; ship it with `minVersion` and
-  prove the oldest supported tag still decodes the rest of the catalog.
-- **PCGamingWiki store slugs are not Epic AppNames.** Using the slug as
-  AppName silently misses the install.
-- **Xbox Store id is not the package Name.** `9mtsbwpwpqvq` is not enough to
-  locate Starbound.
+- **`LinuxMarker` also feeds `GameProcesses`** (`internal/game/catalog_only.go`): a path there must reduce to its base name.
+- **Unverified GOG folder.** `Darkest Dungeon` is Minigalaxy's name for the folder; no source names the one GOG's own installer makes.
 
 ### Acceptance
 
-- Each listed game is detected on that store from a cited marker, AppName or
-  package Name.
-- A catalog that adds the second GOG marker still decodes in the oldest
-  supported tag's `components.Decode`.
-- `bun run gate` stays clean. No guessed ids ship.
+- A Steam install holding only `_linux/darkest.bin.x86_64` is a native Linux install; one holding `_windows/win64/Darkest.exe` stays the Windows build.
+- `scripts/catalog-compat.sh` decodes the catalog in the last two releases.
 
-## Catalog darwin markers and SMAPI's macOS installer names are still uncited
+## Catalog darwin markers are missing for bundles Steam names only as a .app
 
-Linux-testable darwin work is built (Steam roots, `clonefile`, `darwinMarker`
-support, BepInEx launch-script placement, SMAPI app-bundle paths, a darwin
-vet in the gate). No catalog entry has a `darwinMarker` yet, so macOS
-discovery still cannot match a `.app`, and SMAPI's macOS installer folder
-name, `executable_name` without `.app`, and the launch-option form have not
-been verified on a Mac. Full macOS packaging stays parked (see the later
-entry) until the maintainer owns or borrows a Mac.
+Steam's app info gives the inner executable for the games with a `darwinMarker` ([docs/games.md](docs/games.md#macos-markers)). Games whose macOS launch entry is just `<Name>.app`, and the layouts where the install folder is the bundle (Dome Keeper, Sun Haven), have none: the executable name is in the bundle's `Info.plist` (`CFBundleExecutable`), which only a Mac install shows. SMAPI's launch behaviour on macOS rests on its installer source, not a Mac run.
 
-The decided shape is to add each `darwinMarker` from a cited source, and to
-record SMAPI's installer folder name, `executable_name` without `.app`, and
-launch-option form from a Mac run. Rejected: copying Linux names into the
-catalog, or treating this entry as the full macOS ship.
+The decided shape is to add each missing `darwinMarker` from a Mac install's `Info.plist`, and to let BepInEx's macOS placement read a marker that starts at `Contents/` (`contributeDarwin` in `internal/loader/bepinex5/driver.go`, which needs a first segment ending `.app`). Rejected: guessing the executable from the `.app` name, or treating this entry as the full macOS ship.
 
 ### Read
 
-- [docs/design.md](docs/design.md#from-later-picked-2026-11-01) — what is left
-  after the Linux-testable parts.
-- `internal/game/install.go` and `internal/gamestore/standalone.go` — where
-  `darwinMarker` is already honoured.
-- [docs/games.md](docs/games.md#smapi) — SMAPI's installer behaviour this Mac
-  run has to confirm.
+- `internal/loader/bepinex5/driver.go` `contributeDarwin` — the `.app` first-segment rule.
+- [docs/design.md](docs/design.md#from-later-picked-2026-11-01) — what is left after the Linux-testable parts.
 
 ### Traps
 
-- **`darwinMarker` without a citation is a false locate.** The Linux-testable
-  parser is not evidence that a given game's `.app` uses that marker.
-- **SMAPI's Linux names are not the macOS names.** `executable_name` without
-  `.app` and the installer folder name are unverified; shipping them from the
-  Linux layout will miss the bundle.
+- **A `.app` name is not its executable's name** (`TotallyAccurateBattleSimulator.app` runs `Totally Accurate Battle Simulator`, `MacPlayer.app` runs `Project Gorgon`).
 
 ### Acceptance
 
-- Each native-macOS catalog game that should locate on darwin has a cited
-  `darwinMarker`.
-- SMAPI's macOS installer folder name, `executable_name` without `.app`, and
-  launch-option form are recorded from a Mac run.
+- Each native-macOS catalog game that should locate on darwin has a cited `darwinMarker`.
 - `bun run gate` stays clean. This change does not ship a `.dmg` or notarisation.
 
 ## The BepInEx companion still ships overlays in-process

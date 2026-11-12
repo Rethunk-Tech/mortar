@@ -21,6 +21,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/dotnetroot"
+	"github.com/Rethunk-Tech/mortar/internal/gamestore"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	gameruntime "github.com/Rethunk-Tech/mortar/internal/runtime"
@@ -470,7 +471,7 @@ func directExe(inst Install, exe string) string {
 		case inst.Platform == "darwin" && info.DarwinMarker != "":
 			exe = filepath.Join(inst.Dir, filepath.FromSlash(info.DarwinMarker))
 		case strings.HasSuffix(strings.ToLower(info.Marker), ".exe"):
-			exe = filepath.Join(inst.Dir, info.MarkerPath())
+			exe = filepath.Join(inst.Dir, gamestore.MarkerPath(info, inst.Store))
 		}
 	}
 	return exe

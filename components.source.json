@@ -247,6 +247,7 @@
         "vortex": "stardewvalley",
         "mo2": "Stardew Valley"
       },
+      "darwinMarker": "Contents/MacOS/StardewValley",
       "marker": "Stardew Valley.dll",
       "metadata": ["smapi-updates", "smapi-compat", "stardew-dataset"],
       "paths": {
@@ -1716,6 +1717,7 @@
       "id": "muck",
       "name": "Muck",
       "enabled": true,
+      "darwinMarker": "Muck.app/Contents/MacOS/Muck",
       "marker": "Muck.exe",
       "linuxMarker": "Muck.x86_64",
       "r2modmanFolder": "Muck",
@@ -2052,6 +2054,7 @@
       "id": "skul-the-hero-slayer",
       "name": "Skul: The Hero Slayer",
       "enabled": true,
+      "darwinMarker": "Skul.app/Contents/MacOS/Skul",
       "marker": "Skul.exe",
       "r2modmanFolder": "SkulTheHeroSlayer",
       "metadata": [],
@@ -2310,6 +2313,7 @@
       "id": "totally-accurate-battle-simulator",
       "name": "Totally Accurate Battle Simulator",
       "enabled": true,
+      "darwinMarker": "TotallyAccurateBattleSimulator.app/Contents/MacOS/Totally Accurate Battle Simulator",
       "marker": "TotallyAccurateBattleSimulator.exe",
       "r2modmanFolder": "TABS",
       "metadata": [],
@@ -3641,6 +3645,7 @@
       "id": "project-gorgon",
       "name": "Project Gorgon",
       "enabled": true,
+      "darwinMarker": "MacPlayer.app/Contents/MacOS/Project Gorgon",
       "marker": "WindowsPlayer.exe",
       "r2modmanFolder": "ProjectGorgon",
       "metadata": [],
@@ -4706,6 +4711,7 @@
       "id": "cuphead",
       "name": "Cuphead",
       "enabled": true,
+      "darwinMarker": "Cuphead.app/Contents/MacOS/Cuphead",
       "marker": "Cuphead.exe",
       "r2modmanFolder": "Cuphead",
       "metadata": [],
@@ -6149,6 +6155,7 @@
       "id": "my-dream-setup",
       "name": "My Dream Setup",
       "enabled": true,
+      "darwinMarker": "MDS.app/Contents/MacOS/MDS",
       "marker": "MDS.exe",
       "r2modmanFolder": "MyDreamSetup",
       "metadata": [],
@@ -6181,6 +6188,7 @@
       "id": "necropolis",
       "name": "Necropolis",
       "enabled": true,
+      "darwinMarker": "Necropolis.app/Contents/MacOS/Necropolis",
       "marker": "Necropolis.exe",
       "r2modmanFolder": "Necropolis",
       "metadata": [],
@@ -6369,6 +6377,7 @@
       "id": "paralives",
       "name": "Paralives",
       "enabled": true,
+      "darwinMarker": "Paralives.app/Contents/MacOS/Paralives",
       "marker": "Paralives.exe",
       "r2modmanFolder": "Paralives",
       "metadata": [],
@@ -6529,6 +6538,7 @@
       "id": "pikuniku",
       "name": "Pikuniku",
       "enabled": true,
+      "darwinMarker": "Pikuniku.app/Contents/MacOS/Pikuniku",
       "marker": "Pikuniku.exe",
       "r2modmanFolder": "Pikuniku",
       "metadata": [],
@@ -6682,6 +6692,7 @@
       "id": "ravenfield",
       "name": "Ravenfield",
       "enabled": true,
+      "darwinMarker": "ravenfield.app/Contents/MacOS/RavenfieldSteam",
       "marker": "ravenfield.exe",
       "r2modmanFolder": "Ravenfield",
       "metadata": [],
@@ -7594,6 +7605,7 @@
       "id": "west-of-loathing",
       "name": "West of Loathing",
       "enabled": true,
+      "darwinMarker": "West of Loathing.app/Contents/MacOS/West of Loathing",
       "marker": "West of Loathing.exe",
       "r2modmanFolder": "WestofLoathing",
       "metadata": [],
@@ -7896,6 +7908,7 @@
       "id": "stick-fight-the-game",
       "name": "Stick Fight: The Game",
       "enabled": true,
+      "darwinMarker": "StickFight.app/Contents/MacOS/StickFight",
       "marker": "StickFight.exe",
       "r2modmanFolder": "StickFightTheGame",
       "metadata": [],
@@ -8513,6 +8526,7 @@
       "id": "timberborn",
       "name": "Timberborn",
       "enabled": true,
+      "darwinMarker": "Timberborn.app/Contents/MacOS/Timberborn",
       "marker": "Timberborn.exe",
       "r2modmanFolder": "Timberborn",
       "metadata": [],
@@ -8600,6 +8614,7 @@
       "id": "crab-game",
       "name": "Crab Game",
       "enabled": true,
+      "darwinMarker": "Crab Game.app/Contents/MacOS/Crab Game",
       "marker": "Crab Game.exe",
       "r2modmanFolder": "CrabGame",
       "metadata": [],
@@ -10659,6 +10674,7 @@
       "id": "darkest-dungeon",
       "name": "Darkest Dungeon",
       "enabled": true,
+      "minVersion": "0.8.0",
       "importIds": {
         "vortex": "darkestdungeon",
         "mo2": "Darkest Dungeon"
@@ -10682,6 +10698,15 @@
       "stores": {
         "steam": {
           "appId": "262060"
+        },
+        "gog": {
+          "productId": "1450711444",
+          "folder": "Darkest Dungeon",
+          "marker": "_windowsnosteam/win64/Darkest.exe"
+        },
+        "epic": {
+          "appNames": ["36cbf259e631478eaac6ea244e55a709"],
+          "marker": "_windowsnosteam/win64/Darkest.exe"
         }
       },
       "loaders": [
@@ -10706,6 +10731,7 @@
       "id": "starbound",
       "name": "Starbound",
       "enabled": true,
+      "minVersion": "0.8.0",
       "importIds": {
         "vortex": "starbound"
       },
@@ -10728,6 +10754,10 @@
       "stores": {
         "steam": {
           "appId": "211820"
+        },
+        "xbox": {
+          "package": "Chucklefish.StarboundWindows10Edition",
+          "marker": "win/starbound.exe"
         }
       },
       "loaders": [
@@ -12085,6 +12115,7 @@
       "id": "magicite",
       "name": "Magicite",
       "enabled": true,
+      "darwinMarker": "Magicite.app/Contents/MacOS/Magicite",
       "marker": "Magicite.exe",
       "r2modmanFolder": "Magicite",
       "deploy": "profile",
@@ -12214,6 +12245,7 @@
       "id": "shadows-over-loathing",
       "name": "Shadows Over Loathing",
       "enabled": true,
+      "darwinMarker": "Shadows Over Loathing.app/Contents/MacOS/Shadows Over Loathing",
       "marker": "Shadows Over Loathing.exe",
       "r2modmanFolder": "ShadowsOverLoathing",
       "deploy": "profile",
@@ -12707,6 +12739,7 @@
       "id": "grime",
       "name": "GRIME",
       "enabled": true,
+      "darwinMarker": "GRIME.app/Contents/MacOS/GRIME",
       "marker": "GRIME.exe",
       "r2modmanFolder": "Grime",
       "deploy": "profile",
@@ -13433,6 +13466,7 @@
       "id": "disco-elysium",
       "name": "Disco Elysium",
       "enabled": true,
+      "darwinMarker": "disco.app/Contents/MacOS/Disco Elysium",
       "marker": "disco.exe",
       "r2modmanFolder": "DiscoElysium",
       "deploy": "profile",
@@ -13630,6 +13664,7 @@
       "id": "fate-reawakened",
       "name": "FATE: Reawakened",
       "enabled": true,
+      "darwinMarker": "fate.app/Contents/MacOS/FATE Reawakened",
       "marker": "FateReawakened.exe",
       "r2modmanFolder": "FateReawakened",
       "deploy": "profile",
@@ -13834,6 +13869,7 @@
       "id": "papers-please",
       "name": "Papers, Please",
       "enabled": true,
+      "darwinMarker": "PapersPlease.app/Contents/MacOS/PapersPlease",
       "marker": "PapersPlease.exe",
       "r2modmanFolder": "PapersPlease",
       "deploy": "profile",

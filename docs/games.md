@@ -47,6 +47,27 @@ Sources: the game's executable `Graveyard Keeper.exe` (`SonOfTheRocks/GraveyardK
 
 Epic AppName `fa4240e57a3c46b39f169041b7811293`: Vortex's own extension (`Nexus-Mods/game-hogwartslegacy` `src/common.ts:5`, `EPIC_ID`), the same id as `app_name` in Heroic's Legendary metadata and the asset id in Epic's SDL metadata (`imLinguin/epic-sdl-tracker` `sdls/HogwartsLegacy.v4sdmeta`).
 
+## Darkest Dungeon
+
+Sources: Vortex's `game-darkestdungeon` (`Nexus-Mods/vortex-games`, `index.js:12-18`), Steam's app info for `262060` (`api.steamcmd.net/v1/info/262060`, `config.launch`) and Minigalaxy (`sharkwouter/minigalaxy`, `minigalaxy/game.py:105-107`).
+
+- Steam builds start `_windows/win64/Darkest.exe`; GOG (product `1450711444`) and Epic (AppName `36cbf259e631478eaac6ea244e55a709`) hold it at `_windowsnosteam/win64/Darkest.exe` (`index.js:18`, "Epic exe is same as GOG"). A store's `marker` in the catalog names the executable when it is not the game's own, for finding the install and for a direct start.
+- The GOG folder `Darkest Dungeon` is Minigalaxy's: the product title `Darkest Dungeon®` (`api.gog.com/products/1450711444`) with everything but letters, digits and spaces dropped (`get_install_directory_name`). No source names the folder GOG's own installer makes.
+- Steam's native launch entries are `_linux/darkest.bin.x86_64` (64-bit Linux) and `_osx/darkest.app` (macOS, a bundle whose inner executable no source names). `linuxMarker` holds a file name, not a subfolder path, so the Linux build is not in the catalog.
+
+## Starbound
+
+Sources: Vortex's `game-starbound` (`index.js:4,10-14`) and Microsoft's display catalog (`displaycatalog.mp.microsoft.com/v7.0/products?bigIds=9MTSBWPWPQVQ`, `PackageFamilyName` `Chucklefish.StarboundWindows10Edition_ywkyrypjzhpx8`).
+
+- The Xbox package Name is `Chucklefish.StarboundWindows10Edition` and its executable `win/starbound.exe`, where Steam's is `win64/starbound.exe`; the Xbox store's `marker` carries the difference.
+
+## macOS markers
+
+`darwinMarker` is the executable inside the macOS bundle, below the install folder. Its value is the `executable` of the `config.launch` entry with `oslist` `macos` in Steam's app info for the game's app (`api.steamcmd.net/v1/info/<appId>`), taken only where that entry names the executable (`<Name>.app/Contents/MacOS/<exe>`, written with `\` for some entries); an entry naming just the `.app` gives no inner executable and a layout where the install folder is the bundle (`Contents/MacOS/<exe>`, Dome Keeper, Sun Haven) is not a name BepInEx's macOS placement can read, so neither has a `darwinMarker`. `steamMacExecutables` in `internal/components/darwin_markers_test.go` pins each value.
+
+- Stardew Valley is the bundle-is-the-install layout and is the one with a `darwinMarker` (`Contents/MacOS/StardewValley`, working folder `Contents/`). SMAPI's own scanner lists the game folders `/Applications/Stardew Valley.app/Contents/MacOS` and `~/Library/Application Support/Steam/steamapps/common/Stardew Valley/Contents/MacOS` (`Pathoschild/SMAPI` `src/SMAPI.Toolkit/Framework/GameScanning/GameScanner.cs:149-150`), so SMAPI's files go in `Contents/MacOS` below the install.
+- SMAPI's macOS installer is `internal/macOS/SMAPI.Installer`, started by `install on macOS.command` (`src/SMAPI.Installer/assets/install on macOS.command`; `build/scripts/prepare-install-package.ps1:94`), and it replaces `StardewValley` with its launcher as on Linux (`InteractiveInstaller.cs:112`), so the game's own launch entry starts SMAPI and macOS needs no Steam launch option.
+
 ## Mount & Blade II: Bannerlord
 
 Sources: BUTR's Vortex extension (`BUTR/game-mount-and-blade2`, `packages/core/src/common.ts`: Steam app id `261550`, GOG ids `1802539526` and `1564781494`, the game executable in `bin/Win64_Shipping_Client`, a module found as `Modules/<Module>/SubModule.xml`; Nexus's own Vortex entry is only a stub), BUTR's `Bannerlord.BLSE` (its launcher manager source: `Documents/Mount and Blade II Bannerlord/Configs/LauncherData.xml`) and Nexus's `mountandblade2bannerlord`.
