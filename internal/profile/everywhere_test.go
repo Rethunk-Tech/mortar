@@ -122,9 +122,19 @@ func TestLatestStoreKeyOrdersBySourceVersion(t *testing.T) {
 	man := func(v string) map[string]string {
 		return map[string]string{"A/manifest.json": `{"Name":"A","Author":"me","Version":"` + v + `","UniqueID":"me.a"}`}
 	}
-	e.item(t, "local-1", man("1.9.0"))
-	e.item(t, "local-2", man("1.10.0"))
-	e.item(t, "local-0", man("1.0.0"))
+	local := func(files map[string]string) string {
+		src := t.TempDir()
+		for rel, body := range files {
+			writeFile(t, src, rel, body)
+		}
+		key, err := e.items.AddHashedDir(t.Context(), "stardew", src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return key
+	}
+	local1, local2 := local(man("1.9.0")), local(man("1.10.0"))
+	local(man("1.0.0"))
 	e.item(t, "nexus-5-10", man("1.0.0"))
 	e.item(t, "nexus-5-12", man("1.1.0"))
 	e.item(t, "nexus-5-20", map[string]string{"B/manifest.json": manifestJSON("me.b")})
@@ -133,8 +143,8 @@ func TestLatestStoreKeyOrdersBySourceVersion(t *testing.T) {
 	for _, c := range []struct{ old, id, want string }{
 		{"pkg-c", "Ns-Mod", "pkg-b"},
 		{"github-a", "me/mod", "github-b"},
-		{"local-1", "smapi:me.a", "local-2"},
-		{"local-1", "local-1", "local-2"},
+		{local1, "smapi:me.a", local2},
+		{local1, local1, local2},
 		{"nexus-5-10", "smapi:me.a", "nexus-5-12"},
 	} {
 		got, err := e.latestStoreKey("stardew", c.old, c.id)
@@ -142,7 +152,7 @@ func TestLatestStoreKeyOrdersBySourceVersion(t *testing.T) {
 			t.Errorf("latest of %s = %q, %v; want %s", c.old, got, err, c.want)
 		}
 	}
-	for _, old := range []string{"pkg-b", "local-2", "nexus-5-12", "pkg-z"} {
+	for _, old := range []string{"pkg-b", local2, "nexus-5-12", "pkg-z"} {
 		if got, err := e.latestStoreKey("stardew", old, ""); err == nil {
 			t.Errorf("latest of %s = %q, want none", old, got)
 		}

@@ -435,6 +435,21 @@ const useNexusFresh = (game: string, nexusId: number) => {
   })
 }
 
+/**
+ * Test-only: forgets the reads, queue and prime records kept at module level, which the stores' own resets leave
+ * behind, so one test's primes and queued reads never reach the next. No production code calls it. The netstate
+ * listener stays registered: registering it again would answer each event twice.
+ */
+const resetNexusDetailsForTest = () => {
+  reads.clear()
+  line = Promise.resolve()
+  queued.clear()
+  waiting.clear()
+  primed = { game: '', ids: [] }
+  primeAsked.clear()
+  primeInFlight.clear()
+}
+
 export type { NexusById }
 export {
   changelogIsNewSinceLooked,
@@ -450,6 +465,7 @@ export {
   nexusChanged,
   nexusEntryOf,
   primeDetails,
+  resetNexusDetailsForTest,
   useGameNexusDetails,
   useLookedSnapshot,
   useNexusDetails,

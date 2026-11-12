@@ -857,12 +857,13 @@ func (c *boot) dataServices() error {
 			}
 			return c.profileSvc.InstallArchive(ctx, game, profileID, path)
 		},
-		HashCache: filepath.Join(c.dataDir, "cache", "archive-hashes.json"),
-		Offer:     func(g string) bool { return settings.ToggleOn(c.store.Get().GamePrefs(g).OfferNewDownloads) },
-		Seen:      func(g string) int64 { return c.store.Get().GamePrefs(g).LastDownloadsSeen },
-		SetSeen:   c.store.RecordDownloadsSeen,
-		Keys:      c.items.Keys,
-		Profiles:  c.profiles.List,
+		HashCache:  filepath.Join(c.dataDir, "cache", "archive-hashes.json"),
+		Offer:      func(g string) bool { return settings.ToggleOn(c.store.Get().GamePrefs(g).OfferNewDownloads) },
+		Seen:       func(g string) int64 { return c.store.Get().GamePrefs(g).LastDownloadsSeen },
+		SetSeen:    c.store.RecordDownloadsSeen,
+		Keys:       c.items.Keys,
+		Unverified: c.items.Unverified,
+		Profiles:   c.profiles.List,
 		NexusMods: func() map[int]bool {
 			ids := map[int]bool{}
 			for _, h := range c.queueSvc.History() {

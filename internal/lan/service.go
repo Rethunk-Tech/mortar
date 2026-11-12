@@ -45,8 +45,12 @@ const (
 	serviceType     = "_mortar._tcp"
 	maxPayloadBytes = share.MaxFileBytes
 	maxRequestBytes = maxPayloadBytes*4/3 + 4096
-	rateLimit       = 10 * time.Second
-	peerTTL         = 6 * time.Second
+	// maxUnpairedPayloadBytes bounds a share from a sender that has not proved it is paired: it sits in memory for
+	// transferTTL, up to maxUnpairedInbox of them, and carries a profile plus its small config files.
+	maxUnpairedPayloadBytes = 8 << 20
+	maxUnpairedRequestBytes = maxUnpairedPayloadBytes*4/3 + 4096
+	rateLimit               = 10 * time.Second
+	peerTTL                 = 6 * time.Second
 	// browseInterest is how long after a Peers call discovery keeps running; nobody looking means no mDNS traffic.
 	browseInterest = 30 * time.Second
 	queryTimeout   = 2 * time.Second
@@ -61,6 +65,10 @@ const (
 	// senderHeader names the sending device on a /share request so the receiver can rate limit strangers before reading.
 	senderHeader     = "X-Mortar-Sender"
 	maxUnpairedInbox = 20
+	// maxHelloField bounds a /hello id or challenge (both are 43-character tokens) and maxHelloHost its Host (a DNS
+	// name plus port), since every handshake record holds all three for a minute.
+	maxHelloField = 128
+	maxHelloHost  = 256
 	// storeIdle is how long a served store entry may make no progress before the connection is dropped; unlike the
 	// small request deadlines it bounds silence, not the whole stream, which can run for minutes.
 	storeIdle = time.Minute
@@ -556,6 +564,13 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID strin
 	if err != nil {
 		return err
 	}
+	// A peer listed as paired (by the instance it advertised) must answer as that paired id.
+	s.mu.Lock()
+	record, listed := s.peers[peerID]
+	s.mu.Unlock()
+	if listed && hello.ID != record.instance && s.book.key(record.instance) != nil {
+		return errUnproven
+	}
 	key, err := s.provenKey(hello)
 	if err != nil {
 		return err
@@ -685,11 +700,15 @@ func (s *Service) provenKey(hello helloResponse) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !proofMatches(key, hello.challenge, "hello|"+selfID+"|"+hello.ID+"|"+hello.host, hello.Proof) {
-		return nil, nil
+	if hello.challenge == "" || hello.Proof == "" || !hmac.Equal([]byte(helloProof(key, hello.challenge, selfID, hello.ID, hello.host)), []byte(hello.Proof)) {
+		return nil, errUnproven
 	}
 	return key, nil
 }
+
+// errUnproven refuses a send to a computer that claims a paired id without proving it holds that pairing's key:
+// sending it unsealed instead would hand a paired profile to whoever answered.
+var errUnproven = errors.New("that computer did not prove it is the paired computer; pair the two again if one was reinstalled")
 
 func (s *Service) hello(ctx context.Context, peerID string) (helloResponse, error) {
 	endpoint, err := shareEndpoint(peerID, "/hello")
@@ -797,8 +816,14 @@ func (s *Service) handler() http.Handler {
 	mux.HandleFunc("POST /share", jsonOnly(withDeadline(s.sealed(s.resolveShare, true, s.handleShare))))
 	mux.HandleFunc("GET /store/", s.sealed(s.resolveGrant, false, s.handleStore))
 	mux.HandleFunc("POST /outgoing", jsonOnly(withDeadline(s.sealed(s.resolveOutgoing, false, s.handleOutgoing))))
-	mux.HandleFunc("POST /pair/begin", jsonOnly(withDeadline(s.handlePairBegin)))
-	mux.HandleFunc("POST /pair/finish", jsonOnly(withDeadline(s.handlePairFinish)))
+	mux.HandleFunc("POST "+pairBeginPath, jsonOnly(withDeadline(s.handlePairBegin)))
+	mux.HandleFunc("POST "+pairFinishPath, jsonOnly(withDeadline(s.handlePairFinish)))
+	// An older Mortar pairs on these routes and shows whatever body a refusal carries.
+	for _, old := range []string{"POST /pair/begin", "POST /pair/finish"} {
+		mux.HandleFunc(old, func(w http.ResponseWriter, _ *http.Request) {
+			http.Error(w, "update Mortar on both computers to pair", http.StatusNotFound)
+		})
+	}
 	return mux
 }
 
@@ -835,6 +860,10 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 	peer := remotePeer(r)
 	query := r.URL.Query()
 	callerID, challenge := query.Get("id"), query.Get("challenge")
+	if len(callerID) > maxHelloField || len(challenge) > maxHelloField || len(r.Host) > maxHelloHost {
+		http.Error(w, "handshake field is too long", http.StatusBadRequest)
+		return
+	}
 	s.mu.Lock()
 	fromPeer := 0
 	for value, record := range s.nonces {
@@ -869,16 +898,26 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, resp)
 }
 
+// shareBodyLimit is the largest /share body read: a sealed request has proved it is paired, any other gets the
+// unpaired cap.
+func shareBodyLimit(sealed bool) int64 {
+	if sealed {
+		return maxRequestBytes
+	}
+	return maxUnpairedRequestBytes
+}
+
 func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
-	if r.ContentLength > maxRequestBytes {
+	_, isSealed := r.Context().Value(sealedCtxKey{}).(*sealedPeer)
+	limit := shareBodyLimit(isSealed)
+	if r.ContentLength > limit {
 		http.Error(w, "request is too large", http.StatusRequestEntityTooLarge)
 		return
 	}
 	peer := remotePeer(r)
-	// A peer inside its rate limit is refused whatever sender it names. Only a sender naming a paired device can prove
-	// itself paired, so any other has its rate limit charged before its body is read. The body's own proof still
-	// decides pairing.
-	charged := s.book.key(r.Header.Get(senderHeader)) == nil
+	// A peer inside its rate limit is refused whatever sender it names. Only a sealed request has proved it is paired,
+	// so any other is charged before its body is read: the sender header alone is unauthenticated.
+	charged := !isSealed
 	if s.receiveLimited(peer) || charged && !s.allowReceive(peer) {
 		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
 		return
@@ -888,7 +927,7 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer s.releaseShare()
-	r.Body = http.MaxBytesReader(w, r.Body, maxRequestBytes)
+	r.Body = http.MaxBytesReader(w, r.Body, limit)
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "request is too large", http.StatusRequestEntityTooLarge)
@@ -917,6 +956,10 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 	}
 	if !paired && !charged && !s.allowReceive(peer) {
 		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
+		return
+	}
+	if !paired && len(request.Payload) > maxUnpairedRequestBytes {
+		http.Error(w, errPayloadTooLarge.Error(), http.StatusRequestEntityTooLarge)
 		return
 	}
 	items := transferItems(shared)

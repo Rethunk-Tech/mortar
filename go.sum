@@ -1,3 +1,5 @@
+filippo.io/edwards25519 v1.2.0 h1:crnVqOiS4jqYleHd9vaKZ+HKtHfllngJIiOpNpoJsjo=
+filippo.io/edwards25519 v1.2.0/go.mod h1:xzAOLCNug/yB62zG1bQ8uziwrIqIuxhctzJT18Q77mc=
 git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 h1:N3IGoHHp9pb6mj1cbXbuaSXV/UMKwmbKLf53nQmtqMA=
 git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3/go.mod h1:QtOLZGz8olr4qH2vWK0QH0w0O4T9fEIjMuWpKUsH7nc=
 github.com/BurntSushi/toml v1.6.0 h1:dRaEfpa2VI55EwlIW72hMRHdWouJeRF7TPYhI+AUQjk=
@@ -72,8 +74,8 @@ github.com/Rethunk-Tech/vdf/v2 v2.1.0 h1:/7OQ4yK8FD4VTxd1ICFYt0S2M2LM5KeEBNyfFOG
 github.com/Rethunk-Tech/vdf/v2 v2.1.0/go.mod h1:OBN36zQRuteUJTmSjV8JRSccMCP0Nf0AWJGaJLEhLPk=
 github.com/Totative/go-avscan v0.3.0 h1:wosYkdsYoLKCW51kF2qGn3Wb0iRpvEe1de/MnP4BwX0=
 github.com/Totative/go-avscan v0.3.0/go.mod h1:lAH9/mT5NKKul3giqX0jsKEBp4G0XAx7MJGWjGZx748=
-github.com/Totative/go-codepair v0.2.0 h1:XtkBlb3Oll0BYg7hYsPBcGS+5v2FfHZh2+XlGziVik4=
-github.com/Totative/go-codepair v0.2.0/go.mod h1:ju3hM8lrFdcdS1o/hijiZ5hbCZ0b035aKea6U4RblxI=
+github.com/Totative/go-codepair v0.3.0 h1:27k4TDFtooxLbswKNMCpB7sab4S3NWj4mruMXCWkq/I=
+github.com/Totative/go-codepair v0.3.0/go.mod h1:QUtnfGqMsa6AIMSJdQ1GYOBZZ3QOf3IyC5jA/JeOCC8=
 github.com/Totative/go-keyring v0.3.0 h1:5VYcyTd10unpGjuhJgP2EjBsIOItbtipj1qn+MBOwOw=
 github.com/Totative/go-keyring v0.3.0/go.mod h1:q1h9jXCz+ivzMCpqkqywE88CqEIsnGcv0Svr5rR+pXc=
 github.com/andybalholm/brotli v1.3.0 h1:IdkhjSe/+34U+fP7FSR2Q6Poj1hnHUa2GoWmzXJd6qY=
@@ -130,6 +132,8 @@ github.com/google/pprof v0.0.0-20261105003125-4bf881d7fb0b h1:5NKFt6kcAJNVt3XBOf
 github.com/google/pprof v0.0.0-20261105003125-4bf881d7fb0b/go.mod h1:yUo1AMMpsPIDFGuwDK8nLcf8+vvAd5l2O6JDZ6hpwrM=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/gtank/ristretto255 v0.2.0 h1:LeOuWr6giplWkkMizx2emfG03SRPJqKt1nfIHLVHQ/0=
+github.com/gtank/ristretto255 v0.2.0/go.mod h1:OJ1ox/dWcp7sJ5grYDcZ+kkHYuj5nelW5aaL7ESVXBw=
 github.com/hashicorp/golang-lru/v2 v2.0.7 h1:a+bsQ5rvGLjzHuww6tVxozPZFVghXaHOwFs4luLUK2k=
 github.com/hashicorp/golang-lru/v2 v2.0.7/go.mod h1:QeFd9opnmA6QUJc5vARoKUSoFhyfM2/ZepoAG6RGpeM=
 github.com/hashicorp/mdns v1.0.7 h1:yWoQVMW5JOiDxQnIUcm3IDt0kCjf3TuXHDbdEKPsbAY=

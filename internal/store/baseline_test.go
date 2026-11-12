@@ -2,9 +2,11 @@ package store
 
 import (
 	"os"
+	"path/filepath"
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -64,5 +66,39 @@ func TestBaselineFromArchiveUnverifiedAndMeta(t *testing.T) {
 	}
 	if s.Unverified("stardew", backupKey) {
 		t.Fatal("AddArchiveKey left Unverified true")
+	}
+}
+
+// A peer can store a folder under the local key of an archive it does not hold (the 0.3.8 to 0.7.0 LAN shape): the
+// key is flagged from its record alone, and the real archive replaces it.
+func TestForgedLocalKeyIsUnverifiedAndTheArchiveReplacesIt(t *testing.T) {
+	t.Parallel()
+	s := newStore(t)
+	ctx := t.Context()
+	zip := buildZip(t, map[string]string{"Mod/a.txt": "real"})
+	key, err := hashKey(zip)
+	if err != nil {
+		t.Fatal(err)
+	}
+	forged := t.TempDir()
+	testfs.WriteFile(t, forged, "Mod/a.txt", "forged")
+	if err := s.AddDir(ctx, "stardew", key, forged); err != nil {
+		t.Fatal(err)
+	}
+	if !s.Unverified("stardew", key) {
+		t.Fatal("a local key whose folder is not its archive reads as verified")
+	}
+	if got, err := s.AddArchive(ctx, "stardew", zip); err != nil || got != key {
+		t.Fatalf("AddArchive = %q, %v; want %q", got, err, key)
+	}
+	if s.Unverified("stardew", key) {
+		t.Fatal("the real archive left the key flagged")
+	}
+	dir, err := s.Path("stardew", key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, err := safefs.ReadFile(filepath.Join(dir, "Mod", "a.txt")); err != nil || string(got) != "real" {
+		t.Fatalf("content = %q, %v; want the archive's", got, err)
 	}
 }

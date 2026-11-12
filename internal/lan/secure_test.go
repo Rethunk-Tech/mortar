@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io"
 	"maps"
 	"net/http"
@@ -155,12 +156,9 @@ func TestARelayThatChangesTheDialedHostFailsTheHandshake(t *testing.T) {
 		_, _ = io.Copy(w, resp.Body)
 	}))
 	t.Cleanup(srv.Close)
-	paired, err := rig.send(t, strings.TrimPrefix(srv.URL, "http://"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if paired {
-		t.Fatal("a relay was proven paired")
+	// The relay cannot prove the pairing, and the send must not fall back to an unsealed one.
+	if _, err := rig.send(t, strings.TrimPrefix(srv.URL, "http://")); !errors.Is(err, errUnproven) {
+		t.Fatalf("send through a host-changing relay = %v, want errUnproven", err)
 	}
 }
 
@@ -301,10 +299,14 @@ func TestOneHostCannotHoldEveryPairingSession(t *testing.T) {
 	if _, err := host.PairCode(t.Context()); err != nil {
 		t.Fatal(err)
 	}
-	body, _ := json.Marshal(pairBeginRequest{ID: "x", Name: "x", A: base64.RawStdEncoding.EncodeToString(bytes.Repeat([]byte{9}, 32))})
 	codes := map[int]int{}
 	for range maxSessionsPerPeer + 3 {
-		resp, err := postJSON(t, "http://"+addr+"/pair/begin", body)
+		_, msg, err := pairConfig().NewJoiner("AAAAAAAA", "x", "x")
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, _ := json.Marshal(pairBeginRequest{Msg: base64.RawStdEncoding.EncodeToString(msg)})
+		resp, err := postJSON(t, "http://"+addr+pairBeginPath, body)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -326,9 +328,11 @@ func TestGuessesAreCountedBeforeTheyAreChecked(t *testing.T) {
 	host.pairing.mu.Lock()
 	defer host.pairing.mu.Unlock()
 	for range maxFailures {
-		host.pairChargeLocked("192.0.2.9", now)
+		if err := host.pairChargeLocked("192.0.2.9", now); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if err := host.pairOpen("192.0.2.9", now); err == nil {
+	if err := host.pairChargeLocked("192.0.2.9", now); err == nil {
 		t.Fatal("a sixth guess was allowed")
 	}
 }

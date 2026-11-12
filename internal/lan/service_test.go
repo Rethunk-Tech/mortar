@@ -10,7 +10,9 @@ import (
 	"io"
 	"maps"
 	"net"
+	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -32,7 +34,6 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	pairIterations = 1_000
 	retryDelay = time.Millisecond
 	testmain.RunInTempData(m, "lan")
 }
@@ -253,10 +254,9 @@ func TestLoopbackTransfer(t *testing.T) {
 	if err := senderStore.AddDir(t.Context(), "stardew", ghKey, source); err != nil {
 		t.Fatal(err)
 	}
-	// So does an archive the sender installed from disk, which exists nowhere else; its key names the archive's hash,
-	// not the folder's.
-	localKey := store.LocalKey(strings.Repeat("cd", 32))
-	if err := senderStore.AddDir(t.Context(), "stardew", localKey, source); err != nil {
+	// So does an item the sender installed from disk, which exists nowhere else.
+	localKey, err := senderStore.AddHashedDir(t.Context(), "stardew", source)
+	if err != nil {
 		t.Fatal(err)
 	}
 
@@ -332,8 +332,8 @@ func TestLoopbackTransfer(t *testing.T) {
 	if string(got) != "from sender" {
 		t.Fatalf("installed contents = %q", got)
 	}
-	if !receiverStore.Unverified("stardew", key) || receiverStore.Unverified("stardew", localKey) {
-		t.Error("a file taken from a computer is vouched for by it alone, except a local archive")
+	if !receiverStore.Unverified("stardew", key) || !receiverStore.Unverified("stardew", localKey) {
+		t.Error("a file taken from a computer is vouched for by it alone, a local archive's included")
 	}
 	if src, pkg, _, ok := receiverStore.Meta("stardew", localKey); !ok || src != profile.KindLocal || pkg != "Mine.zip" {
 		t.Fatalf("local entry meta = %q %q %v", src, pkg, ok)
@@ -676,7 +676,7 @@ func TestListenerRefusesNonJSONPostsAndCapsHandshakes(t *testing.T) {
 	t.Parallel()
 	service := NewService(Deps{Dir: t.TempDir()})
 	handler := service.handler()
-	for _, path := range []string{"/share", "/outgoing", "/pair/begin", "/pair/finish"} {
+	for _, path := range []string{"/share", "/outgoing", pairBeginPath, pairFinishPath} {
 		for _, contentType := range []string{"text/plain", "", "application/jsonx"} {
 			request := httptest.NewRequestWithContext(t.Context(), "POST", "http://mortar.test"+path, strings.NewReader("{}"))
 			request.Header.Set("Content-Type", contentType)
@@ -768,6 +768,27 @@ func TestShareRequestsInFlightAreLimited(t *testing.T) {
 	}
 }
 
+// An unsealed share is charged whatever sender it names, so naming a paired id neither skips the limit nor answers
+// differently from naming a stranger.
+func TestUnsealedShareNamingAPairedSenderIsCharged(t *testing.T) {
+	service := NewService(Deps{})
+	if err := service.book.add(PairedPeer{ID: "laptop", Name: "Laptop"}, make([]byte, 32)); err != nil {
+		t.Fatal(err)
+	}
+	codes := make([]int, 0, 2)
+	for range 2 {
+		request := httptest.NewRequestWithContext(t.Context(), "POST", "http://mortar.test/share", strings.NewReader("{"))
+		request.RemoteAddr = "192.0.2.21:4000"
+		request.Header.Set(senderHeader, "laptop")
+		response := httptest.NewRecorder()
+		service.handleShare(response, request)
+		codes = append(codes, response.Code)
+	}
+	if codes[0] != http.StatusBadRequest || codes[1] != http.StatusTooManyRequests {
+		t.Fatalf("answers = %v, want [400 429]", codes)
+	}
+}
+
 // A peer inside its rate limit is refused before its body is read, even when it names a paired device.
 func TestRateLimitedPeerNamingAPairedSenderIsRefusedBeforeItsBody(t *testing.T) {
 	service := NewService(Deps{})
@@ -804,12 +825,62 @@ func TestHelloProvesPairingKey(t *testing.T) {
 	// Claiming the paired id without the key: no proof, or a proof recorded for another challenge.
 	spoof := hello
 	spoof.Proof = ""
-	if key, _ := sender.provenKey(spoof); key != nil {
-		t.Fatal("a peer sending no proof was treated as paired")
+	if key, err := sender.provenKey(spoof); key != nil || !errors.Is(err, errUnproven) {
+		t.Fatalf("a peer sending no proof: key %v, err %v", key, err)
 	}
 	replay := hello
 	replay.challenge = "another-challenge"
-	if key, _ := sender.provenKey(replay); key != nil {
-		t.Fatal("a replayed proof was accepted for a new challenge")
+	if key, err := sender.provenKey(replay); key != nil || !errors.Is(err, errUnproven) {
+		t.Fatalf("a replayed proof for a new challenge: key %v, err %v", key, err)
+	}
+}
+
+// A computer still on 0.7.0's LAN protocol answers /hello with that version: a send to it is refused with the update
+// message, not as a pairing whose proof failed.
+func TestAPeerOnTheOlderProtocolIsToldToUpdateMortar(t *testing.T) {
+	t.Parallel()
+	old := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, helloResponse{ID: "old", Name: "Old", Version: "6", Nonce: "n", Proof: "p"})
+	}))
+	t.Cleanup(old.Close)
+	s, _ := pairedService(t, nil, nil)
+	if _, err := s.hello(t.Context(), strings.TrimPrefix(old.URL, "http://")); err == nil || !strings.Contains(err.Error(), "update Mortar on both computers") {
+		t.Fatalf("hello from an older peer: %v", err)
+	}
+}
+
+func TestHelloRefusesOversizedFieldsAndStoresNothing(t *testing.T) {
+	t.Parallel()
+	service, addr := pairedService(t, nil, nil)
+	for name, query := range map[string]url.Values{
+		"id":        {"id": {strings.Repeat("a", maxHelloField+1)}},
+		"challenge": {"challenge": {strings.Repeat("a", maxHelloField+1)}},
+	} {
+		resp, err := getURL(t, "http://"+addr+"/hello?"+query.Encode())
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = resp.Body.Close()
+		if resp.StatusCode != http.StatusBadRequest {
+			t.Fatalf("oversized %s: status %d, want 400", name, resp.StatusCode)
+		}
+	}
+	service.mu.Lock()
+	defer service.mu.Unlock()
+	if len(service.nonces) != 0 {
+		t.Fatalf("%d handshake records stored, want 0", len(service.nonces))
+	}
+}
+
+func TestUnpairedShareLargerThanTheUnpairedCapIsRefused(t *testing.T) {
+	t.Parallel()
+	service := NewService(Deps{})
+	body := strings.NewReader(strings.Repeat("a", maxUnpairedRequestBytes+1))
+	request := httptest.NewRequestWithContext(t.Context(), "POST", "http://mortar.test/share", body)
+	request.RemoteAddr = "192.0.2.30:4000"
+	response := httptest.NewRecorder()
+	service.handleShare(response, request)
+	if response.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("status = %d, want 413", response.Code)
 	}
 }

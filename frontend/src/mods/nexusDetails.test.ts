@@ -13,6 +13,7 @@ import {
   newestOffered,
   nexusEntryOf,
   primeDetails,
+  resetNexusDetailsForTest,
   useNexusDetails,
   useNexusSeen,
   watermarkOf,
@@ -52,6 +53,7 @@ const page = (id: number): Details => ({
 })
 
 beforeEach(() => {
+  resetNexusDetailsForTest()
   stubBinding(nexussvc, 'CachedDetails', () => cached)
   stubBinding(nexussvc, 'Details', (_game: string, id: number) => {
     loads.push(id)
@@ -105,8 +107,6 @@ test('a page read signed out makes no Nexus call and marks the entry signed out'
 })
 
 test('signing out marks pages already read as saved, and signing in reads them again', async () => {
-  // Signing in primes the list an earlier test left; this one primes none, so it leaves none asked.
-  await primeDetails('', [])
   useNexus.setState({ signedIn: true, name: 'pat', premium: false })
   await loadDetails('stardew', 2410)
   expect(nexusEntryOf(useNexusDetails.getState().byKey, 'stardew', 2410)?.signedOut).toBeUndefined()

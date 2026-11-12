@@ -303,3 +303,22 @@ func TestABackupsStoreItemIsNeitherVouchedForNorServed(t *testing.T) {
 		}
 	}
 }
+
+func TestExtractTarStopsAtTheSharesRemainingBudget(t *testing.T) {
+	t.Parallel()
+	src := t.TempDir()
+	if err := os.WriteFile(filepath.Join(src, "a.bin"), make([]byte, 4096), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var tarred bytes.Buffer
+	if err := writeTar(t.Context(), &tarred, src); err != nil {
+		t.Fatal(err)
+	}
+	var got int64
+	if err := extractTar(t.Context(), bytes.NewReader(tarred.Bytes()), t.TempDir(), &got, 1024, func(int64) {}); err == nil {
+		t.Fatal("an item past the share's remaining budget was unpacked")
+	}
+	if err := extractTar(t.Context(), bytes.NewReader(tarred.Bytes()), t.TempDir(), &got, maxShareBytes, func(int64) {}); err != nil {
+		t.Fatalf("an item inside the budget was refused: %v", err)
+	}
+}
