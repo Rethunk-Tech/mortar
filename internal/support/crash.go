@@ -177,16 +177,22 @@ var (
 	queryValue = regexp.MustCompile(`([?&;][^=&;\s#]*=)[^&;\s#]*`)
 	userInfo   = regexp.MustCompile(`^([A-Za-z][A-Za-z0-9+.-]*://)[^/@?#]*@`)
 	bearer     = regexp.MustCompile(`(?i)((?:authorization|bearer|apikey|api-key)["']?\s*[:=]?\s*(?:bearer\s+)?)[A-Za-z0-9._~+/=-]{8,}`)
+	// assigned is a secret a program printed as name=value or name: value, quoted or not, in a log line rather
+	// than an address: a build's environment dump, a dotnet or package manager message. The name must end in a
+	// secret word, so clientSecret and MY_SECRET match; a name that merely starts with one does not, because a log
+	// is full of keybindings and keyboard hints.
+	assigned = regexp.MustCompile(`(?i)((?:^|[\s"'({,;])[A-Za-z0-9_.-]*(?:token|secret|password|passwd|api[_-]?key|key)["']?\s*[:=]\s*["']?)[^\s"',;]{4,}`)
 )
 
-// scrubSecrets blanks the value of every query parameter and the user info of every address in text, and any
-// bearer token or API key written as a header.
+// scrubSecrets blanks the value of every query parameter and the user info of every address in text, any bearer
+// token or API key written as a header, and any secret a program printed as name=value or name: value.
 func scrubSecrets(text string) string {
 	text = loggedURL.ReplaceAllStringFunc(text, func(u string) string {
 		u = userInfo.ReplaceAllString(u, "${1}REDACTED@")
 		return queryValue.ReplaceAllString(u, "${1}REDACTED")
 	})
-	return bearer.ReplaceAllString(text, "${1}REDACTED")
+	text = bearer.ReplaceAllString(text, "${1}REDACTED")
+	return assigned.ReplaceAllString(text, "${1}REDACTED")
 }
 
 // hideHomeIn replaces every occurrence of the home folder in free text such as a log, where paths appear mid-line.

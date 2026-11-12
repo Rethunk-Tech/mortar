@@ -201,6 +201,24 @@ func TestBundleProfilesAndQueueHideTheHomeFolder(t *testing.T) {
 	}
 }
 
+func TestHideHomeInBlanksSecretsABuildLogWritesAsAnAssignment(t *testing.T) {
+	t.Parallel()
+	line := "dotnet build: token: tokentokentoken" +
+		` ; MY_SECRET=hunter2hunter2 ; "clientSecret": "s3cr3t-value" ; Password=correcthorse ; apiKey=qwertyuiop` +
+		` ; hint: keybinding=S pressed`
+	got := hideHomeIn(line, "/home/me")
+	for _, leaked := range []string{"tokentokentoken", "hunter2hunter2", "s3cr3t-value", "correcthorse", "qwertyuiop"} {
+		if strings.Contains(got, leaked) {
+			t.Errorf("%q survived: %s", leaked, got)
+		}
+	}
+	for _, kept := range []string{"token: REDACTED", "MY_SECRET=REDACTED", "Password=REDACTED", "apiKey=REDACTED", "keybinding=S"} {
+		if !strings.Contains(got, kept) {
+			t.Errorf("%q lost: %s", kept, got)
+		}
+	}
+}
+
 func TestHideHomeInBlanksEverySecretAnAddressOrHeaderCarries(t *testing.T) {
 	t.Parallel()
 	line := `download failed: Get "https://cf-files.nexusmods.com/cdn/1/2/x.zip?md5=abc123&expires=1700000000&user_id=4242": dial tcp: timeout` +
