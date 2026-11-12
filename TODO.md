@@ -6,7 +6,8 @@ change that lands it. Design text lives in [docs/design.md](docs/design.md).
 
 ## Mortar pins a Wails fork instead of an upstream release
 
-`go.mod` still `replace`s Wails with `Rethunk-AI/wails` branch `mortar/v3-next`.
+`go.mod` still `replace`s Wails with `Rethunk-AI/wails` branch `mortar/v3.1.0-combined`
+(tags `v3.1.0-mortar.N`).
 Every Mortar build, the AppImage path and the GTK4 window rest on that fork, so
 an upstream Wails v3 tag cannot be taken until it carries the same hooks. The
 cost is a private pin that has to be rebased onto each Wails move, and a
@@ -38,7 +39,8 @@ before those PRs land, or carrying a permanent fork.
 - `go.mod` has no `Rethunk-AI/wails` replace and pins an upstream Wails module
   version.
 - That version includes #6202 (OnUpdateApplied, WEP #6203), #6199, #6240, #6197,
-  #6281, #6282, #6283, #6285, #6284, #6287, WEPs #6243 and #6244, and apply-on-exit.
+  #6281, #6282, #6283, #6526, #6571 to #6578, #6582, WEPs #6243, #6244 and #6580,
+  apply-on-exit and the server-mode shutdown hooks.
 - `bun run gate` stays clean.
 
 ## The Linux game sandbox is unproven on real games

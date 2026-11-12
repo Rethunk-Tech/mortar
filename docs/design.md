@@ -6,7 +6,7 @@ Screens and styling: [gui-design.md](gui-design.md). Standing rules: [AGENTS.md]
 
 ## Release
 
-Drop the `Rethunk-AI/wails` replace in `go.mod` (branch `mortar/v3-next`) and pin an upstream release once one carries what the branch adds: #6202 (OnUpdateApplied, with WEP #6203), #6199 (service methods fall back to `Options.MarshalError`; `errorkind_test.go` relies on it), #6240 (single-instance lock released at the start of shutdown), #6197 (GTK4 transparency), #6281 and #6282 (session-bus fallbacks), #6283 (GTK4 drop motion), #6285 (server-mode shutdown hooks), #6284 and #6287, WEPs #6243 (local linuxdeploy) and #6244 (`-nopack`), and the fork-only apply-on-exit.
+Drop the `Rethunk-AI/wails` replace in `go.mod` (branch `mortar/v3.1.0-combined`, tagged `v3.1.0-mortar.N`) and pin an upstream release once one carries what the branch adds: #6202 (OnUpdateApplied, with WEP #6203), #6199 (service methods fall back to `Options.MarshalError`; `errorkind_test.go` relies on it), #6240 (single-instance lock released at the start of shutdown), #6197 (GTK4 transparency), #6281 and #6282 (session-bus fallbacks), #6283 (GTK4 drop motion), #6526 (NVIDIA inside a Flatpak), #6571 to #6578 and #6582 (runtime-call origin, webview navigation, second-instance and URL fixes), WEPs #6243 (local linuxdeploy), #6244 (`-nopack`) and #6580 (updater statement signature), and the fork-only apply-on-exit and server-mode shutdown hooks (#6285 was closed upstream unmerged).
 
 [TODO.md](../TODO.md#mortar-pins-a-wails-fork-instead-of-an-upstream-release)
 
