@@ -35,6 +35,9 @@ const (
 // the shutdown itself and exits: a main thread stuck in a toolkit call must not keep a quit waiting for half a minute.
 const quitGrace = 2 * time.Second
 
+// finishGrace bounds the watchdog's own shutdown work (LAN teardown, staged-update swap) before it exits regardless.
+var finishGrace = 3 * time.Second
+
 type QuitService struct {
 	app *application.App
 	// finish runs the shutdown work once, whichever path reaches it first.
@@ -154,7 +157,17 @@ func (s *QuitService) armWatchdog() {
 				time.Sleep(watchdogPoll)
 			}
 			slog.Warn("quit: graceful shutdown took over; finishing it directly", "over", s.grace)
-			s.finish()
+			// finish can itself be the stuck call: the graceful path may be inside the same once-guarded shutdown.
+			done := make(chan struct{})
+			go func() {
+				s.finish()
+				close(done)
+			}()
+			select {
+			case <-done:
+			case <-time.After(finishGrace):
+				slog.Warn("quit: shutdown work stalled; exiting without it", "over", finishGrace)
+			}
 			s.exit(0)
 		}()
 	})

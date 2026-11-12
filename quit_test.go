@@ -43,6 +43,27 @@ func TestWatchdogExitsOnceAfterGraceAndWaitsForInstalls(t *testing.T) {
 	}
 }
 
+func TestWatchdogExitsWhenShutdownWorkHangs(t *testing.T) {
+	prevPoll, prevFinish := watchdogPoll, finishGrace
+	watchdogPoll, finishGrace = time.Millisecond, 20*time.Millisecond
+	t.Cleanup(func() { watchdogPoll, finishGrace = prevPoll, prevFinish })
+	hang := make(chan struct{})
+	t.Cleanup(func() { close(hang) })
+	exited := make(chan int, 1)
+	s := &QuitService{
+		grace:  5 * time.Millisecond,
+		busy:   func() bool { return false },
+		finish: func() { <-hang },
+		exit:   func(code int) { exited <- code },
+	}
+	s.armWatchdog()
+	select {
+	case <-exited:
+	case <-time.After(2 * time.Second):
+		t.Fatal("a hung shutdown kept the process alive")
+	}
+}
+
 func TestOneClickOnCloseDecides(t *testing.T) {
 	cases := []struct {
 		name                             string
