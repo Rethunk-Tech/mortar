@@ -1,6 +1,7 @@
 # `bun run test` backgrounds its Go half inside bash -c, which gate cannot see into, so left alone both gates
 # compile and run the race tests at once.
 [gates.go]
+needs = ["typecheck"]
 run = "go test -race ./..."
 timeout = "3m"
 
@@ -9,7 +10,9 @@ timeout = "3m"
 run = "golangci-lint run --allow-parallel-runners"
 timeout = "3m"
 
+# typecheck regenerates frontend/bindings with -clean (and a temp dir beside it); the JS tests import from it and the Go docs tests walk the tree.
 [gates.test]
+needs = ["typecheck"]
 run = "bun run test:js"
 
 [gates.e2e]
