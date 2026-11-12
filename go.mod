@@ -6,12 +6,12 @@ require (
 	github.com/Rethunk-Tech/go-archive v0.3.0
 	github.com/Rethunk-Tech/go-bannerlord v0.1.2
 	github.com/Rethunk-Tech/go-bepinex v0.2.2
-	github.com/Rethunk-Tech/go-cfgedit v0.4.0
+	github.com/Rethunk-Tech/go-cfgedit v0.4.1
 	github.com/Rethunk-Tech/go-contentpatcher v0.1.0
 	github.com/Rethunk-Tech/go-curseforge v0.4.0
-	github.com/Rethunk-Tech/go-desktopenv v0.9.0
+	github.com/Rethunk-Tech/go-desktopenv v0.9.1
 	github.com/Rethunk-Tech/go-dotnet v0.3.0
-	github.com/Rethunk-Tech/go-editorlocator v0.1.0
+	github.com/Rethunk-Tech/go-editorlocator v0.1.1
 	github.com/Rethunk-Tech/go-folderwatch v0.1.0
 	github.com/Rethunk-Tech/go-fomod v0.1.2
 	github.com/Rethunk-Tech/go-gamelocator v0.4.0
@@ -81,7 +81,7 @@ require (
 	github.com/stangelandcl/ppmd v0.1.1 // indirect
 	github.com/ulikunitz/xz v0.5.17 // indirect
 	go4.org v0.0.0-20261028031214-ed6929a230fe // indirect
-	golang.org/x/mod v0.42.0 // indirect
+	golang.org/x/mod v0.43.0 // indirect
 	golang.org/x/term v0.47.0 // indirect
 	golang.org/x/text v0.44.0 // indirect
 	modernc.org/libc v1.80.1 // indirect

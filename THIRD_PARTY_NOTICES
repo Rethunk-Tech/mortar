@@ -3088,7 +3088,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-cfgedit@v0.4.0
+github.com/Rethunk-Tech/go-cfgedit@v0.4.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-cfgedit
 
@@ -3172,7 +3172,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-desktopenv@v0.9.0
+github.com/Rethunk-Tech/go-desktopenv@v0.9.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-desktopenv
 
@@ -3228,7 +3228,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-editorlocator@v0.1.0
+github.com/Rethunk-Tech/go-editorlocator@v0.1.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-editorlocator
 
@@ -5230,7 +5230,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-golang.org/x/mod@v0.42.0
+golang.org/x/mod@v0.43.0
 licence: BSD-3-Clause
 https://pkg.go.dev/golang.org/x/mod
 
