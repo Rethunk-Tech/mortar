@@ -4,8 +4,8 @@ package deps
 
 import (
 	"fmt"
-	"strings"
 
+	tstore "github.com/Rethunk-Tech/go-thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -41,12 +41,11 @@ func Thunderstore(s string) (Dependency, error) {
 	return Dependency{Target: Target{Package: "thunderstore:" + pkg}, Constraint: version, Relation: Required}, nil
 }
 
-// ThunderstoreRef splits "Namespace-Name-Version" into its "Namespace-Name" package and its version. Thunderstore
-// allows no '-' inside a namespace, name or version, so anything but three parts with a namespace and name is malformed.
+// ThunderstoreRef splits "Namespace-Name-Version" into its "Namespace-Name" package and its version.
 func ThunderstoreRef(s string) (pkg, version string, ok bool) {
-	parts := strings.Split(s, "-")
-	if len(parts) != 3 || parts[0] == "" || parts[1] == "" {
+	d, err := tstore.ParseDependency(s)
+	if err != nil {
 		return "", "", false
 	}
-	return parts[0] + "-" + parts[1], parts[2], true
+	return d.Namespace + "-" + d.Name, d.Version, true
 }

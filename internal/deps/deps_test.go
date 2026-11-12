@@ -40,7 +40,7 @@ func TestThunderstoreRefNeedsExactlyNamespaceNameVersion(t *testing.T) {
 	if pkg, v, ok := ThunderstoreRef("Ns-Name-1.0.0"); !ok || pkg != "Ns-Name" || v != "1.0.0" {
 		t.Fatalf("%q %q %v", pkg, v, ok)
 	}
-	for _, bad := range []string{"Ns-Name", "A-B-C-D", "-Name-1.0.0"} {
+	for _, bad := range []string{"Ns-Name", "A-B-C-D", "-Name-1.0.0", "Ns-Name-latest"} {
 		if _, _, ok := ThunderstoreRef(bad); ok {
 			t.Errorf("%q accepted", bad)
 		}
