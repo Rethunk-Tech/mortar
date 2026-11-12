@@ -533,10 +533,10 @@ func TestFreeAccountWaitsForTheClickThenTakesTheLink(t *testing.T) {
 	if len(opened) != 1 || opened[0] != want {
 		t.Fatalf("opened %v", opened)
 	}
-	if f.s.Route(nexusmods.NXMLink{ModID: 1, FileID: 99, Key: "k", Expires: f.now().Unix() + 600}) {
+	if f.s.Route(nexusmods.NXMLink{Game: "stardew", ModID: 1, FileID: 99, Key: "k", Expires: f.now().Unix() + 600}) {
 		t.Error("a link for another file was taken")
 	}
-	if !f.s.Route(nexusmods.NXMLink{ModID: 1, FileID: 10, Key: "k", Expires: f.now().Unix() + 600}) {
+	if !f.s.Route(nexusmods.NXMLink{Game: "stardew", ModID: 1, FileID: 10, Key: "k", Expires: f.now().Unix() + 600}) {
 		t.Fatal("the waiting item did not take its link")
 	}
 	f.wait("done", f.item(StateDone))
@@ -587,7 +587,7 @@ func TestExpiredKeyReopensThePage(t *testing.T) {
 	f.start()
 	f.add(req(10))
 	f.wait("the click", f.item(StateWaitingClick))
-	f.s.Route(nexusmods.NXMLink{ModID: 1, FileID: 10, Key: "old", Expires: f.now().Unix() + 1})
+	f.s.Route(nexusmods.NXMLink{Game: "stardew", ModID: 1, FileID: 10, Key: "old", Expires: f.now().Unix() + 1})
 	f.wait("the page again", func(State) bool {
 		f.mu.Lock()
 		defer f.mu.Unlock()
@@ -969,9 +969,9 @@ func TestRouteGivesAClickedFileToAPendingUpdate(t *testing.T) {
 	f := newFixture(t)
 	f.premium.Store(false)
 	f.s.mu.Lock()
-	f.s.items = append(f.s.items, &Item{ID: "u", Kind: KindUpdate, ModID: 41150, State: StateFailed, Error: "That item could not be found."})
+	f.s.items = append(f.s.items, &Item{ID: "u", Kind: KindUpdate, Game: "stardew", ModID: 41150, State: StateFailed, Error: "That item could not be found."})
 	f.s.mu.Unlock()
-	if !f.s.Route(nexusmods.NXMLink{ModID: 41150, FileID: 185334, Key: "k", Expires: f.now().Unix() + 600}) {
+	if !f.s.Route(nexusmods.NXMLink{Game: "stardew", ModID: 41150, FileID: 185334, Key: "k", Expires: f.now().Unix() + 600}) {
 		t.Fatal("the link should complete the pending update")
 	}
 	f.s.mu.Lock()
@@ -979,6 +979,22 @@ func TestRouteGivesAClickedFileToAPendingUpdate(t *testing.T) {
 	it := f.s.items[len(f.s.items)-1]
 	if it.FileID != 185334 || it.State != StateQueued || it.Error != "" {
 		t.Fatalf("update item %+v", *it)
+	}
+}
+
+// A Nexus mod id is per game: Valheim's 500 is not Lethal Company's, so a click on one never resumes the other.
+func TestRouteOnlyGivesAClickedFileToItsGamesItem(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	f.premium.Store(false)
+	f.s.mu.Lock()
+	f.s.items = append(f.s.items, &Item{ID: "lc", Kind: KindInstall, Game: "lethal-company", Profile: "p1", ModID: 500, FileID: 10, State: StateWaitingClick})
+	f.s.mu.Unlock()
+	if f.s.Route(nexusmods.NXMLink{Game: "valheim", ModID: 500, FileID: 10, Key: "k", Expires: f.now().Unix() + 600}) {
+		t.Fatal("a Valheim link took the Lethal Company item")
+	}
+	if !f.s.Route(nexusmods.NXMLink{Game: "lethal-company", ModID: 500, FileID: 10, Key: "k", Expires: f.now().Unix() + 600}) {
+		t.Fatal("the item's own game did not take its link")
 	}
 }
 

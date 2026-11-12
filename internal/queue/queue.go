@@ -939,13 +939,14 @@ func (r Request) implicit() bool { return r.Implicit || r.Kind == KindDependency
 // none did, the link is a download the user started on their own.
 func (s *Service) Route(link nexusmods.NXMLink) bool {
 	s.mu.Lock()
+	// Mod ids are per game: the same number on another game's site is a different mod.
 	i := slices.IndexFunc(s.items, func(it *Item) bool {
-		return (it.State == StateWaitingClick || it.State == StateQueued) && it.ModID == link.ModID && it.FileID == link.FileID && it.FileID != 0
+		return it.Game == link.Game && (it.State == StateWaitingClick || it.State == StateQueued) && it.ModID == link.ModID && it.FileID == link.FileID && it.FileID != 0
 	})
 	if i < 0 {
 		// An update that has not settled on a file yet (or could not) takes the file the user clicked on its page.
 		i = slices.IndexFunc(s.items, func(it *Item) bool {
-			return (it.Kind == KindUpdate || it.Latest) && it.ModID == link.ModID && it.Repo == "" &&
+			return it.Game == link.Game && (it.Kind == KindUpdate || it.Latest) && it.ModID == link.ModID && it.Repo == "" &&
 				(it.State == StateWaitingClick || it.State == StateQueued || it.State == StateFailed)
 		})
 		if i >= 0 {
