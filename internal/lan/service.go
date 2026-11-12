@@ -61,6 +61,10 @@ const (
 	// senderHeader names the sending device on a /share request so the receiver can rate limit strangers before reading.
 	senderHeader     = "X-Mortar-Sender"
 	maxUnpairedInbox = 20
+	// maxHelloField bounds a /hello id or challenge (both are 43-character tokens) and maxHelloHost its Host (a DNS
+	// name plus port), since every handshake record holds all three for a minute.
+	maxHelloField = 128
+	maxHelloHost  = 256
 	// storeIdle is how long a served store entry may make no progress before the connection is dropped; unlike the
 	// small request deadlines it bounds silence, not the whole stream, which can run for minutes.
 	storeIdle = time.Minute
@@ -852,6 +856,10 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 	peer := remotePeer(r)
 	query := r.URL.Query()
 	callerID, challenge := query.Get("id"), query.Get("challenge")
+	if len(callerID) > maxHelloField || len(challenge) > maxHelloField || len(r.Host) > maxHelloHost {
+		http.Error(w, "handshake field is too long", http.StatusBadRequest)
+		return
+	}
 	s.mu.Lock()
 	fromPeer := 0
 	for value, record := range s.nonces {

@@ -11,6 +11,7 @@ import (
 	"maps"
 	"net"
 	"net/http"
+	"net/url"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -845,5 +846,28 @@ func TestAPeerOnTheOlderProtocolIsToldToUpdateMortar(t *testing.T) {
 	s, _ := pairedService(t, nil, nil)
 	if _, err := s.hello(t.Context(), strings.TrimPrefix(old.URL, "http://")); err == nil || !strings.Contains(err.Error(), "update Mortar on both computers") {
 		t.Fatalf("hello from an older peer: %v", err)
+	}
+}
+
+func TestHelloRefusesOversizedFieldsAndStoresNothing(t *testing.T) {
+	t.Parallel()
+	service, addr := pairedService(t, nil, nil)
+	for name, query := range map[string]url.Values{
+		"id":        {"id": {strings.Repeat("a", maxHelloField+1)}},
+		"challenge": {"challenge": {strings.Repeat("a", maxHelloField+1)}},
+	} {
+		resp, err := getURL(t, "http://"+addr+"/hello?"+query.Encode())
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = resp.Body.Close()
+		if resp.StatusCode != http.StatusBadRequest {
+			t.Fatalf("oversized %s: status %d, want 400", name, resp.StatusCode)
+		}
+	}
+	service.mu.Lock()
+	defer service.mu.Unlock()
+	if len(service.nonces) != 0 {
+		t.Fatalf("%d handshake records stored, want 0", len(service.nonces))
 	}
 }
