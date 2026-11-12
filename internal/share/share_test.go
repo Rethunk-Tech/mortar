@@ -867,3 +867,25 @@ func TestAnExtraFolderModTravelsToAPairedComputer(t *testing.T) {
 		t.Fatalf("entries %+v, %v", pv.Entries, err)
 	}
 }
+
+func TestReadBytesRefusesADecompressionBomb(t *testing.T) {
+	t.Parallel()
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	w, err := zw.Create("profile.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := w.Write(make([]byte, 64<<20)); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if buf.Len() > MaxFileBytes {
+		t.Fatalf("bomb is %d bytes packed, want it under the file cap", buf.Len())
+	}
+	if _, err := ReadBytes(buf.Bytes()); err == nil {
+		t.Fatal("a zip inflating to 64 MiB was accepted")
+	}
+}

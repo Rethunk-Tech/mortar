@@ -11,8 +11,8 @@ import (
 	"maps"
 	"net"
 	"net/http"
-	"net/url"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -869,5 +869,18 @@ func TestHelloRefusesOversizedFieldsAndStoresNothing(t *testing.T) {
 	defer service.mu.Unlock()
 	if len(service.nonces) != 0 {
 		t.Fatalf("%d handshake records stored, want 0", len(service.nonces))
+	}
+}
+
+func TestUnpairedShareLargerThanTheUnpairedCapIsRefused(t *testing.T) {
+	t.Parallel()
+	service := NewService(Deps{})
+	body := strings.NewReader(strings.Repeat("a", maxUnpairedRequestBytes+1))
+	request := httptest.NewRequestWithContext(t.Context(), "POST", "http://mortar.test/share", body)
+	request.RemoteAddr = "192.0.2.30:4000"
+	response := httptest.NewRecorder()
+	service.handleShare(response, request)
+	if response.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("status = %d, want 413", response.Code)
 	}
 }

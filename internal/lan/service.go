@@ -45,6 +45,10 @@ const (
 	serviceType     = "_mortar._tcp"
 	maxPayloadBytes = share.MaxFileBytes
 	maxRequestBytes = maxPayloadBytes*4/3 + 4096
+	// maxUnpairedPayloadBytes bounds a share from a sender that has not proved it is paired: it sits in memory for
+	// transferTTL, up to maxUnpairedInbox of them, and carries a profile plus its small config files.
+	maxUnpairedPayloadBytes = 1 << 20
+	maxUnpairedRequestBytes = maxUnpairedPayloadBytes*4/3 + 4096
 	rateLimit       = 10 * time.Second
 	peerTTL         = 6 * time.Second
 	// browseInterest is how long after a Peers call discovery keeps running; nobody looking means no mDNS traffic.
@@ -895,14 +899,18 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
-	if r.ContentLength > maxRequestBytes {
+	_, isSealed := r.Context().Value(sealedCtxKey{}).(*sealedPeer)
+	limit := int64(maxUnpairedRequestBytes)
+	if isSealed {
+		limit = maxRequestBytes
+	}
+	if r.ContentLength > limit {
 		http.Error(w, "request is too large", http.StatusRequestEntityTooLarge)
 		return
 	}
 	peer := remotePeer(r)
 	// A peer inside its rate limit is refused whatever sender it names. Only a sealed request has proved it is paired,
 	// so any other is charged before its body is read: the sender header alone is unauthenticated.
-	_, isSealed := r.Context().Value(sealedCtxKey{}).(*sealedPeer)
 	charged := !isSealed
 	if s.receiveLimited(peer) || charged && !s.allowReceive(peer) {
 		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
@@ -913,7 +921,7 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer s.releaseShare()
-	r.Body = http.MaxBytesReader(w, r.Body, maxRequestBytes)
+	r.Body = http.MaxBytesReader(w, r.Body, limit)
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "request is too large", http.StatusRequestEntityTooLarge)
@@ -942,6 +950,10 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 	}
 	if !paired && !charged && !s.allowReceive(peer) {
 		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
+		return
+	}
+	if !paired && len(request.Payload) > maxUnpairedRequestBytes {
+		http.Error(w, errPayloadTooLarge.Error(), http.StatusRequestEntityTooLarge)
 		return
 	}
 	items := transferItems(shared)
