@@ -753,8 +753,11 @@ func TestUnreadableTrashedProfileBlocksOnlyItself(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(e.trash, "stardew", good.ID)); err == nil {
 		t.Fatal("readable expired profile was not purged")
 	}
-	if _, err := e.StoreKeys(true); err == nil {
-		t.Fatal("StoreKeys ignored an unreadable trashed profile")
+	if _, err := e.StoreKeys(true); err != nil {
+		t.Fatalf("an unreadable trashed profile blocked the store keep set: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(e.trash, "stardew", bad.ID)); err != nil {
+		t.Fatal("the unreadable trashed profile was removed")
 	}
 }
 

@@ -330,7 +330,10 @@ func (s *Store) gameStoreKeys(g string, history bool) ([]string, error) {
 		}
 		p, err := readAt(filepath.Join(s.trash, g, d.Name()), d.Name())
 		if err != nil {
-			return nil, err
+			// A trashed profile that no longer reads cannot name its store keys, and one damaged folder must not
+			// block collection forever: it is skipped like trashed() skips it, and its folder stays for a repair.
+			slog.Warn("trashed profile skipped", "game", g, "skipped", d.Name(), "err", err)
+			continue
 		}
 		profiles = append(profiles, p)
 	}
