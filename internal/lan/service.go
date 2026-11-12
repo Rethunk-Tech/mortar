@@ -47,7 +47,7 @@ const (
 	maxRequestBytes = maxPayloadBytes*4/3 + 4096
 	// maxUnpairedPayloadBytes bounds a share from a sender that has not proved it is paired: it sits in memory for
 	// transferTTL, up to maxUnpairedInbox of them, and carries a profile plus its small config files.
-	maxUnpairedPayloadBytes = 1 << 20
+	maxUnpairedPayloadBytes = 8 << 20
 	maxUnpairedRequestBytes = maxUnpairedPayloadBytes*4/3 + 4096
 	rateLimit               = 10 * time.Second
 	peerTTL                 = 6 * time.Second
