@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 
 	"github.com/Rethunk-Tech/go-semverish"
@@ -88,6 +89,8 @@ type Update struct {
 	// when the source's listing carries both versions' dependencies.
 	AddedDeps   []string `json:"addedDeps,omitempty"`
 	RemovedDeps []string `json:"removedDeps,omitempty"`
+	// Want is the queue request that applies this update, set when the service lists updates.
+	Want queue.Request `json:"want"`
 	// FileID is the Nexus file the update downloads, the one that supersedes the installed file. PickFile is set
 	// instead when Nexus lists the installed file but none supersedes it: a page of several downloads has no single
 	// "latest file", so the user picks it on Nexus.
@@ -650,4 +653,29 @@ func liveNexusFile(files []nexusmods.BatchFile, x framework.Mod, modID int, vers
 	}
 	s.PickFile, s.Current = nexus.Stale(installed), !nexus.Stale(installed)
 	return s
+}
+
+// Request is the queue request that applies the update. A Modrinth update names its exact version, since a version
+// number can repeat across loaders. A Nexus update of a mod with a GitHub repo tries that repo's release at the same
+// version first, since a free Nexus account must click for every file.
+func (u Update) Request(game, profileID string) queue.Request {
+	req := queue.Request{Kind: queue.KindUpdate, Game: game, Profile: profileID, Name: u.Name, Version: u.Version, CurrentKey: u.Key}
+	switch {
+	case u.Package != "":
+		req.Package, req.Source, req.Version = u.Package, u.PackageSource, cmp.Or(u.PackageVersion, u.Version)
+	case u.GitHubRepo != "":
+		req.Repo = u.GitHubRepo
+	default:
+		req.ModID, req.FileID, req.FallbackRepo, req.FallbackID = u.NexusID, u.FileID, u.GitHubFallback, u.ID
+	}
+	return req
+}
+
+// withRequests gives each update the queue request that applies it.
+func withRequests(r UpdatesResult, game, profileID string) UpdatesResult {
+	r.Updates = slices.Clone(r.Updates)
+	for i := range r.Updates {
+		r.Updates[i].Want = r.Updates[i].Request(game, profileID)
+	}
+	return r
 }

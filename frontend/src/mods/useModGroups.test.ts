@@ -10,6 +10,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type { Request } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 
 i18n.load('en', {})
 i18n.activate('en')
@@ -95,6 +96,7 @@ const updates: UpdatesResult = {
     githubRepo: '',
     unofficial: false,
     source: 'nexus',
+    want: { kind: 'update' } as Request,
   })),
   held: [],
   unknown: false,

@@ -9,30 +9,8 @@ import { pendingFor, pendingPackage } from '../../queue/totals.ts'
 import { isFull, loadDetails, nexusEntryOf, useNexusDetails } from '../nexusDetails.ts'
 import { optionalUpdateWants, useOptionalSkips } from '../optionalFiles.ts'
 
-const updateSource = (u: Update): Partial<Want> => {
-  if (u.package) {
-    return { package: u.package, ...(u.packageSource ? { source: u.packageSource } : {}) }
-  }
-  if (u.githubRepo) {
-    return { repo: u.githubRepo }
-  }
-  return {
-    modId: u.nexusId,
-    ...(u.fileId ? { fileId: u.fileId } : {}),
-    ...(u.githubFallback ? { fallbackRepo: u.githubFallback, fallbackId: u.id } : {}),
-  }
-}
-
-/** The queue request for an update. A Modrinth update names its exact version, since a version number can repeat
- * across loaders. A Nexus update of a mod with a GitHub repo tries that repo's release at the same
- * version first, since a free Nexus account must click for every file. */
-export const updateWant = (u: Update): Want => ({
-  kind: 'update',
-  ...updateSource(u),
-  name: u.name,
-  version: u.packageVersion || u.version,
-  currentKey: u.key,
-})
+/** The queue request for an update, as the Go side words it. */
+export const updateWant = (u: Update): Want => u.want
 
 /** The update's request, then newer versions of the optional files laid over the entry unless they are left out;
  * the queue installs those after the main file. */

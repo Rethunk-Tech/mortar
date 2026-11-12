@@ -1,6 +1,9 @@
 import { expect, test } from 'bun:test'
 import type { Update } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
-import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
+import type {
+  Item,
+  Request,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import {
   acknowledgeUpdateCaution,
   cautionAcknowledged,
@@ -8,7 +11,23 @@ import {
   queueItemSucceeded,
 } from './autoUpdate.ts'
 
-const update = (overrides: Partial<Update>): Update => ({
+// The queue request comes from Go with the update; this stands in for it.
+const update = (overrides: Partial<Update>): Update => {
+  const u = base(overrides)
+  const source = u.githubRepo ? { repo: u.githubRepo } : { modId: u.nexusId }
+  return {
+    ...u,
+    want: {
+      kind: 'update',
+      ...source,
+      name: u.name,
+      version: u.version,
+      currentKey: u.key,
+    } as unknown as Request,
+  }
+}
+
+const base = (overrides: Partial<Update>): Update => ({
   key: 'old',
   id: 'mod',
   name: 'Mod',
@@ -19,6 +38,7 @@ const update = (overrides: Partial<Update>): Update => ({
   githubRepo: '',
   source: '',
   unofficial: false,
+  want: { kind: 'update' } as Request,
   ...overrides,
 })
 
@@ -65,16 +85,4 @@ test('keeps caution acknowledgements for auto-update', () => {
   acknowledgeUpdateCaution('profile', candidate, true)
   expect(cautionAcknowledged('profile', candidate)).toBe(true)
   acknowledgeUpdateCaution('profile', candidate, false)
-})
-
-test('a Nexus update carries the GitHub fallback when the mod has one', () => {
-  const plan = planAutoUpdates(
-    [update({ key: 'both', githubFallback: 'Esca-MMC/DestroyableBushes' })],
-    new Set(),
-  )
-  expect(plan.wants[0]).toMatchObject({
-    modId: 42,
-    fallbackRepo: 'Esca-MMC/DestroyableBushes',
-    fallbackId: 'mod',
-  })
 })

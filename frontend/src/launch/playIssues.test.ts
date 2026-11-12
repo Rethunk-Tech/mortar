@@ -5,6 +5,7 @@ import type {
   Missing,
   Update,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import type { Request } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import { overflowIssueCount, playIssueSummary } from './playIssues.ts'
 
 const missing = (over: Partial<Missing> = {}): Missing => ({
@@ -59,6 +60,7 @@ const update = (over: Partial<Update> = {}): Update => ({
   githubRepo: '',
   unofficial: false,
   source: '',
+  want: { kind: 'update' } as Request,
   ...over,
 })
 

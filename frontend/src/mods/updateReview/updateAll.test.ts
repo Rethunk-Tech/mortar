@@ -21,7 +21,15 @@ afterEach(() => {
 })
 
 const update = (key: string, extra: Partial<Update> = {}) =>
-  ({ key, id: key, name: key, version: '2', githubRepo: `o/${key}`, ...extra }) as Update
+  ({
+    key,
+    id: key,
+    name: key,
+    version: '2',
+    githubRepo: `o/${key}`,
+    want: { kind: 'update', repo: `o/${key}`, currentKey: key },
+    ...extra,
+  }) as Update
 
 test('a batch of mixed sources is one Add holding only the same-source updates', async () => {
   useProfiles.setState({ game: { id: 'stardew' } as never, openId: 'p1' })

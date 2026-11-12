@@ -7,6 +7,7 @@ import {
   type Drift,
   DriftKind,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type { Request } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import { testProfile } from '../profiles/testProfile.ts'
 import {
   entryHasDrift,
@@ -37,6 +38,8 @@ const copy = (key: string, newest: boolean, nexus = false): Copy => ({
   needed: [],
   tooOld: [],
 })
+
+const want = { kind: 'update' } as Request
 
 test('preselect keeps the newest copy', () => {
   expect(preselect([copy('old', false), copy('new', true)])).toBe('new')
@@ -164,6 +167,7 @@ test('an update belongs to one copy of a mod', () => {
     githubRepo: '',
     source: '',
     unofficial: false,
+    want,
   }
   const result = { updates: [update], held: [], unknown: false }
   expect(updateCount(result)).toBe(1)
@@ -189,6 +193,7 @@ test('a pin or skipped version hides that update', () => {
     githubRepo: '',
     source: '',
     unofficial: false,
+    want,
   }
   const result = { updates: [update], held: [], unknown: false }
   const pinned = testProfile({
@@ -229,6 +234,7 @@ test('a removed Nexus page and unofficial versions are not installed by Update a
     githubRepo: '',
     source: '',
     unofficial: false,
+    want,
   }
   expect(listedAgainstNexus(row, { status: 'published', available: true })).toBe(true)
   expect(listedAgainstNexus(row, { status: 'deleted', available: true })).toBe(false)
@@ -250,6 +256,7 @@ test('review updates use the same Nexus-filtered list as the count', () => {
         githubRepo: '',
         source: '',
         unofficial: false,
+        want,
       },
       {
         key: 'b',
@@ -262,6 +269,7 @@ test('review updates use the same Nexus-filtered list as the count', () => {
         githubRepo: '',
         source: '',
         unofficial: false,
+        want,
       },
     ],
     held: [],

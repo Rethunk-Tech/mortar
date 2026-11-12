@@ -2104,7 +2104,7 @@ func (s *Services) queueUpdates(ctx context.Context, gameID, id string, ids []st
 	}
 	var reqs []queue.Request
 	for _, u := range pickUpdates(r.Updates, ids, all, beforePlay) {
-		reqs = append(reqs, updateRequest(gameID, id, u))
+		reqs = append(reqs, u.Request(gameID, id))
 	}
 	if len(reqs) == 0 {
 		switch {
@@ -2198,20 +2198,6 @@ func (s *Services) updateBeforePlay(ctx context.Context, gameID, id string) erro
 
 func queueableUpdate(u problems.Update, named bool) bool {
 	return !u.Unofficial && !u.PickFile && !u.NotDistributable && (!u.Switch || named)
-}
-
-func updateRequest(game, profileID string, u problems.Update) queue.Request {
-	req := queue.Request{Kind: queue.KindUpdate, Game: game, Profile: profileID, Name: u.Name, Version: u.Version, CurrentKey: u.Key}
-	switch {
-	case u.Package != "":
-		// A Modrinth update names its exact version, since a version number can repeat across loaders.
-		req.Package, req.Source, req.Version = u.Package, u.PackageSource, cmp.Or(u.PackageVersion, u.Version)
-	case u.GitHubRepo != "":
-		req.Repo = u.GitHubRepo
-	default:
-		req.ModID, req.FileID, req.FallbackRepo, req.FallbackID, req.Latest = u.NexusID, u.FileID, u.GitHubFallback, u.ID, true
-	}
-	return req
 }
 
 // QueuedUpdates is what updates.queue queued. Before is the restore point Update all took, which a revert to undoes the
