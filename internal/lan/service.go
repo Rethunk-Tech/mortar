@@ -49,8 +49,8 @@ const (
 	// transferTTL, up to maxUnpairedInbox of them, and carries a profile plus its small config files.
 	maxUnpairedPayloadBytes = 1 << 20
 	maxUnpairedRequestBytes = maxUnpairedPayloadBytes*4/3 + 4096
-	rateLimit       = 10 * time.Second
-	peerTTL         = 6 * time.Second
+	rateLimit               = 10 * time.Second
+	peerTTL                 = 6 * time.Second
 	// browseInterest is how long after a Peers call discovery keeps running; nobody looking means no mDNS traffic.
 	browseInterest = 30 * time.Second
 	queryTimeout   = 2 * time.Second
@@ -898,12 +898,18 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, resp)
 }
 
+// shareBodyLimit is the largest /share body read: a sealed request has proved it is paired, any other gets the
+// unpaired cap.
+func shareBodyLimit(sealed bool) int64 {
+	if sealed {
+		return maxRequestBytes
+	}
+	return maxUnpairedRequestBytes
+}
+
 func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 	_, isSealed := r.Context().Value(sealedCtxKey{}).(*sealedPeer)
-	limit := int64(maxUnpairedRequestBytes)
-	if isSealed {
-		limit = maxRequestBytes
-	}
+	limit := shareBodyLimit(isSealed)
 	if r.ContentLength > limit {
 		http.Error(w, "request is too large", http.StatusRequestEntityTooLarge)
 		return
