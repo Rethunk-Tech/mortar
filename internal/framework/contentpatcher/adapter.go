@@ -162,6 +162,9 @@ func frameworkHint(h cp.Hint) framework.SettingHint {
 		Variant:     h.Variant,
 		CurrentFor:  h.CurrentFor,
 	}
+	if h.BecausePack != "" {
+		out.Description = "This setting has no effect because " + h.BecausePack + " loads " + h.DeadTarget + " over it."
+	}
 	for _, id := range h.For {
 		out.For = append(out.For, frameworkID(id))
 	}
