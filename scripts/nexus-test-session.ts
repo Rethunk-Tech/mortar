@@ -54,10 +54,11 @@ function fail(message: string): never {
 
 async function withLock<T>(fn: () => Promise<T>): Promise<T> {
   const dir = join(tmpdir(), 'mortar-nexus-test-session.lock')
-  for (;;) {
+  let held = false
+  while (!held) {
     try {
       mkdirSync(dir)
-      break
+      held = true
     } catch {
       try {
         if (Date.now() - statSync(dir).mtimeMs > STALE_LOCK_MS) {

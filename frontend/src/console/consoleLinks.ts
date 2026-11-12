@@ -63,11 +63,7 @@ function pathSegmentChar(ch: string): boolean {
 
 function extendPath(text: string, minEnd: number): number {
   let end = minEnd
-  for (;;) {
-    const sep = text[end]
-    if (sep !== '/' && sep !== '\\') {
-      break
-    }
+  while (text[end] === '/' || text[end] === '\\') {
     let i = end + 1
     while (i < text.length && pathSegmentChar(text[i] ?? '')) {
       i += 1
@@ -152,12 +148,7 @@ function linksInText(
 ): ConsoleLink[] {
   const found: ConsoleLink[] = frameLinks(text, roots)
   for (const n of indexOf(mods).names) {
-    let from = 0
-    for (;;) {
-      const i = text.indexOf(n.key, from)
-      if (i < 0) {
-        break
-      }
+    for (let i = text.indexOf(n.key); i >= 0; i = text.indexOf(n.key, i + 1)) {
       const end = i + n.key.length
       if (isTokenBoundary(text, i, end)) {
         insertNonOverlapping(found, {
@@ -167,18 +158,12 @@ function linksInText(
           id: n.id,
         })
       }
-      from = i + 1
     }
   }
 
   for (const root of [roots.modsDir, roots.gameDir]) {
     for (const needle of needlesFor(root)) {
-      let from = 0
-      for (;;) {
-        const i = text.indexOf(needle, from)
-        if (i < 0) {
-          break
-        }
+      for (let i = text.indexOf(needle); i >= 0; i = text.indexOf(needle, i + 1)) {
         const end = extendPath(text, i + needle.length)
         insertNonOverlapping(found, {
           kind: 'path',
@@ -186,7 +171,6 @@ function linksInText(
           end,
           path: text.slice(i, end),
         })
-        from = i + 1
       }
     }
   }

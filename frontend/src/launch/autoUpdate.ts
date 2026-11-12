@@ -124,7 +124,8 @@ function queueItemSucceeded(item: Item | undefined, premium: boolean): boolean {
 
 async function waitForUpdates(ids: string[], premium: boolean): Promise<void> {
   const deadline = Date.now() + QUEUE_TIMEOUT_MS
-  for (;;) {
+  let expired = false
+  while (!expired) {
     const state = await QueueState()
     const items = state.items ?? []
     const found = ids.map((id) => items.find((item) => item.id === id))
@@ -139,11 +140,12 @@ async function waitForUpdates(ids: string[], premium: boolean): Promise<void> {
       }
       return
     }
-    if (Date.now() >= deadline) {
-      throw new Error(i18n._(msg`Timed out waiting for mod updates`))
+    expired = Date.now() >= deadline
+    if (!expired) {
+      await delay(Math.min(QUEUE_POLL_MS, deadline - Date.now()))
     }
-    await delay(Math.min(QUEUE_POLL_MS, Math.max(0, deadline - Date.now())))
   }
+  throw new Error(i18n._(msg`Timed out waiting for mod updates`))
 }
 
 function requests(game: string, profileId: string, wants: Want[], batchId: string): Request[] {
