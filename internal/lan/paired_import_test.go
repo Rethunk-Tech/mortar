@@ -41,6 +41,10 @@ func (noMeta) Collection(context.Context, string, string, int) (nexusmods.Collec
 	return nexusmods.Collection{}, errors.New("no collection")
 }
 
+func (noMeta) CompatList(context.Context) (smapiweb.CompatIndex, error) {
+	return smapiweb.CompatIndex{}, nil
+}
+
 func (noMeta) CheckUpdates(context.Context, meta.UpdateRequest) []smapiweb.UpdateResult { return nil }
 
 type queueSpy struct{ reqs atomic.Int64 }

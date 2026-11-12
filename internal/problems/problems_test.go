@@ -35,6 +35,10 @@ func (f fakeMeta) Page(_ context.Context, id int) (smapiweb.Page, error) {
 	return f.pages[id], nil
 }
 
+func (fakeMeta) CompatList(context.Context) (smapiweb.CompatIndex, error) {
+	return smapiweb.CompatIndex{}, nil
+}
+
 func (f fakeMeta) CheckUpdates(_ context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult {
 	out := make([]smapiweb.UpdateResult, len(req.Mods))
 	for i, m := range req.Mods {

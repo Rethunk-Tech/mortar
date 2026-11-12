@@ -6,8 +6,6 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 )
@@ -47,8 +45,8 @@ func TestEveryCatalogReferenceResolves(t *testing.T) {
 			}
 		}
 		for _, id := range g.Metadata {
-			if p := metadata.For(&meta.Client{}, []string{id}); p == (metadata.Providers{}) {
-				t.Errorf("%s: metadata %q has no provider", g.ID, id)
+			if !slices.Contains([]string{components.MetaSMAPIUpdates, components.MetaSMAPICompat, components.MetaStardewDataset}, id) {
+				t.Errorf("%s: metadata %q is not a known feature", g.ID, id)
 			}
 		}
 		if s := g.Stores.Steam; s != nil && s.AppID == "" {

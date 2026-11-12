@@ -23,7 +23,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -211,7 +210,7 @@ func (s *Service) FarmTypes(ctx context.Context, game, profileID string) []probl
 // index is the mod dataset index a scan matches save keys against; empty for a game whose saves the dataset does not
 // cover, which then needs no network to list its saves.
 func (s *Service) index(ctx context.Context, gameID string) (map[string][]smapiweb.Ref, error) {
-	if info, ok := components.Game(gameID); !ok || !info.HasMetadata(metadata.StardewDataset) {
+	if info, ok := components.Game(gameID); !ok || !info.HasMetadata(components.MetaStardewDataset) {
 		return map[string][]smapiweb.Ref{}, nil
 	}
 	return s.meta.Index(ctx)

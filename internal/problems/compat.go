@@ -10,7 +10,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-semverish"
@@ -55,11 +54,10 @@ func (s *Service) withCompat(ctx context.Context, r Result, gameID string, mods 
 }
 
 func (s *Service) compatIndex(ctx context.Context, gameID string) (smapiweb.CompatIndex, bool) {
-	st := s.providers(gameID).Status
-	if st == nil {
+	if info, ok := components.Game(gameID); !ok || !info.HasMetadata(components.MetaSMAPICompat) {
 		return smapiweb.CompatIndex{}, false
 	}
-	idx, err := st.CompatList(ctx)
+	idx, err := s.meta.CompatList(ctx)
 	if err != nil {
 		return smapiweb.CompatIndex{}, false
 	}
@@ -112,50 +110,27 @@ func nexusIDOf(m framework.Mod) int {
 	return smapimanifest.FirstNexusID(m.UpdateKeys)
 }
 
-// providers are the metadata providers the game's catalog entry names; a game with no client has none.
-func (s *Service) providers(gameID string) metadata.Providers {
-	c, ok := s.meta.(*meta.Client)
-	if !ok {
-		return metadata.Providers{}
-	}
-	g, ok := components.Game(gameID)
-	if !ok {
-		return metadata.Providers{}
-	}
-	return metadata.For(c, g.Metadata)
-}
-
-// metaFor is the lookup surface for a game's checks: updates and the dataset answer from the game's providers,
-// and a game without one asks nothing. A Meta that is not the shared client (a test fake) answers as it is.
-func (s *Service) metaFor(gameID string) providerMeta {
-	if _, ok := s.meta.(*meta.Client); !ok {
-		return providerMeta{Meta: s.meta, asIs: true}
-	}
-	return providerMeta{Meta: s.meta, p: s.providers(gameID)}
-}
-
-type providerMeta struct {
+// gatedMeta answers only the lookups the game's catalog entry names; a game that names none asks nothing.
+type gatedMeta struct {
 	Meta
-	p    metadata.Providers
-	asIs bool
+	info components.GameInfo
 }
 
-func (m providerMeta) CheckUpdates(ctx context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult {
-	switch {
-	case m.asIs:
-		return m.Meta.CheckUpdates(ctx, req)
-	case m.p.Updates == nil:
+func (s *Service) metaFor(gameID string) gatedMeta {
+	info, _ := components.Game(gameID)
+	return gatedMeta{Meta: s.meta, info: info}
+}
+
+func (m gatedMeta) CheckUpdates(ctx context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult {
+	if !m.info.HasMetadata(components.MetaSMAPIUpdates) {
 		return nil
 	}
-	return m.p.Updates.CheckUpdates(ctx, req)
+	return m.Meta.CheckUpdates(ctx, req)
 }
 
-func (m providerMeta) Lookup(ctx context.Context, uniqueID string) ([]smapiweb.Ref, error) {
-	switch {
-	case m.asIs:
-		return m.Meta.Lookup(ctx, uniqueID)
-	case m.p.Dataset == nil:
+func (m gatedMeta) Lookup(ctx context.Context, uniqueID string) ([]smapiweb.Ref, error) {
+	if !m.info.HasMetadata(components.MetaStardewDataset) {
 		return nil, nil
 	}
-	return m.p.Dataset.Lookup(ctx, uniqueID)
+	return m.Meta.Lookup(ctx, uniqueID)
 }

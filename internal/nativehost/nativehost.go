@@ -525,7 +525,7 @@ func nexusModProblems(domain string, modID int) []modProblem {
 // from the copy Mortar cached for its Problems check.
 func brokenNexusModIDs(domain string) []int {
 	info, ok := components.GameByNexusDomain(domain)
-	if !ok || !info.HasMetadata("smapi-compat") {
+	if !ok || !info.HasMetadata(components.MetaSMAPICompat) {
 		return nil
 	}
 	cached, ok := diskcache.Peek[smapiweb.CompatIndex]((&meta.Client{}).Cache(), meta.CompatCacheFile)

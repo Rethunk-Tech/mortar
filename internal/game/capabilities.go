@@ -12,7 +12,6 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
-	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -143,7 +142,7 @@ func SaveLayout(id, dir string) saves.Layout {
 // Vintage Story Mod DB, which answers for the mod id in modinfo.json.
 func FindSourceSites(g components.GameInfo) []string {
 	var out []string
-	if g.HasMetadata(metadata.StardewDataset) {
+	if g.HasMetadata(components.MetaStardewDataset) {
 		out = append(out, "nexus")
 	}
 	if len(g.Loaders) > 0 && bepinex5.Family(g.Loaders[0].ID) && slices.ContainsFunc(g.Sources, func(s components.GameSource) bool { return s.ID == "thunderstore" }) {

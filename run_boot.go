@@ -53,7 +53,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/loadersvc"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
-	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
@@ -937,8 +936,8 @@ func (c *boot) browseConfig() error {
 		if !ok {
 			return nil
 		}
-		if st := metadata.For(c.modMeta, info.Metadata).Status; st != nil {
-			return st.CompatList
+		if info.HasMetadata(components.MetaSMAPICompat) {
+			return c.modMeta.CompatList
 		}
 		return nil
 	}

@@ -2096,6 +2096,13 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 	})
 }
 
+// Catalog ids of the metadata features a game's entry can name.
+const (
+	MetaSMAPIUpdates   = "smapi-updates"
+	MetaSMAPICompat    = "smapi-compat"
+	MetaStardewDataset = "stardew-dataset"
+)
+
 // HasMetadata reports whether the game uses the named metadata feature.
 func (g GameInfo) HasMetadata(name string) bool { return slices.Contains(g.Metadata, name) }
 

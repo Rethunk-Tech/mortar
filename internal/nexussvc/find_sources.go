@@ -15,7 +15,6 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/metadata"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -147,7 +146,7 @@ func (s *Service) SetNexusPage(ctx context.Context, gameID, profileID, key, link
 	if fileID <= 0 {
 		fileID = 0
 	}
-	if fileID == 0 && info.HasMetadata(metadata.StardewDataset) {
+	if fileID == 0 && info.HasMetadata(components.MetaStardewDataset) {
 		p, err := s.Profiles.Get(gameID, profileID)
 		if err != nil {
 			return profile.Profile{}, err

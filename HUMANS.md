@@ -142,7 +142,7 @@ A new store, site, runtime, provider, host, installer, deployer, framework or lo
 - Store: where its files live and how to read them go in a go-gamelocator package (one per store); `Store` in `internal/gamestore/gamestore.go` gets a driver over it, added to `All()`, and `components.GameStores` the matching field.
 - Source: `Source` in `internal/source/<id>/`; `source.Register`; import in `internal/source/all/all.go`. A searcher sets `Item.Adult` from the site's flag, since browse hides adult hits unless opted in. Tests serve the site from a fake HTTP server.
 - Runtime: `Runtime` in `internal/runtime`, in `drivers` before `native`, which claims whatever nothing else does.
-- Metadata provider: `internal/metadata`; add the id's case in `For`.
+- Metadata feature: add the id as a `components.Meta*` constant, gate on `GameInfo.HasMetadata`, and add its method to `problems.Meta`.
 - Host: `Direct` (any HTTPS URL) and `GitHub` in `internal/host`, built where a download starts.
 - Pack format: `Format` in `internal/pack`; pass it to `pack.Read` where the importer lists formats. It writes nothing.
 - Installer: `Installer` in `internal/installer`; `installer.Register`; id in `detectionOrder` before `plain`. Every `Layout` path is validated to stay inside its target.

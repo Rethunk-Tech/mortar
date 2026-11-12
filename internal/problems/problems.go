@@ -39,6 +39,7 @@ type Meta interface {
 	Page(ctx context.Context, id int) (smapiweb.Page, error)
 	Collection(ctx context.Context, domain, slug string, revision int) (nexusmods.Collection, error)
 	CheckUpdates(ctx context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult
+	CompatList(ctx context.Context) (smapiweb.CompatIndex, error)
 }
 
 // Environment says what the profile runs on, for the broken-mod check.
