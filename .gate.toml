@@ -11,9 +11,9 @@ timeout = "3m"
 run = "golangci-lint run --allow-parallel-runners"
 timeout = "3m"
 
-# Bindings first (needs typecheck); tsc does not, so it runs beside the JS tests instead of stretching the wall.
+# Bindings-fresh does not -clean, and a warm tree already has bindings and catalogs (HUMANS.md generates them
+# before a first gate), so tsc and the JS tests start at once beside it.
 [gates.test]
-needs = ["typecheck"]
 run = "bun run --cwd frontend tsc --noEmit & tsc=$!; bun run test:js; js=$?; wait $tsc; t=$?; [ $js -eq 0 ] && [ $t -eq 0 ]"
 
 [gates.e2e]
