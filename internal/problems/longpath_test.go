@@ -250,6 +250,7 @@ func TestProblemsWaitsForTheLongPathWalk(t *testing.T) {
 	defer func(was bool) { checkLongPaths = was }(checkLongPaths)
 	checkLongPaths = true
 	s := NewService(t.TempDir(), set, profiles, nil)
+	t.Cleanup(func() { waitLongPaths(s) })
 	s.meta = fakeMeta{}
 	got, err := s.Problems(t.Context(), "stardew", p.ID)
 	if err != nil {
