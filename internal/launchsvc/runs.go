@@ -16,6 +16,7 @@ import (
 	"github.com/Rethunk-Tech/go-smapi/logline"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/modreport"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -245,6 +246,19 @@ func (s *Service) RunLines(gameID, profileID, runID string) ([]launch.Entry, err
 		entries[i].Seq = int64(i + 1)
 	}
 	return entries, nil
+}
+
+// ModReport is the author report for one mod: its text, and the link to open (a GitHub issue, the Nexus bugs tab, or the
+// mod's own page). With runID set, the mod's ERROR and ALERT lines from that run fill the Errors list.
+func (s *Service) ModReport(profileID, runID string, in modreport.Input) (modreport.Result, error) {
+	if runID != "" && len(in.ErrorLines) == 0 {
+		entries, err := s.RunLines(in.Game, profileID, runID)
+		if err != nil {
+			return modreport.Result{}, err
+		}
+		in.Entries = entries
+	}
+	return modreport.Build(in), nil
 }
 
 // RunIssues is ERROR/ALERT and WARN counts per installed mod from one recorded run.

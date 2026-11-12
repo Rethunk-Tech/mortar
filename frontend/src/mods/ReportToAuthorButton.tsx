@@ -1,4 +1,3 @@
-import type { I18n } from '@lingui/core'
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, FormControlLabel, Switch, Typography } from '@mui/material'
 import { Clipboard } from '@wailsio/runtime'
@@ -6,9 +5,10 @@ import { Flag, MessageSquareWarning, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { ReportTarget } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import {
-  RunLines,
+  ModReport,
   RunLog,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import type { Result } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/modreport/models.ts'
 import type {
   Mod,
   Profile,
@@ -20,7 +20,6 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { anonymize } from '../console/anonymize.ts'
 import { shareLogConfirm } from '../console/shareLog.ts'
-import { gameName } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
 import { useProfileLoader } from '../profiles/store.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
@@ -29,65 +28,16 @@ import { openWeb } from '../shell/openWeb.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { entryOf, nexusIdOf } from './lookup.ts'
-import { nexusDomain } from './nexusDomain.ts'
+import { entryOf } from './lookup.ts'
 import { FixAction } from './problemFix/fixActions.tsx'
 import { useInSplitFix } from './problemFix/splitContext.ts'
-import { buildModReport, type ModReportFields, modErrorLines } from './reportToAuthor.ts'
+import { type ReportParts, reportInput } from './reportToAuthor.ts'
 
 const reportIcon = <MessageSquareWarning size={16} aria-hidden={true} />
 
 const REPORT_SOURCES = ['thunderstore', 'curseforge', 'vsmoddb']
 
 const buttonSx = { whiteSpace: 'nowrap' } as const
-
-interface ReportFieldsInput {
-  game: string
-  profile: Profile
-  mod: Mod
-  modLogName: string
-  issueTitle: string
-  entries: Awaited<ReturnType<typeof RunLines>>
-  loader: { gameVersion: string; version: string } | null
-  loaderName: string
-  mortarVersion: string
-  logShareURL: string
-  target: { repo: string; url: string }
-}
-
-function reportFields(input: ReportFieldsInput): ModReportFields {
-  const {
-    game,
-    profile,
-    mod,
-    modLogName,
-    issueTitle,
-    entries,
-    loader,
-    loaderName,
-    mortarVersion,
-    logShareURL,
-    target,
-  } = input
-  const source = entryOf(profile, mod.key)?.source
-  return {
-    modName: mod.name,
-    modVersion: mod.version,
-    gameName: gameName(game),
-    gameVersion: loader?.gameVersion ?? '',
-    loaderName,
-    smapiVersion: loader?.version ?? '',
-    mortarVersion,
-    errorLines: entries ? modErrorLines(entries, modLogName) : [],
-    logShareURL,
-    source,
-    nexusDomain: nexusDomain(),
-    githubRepo: source?.kind === 'github' ? (source.repo ?? '') : target.repo,
-    nexusModId: nexusIdOf(profile, mod),
-    pageUrl: target.url,
-    issueTitle,
-  }
-}
 
 // Where the mod's own site takes reports, for the sites Mortar installs from that are neither GitHub nor Nexus; empty
 // when the site cannot say, so the report is still copied.
@@ -106,16 +56,23 @@ async function reportTarget(
   }
 }
 
+async function authorReport(
+  profileId: string,
+  runId: string,
+  parts: Omit<ReportParts, 'target'>,
+): Promise<Result> {
+  const target = await reportTarget(parts.game, parts.source)
+  return ModReport(profileId, runId, reportInput({ ...parts, target }))
+}
+
 async function finishReport(opts: {
-  i18n: I18n
   copiedTitle: string
   pasteHint: string
   cutHint: string
-  fields: ModReportFields
+  report: Result
   push: ReturnType<typeof useToasts.getState>['push']
 }): Promise<void> {
-  const { i18n, copiedTitle, pasteHint, cutHint, fields, push } = opts
-  const report = buildModReport(i18n, fields)
+  const { copiedTitle, pasteHint, cutHint, report, push } = opts
   await Clipboard.SetText(report.text)
   if (report.url !== '') {
     await openWeb(report.url)
@@ -183,27 +140,23 @@ export function ReportToAuthorButton({
   }
   const runWithLink = async (logShareURL: string) => {
     try {
-      const entries = runId ? await RunLines(game, profile.id, runId) : null
-      const target = await reportTarget(game, entryOf(profile, mod.key)?.source)
-      const fields = reportFields({
+      const report = await authorReport(profile.id, runId, {
         game,
-        profile,
-        mod,
+        modName: mod.name,
+        modVersion: mod.version,
         modLogName,
-        issueTitle: t`Error in ${{ name: mod.name }}`,
-        entries,
+        source: entryOf(profile, mod.key)?.source,
         loader,
         loaderName: profileLoader?.name ?? '',
         mortarVersion,
         logShareURL,
-        target,
+        issueTitle: t`Error in ${{ name: mod.name }}`,
       })
       await finishReport({
-        i18n,
         copiedTitle: t`Report copied`,
         pasteHint: t`Paste it on the mod's page.`,
         cutHint: t`The issue holds the start of it. Paste the whole report over it.`,
-        fields,
+        report,
         push,
       })
       setOpen(false)

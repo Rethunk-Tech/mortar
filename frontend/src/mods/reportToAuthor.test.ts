@@ -1,135 +1,45 @@
 import { expect, test } from 'bun:test'
-import {
-  type Entry,
-  Level,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
-import { i18n } from '../i18n/index.ts'
-import {
-  buildModReport,
-  buildModReportText,
-  githubIssueURL,
-  modErrorLines,
-  truncateGithubBody,
-} from './reportToAuthor.ts'
+import { reportInput } from './reportToAuthor.ts'
 
-test('mod error lines keep continuations and cap at twenty', () => {
-  const entries: Entry[] = [
-    {
-      seq: 1,
-      time: '12:00:00',
-      level: Level.Error,
-      mod: 'SomeMod',
-      message: 'first',
-      cont: false,
-    },
-    {
-      seq: 2,
-      time: '12:00:00',
-      level: Level.Error,
-      mod: 'SomeMod',
-      message: 'second line',
-      cont: true,
-    },
-    {
-      seq: 3,
-      time: '12:00:01',
-      level: Level.Info,
-      mod: 'SomeMod',
-      message: 'ignored',
-      cont: false,
-    },
-  ]
-  expect(modErrorLines(entries, 'SomeMod')).toEqual([
-    '[12:00:00 ERROR SomeMod] first',
-    'second line',
-  ])
-})
+const parts = {
+  game: 'stardewvalley',
+  modName: 'Content Patcher',
+  modVersion: '2.0.0',
+  modLogName: 'Content Patcher',
+  source: { kind: 'github', name: '', repo: 'Pathoschild/ContentPatcher' },
+  loader: { gameVersion: '1.6.15', version: '4.1.10' },
+  loaderName: 'SMAPI',
+  mortarVersion: '0.1.0',
+  logShareURL: 'https://smapi.io/log/abc',
+  issueTitle: 'Oops',
+  target: { repo: 'other/repo', url: '' },
+}
 
-test('github issue URL encodes the title and cuts the body to an address the opener takes', () => {
-  const body = `Mod: CatLib\n${'é x'.repeat(3000)}`
-  const { url, cut } = githubIssueURL('Pathoschild/ContentPatcher', 'Error in CP', body)
-  expect(url.startsWith('https://github.com/Pathoschild/ContentPatcher/issues/new?')).toBe(true)
-  expect(url).toContain('title=Error+in+CP')
-  expect(url.length).toBeLessThanOrEqual(2048)
-  expect(cut).toBe(true)
-  const short = githubIssueURL('a/b', 't', 'short body')
-  expect(short.cut).toBe(false)
-  expect(new URL(short.url).searchParams.get('body')).toBe('short body')
-})
-
-test('github issue URL refuses a repo that is not owner/name', () => {
-  for (const repo of ['', '..', '../x/y', 'a/../b', 'a/b/c', 'a/b?x=1', 'a/b#c', 'a b/c', './.']) {
-    expect(githubIssueURL(repo, 't', 'b').url).toBe('')
-  }
-})
-
-test('report text lists versions and errors', () => {
-  const text = buildModReportText(i18n, {
-    modName: 'Content Patcher',
-    modVersion: '2.0.0',
-    gameName: 'Stardew Valley',
-    gameVersion: '1.6.15',
-    loaderName: 'SMAPI',
-    smapiVersion: '4.1.10',
-    mortarVersion: '0.1.0',
-    errorLines: ['[12:00 ERROR CP] boom'],
-    logShareURL: 'https://smapi.io/log/abc',
-    source: { kind: 'github', name: '', repo: 'Pathoschild/ContentPatcher' },
-    nexusDomain: 'stardewvalley',
-    githubRepo: '',
-    nexusModId: 0,
-    pageUrl: '',
-    issueTitle: '',
+test('a GitHub source reports to its own repo, not the site target', () => {
+  const input = reportInput(parts)
+  expect(input).toMatchObject({
+    Game: 'stardewvalley',
+    GameVersion: '1.6.15',
+    SMAPIVersion: '4.1.10',
+    LoaderName: 'SMAPI',
+    LogName: 'Content Patcher',
+    GitHubRepo: '',
+    IssueTitle: 'Oops',
   })
-  expect(text).toContain('Mod: Content Patcher 2.0.0')
-  expect(text).toContain('SMAPI: 4.1.10')
-  expect(text).toContain('Log: https://smapi.io/log/abc')
+  expect(input.Source.repo).toBe('Pathoschild/ContentPatcher')
 })
 
-test('buildModReport prefers GitHub prefill', () => {
-  const res = buildModReport(i18n, {
-    modName: 'CP',
-    modVersion: '1',
-    gameName: 'Stardew Valley',
-    gameVersion: '',
-    loaderName: 'SMAPI',
-    smapiVersion: '',
-    mortarVersion: '',
-    errorLines: ['err'],
-    logShareURL: '',
-    source: { kind: 'github', name: '', repo: 'Pathoschild/ContentPatcher' },
-    nexusDomain: 'stardewvalley',
-    githubRepo: 'Pathoschild/ContentPatcher',
-    nexusModId: 0,
-    pageUrl: '',
-    issueTitle: 'Oops',
+test('a site mod without a source takes the site target and an empty loader', () => {
+  const input = reportInput({
+    ...parts,
+    source: undefined,
+    loader: null,
+    target: { repo: 'a/b', url: 'https://mods.vintagestory.at/carryon' },
   })
-  expect(res.github).toBe(true)
-  expect(res.url).toContain('github.com/Pathoschild/ContentPatcher/issues/new')
-  expect(truncateGithubBody('abc')).toBe('abc')
-})
-
-test('buildModReport falls back to the mod site page', () => {
-  const res = buildModReport(i18n, {
-    modName: 'Carry On',
-    modVersion: '1',
-    gameName: 'Vintage Story',
-    gameVersion: '',
-    loaderName: 'SMAPI',
-    smapiVersion: '',
-    mortarVersion: '',
-    errorLines: [],
-    logShareURL: '',
-    source: { kind: 'vsmoddb', name: '890-4405' },
-    nexusDomain: '',
-    githubRepo: '',
-    nexusModId: 0,
-    pageUrl: 'https://mods.vintagestory.at/carryon',
-    issueTitle: '',
-  })
-  expect(res).toMatchObject({
-    url: 'https://mods.vintagestory.at/carryon',
-    page: true,
-    github: false,
+  expect(input).toMatchObject({
+    GitHubRepo: 'a/b',
+    PageURL: 'https://mods.vintagestory.at/carryon',
+    GameVersion: '',
+    SMAPIVersion: '',
   })
 })
