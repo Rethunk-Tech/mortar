@@ -60,15 +60,15 @@ func TestOnlyAnUnnamedCommandDetectionIsNamedAfterItsProgram(t *testing.T) {
 	}
 	dir := t.TempDir()
 	testfs.WriteAt(t, filepath.Join(dir, "a"), []byte("x"))
-	got, found, err := New(Config{Mode: ModeCommand, Command: "false"}).Scan(t.Context(), dir)
+	got, found, err := New(Config{Mode: ModeCommand, Command: "false {path}"}).Scan(t.Context(), dir)
 	if err != nil || !found || got.Name != "detected by false" {
 		t.Errorf("unnamed: got %+v, %v, %v", got, found, err)
 	}
-	got, found, err = New(Config{Mode: ModeCommand, Command: `sh -c "echo Win.Test.Bad; exit 1"`}).Scan(t.Context(), dir)
+	got, found, err = New(Config{Mode: ModeCommand, Command: `sh -c "echo Win.Test.Bad; exit 1" {path}`}).Scan(t.Context(), dir)
 	if err != nil || !found || got.Name != "Win.Test.Bad" {
 		t.Errorf("named: got %+v, %v, %v", got, found, err)
 	}
-	got, found, err = New(Config{Mode: ModeCommand, Command: "true"}).Scan(t.Context(), dir)
+	got, found, err = New(Config{Mode: ModeCommand, Command: "true {path}"}).Scan(t.Context(), dir)
 	if err != nil || found || got != (goavscan.Detection{}) {
 		t.Errorf("clean: got %+v, %v, %v", got, found, err)
 	}
