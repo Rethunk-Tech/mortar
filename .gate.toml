@@ -1,7 +1,8 @@
-# `bun run test` backgrounds its Go half inside bash -c, which gate cannot see into, so left alone both gates
-# compile and run the race tests at once.
+# bindings-fresh does not -clean, so the race tests can start at once beside it (scripts/gate.sh does the same).
+[gates.typecheck]
+run = "scripts/bindings-fresh.sh"
+
 [gates.go]
-needs = ["typecheck"]
 run = "go test -race ./..."
 timeout = "3m"
 
@@ -10,10 +11,10 @@ timeout = "3m"
 run = "golangci-lint run --allow-parallel-runners"
 timeout = "3m"
 
-# typecheck regenerates frontend/bindings with -clean (and a temp dir beside it); the JS tests import from it and the Go docs tests walk the tree.
+# Bindings first (needs typecheck); tsc does not, so it runs beside the JS tests instead of stretching the wall.
 [gates.test]
 needs = ["typecheck"]
-run = "bun run test:js"
+run = "bun run --cwd frontend tsc --noEmit & tsc=$!; bun run test:js; js=$?; wait $tsc; t=$?; [ $js -eq 0 ] && [ $t -eq 0 ]"
 
 [gates.e2e]
 run = "bun run --cwd frontend e2e"

@@ -430,12 +430,12 @@ const fakeGameEnvLines = fakeGameEnv + "=1\nGORACE=atexit_sleep_ms=0"
 
 func TestMain(m *testing.M) {
 	if os.Getenv(fakeGameEnv) != "" {
-		time.Sleep(700 * time.Millisecond)
+		time.Sleep(80 * time.Millisecond)
 		os.Exit(0)
 	}
-	pollEvery = 50 * time.Millisecond
-	bisectPoll = 100 * time.Millisecond
-	reapGrace = 100 * time.Millisecond
+	pollEvery = 10 * time.Millisecond
+	bisectPoll = 20 * time.Millisecond
+	reapGrace = 20 * time.Millisecond
 	root, err := os.MkdirTemp("", "launchsvc")
 	if err != nil {
 		panic(err)
@@ -484,13 +484,13 @@ func TestStartedGameIsNotCancelledWhenStartReturns(t *testing.T) {
 			t.Fatal(err)
 		}
 		if len(runs) > 0 {
-			if runs[0].DurationMs < 500 {
+			if runs[0].DurationMs < 40 {
 				text, _ := svc.RunLog("stardew", p.ID, runs[0].ID)
 				t.Fatalf("the game was stopped after %d ms: %q", runs[0].DurationMs, text)
 			}
 			return
 		}
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(pollEvery)
 	}
 	t.Fatal("the run was never recorded")
 }

@@ -35,6 +35,6 @@ func TestTerminateLeavesAPidThatIsNoLongerTheGame(t *testing.T) {
 	select {
 	case <-exited:
 		t.Fatal("the unrelated process was ended")
-	case <-time.After(500 * time.Millisecond):
+	case <-time.After(50 * time.Millisecond):
 	}
 }

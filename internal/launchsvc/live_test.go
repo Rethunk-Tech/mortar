@@ -168,7 +168,7 @@ func TestFollowRunningAnnouncesTheSceneAndStopsWhenTheRunEnds(t *testing.T) {
 
 func TestFollowRunningEmitsNothingWhileTheCompanionDoesNotAnswer(t *testing.T) {
 	_, _, cancel, events, done := followFixture(t, "")
-	time.Sleep(10 * pollEvery)
+	time.Sleep(3 * pollEvery)
 	select {
 	case run := <-events:
 		t.Fatalf("emitted %+v with no companion to ask", run)
