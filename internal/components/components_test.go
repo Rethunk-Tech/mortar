@@ -332,6 +332,28 @@ func TestBundledGamesNameTheirExtraStores(t *testing.T) {
 	}
 }
 
+// Sources: Gloss Mod Manager (GlossMod/gmm-expands PlanetZoo.ts:15-34: Steam 703080, PlanetZoo.exe, mods in win64/ovldata
+// as folders holding manifest.xml); a Graveyard Keeper plugin (SonOfTheRocks/GraveyardKeepelago Plugin.cs,
+// BepInProcess("Graveyard Keeper.exe")); Steam app 599140; Vortex's game-hogwartslegacy src/common.ts:5 (Epic id).
+func TestBundledFolderAndBepInExGamesFromCitedSources(t *testing.T) {
+	c := NewClient(nil)
+	c.SetManifest(Manifest{Serial: 1})
+	pz, ok := c.Game("planet-zoo")
+	if !ok || pz.Marker != "PlanetZoo.exe" || pz.Stores.Steam == nil || pz.Stores.Steam.AppID != "703080" ||
+		pz.Paths["mods"].Windows != "{install}/win64/ovldata" || pz.Targets[0].ModRoot != "manifest.xml" {
+		t.Errorf("planet-zoo = %+v", pz)
+	}
+	gk, ok := c.Game("graveyard-keeper")
+	if !ok || gk.Marker != "Graveyard Keeper.exe" || gk.Stores.Steam == nil || gk.Stores.Steam.AppID != "599140" ||
+		gk.Loaders[0].ID != "bepinex5" {
+		t.Errorf("graveyard-keeper = %+v", gk)
+	}
+	hl, ok := c.Game("hogwarts-legacy")
+	if !ok || hl.Stores.Epic == nil || len(hl.Stores.Epic.AppNames) != 1 || hl.Stores.Epic.AppNames[0] != "fa4240e57a3c46b39f169041b7811293" {
+		t.Errorf("hogwarts-legacy Epic store = %+v", hl.Stores.Epic)
+	}
+}
+
 func TestGameFallsBackToBundledAndRejectsUnsafeNames(t *testing.T) {
 	c := NewClient(nil)
 	c.SetManifest(Manifest{Serial: 1})

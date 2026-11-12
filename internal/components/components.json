@@ -1,5 +1,5 @@
 {
-  "serial": 1794339064,
+  "serial": 1794468459,
   "components": [
     {
       "game": "melonloader",
@@ -10889,6 +10889,9 @@
       "stores": {
         "steam": {
           "appId": "990080"
+        },
+        "epic": {
+          "appNames": ["fa4240e57a3c46b39f169041b7811293"]
         }
       },
       "loaders": [
@@ -10907,6 +10910,75 @@
           "id": "curseforge",
           "key": "7466",
           "gameId": 87986
+        }
+      ]
+    },
+    {
+      "id": "planet-zoo",
+      "name": "Planet Zoo",
+      "enabled": true,
+      "marker": "PlanetZoo.exe",
+      "metadata": [],
+      "paths": {
+        "mods": {
+          "windows": "{install}/win64/ovldata"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "mods",
+          "root": "{profile}/Mods",
+          "modRoot": "manifest.xml"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "703080"
+        }
+      },
+      "loaders": [
+        {
+          "id": "folder"
+        }
+      ],
+      "sources": [
+        {
+          "id": "nexus",
+          "key": "planetzoo",
+          "gameId": 3100
+        }
+      ]
+    },
+    {
+      "id": "graveyard-keeper",
+      "name": "Graveyard Keeper",
+      "enabled": true,
+      "marker": "Graveyard Keeper.exe",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "599140"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5"
+        }
+      ],
+      "sources": [
+        {
+          "id": "nexus",
+          "key": "graveyardkeeper",
+          "gameId": 2696
         }
       ]
     },

@@ -28,7 +28,24 @@ Sources: Vortex's `game-baldursgate3` extension (`Nexus-Mods/vortex-games`, `gam
 - A pak with no `meta.lsx` (an override) is placed and not listed.
 - Only the Windows build is started, under Proton. `bg3.exe` is the marker; `bg3_dx11.exe` is the other build.
 - Unverified until someone runs the game: the GOG install folder name (`Baldurs Gate 3`), and that the game accepts a `modsettings.lsx` whose GustavX entry carries Mortar's fixed version.
-- Planet Zoo and Graveyard Keeper are not in the catalog: no r2modman, Gale or Vortex source names a mods folder or a marker for either.
+
+## Planet Zoo
+
+Sources: Gloss Mod Manager (`GlossMod/gmm-expands` `PlanetZoo.ts:15-34`: Steam `703080`, executable `PlanetZoo.exe` in the install root, mods installed into `win64/ovldata` as the folders holding a `manifest.xml`), ACSE's install guide (`opennaja.github.io/ACSE`: "Copy the 'ACSE' folder ... into the game 'OVLData' folder", example path `/Planet Zoo/Win64/OvlData/`) and Nexus's `planetzoo` (game id `3100`, Nexus GraphQL).
+
+- The folder loader places each mod folder (the one holding `manifest.xml`) in `win64/ovldata` for the run. Frontier supports no modding; ACSE is the community's script extender and is itself such a folder.
+- Only the Windows build is started, under Proton.
+
+## Graveyard Keeper
+
+Sources: the game's executable `Graveyard Keeper.exe` (`SonOfTheRocks/GraveyardKeepelago` `Plugin.cs`, `[BepInProcess("Graveyard Keeper.exe")]`; `Hezkore/graveyard-keeper-ultrawide` `patch.cs` looks for it in the game root), Steam `599140` and Nexus's `graveyardkeeper` (game id `2696`, Nexus GraphQL).
+
+- Mods are BepInEx 5 plugins for the 64-bit Unity Mono build (Steam); the GOG build is 32-bit, which Mortar's BepInEx pack does not cover.
+- Unverified until someone runs the game: the Steam install folder name and the Proton launch.
+
+## Hogwarts Legacy
+
+Epic AppName `fa4240e57a3c46b39f169041b7811293`: Vortex's own extension (`Nexus-Mods/game-hogwartslegacy` `src/common.ts:5`, `EPIC_ID`), the same id as `app_name` in Heroic's Legendary metadata and the asset id in Epic's SDL metadata (`imLinguin/epic-sdl-tracker` `sdls/HogwartsLegacy.v4sdmeta`).
 
 ## Mount & Blade II: Bannerlord
 
