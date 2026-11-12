@@ -6,7 +6,7 @@ licence and NOTICE text from each.
 
 ================================================================================
 
-@babel/runtime@7.29.13
+@babel/runtime@7.29.14
 licence: MIT
 https://babel.dev/docs/en/next/babel-runtime
 
@@ -1842,7 +1842,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/google/pprof@v0.0.0-20261105003125-4bf881d7fb0b
+github.com/google/pprof@v0.0.0-20261111200114-fac431ef4d26
 licence: Apache-2.0
 https://github.com/google/pprof
 
@@ -2516,7 +2516,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/klauspost/compress@v1.20.3
+github.com/klauspost/compress@v1.20.4
 licence: Apache-2.0
 https://github.com/klauspost/compress
 
@@ -2975,7 +2975,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-archive@v0.3.0
+github.com/Rethunk-Tech/go-archive@v0.3.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-archive
 
@@ -4170,7 +4170,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/Totative/go-avscan@v0.3.0
+github.com/Totative/go-avscan@v0.4.0
 licence: Apache-2.0
 https://github.com/Totative/go-avscan
 
@@ -4362,7 +4362,7 @@ Apache License
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2026 Rethunk.Tech, LLC
+   Copyright 2026 Damon Blais
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -5332,7 +5332,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-golang.org/x/term@v0.47.0
+golang.org/x/term@v0.48.0
 licence: BSD-3-Clause
 https://pkg.go.dev/golang.org/x/term
 
@@ -5583,7 +5583,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-lucide-react@1.70.0
+lucide-react@1.72.0
 licence: MIT
 https://lucide.dev
 
@@ -6789,7 +6789,7 @@ Bundled source icon (frontend/src/brand/vendor/modio.svg) from the mod.io SDK, s
 
 --------------------------------------------------------------------------------
 
-modernc.org/libc@v1.80.1
+modernc.org/libc@v1.81.0
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/libc
 

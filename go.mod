@@ -3,7 +3,7 @@ module github.com/Rethunk-Tech/mortar
 go 1.27.4
 
 require (
-	github.com/Rethunk-Tech/go-archive v0.3.0
+	github.com/Rethunk-Tech/go-archive v0.3.1
 	github.com/Rethunk-Tech/go-bannerlord v0.1.2
 	github.com/Rethunk-Tech/go-bepinex v0.2.2
 	github.com/Rethunk-Tech/go-cfgedit v0.4.1
@@ -34,12 +34,12 @@ require (
 	github.com/Rethunk-Tech/go-thunderstore v0.4.1
 	github.com/Rethunk-Tech/go-vintagestory v0.1.0
 	github.com/Rethunk-Tech/go-winsym v0.2.1
-	github.com/Totative/go-avscan v0.3.0
+	github.com/Totative/go-avscan v0.4.0
 	github.com/Totative/go-codepair v0.3.0
 	github.com/Totative/go-keyring v0.3.0
 	github.com/andybalholm/brotli v1.3.0
 	github.com/godbus/dbus/v5 v5.2.4
-	github.com/google/pprof v0.0.0-20261105003125-4bf881d7fb0b
+	github.com/google/pprof v0.0.0-20261111200114-fac431ef4d26
 	github.com/hashicorp/mdns v1.0.7
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d
 	github.com/wailsapp/wails/v3 v3.1.0
@@ -71,7 +71,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gtank/ristretto255 v0.2.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
-	github.com/klauspost/compress v1.20.3 // indirect
+	github.com/klauspost/compress v1.20.4 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/miekg/dns v1.1.73 // indirect
 	github.com/ncruces/go-strftime v1.1.0 // indirect
@@ -82,9 +82,9 @@ require (
 	github.com/ulikunitz/xz v0.5.17 // indirect
 	go4.org v0.0.0-20261028031214-ed6929a230fe // indirect
 	golang.org/x/mod v0.43.0 // indirect
-	golang.org/x/term v0.47.0 // indirect
+	golang.org/x/term v0.48.0 // indirect
 	golang.org/x/text v0.44.0 // indirect
-	modernc.org/libc v1.80.1 // indirect
+	modernc.org/libc v1.81.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 )
