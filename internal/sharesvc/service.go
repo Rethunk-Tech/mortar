@@ -858,24 +858,16 @@ type storedEntry struct {
 // storedEntry is the entry that places m's store item, for a source whose store key m names exactly.
 func (m Mod) storedEntry() (storedEntry, bool) {
 	switch m.Site {
-	case SiteThunderstore:
-		src := profile.Source{Kind: profile.KindThunderstore, Name: m.Package, Version: m.Version}.WithDisabled(m.Disabled)
-		key, _ := profile.SourceKey(src)
-		return storedEntry{key: key, source: src}, true
-	case SiteCurseForge:
-		src := profile.Source{Kind: profile.KindCurseForge, Name: m.Package, FileID: m.FileID}.WithDisabled(m.Disabled)
-		key, _ := profile.SourceKey(src)
-		return storedEntry{key: key, source: src}, true
-	case SiteModio:
-		src := profile.Source{Kind: profile.KindModio, Name: m.Package, FileID: m.FileID}.WithDisabled(m.Disabled)
-		key, _ := profile.SourceKey(src)
-		return storedEntry{key: key, source: src}, true
-	case SiteVSModDB:
-		src := profile.Source{Kind: profile.KindVSModDB, Name: m.Package, FileID: m.FileID, Version: m.Version}.WithDisabled(m.Disabled)
-		key, _ := profile.SourceKey(src)
-		return storedEntry{key: key, source: src}, true
-	case SiteParadox:
-		src := profile.Source{Kind: profile.KindParadox, Name: m.Package, FileID: m.FileID, Version: m.Version}.WithDisabled(m.Disabled)
+	case SiteThunderstore, SiteCurseForge, SiteModio, SiteVSModDB, SiteParadox:
+		// A site's Kind is its Site string; Thunderstore pins no file and CurseForge and mod.io no version.
+		src := profile.Source{Kind: m.Site, Name: m.Package, FileID: m.FileID, Version: m.Version}
+		switch m.Site {
+		case SiteThunderstore:
+			src.FileID = 0
+		case SiteCurseForge, SiteModio:
+			src.Version = ""
+		}
+		src = src.WithDisabled(m.Disabled)
 		key, _ := profile.SourceKey(src)
 		return storedEntry{key: key, source: src}, true
 	case SiteGitHub:

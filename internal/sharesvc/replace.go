@@ -14,18 +14,17 @@ type ReplacePlan struct {
 	KeepLocal  []string `json:"keepLocal"`
 }
 
+// fileTokenPrefix leads the token of a source whose package is pinned to one file.
+var fileTokenPrefix = map[string]string{
+	profile.KindCurseForge: "c",
+	profile.KindVSModDB:    "v",
+	profile.KindParadox:    "x",
+	profile.KindModio:      "m",
+}
+
 func sourceToken(kind string, modID, fileID int, repo, tag, asset, pkg string) string {
-	if kind == profile.KindCurseForge && pkg != "" {
-		return fmt.Sprintf("c:%s:%d", pkg, fileID)
-	}
-	if kind == profile.KindVSModDB && pkg != "" {
-		return fmt.Sprintf("v:%s:%d", pkg, fileID)
-	}
-	if kind == profile.KindParadox && pkg != "" {
-		return fmt.Sprintf("x:%s:%d", pkg, fileID)
-	}
-	if kind == profile.KindModio && pkg != "" {
-		return fmt.Sprintf("m:%s:%d", pkg, fileID)
+	if prefix, ok := fileTokenPrefix[kind]; ok && pkg != "" {
+		return fmt.Sprintf("%s:%s:%d", prefix, pkg, fileID)
 	}
 	if pkg != "" {
 		return "t:" + strings.ToLower(pkg)
@@ -35,9 +34,6 @@ func sourceToken(kind string, modID, fileID int, repo, tag, asset, pkg string) s
 	}
 	if modID != 0 {
 		return fmt.Sprintf("n:%d:%d", modID, fileID)
-	}
-	if kind == profile.KindLocal {
-		return ""
 	}
 	return ""
 }

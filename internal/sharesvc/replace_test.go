@@ -127,3 +127,24 @@ func TestPlanReplaceKeepsTheSharedModioFileAndDropsAnother(t *testing.T) {
 		t.Fatalf("remove = %+v", got)
 	}
 }
+
+func TestStoredEntryPinsOnlyWhatItsSiteKeys(t *testing.T) {
+	for _, c := range []struct {
+		site        string
+		file        int
+		version     string
+		wantFile    int
+		wantVersion string
+	}{
+		{SiteThunderstore, 9, "1.0", 0, "1.0"},
+		{SiteCurseForge, 9, "1.0", 9, ""},
+		{SiteModio, 9, "1.0", 9, ""},
+		{SiteVSModDB, 9, "1.0", 9, "1.0"},
+		{SiteParadox, 9, "1.0", 9, "1.0"},
+	} {
+		e, ok := Mod{Site: c.site, Package: "p", FileID: c.file, Version: c.version}.storedEntry()
+		if !ok || e.source.Kind != c.site || e.source.FileID != c.wantFile || e.source.Version != c.wantVersion {
+			t.Errorf("%s: got %+v %v", c.site, e.source, ok)
+		}
+	}
+}
