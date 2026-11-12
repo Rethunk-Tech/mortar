@@ -40,7 +40,7 @@
 # regress --game lethal-company builds its own sandbox, bootstraps a Proton prefix, installs BepInEx and three plugins
 # from Thunderstore (cached in /var/tmp/mortar-regress-cache; MORTAR_REGRESS_OFFLINE=1 proves a rerun needs no network),
 # launches directly under Proton, and requires the plugins to load and the purge to leave the game folder identical.
-# MORTAR_REGRESS_SANDBOX=1 runs those launches inside the opt-in game sandbox and requires the stored runs to say so.
+# MORTAR_REGRESS_SANDBOX=1 runs the launches of either regress inside the opt-in game sandbox and requires the stored runs to say so.
 # MORTAR_REGRESS_EXTRA (local package zips) and MORTAR_REGRESS_EXTRA_PLUGINS (their plugin names) add a mod under test.
 # MORTAR_REGRESS_MATRIX=1 also runs the BepInEx test matrix (scripts/regress-bepinex.sh, docs/bepinex-test-matrix.md)
 # within three launches, the base one and two more, which leaves none for MORTAR_REGRESS_R2_CODE (refused with it); it needs the network and the .NET SDK, and MORTAR_REGRESS_R2_EXPORT=1
@@ -764,6 +764,16 @@ regress_sandbox() {
   SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
 }
 
+# regress_sandbox_check GAME PROFILE sets failures when MORTAR_REGRESS_SANDBOX is on and no stored run of the profile
+# says the sandbox wrapped it, so a pass cannot come from a launch that quietly went around it. The hidden home itself
+# is proven without a game by TestSandboxedProcessSeesNeitherSSHNorARealHomeCanary in internal/sandbox.
+regress_sandbox_check() {
+  [ -n "${MORTAR_REGRESS_SANDBOX:-}" ] || return 0
+  local boxed
+  boxed=$(cli runs "$1" "$2" --json 2>/dev/null | jq '[.[] | select((.sandbox // []) | length > 0)] | length' 2>/dev/null || echo 0)
+  [ "${boxed:-0}" -gt 0 ] || failures+=("sandbox: no stored run of $2 reports sandboxed folders")
+}
+
 regress() {
   regress_sandbox
   # game and verdict are read by the EXIT trap, after this function's locals are gone.
@@ -783,6 +793,7 @@ regress() {
   build
   start
   cli settings set --game stardew defaultLaunchMethod direct >/dev/null
+  [ -n "${MORTAR_REGRESS_SANDBOX:-}" ] && cli settings set --game stardew sandboxLaunch true >/dev/null
   profile=${MORTAR_REGRESS_PROFILE:-$(cli profiles stardew --json | jq -r '.[0].id')}
   # A mod under test: MORTAR_REGRESS_EXTRA's local zips install into the profile, and SMAPI has to list each name in
   # MORTAR_REGRESS_EXTRA_MODS (separated by ";") as loaded.
@@ -845,6 +856,7 @@ regress() {
     failures+=("game folder differs after purge ($diff_lines lines); see $ROOT/game-before.txt vs game-after.txt")
   fi
 
+  regress_sandbox_check stardew "$profile"
   [ ${#failures[@]} -eq 0 ] && verdict=PASS
   echo "---- regress: $verdict ($((SECONDS - t0))s)"
   echo "profile        $profile"
@@ -1273,12 +1285,7 @@ PYEOF
     [ "$failed" -eq 0 ] || failures+=("matrix: $failed rows failed; see $ROOT/matrix.tsv")
   fi
 
-  # A sandboxed pass must come from runs the sandbox actually wrapped, not from a launch that quietly went around it.
-  if [ -n "${MORTAR_REGRESS_SANDBOX:-}" ]; then
-    local boxed
-    boxed=$(cli runs "$rg_id" "$profile" --json 2>/dev/null | jq '[.[] | select((.sandbox // []) | length > 0)] | length' 2>/dev/null || echo 0)
-    [ "${boxed:-0}" -gt 0 ] || failures+=("sandbox: no stored run of $profile reports sandboxed folders")
-  fi
+  regress_sandbox_check "$rg_id" "$profile"
   [ ${#failures[@]} -eq 0 ] && verdict=PASS
   echo "---- regress $rg_id: $verdict ($((SECONDS - t0))s)"
   echo "profile        $profile"

@@ -83,8 +83,11 @@ and macOS.
 - `internal/settings/registry.go:271` — `sandboxLaunch` and `sandboxExtraFolders`.
 - `frontend/src/settings/GameSettingsPage.tsx:84` and
   `frontend/src/settings/prefCopyGame.ts:130`.
-- `scripts/selftest.sh:1091` — `MORTAR_REGRESS_SANDBOX` today reaches only the
-  Lethal Company path.
+- `scripts/selftest.sh` `regress_sandbox_check` — `MORTAR_REGRESS_SANDBOX`
+  reaches the Stardew and Lethal Company regress; neither has run sandboxed on
+  a real game yet.
+- `internal/sandbox/sandbox_test.go`
+  `TestSandboxedProcessSeesNeitherSSHNorARealHomeCanary` — real bwrap, no game.
 - Tests: `internal/sandbox/sandbox_test.go`,
   `internal/launchsvc/sandbox_spec_test.go`.
 
@@ -109,61 +112,17 @@ and macOS.
 - `bun run gate` stays clean. No seccomp, network namespace, Windows or macOS
   sandbox ships in this change.
 
-## Planet Zoo and Graveyard Keeper have no catalog path into a mods folder
-
-Both games are owned and decided as folder games, but the catalog has no
-entry, so Mortar cannot find a mods folder or attach a loader. Graveyard
-Keeper also has no BepInEx loader pack. No r2modman, Gale or Vortex source
-cites a mods folder or marker, so the entries cannot be written from those
-trees.
-
-The decided shape is catalog entries for both; Graveyard Keeper gets a
-BepInEx loader pack. Each waits for a cited mods folder or marker. Product
-side (wording, settings, findings, UI) stays in Mortar; any library change
-ships and is tagged before Mortar bumps to it. Rejected: inventing a mods
-path without a cited source.
-
-### Read
-
-- [docs/design.md](docs/design.md#from-later-picked-2026-11-01) — the pick and
-  the "cited source" rule.
-- [docs/games.md](docs/games.md) — per-game decisions and sources the catalog
-  cannot carry.
-- [HUMANS.md](HUMANS.md#adding-a-game) — how a catalog-only game is added.
-
-### Traps
-
-- **No code for a game that the catalog can express.** A new Go driver here
-  would be the wrong layer; the catalog plus an existing folder/BepInEx path
-  is the shape.
-- **Uncited mods folders do not ship.** r2modman, Gale and Vortex do not give
-  one; guessing breaks the first install on a real copy.
-
-### Acceptance
-
-- Planet Zoo and Graveyard Keeper appear in `mortar games` with a cited mods
-  folder or marker.
-- Graveyard Keeper installs through a BepInEx loader pack.
-- `bun run gate` stays clean. The oldest supported tag's `components.Decode`
-  still reads the catalog (minVersion on any field value an older build cannot
-  read).
-
 ## Owned games cannot be detected on GOG, Epic and Xbox without extra markers
 
-GOG for The Witcher 3 and Cyberpunk 2077 and the EA app for Titanfall 2 are
-built. Darkest Dungeon on GOG, Hogwarts Legacy and Darkest Dungeon on Epic,
-and Starbound on Xbox still cannot be detected: the public ids are the store
-slug or a numeric id, not the on-disk marker or Epic AppName or Xbox package
-Name Mortar's locators need. A second GOG marker is also a new catalog field.
+GOG for The Witcher 3 and Cyberpunk 2077, the EA app for Titanfall 2 and Hogwarts Legacy on Epic are built. Darkest Dungeon on GOG and Epic and Starbound on Xbox are sourced but still cannot be detected: their install holds the executable in a folder the catalog's one `markerDir` does not name, and `ValidInstall` rejects the folder. Both need a second marker as a new catalog field.
 
-The decided shape is to add each store id once a source cites it. Darkest
-Dungeon on GOG (`1450711444`) gets a second marker
-(`_windowsnosteam/win64/Darkest.exe`) as a new catalog field with `minVersion`
-and the oldest-tag decode check; its native Linux build needs the executable
-name. Hogwarts Legacy and Darkest Dungeon on Epic need their Epic AppName
-(PCGamingWiki gives only the store slug). Starbound on Xbox needs its package
-Name (only Store id `9mtsbwpwpqvq` is known). Rejected: shipping guessed
-AppNames or a GOG second marker as a Mortar-only heuristic.
+The decided shape is a per-store marker (a new field with `minVersion` and the oldest-tag decode check), then each store id below. Sourced values:
+
+- Darkest Dungeon on GOG: product `1450711444`, marker `_windowsnosteam/win64/Darkest.exe` (Vortex `Nexus-Mods/vortex-games` `game-darkestdungeon/index.js:12,18`).
+- Darkest Dungeon on Epic: AppName `36cbf259e631478eaac6ea244e55a709`, same marker as GOG (`index.js:14,18`, comment "Epic exe is same as GOG").
+- Starbound on Xbox: package Name `Chucklefish.StarboundWindows10Edition` (Microsoft's display catalog, `displaycatalog.mp.microsoft.com/v7.0/products?bigIds=9MTSBWPWPQVQ`, `PackageFamilyName` `Chucklefish.StarboundWindows10Edition_ywkyrypjzhpx8`; Vortex `game-starbound/index.js:4`), executable `win/starbound.exe` (`index.js:14`).
+
+Still unsourced: Darkest Dungeon's native Linux executable name, and the GOG install folder name Mortar's GOG locator needs. Rejected: shipping guessed names or a GOG second marker as a Mortar-only heuristic.
 
 ### Read
 

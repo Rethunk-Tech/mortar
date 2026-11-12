@@ -3,6 +3,7 @@
 package sandbox
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -385,5 +386,32 @@ func TestArgvBindsTheTargetOfALinkedReadOnlyFolder(t *testing.T) {
 	b, _ := Argv("bwrap", Spec{Home: home, RO: []string{bait}}, "g", nil)
 	if index(b, "--ro-bind", keys, bait) >= 0 {
 		t.Fatalf("a link into ~/.ssh was mounted: %v", b)
+	}
+}
+
+// The launch prefix must not show the player's ~/.ssh or any file in the real home, which is what a malicious mod reads.
+func TestSandboxedProcessSeesNeitherSSHNorARealHomeCanary(t *testing.T) {
+	bw, err := Bwrap()
+	if err != nil {
+		t.Skip("needs bubblewrap")
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Skip("no home folder")
+	}
+	canary, err := os.CreateTemp(home, ".mortar-sandbox-canary-*")
+	if err != nil {
+		t.Skipf("home is not writable: %v", err)
+	}
+	_ = canary.Close()
+	t.Cleanup(func() { _ = os.Remove(canary.Name()) })
+	script := `test ! -e "$1" && test ! -e "$2/.ssh" && test ! -e "$2/.config"`
+	a, _ := Argv(bw, Spec{Home: home}, "sh", []string{"-c", script, "sh", canary.Name(), home})
+	if out, err := exec.CommandContext(t.Context(), a[0], a[1:]...).CombinedOutput(); err != nil { //nolint:gosec // G204: bwrap found on PATH, arguments built by Argv
+		var exit *exec.ExitError
+		if errors.As(err, &exit) && exit.ExitCode() == 1 {
+			t.Fatalf("the sandboxed process saw the canary or a credential folder: %s", out)
+		}
+		t.Skipf("bwrap cannot run here: %v %s", err, out)
 	}
 }
