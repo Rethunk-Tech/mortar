@@ -780,3 +780,12 @@ func TestCorruptIndexCollectKeepsReferencedBlob(t *testing.T) {
 		t.Errorf("a referenced item's blob was deleted after a corrupt index: %v", err)
 	}
 }
+
+func TestAddBackupDirRefusesTraversalKeys(t *testing.T) {
+	s := newStore(t)
+	for _, key := range []string{"../x", "a/../../x", "..", "/etc", `a\b`} {
+		if err := s.AddBackupDir(t.Context(), "stardew", key, t.TempDir()); err == nil {
+			t.Errorf("AddBackupDir(%q) succeeded", key)
+		}
+	}
+}
