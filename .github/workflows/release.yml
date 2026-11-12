@@ -14,7 +14,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
   # Build output does not depend on the ref (the tag only has to match build/config.yml), so a run whose commit
