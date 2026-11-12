@@ -163,6 +163,31 @@ func TestHistoryReadsAnIndentedFileAndWritesItCompact(t *testing.T) {
 	}
 }
 
+func TestHistoryKeepsADamagedFileAsideInsteadOfLosingIt(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	if err := os.WriteFile(f.s.historyPath(), []byte(`[{"name":"old"},{"name":"newer"`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	f.s.recordHistory(&Item{Name: "b", started: f.now()}, StateDone)
+	f.s.FlushHistory()
+	var onDisk []HistoryEntry
+	if _, err := datadir.ReadJSON(f.s.historyPath(), &onDisk); err != nil {
+		t.Fatal(err)
+	}
+	if len(onDisk) != 1 || onDisk[0].Name != "b" {
+		t.Fatalf("history on disk %+v", onDisk)
+	}
+	aside, err := filepath.Glob(f.s.historyPath() + ".corrupt-*")
+	if err != nil || len(aside) != 1 {
+		t.Fatalf("damaged file moved aside to %v, %v", aside, err)
+	}
+	kept, err := os.ReadFile(aside[0])
+	if err != nil || !bytes.Contains(kept, []byte(`"name":"newer"`)) {
+		t.Fatalf("damaged file kept %q, %v", kept, err)
+	}
+}
+
 func TestHistoryRetryKeepsThePackageFile(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)

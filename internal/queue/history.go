@@ -56,7 +56,8 @@ func (s *Service) loadHistory() []HistoryEntry {
 	if !s.histLoaded {
 		s.histLoaded = true
 		var entries []HistoryEntry
-		if _, err := datadir.ReadJSON(s.historyPath(), &entries); err == nil {
+		// A damaged file is moved aside rather than replaced by the next entry, so what it held can be recovered.
+		if _, err := datadir.ReadJSONOrQuarantine(s.historyPath(), &entries); err == nil {
 			s.history = entries
 		}
 	}
