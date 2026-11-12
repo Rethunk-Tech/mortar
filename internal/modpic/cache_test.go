@@ -146,6 +146,25 @@ func TestSizedURLEmptyWhenInvalid(t *testing.T) {
 	}
 }
 
+func TestAPictureURLWithALongQueryIsRefused(t *testing.T) {
+	picture := pictureURL("cdn.modrinth.com", "/a.png?a="+strings.Repeat("a", 1<<20))
+	if SizedURL(picture, Thumb) != "" {
+		t.Fatal("sized a picture URL carrying a megabyte of query")
+	}
+	fetched := false
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fetched = true
+	}))
+	t.Cleanup(srv.Close)
+	c := New(t.TempDir(), tlsClient(srv, "cdn.modrinth.com"))
+	if _, _, err := c.get(t.Context(), picture, Thumb); err == nil {
+		t.Fatal("fetched a picture URL carrying a megabyte of query")
+	}
+	if fetched {
+		t.Fatal("fetched a picture URL carrying a megabyte of query")
+	}
+}
+
 func TestSizedURLTakesEveryBrowseSourcesPictureHost(t *testing.T) {
 	for _, host := range []string{
 		"cdn.modrinth.com", "media.forgecdn.net", "avatars.githubusercontent.com", "img.itch.zone",

@@ -204,7 +204,14 @@ func key(picture string, px int) string {
 	return hex.EncodeToString(sum[:])
 }
 
+// maxPictureURL caps a picture address: a CDN's own links are short, and a long query lets a caller send an
+// arbitrary amount of text to the host as the request line.
+const maxPictureURL = 2048
+
 func parsePicture(raw string) (*url.URL, error) {
+	if len(raw) > maxPictureURL {
+		return nil, fmt.Errorf("the picture URL is longer than %d characters", maxPictureURL)
+	}
 	u, err := url.Parse(raw)
 	if err != nil {
 		return nil, err
