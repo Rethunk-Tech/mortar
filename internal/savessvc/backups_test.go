@@ -177,7 +177,7 @@ func TestDeleteBackupRefusesPinned(t *testing.T) {
 func TestListBackupsKeepsToTheGameAndProfile(t *testing.T) {
 	s, savesDir := backupService(t)
 	lc := filepath.Join(t.TempDir(), "Lethal Company")
-	s.scanners["lethal-company"] = &saves.Scanner{Layout: saves.Layout{Dir: lc}}
+	s.scanners["lethal-company"] = &saves.Scanner{Dir: lc}
 	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
 	data, err := datadir.Dir()
 	if err != nil {

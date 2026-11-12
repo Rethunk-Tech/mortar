@@ -64,8 +64,13 @@ type Format interface {
 // (byFolder maps its game folder to the catalog id), Gale's database (folder is the player's own Gale folder, "" for
 // none) and a Thunderstore modpack zip.
 func Formats(code Code, byFolder func(folder string) (string, bool), folder string) []Format {
-	return []Format{code, GaleCode{HTTP: code.HTTP}, Profile{GameByFolder: byFolder},
-		Gale{GameBySlug: GameByThunderstoreKey, DB: GaleDB(folder)}, Modpack{}}
+	return []Format{
+		code,
+		GaleCode{HTTP: code.HTTP},
+		Profile{GameByFolder: byFolder},
+		Gale{GameBySlug: GameByThunderstoreKey, DB: GaleDB(folder)},
+		Modpack{},
+	}
 }
 
 // GameByThunderstoreKey is the catalog game whose Thunderstore community key is slug, which is what Gale names a game.

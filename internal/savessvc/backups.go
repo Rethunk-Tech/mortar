@@ -125,7 +125,7 @@ func (s *Service) SaveCopies(game, profile, save string) ([]saves.Copy, error) {
 	if err != nil {
 		return nil, err
 	}
-	return sc.Layout.CopiesOf(save), nil
+	return sc.CopiesOf(save), nil
 }
 
 // RestoreSaveCopy puts one of the game's own copies of save back over it, after backing up the current saves.

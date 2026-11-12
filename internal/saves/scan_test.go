@@ -70,7 +70,7 @@ func fixture(t *testing.T) (dir string) {
 
 func TestScanReadsSaveAndCachesByMtime(t *testing.T) {
 	dir := fixture(t)
-	s := &Scanner{Layout: Layout{Dir: dir}, CacheDir: t.TempDir()}
+	s := &Scanner{Dir: dir, CacheDir: t.TempDir()}
 	got, err := s.Scan(t.Context(), index)
 	if err != nil {
 		t.Fatal(err)
@@ -117,7 +117,7 @@ func TestNewestReadsOnlyTheNewestSave(t *testing.T) {
 	if err := os.Chtimes(filepath.Join(newest, "New_1"), now, now); err != nil {
 		t.Fatal(err)
 	}
-	got, err := (&Scanner{Layout: Layout{Dir: dir}}).Newest(t.Context(), index)
+	got, err := (&Scanner{Dir: dir}).Newest(t.Context(), index)
 	if err != nil || got.Folder != "New_1" || !reflect.DeepEqual(got.Used, []mod.ID{"smapi:author.mod"}) {
 		t.Fatalf("newest = %+v, %v", got, err)
 	}
@@ -130,7 +130,7 @@ func TestKeysSpanChunks(t *testing.T) {
 	}
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "Big_2", "Big_2"), string(pad)+item("Author.Mod/x")+string(pad)+item("Sonozuki.MoreGrass/y"))
-	got, err := (&Scanner{Layout: Layout{Dir: dir}}).Scan(t.Context(), index)
+	got, err := (&Scanner{Dir: dir}).Scan(t.Context(), index)
 	if err != nil || !reflect.DeepEqual(got[0].Used, []mod.ID{"smapi:author.mod", "smapi:sonozuki.moregrass"}) {
 		t.Fatalf("scan = %+v, %v", got, err)
 	}
@@ -148,7 +148,7 @@ func TestScanDoesNotWriteSaves(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := (&Scanner{Layout: Layout{Dir: dir}, CacheDir: t.TempDir()}).Scan(t.Context(), index); err != nil {
+	if _, err := (&Scanner{Dir: dir, CacheDir: t.TempDir()}).Scan(t.Context(), index); err != nil {
 		t.Fatal(err)
 	}
 	afterStMain, err := os.Stat(main)
@@ -174,7 +174,7 @@ func TestWhichFarmSpansChunks(t *testing.T) {
 	}
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "Big_3", "Big_3"), string(pad)+"<whichFarm>7</whichFarm>"+item("Author.Mod/x"))
-	got, err := (&Scanner{Layout: Layout{Dir: dir}}).Scan(t.Context(), index)
+	got, err := (&Scanner{Dir: dir}).Scan(t.Context(), index)
 	if err != nil || got[0].WhichFarm != 7 {
 		t.Fatalf("whichFarm = %+v, %v", got, err)
 	}
@@ -184,7 +184,7 @@ func TestCustomFarmSavesItsID(t *testing.T) {
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "Cookie_1", "Cookie_1"), `<whichFarm>Loafeon.Sunblossom.CFL/Sunblossom Farm</whichFarm>`+item("Author.Mod/x"))
 	write(t, filepath.Join(dir, "Vanilla_2", "Vanilla_2"), `<whichFarm>2</whichFarm>`)
-	got, err := (&Scanner{Layout: Layout{Dir: dir}}).Scan(t.Context(), index)
+	got, err := (&Scanner{Dir: dir}).Scan(t.Context(), index)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -230,7 +230,7 @@ func TestFileSavesAreFoundWithAnUnknownFit(t *testing.T) {
 	if got := l.Paths("LCSaveFile1"); !reflect.DeepEqual(got, []string{"LCSaveFile1", "LCSaveFile1.moddata"}) {
 		t.Fatalf("Paths = %v, want the slot with its mod data", got)
 	}
-	s := &Scanner{Layout: Layout{Dir: l.Dir, Files: l.Files}, CacheDir: t.TempDir()}
+	s := &Scanner{Dir: l.Dir, Files: l.Files, CacheDir: t.TempDir()}
 	infos, err := s.Scan(t.Context(), index)
 	if err != nil || len(infos) != 3 {
 		t.Fatalf("Scan = %+v, %v", infos, err)
@@ -286,7 +286,7 @@ func TestFolderSavesStayStardewShaped(t *testing.T) {
 }
 
 func TestScanRecomputesAResultCachedByAnOlderParser(t *testing.T) {
-	s := &Scanner{Layout: Layout{Dir: fixture(t)}, CacheDir: t.TempDir()}
+	s := &Scanner{Dir: fixture(t), CacheDir: t.TempDir()}
 	if _, err := s.Scan(t.Context(), index); err != nil {
 		t.Fatal(err)
 	}
