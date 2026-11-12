@@ -26,6 +26,7 @@ function repo(): string {
   cpSync(join(import.meta.dir, 'vulncheck.sh'), join(root, 'scripts/vulncheck.sh'))
   writeFileSync(join(root, 'go.mod'), 'a')
   writeFileSync(join(root, 'go.sum'), 'b')
+  writeFileSync(join(root, 'bun.lock'), 'c')
   writeFileSync(
     join(root, 'bin/govulncheck'),
     `#!/bin/sh\necho ran >>"${root}/calls"\n[ -z "$FAIL_VULN" ]\n`,
@@ -42,7 +43,7 @@ const calls = (root: string) => {
   }
 }
 
-test('govulncheck reruns only when go.mod or go.sum changed, CI or the force variable', () => {
+test('govulncheck reruns only when go.mod, go.sum or bun.lock changed, CI or the force variable', () => {
   const root = repo()
   try {
     expect(run(root, {}).code).toBe(0)
@@ -55,9 +56,19 @@ test('govulncheck reruns only when go.mod or go.sum changed, CI or the force var
     writeFileSync(join(root, 'go.sum'), 'changed')
     run(root, {})
     expect(calls(root)).toBe(4)
+    writeFileSync(join(root, 'bun.lock'), 'changed')
+    run(root, {})
+    expect(calls(root)).toBe(5)
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
+})
+
+test('bun run vuln is the stamped wrapper', () => {
+  const pkg = JSON.parse(readFileSync(join(import.meta.dir, '../package.json'), 'utf8')) as {
+    scripts: { vuln: string }
+  }
+  expect(pkg.scripts.vuln).toBe('scripts/vulncheck.sh')
 })
 
 test('a failing govulncheck leaves no stamp, so the next run checks again', () => {

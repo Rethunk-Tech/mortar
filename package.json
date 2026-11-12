@@ -22,7 +22,7 @@
     "renders:diff": "bun frontend/node_modules/.bin/render-diff",
     "renders:release": "MORTAR_RENDER_WEBKIT=1 scripts/render-budget.sh",
     "renders:webkit": "bun frontend/e2e/webkit-walk.ts",
-    "vuln": "govulncheck ./...",
+    "vuln": "scripts/vulncheck.sh",
     "site": "bun run --cwd web build",
     "site:search": "pagefind --site site --output-subdir pagefind",
     "site:downloads": "bun scripts/site-downloads.ts",

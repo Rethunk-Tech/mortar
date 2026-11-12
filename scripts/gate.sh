@@ -64,7 +64,7 @@ step() {
 ) >"$logs/bindings" 2>&1 &
 bindings_pid=$!
 
-step shellcheck bash -c "set -o pipefail; git ls-files -co --exclude-standard -z '*.sh' | xargs -0 -r -P \"$(nproc)\" -n 8 shellcheck -x"
+step shellcheck bash -c "set -o pipefail; git ls-files -co --exclude-standard -z '*.sh' | xargs -0 -r shellcheck -x"
 # The race build, linux lint, govulncheck and the race tests all start at once and share GOCACHE: GOFLAGS=-race
 # makes lint and govulncheck load packages from the same instrumented compile the tests link, so the Wails cgo
 # step and sqlite compile once, not once per tool. Waiting for the build first stacked the test-binary compile
