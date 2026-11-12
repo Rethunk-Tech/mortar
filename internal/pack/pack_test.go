@@ -225,3 +225,19 @@ func TestProfileFolderKeepsNestedConfigs(t *testing.T) {
 		t.Fatalf("configs %+v, %v", d.Configs, err)
 	}
 }
+
+func TestFormatsAreTriedInOrderAndGaleNamesTheCatalogGame(t *testing.T) {
+	var ids []string
+	for _, f := range Formats(Code{}, nil, "") {
+		ids = append(ids, f.ID())
+	}
+	if len(ids) != 5 || ids[2] != (Profile{}).ID() || ids[3] != (Gale{}).ID() || ids[4] != (Modpack{}).ID() {
+		t.Fatalf("formats %v", ids)
+	}
+	if id, ok := GameByThunderstoreKey("lethal-company"); !ok || id == "" {
+		t.Fatalf("lethal-company -> %q %v", id, ok)
+	}
+	if _, ok := GameByThunderstoreKey("no-such-community"); ok {
+		t.Fatal("an unknown key named a game")
+	}
+}

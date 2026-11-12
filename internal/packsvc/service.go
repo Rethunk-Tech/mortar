@@ -79,14 +79,7 @@ type Result struct {
 }
 
 func (s *Service) read(ctx context.Context, path string) (pack.Draft, error) {
-	return pack.Read(ctx, pack.Input{Path: path},
-		s.Code, pack.GaleCode{HTTP: s.Code.HTTP}, pack.Profile{GameByFolder: game.ByR2modmanFolder}, pack.Gale{GameBySlug: gameByThunderstoreKey, DB: pack.GaleDB(s.folder())}, pack.Modpack{})
-}
-
-// gameByThunderstoreKey is the catalog game whose Thunderstore community key is slug, which is what Gale names a game.
-func gameByThunderstoreKey(slug string) (string, bool) {
-	g, ok := components.GameBySource("thunderstore", slug)
-	return g.ID, ok
+	return pack.Read(ctx, pack.Input{Path: path}, pack.Formats(s.Code, game.ByR2modmanFolder, s.folder())...)
 }
 
 // LocalProfile is a profile folder of r2modman, the Thunderstore Mod Manager or Gale on this computer.

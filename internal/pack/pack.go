@@ -14,6 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/components"
 )
 
 // Input is what a user handed Mortar: a file or folder path, a link, or pasted text. A format reads the field it
@@ -57,6 +58,20 @@ type Format interface {
 	ID() string
 	Detect(in Input) bool
 	Parse(ctx context.Context, in Input) (Draft, error)
+}
+
+// Formats are every format Read can take, in the order it tries them: the profile codes, an r2modman profile folder
+// (byFolder maps its game folder to the catalog id), Gale's database (folder is the player's own Gale folder, "" for
+// none) and a Thunderstore modpack zip.
+func Formats(code Code, byFolder func(folder string) (string, bool), folder string) []Format {
+	return []Format{code, GaleCode{HTTP: code.HTTP}, Profile{GameByFolder: byFolder},
+		Gale{GameBySlug: GameByThunderstoreKey, DB: GaleDB(folder)}, Modpack{}}
+}
+
+// GameByThunderstoreKey is the catalog game whose Thunderstore community key is slug, which is what Gale names a game.
+func GameByThunderstoreKey(slug string) (string, bool) {
+	g, ok := components.GameBySource("thunderstore", slug)
+	return g.ID, ok
 }
 
 // ErrUnknown means no format recognised the input.
