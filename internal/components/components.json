@@ -10939,7 +10939,8 @@
       },
       "loaders": [
         {
-          "id": "folder"
+          "id": "folder",
+          "name": ""
         }
       ],
       "sources": [
