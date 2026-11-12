@@ -62,7 +62,7 @@ func (s *Service) scheduledTickFor(ctx context.Context, gameID string, now time.
 			continue
 		}
 		u.interval = time.Duration(hours) * time.Hour
-		last, err := s.lastScheduledAt(scheduleKey(gameID, u.profile), backupsDir, now)
+		last, err := s.lastScheduledAt(scheduleKey(gameID, u.profile), u.profile, backupsDir, now)
 		if err != nil {
 			slog.Warn("scheduled save backup", "err", err)
 			return
@@ -133,7 +133,7 @@ func (s *Service) LastScheduledBackup() (int64, error) {
 		if err != nil {
 			return 0, err
 		}
-		last, err := s.lastScheduledAt(id, backupsDir, time.Now())
+		last, err := backup.LastScheduled(backupsDir, time.Now())
 		if err != nil {
 			return 0, err
 		}
@@ -147,22 +147,23 @@ func (s *Service) LastScheduledBackup() (int64, error) {
 	return newest.UnixMilli(), nil
 }
 
-// lastScheduledAt is when the last pass ran; before the first this run it is the newest scheduled backup on disk,
-// so restarting Mortar does not reset a daily schedule.
-func (s *Service) lastScheduledAt(gameID, backupsDir string, now time.Time) (time.Time, error) {
+// lastScheduledAt is when the last pass of one saves folder ran; before the first this run it is that folder's newest
+// scheduled backup on disk, so restarting Mortar does not reset its schedule and a fresher backup of another folder
+// does not stand in for it.
+func (s *Service) lastScheduledAt(unit, profile, backupsDir string, now time.Time) (time.Time, error) {
 	s.schedMu.Lock()
 	defer s.schedMu.Unlock()
-	if s.lastScheduled[gameID].IsZero() {
-		last, err := backup.LastScheduled(backupsDir, now)
+	if s.lastScheduled[unit].IsZero() {
+		last, err := backup.LastScheduledFor(backupsDir, profile, now)
 		if err != nil {
 			return time.Time{}, err
 		}
 		if s.lastScheduled == nil {
 			s.lastScheduled = map[string]time.Time{}
 		}
-		s.lastScheduled[gameID] = last
+		s.lastScheduled[unit] = last
 	}
-	return s.lastScheduled[gameID], nil
+	return s.lastScheduled[unit], nil
 }
 
 type profileSaves struct {

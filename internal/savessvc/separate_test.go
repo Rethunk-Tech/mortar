@@ -1,6 +1,7 @@
 package savessvc
 
 import (
+	"os"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -167,6 +168,57 @@ func TestScheduledBackupsCoverEachSeparateSavesFolderOnce(t *testing.T) {
 	s.scheduledTickFor(t.Context(), "stardew", now.Add(7*time.Hour))
 	if got := scheduled(); !slices.Equal(got, want) {
 		t.Fatalf("unchanged saves backed up again: %v", got)
+	}
+}
+
+// A restart measures each saves folder from its own newest scheduled backup, so a fresher backup of another profile's
+// saves does not stand in for one that is due.
+func TestARestartDoesNotSkipAProfileDueOnItsOwnSchedule(t *testing.T) {
+	s, shared, ownDir, own, _ := separateEnv(t)
+	if _, err := s.settings.Update(func(v *settings.Settings) {
+		if err := settings.ApplyKeyGame(v, "saveBackupHours", "1", "stardew"); err != nil {
+			t.Error(err)
+		}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.profiles.SetOverride("stardew", own.ID, "saveBackupHours", "6"); err != nil {
+		t.Fatal(err)
+	}
+	ownBackups := func() int {
+		listed, err := s.ListBackups("stardew", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		n := 0
+		for _, b := range listed {
+			if b.Kind == backup.KindScheduled && b.Profile == own.ID {
+				n++
+			}
+		}
+		return n
+	}
+	t0 := time.Now()
+	s.scheduledTickFor(t.Context(), "stardew", t0)
+	if n := ownBackups(); n != 1 {
+		t.Fatalf("the first pass made %d of the profile's own backups", n)
+	}
+	// The game's shared saves back up again two hours on; the profile's six-hour schedule is untouched.
+	testfs.WriteFarm(t, shared, "Farm_1", "Shared", "shared-v2")
+	s.scheduledTickFor(t.Context(), "stardew", t0.Add(2*time.Hour))
+	if n := ownBackups(); n != 1 {
+		t.Fatalf("a pass two hours on backed up the profile early: %d of its backups", n)
+	}
+	restarted := &Service{settings: s.settings, scanners: s.scanners, profiles: s.profiles, busy: func() bool { return false }}
+	testfs.WriteFarm(t, ownDir, "Farm_2", "Own", "own-v2")
+	for _, p := range []string{filepath.Join(ownDir, "Farm_2", "Farm_2"), filepath.Join(ownDir, "Farm_2", "SaveGameInfo"), filepath.Join(ownDir, "Farm_2")} {
+		if err := os.Chtimes(p, t0.Add(3*time.Hour), t0.Add(3*time.Hour)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	restarted.scheduledTickFor(t.Context(), "stardew", t0.Add(7*time.Hour))
+	if n := ownBackups(); n != 2 {
+		t.Fatalf("a restart skipped a profile due on its own schedule: %d of its backups", n)
 	}
 }
 

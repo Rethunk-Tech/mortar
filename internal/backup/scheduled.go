@@ -69,6 +69,20 @@ func LastScheduled(backupsDir string, now time.Time) (time.Time, error) {
 	return last, err
 }
 
+// LastScheduledFor is LastScheduled for one saves folder: profile's own when profile names a profile, the game's
+// shared saves when it is "". A fresher backup of another folder is not this one's last pass.
+func LastScheduledFor(backupsDir, profile string, now time.Time) (time.Time, error) {
+	newest, err := scheduledNewest(backupsDir, now)
+	var last time.Time
+	prefix := profile + "/"
+	for key, t := range newest {
+		if strings.HasPrefix(key, prefix) && t.After(last) {
+			last = t
+		}
+	}
+	return last, err
+}
+
 // clockSkew is how far ahead of now a backup stamp may be before it is taken as written by a clock that was wrong.
 const clockSkew = 5 * time.Minute
 
