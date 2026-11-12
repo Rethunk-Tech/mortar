@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/playcheck"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -617,7 +618,7 @@ func TestJSONErrorsUseStructuredExitCodes(t *testing.T) {
 }
 
 func TestPlayCheck(t *testing.T) {
-	groups := []control.PlayIssueGroup{
+	groups := []playcheck.Group{
 		{Kind: "missing", Count: 1, Names: []string{"Pathoschild.ContentPatcher"}},
 		{Kind: "conflicts", Count: 2, Names: []string{"A, B"}},
 	}
@@ -625,11 +626,11 @@ func TestPlayCheck(t *testing.T) {
 	if r.code != 3 || r.calls[0].method != "play.check" || !strings.Contains(r.out, "missing (1):") || !strings.Contains(r.out, "conflicts (2):") {
 		t.Fatalf("play --check issues: %+v", r)
 	}
-	r = invoke(t, map[string]any{"play.check": []control.PlayIssueGroup{}}, "play", "stardew", "Farm", "--check")
+	r = invoke(t, map[string]any{"play.check": []playcheck.Group{}}, "play", "stardew", "Farm", "--check")
 	if r.code != 0 || !strings.Contains(r.out, "Ready to play.") {
 		t.Fatalf("play --check clean: %+v", r)
 	}
-	r = invoke(t, map[string]any{"play.check": []control.PlayIssueGroup{}}, "play", "stardew", "Farm", "--check", "--json")
+	r = invoke(t, map[string]any{"play.check": []playcheck.Group{}}, "play", "stardew", "Farm", "--check", "--json")
 	if r.code != 0 || !strings.Contains(r.out, "[") {
 		t.Fatalf("play --check json: %+v", r)
 	}

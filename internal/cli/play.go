@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/playcheck"
 )
 
 type playCheckError struct{ code int }
@@ -25,7 +26,7 @@ func (c *cmd) play() error {
 	if err != nil {
 		return err
 	}
-	var groups []control.PlayIssueGroup
+	var groups []playcheck.Group
 	if err := c.call("play.check", control.Params{Game: a[0], Profile: a[1]}, &groups, readTimeout); err != nil {
 		return err
 	}
@@ -38,7 +39,7 @@ func (c *cmd) play() error {
 	return nil
 }
 
-func printPlayIssues(c *cmd, groups []control.PlayIssueGroup) {
+func printPlayIssues(c *cmd, groups []playcheck.Group) {
 	if len(groups) == 0 {
 		fmt.Fprintln(c.out, "Ready to play.")
 		return

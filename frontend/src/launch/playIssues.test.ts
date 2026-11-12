@@ -1,167 +1,49 @@
 import { expect, test } from 'bun:test'
-import type { AssetConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
-import type {
-  Broken,
-  Missing,
-  Update,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
-import type { Request } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
-import { overflowIssueCount, playIssueSummary } from './playIssues.ts'
+import type { Group } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/playcheck/models.ts'
+import { overflowIssueCount, worded } from './playIssues.ts'
 
-const missing = (over: Partial<Missing> = {}): Missing => ({
-  dependentId: 'A.Mod',
-  dependentName: 'A',
-  id: 'Need.This',
-  minimumVersion: '',
-  reason: 'absent',
-  installedVersion: '',
-  listed: false,
-  note: '',
-  optional: false,
-  where: null,
+const group = (over: Partial<Group>): Group => ({
+  kind: 'missing',
+  count: 1,
+  names: ['A'],
   ...over,
 })
 
-const conflict = (over: Partial<AssetConflict> = {}): AssetConflict => ({
-  kind: 'load',
-  target: 'maps/town',
-  packIds: [],
-  names: ['One', 'Two'],
-  keys: [],
-  winnerId: '',
-  winnerKind: '',
-  winnerName: '',
-  overridden: [],
-  cosmetic: false,
-  fixes: [],
-  info: '',
-  evidence: [],
-  ...over,
-})
-
-const broken = (over: Partial<Broken> = {}): Broken => ({
-  key: 'k',
-  id: 'B.Mod',
-  name: 'Broke',
-  status: 'broken',
-  brokeIn: '',
-  summary: '',
-  ...over,
-})
-
-const update = (over: Partial<Update> = {}): Update => ({
-  key: 'u',
-  id: '',
-  name: 'Newer',
-  installed: '',
-  version: '2.0.0',
-  url: '',
-  nexusId: 0,
-  githubRepo: '',
-  unofficial: false,
-  source: '',
-  want: { kind: 'update' } as Request,
-  ...over,
-})
-
-test('playIssueSummary is empty when nothing is wrong', () => {
-  expect(playIssueSummary({})).toEqual([])
-  expect(
-    playIssueSummary({
-      missing: [
-        missing({ optional: true }),
-        missing({ reason: 'unknown', minimumVersion: '1.2', installedVersion: 'beta' }),
-      ],
-      assetConflicts: [conflict({ cosmetic: true })],
-      broken: [broken({ status: 'abandoned' }), broken({ status: 'game-unknown' })],
-      updates: [],
-      currentProfileId: 'p1',
-      lastPlayed: { folder: 'Farm_1', farm: 'Sunny', profileId: 'p1', profileName: 'Main' },
+test('a conflict lists its mods as a sentence in the language, and a bare target as it is', () => {
+  const g = worded(
+    group({
+      kind: 'conflicts',
+      count: 2,
+      names: ['SVE, Other', 'maps/town'],
+      nameParts: [['SVE', 'Other'], null],
     }),
-  ).toEqual([])
+  )
+  expect(g.names).toEqual(['SVE and Other', 'maps/town'])
 })
 
-test('playIssueSummary adds a last-profile group when the newest save used another profile', () => {
-  expect(
-    playIssueSummary({
-      currentProfileId: 'p1',
-      lastPlayed: { folder: 'Farm_1', farm: 'Sunny', profileId: 'p2', profileName: 'Co-op' },
-    }),
-  ).toEqual([
-    {
-      kind: 'lastProfile',
+test('changes are worded from their kind and values', () => {
+  const g = worded(
+    group({
+      kind: 'changes',
       count: 1,
-      names: [],
-      save: 'Sunny',
-      profileName: 'Co-op',
-      switchProfileId: 'p2',
-    },
-  ])
+      names: ['added Alpha'],
+      changes: [{ kind: 'added', mod: 'smapi:A', name: 'Alpha', key: 'a', detail: 'added Alpha' }],
+    }),
+  )
+  expect(g.names).toEqual(['Added Alpha'])
 })
 
-test('playIssueSummary names a missing requirement Unknown mod when the page has no name', () => {
+test('the last-profile group names the save by its farm, else its name', () => {
   expect(
-    playIssueSummary({
-      missing: [missing({ id: 'Need.This', where: null })],
-    }),
-  ).toEqual([
-    {
-      kind: 'missing',
-      count: 1,
-      names: ['Unknown mod'],
-      nameTitles: ['Need.This'],
-    },
-  ])
-})
-
-test('playIssueSummary groups required missing, non-cosmetic conflicts, updates, broken or obsolete, and long paths', () => {
-  const names = ['A', 'B', 'C', 'D', 'E', 'F']
+    worded(group({ kind: 'lastProfile', names: [], saveFolder: 'Farm_1', saveFarm: 'Sunny' })).save,
+  ).toBe('Sunny')
   expect(
-    playIssueSummary({
-      missing: [
-        missing({
-          id: 'SpaceCore',
-          where: {
-            site: 'Nexus',
-            github: '',
-            pageId: 1,
-            pageName: 'SpaceCore',
-            url: '',
-            fileId: 0,
-            fileName: '',
-            version: '',
-          },
-        }),
-      ],
-      assetConflicts: [conflict({ names: ['SVE', 'Other'] })],
-      broken: [
-        broken({ name: 'Old', status: 'obsolete' }),
-        broken({ name: 'Dead', status: 'abandoned' }),
-      ],
-      longPaths: [
-        { key: 'nexus-1-2', name: 'Deep', files: 2, longest: 'x', length: 270, placed: false },
-      ],
-      updates: names.map((name, i) => update({ name, key: String(i) })),
-    }),
-  ).toEqual([
-    { kind: 'missing', count: 1, names: ['SpaceCore'] },
-    { kind: 'conflicts', count: 1, names: ['SVE and Other'] },
-    { kind: 'updates', count: 6, names: ['A', 'B', 'C', 'D', 'E'] },
-    { kind: 'broken', count: 1, names: ['Old'] },
-    { kind: 'longPaths', count: 1, names: ['Deep'] },
-  ])
+    worded(group({ kind: 'lastProfile', names: [], saveFolder: 'Farm_1', saveName: 'World' })).save,
+  ).toBe('World')
+  expect(worded(group({ kind: 'missing' })).save).toBe('')
 })
 
 test('overflowIssueCount is the names past the five shown', () => {
   expect(overflowIssueCount({ count: 6, names: ['A', 'B', 'C', 'D', 'E'] })).toBe(1)
   expect(overflowIssueCount({ count: 2, names: ['A', 'B'] })).toBe(0)
-})
-
-test('playIssueSummary names a disabled requirement by its installed copy', () => {
-  expect(
-    playIssueSummary({
-      missing: [missing({ id: 'Need.This', where: null })],
-      nameOf: (id) => (id === 'Need.This' ? 'Need This' : id),
-    })[0]?.names,
-  ).toEqual(['Need This'])
 })

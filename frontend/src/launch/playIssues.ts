@@ -1,220 +1,34 @@
-import type { AssetConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
-import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
-import type {
-  Broken,
-  LongPath,
-  Missing,
-  Result,
-  Update,
-  UpdatesResult,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
-import {
-  Problems,
-  Updates,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
-import type { HistoryDiff } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { ChangesSince } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { LastSaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
+import type { Group } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/playcheck/models.ts'
+import { Check } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/playcheck/service.ts'
 import { listNames } from '../i18n/list.ts'
-import { localId } from '../mods/dependents.ts'
-import { missingDepName } from '../mods/describe.ts'
-import { countsAsMissing, sameId, visibleUpdates } from '../mods/lookup.ts'
-import { useMods } from '../mods/store.ts'
-import { changesSinceCache } from '../profiles/changesSinceCache.ts'
-import { diffLines } from '../profiles/historyDiff.ts'
-import { getProfile } from '../profiles/store.ts'
+import { itemLabel } from '../profiles/historyDiff.ts'
 import { saveName } from '../saves/saveName.ts'
 
-const PLAY_ISSUE_NAME_CAP = 5
+// Go decides which warnings there are and what they list; the window words the parts that depend on the language:
+// a conflict's mods, a change, a save.
+type PlayIssueGroup = Omit<Group, 'names'> & { names: string[]; save: string }
 
-type PlayIssueKind =
-  | 'missing'
-  | 'conflicts'
-  | 'updates'
-  | 'broken'
-  | 'longPaths'
-  | 'lastProfile'
-  | 'changes'
-  | 'saveMods'
-  | 'saveModsOff'
-
-interface PlayIssueGroup {
-  kind: PlayIssueKind
-  count: number
-  names: string[]
-  nameTitles?: string[]
-  save?: string
-  profileName?: string
-  switchProfileId?: string
-}
-
-function groupOf(
-  kind: PlayIssueKind,
-  entries: { name: string; title?: string }[],
-): PlayIssueGroup | null {
-  if (entries.length === 0) {
-    return null
-  }
-  const slice = entries.slice(0, PLAY_ISSUE_NAME_CAP)
-  const titles = slice.map((entry) => entry.title ?? '')
+function worded(g: Group): PlayIssueGroup {
+  const names = g.names ?? []
+  const changes = g.changes ?? []
   return {
-    kind,
-    count: entries.length,
-    names: slice.map((entry) => entry.name),
-    ...(titles.some((title) => title !== '') ? { nameTitles: titles } : {}),
+    ...g,
+    names:
+      changes.length > 0
+        ? changes.map(itemLabel)
+        : names.map((name, i) => {
+            const parts = g.nameParts?.[i] ?? []
+            return parts.length > 0 ? listNames(parts) : name
+          }),
+    save:
+      g.kind === 'lastProfile'
+        ? saveName({ farm: g.saveFarm ?? '', folder: g.saveFolder ?? '', name: g.saveName })
+        : '',
   }
-}
-
-function missingName(m: Missing, nameOf: (id: string) => string): { name: string; title?: string } {
-  const name = missingDepName(m, nameOf)
-  const unnamed = (m.where?.pageName ?? '').trim() === '' && name === localId(m.id)
-  return unnamed ? { name: 'Unknown mod', title: name } : { name }
-}
-
-function conflictName(c: AssetConflict): { name: string } {
-  const names = (c.names ?? []).filter((n) => n !== '')
-  return { name: names.length > 0 ? listNames(names) : c.target }
-}
-
-function playIssueSummary(input: {
-  missing?: Missing[] | null
-  nameOf?: (id: string) => string
-  assetConflicts?: AssetConflict[] | null
-  broken?: Broken[] | null
-  longPaths?: LongPath[] | null
-  updates?: Update[] | null
-  currentProfileId?: string
-  lastPlayed?: {
-    folder: string
-    farm: string
-    name?: string | undefined
-    profileId: string
-    profileName: string
-  } | null
-  saveMods?: { name: string; disabled?: boolean }[]
-  switchProfileId?: string
-}): PlayIssueGroup[] {
-  const groups: PlayIssueGroup[] = []
-  const missing = groupOf(
-    'missing',
-    (input.missing ?? [])
-      .filter(countsAsMissing)
-      .map((m) => missingName(m, input.nameOf ?? localId)),
-  )
-  const conflicts = groupOf(
-    'conflicts',
-    (input.assetConflicts ?? []).filter((c) => !c.cosmetic).map(conflictName),
-  )
-  const updates = groupOf(
-    'updates',
-    (input.updates ?? []).map((u) => ({ name: u.name })),
-  )
-  const broken = groupOf(
-    'broken',
-    (input.broken ?? [])
-      .filter((b) => b.status === 'broken' || b.status === 'obsolete' || b.status === 'cycle')
-      .map((b) => ({ name: b.name })),
-  )
-  const longPaths = groupOf(
-    'longPaths',
-    (input.longPaths ?? []).map((l) => ({ name: l.name })),
-  )
-  for (const g of [missing, conflicts, updates, broken, longPaths]) {
-    if (g) {
-      groups.push(g)
-    }
-  }
-  const last = input.lastPlayed
-  if (last?.profileId && last.profileId !== input.currentProfileId) {
-    groups.push({
-      kind: 'lastProfile',
-      count: 1,
-      names: [],
-      save: saveName(last),
-      profileName: last.profileName,
-      switchProfileId: last.profileId,
-    })
-  }
-  // Mods the profile lacks and mods it has switched off need different fixes, so they are listed apart.
-  for (const [kind, disabled] of [
-    ['saveMods', false],
-    ['saveModsOff', true],
-  ] as const) {
-    const found = (input.saveMods ?? []).filter((m) => (m.disabled ?? false) === disabled)
-    if (found.length > 0) {
-      groups.push({
-        kind,
-        count: found.length,
-        names: found.slice(0, PLAY_ISSUE_NAME_CAP).map((m) => m.name),
-        ...(input.switchProfileId ? { switchProfileId: input.switchProfileId } : {}),
-      })
-    }
-  }
-  return groups
 }
 
 async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIssueGroup[]> {
-  const [problems, updates, lastFit]: [
-    Result,
-    UpdatesResult,
-    Awaited<ReturnType<typeof LastSaveGap>> | null,
-  ] = await Promise.all([
-    Problems(game, profileId),
-    Updates(game, profileId),
-    LastSaveGap(game, profileId).catch(() => null),
-  ])
-  const profile = getProfile(profileId)
-  const fit = lastFit?.[0]
-  const lastName = fit?.lastProfileId
-    ? (getProfile(fit.lastProfileId)?.name ?? fit.lastProfileId)
-    : ''
-  const groups = playIssueSummary({
-    missing: problems.missing,
-    nameOf: (id) => useMods.getState().mods.find((m) => sameId(m.id, id))?.name ?? localId(id),
-    assetConflicts: problems.assetConflicts,
-    broken: problems.broken,
-    longPaths: problems.longPaths ?? null,
-    updates: visibleUpdates(updates, profile),
-    currentProfileId: profileId,
-    lastPlayed:
-      fit?.lastProfileId && lastName
-        ? {
-            folder: fit.folder,
-            farm: fit.farm,
-            name: fit.name,
-            profileId: fit.lastProfileId,
-            profileName: lastName,
-          }
-        : null,
-    saveMods: (fit?.missing ?? []).map((m) => ({
-      name: m.name || localId(m.id),
-      disabled: m.disabled,
-    })),
-    switchProfileId: fit?.lastProfileExists ? fit.lastProfileId : '',
-  })
-  try {
-    const runs = await Runs(game, profileId)
-    const since = runs?.[0]?.started ?? ''
-    const key = `${game}\0${profileId}\0${profile?.updated ?? ''}\0${since}`
-    let diff: HistoryDiff | null | undefined
-    if (changesSinceCache.has(key)) {
-      diff = changesSinceCache.get(key)
-    } else {
-      diff = await ChangesSince(game, profileId, since)
-      changesSinceCache.set(key, diff)
-    }
-    const names = diff ? diffLines(diff) : []
-    if (names.length > 0) {
-      groups.push({
-        kind: 'changes',
-        count: names.length,
-        names: names.slice(0, PLAY_ISSUE_NAME_CAP),
-      })
-    }
-  } catch {
-    // pre-Play still shows problems when history is unavailable
-  }
-  return groups
+  return ((await Check(game, profileId)) ?? []).map(worded)
 }
 
 function overflowIssueCount(group: Pick<PlayIssueGroup, 'count' | 'names'>): number {
@@ -222,4 +36,4 @@ function overflowIssueCount(group: Pick<PlayIssueGroup, 'count' | 'names'>): num
 }
 
 export type { PlayIssueGroup }
-export { gatherPlayIssues, overflowIssueCount, playIssueSummary }
+export { gatherPlayIssues, overflowIssueCount, worded }

@@ -1,7 +1,6 @@
 package control
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -42,22 +41,4 @@ func (s *Services) profileGood(game, id string, mark, restore bool) (any, error)
 	default:
 		return s.Profiles.KnownGood(game, id)
 	}
-}
-
-func (s *Services) changesPlayGroup(ctx context.Context, game, id string) PlayIssueGroup {
-	_ = ctx
-	diff, err := s.profileChanges(game, id)
-	if err != nil || len(diff.Items) == 0 {
-		return PlayIssueGroup{}
-	}
-	names := make([]string, 0, min(len(diff.Items), playIssueNameCap))
-	for _, it := range diff.Items {
-		if it.Detail != "" {
-			names = append(names, it.Detail)
-		}
-	}
-	if len(names) > playIssueNameCap {
-		names = names[:playIssueNameCap]
-	}
-	return PlayIssueGroup{Kind: "changes", Count: len(diff.Items), Names: names}
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/playcheck"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -80,7 +81,7 @@ func printHistoryDiff(c *cmd, diff profile.HistoryDiff) {
 	c.table("KIND\tMOD\tCHANGE", rows)
 }
 
-func playGroupsBlocking(groups []control.PlayIssueGroup) int {
+func playGroupsBlocking(groups []playcheck.Group) int {
 	n := 0
 	for _, g := range groups {
 		if g.Kind != "changes" {

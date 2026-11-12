@@ -63,6 +63,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/opener"
 	"github.com/Rethunk-Tech/mortar/internal/packsvc"
 	"github.com/Rethunk-Tech/mortar/internal/picker"
+	"github.com/Rethunk-Tech/mortar/internal/playcheck"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -135,6 +136,7 @@ type boot struct {
 	pictures        *modpic.Cache
 	plays           *shortcut.Service
 	problemsSvc     *problems.Service
+	playCheckSvc    *playcheck.Service
 	profileSvc      *profile.Service
 	profiles        *profile.Store
 	queueSvc        *queue.Service
@@ -762,6 +764,7 @@ func (c *boot) problemsWiring() error {
 	}
 	c.problemsSvc.NexusPages = c.nexusPages
 	c.problemsSvc.NexusFiles = c.nexusFiles
+	c.playCheckSvc = &playcheck.Service{Problems: c.problemsSvc, Saves: c.savesSvc, Profiles: c.profileSvc, Launches: c.launches, Settings: c.store}
 	c.supportSvc = support.NewService(version, c.problemsSvc.Environment, c.home, c.profiles.ModsDir)
 	c.supportSvc.RecentLog = c.recentLog
 	return nil
@@ -995,6 +998,7 @@ func (c *boot) registerServices() error {
 		application.NewService(c.nxmSvc),
 		application.NewService(c.notifier),
 		application.NewService(c.problemsSvc),
+		application.NewService(c.playCheckSvc),
 		application.NewService(c.queueSvc),
 		application.NewService(c.shareSvc),
 		application.NewService(c.syncSvc),
@@ -1060,7 +1064,7 @@ func (c *boot) startBackground(updateCtx, queueCtx context.Context) error {
 func (c *boot) serveControl(queueCtx context.Context) error {
 	ctl := &control.Services{
 		Version: version, Settings: c.store, SettingsSvc: c.svc, Games: c.gamesSvc, Store: c.profiles, Profiles: c.profileSvc,
-		Problems: c.problemsSvc, Launches: c.launches, Saves: c.savesSvc, Queue: c.queueSvc, Tools: c.toolsSvc, SavedGroups: c.savedGroupsSvc,
+		Problems: c.problemsSvc, PlayCheck: c.playCheckSvc, Launches: c.launches, Saves: c.savesSvc, Queue: c.queueSvc, Tools: c.toolsSvc, SavedGroups: c.savedGroupsSvc,
 		Nexus: c.nexusSvc, Shares: c.shareSvc, Data: c.dataSvc, Plays: c.plays, Loaders: c.loaders, Dev: c.devSvc, Templates: c.templatesSvc, Archives: c.archivesSvc, Browse: c.browseSvc, Bisect: c.bisectSvc, StoreCheck: c.checkSvc, Lan: c.lanSvc, Sync: c.syncSvc, Updates: c.updates, Nxm: c.nxmSvc, Support: c.supportSvc, Packs: c.packs,
 		Emit: func(name string, data any) {
 			if name == control.InstallAskEvent {

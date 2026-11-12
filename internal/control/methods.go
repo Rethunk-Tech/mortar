@@ -32,6 +32,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/packsvc"
+	"github.com/Rethunk-Tech/mortar/internal/playcheck"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -80,6 +81,7 @@ type Services struct {
 	Store       *profile.Store
 	Profiles    *profile.Service
 	Problems    *problems.Service
+	PlayCheck   *playcheck.Service
 	Launches    *launchsvc.Service
 	Saves       *savessvc.Service
 	Queue       *queue.Service
@@ -1261,8 +1263,8 @@ var coreProfile = map[string]profileMethod{
 	"saves": func(s *Services, ctx context.Context, p Params, _ profile.Profile, id string) (any, error) {
 		return s.Saves.Saves(ctx, p.Game, id)
 	},
-	"play.check": func(s *Services, ctx context.Context, p Params, prof profile.Profile, id string) (any, error) {
-		return s.playCheck(ctx, p.Game, id, prof)
+	"play.check": func(s *Services, ctx context.Context, p Params, _ profile.Profile, id string) (any, error) {
+		return s.PlayCheck.Check(ctx, p.Game, id)
 	},
 	"play.test": func(s *Services, ctx context.Context, p Params, _ profile.Profile, id string) (any, error) {
 		return s.playTest(ctx, p.Game, id, p.Install)
@@ -1822,145 +1824,6 @@ func (e launchWarningError) Error() string {
 		))
 	}
 	return strings.Join(append(warnings, "Play anyway with --force."), "\n")
-}
-
-const playIssueNameCap = 5
-
-// PlayIssueGroup is one pre-Play warning bucket, matching the window's playIssues summary.
-type PlayIssueGroup struct {
-	Kind  string   `json:"kind"`
-	Count int      `json:"count"`
-	Names []string `json:"names"`
-}
-
-func (s *Services) playCheck(ctx context.Context, gameID, id string, prof profile.Profile) ([]PlayIssueGroup, error) {
-	res, err := s.Problems.Problems(ctx, gameID, id)
-	if err != nil {
-		return nil, err
-	}
-	upd, err := s.Problems.Updates(ctx, gameID, id)
-	if err != nil {
-		return nil, err
-	}
-	smapiNever := false
-	if s.Settings != nil {
-		smapiNever = s.Settings.Get().SmapiBuilds == settings.SmapiBuildsNever
-	}
-	groups := playIssueGroups(prof, res, upd, smapiNever)
-	if ch := s.changesPlayGroup(ctx, gameID, id); ch.Kind != "" {
-		groups = append(groups, ch)
-	}
-	if s.Saves != nil {
-		if save, gap := adviceOnly(s.Saves.LastSaveGap(ctx, gameID, id)); gap {
-			groups = append(groups, saveGapGroup(save))
-		}
-	}
-	return groups, nil
-}
-
-// saveGapGroup is the newest save's warning that Play gives: the mods it was last played with that the profile lacks,
-// else the ones the save file itself names.
-func saveGapGroup(save savessvc.Fit) PlayIssueGroup {
-	lacks := save.LastMissing
-	if len(lacks) == 0 {
-		lacks = save.Missing
-	}
-	names := make([]string, 0, min(len(lacks), playIssueNameCap))
-	for _, l := range lacks[:min(len(lacks), playIssueNameCap)] {
-		names = append(names, l.Name)
-	}
-	return PlayIssueGroup{Kind: "save", Count: len(lacks), Names: names}
-}
-
-func playIssueGroups(prof profile.Profile, res problems.Result, upd problems.UpdatesResult, smapiNever bool) []PlayIssueGroup {
-	missing := missingNames(res.Missing)
-	conflicts := conflictLabels(res.AssetConflicts)
-	updates := pendingUpdateNames(prof, upd, smapiNever)
-	var broken []string
-	for _, b := range res.Broken {
-		if b.Status == "broken" || b.Status == "obsolete" || b.Status == "cycle" {
-			broken = append(broken, b.Name)
-		}
-	}
-	var longPaths []string
-	for _, l := range res.LongPaths {
-		longPaths = append(longPaths, l.Name)
-	}
-	var out []PlayIssueGroup
-	for _, g := range []struct {
-		kind   string
-		labels []string
-	}{
-		{"missing", missing},
-		{"conflicts", conflicts},
-		{"updates", updates},
-		{"broken", broken},
-		{"longPaths", longPaths},
-	} {
-		if len(g.labels) == 0 {
-			continue
-		}
-		names := g.labels
-		if len(names) > playIssueNameCap {
-			names = names[:playIssueNameCap]
-		}
-		out = append(out, PlayIssueGroup{Kind: g.kind, Count: len(g.labels), Names: names})
-	}
-	return out
-}
-
-// missingNames lists each absent mod once; Missing has a row per dependent mod.
-func missingNames(rows []problems.Missing) []string {
-	var out []string
-	seen := map[string]bool{}
-	for _, m := range rows {
-		if m.Optional || seen[m.ID.Fold()] {
-			continue
-		}
-		seen[m.ID.Fold()] = true
-		name := m.ID.Local()
-		if m.Where != nil && m.Where.PageName != "" {
-			name = m.Where.PageName
-		}
-		out = append(out, name)
-	}
-	return out
-}
-
-func conflictLabels(conflicts []framework.AssetConflict) []string {
-	var out []string
-	for _, c := range conflicts {
-		if c.Cosmetic {
-			continue
-		}
-		names := make([]string, 0, len(c.Names))
-		for _, n := range c.Names {
-			if n != "" {
-				names = append(names, n)
-			}
-		}
-		if len(names) > 0 {
-			out = append(out, strings.Join(names, ", "))
-		} else {
-			out = append(out, c.Target)
-		}
-	}
-	return out
-}
-
-func pendingUpdateNames(prof profile.Profile, upd problems.UpdatesResult, smapiNever bool) []string {
-	var out []string
-	for _, u := range upd.Updates {
-		if smapiNever && u.Unofficial {
-			continue
-		}
-		e, ok := entryByKey(prof, u.Key)
-		if ok && (e.Pinned || (u.Source != "" && slices.Contains(e.SkipSources, u.Source)) || (e.SkipVersion != "" && e.SkipVersion == u.Version)) {
-			continue
-		}
-		out = append(out, u.Name)
-	}
-	return out
 }
 
 func entryByKey(p profile.Profile, key string) (profile.Entry, bool) {

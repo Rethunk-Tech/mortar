@@ -61,7 +61,7 @@ const buildProblems = (result: Result): Problem[] => [
 
 // Optional listed requirements, outside requirements and versions that cannot be compared are informational: the
 // server's Count leaves them out.
-export const countsAsMissing = (m: Missing): boolean =>
+const countsAsMissing = (m: Missing): boolean =>
   !(m.optional || m.external || m.reason === 'unknown')
 
 // A plugin that loaded and then threw still ran, and so did a run that did not crash: shown, not counted.

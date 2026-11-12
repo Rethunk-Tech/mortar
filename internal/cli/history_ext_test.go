@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/control"
+	"github.com/Rethunk-Tech/mortar/internal/playcheck"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -51,7 +51,7 @@ func TestProfileChangesAndGoodCLI(t *testing.T) {
 
 func TestPlayCheckIgnoresChangesForExit(t *testing.T) {
 	results := map[string]any{
-		"play.check": []control.PlayIssueGroup{{Kind: "changes", Count: 1, Names: []string{"added Alpha"}}},
+		"play.check": []playcheck.Group{{Kind: "changes", Count: 1, Names: []string{"added Alpha"}}},
 	}
 	r := invoke(t, results, "play", "stardew", "Farm", "--check")
 	if r.code != 0 {

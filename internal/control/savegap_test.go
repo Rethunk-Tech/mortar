@@ -37,8 +37,4 @@ func TestSaveGapWordingAndGroup(t *testing.T) {
 	if strings.Contains(msg, "'s farm") || !strings.Contains(msg, "The farm (Farm_1)") {
 		t.Errorf("a save with no farmer name reads %q", msg)
 	}
-	g := saveGapGroup(savessvc.Fit{Missing: []savessvc.Lack{{Name: "File"}}, LastMissing: []savessvc.Lack{{Name: "A"}, {Name: "B"}}})
-	if g.Kind != "save" || g.Count != 2 || strings.Join(g.Names, ",") != "A,B" {
-		t.Errorf("save group %+v", g)
-	}
 }

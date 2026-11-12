@@ -91,13 +91,3 @@ func TestProfileGoodRefusesBothFlagsWithTheCLIWords(t *testing.T) {
 		t.Fatalf("err = %v", err)
 	}
 }
-
-// The pre-Play warning lists as many change names as every other group of issues, keeping the full count.
-func TestChangesPlayGroupCapsNamesAsEveryOtherGroup(t *testing.T) {
-	s, prof := historyHarness(t, playIssueNameCap+2)
-	recordRun(t, s, prof, time.Now().Add(-time.Hour))
-	g := s.changesPlayGroup(t.Context(), "lethal-company", prof.ID)
-	if g.Kind != "changes" || g.Count != playIssueNameCap+2 || len(g.Names) != playIssueNameCap {
-		t.Fatalf("group = %+v", g)
-	}
-}
