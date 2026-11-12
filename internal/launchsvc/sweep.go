@@ -147,8 +147,14 @@ func (s *Service) sweepCompat(ctx context.Context) (smapiweb.CompatIndex, error)
 	if s.SweepCompat != nil {
 		return s.SweepCompat(ctx)
 	}
-	c := meta.Client{}
-	return c.CompatList(ctx)
+	return s.metaClient().CompatList(ctx)
+}
+
+func (s *Service) metaClient() *meta.Client {
+	if s.Meta != nil {
+		return s.Meta
+	}
+	return &meta.Client{}
 }
 
 func (s *Service) scanSweepProfiles(gameID string, profiles []profile.Profile, idx smapiweb.CompatIndex, known components.BrokenList, gameVer string, updates map[string]bool) []ProfileSweep {
@@ -216,8 +222,7 @@ func (s *Service) sweepUpdateSet(ctx context.Context, gameID, gameVer, smapiVer 
 		}
 	}
 	out := map[string]bool{}
-	c := meta.Client{}
-	for _, r := range c.CheckUpdates(ctx, meta.UpdateRequest{
+	for _, r := range s.metaClient().CheckUpdates(ctx, meta.UpdateRequest{
 		APIVersion: smapiVer, GameVersion: gameVer, Platform: sweepPlatform(), Mods: installed,
 	}) {
 		if r.Suggested != nil {

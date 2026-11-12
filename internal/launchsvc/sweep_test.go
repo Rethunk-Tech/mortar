@@ -3,9 +3,14 @@ package launchsvc
 import (
 	"context"
 	"maps"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 
 	"github.com/Rethunk-Tech/go-smapiweb"
 
@@ -202,5 +207,24 @@ func TestSweepKnownBrokenListsWhatSMAPIsListDidNot(t *testing.T) {
 	want := map[string]string{"fixable": fixUpdate, "stuck": fixNone, "old": fixOff}
 	if !maps.Equal(fixes, want) {
 		t.Fatalf("fixes = %v, want %v", fixes, want)
+	}
+}
+
+func TestSweepCompatAsksThroughTheAppsMetaClient(t *testing.T) {
+	var asked atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		asked.Add(1)
+		_, _ = w.Write([]byte(`[{"name":"Bus","id":"hootless.BusLocations","compatibility":{"status":"broken"}}]`))
+	}))
+	t.Cleanup(srv.Close)
+	svc, _ := sweepEnv(t)
+	svc.SweepCompat = nil
+	svc.Meta = &meta.Client{HTTP: srv.Client(), CacheDir: t.TempDir(), CompatURL: srv.URL}
+	idx, err := svc.sweepCompat(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := idx.Lookup("hootless.BusLocations", 0); !ok || asked.Load() != 1 {
+		t.Fatalf("asked %d times through the app's client, found %v", asked.Load(), ok)
 	}
 }

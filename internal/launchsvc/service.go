@@ -38,6 +38,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 	"github.com/Rethunk-Tech/mortar/internal/overlay"
@@ -220,6 +221,8 @@ type Service struct {
 	SweepVersions  func(gameID string) (gameVer, smapiVer string, err error)
 	SweepCompat    func(ctx context.Context) (smapiweb.CompatIndex, error)
 	SweepHasUpdate func(uniqueID mod.ID, nexusID int) bool
+	// Meta is the app's shared metadata client, whose caches the patch-day sweep reuses; nil asks through a fresh one.
+	Meta *meta.Client
 	// Symbols names native crash frames from symbol servers; nil names none.
 	Symbols *winsym.Resolver
 }

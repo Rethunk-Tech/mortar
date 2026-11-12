@@ -472,6 +472,7 @@ func (c *boot) startLaunches() error {
 	c.profiles.GameRunning = c.launches.Busy
 	c.bisectSvc = bisect.NewService(c.profiles, c.launches)
 	c.modMeta = &meta.Client{CacheDir: c.cacheDir(), Version: version}
+	c.launches.Meta = c.modMeta
 	source.Register(c.tsDriver())
 	source.Register(&githubsrc.Driver{CacheDir: c.cacheDir()})
 	c.componentClient = components.NewClient(&http.Client{Timeout: 30 * time.Second})
