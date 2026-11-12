@@ -811,6 +811,30 @@ func TestSwitchingOffAModWhoseRecordedFolderIsGoneNamesTheFolder(t *testing.T) {
 	}
 }
 
+// A folder left under both names used to make a disable a silent no-op that still recorded the mod as off, so the
+// game kept loading it. The flip now refuses, so the profile never records a state the folder does not have.
+func TestDisablingAModWhoseFolderExistsUnderBothNamesIsRefused(t *testing.T) {
+	t.Parallel()
+	e := envWithFolderAB(t)
+	p, _ := e.Create("stardew", "P")
+	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	pack := filepath.Join(e.mods(p.ID), "local-a")
+	writeFile(t, pack, ".A/manifest.json", manifestJSON("Me.A"))
+	_, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", false)
+	if err == nil || !strings.Contains(err.Error(), "both names") {
+		t.Fatalf("err = %v, want the folder present under both names named", err)
+	}
+	all, err := e.List("stardew")
+	if err != nil || len(all) != 1 {
+		t.Fatalf("profiles = %+v, %v", all, err)
+	}
+	if !all[0].Entries[0].Enabled("smapi:Me.A") {
+		t.Fatalf("a failed switch-off was recorded as off: %+v", all[0].Entries[0])
+	}
+}
+
 func TestSwitchingAModOffRecordsWhenAndSwitchingItOnClearsIt(t *testing.T) {
 	t.Parallel()
 	e := envWithAB(t)

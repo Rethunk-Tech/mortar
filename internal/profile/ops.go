@@ -111,12 +111,17 @@ func removeEntryFolders(modsDir, key string) error {
 }
 
 // flip renames a folder between its enabled and disabled names; it does nothing when it already has the wanted one.
+// Both names holding a folder means a copy was left behind, and picking one would hide a folder the game still loads,
+// so it is reported for the player to clean up.
 func flip(plain, dotted string, enabled bool) error {
 	from, to := dotted, plain
 	if !enabled {
 		from, to = plain, dotted
 	}
 	if datadir.Exists(to) {
+		if datadir.Exists(from) {
+			return fmt.Errorf("mod folder %s exists under both names", filepath.Base(plain))
+		}
 		return nil
 	}
 	if !datadir.Exists(from) {
