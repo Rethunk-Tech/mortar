@@ -18,10 +18,10 @@ func ValidCutoff(s string) bool {
 	return err == nil
 }
 
-// ParseCutoff reads a YYYY-MM-DD date as the end of that day in UTC, so a version released on the date still counts.
-// An empty or unreadable value is no cutoff.
+// ParseCutoff reads a YYYY-MM-DD date as the end of that day where the player is, so a version released on the date
+// still counts and one from the next local day does not. An empty or unreadable value is no cutoff.
 func ParseCutoff(s string) time.Time {
-	t, err := time.Parse(CutoffLayout, s)
+	t, err := time.ParseInLocation(CutoffLayout, s, time.Local)
 	if err != nil {
 		return time.Time{}
 	}

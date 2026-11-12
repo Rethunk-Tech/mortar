@@ -7,7 +7,16 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/github"
 )
 
+// withLocalZone runs the test with loc as the process's local zone, which ParseCutoff reads for the player's day.
+func withLocalZone(t *testing.T, loc *time.Location) {
+	t.Helper()
+	old := time.Local
+	time.Local = loc
+	t.Cleanup(func() { time.Local = old })
+}
+
 func TestWithin(t *testing.T) {
+	withLocalZone(t, time.UTC)
 	type rel struct {
 		v string
 		t string
@@ -39,6 +48,22 @@ func TestWithin(t *testing.T) {
 				t.Fatalf("%s: got %v want %v", c.name, got, c.want)
 			}
 		}
+	}
+}
+
+func TestCutoffEndsTheLocalDay(t *testing.T) {
+	withLocalZone(t, time.FixedZone("UTC-10", -10*60*60))
+	// In UTC-10 the chosen day ends at 2024-02-11T10:00Z, so a release half an hour earlier is still on that day.
+	release := []struct{ v, t string }{{"late", "2024-02-11T09:30:00Z"}}
+	date := func(r struct{ v, t string }) (time.Time, bool) {
+		x, err := time.Parse(time.RFC3339, r.t)
+		return x, err == nil
+	}
+	if got := Within(release, ParseCutoff("2024-02-10"), date); len(got) != 1 {
+		t.Fatalf("a release on the chosen local day was cut off: %v", got)
+	}
+	if got := Within(release, ParseCutoff("2024-02-09"), date); len(got) != 0 {
+		t.Fatalf("a release after the chosen local day was kept: %v", got)
 	}
 }
 
