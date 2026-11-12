@@ -4,12 +4,14 @@ package support
 import (
 	"cmp"
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"runtime"
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-smapi/logline"
 
 	"github.com/Rethunk-Tech/go-smapiweb"
@@ -21,7 +23,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
-	"github.com/Rethunk-Tech/mortar/internal/logshare"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -29,9 +30,6 @@ import (
 )
 
 const (
-	// MaxLog allows the console's launch.MaxLines at 256 bytes a line; a SMAPI log past that is not one session's.
-	MaxLog = launch.MaxLines * 256
-
 	smapiBase = "https://smapi.io"
 	issuesURL = "https://github.com/Rethunk-Tech/mortar/issues/new"
 )
@@ -87,7 +85,7 @@ func (s *Service) Log(gameID, profileID string) (string, error) {
 	if !found {
 		return "", nil
 	}
-	if len(data) > MaxLog {
+	if len(data) > launch.MaxLogBytes {
 		return "", fmt.Errorf("the log is %s, too large to upload", bytefmt.Format(int64(len(data))))
 	}
 	modsDir, err := s.modsDir(gameID, profileID)
@@ -106,7 +104,12 @@ func (s *Service) Upload(ctx context.Context, gameID, loaderID, log string) (str
 	if err := CanShare(gameID, loaderID); err != nil {
 		return "", err
 	}
-	return logshare.Upload(ctx, &smapiweb.Client{LogURL: strings.TrimRight(s.base, "/") + "/log"}, log, MaxLog)
+	link, err := (&smapiweb.Client{LogURL: strings.TrimRight(s.base, "/") + "/log"}).UploadLog(ctx, log, launch.MaxLogBytes)
+	// The module's status error names no host, so it is worded here as the player has always read it.
+	if se, ok := errors.AsType[*httpkit.StatusError](err); ok {
+		return "", fmt.Errorf("smapi.io answered %s", se.Status)
+	}
+	return link, err
 }
 
 // BugReport is what the user wrote in Mortar's Report a bug dialog.

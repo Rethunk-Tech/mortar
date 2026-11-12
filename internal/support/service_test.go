@@ -11,6 +11,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
@@ -64,7 +65,7 @@ func TestUploadFailures(t *testing.T) {
 }
 
 func TestUploadRejectsOversizeWithoutSending(t *testing.T) {
-	_, err := upload(t, func(http.ResponseWriter, *http.Request) { t.Error("request sent") }, strings.Repeat("x", MaxLog+1))
+	_, err := upload(t, func(http.ResponseWriter, *http.Request) { t.Error("request sent") }, strings.Repeat("x", launch.MaxLogBytes+1))
 	if err == nil {
 		t.Fatal("want an error")
 	}
@@ -186,10 +187,28 @@ func TestAnOversizeLogNamesItsSizeWithoutRoundingBelowTheCap(t *testing.T) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "SMAPI-latest.txt"), make([]byte, MaxLog+1), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "SMAPI-latest.txt"), make([]byte, launch.MaxLogBytes+1), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.Log("stardew", "a"); err == nil || !strings.Contains(err.Error(), "4.9 MB") {
 		t.Fatalf("got %v", err)
+	}
+}
+
+func TestUploadWording(t *testing.T) {
+	cases := map[string]struct {
+		handler http.HandlerFunc
+		want    string
+	}{
+		"status": {func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusBadGateway) }, "smapi.io answered 502 Bad Gateway"},
+		"page":   {func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("<html>")) }, "smapi.io did not accept the log"},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			_, err := upload(t, tc.handler, "log")
+			if err == nil || err.Error() != tc.want {
+				t.Fatalf("got %v, want %q", err, tc.want)
+			}
+		})
 	}
 }
