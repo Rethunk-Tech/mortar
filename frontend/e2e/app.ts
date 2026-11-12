@@ -183,6 +183,16 @@ export async function clearBell(page: Page, stepMs: number) {
   await bell.waitFor({ state: 'detached', timeout: stepMs })
 }
 
+/**
+ * Success notices go to the notification list without a pop-up (05bc7d171), so a spec that waits for one opens the
+ * list, checks the notice and closes it again.
+ */
+export async function expectNotice(page: Page, text: string | RegExp) {
+  await page.getByRole('button', { name: /^Notifications/ }).click()
+  await expect(page.getByRole('presentation').getByText(text).first()).toBeVisible()
+  await page.keyboard.press('Escape')
+}
+
 let timingCase = ''
 
 /** Runs a setup step; with MORTAR_RENDER_TIMING set, prints how long it took, so slow setups can be told from slow quiet waits. */

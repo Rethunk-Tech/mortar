@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { openGameSettings, openSeedFarm } from './app.ts'
+import { expectNotice, openGameSettings, openSeedFarm } from './app.ts'
 
 test('Game settings › Mods trims a profile history to the changes kept', async ({ page }) => {
   await openSeedFarm(page)
@@ -13,5 +13,5 @@ test('Game settings › Mods trims a profile history to the changes kept', async
   await expect(keep).toBeVisible()
   await keep.fill('1')
   await dialog.getByRole('button', { name: /^Trim/ }).click()
-  await expect(page.getByText(/^Trimmed .*'s history/)).toBeVisible()
+  await expectNotice(page, /^Trimmed .*'s history/)
 })
