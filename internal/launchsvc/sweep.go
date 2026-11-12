@@ -169,16 +169,13 @@ func (s *Service) scanSweepProfiles(gameID string, profiles []profile.Profile, i
 		}
 		row := ProfileSweep{Profile: p.ID, Name: p.Name, Broken: sweepBroken(mods, idx, has)}
 		row.Broken = append(row.Broken, sweepKnownBroken(mods, row.Broken, known, gameVer, has)...)
-		row.MissingDeps = s.sweepMissingDeps(gameID, p.ID, mods)
+		row.MissingDeps = sweepMissingDeps(mods)
 		out = append(out, row)
 	}
 	return out
 }
 
-func (s *Service) sweepMissingDeps(gameID, profileID string, mods []profile.Mod) int {
-	if s.SweepMissingDeps != nil {
-		return s.SweepMissingDeps(gameID, profileID)
-	}
+func sweepMissingDeps(mods []profile.Mod) int {
 	have := map[string]bool{}
 	for _, m := range mods {
 		if m.Enabled && m.ID != "" {

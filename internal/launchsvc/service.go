@@ -216,11 +216,10 @@ type Service struct {
 	reaping  map[string]bool
 	// sampled is closed once a measured launch's sampler has stopped its session; the game must still be running then.
 	sampled map[string]chan struct{}
-	// SweepVersions, SweepCompat, SweepHasUpdate and SweepMissingDeps are replaced in tests.
-	SweepVersions    func(gameID string) (gameVer, smapiVer string, err error)
-	SweepCompat      func(ctx context.Context) (smapiweb.CompatIndex, error)
-	SweepHasUpdate   func(uniqueID mod.ID, nexusID int) bool
-	SweepMissingDeps func(gameID, profileID string) int
+	// SweepVersions, SweepCompat and SweepHasUpdate are replaced in tests.
+	SweepVersions  func(gameID string) (gameVer, smapiVer string, err error)
+	SweepCompat    func(ctx context.Context) (smapiweb.CompatIndex, error)
+	SweepHasUpdate func(uniqueID mod.ID, nexusID int) bool
 	// Symbols names native crash frames from symbol servers; nil names none.
 	Symbols *winsym.Resolver
 }
