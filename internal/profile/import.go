@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/migrate"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -79,13 +80,6 @@ type GameModsResult struct {
 	Imported int              `json:"imported"`
 	Skipped  int              `json:"skipped"`
 	Failed   int              `json:"failed"`
-}
-
-// ExternalMod is one folder selected from an external mod manager's profile.
-type ExternalMod struct {
-	SourcePath string `json:"sourcePath"`
-	ID         mod.ID `json:"id"`
-	Enabled    bool   `json:"enabled"`
 }
 
 type gameModFolder struct {
@@ -547,7 +541,7 @@ func (s *Store) ImportGameMods(ctx context.Context, game, modsDir string, move b
 
 // ImportExternalMods copies the selected external-manager folders into an existing profile and returns the history
 // events the import recorded, oldest first; under a history batch that is the batch's one event.
-func (s *Store) ImportExternalMods(ctx context.Context, game, id string, mods []ExternalMod) ([]string, error) {
+func (s *Store) ImportExternalMods(ctx context.Context, game, id string, mods []migrate.ModPreview) ([]string, error) {
 	enabled := make(map[string]bool, len(mods))
 	seen := make(map[string]bool, len(mods))
 	var paths []string

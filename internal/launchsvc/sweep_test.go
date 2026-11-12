@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
+	"github.com/Rethunk-Tech/mortar/internal/migrate"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testcatalog"
 
@@ -49,7 +50,7 @@ func addSweepMod(t *testing.T, profiles *profile.Store, profileID, uniqueID, nam
 	if err := os.WriteFile(filepath.Join(dir, "manifest.json"), []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	_, err := profiles.ImportExternalMods(t.Context(), "stardew", profileID, []profile.ExternalMod{
+	_, err := profiles.ImportExternalMods(t.Context(), "stardew", profileID, []migrate.ModPreview{
 		{SourcePath: dir, ID: mod.SMAPI(uniqueID), Enabled: true},
 	})
 	if err != nil {

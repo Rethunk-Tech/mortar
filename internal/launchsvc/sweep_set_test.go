@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-Tech/go-smapiweb"
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/migrate"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
@@ -161,7 +162,7 @@ func addSweepModWithoutID(t *testing.T, profiles *profile.Store, profileID strin
 	if err := os.WriteFile(filepath.Join(dir, "manifest.json"), []byte(`{"Name":"NoID","Author":"A","Version":"1.0.0"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := profiles.ImportExternalMods(t.Context(), "stardew", profileID, []profile.ExternalMod{
+	if _, err := profiles.ImportExternalMods(t.Context(), "stardew", profileID, []migrate.ModPreview{
 		{SourcePath: dir, Enabled: true},
 	}); err != nil {
 		t.Fatal(err)

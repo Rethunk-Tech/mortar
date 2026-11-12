@@ -1235,7 +1235,7 @@ func (s *Service) takePreview(game, session string) (*session, error) {
 type importPlan struct {
 	reqs   []queue.Request
 	wanted []wantedFile
-	local  []profile.ExternalMod
+	local  []migrate.ModPreview
 	// fromStore are files already in the store, whatever their source: a paired computer's copies, placed from there
 	// instead of downloaded again.
 	fromStore []storedEntry
@@ -1260,7 +1260,7 @@ func planImport(game string, cur *session, mods []Mod, stored map[string]bool, e
 		}
 		if m.Site == SiteLocal {
 			if im, ok := external[m.Key]; ok {
-				plan.local = append(plan.local, profile.ExternalMod{SourcePath: im.SourcePath, ID: im.ID, Enabled: im.Enabled})
+				plan.local = append(plan.local, im)
 			} else if lm, ok := carriedByKey[m.Key]; ok {
 				plan.carried = append(plan.carried, lm)
 			} else if stored[m.Key] {
