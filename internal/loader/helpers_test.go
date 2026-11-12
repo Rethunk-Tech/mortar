@@ -1,7 +1,6 @@
 package loader
 
 import (
-	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -33,7 +32,7 @@ func TestLiveOfTrustsOnlyGameVersion(t *testing.T) {
 }
 
 func TestDebuggerAndSharesLog(t *testing.T) {
-	if Debugger(context.Background()) || !Debugger(WithDebugger(context.Background())) {
+	if Debugger(t.Context()) || !Debugger(WithDebugger(t.Context())) {
 		t.Error("Debugger flag does not follow WithDebugger")
 	}
 	if SharesLog(fakeLoader{}) || !SharesLog(shareLoader{}) {
@@ -47,7 +46,7 @@ func TestWriteIntroSkipWritesAndClears(t *testing.T) {
 	if err := WriteIntroSkip(dir, IntroToMenu); err != nil {
 		t.Fatal(err)
 	}
-	if b, err := os.ReadFile(path); err != nil || string(b) != "menu" {
+	if b, err := os.ReadFile(filepath.Clean(path)); err != nil || string(b) != "menu" {
 		t.Fatalf("file = %q, %v", b, err)
 	}
 	if err := WriteIntroSkip(dir, IntroPlay); err != nil {
