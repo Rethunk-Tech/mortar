@@ -15,11 +15,13 @@ import (
 	"os"
 	"strings"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/scratch"
 
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -35,6 +37,11 @@ const (
 
 	maxTarEntries = 10000
 	maxTarBytes   = int64(2 << 30)
+	// maxShareBytes bounds everything one share may unpack across its items; the sender declares no sizes, so this is
+	// the only total.
+	maxShareBytes = int64(8 << 30)
+	// minFreeBytes is the room a copy needs before it starts, as the sender declares no size to compare with.
+	minFreeBytes = int64(512 << 20)
 )
 
 // TransferProgress reports one accepted share's store transfer.
@@ -298,9 +305,15 @@ func (s *Service) fetchOnce(
 		return 0, installError("prepare room for", item, incoming.Sender, err)
 	}
 	defer func() { _ = safefs.RemoveAll(temp) }()
+	if bytes >= maxShareBytes {
+		return 0, usererr.New(usererr.Damaged, fmt.Sprintf("the files from %s add up to more than %s", incoming.Sender, bytefmt.Format(maxShareBytes)))
+	}
+	if free, err := safefs.FreeBytes(temp); err == nil && free < minFreeBytes {
+		return 0, installError("make room for", item, incoming.Sender, syscall.ENOSPC)
+	}
 	var received int64
 	var last time.Time
-	if err := extractTar(ctx, idle.reader(response.Body), temp, &received, func(n int64) {
+	if err := extractTar(ctx, idle.reader(response.Body), temp, &received, maxShareBytes-bytes, func(n int64) {
 		if now := s.clock(); now.Sub(last) >= progressEvery {
 			last = now
 		} else {
@@ -522,7 +535,8 @@ func (r contextReader) Read(p []byte) (int, error) {
 }
 
 // extractTar unpacks a store item's tar into root under go-archive's policy, counting received bytes into total.
-func extractTar(ctx context.Context, source io.Reader, root string, total *int64, progress func(int64)) error {
+// budget is the most this item may unpack, what the share's total cap leaves.
+func extractTar(ctx context.Context, source io.Reader, root string, total *int64, budget int64, progress func(int64)) error {
 	rootHandle, err := os.OpenRoot(root)
 	if err != nil {
 		return err
@@ -531,7 +545,7 @@ func extractTar(ctx context.Context, source io.Reader, root string, total *int64
 	counted := &countingReader{r: contextReader{done: ctx.Done(), r: source}, total: total, progress: progress}
 	// The tar name is what lets an item holding no files, only the end marker, through as an empty tar.
 	return archive.ExtractReader(counted, "item.tar", rootHandle,
-		archive.Options{MaxEntries: maxTarEntries, MaxEntryBytes: maxTarBytes, MaxTotalBytes: maxTarBytes})
+		archive.Options{MaxEntries: maxTarEntries, MaxEntryBytes: min(maxTarBytes, budget), MaxTotalBytes: min(maxTarBytes, budget)})
 }
 
 // countingReader adds every byte read to total and reports the running sum.
