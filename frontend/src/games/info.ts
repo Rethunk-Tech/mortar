@@ -71,12 +71,6 @@ export function reloadGames() {
   ensureLoaded()
 }
 
-let listening = false
-
 export function initGameList() {
-  if (listening || typeof Events.On !== 'function') {
-    return
-  }
-  listening = true
   Events.On('catalog:changed', reloadGames)
 }

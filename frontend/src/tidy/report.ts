@@ -60,14 +60,8 @@ async function show() {
   })
 }
 
-let listening = false
-
 // Startup repairs finish about when the window loads: ask once now, and again if they finish later.
 export function initTidyReport() {
-  if (listening || typeof Events.On !== 'function') {
-    return
-  }
-  listening = true
   Events.On('tidy:report', () => {
     show().catch(reportUnexpected)
   })

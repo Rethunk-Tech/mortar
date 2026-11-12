@@ -132,14 +132,8 @@ export async function refreshInfo(game: string, dir: string, quiet = false) {
   }
 }
 
-let listening = false
-
 /** When a project's sources change, rebuilds it if build on save is on, else rereads it so its card says it changed. */
 export function initDevWatch() {
-  if (listening || typeof Events.On !== 'function') {
-    return
-  }
-  listening = true
   Events.On('dev:source', (event) => {
     const { game, dir } = event.data
     const sep = dir.includes('\\') ? '\\' : '/'

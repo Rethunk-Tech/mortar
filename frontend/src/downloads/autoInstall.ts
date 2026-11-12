@@ -130,15 +130,9 @@ export function installExtraFolder(game: string, dir: string) {
   })
 }
 
-let listening = false
-
 /** Keeps profiles current with a mod author's builds: each extra mods folder's mods install into its profile each
  * time its files change. */
 export function initAutoInstall() {
-  if (listening || typeof Events.On !== 'function') {
-    return
-  }
-  listening = true
   Events.On('library:extra-folder', (event) => {
     const { game, dir } = event.data
     installExtraFolder(game, dir)

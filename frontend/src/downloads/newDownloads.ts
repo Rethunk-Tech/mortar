@@ -58,14 +58,8 @@ async function offer(game: string) {
   })
 }
 
-let listening = false
-
 /** Offers archives that land in the download folder while Mortar runs, one toast per batch. */
 export function initNewDownloads() {
-  if (listening || typeof Events.On !== 'function') {
-    return
-  }
-  listening = true
   Events.On('library:downloads', (event) => {
     offer(String(event.data)).catch(reportUnexpected)
   })

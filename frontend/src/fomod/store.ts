@@ -74,7 +74,7 @@ export const useFomod = create<{
 }))
 
 export function watchFomodQueue() {
-  if (watching || typeof Events.On !== 'function') {
+  if (watching) {
     return
   }
   watching = true

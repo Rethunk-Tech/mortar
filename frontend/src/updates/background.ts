@@ -1,13 +1,7 @@
 import { Events } from '@wailsio/runtime'
 import { useMortarUpdate } from '../settings/updates.ts'
 
-let listening = false
-
 export function initMortarUpdateBackground() {
-  if (listening || typeof Events.On !== 'function') {
-    return
-  }
-  listening = true
   useMortarUpdate
     .getState()
     .load()

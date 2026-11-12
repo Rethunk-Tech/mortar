@@ -7,7 +7,7 @@ export function useGameModsProgress(game: string, running: boolean) {
   const [progress, setProgress] = useState<GameModsProgress | null>(null)
   useEffect(() => {
     setProgress(null)
-    if (!running || typeof Events.On !== 'function') {
+    if (!running) {
       return
     }
     return Events.On('profile:game-mods-progress', (e) => {

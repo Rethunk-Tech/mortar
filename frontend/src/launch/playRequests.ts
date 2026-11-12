@@ -20,9 +20,6 @@ async function play(r: Request) {
 }
 
 export function initPlayRequests() {
-  if (typeof Events.On !== 'function') {
-    return
-  }
   const seen = new Set<number>()
   // A request that waits for the window also arrives as an event, and stays waiting until taken: taking it after
   // each event keeps a reload from playing it again. Requests without an id (the tray's) never wait.

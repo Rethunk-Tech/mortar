@@ -42,13 +42,7 @@ function openDigestReview(notice: ModUpdateDigestNotice) {
   useUpdates.getState().setReviewing(true)
 }
 
-let listening = false
-
 function initUpdateDigestToast() {
-  if (listening || typeof Events.On !== 'function') {
-    return
-  }
-  listening = true
   Events.On('updates:digest', (event) => showDigest(event.data as ModUpdateDigestNotice))
 }
 

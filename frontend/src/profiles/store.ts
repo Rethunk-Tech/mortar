@@ -460,9 +460,6 @@ export const useProfiles = create<{
 // The command line changes profiles through the running app, which then names the game; reload it when it is open.
 export function initProfilesChanged() {
   setLatestChange((id) => getProfile(id)?.lastChange ?? '')
-  if (typeof Events.On !== 'function') {
-    return
-  }
   Events.On('profiles:changed', (event) => {
     const s = useProfiles.getState()
     if (s.game?.id === event.data) {
