@@ -94,8 +94,9 @@ func buildOS(host, dir string) string {
 }
 
 // macBundle is the folder inside the game's macOS bundle that holds the executable, which SMAPI's installer treats
-// as the game folder.
-const macBundle = "Stardew Valley.app/Contents/MacOS"
+// as the game folder. The install folder is the bundle itself (Steam's Stardew Valley folder, /Applications/Stardew
+// Valley.app).
+const macBundle = "Contents/MacOS"
 
 // gameFolder is the folder SMAPI's files live in for the install dir on goos: the bundle's executable folder on
 // macOS, the install itself elsewhere.

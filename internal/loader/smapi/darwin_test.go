@@ -7,7 +7,7 @@ import (
 
 func TestGameFolder(t *testing.T) {
 	dir := filepath.Join("games", "Stardew Valley")
-	if got, want := gameFolder(dir, "darwin"), filepath.Join(dir, "Stardew Valley.app", "Contents", "MacOS"); got != want {
+	if got, want := gameFolder(dir, "darwin"), filepath.Join(dir, "Contents", "MacOS"); got != want {
 		t.Errorf("darwin: %q, want %q", got, want)
 	}
 	for _, goos := range []string{"linux", "windows"} {
