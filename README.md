@@ -54,7 +54,7 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 | -------------------------- | -------------------------------------------- |
 | Using Mortar               | [docs/user-guide.md](docs/user-guide.md)     |
 | How it works               | [docs/architecture.md](docs/architecture.md) |
-| Decided work not yet built | [docs/design.md](docs/design.md)             |
+| Decided work not yet built | [TODO.md](TODO.md)                           |
 | Screens and styling        | [docs/gui-design.md](docs/gui-design.md)     |
 | Threat model               | [docs/security.md](docs/security.md)         |
 | Run, build, gate           | [HUMANS.md](HUMANS.md)                       |
