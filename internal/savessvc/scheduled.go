@@ -194,7 +194,7 @@ func (s *Service) ownSaves(gameID string) []profileSaves {
 			slog.Warn("scheduled save backup", "id", p.ID, "err", err)
 			continue
 		}
-		out = append(out, profileSaves{profile: p.ID, layout: sc.Layout(), overrides: p.PrefOverrides()})
+		out = append(out, profileSaves{profile: p.ID, layout: sc.Layout, overrides: p.PrefOverrides()})
 	}
 	return out
 }

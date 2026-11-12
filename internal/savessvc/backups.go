@@ -37,7 +37,7 @@ func (s *Service) ListBackups(game, profile string) ([]backup.Backup, error) {
 	var out []backup.Backup
 	seen := map[string]bool{}
 	for _, dir := range reads {
-		listed, err := backup.List(dir, s.scanner(id).Layout())
+		listed, err := backup.List(dir, s.scanner(id).Layout)
 		if err != nil {
 			return nil, err
 		}
@@ -112,7 +112,7 @@ func (s *Service) RestoreBackup(ctx context.Context, game, profile, name string,
 		return err
 	}
 	src := findBackup(target.Reads, name)
-	return backup.Restore(ctx, src, sc.Layout(), target.Dir, folders, target.Keep, time.Now())
+	return backup.Restore(ctx, src, sc.Layout, target.Dir, folders, target.Keep, time.Now())
 }
 
 // SaveCopies lists the copies the game keeps itself of save in the saves folder profile reads, newest first.
@@ -125,7 +125,7 @@ func (s *Service) SaveCopies(game, profile, save string) ([]saves.Copy, error) {
 	if err != nil {
 		return nil, err
 	}
-	return sc.Layout().CopiesOf(save), nil
+	return sc.Layout.CopiesOf(save), nil
 }
 
 // RestoreSaveCopy puts one of the game's own copies of save back over it, after backing up the current saves.
@@ -145,7 +145,7 @@ func (s *Service) RestoreSaveCopy(ctx context.Context, game, profile, save, kept
 	if err != nil {
 		return err
 	}
-	return backup.RestoreCopy(ctx, sc.Layout(), target.Dir, save, kept, target.Keep, time.Now())
+	return backup.RestoreCopy(ctx, sc.Layout, target.Dir, save, kept, target.Keep, time.Now())
 }
 
 // OpenBackupsFolder shows the backups folder in the system file manager.
@@ -182,7 +182,7 @@ func (s *Service) CreateBackup(ctx context.Context, game, profile, folder string
 	}
 	now := uniqueBackupTime(target.Reads, time.Now())
 	folder = saveFolder(ctx, sc, folder)
-	_, err = backup.Folder(ctx, sc.Layout(), target.Dir, folder, target.Keep, now, backup.Cause{Kind: backup.KindManual, Pinned: true})
+	_, err = backup.Folder(ctx, sc.Layout, target.Dir, folder, target.Keep, now, backup.Cause{Kind: backup.KindManual, Pinned: true})
 	if errors.Is(err, backup.ErrNoSaves) {
 		return false, nil
 	}
@@ -243,7 +243,7 @@ func (s *Service) saveFolderPath(game, profile, folder string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	l := sc.Layout()
+	l := sc.Layout
 	if len(l.Files) > 0 {
 		if !l.IsSave(folder) {
 			return "", fmt.Errorf("save %q not found", folder)
@@ -286,7 +286,7 @@ func (s *Service) target(gameID, profileID string) (backup.Target, error) {
 
 func (s *Service) backupDirs(gameID string) (l saves.Layout, backupsDir string, err error) {
 	target, err := s.target(gameID, "")
-	return s.scanner(gameID).Layout(), target.Dir, err
+	return s.scanner(gameID).Layout, target.Dir, err
 }
 
 func (s *Service) backupReads(gameID string) ([]string, error) {

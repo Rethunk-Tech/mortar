@@ -43,7 +43,7 @@ func TestServiceRefusesRestoreWhileBusy(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("LOCALAPPDATA", t.TempDir())
-	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Dir: t.TempDir()}}, busy: func() bool { return true }}
+	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Layout: saves.Layout{Dir: t.TempDir()}}}, busy: func() bool { return true }}
 	if err := s.RestoreBackup(t.Context(), "stardew", "", "2026-01-01T00-00-00.000.zip", nil); !errors.Is(err, ErrBusy) {
 		t.Fatalf("err = %v", err)
 	}
@@ -135,7 +135,7 @@ func TestCreateBackupUsesGameBackupLocationAndStillListsOldFolder(t *testing.T) 
 }
 
 func TestOpenSaveFolderRefusesPathsOutsideSaves(t *testing.T) {
-	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Dir: t.TempDir()}}}
+	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Layout: saves.Layout{Dir: t.TempDir()}}}}
 	for _, folder := range []string{"", ".", "..", "../etc", "a/b", "Missing_123"} {
 		if err := s.OpenSaveFolder("stardew", "", folder); err == nil {
 			t.Errorf("OpenSaveFolder(%q) = nil, want an error", folder)
@@ -158,7 +158,7 @@ func TestDeleteBackupRefusesPinned(t *testing.T) {
 	if _, err := backup.Folder(t.Context(), saves.Layout{Dir: savesDir}, dir, "Farm_2", backup.DefaultKeep, t0.Add(time.Hour), backup.Cause{Kind: backup.KindManual, Pinned: true}); err != nil {
 		t.Fatal(err)
 	}
-	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Dir: savesDir}}}
+	s := &Service{scanners: map[string]*saves.Scanner{"stardew": {Layout: saves.Layout{Dir: savesDir}}}}
 	all, err := s.ListBackups("stardew", "")
 	if err != nil || len(all) != 2 || all[0].Kind != backup.KindManual {
 		t.Fatalf("backups = %+v, %v", all, err)
@@ -177,7 +177,7 @@ func TestDeleteBackupRefusesPinned(t *testing.T) {
 func TestListBackupsKeepsToTheGameAndProfile(t *testing.T) {
 	s, savesDir := backupService(t)
 	lc := filepath.Join(t.TempDir(), "Lethal Company")
-	s.scanners["lethal-company"] = &saves.Scanner{Dir: lc}
+	s.scanners["lethal-company"] = &saves.Scanner{Layout: saves.Layout{Dir: lc}}
 	testfs.WriteFarm(t, savesDir, "Farm_1", "Sunny", "v1")
 	data, err := datadir.Dir()
 	if err != nil {

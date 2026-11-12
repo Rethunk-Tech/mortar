@@ -80,21 +80,9 @@ type cached struct {
 
 // Scanner scans the saves in Dir, laid out as Files and Companions say (see Layout), and caches results in CacheDir.
 type Scanner struct {
-	Dir            string
-	Files          []string
-	Companions     []string
-	CompanionPaths []string
-	Copies         []string
-	CopyFolders    []string
-	Linked         []string
-	UserFolders    bool
-	CacheDir       string
-	mu             sync.Mutex
-}
-
-// Layout is the scanned folder and its save shape.
-func (s *Scanner) Layout() Layout {
-	return Layout{Dir: s.Dir, Files: s.Files, Companions: s.Companions, CompanionPaths: s.CompanionPaths, Copies: s.Copies, CopyFolders: s.CopyFolders, Linked: s.Linked, UserFolders: s.UserFolders}
+	Layout
+	CacheDir string
+	mu       sync.Mutex
 }
 
 // Scan returns every save in Dir, newest first. A save that cannot be read is left out and reported in the
@@ -102,7 +90,7 @@ func (s *Scanner) Layout() Layout {
 func (s *Scanner) Scan(ctx context.Context, index map[string][]smapiweb.Ref) ([]Info, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	entries, err := s.Layout().Names()
+	entries, err := s.Layout.Names()
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +146,7 @@ func (s *Scanner) Scan(ctx context.Context, index map[string][]smapiweb.Ref) ([]
 func (s *Scanner) Newest(ctx context.Context, index map[string][]smapiweb.Ref) (Info, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	entries, err := s.Layout().Names()
+	entries, err := s.Layout.Names()
 	if err != nil {
 		return Info{}, err
 	}
@@ -428,11 +416,11 @@ func (l Layout) newest(name string) (mtime time.Time, size int64, err error) {
 
 // stampOf reports ok=false for an entry that is not a save (see Layout.IsSave).
 func (s *Scanner) stampOf(folder string, index int) (st stamp, ok bool, err error) {
-	if !s.Layout().IsSave(folder) {
+	if !s.Layout.IsSave(folder) {
 		return st, false, nil
 	}
 	if len(s.Files) > 0 {
-		mtime, size, err := s.Layout().newest(folder)
+		mtime, size, err := s.Layout.newest(folder)
 		if err != nil {
 			return st, false, err
 		}
@@ -454,7 +442,7 @@ func (s *Scanner) read(ctx context.Context, folder string, index map[string][]sm
 	if len(s.Files) > 0 {
 		// A save kept as one file (Lethal Company's encrypted ES3) names no mods, so its fit is unknown.
 		info.Unrecorded = true
-		mtime, _, err := s.Layout().newest(folder)
+		mtime, _, err := s.Layout.newest(folder)
 		if err != nil {
 			return info, err
 		}

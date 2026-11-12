@@ -127,7 +127,7 @@ func (s *Service) buildScanners(base string) map[string]*saves.Scanner {
 		}
 		l := game.SaveLayout(id, savesDir)
 		slog.Info("saves: layout", "game", id, "dir", l.Dir, "files", l.Files, "serial", game.CatalogSerial())
-		scanners[id] = &saves.Scanner{Dir: l.Dir, Files: l.Files, Companions: l.Companions, CompanionPaths: l.CompanionPaths, Copies: l.Copies, CopyFolders: l.CopyFolders, Linked: l.Linked, UserFolders: l.UserFolders, CacheDir: filepath.Join(base, "cache", id)}
+		scanners[id] = &saves.Scanner{Layout: l, CacheDir: filepath.Join(base, "cache", id)}
 	}
 	return scanners
 }
@@ -179,7 +179,9 @@ func (s *Service) scannerFor(gameID, profileID string) (*saves.Scanner, error) {
 	if s.byDir == nil {
 		s.byDir = map[string]*saves.Scanner{}
 	}
-	sc := &saves.Scanner{Dir: dir, Files: selected.Files, Companions: selected.Companions, CompanionPaths: selected.CompanionPaths, Copies: selected.Copies, CopyFolders: selected.CopyFolders, Linked: selected.Linked, UserFolders: selected.UserFolders, CacheDir: filepath.Join(selected.CacheDir, cache)}
+	l := selected.Layout
+	l.Dir = dir
+	sc := &saves.Scanner{Layout: l, CacheDir: filepath.Join(selected.CacheDir, cache)}
 	s.byDir[dir] = sc
 	return sc, nil
 }

@@ -74,7 +74,7 @@ func TestLastSaveGap(t *testing.T) {
 	s := &Service{
 		profiles: e.profiles, settings: st, last: NewStore(t.TempDir()),
 		meta:     &meta.Client{HTTP: index.Client(), CacheDir: t.TempDir(), IndexURL: index.URL},
-		scanners: map[string]*saves.Scanner{"stardew": {Dir: savesDir, CacheDir: t.TempDir()}},
+		scanners: map[string]*saves.Scanner{"stardew": {Layout: saves.Layout{Dir: savesDir}, CacheDir: t.TempDir()}},
 	}
 
 	if _, ok, err := s.LastSaveGap(t.Context(), "stardew", p.ID); ok || err != nil {
