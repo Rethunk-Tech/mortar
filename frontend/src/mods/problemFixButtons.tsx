@@ -52,18 +52,6 @@ function RunErrorKind({ problem, dismissedToken, button }: KindProps<'runError'>
   return <RunErrorButtons runError={problem.runError} button={button} />
 }
 
-function DuplicateKind({ problem, button }: KindProps<'duplicate'>) {
-  return <DuplicateFix problem={problem} button={button} />
-}
-
-function BrokenKind({ problem, dismissedToken, button }: KindProps<'broken'>) {
-  return <BrokenFix problem={problem} dismissedToken={dismissedToken} button={button} />
-}
-
-function SettingKind({ problem, dismissedToken }: KindProps<'setting'>) {
-  return <SettingFix problem={problem} dismissedToken={dismissedToken} />
-}
-
 function AssetKind({ problem, dismissedToken }: KindProps<'asset'>) {
   return (
     <AssetFix
@@ -74,47 +62,19 @@ function AssetKind({ problem, dismissedToken }: KindProps<'asset'>) {
   )
 }
 
-function DamagedKind({ problem, button }: KindProps<'damaged'>) {
-  return <DamagedFix problem={problem} button={button} />
-}
-
-function LongPathKind({ problem, button }: KindProps<'longPath'>) {
-  return <LongPathFix problem={problem} button={button} />
-}
-
-function MissingKind({ problem, dismissedToken, button }: KindProps<'missing'>) {
-  return <MissingFix problem={problem} dismissedToken={dismissedToken} button={button} />
-}
-
-function DeprecatedKind({ problem, dismissedToken, button }: KindProps<'deprecated'>) {
-  return <DeprecatedFix problem={problem} dismissedToken={dismissedToken} button={button} />
-}
-
-function FileConflictKind({ problem, button }: KindProps<'fileConflict'>) {
-  return <FileConflictFix problem={problem} button={button} />
-}
-
-function PluginClashKind({ problem, button }: KindProps<'pluginClash'>) {
-  return <PluginClashFix problem={problem} button={button} />
-}
-
-function LoadFailureKind({ problem, dismissedToken, button }: KindProps<'loadFailure'>) {
-  return <LoadFailureFix problem={problem} dismissedToken={dismissedToken} button={button} />
-}
-
 const problemFixes = {
-  loadFailure: LoadFailureKind,
+  loadFailure: LoadFailureFix,
   runError: RunErrorKind,
-  duplicate: DuplicateKind,
-  broken: BrokenKind,
-  setting: SettingKind,
+  duplicate: DuplicateFix,
+  broken: BrokenFix,
+  setting: SettingFix,
   asset: AssetKind,
-  missing: MissingKind,
-  damaged: DamagedKind,
-  longPath: LongPathKind,
-  pluginClash: PluginClashKind,
-  deprecated: DeprecatedKind,
-  fileConflict: FileConflictKind,
+  missing: MissingFix,
+  damaged: DamagedFix,
+  longPath: LongPathFix,
+  pluginClash: PluginClashFix,
+  deprecated: DeprecatedFix,
+  fileConflict: FileConflictFix,
 } satisfies { [K in Problem['kind']]: ComponentType<KindProps<K>> }
 
 // Moves a folder Mortar did not install to its trash, with an Undo that puts it back.
