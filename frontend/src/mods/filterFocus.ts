@@ -1,16 +1,7 @@
-type Listener = () => void
+import { createSignal } from '../shell/signal.ts'
 
-const listeners = new Set<Listener>()
+const focus = createSignal()
 
-export function requestFilterFocus() {
-  for (const fn of listeners) {
-    fn()
-  }
-}
+export const requestFilterFocus = focus.emit
 
-export function onFilterFocus(fn: Listener): () => void {
-  listeners.add(fn)
-  return () => {
-    listeners.delete(fn)
-  }
-}
+export const onFilterFocus = focus.subscribe

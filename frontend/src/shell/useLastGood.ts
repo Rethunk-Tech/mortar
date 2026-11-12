@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { peekLast, putLast, subscribeLast } from './lastGood.ts'
+import { createSignal } from './signal.ts'
 
 export interface LastGoodOptions<T> {
   /** A cheap read of a saved snapshot, shown while the first live read of a key runs. */
@@ -21,7 +22,7 @@ export interface LastGoodOptions<T> {
 // Keys with a read in flight. Kept outside the hook so that only a view that shows a read's progress redraws for it:
 // every other reader of a key would otherwise redraw twice per read for a flag it never looks at.
 const inflight = new Set<string>()
-const inflightListeners = new Set<() => void>()
+const inflightChanged = createSignal()
 
 const setInflight = (key: string, on: boolean) => {
   if (on === inflight.has(key)) {
@@ -32,21 +33,12 @@ const setInflight = (key: string, on: boolean) => {
   } else {
     inflight.delete(key)
   }
-  for (const listener of inflightListeners) {
-    listener()
-  }
-}
-
-const subscribeInflight = (listener: () => void): (() => void) => {
-  inflightListeners.add(listener)
-  return () => {
-    inflightListeners.delete(listener)
-  }
+  inflightChanged.emit()
 }
 
 /** Whether a read of the key is on its way, for a view that waits on it before acting on what it shows. */
 export function useLastGoodRefreshing(key: string | null): boolean {
-  return useSyncExternalStore(subscribeInflight, () => key !== null && inflight.has(key))
+  return useSyncExternalStore(inflightChanged.subscribe, () => key !== null && inflight.has(key))
 }
 
 /**

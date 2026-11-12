@@ -1,4 +1,5 @@
 import { sameValue } from '@rethunk/react-load-hooks'
+import { createSignal } from './signal.ts'
 
 /** What a view last drew for a key: the answer, when it was read, and whether it is only a saved snapshot that the
  * live read has not yet confirmed. */
@@ -9,20 +10,9 @@ export interface LastGood<T> {
 }
 
 const entries = new Map<string, LastGood<unknown>>()
-const listeners = new Set<() => void>()
+const changed = createSignal()
 
-const notify = () => {
-  for (const listener of listeners) {
-    listener()
-  }
-}
-
-export function subscribeLast(listener: () => void): () => void {
-  listeners.add(listener)
-  return () => {
-    listeners.delete(listener)
-  }
-}
+export const subscribeLast = changed.subscribe
 
 export function peekLast<T>(key: string): LastGood<T> | undefined {
   return entries.get(key) as LastGood<T> | undefined
@@ -57,6 +47,6 @@ export function putLast<T>(
     return value
   }
   entries.set(key, { value, at, seed })
-  notify()
+  changed.emit()
   return value
 }
