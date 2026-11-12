@@ -21,7 +21,7 @@ func gameDir(dir string, g components.GameInfo) string {
 		return found
 	}
 	if g.LinuxMarker != "" && goruntime.GOOS == "linux" {
-		return gamelocator.GameDir(dir, g.LinuxMarker)
+		return gamelocator.GameDir(dir, filepath.FromSlash(g.LinuxMarker))
 	}
 	if g.DarwinMarker != "" && goruntime.GOOS == "darwin" {
 		return gamelocator.GameDir(dir, filepath.FromSlash(g.DarwinMarker))

@@ -176,3 +176,21 @@ func TestValidInstallFindsMarkerBelowRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestDarkestDungeonLinuxMarkerInstall(t *testing.T) {
+	dir := t.TempDir()
+	bin := filepath.Join(dir, "_linux")
+	if err := os.MkdirAll(bin, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(bin, "darkest.bin.x86_64"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	g := catalogOnly("darkest-dungeon")
+	if err := g.ValidInstall(dir); err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(g.GameProcesses(), "darkest.bin.x86_64") {
+		t.Fatalf("GameProcesses = %v", g.GameProcesses())
+	}
+}

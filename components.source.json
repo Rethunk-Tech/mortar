@@ -10681,10 +10681,12 @@
       },
       "marker": "Darkest.exe",
       "markerDir": "_windows/win64",
+      "linuxMarker": "_linux/darkest.bin.x86_64",
       "metadata": [],
       "paths": {
         "mods": {
-          "windows": "{install}/mods"
+          "windows": "{install}/mods",
+          "linux": "{install}/mods"
         }
       },
       "deploy": "profile",

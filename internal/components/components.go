@@ -122,8 +122,9 @@ type GameInfo struct {
 	// MarkerDir is the slash-separated folder below the install root that holds Marker, for a game whose executable
 	// sits below the root (Game/Bin); empty when the marker is at the root or one "game" folder down.
 	MarkerDir string `json:"markerDir,omitempty"`
-	// LinuxMarker is the executable of the game's native Linux build where the store ships one beside the build Marker
-	// names: an install holding it and not Marker is that build, started natively rather than under Proton.
+	// LinuxMarker is the slash path below the install of the executable of the game's native Linux build where the
+	// store ships one beside the build Marker names: an install holding it and not Marker is that build, started
+	// natively rather than under Proton.
 	LinuxMarker string `json:"linuxMarker,omitempty"`
 	// DarwinMarker is the slash path below the install folder of the executable inside the game's macOS bundle
 	// (Game.app/Contents/MacOS/Game). On a Mac an install holding it and not Marker is that build. A store that
@@ -1083,9 +1084,6 @@ func (g GameInfo) Validate() error {
 
 func (g GameInfo) validateNames() error {
 	names := []string{g.Marker}
-	if g.LinuxMarker != "" {
-		names = append(names, g.LinuxMarker)
-	}
 	names = append(names, g.Processes...)
 	if g.Stores.GOG != nil {
 		names = append(names, g.Stores.GOG.Folder)
@@ -1101,7 +1099,7 @@ func (g GameInfo) validateNames() error {
 	if g.MarkerDir != "" && unsafeRel(g.MarkerDir) {
 		return fmt.Errorf("game %q has an unsafe marker folder %q", g.ID, g.MarkerDir)
 	}
-	for _, p := range []string{g.LinuxStart, g.DarwinMarker, g.Art, g.Stores.StoreMarker("gog"), g.Stores.StoreMarker("epic"), g.Stores.StoreMarker("xbox")} {
+	for _, p := range []string{g.LinuxMarker, g.LinuxStart, g.DarwinMarker, g.Art, g.Stores.StoreMarker("gog"), g.Stores.StoreMarker("epic"), g.Stores.StoreMarker("xbox")} {
 		if p != "" && unsafeRel(p) {
 			return fmt.Errorf("game %q has an unsafe install file %q", g.ID, p)
 		}

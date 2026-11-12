@@ -25,7 +25,6 @@ A malicious mod is code in the game process, so it can read the player's `~/.ssh
 
 Each part goes in the repo that owns its concern; Mortar keeps the product side (wording, settings, findings, UI). A library change ships and is tagged before Mortar bumps to it.
 
-- **More stores:** Darkest Dungeon's native Linux build needs `LinuxMarker` to hold a subfolder path. [TODO.md](../TODO.md#darkest-dungeons-native-linux-build-is-not-in-the-catalog)
 - **macOS, what is left after the Linux-testable parts** (darwin Steam roots, `clonefile`, `darwinMarker` support, BepInEx launch-script placement with the Steam launch option, SMAPI's app-bundle paths and mod deployment, a darwin vet in the gate, and a `darwinMarker` for every game whose Steam launch entry names its executable already exist): games Steam names only as a `.app` need the executable from a Mac install's `Info.plist`. [TODO.md](../TODO.md#catalog-darwin-markers-are-missing-for-bundles-steam-names-only-as-a-app)
 
 ### Lethal Company content packs under `mortar/<kind>/`

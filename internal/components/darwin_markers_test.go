@@ -51,3 +51,37 @@ func TestDarwinMarkersAreTheExecutablesSteamLaunchesOnMacOS(t *testing.T) {
 		}
 	}
 }
+
+func TestLinuxMarkerIsASlashPathBelowTheInstall(t *testing.T) {
+	g := GameInfo{ID: "x", Name: "x", Marker: "x.exe", LinuxMarker: "_linux/game.bin", Loaders: []GameLoader{{ID: "l"}}, Deploy: DeployProfile}
+	if err := g.Validate(); err != nil {
+		t.Fatalf("valid linuxMarker rejected: %v", err)
+	}
+	for _, bad := range []string{"../x", "/abs"} {
+		ng := g
+		ng.LinuxMarker = bad
+		if ng.Validate() == nil {
+			t.Fatalf("linuxMarker %q validated", bad)
+		}
+	}
+	m, err := BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	found, ok := GameInfo{}, false
+	for _, game := range m.Games {
+		if game.ID == "darkest-dungeon" {
+			found, ok = game, true
+			break
+		}
+	}
+	if !ok {
+		t.Fatal("darkest-dungeon is not in the catalog")
+	}
+	if found.LinuxMarker != "_linux/darkest.bin.x86_64" {
+		t.Errorf("linuxMarker %q", found.LinuxMarker)
+	}
+	if found.Paths["mods"].Linux != "{install}/mods" {
+		t.Errorf("linux mods path %q", found.Paths["mods"].Linux)
+	}
+}

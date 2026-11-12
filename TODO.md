@@ -114,27 +114,6 @@ and macOS.
 - `bun run gate` stays clean. No seccomp, network namespace, Windows or macOS
   sandbox ships in this change.
 
-## Darkest Dungeon's native Linux build is not in the catalog
-
-Steam launches `_linux/darkest.bin.x86_64` for the 64-bit Linux build (Steam app info for `262060`, `config.launch`; [docs/games.md](docs/games.md#darkest-dungeon)). `GameInfo.LinuxMarker` holds a file name that `GameInfo.Validate` rejects with a path separator, so the entry cannot name it and a native Linux install is read as the Windows build or missed.
-
-The decided shape is `LinuxMarker` as a slash path below the install, validated with `unsafeRel` like `DarwinMarker`, then `linuxMarker` and a `linux` mods path (`{install}/mods`) on the Darkest Dungeon entry. Rejected: a second field for subfolder Linux executables.
-
-### Read
-
-- `internal/components/components.go` — `LinuxMarker` and the file-name check in `Validate` (the "unsafe file or folder name" error).
-- `internal/game/install.go` `platformOf`, `internal/game/start.go` `directExe` and `internal/gamestore/drivers.go` (Lutris marker loop) — every reader of `LinuxMarker`.
-
-### Traps
-
-- **`LinuxMarker` also feeds `GameProcesses`** (`internal/game/catalog_only.go`): a path there must reduce to its base name.
-- **Unverified GOG folder.** `Darkest Dungeon` is Minigalaxy's name for the folder; no source names the one GOG's own installer makes.
-
-### Acceptance
-
-- A Steam install holding only `_linux/darkest.bin.x86_64` is a native Linux install; one holding `_windows/win64/Darkest.exe` stays the Windows build.
-- `scripts/catalog-compat.sh` decodes the catalog in the last two releases.
-
 ## Catalog darwin markers are missing for bundles Steam names only as a .app
 
 Steam's app info gives the inner executable for the games with a `darwinMarker` ([docs/games.md](docs/games.md#macos-markers)). Games whose macOS launch entry is just `<Name>.app`, and the layouts where the install folder is the bundle (Dome Keeper, Sun Haven), have none: the executable name is in the bundle's `Info.plist` (`CFBundleExecutable`), which only a Mac install shows. SMAPI's launch behaviour on macOS rests on its installer source, not a Mac run.

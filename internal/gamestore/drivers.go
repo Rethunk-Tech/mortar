@@ -155,7 +155,7 @@ func (lutrisStore) Launchers(goos string) []LauncherSpec {
 func (lutrisStore) Discover(home string, roots map[string][]string, g components.GameInfo) []Install {
 	var out []Install
 	// Lutris runs the Windows build under Wine or, for a game with a native Linux build, that build.
-	for _, marker := range []string{g.MarkerPath(), g.LinuxMarker} {
+	for _, marker := range []string{g.MarkerPath(), filepath.FromSlash(g.LinuxMarker)} {
 		if marker == "" {
 			continue
 		}
