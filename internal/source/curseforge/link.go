@@ -17,9 +17,6 @@ func (Driver) HandleLinksDefault() bool { return false }
 // Ref names one file of a project in an install link.
 type Ref = cf.Ref
 
-// ParseLink reads curseforge://install?addonId=<project>&fileId=<file>.
-func ParseLink(raw string) (Ref, error) { return cf.ParseLink(raw) }
-
 // Project is what a link's project is: its name, the site's id of its game, and whether its author forbids
 // downloads outside CurseForge's own page.
 type Project struct {

@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	gocurseforge "github.com/Rethunk-Tech/go-curseforge"
+
 	"github.com/Rethunk-Tech/go-nexusmods"
 	"github.com/Rethunk-Tech/go-vintagestory/moddb"
 
@@ -444,7 +446,7 @@ func TestACurseForgeLinkWaitsForItsOwnGameAndAnotherGamesGoesBack(t *testing.T) 
 	}); err != nil {
 		t.Fatal(err)
 	}
-	ref, err := curseforge.ParseLink("curseforge://install?addonId=309243&fileId=555")
+	ref, err := gocurseforge.ParseLink("curseforge://install?addonId=309243&fileId=555")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -488,7 +490,7 @@ func TestAModDBLinkArrivesUnderTheIDBrowseUses(t *testing.T) {
 		t.Fatal(err)
 	}
 	s.VSModDBRelease = func(_ context.Context, id, version string) (vsmoddb.Resolved, error) {
-		return vsmoddb.Resolved{ID: vsmoddb.ID(890, 4405), Name: "Carry On", Version: version}, nil
+		return vsmoddb.Resolved{ID: moddb.ID(890, 4405), Name: "Carry On", Version: version}, nil
 	}
 	s.receiveVSModDB("", ref)
 	in := s.Inbox()

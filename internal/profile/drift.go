@@ -112,10 +112,6 @@ func entryFolderName(name string) string {
 	return strings.TrimPrefix(name, ".")
 }
 
-func isUserWritten(rel string) bool {
-	return datadir.WritableRel(rel)
-}
-
 // undotDirs drops the leading dot Mortar adds to a switched-off mod's folder, so its files still match the
 // store copy, which keeps the plain name.
 func undotDirs(rel string) string {
@@ -153,7 +149,7 @@ func walkFolderStat(root, peer string) (FolderStat, error) {
 		for _, name := range listing.Files {
 			path := filepath.Join(dir, name)
 			rel := strings.TrimPrefix(path, prefix)
-			if isUserWritten(rel) {
+			if datadir.WritableRel(rel) {
 				continue
 			}
 			if inPeer != nil && !inPeerSet(inPeer, rel) {
@@ -413,7 +409,7 @@ func listStoreItem(root string) (storeListing, error) {
 		}
 		rel := strings.TrimPrefix(path, prefix)
 		out.Files[rel] = struct{}{}
-		if isUserWritten(rel) {
+		if datadir.WritableRel(rel) {
 			return nil
 		}
 		info, err := d.Info()

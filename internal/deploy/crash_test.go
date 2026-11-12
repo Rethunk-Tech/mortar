@@ -7,6 +7,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -83,7 +84,7 @@ func TestACrashAfterAnyApplyStepIsRecoveredToTheStartingTree(t *testing.T) {
 		if got[i] == "before-copy:0" || got[i] == "before-copy:1" || got[i] == "before-copy:2" {
 			var n int
 			_, _ = fmt.Sscanf(got[i], "before-copy:%d", &n)
-			write(t, tmpName(p.Ops[n].Dst), "partial")
+			write(t, datadir.CopyTempName(p.Ops[n].Dst), "partial")
 		}
 		r.leftover(t, start, got[i])
 	}

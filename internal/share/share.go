@@ -16,6 +16,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/go-itchio"
+
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 
@@ -24,7 +26,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/source/itch"
 	"github.com/Rethunk-Tech/mortar/internal/source/patreon"
 )
 
@@ -234,7 +235,7 @@ func (r Ref) valid() bool {
 		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && r.Package == "" && r.Version == "" && r.Itch == "" && r.CurseForge == 0 && patreon.ValidID(r.Patreon)
 	}
 	if r.Itch != "" {
-		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && r.Package == "" && r.Version == "" && r.CurseForge == 0 && itch.ValidPage(r.Itch)
+		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && r.Package == "" && r.Version == "" && r.CurseForge == 0 && itchio.ValidPage(r.Itch)
 	}
 	if r.CurseForge != 0 {
 		return r.ModID == 0 && r.GitHub == "" && r.Package == "" && r.Version == "" && r.CurseForge > 0 && r.CurseForge <= maxID && r.FileID > 0 && r.FileID <= maxID

@@ -12,9 +12,6 @@ var vintageStoryLevels = map[string]Level{
 	"VerboseDebug": Trace,
 }
 
-// LogGameVersion is the game version a log message names, for a game whose loader does not read its own log.
-func LogGameVersion(message string) string { return vslog.GameVersion(message) }
-
 func parseVintageStory(line string) (Entry, bool) {
 	l, ok := vslog.ParseLine(line)
 	if !ok {

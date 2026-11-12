@@ -54,9 +54,6 @@ func (Driver) Hosts() []string { return []string{"mods.paradoxplaza.com"} }
 // namePattern is the opaque file name of a mod, a UUID in practice; it enters a download address.
 var namePattern = regexp.MustCompile(`^[A-Za-z0-9-]{1,64}$`)
 
-// ValidID reports whether id is a Paradox Mods mod id.
-func ValidID(id string) bool { return paradoxmods.ValidID(id) }
-
 // ModPageURL is the mod's page; gameKey does not enter the address.
 func (Driver) ModPageURL(_, id string) string {
 	return paradoxmods.PageURL(id)

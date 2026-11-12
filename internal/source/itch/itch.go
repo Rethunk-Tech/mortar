@@ -62,7 +62,7 @@ func (Driver) Hosts() []string { return []string{"itch.io"} }
 // result, which the site redirects to the page, so no slug is needed. gameKey does not enter the address.
 func (Driver) ModPageURL(_, id string) string {
 	if strings.Contains(id, "/") {
-		return PageURL(id)
+		return itchio.PageURL(id)
 	}
 	if id == "" {
 		return ""

@@ -10,6 +10,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/go-smapi/logline"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -93,7 +95,7 @@ func (s *Service) Log(gameID, profileID string) (string, error) {
 		return "", err
 	}
 	text := strings.ToValidUTF8(string(data), "")
-	if !launch.LogOwnedBy(text, s.home, modsDir) {
+	if !logline.LogOwnedBy(text, s.home, modsDir) {
 		return "", nil
 	}
 	return text, nil

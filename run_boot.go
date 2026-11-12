@@ -1456,10 +1456,6 @@ func (t *trayUI) read() trayView {
 	return v
 }
 
-func trayGameName(id string) string {
-	return game.NameOf(id)
-}
-
 func (t *trayUI) build(v trayView) {
 	if t.menu == nil {
 		return
@@ -1498,10 +1494,10 @@ func (t *trayUI) addStops(v trayView, group func()) {
 			continue
 		}
 		group()
-		t.menu.Add(i18n.T("Stop {game}", "game", trayGameName(id))).OnClick(func(*application.Context) {
+		t.menu.Add(i18n.T("Stop {game}", "game", game.NameOf(id))).OnClick(func(*application.Context) {
 			if err := t.c.launches.Stop(context.Background(), id); err != nil {
 				slog.Info("tray: stop", "game", id, "err", err)
-				desktopnotify.Send(desktopnotify.KindOther, i18n.T("Could not stop {game}", "game", trayGameName(id)), err.Error(), nil)
+				desktopnotify.Send(desktopnotify.KindOther, i18n.T("Could not stop {game}", "game", game.NameOf(id)), err.Error(), nil)
 			}
 		})
 	}
@@ -1514,7 +1510,7 @@ func (t *trayUI) addPlay(v trayView, group func()) {
 			continue
 		}
 		group()
-		sub := t.menu.AddSubmenu(i18n.T("Play {game}", "game", trayGameName(id)))
+		sub := t.menu.AddSubmenu(i18n.T("Play {game}", "game", game.NameOf(id)))
 		for _, row := range v.recent[id] {
 			item := sub.Add(row.Name)
 			if v.busy[id] {

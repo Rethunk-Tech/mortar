@@ -428,7 +428,7 @@ func carryOverWalk(prof, old, target string, configOnly bool, gone func(rel, p s
 		if err != nil {
 			return err
 		}
-		if configOnly && !isUserWritten(rel) {
+		if configOnly && !datadir.WritableRel(rel) {
 			return nil
 		}
 		oldP, newP := filepath.Join(old, rel), filepath.Join(target, rel)

@@ -13,6 +13,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapi/logline"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 
@@ -675,7 +677,7 @@ func pathWithin(path, dir string) bool {
 // LCGeneralSaveData and Valheim writes a character and a world each run; the patterns keep the first out and
 // count both of the second.
 func (s *Service) playedSaves(gameID, text string, started time.Time, failed bool) []string {
-	if folder, ok := launch.LoadedSave(text); ok {
+	if folder, ok := logline.LoadedSave(text); ok {
 		return []string{folder}
 	}
 	if failed || started.IsZero() || s.settings == nil {
@@ -808,7 +810,7 @@ func readOwnedLog(path string, own bool, home, modsDir string, since time.Time) 
 	if len(head) > 0 {
 		text = strings.ToValidUTF8(string(head), "") + "\n" + launch.CapLog(text, launch.MaxLogBytes)
 	}
-	if !own && !launch.LogOwnedBy(text, home, modsDir) && !launch.LogOwnedBy(strings.ToValidUTF8(string(head), ""), home, modsDir) {
+	if !own && !logline.LogOwnedBy(text, home, modsDir) && !logline.LogOwnedBy(strings.ToValidUTF8(string(head), ""), home, modsDir) {
 		return "", false
 	}
 	return text, true

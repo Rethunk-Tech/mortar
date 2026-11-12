@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapi/logline"
+
 	pprofile "github.com/google/pprof/profile"
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
@@ -24,7 +26,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/picker"
@@ -305,7 +306,7 @@ func (s *Service) loaderTail(gameID, profileID string) (name, body string) {
 	}
 	text := strings.ToValidUTF8(string(data), "")
 	if !safefs.UnderRoot(profileDir, path) {
-		if !launch.LogOwnedBy(text, s.home, modsDir) {
+		if !logline.LogOwnedBy(text, s.home, modsDir) {
 			return "", ""
 		}
 	}

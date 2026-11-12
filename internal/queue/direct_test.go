@@ -8,9 +8,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-vintagestory/moddb"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
-	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -114,7 +115,7 @@ func TestExpandDirectKeepsThePicturePerEntryOnlyForTheRoot(t *testing.T) {
 
 func TestAModDBIDIsAValidDirectPackage(t *testing.T) {
 	t.Parallel()
-	r := Request{Game: "vintage-story", Profile: "p", Source: "vsmoddb", Package: vsmoddb.ID(890, 4405)}
+	r := Request{Game: "vintage-story", Profile: "p", Source: "vsmoddb", Package: moddb.ID(890, 4405)}
 	if !r.valid() {
 		t.Fatalf("%q was refused", r.Package)
 	}

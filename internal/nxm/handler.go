@@ -1,12 +1,8 @@
 package nxm
 
 import (
-	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 )
-
-// Schemes are the URL schemes the registered sources claim, which Mortar registers for.
-func Schemes() []string { return source.Schemes() }
 
 // Owner is the app the system currently opens a source scheme's links with. ID is what Restore takes back (a desktop file id
 // on Linux, the open command on Windows); Name is for the user. An empty ID means no app owns the scheme.

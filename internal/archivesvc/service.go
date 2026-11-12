@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-itchio"
+
 	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
@@ -19,7 +21,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/dlwatch"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/source/itch"
 	"github.com/Rethunk-Tech/mortar/internal/source/patreon"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -139,7 +140,7 @@ func (s *Service) scanDownloads() ([]DownloadArchive, error) {
 		}
 		for _, e := range ents {
 			path := filepath.Join(dir, e.Name())
-			if e.IsDir() || !isArchive(e.Name()) || seen[path] {
+			if e.IsDir() || !ga.HasExtension(e.Name()) || seen[path] {
 				continue
 			}
 			info, err := e.Info()
@@ -263,7 +264,7 @@ var handoffSites = []struct {
 	valid func(id string) bool
 }{
 	{profile.KindPatreon, patreon.ParsePostURL, patreon.PostURL, patreon.ValidID},
-	{profile.KindItch, itch.ParsePageURL, itch.PageURL, itch.ValidPage},
+	{profile.KindItch, itchio.ParsePageURL, itchio.PageURL, itchio.ValidPage},
 }
 
 // HandoffPage reads a pasted Patreon post or itch.io game page address. The window opens URL in the browser, the player
@@ -325,5 +326,3 @@ func (s *Service) profileNames(game string) (map[string]bool, error) {
 func (s *Service) unverified(game, key string) bool {
 	return s.d.Unverified != nil && s.d.Unverified(game, key)
 }
-
-func isArchive(name string) bool { return ga.HasExtension(name) }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/packsvc"
 )
@@ -33,7 +34,7 @@ func (c *cmd) profileFarm() error {
 			return err
 		}
 		text := strings.Join(a[2:], " ")
-		if raw, err := readBody(a[2]); err == nil {
+		if raw, err := safefs.ReadFile(a[2]); err == nil {
 			text = string(raw)
 		}
 		p := control.Params{Game: a[0], Profile: a[1], Value: text}

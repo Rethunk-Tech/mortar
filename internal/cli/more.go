@@ -32,8 +32,6 @@ func rest(a []string, from int) []string {
 	return a[from:]
 }
 
-func readBody(path string) ([]byte, error) { return safefs.ReadFile(path) }
-
 // renameParams reads "<game> <name> <new name...>"; a new name may span words.
 func renameParams(a []string, _ *cmd) (control.Params, error) {
 	return control.Params{Game: a[0], Name: a[1], Value: strings.Join(a[2:], " ")}, nil
@@ -75,7 +73,7 @@ var moreVerbs = map[string]moreVerb{
 	"templates undo": {
 		method: "templates.undo", args: []string{"a game", "a profile", "an undo file (the undo object of templates apply --json)"}, msg: "Undid the template.",
 		params: func(a []string, _ *cmd) (control.Params, error) {
-			b, err := readBody(a[2])
+			b, err := safefs.ReadFile(a[2])
 			return control.Params{Game: a[0], Profile: a[1], Body: b}, err
 		},
 	},
@@ -86,7 +84,7 @@ var moreVerbs = map[string]moreVerb{
 	"templates restore": {
 		method: "templates.restore", args: []string{"a game", "a template file (one entry of templates list --json)"}, msg: "Restored the template.",
 		params: func(a []string, _ *cmd) (control.Params, error) {
-			b, err := readBody(a[1])
+			b, err := safefs.ReadFile(a[1])
 			return control.Params{Game: a[0], Body: b}, err
 		},
 	},

@@ -7,13 +7,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-paradoxmods"
+
 	gomodrinth "github.com/Rethunk-Tech/go-modrinth"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
-	"github.com/Rethunk-Tech/mortar/internal/source/paradox"
+
+	// Registers the paradox source, whose page links the update rows below resolve.
+	_ "github.com/Rethunk-Tech/mortar/internal/source/paradox"
 )
 
 // installTimeout bounds the app's answer to a queued install; the queue only takes the request, the downloads run on.
@@ -74,7 +78,7 @@ func (h handlers) answerInstallProject(req request) reply {
 	var valid bool
 	switch req.Source {
 	case "paradox":
-		valid = paradox.ValidID(req.Project)
+		valid = paradoxmods.ValidID(req.Project)
 	case "modrinth":
 		valid = gomodrinth.ValidID(req.Project)
 	default:

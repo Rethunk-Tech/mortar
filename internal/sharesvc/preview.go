@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/go-itchio"
+
 	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/go-smapiweb"
@@ -28,7 +30,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
-	"github.com/Rethunk-Tech/mortar/internal/source/itch"
 	"github.com/Rethunk-Tech/mortar/internal/source/paradox"
 	"github.com/Rethunk-Tech/mortar/internal/source/patreon"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
@@ -445,7 +446,7 @@ func (r *resolver) github(ref share.Ref) Mod {
 
 // itch resolves a file the sender saved from an itch.io page, as patreon does for a post.
 func (r *resolver) itch(ref share.Ref) Mod {
-	return r.pageRow(ref, SiteItch, "itch:"+ref.Itch, "itch.io page "+ref.Itch, itch.PageURL(ref.Itch), profile.KindItch, ref.Itch, ReasonItch)
+	return r.pageRow(ref, SiteItch, "itch:"+ref.Itch, "itch.io page "+ref.Itch, itchio.PageURL(ref.Itch), profile.KindItch, ref.Itch, ReasonItch)
 }
 
 // curseforge resolves a shared CurseForge file: installed when the profile or the store holds it, downloaded when the

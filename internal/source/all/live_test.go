@@ -4,9 +4,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-itchio"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
-	"github.com/Rethunk-Tech/mortar/internal/source/itch"
 	"github.com/Rethunk-Tech/mortar/internal/source/patreon"
 )
 
@@ -30,8 +31,8 @@ func TestLiveSims4Sources(t *testing.T) {
 				return
 			}
 			if gs.ID == "itch" {
-				id, ok := itch.ParsePageURL("https://someone.itch.io/some-sims-4-mod")
-				if !ok || itch.PageURL(id) != "https://someone.itch.io/some-sims-4-mod" {
+				id, ok := itchio.ParsePageURL("https://someone.itch.io/some-sims-4-mod")
+				if !ok || itchio.PageURL(id) != "https://someone.itch.io/some-sims-4-mod" {
 					t.Fatalf("page url resolved to %q, %v", id, ok)
 				}
 				return

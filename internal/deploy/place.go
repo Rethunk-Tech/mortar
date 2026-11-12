@@ -486,7 +486,7 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 // content is removed.
 func undoDst(m *Manifest, o Placed, i int, log *opLog) error {
 	// A crashed copy leaves its temp file; the name is Mortar's, so it goes whatever else is known of the operation.
-	if err := safefs.Remove(tmpName(o.Dst)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := safefs.Remove(datadir.CopyTempName(o.Dst)); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
 	_, backupErr := os.Lstat(o.Displaced)

@@ -626,7 +626,7 @@ func (s *Store) recordHistoryBatch(dir string, batch *historyBatch, after []Entr
 }
 
 func (s *Store) recordHistoryBatchData(dir string, data *historyFileData, batch *historyBatch, after []Entry) error {
-	if entriesEqual(batch.Before, after) {
+	if reflect.DeepEqual(batch.Before, after) {
 		return nil
 	}
 	ev := classifyHistory(batch.Before, after)
@@ -695,7 +695,7 @@ func (s *Store) Baseline(game, id string) (string, error) {
 	}
 	if n := len(data.Events); n > 0 {
 		last := data.Events[n-1]
-		if snap, ok := snapshotEntries(&data, last.SnapshotID); ok && entriesEqual(snap, p.Entries) {
+		if snap, ok := snapshotEntries(&data, last.SnapshotID); ok && reflect.DeepEqual(snap, p.Entries) {
 			return last.ID, nil
 		}
 	}
@@ -983,13 +983,9 @@ func cloneEntries(in []Entry) []Entry {
 	return out
 }
 
-func entriesEqual(a, b []Entry) bool {
-	return reflect.DeepEqual(a, b)
-}
-
 // recordHistory appends the event for a change and returns its id, or "" when nothing changed.
 func recordHistory(dir string, before, after []Entry, state HistoryChange, kind string, note HistoryEvent, configs []string, keep int) (string, error) {
-	if entriesEqual(before, after) {
+	if reflect.DeepEqual(before, after) {
 		if kind == "" && state == "" {
 			return "", nil
 		}

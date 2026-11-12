@@ -3,6 +3,7 @@ package profile
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 	"time"
 
@@ -124,7 +125,7 @@ func TestHealthUnreadableSnapshotIsDropped(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !entriesEqual(repaired.Entries, p.Entries) {
+	if !reflect.DeepEqual(repaired.Entries, p.Entries) {
 		t.Fatal("dropping a snapshot changed the profile")
 	}
 	after, _ := e.History("stardew", p.ID)

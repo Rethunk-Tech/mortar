@@ -47,23 +47,6 @@ type Entry struct {
 	Object string `json:"object,omitempty"`
 }
 
-// LoadedSave returns the save folder SMAPI loaded, from the last matching SMAPI line in log.
-func LoadedSave(log string) (string, bool) {
-	return logline.LoadedSave(log)
-}
-
-// ModsPath returns the mods folder SMAPI's log says it loaded, as SMAPI wrote it, and false when the log does not
-// say. SMAPI writes the home folder as ~ (`PathUtilities.AnonymizePathForDisplay`).
-func ModsPath(log string) (string, bool) {
-	return logline.ModsPath(log)
-}
-
-// LogOwnedBy reports whether log was written by SMAPI loading modsDir. home is the folder SMAPI shortened to ~.
-// A log that does not name its mods folder belongs to no one.
-func LogOwnedBy(log, home, modsDir string) bool {
-	return logline.LogOwnedBy(log, home, modsDir)
-}
-
 // Parser turns log lines into entries, remembering the last header so continuation lines can inherit it.
 type Parser struct {
 	// Now, when set, times a header its loader wrote without one (stock BepInEx) as it arrives, so a live console can

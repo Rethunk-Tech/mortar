@@ -265,7 +265,7 @@ func (s *Store) captureBeforeEdit(dir string, p Profile) error {
 	}
 	if n := len(data.Events); n > 0 {
 		head := data.Events[n-1]
-		if snap, ok := snapshotEntries(&data, head.SnapshotID); ok && entriesEqual(snap, p.Entries) {
+		if snap, ok := snapshotEntries(&data, head.SnapshotID); ok && reflect.DeepEqual(snap, p.Entries) {
 			idx, _ := historyConfigIndex(dir, p.Entries)
 			if captured, err := readSnapshotIndex(dir, head.SnapshotID); err == nil && reflect.DeepEqual(idx, captured) {
 				return nil

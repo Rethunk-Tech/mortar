@@ -3,6 +3,8 @@ package itch
 import (
 	"testing"
 
+	"github.com/Rethunk-Tech/go-itchio"
+
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -11,7 +13,7 @@ func TestPageURLRebuildsTheCanonicalAddress(t *testing.T) {
 	if got := (Driver{}).ModPageURL("", "someone/cool-mod"); got != "https://someone.itch.io/cool-mod" {
 		t.Fatalf("got %q", got)
 	}
-	if PageURL("someone/../x") != "" || PageURL("nogame") != "" {
+	if itchio.PageURL("someone/../x") != "" || itchio.PageURL("nogame") != "" {
 		t.Fatal("an invalid page id built an address")
 	}
 }

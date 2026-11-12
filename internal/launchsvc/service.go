@@ -20,6 +20,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Rethunk-Tech/go-smapi/logline"
+	"github.com/Rethunk-Tech/go-vintagestory/vslog"
+
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/go-gamelocator/steam"
@@ -327,7 +330,7 @@ func launchGameVersion(s *Service, key string) string {
 		return ""
 	}
 	gameID, _, _ := strings.Cut(key, "/")
-	read := launch.LogGameVersion
+	read := vslog.GameVersion
 	if l, ok := game.PrimaryLoader(gameID); ok {
 		if versions, ok := l.(loader.GameVersion); ok {
 			read = versions.GameVersion
@@ -1556,7 +1559,7 @@ func (s *Service) Lines(gameID, profileID string) ([]launch.Entry, error) {
 		return nil, err
 	}
 	text := strings.ToValidUTF8(string(data), "")
-	if !own && !launch.LogOwnedBy(text, s.home, modsDir) {
+	if !own && !logline.LogOwnedBy(text, s.home, modsDir) {
 		return []launch.Entry{}, nil
 	}
 	var p launch.Parser

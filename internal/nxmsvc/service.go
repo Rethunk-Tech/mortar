@@ -14,6 +14,8 @@ import (
 	"sync"
 	"time"
 
+	gocurseforge "github.com/Rethunk-Tech/go-curseforge"
+
 	"github.com/Rethunk-Tech/go-nexusmods"
 	"github.com/Rethunk-Tech/go-vintagestory/moddb"
 
@@ -161,7 +163,7 @@ func (s *Service) receiveOne(arg string) {
 		s.emit(ArrivedEvent, a)
 		return
 	}
-	if ref, err := curseforge.ParseLink(arg); err == nil {
+	if ref, err := gocurseforge.ParseLink(arg); err == nil {
 		go s.receiveCurseForge(arg, ref)
 		return
 	}
@@ -462,7 +464,7 @@ func (s *Service) Enable() error {
 		previous = map[string]string{}
 	}
 	prevName := s.store.Get().NxmPreviousName
-	for _, scheme := range nxm.Schemes() {
+	for _, scheme := range source.Schemes() {
 		o, err := s.handler.Owner(scheme)
 		if err != nil {
 			return err

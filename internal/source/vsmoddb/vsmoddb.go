@@ -43,9 +43,6 @@ func (Driver) Modes() []source.Acquire { return []source.Acquire{source.Download
 // Hosts is the site's web host.
 func (Driver) Hosts() []string { return []string{"mods.vintagestory.at"} }
 
-// ID joins a mod's modid and assetid into the id Mortar keeps.
-func ID(modID, assetID int) string { return moddb.ID(modID, assetID) }
-
 // ModPageURL is the mod's page; gameKey does not enter the address.
 func (Driver) ModPageURL(_, id string) string {
 	if _, asset, ok := moddb.SplitID(id); ok && asset != "" {
@@ -140,7 +137,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 			continue
 		}
 		out.Items = append(out.Items, source.Item{
-			Source: d.ID(), ID: ID(m.ModID, m.AssetID), Name: m.Name, Summary: m.Summary, Author: m.Author,
+			Source: d.ID(), ID: moddb.ID(m.ModID, m.AssetID), Name: m.Name, Summary: m.Summary, Author: m.Author,
 			Picture: m.Logo, Endorsements: m.Follows, Downloads: m.Downloads, Updated: stamp(m.LastReleased),
 			URL: moddb.PageURL(m.URLAlias, m.AssetID),
 		})
@@ -263,7 +260,7 @@ func (d Driver) Resolve(ctx context.Context, id, version string) (Resolved, erro
 		return Resolved{}, fmt.Errorf("%s has no release %s on the Vintage Story Mod DB", m.Name, cmp.Or(version, "to download"))
 	}
 	return Resolved{
-		ID: ID(m.ModID, m.AssetID), Name: m.Name, Version: pick.ModVersion, FileName: pick.FileName, URL: pick.MainFile,
+		ID: moddb.ID(m.ModID, m.AssetID), Name: m.Name, Version: pick.ModVersion, FileName: pick.FileName, URL: pick.MainFile,
 		Picture: m.Logo, ReleaseID: pick.ReleaseID,
 	}, nil
 }
@@ -286,7 +283,7 @@ func (d Driver) Items(ctx context.Context, _, _ string, ids []string) (map[strin
 			continue
 		}
 		out[strings.ToLower(id)] = source.Item{
-			Source: d.ID(), ID: ID(m.ModID, m.AssetID), Name: m.Name, Author: m.Author, Version: r.ModVersion,
+			Source: d.ID(), ID: moddb.ID(m.ModID, m.AssetID), Name: m.Name, Author: m.Author, Version: r.ModVersion,
 			Picture: m.Logo, URL: moddb.PageURL(m.URLAlias, m.AssetID),
 		}
 	}

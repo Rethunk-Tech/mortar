@@ -2,6 +2,7 @@ package profile
 
 import (
 	"fmt"
+	"reflect"
 	"slices"
 	"strings"
 
@@ -279,7 +280,7 @@ func emptyConfigs() map[string]map[string][]byte {
 
 func overlayLiveIfCurrent(dir string, data historyFileData, entries []Entry, cfg map[string]map[string][]byte) {
 	latest, ok := latestSnapshotOf(data)
-	if !ok || !entriesEqual(latest, entries) {
+	if !ok || !reflect.DeepEqual(latest, entries) {
 		return
 	}
 	overlayLiveConfigs(dir, entries, cfg)
