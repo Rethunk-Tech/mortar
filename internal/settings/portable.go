@@ -186,6 +186,9 @@ func keepLocalOnly(out *Settings, cur Settings, gamesImported bool) {
 		dst.LastDownloadsSeen = local.LastDownloadsSeen
 		dst.LastSweepGameVersion = local.LastSweepGameVersion
 		dst.NxmDefaultProfile = local.NxmDefaultProfile
+		// Like the antivirus, an imported file may tighten the game sandbox but never open it.
+		dst.SandboxExtraFolders = local.SandboxExtraFolders
+		dst.SandboxLaunch = dst.SandboxLaunch || local.SandboxLaunch
 		if !fromFile[id] {
 			continue
 		}

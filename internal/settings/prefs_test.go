@@ -92,7 +92,7 @@ func TestAutoEnableRequirementsAlwaysOnly(t *testing.T) {
 	}
 }
 
-var localOnlyKeys = []string{"antivirusSocket", "antivirusCommand", "alvrProgram", "codeEditor", "extraModsFolder", "syncOwnFolder", "backupLocation", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "mo2Folder", "packFolder", "lanAllowAnyAddress", "nxmDefaultProfile"}
+var localOnlyKeys = []string{"antivirusSocket", "antivirusCommand", "alvrProgram", "codeEditor", "extraModsFolder", "sandboxExtraFolders", "syncOwnFolder", "backupLocation", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "mo2Folder", "packFolder", "lanAllowAnyAddress", "nxmDefaultProfile"}
 
 func TestPrefsExportImportRoundTrip(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
@@ -245,6 +245,44 @@ func TestImportKeepsLocalOnlyGameFields(t *testing.T) {
 	}
 	if parsed.GamePrefs("stardew").DevProjects != nil {
 		t.Fatal("a parsed export carries a dev project")
+	}
+}
+
+// An imported file cannot widen the game sandbox's writable folders or turn the sandbox off; it may turn it on.
+func TestImportNeverWidensOrDropsTheGameSandbox(t *testing.T) {
+	file := Defaults()
+	gp := file.GamePrefs("stardew")
+	gp.SandboxLaunch = false
+	gp.SandboxExtraFolders = "/home/someone"
+	file.Games = map[string]*GameSettings{"stardew": &gp}
+	b, err := MarshalExport(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, present, err := ParseExport(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cur := Defaults()
+	mine := cur.GamePrefs("stardew")
+	mine.SandboxLaunch = true
+	mine.SandboxExtraFolders = "/mine"
+	cur.Games = map[string]*GameSettings{"stardew": &mine}
+	ApplyExport(&cur, parsed, present)
+	if got := cur.GamePrefs("stardew"); !got.SandboxLaunch || got.SandboxExtraFolders != "/mine" {
+		t.Fatalf("sandbox = %v %q", got.SandboxLaunch, got.SandboxExtraFolders)
+	}
+
+	on := Defaults()
+	og := on.GamePrefs("stardew")
+	og.SandboxLaunch = true
+	on.Games = map[string]*GameSettings{"stardew": &og}
+	b, _ = MarshalExport(on)
+	parsed, present, _ = ParseExport(b)
+	off := Defaults()
+	ApplyExport(&off, parsed, present)
+	if !off.GamePrefs("stardew").SandboxLaunch {
+		t.Fatal("an import could not turn the sandbox on")
 	}
 }
 
