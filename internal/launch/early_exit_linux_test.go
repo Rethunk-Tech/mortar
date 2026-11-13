@@ -103,6 +103,7 @@ func TestStdinStaysOpenWhileTheProcessRuns(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Cleanup(captureOf(exited).release)
 	if err := <-exited; err != nil {
 		t.Fatal(err)
 	}
