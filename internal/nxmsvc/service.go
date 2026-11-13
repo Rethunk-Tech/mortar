@@ -87,6 +87,9 @@ const assignedBuffer = 64
 // duplicateWindow is how long a link without a readable expiry is taken only once. With the browser extension a
 // link can arrive more than once: from the page's own launch, from the extension, and again from every tab still
 // open when the extension is reinstalled. A link with an expiry is taken once until it expires.
+// maxArrivals bounds the links waiting for a profile: a web page can fire any number of distinct nxm:// links.
+const maxArrivals = 64
+
 const duplicateWindow = 10 * time.Minute
 
 // Service receives links and switches the system handler.
@@ -124,6 +127,15 @@ func NewService(store *settings.Store, handler nxm.Handler) *Service {
 	return &Service{store: store, handler: handler, now: time.Now, Assigned: make(chan Assignment, assignedBuffer)}
 }
 
+// queueArrival appends a, dropping the oldest waiting arrival past maxArrivals. The caller holds s.mu.
+func (s *Service) queueArrival(a Arrival) {
+	if len(s.arrivals) >= maxArrivals {
+		slog.Warn("nxm: too many links waiting, oldest dropped", "id", s.arrivals[0].ID, "max", maxArrivals)
+		s.arrivals = slices.Delete(s.arrivals, 0, 1)
+	}
+	s.arrivals = append(s.arrivals, a)
+}
+
 func (s *Service) emit(name string, data any) {
 	if s.App != nil {
 		s.App.Emit(name, data)
@@ -158,7 +170,7 @@ func (s *Service) receiveOne(arg string) {
 		s.nextID++
 		a := Arrival{ID: s.nextID, Package: ref.Namespace + "-" + ref.Name, Version: ref.Version, Games: gamesWith("thunderstore"), raw: arg}
 		slog.Info("nxm: link arrived for a package", "id", a.ID, "package", a.Package)
-		s.arrivals = append(s.arrivals, a)
+		s.queueArrival(a)
 		s.mu.Unlock()
 		s.emit(ArrivedEvent, a)
 		return
@@ -242,7 +254,7 @@ func (s *Service) receiveNexus(arg string) {
 	}
 	a := Arrival{ID: id, Link: link, raw: arg}
 	slog.Info("nxm: link arrived for a mod file", "id", id, "mod", link.ModID, "file", link.FileID)
-	s.arrivals = append(s.arrivals, a)
+	s.queueArrival(a)
 	s.mu.Unlock()
 	s.emit(ArrivedEvent, a)
 }
@@ -311,7 +323,7 @@ func (s *Service) receiveCurseForge(raw string, ref curseforge.Ref) {
 	a := Arrival{ID: id, Source: "curseforge", Package: strconv.Itoa(ref.Project), Name: name, File: ref.File, Games: games, raw: raw}
 	slog.Info("nxm: link arrived for a curseforge project file", "id", a.ID, "file", a.Package, "file2", a.File)
 	s.mu.Lock()
-	s.arrivals = append(s.arrivals, a)
+	s.queueArrival(a)
 	s.mu.Unlock()
 	s.emit(ArrivedEvent, a)
 }
@@ -335,7 +347,7 @@ func (s *Service) receiveVSModDB(raw string, ref moddb.Ref) {
 	s.mu.Lock()
 	s.nextID++
 	a.ID = s.nextID
-	s.arrivals = append(s.arrivals, a)
+	s.queueArrival(a)
 	s.mu.Unlock()
 	slog.Info("nxm: link arrived for a mod db mod", "id", a.ID, "mod", a.Package, "version", a.Version)
 	s.emit(ArrivedEvent, a)

@@ -3,6 +3,7 @@ package nxmsvc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
@@ -534,5 +535,19 @@ func TestTakenAndYieldCoverCurseForge(t *testing.T) {
 	}
 	if on := s.store.Get().CurseForgeHandleLinks; on == nil || *on {
 		t.Fatalf("after Yield: %v", on)
+	}
+}
+
+func TestPendingArrivalsAreCapped(t *testing.T) {
+	s := newService(t, &fakeHandler{})
+	for i := 1; i <= maxArrivals+5; i++ {
+		s.Receive([]string{fmt.Sprintf("nxm://stardewvalley/mods/5/files/%d?key=k&expires=99999999999&user_id=42", i)})
+	}
+	in := s.Inbox().Arrivals
+	if len(in) != maxArrivals {
+		t.Fatalf("%d arrivals waiting, want %d", len(in), maxArrivals)
+	}
+	if in[0].Link.FileID != 6 {
+		t.Errorf("oldest kept is file %d, want 6", in[0].Link.FileID)
 	}
 }
