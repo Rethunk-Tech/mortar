@@ -551,3 +551,27 @@ func TestPendingArrivalsAreCapped(t *testing.T) {
 		t.Errorf("oldest kept is file %d, want 6", in[0].Link.FileID)
 	}
 }
+
+func TestPendingRejectionsAreCapped(t *testing.T) {
+	s := newService(t, &fakeHandler{})
+	for i := 1; i <= maxArrivals+5; i++ {
+		s.Receive([]string{fmt.Sprintf("nxm://stardewvalley/mods/5/files/%d?key=k&expires=1000600&user_id=1", i)})
+	}
+	in := s.Inbox().Rejections
+	if len(in) != maxArrivals {
+		t.Fatalf("%d rejections waiting, want %d", len(in), maxArrivals)
+	}
+	if in[0].ID != 6 {
+		t.Errorf("oldest kept is id %d, want 6", in[0].ID)
+	}
+}
+
+func TestRecentLinksAreCapped(t *testing.T) {
+	s := newService(t, &fakeHandler{})
+	for i := 1; i <= maxArrivals+5; i++ {
+		s.Receive([]string{fmt.Sprintf("nxm://stardewvalley/mods/5/files/%d?key=k&expires=99999999999&user_id=42", i)})
+	}
+	if n := len(s.recent); n != maxArrivals {
+		t.Fatalf("%d recent links, want %d", n, maxArrivals)
+	}
+}

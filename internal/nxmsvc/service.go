@@ -136,6 +136,15 @@ func (s *Service) queueArrival(a Arrival) {
 	s.arrivals = append(s.arrivals, a)
 }
 
+// queueRejection appends r, dropping the oldest unshown refusal past maxArrivals. The caller holds s.mu.
+func (s *Service) queueRejection(r Rejection) {
+	if len(s.rejections) >= maxArrivals {
+		slog.Warn("nxm: too many refusals waiting, oldest dropped", "id", s.rejections[0].ID, "max", maxArrivals)
+		s.rejections = slices.Delete(s.rejections, 0, 1)
+	}
+	s.rejections = append(s.rejections, r)
+}
+
 func (s *Service) emit(name string, data any) {
 	if s.App != nil {
 		s.App.Emit(name, data)
@@ -247,7 +256,7 @@ func (s *Service) receiveNexus(arg string) {
 		s.mu.Lock()
 		r := Rejection{ID: id, Reason: re.Reason}
 		slog.Warn("nxm: link rejected", "game", id, "reason", re.Reason)
-		s.rejections = append(s.rejections, r)
+		s.queueRejection(r)
 		s.mu.Unlock()
 		s.emit(RejectedEvent, r)
 		return
@@ -304,7 +313,7 @@ func (s *Service) receiveCurseForge(raw string, ref curseforge.Ref) {
 		r := Rejection{ID: id, Reason: nexusmods.ReasonGame}
 		slog.Warn("nxm: link rejected", "game", id, "reason", r.Reason)
 		s.mu.Lock()
-		s.rejections = append(s.rejections, r)
+		s.queueRejection(r)
 		s.mu.Unlock()
 		s.emit(RejectedEvent, r)
 		return
@@ -315,7 +324,7 @@ func (s *Service) receiveCurseForge(raw string, ref curseforge.Ref) {
 		r := Rejection{ID: id, Reason: nxm.ReasonRestricted, Name: name}
 		slog.Warn("nxm: link rejected", "game", id, "reason", r.Reason)
 		s.mu.Lock()
-		s.rejections = append(s.rejections, r)
+		s.queueRejection(r)
 		s.mu.Unlock()
 		s.emit(RejectedEvent, r)
 		return
@@ -396,6 +405,16 @@ func (s *Service) duplicate(link string) bool {
 		if exp, err := strconv.ParseInt(u.Query().Get("expires"), 10, 64); err == nil && time.Unix(exp, 0).After(until) {
 			until = time.Unix(exp, 0)
 		}
+	}
+	for len(s.recent) >= maxArrivals {
+		var oldest string
+		var oldestUntil time.Time
+		for l, t := range s.recent {
+			if oldest == "" || t.Before(oldestUntil) {
+				oldest, oldestUntil = l, t
+			}
+		}
+		delete(s.recent, oldest)
 	}
 	s.recent[link] = until
 	return false
