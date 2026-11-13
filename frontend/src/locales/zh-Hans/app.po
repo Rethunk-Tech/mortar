@@ -2103,6 +2103,10 @@ msgstr "{name} 需要选择后才能安装；请将其拖到窗口上"
 msgid "already up to date in this profile"
 msgstr "此配置中已是最新"
 
+#: src/games/addWarning.ts
+msgid "The {store} edition is 32-bit. Mortar's {loader} pack does not cover it, so plugins will not load."
+msgstr ""
+
 #: src/QuitPrompt.tsx
 msgid "Quit Mortar?"
 msgstr "退出 Mortar？"

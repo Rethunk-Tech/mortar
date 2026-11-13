@@ -2103,6 +2103,10 @@ msgstr ""
 msgid "already up to date in this profile"
 msgstr ""
 
+#: src/games/addWarning.ts
+msgid "The {store} edition is 32-bit. Mortar's {loader} pack does not cover it, so plugins will not load."
+msgstr ""
+
 #: src/QuitPrompt.tsx
 msgid "Quit Mortar?"
 msgstr ""

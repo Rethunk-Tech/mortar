@@ -1,6 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Alert, Box, Button, Typography } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
 import { FolderOpen } from 'lucide-react'
 import { memo, type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -21,6 +21,7 @@ import { Field, FormDialog, TextInput } from '../shell/dialog/FormDialog.tsx'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { addGameWarning } from './addWarning.ts'
 import { reloadGames, useGames } from './info.ts'
 import { loaderIcon } from './loaderIcons.ts'
 
@@ -131,6 +132,34 @@ function RemoveGameConfirm({
   )
 }
 
+function EditionWarning({ text }: { text: string }) {
+  if (!text) {
+    return null
+  }
+  return (
+    <Alert variant="compact" severity="warning">
+      {text}
+    </Alert>
+  )
+}
+
+function applyGuess(
+  guess: { name: string; loader: string; warning?: string },
+  set: {
+    suggested: (name: string) => void
+    guessed: (loader: string) => void
+    warning: (text: string) => void
+    loader: (id: string) => void
+  },
+) {
+  set.suggested(guess.name)
+  set.guessed(guess.loader)
+  set.warning(addGameWarning(guess.warning ?? ''))
+  if (guess.loader) {
+    set.loader(guess.loader)
+  }
+}
+
 const addIssue = (hasExe: boolean, hasName: boolean): string => {
   if (!(hasExe || hasName)) {
     return i18n._(msg`Choose the game's program and give it a name first.`)
@@ -156,6 +185,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
   const [community, setCommunity] = useState('')
   // The loader the game's own files point to, once a program is chosen.
   const [guessed, setGuessed] = useState('')
+  const [warning, setWarning] = useState('')
   const [busy, run] = usePending()
   const [removing, setRemoving] = useState<{ id: string; name: string } | null>(null)
   const { data: loaders } = useLoaded(() => CustomLoaders(), [], [])
@@ -187,12 +217,12 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
             return
           }
           setExe(path)
-          const guess = await GuessCustomGame(path)
-          setSuggested(guess.name)
-          setGuessed(guess.loader)
-          if (guess.loader) {
-            setLoader(guess.loader)
-          }
+          applyGuess(await GuessCustomGame(path), {
+            suggested: setSuggested,
+            guessed: setGuessed,
+            warning: setWarning,
+            loader: setLoader,
+          })
         })
         .catch(reportError(t`Could not open the file dialog`))
     return (
@@ -225,6 +255,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
             </Typography>
           ) : null}
         </Box>
+        <EditionWarning text={exe ? warning : ''} />
         <NameField key={round} value={name} suggested={suggested} onFilled={setHasName} />
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           <LoaderChoice
@@ -264,7 +295,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
         ) : null}
       </>
     )
-  }, [exe, loader, community, guessed, loaders, round, suggested, mine, t])
+  }, [exe, loader, community, guessed, loaders, round, suggested, mine, t, warning])
   const needsCommunity = loader === 'shimloader' && community.trim() === ''
   const ready = exe !== '' && hasName && !needsCommunity
   return (

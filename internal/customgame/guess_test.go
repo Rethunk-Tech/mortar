@@ -13,11 +13,16 @@ func TestGuessFromReadsTheGamesFiles(t *testing.T) {
 		exe   string
 		want  Guess
 	}{
-		{"unreal", nil, "Void/VotV/Binaries/Win64/VotV-Win64-Shipping.exe", Guess{"Void", Shimloader}},
-		{"il2cpp", []string{"Game/GameAssembly.dll"}, "Game/Game.exe", Guess{"Game", BepInEx6}},
-		{"mono", []string{"Game/Game_Data/Managed/Assembly-CSharp.dll"}, "Game/Game.exe", Guess{"Game", BepInEx5}},
-		{"melonloader wins over il2cpp", []string{"Game/GameAssembly.dll", "Game/MelonLoader/x.dll"}, "Game/Game.exe", Guess{"Game", MelonLoader}},
-		{"unknown", nil, "Some Game/run.exe", Guess{"Some Game", ""}},
+		{"unreal", nil, "Void/VotV/Binaries/Win64/VotV-Win64-Shipping.exe", Guess{Name: "Void", Loader: Shimloader}},
+		{"il2cpp", []string{"Game/GameAssembly.dll"}, "Game/Game.exe", Guess{Name: "Game", Loader: BepInEx6}},
+		{"mono", []string{"Game/Game_Data/Managed/Assembly-CSharp.dll"}, "Game/Game.exe", Guess{Name: "Game", Loader: BepInEx5}},
+		{"melonloader wins over il2cpp", []string{"Game/GameAssembly.dll", "Game/MelonLoader/x.dll"}, "Game/Game.exe", Guess{Name: "Game", Loader: MelonLoader}},
+		{"unknown", nil, "Some Game/run.exe", Guess{Name: "Some Game"}},
+		{"gog graveyard keeper", []string{
+			"Graveyard Keeper/Graveyard Keeper_Data/Managed/Assembly-CSharp.dll",
+			"Graveyard Keeper/goggame-1780408621.info",
+		}, "Graveyard Keeper/Graveyard Keeper.exe", Guess{Name: "Graveyard Keeper", Loader: BepInEx5, Warning: WarningGOG32Bit}},
+		{"steam graveyard keeper", []string{"Graveyard Keeper/Graveyard Keeper_Data/Managed/Assembly-CSharp.dll"}, "Graveyard Keeper/Graveyard Keeper.exe", Guess{Name: "Graveyard Keeper", Loader: BepInEx5}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			root := t.TempDir()

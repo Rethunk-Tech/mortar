@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, InputAdornment, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, InputAdornment, TextField, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { useLoaded, useOnWindowFocus } from '@rethunk/react-load-hooks'
 import { Check, FolderOpen, RefreshCw, TriangleAlert, X } from 'lucide-react'
@@ -11,6 +11,7 @@ import type {
 import { SuggestFolders } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { SetGameFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { storeAddWarning } from '../games/addWarning.ts'
 import { gameArt } from '../games/art.ts'
 import { storeName } from '../games/storeName.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
@@ -219,6 +220,7 @@ export function FindStep({
   const details = [loaderGameVersion ? `${game.name} ${loaderGameVersion}` : '', loaderLine()]
     .filter(Boolean)
     .join(' · ')
+  const editionWarning = storeAddWarning(game.id, game.store)
 
   return (
     <Panel width={640}>
@@ -263,6 +265,11 @@ export function FindStep({
             </Button>
           </Box>
           <Typography sx={{ fontSize: 'base.fontSize' }}>{details}</Typography>
+          {editionWarning ? (
+            <Alert variant="compact" severity="warning">
+              {editionWarning}
+            </Alert>
+          ) : null}
         </Box>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>

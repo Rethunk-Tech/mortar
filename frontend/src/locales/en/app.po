@@ -2109,6 +2109,10 @@ msgstr "{name} needs a choice to install; drop it on the window instead"
 msgid "already up to date in this profile"
 msgstr "already up to date in this profile"
 
+#: src/games/addWarning.ts
+msgid "The {store} edition is 32-bit. Mortar's {loader} pack does not cover it, so plugins will not load."
+msgstr "The {store} edition is 32-bit. Mortar's {loader} pack does not cover it, so plugins will not load."
+
 #: src/QuitPrompt.tsx
 msgid "Quit Mortar?"
 msgstr "Quit Mortar?"

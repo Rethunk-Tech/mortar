@@ -38,7 +38,7 @@ Sources: Gloss Mod Manager (`GlossMod/gmm-expands` `PlanetZoo.ts:15-34`: Steam `
 
 ## Graveyard Keeper
 
-Sources: the game's executable `Graveyard Keeper.exe` (`SonOfTheRocks/GraveyardKeepelago` `Plugin.cs`, `[BepInProcess("Graveyard Keeper.exe")]`; `Hezkore/graveyard-keeper-ultrawide` `patch.cs` looks for it in the game root), Steam `599140` and Nexus's `graveyardkeeper` (game id `2696`, Nexus GraphQL).
+Sources: the game's executable `Graveyard Keeper.exe` (`SonOfTheRocks/GraveyardKeepelago` `Plugin.cs`, `[BepInProcess("Graveyard Keeper.exe")]`; `Hezkore/graveyard-keeper-ultrawide` `patch.cs` looks for it in the game root), Steam `599140`, GOG `1780408621` (`api.gog.com/products/1780408621`; Minigalaxy folder `Graveyard Keeper` from the product title) and Nexus's `graveyardkeeper` (game id `2696`, Nexus GraphQL).
 
 - Mods are BepInEx 5 plugins for the 64-bit Unity Mono build (Steam); the GOG build is 32-bit, which Mortar's BepInEx pack does not cover.
 - Unverified until someone runs the game: the Steam install folder name and the Proton launch.

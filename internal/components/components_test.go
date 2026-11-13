@@ -334,7 +334,8 @@ func TestBundledGamesNameTheirExtraStores(t *testing.T) {
 
 // Sources: Gloss Mod Manager (GlossMod/gmm-expands PlanetZoo.ts:15-34: Steam 703080, PlanetZoo.exe, mods in win64/ovldata
 // as folders holding manifest.xml); a Graveyard Keeper plugin (SonOfTheRocks/GraveyardKeepelago Plugin.cs,
-// BepInProcess("Graveyard Keeper.exe")); Steam app 599140; Vortex's game-hogwartslegacy src/common.ts:5 (Epic id).
+// BepInProcess("Graveyard Keeper.exe")); Steam app 599140; GOG 1780408621 (api.gog.com/products/1780408621); Vortex's
+// game-hogwartslegacy src/common.ts:5 (Epic id).
 func TestBundledFolderAndBepInExGamesFromCitedSources(t *testing.T) {
 	c := NewClient(nil)
 	c.SetManifest(Manifest{Serial: 1})
@@ -345,6 +346,7 @@ func TestBundledFolderAndBepInExGamesFromCitedSources(t *testing.T) {
 	}
 	gk, ok := c.Game("graveyard-keeper")
 	if !ok || gk.Marker != "Graveyard Keeper.exe" || gk.Stores.Steam == nil || gk.Stores.Steam.AppID != "599140" ||
+		gk.Stores.GOG == nil || gk.Stores.GOG.ProductID != "1780408621" || gk.Stores.GOG.Folder != "Graveyard Keeper" ||
 		gk.Loaders[0].ID != "bepinex5" {
 		t.Errorf("graveyard-keeper = %+v", gk)
 	}

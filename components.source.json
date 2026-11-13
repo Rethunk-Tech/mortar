@@ -10821,6 +10821,10 @@
       "stores": {
         "steam": {
           "appId": "599140"
+        },
+        "gog": {
+          "productId": "1780408621",
+          "folder": "Graveyard Keeper"
         }
       },
       "loaders": [

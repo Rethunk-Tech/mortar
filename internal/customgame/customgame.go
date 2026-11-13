@@ -226,10 +226,16 @@ func Remove(id string) error {
 	return Register(games)
 }
 
+// WarningGOG32Bit is Guess.Warning for the GOG edition of Graveyard Keeper: its 32-bit build is outside Mortar's
+// BepInEx pack, so plugins will not load. The Add a game form shows it and still lets the game be added.
+const WarningGOG32Bit = "gog-32bit"
+
 // Guess is what a game's files suggest for the Add a game form: a name and a loader, each empty when nothing does.
 type Guess struct {
 	Name   string `json:"name"`
 	Loader string `json:"loader"`
+	// Warning is a stable code the Add a game form translates, empty when the files raise nothing.
+	Warning string `json:"warning,omitempty"`
 }
 
 // GuessFrom reads the folder around the executable at exe: an Unreal game's Binaries/Win64, a Unity game's
@@ -251,5 +257,17 @@ func GuessFrom(exe string) Guess {
 	case len(managed) > 0:
 		g.Loader = BepInEx5
 	}
+	g.Warning = addWarning(exe, dir)
 	return g
+}
+
+func addWarning(exe, dir string) string {
+	if !strings.EqualFold(filepath.Base(exe), "Graveyard Keeper.exe") {
+		return ""
+	}
+	hits, err := filepath.Glob(filepath.Join(dir, "goggame-*.info"))
+	if err != nil || len(hits) == 0 {
+		return ""
+	}
+	return WarningGOG32Bit
 }
