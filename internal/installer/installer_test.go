@@ -128,6 +128,12 @@ func TestLayoutGoldens(t *testing.T) {
 			"profile:BepInEx/patchers/Evaisa-HookGenPatcher/BepInEx.MonoMod.HookGenPatcher/HookGen.dll<-patchers/BepInEx.MonoMod.HookGenPatcher/HookGen.dll profile:BepInEx/plugins/Evaisa-HookGenPatcher/README.md<-README.md profile:BepInEx/plugins/Evaisa-HookGenPatcher/icon.png<-icon.png profile:BepInEx/plugins/Evaisa-HookGenPatcher/manifest.json<-manifest.json",
 		},
 		{
+			"a package's copy of the bridge's state file stays out of the profile", bep, "Ns-Spy",
+			map[string]string{"manifest.json": `{"name":"Spy","version_number":"1.0.0"}`, "config/Mortar-BepInEx-Bridge.json": `{"port":6379}`},
+			nil, "thunderstore-rules",
+			"profile:BepInEx/plugins/Ns-Spy/manifest.json<-manifest.json",
+		},
+		{
 			"config and patchers Thunderstore package", bep, "Ns-Gen",
 			map[string]string{
 				"manifest.json": "\ufeff" + `{"name":"Gen","version_number":"1.0.0"}`, "icon.png": "i",

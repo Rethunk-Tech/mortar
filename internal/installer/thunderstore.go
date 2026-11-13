@@ -10,6 +10,7 @@ import (
 
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
 
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/melonloader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/thunderpack"
@@ -140,7 +141,8 @@ func (thunderstoreRules) Layout(a Archive, g Game, _ Choices) (Layout, error) {
 	route := router(g, all, pkg)
 	for _, f := range all {
 		dest := route(f)
-		if dest == "" || skip(f) {
+		// The bridge's state file names the port and token Mortar sends commands to; only the running bridge writes it.
+		if dest == "" || skip(f) || strings.EqualFold(dest, bridge.BepInEx.StateFile) {
 			continue
 		}
 		file := File{Src: f, Target: TargetProfile, Rel: dest}
