@@ -29,7 +29,7 @@ func TestDeployPlacesLoaderFilesAndTakesThemBack(t *testing.T) {
 
 	for _, plan := range []*launchplan.Plan{launchplan.New(launchplan.ModeProfile), launchplan.New(launchplan.ModeVanilla)} {
 		plan.AddFile(launchplan.PlanFile{Src: src, Dst: "winhttp.dll"})
-		dep, err := startDeploy(t.Context(), inst, plan, nil, deploy.Mode{})
+		dep, err := startDeploy(t.Context(), inst, plan, nil, deploy.Mode{}, nil)
 		if err != nil || (plan.Mode == launchplan.ModeVanilla) != (dep.d == nil) {
 			t.Fatalf("mode %s: deployment %v, %v", plan.Mode, dep, err)
 		}
@@ -44,7 +44,7 @@ func TestDeployPlacesLoaderFilesAndTakesThemBack(t *testing.T) {
 			t.Fatalf("mode %s: the placed file outlives the launch: %v", plan.Mode, err)
 		}
 	}
-	if dep, err := startDeploy(t.Context(), inst, launchplan.New(launchplan.ModeProfile), nil, deploy.Mode{}); dep.d != nil || err != nil {
+	if dep, err := startDeploy(t.Context(), inst, launchplan.New(launchplan.ModeProfile), nil, deploy.Mode{}, nil); dep.d != nil || err != nil {
 		t.Fatalf("a redirect loader declares no files, so nothing deploys: %v, %v", dep, err)
 	}
 }
@@ -84,7 +84,7 @@ func TestDeployRecoversALaunchNothingTookBack(t *testing.T) {
 	launch := func() *deployment {
 		plan := launchplan.New(launchplan.ModeProfile)
 		plan.AddFile(launchplan.PlanFile{Src: src, Dst: "winhttp.dll"})
-		dep, err := startDeploy(t.Context(), inst, plan, nil, deploy.Mode{})
+		dep, err := startDeploy(t.Context(), inst, plan, nil, deploy.Mode{}, nil)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -67,6 +67,10 @@ const (
 	SteamOptionEvent = "launch:steam-option"
 	// SettingsRestoreWarningEvent is emitted when profile game settings could not be restored.
 	SettingsRestoreWarningEvent = "launch:settings-restore-warning"
+	// RescuedEvent is emitted when changed bytes are kept beside a file no profile could take.
+	RescuedEvent = "launch:rescued"
+	// DiscardRescuedEvent comes back from the window to drop those kept files.
+	DiscardRescuedEvent = "launch:discard-rescued"
 
 	stopGrace  = 10 * time.Second
 	procDirRun = "/proc"
@@ -128,6 +132,11 @@ type SettingsRestoreWarning struct {
 	Game    string `json:"game"`
 	Profile string `json:"profile"`
 	Error   string `json:"error"`
+}
+
+// RescuedNotice is the paths of kept rescue files the window should tell the player about.
+type RescuedNotice struct {
+	Paths []string `json:"paths"`
 }
 
 // CommandPreview is the direct launch command assembled from unsaved profile fields.
@@ -225,6 +234,8 @@ type Service struct {
 	Meta *meta.Client
 	// Symbols names native crash frames from symbol servers; nil names none.
 	Symbols *winsym.Resolver
+	// Rescued is called with newly recorded rescue paths; main tells the window.
+	Rescued func([]string)
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store) *Service {

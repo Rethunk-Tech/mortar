@@ -1943,6 +1943,7 @@ msgstr "Release {name}"
 msgid "A Mortar link, a mod manager's code, or a collection, post or mod page."
 msgstr "A Mortar link, a mod manager's code, or a collection, post or mod page."
 
+#: src/launch/rescuedToast.ts
 #: src/shell/useDiscardGuard.tsx
 msgid "Discard"
 msgstr "Discard"
@@ -6041,6 +6042,10 @@ msgstr "Paths too long for {os} ({count})"
 #: src/lan/SendPanel.tsx
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
+
+#: src/launch/rescuedToast.ts
+msgid "Edits were restored"
+msgstr "Edits were restored"
 
 #: src/toasts/EarlierChanges.tsx
 msgid "No changes yet"

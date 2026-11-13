@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"slices"
 
@@ -26,18 +27,40 @@ type Note struct {
 // notesPath sits beside the journal folder, which Purge removes, so a note outlives the launch until its file is gone.
 func notesPath(journalDir string) string { return journalDir + ".shared.json" }
 
-// saveNotes merges notes into the install's record.
-func saveNotes(journalDir string, notes []Note) error {
+// saveNotes merges notes into the install's record and returns newly recorded rescue paths.
+func saveNotes(journalDir string, notes []Note) (fresh []string, err error) {
 	if len(notes) == 0 || journalDir == "" {
-		return nil
+		return nil, nil
 	}
 	all := Notes(journalDir)
 	for _, n := range notes {
-		if !slices.ContainsFunc(all, func(x Note) bool { return x.Path == n.Path && x.Kind == n.Kind }) {
-			all = append(all, n)
+		if slices.ContainsFunc(all, func(x Note) bool { return x.Path == n.Path && x.Kind == n.Kind }) {
+			continue
+		}
+		all = append(all, n)
+		if n.Kind == NoteRescued {
+			fresh = append(fresh, n.Path)
 		}
 	}
-	return writeNotes(journalDir, all)
+	if err := writeNotes(journalDir, all); err != nil {
+		return nil, err
+	}
+	return fresh, nil
+}
+
+// DiscardRescued removes noted rescue files at paths, so they are no longer kept.
+func DiscardRescued(journalDir string, paths []string) error {
+	want := make(map[string]bool, len(paths))
+	for _, p := range paths {
+		want[p] = true
+	}
+	var errs []error
+	for _, n := range Notes(journalDir) {
+		if n.Kind == NoteRescued && want[n.Path] {
+			errs = append(errs, safefs.Remove(n.Path))
+		}
+	}
+	return errors.Join(errs...)
 }
 
 func writeNotes(journalDir string, notes []Note) error {

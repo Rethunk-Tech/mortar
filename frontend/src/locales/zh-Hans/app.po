@@ -1937,6 +1937,7 @@ msgstr "发布 {name}"
 msgid "A Mortar link, a mod manager's code, or a collection, post or mod page."
 msgstr "Mortar 链接、模组管理器代码，或合集、帖子、模组页面。"
 
+#: src/launch/rescuedToast.ts
 #: src/shell/useDiscardGuard.tsx
 msgid "Discard"
 msgstr "放弃"
@@ -6035,6 +6036,10 @@ msgstr "路径对 {os} 来说过长（{count}）"
 #: src/lan/SendPanel.tsx
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "请让另一位 Mortar 用户开启附近分享。"
+
+#: src/launch/rescuedToast.ts
+msgid "Edits were restored"
+msgstr ""
 
 #: src/toasts/EarlierChanges.tsx
 msgid "No changes yet"

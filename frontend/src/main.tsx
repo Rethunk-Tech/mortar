@@ -20,6 +20,7 @@ import { OutgoingProgress } from './lan/OutgoingProgress.tsx'
 import { initLaunch } from './launch/events.ts'
 import { initPlayMode } from './launch/playMode.ts'
 import { initPlayRequests } from './launch/playRequests.ts'
+import { initRescuedToast } from './launch/rescuedToast.ts'
 import { initLoader } from './loader/store.ts'
 import { initNexusSeen } from './mods/nexusDetails.ts'
 import { initUpdateDigestToast } from './mods/updateDigestToast.ts'
@@ -57,6 +58,7 @@ await initSettings().catch(reportUnexpected)
 initInstallAsks()
 initMortarUpdateBackground()
 initUpdateDigestToast()
+initRescuedToast()
 initNewDownloads()
 initAutoInstall()
 initDevWatch()

@@ -25,6 +25,8 @@ const journalFile = "deploy.json"
 // files, so they are copies, never links into the store.
 type Place struct {
 	Mode Mode
+	// Rescued is called with newly recorded rescue paths after notes are saved, so the window can tell the player.
+	Rescued func([]string)
 }
 
 // Plan resolves the loaders' install-side plan files, whose Dst is relative to dir, the install folder.
@@ -150,11 +152,19 @@ func (p Place) Apply(ctx context.Context, q Plan) (Manifest, error) {
 	}
 	placed, runErr := p.placeAll(ctx, &m, log, kept, carried)
 	commitErr := commitPlaced(&m, placed, log)
-	notesErr := saveNotes(q.View.JournalDir, m.notes)
+	notesErr := p.saveNotes(q.View.JournalDir, m.notes)
 	if runErr != nil || commitErr != nil {
 		return m, errors.Join(runErr, commitErr, notesErr, log.close())
 	}
 	return m, errors.Join(notesErr, log.close(), persist(m))
+}
+
+func (p Place) saveNotes(journalDir string, notes []Note) error {
+	fresh, err := saveNotes(journalDir, notes)
+	if p.Rescued != nil && len(fresh) > 0 {
+		p.Rescued(fresh)
+	}
+	return err
 }
 
 // record is the manifest's files: a file the previous Play left standing as it is, or one this Play puts down, with the
@@ -435,7 +445,7 @@ func (p Place) Purge(ctx context.Context, m Manifest) error {
 	}
 	err := log.close()
 	at("journal")
-	return errors.Join(err, saveNotes(m.View.JournalDir, m.notes), safefs.RemoveAll(m.View.JournalDir))
+	return errors.Join(err, p.saveNotes(m.View.JournalDir, m.notes), safefs.RemoveAll(m.View.JournalDir))
 }
 
 // drop takes back the files the previous Play placed that this plan no longer wants, before this Play's record replaces
@@ -485,14 +495,14 @@ func (p Place) keep(ctx context.Context, m *Manifest, log *opLog) error {
 		// Nothing left to keep: the journal goes with the last file, and the next Play starts clean.
 		errs = append(errs, log.close())
 		at("journal")
-		return errors.Join(errors.Join(errs...), saveNotes(m.View.JournalDir, m.notes), safefs.RemoveAll(m.View.JournalDir))
+		return errors.Join(errors.Join(errs...), p.saveNotes(m.View.JournalDir, m.notes), safefs.RemoveAll(m.View.JournalDir))
 	}
 	if err := adopt(m, log); err != nil {
 		return errors.Join(errors.Join(errs...), err, log.close())
 	}
 	errs = append(errs, log.close())
 	// The files taken back stay on the record, marked undone, so the log's indices name the same files before and after.
-	errs = append(errs, saveNotes(m.View.JournalDir, m.notes), persist(*m))
+	errs = append(errs, p.saveNotes(m.View.JournalDir, m.notes), persist(*m))
 	at("kept")
 	return errors.Join(errs...)
 }

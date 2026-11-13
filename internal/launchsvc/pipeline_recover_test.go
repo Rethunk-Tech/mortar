@@ -111,7 +111,7 @@ func TestStartDeployVanillaTakesBackKeptFiles(t *testing.T) {
 	plan := launchplan.New(launchplan.ModeVanilla)
 	plan.AddFile(launchplan.PlanFile{Src: dll, Dst: "winhttp.dll"})
 	inst := game.Install{ID: svc.selectedSlot(game.Find("stardew")).inst, Dir: install}
-	dep, err := startDeploy(t.Context(), inst, plan, nil, deploy.Mode{})
+	dep, err := startDeploy(t.Context(), inst, plan, nil, deploy.Mode{}, nil)
 	if err != nil || dep.d != nil {
 		t.Fatalf("vanilla: %v %v", dep, err)
 	}
@@ -261,14 +261,14 @@ func TestAFailedDeployTakesBackWhatItPlaced(t *testing.T) {
 	// Canceled once the journal is written: the deploy fails with its record on disk and nothing placed yet.
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
-	if _, err := startDeploy(ctx, inst, plan, nil, deploy.Mode{}); err == nil {
+	if _, err := startDeploy(ctx, inst, plan, nil, deploy.Mode{}, nil); err == nil {
 		t.Fatal("a canceled deploy succeeded")
 	}
 	if dir, _ := journalDir(inst.ID); deploy.HasJournal(dir) {
 		t.Fatal("the canceled deploy left its journal")
 	}
 	missingPlan := &launchplan.Plan{Files: []launchplan.PlanFile{{Src: missing, Dst: "b.dll"}}}
-	if _, err := startDeploy(t.Context(), inst, missingPlan, nil, deploy.Mode{}); err == nil {
+	if _, err := startDeploy(t.Context(), inst, missingPlan, nil, deploy.Mode{}, nil); err == nil {
 		t.Fatal("a deploy with a missing source succeeded")
 	}
 	if b, _ := safefs.ReadFile(filepath.Join(inst.Dir, "a.dll")); string(b) != "the player's own" {

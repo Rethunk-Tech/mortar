@@ -109,6 +109,8 @@ func registerEvents() {
 	application.RegisterEvent[launchsvc.BackupWarning](launchsvc.BackupWarningEvent)
 	application.RegisterEvent[launchsvc.SteamOption](launchsvc.SteamOptionEvent)
 	application.RegisterEvent[launchsvc.SettingsRestoreWarning](launchsvc.SettingsRestoreWarningEvent)
+	application.RegisterEvent[launchsvc.RescuedNotice](launchsvc.RescuedEvent)
+	application.RegisterEvent[launchsvc.RescuedNotice](launchsvc.DiscardRescuedEvent)
 	application.RegisterEvent[updatesvc.Release](updatesvc.StagedEvent)
 	application.RegisterEvent[updatesvc.ModUpdateDigestNotice](updatesvc.ModUpdateDigestEvent)
 	application.RegisterEvent[profile.GameModsProgress](profile.GameModsProgressEvent)

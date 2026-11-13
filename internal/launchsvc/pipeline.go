@@ -370,7 +370,7 @@ func (s *Service) deployProfile(ctx context.Context, gameID string, inst game.In
 	if s.keepPlaced(gameID, profileID) {
 		mode.Reuse = deploy.ReuseStat
 	}
-	return startDeploy(ctx, inst, plan, roots, mode)
+	return startDeploy(ctx, inst, plan, roots, mode, s.Rescued)
 }
 
 // keepPlaced is whether this Play keeps its files for the next one. Only the folder loader does: the others place a
@@ -429,8 +429,8 @@ func (s *Service) prelaunch(gameID, profileID, installDir string) error {
 
 // startDeploy places plan's install-side files into inst, journaled before the first file moves. A launch with none
 // returns a deployment that has nothing to take back.
-func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan, roots map[string]string, mode deploy.Mode) (*deployment, error) {
-	d := &deploy.Place{Mode: mode}
+func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan, roots map[string]string, mode deploy.Mode, rescued func([]string)) (*deployment, error) {
+	d := &deploy.Place{Mode: mode, Rescued: rescued}
 	if plan.Mode == launchplan.ModeVanilla || len(plan.Files) == 0 {
 		dir, err := journalDir(inst.ID)
 		if err == nil {
@@ -517,7 +517,7 @@ func (s *Service) RecoverDeploys(ctx context.Context) ([]string, error) {
 //
 //wails:ignore
 func (s *Service) RecoverGameDeploys(ctx context.Context, id string) (found bool, err error) {
-	d := deploy.Place{}
+	d := deploy.Place{Rescued: s.Rescued}
 	g := game.Find(id)
 	if g == nil {
 		return false, nil
@@ -634,6 +634,30 @@ func (s *Service) SharedFiles(gameID string) []profile.SharedFile {
 		}
 	}
 	return out
+}
+
+// DiscardRescued removes noted rescue files at paths.
+//
+//wails:ignore
+func (s *Service) DiscardRescued(paths []string) error {
+	var errs []error
+	for _, id := range game.Implemented() {
+		g := game.Find(id)
+		if g == nil {
+			continue
+		}
+		for _, sl := range s.slots(g) {
+			if sl.inst == "" {
+				continue
+			}
+			dir, err := journalDir(sl.inst)
+			if err != nil {
+				continue
+			}
+			errs = append(errs, deploy.DiscardRescued(dir, paths))
+		}
+	}
+	return errors.Join(errs...)
 }
 
 // errNoPrefix is a Steam-relayed Proton launch whose prefix does not exist yet: Steam would create it without the

@@ -1085,6 +1085,14 @@ func (c *boot) serveControl(queueCtx context.Context) error {
 	c.svc.App = h
 	c.loaders.App = h
 	c.launches.App = h
+	c.launches.Rescued = func(paths []string) {
+		notice := launchsvc.RescuedNotice{Paths: paths}
+		if c.toPage != nil {
+			c.toPage(launchsvc.RescuedEvent, notice)
+			return
+		}
+		c.intents.Queue(launchsvc.RescuedEvent, notice)
+	}
 	if err := c.launches.RecoverGameSettings(); err != nil {
 		slog.Warn("game settings restore", "err", err)
 		c.app.Event.Emit(launchsvc.SettingsRestoreWarningEvent, launchsvc.SettingsRestoreWarning{Error: err.Error()})
@@ -1346,6 +1354,15 @@ func (c *boot) windowFuncs(updateCtx context.Context) error {
 	c.app.Event.On(game.CatalogRetryEvent, func(*application.CustomEvent) {
 		_ = safefs.Remove(filepath.Join(c.dataDir, "cache", "components-failure"))
 		_ = c.catalogRefresh(updateCtx)
+	})
+	c.app.Event.On(launchsvc.DiscardRescuedEvent, func(e *application.CustomEvent) {
+		notice, ok := e.Data.(launchsvc.RescuedNotice)
+		if !ok {
+			return
+		}
+		if err := c.launches.DiscardRescued(notice.Paths); err != nil {
+			slog.Warn("discard rescued", "err", err)
+		}
 	})
 	pongs := make(chan struct{}, 1)
 	c.app.Event.On(windowPongEvent, func(*application.CustomEvent) {

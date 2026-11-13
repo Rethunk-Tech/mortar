@@ -1937,6 +1937,7 @@ msgstr ""
 msgid "A Mortar link, a mod manager's code, or a collection, post or mod page."
 msgstr ""
 
+#: src/launch/rescuedToast.ts
 #: src/shell/useDiscardGuard.tsx
 msgid "Discard"
 msgstr ""
@@ -6034,6 +6035,10 @@ msgstr ""
 
 #: src/lan/SendPanel.tsx
 msgid "Ask another Mortar user to open sharing nearby."
+msgstr ""
+
+#: src/launch/rescuedToast.ts
+msgid "Edits were restored"
 msgstr ""
 
 #: src/toasts/EarlierChanges.tsx
