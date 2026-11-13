@@ -324,3 +324,49 @@ func TestAChangedFileAnUpdateDroppedStaysWithKeepWhenItsFolderEmpties(t *testing
 	r.sync()
 	r.want("Mods/mc/old.cfg", "player=2")
 }
+
+func (r *syncRig) switchMods(e Entry, on bool) {
+	r.t.Helper()
+	for _, m := range e.Mods {
+		if _, _, err := r.e.enableMod(folderGame, r.p.ID, e.Key, m.ID, on); err != nil {
+			r.t.Fatal(err)
+		}
+	}
+}
+
+// A held edit belongs to the mod that held it: another mod laying out the same path gets its own file, and a second
+// hold of the path keeps the first, so each mod gets its own edit back.
+func TestAHeldEditComesBackOnlyWithItsOwnMod(t *testing.T) {
+	t.Parallel()
+	r := newSyncRig(t)
+	a := r.install(cfSource(10), map[string]string{"mc/a.ts4script": "a", "mc/mc.cfg": "A default"}).Entries[0]
+	r.sync()
+	r.write("Mods/mc/mc.cfg", "A edit")
+	r.switchMods(a, false)
+	r.sync()
+	r.want("changed/Mods/mc/mc.cfg", "A edit")
+
+	b := r.install(Source{Kind: KindCurseForge, Name: "Other", ModID: 8, FileID: 1},
+		map[string]string{"mc/b.ts4script": "b", "mc/mc.cfg": "B default"}).Entries[1]
+	r.sync()
+	r.want("Mods/mc/mc.cfg", "B default")
+	r.write("Mods/mc/mc.cfg", "B edit")
+	r.switchMods(b, false)
+	r.sync()
+	r.absent("Mods/mc/mc.cfg")
+
+	r.switchMods(a, true)
+	r.sync()
+	r.want("Mods/mc/mc.cfg", "A edit")
+	r.switchMods(a, false)
+	r.switchMods(b, true)
+	r.sync()
+	r.want("Mods/mc/mc.cfg", "B edit")
+	r.switchMods(b, false)
+	r.switchMods(a, true)
+	r.sync()
+	r.want("Mods/mc/mc.cfg", "A edit")
+	// A restored edit is the mod's changed copy, not a stray the next sync replaces.
+	r.sync()
+	r.want("Mods/mc/mc.cfg", "A edit")
+}

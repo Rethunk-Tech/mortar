@@ -47,6 +47,35 @@ func markHeld(dir, rel string, now time.Time, held bool) error {
 	return writeHeld(dir, rec)
 }
 
+// heldOwnersIndex records, by slash path below changed/, the profile path each held copy came from and the entry that
+// held it, so a copy comes back only with its own mod. A copy with no record (held by an older Mortar, or brought by a
+// backup) sits at its own path and comes back with any mod that lays the path out.
+const heldOwnersIndex = ".mortar-held-owners.json"
+
+type heldOwner struct {
+	Path string `json:"p"`
+	Key  string `json:"k"`
+}
+
+func readHeldOwners(dir string) map[string]heldOwner {
+	owners := map[string]heldOwner{}
+	if _, err := datadir.ReadJSON(filepath.Join(dir, heldOwnersIndex), &owners); err != nil {
+		return map[string]heldOwner{}
+	}
+	return owners
+}
+
+func writeHeldOwners(dir string, owners map[string]heldOwner) error {
+	if len(owners) == 0 {
+		err := safefs.Remove(filepath.Join(dir, heldOwnersIndex))
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	return datadir.WriteJSON(filepath.Join(dir, heldOwnersIndex), owners)
+}
+
 type heldCopy struct{ root, path string }
 
 // expireHeld deletes the held copies whose mod has been out of the profile longer than keep. A held copy with no
@@ -88,6 +117,15 @@ func expireHeld(dir string, keep time.Duration, now time.Time) (int, error) {
 		if _, ok := onDisk[key]; !ok {
 			delete(rec, key)
 		}
+	}
+	owners := readHeldOwners(dir)
+	for key := range owners {
+		if _, ok := rec[key]; !ok {
+			delete(owners, key)
+		}
+	}
+	if err := writeHeldOwners(dir, owners); err != nil {
+		return expired, err
 	}
 	return expired, writeHeld(dir, rec)
 }

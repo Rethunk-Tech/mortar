@@ -15,7 +15,7 @@ func TestHeldCopiesExpireWithTheTrashRetention(t *testing.T) {
 	writeFile(t, dir, "Mods/mc/notes.cfg", "mine")
 	held := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	for _, rel := range []string{"Mods/mc/mc_settings.cfg", "Mods/mc/notes.cfg"} {
-		if err := holdChanged(dir, rel); err != nil {
+		if err := holdChanged(dir, rel, ""); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -44,7 +44,7 @@ func TestHeldCopiesExpireWithTheTrashRetention(t *testing.T) {
 			t.Fatalf("%s was deleted before its own retention ran out", rel)
 		}
 	}
-	if ok, err := restoreChanged(dir, "Mods/mc/notes.cfg"); err != nil || !ok {
+	if ok, err := restoreChanged(dir, "Mods/mc/notes.cfg", func(string) bool { return true }); err != nil || !ok {
 		t.Fatalf("restore = %v, %v", ok, err)
 	}
 	if _, known := readHeld(dir)["Mods/mc/notes.cfg"]; known {

@@ -269,13 +269,13 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 	if err := s.parkModConfigs(gameID, p, dir); err != nil {
 		return err
 	}
-	run := &syncRun{dir: dir, files: files, prev: readPlaced(dir), srcHash: map[string]string{}}
+	run := &syncRun{dir: dir, files: files, prev: readPlaced(dir), succ: successors(p), srcHash: map[string]string{}}
 	run.next = maps.Clone(run.prev)
-	gone, kept, err := run.dropStale(p, s.oldFilesMode(gameID))
+	gone, kept, err := run.dropStale(s.oldFilesMode(gameID))
 	if err != nil {
 		return err
 	}
-	if err := holdAdopted(dir, gone, kept, files); err != nil {
+	if err := run.holdAdopted(gone, kept); err != nil {
 		return err
 	}
 	s.expireHeldCopies(dir)
@@ -308,6 +308,7 @@ type syncRun struct {
 	files   map[string]packageFile
 	prev    map[string]placedRec
 	next    map[string]placedRec
+	succ    map[string]string
 	srcHash map[string]string
 }
 
@@ -322,12 +323,11 @@ func (r *syncRun) hashOf(rel string) (string, error) {
 
 // dropStale takes away the placed files no enabled package ships any more and returns their paths, and the paths of
 // the changed files it left in place because an update dropped them in Keep mode.
-func (r *syncRun) dropStale(p Profile, mode string) (gone []string, kept map[string]bool, err error) {
+func (r *syncRun) dropStale(mode string) (gone []string, kept map[string]bool, err error) {
 	lays := map[string]bool{}
 	for _, f := range r.files {
 		lays[f.key] = true
 	}
-	succ := successors(p)
 	kept = map[string]bool{}
 	for rel, rec := range r.prev {
 		if _, keep := r.files[rel]; keep {
@@ -337,7 +337,7 @@ func (r *syncRun) dropStale(p Profile, mode string) (gone []string, kept map[str
 		if changedSince(rec, dst) {
 			// A changed file whose entry was updated to a version that no longer ships it follows oldFilesOnUpdate;
 			// one whose entry was switched off or removed is held, to come back with it.
-			owner := succ[rec.Key]
+			owner := r.succ[rec.Key]
 			dropped := rec.Key != "" && owner != "" && lays[owner]
 			switch {
 			case dropped && mode == settings.OldFilesKeep:
@@ -350,7 +350,7 @@ func (r *syncRun) dropStale(p Profile, mode string) (gone []string, kept map[str
 					return nil, nil, err
 				}
 			default:
-				if err := holdChanged(r.dir, rel); err != nil {
+				if err := holdChanged(r.dir, rel, rec.Key); err != nil {
 					return nil, nil, err
 				}
 			}
@@ -393,6 +393,8 @@ func (r *syncRun) place(rel string) error {
 	if statErr == nil && info.IsDir() {
 		statErr = errors.New("a folder is in the way")
 	}
+	winner := r.files[rel].key
+	absent := statErr != nil && info == nil
 	switch {
 	case statErr == nil && !recorded:
 		// The store's own bytes, which a lost record may have left, are adopted. Any other bytes are an older
@@ -410,13 +412,19 @@ func (r *syncRun) place(rel string) error {
 			return err
 		}
 	case statErr == nil && changedSince(rec, dst):
-		if rec.Key == "" || rec.Key == r.files[rel].key {
+		if rec.Key == "" || rec.Key == winner {
 			// Still the package's file, with changes that stay; the record keeps it ownable when the package goes.
 			return nil
 		}
-		if done, err := r.rescueBeaten(rel, dst); err != nil || done {
+		if !slices.Contains(r.files[rel].beaten, rec.Key) && !r.sameMod(rec.Key, winner) {
+			// Its entry was switched off or removed: the copy waits for that entry, as when nothing else lays it out.
+			if err := holdChanged(r.dir, rel, rec.Key); err != nil {
+				return err
+			}
+		} else if done, err := r.rescueBeaten(rel, dst); err != nil || done {
 			return err
 		}
+		absent = true
 	case statErr == nil && r.current(rel, rec, dst):
 		if rec.Size < 0 {
 			var err error
@@ -428,14 +436,16 @@ func (r *syncRun) place(rel string) error {
 	if err := datadir.MkdirParent(dst); err != nil {
 		return err
 	}
-	if statErr != nil && info == nil {
-		restored, err := restoreChanged(r.dir, rel)
+	if absent {
+		restored, err := restoreChanged(r.dir, rel, func(held string) bool { return r.sameMod(held, winner) })
 		if err != nil {
 			return err
 		}
 		if restored {
-			delete(r.next, rel)
-			return nil
+			// Recorded as a changed copy of the winner's file, so it stays and is held again when the winner goes.
+			h, err := r.hashOf(rel)
+			r.next[rel] = placedRec{Hash: h, Size: -1, Key: winner}
+			return err
 		}
 	}
 	if err := safefs.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -490,11 +500,25 @@ func ownedFolder(rel string) string {
 	return strings.Join(parts[:2], "/")
 }
 
+// sameMod reports whether held, the entry that held a copy, is winner or an entry an update chain replaced with winner.
+// A copy held before owners were recorded belongs to any mod.
+func (r *syncRun) sameMod(held, winner string) bool {
+	seen := map[string]bool{}
+	for k := held; k != "" && !seen[k]; k = r.succ[k] {
+		if k == winner {
+			return true
+		}
+		seen[k] = true
+	}
+	return held == ""
+}
+
 // holdAdopted holds the files in a folder no package lays out any more that no record names (adopted from play), so
 // they leave the profile with the package that owned the folder. The files kept stay where they are.
-func holdAdopted(dir string, gone []string, kept map[string]bool, files map[string]packageFile) error {
+func (r *syncRun) holdAdopted(gone []string, kept map[string]bool) error {
+	dir := r.dir
 	wanted := map[string]bool{}
-	for rel := range files {
+	for rel := range r.files {
 		wanted[ownedFolder(rel)] = true
 	}
 	done := map[string]bool{}
@@ -507,17 +531,17 @@ func holdAdopted(dir string, gone []string, kept map[string]bool, files map[stri
 		root := filepath.Join(dir, filepath.FromSlash(folder))
 		var held []string
 		err := safefs.WalkRegular(root, func(path string, _ fs.DirEntry) error {
-			r, err := filepath.Rel(dir, path)
-			if r = filepath.ToSlash(r); !kept[r] {
-				held = append(held, r)
+			p, err := filepath.Rel(dir, path)
+			if p = filepath.ToSlash(p); !kept[p] {
+				held = append(held, p)
 			}
 			return err
 		})
 		if err != nil {
 			return err
 		}
-		for _, r := range held {
-			if err := holdChanged(dir, r); err != nil {
+		for _, h := range held {
+			if err := holdChanged(dir, h, r.prev[rel].Key); err != nil {
 				return err
 			}
 		}
@@ -605,31 +629,38 @@ func holdDropped(dir, key string) error {
 		return err
 	}
 	for rel := range files {
-		to := filepath.Join(dir, changedDir, rel)
-		if err := datadir.MkdirParent(to); err != nil {
-			return err
-		}
-		if err := safefs.Rename(filepath.Join(root, rel), to); err != nil {
-			return err
-		}
-		if err := markHeld(dir, filepath.ToSlash(rel), time.Now(), true); err != nil {
+		if err := holdAt(dir, filepath.Join(root, rel), filepath.ToSlash(rel), key); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-// holdChanged moves a changed copy aside under changed/, replacing an older one.
-func holdChanged(dir, rel string) error {
-	from := filepath.Join(dir, filepath.FromSlash(rel))
-	to := filepath.Join(dir, changedDir, filepath.FromSlash(rel))
+// holdChanged moves a changed copy aside under changed/, owned by the entry key that laid it out.
+func holdChanged(dir, rel, key string) error {
+	return holdAt(dir, filepath.Join(dir, filepath.FromSlash(rel)), rel, key)
+}
+
+// holdAt moves from, the copy of the profile's rel that key owns, under changed/: at rel, or beside an earlier hold of
+// rel at the first free numbered name, so each mod's copy waits for its own mod.
+func holdAt(dir, from, rel, key string) error {
+	name := rel
+	for n := 2; datadir.Exists(filepath.Join(dir, changedDir, filepath.FromSlash(name))); n++ {
+		name = fmt.Sprintf("%s.%d", rel, n)
+	}
+	to := filepath.Join(dir, changedDir, filepath.FromSlash(name))
 	if err := datadir.MkdirParent(to); err != nil {
 		return err
 	}
 	if err := safefs.Rename(from, to); err != nil {
 		return err
 	}
-	return markHeld(dir, rel, time.Now(), true)
+	owners := readHeldOwners(dir)
+	owners[name] = heldOwner{Path: rel, Key: key}
+	if err := writeHeldOwners(dir, owners); err != nil {
+		return err
+	}
+	return markHeld(dir, name, time.Now(), true)
 }
 
 // holdReplaced moves an unrecorded copy that a package's file is about to replace under replaced/, which nothing puts
@@ -645,9 +676,24 @@ func holdReplaced(dir, rel string) error {
 	return markHeld(dir, replacedDir+"/"+rel, time.Now(), true)
 }
 
-// restoreChanged puts a held copy back in the profile and reports whether there was one.
-func restoreChanged(dir, rel string) (bool, error) {
-	from := filepath.Join(dir, changedDir, filepath.FromSlash(rel))
+// restoreChanged puts back the copy of rel held by an entry owns accepts and reports whether there was one. A copy held
+// before owners were recorded sits at rel with no record and is anyone's.
+func restoreChanged(dir, rel string, owns func(key string) bool) (bool, error) {
+	owners := readHeldOwners(dir)
+	name := ""
+	for _, n := range slices.Sorted(maps.Keys(owners)) {
+		if o := owners[n]; o.Path == rel && owns(o.Key) && datadir.Exists(filepath.Join(dir, changedDir, filepath.FromSlash(n))) {
+			name = n
+			break
+		}
+	}
+	if _, recorded := owners[rel]; name == "" && !recorded {
+		name = rel
+	}
+	if name == "" {
+		return restoreDropped(dir, rel)
+	}
+	from := filepath.Join(dir, changedDir, filepath.FromSlash(name))
 	if _, err := os.Lstat(from); errors.Is(err, fs.ErrNotExist) {
 		return restoreDropped(dir, rel)
 	} else if err != nil {
@@ -657,7 +703,11 @@ func restoreChanged(dir, rel string) (bool, error) {
 		return false, err
 	}
 	removeUp(filepath.Join(dir, changedDir), from)
-	return true, markHeld(dir, rel, time.Time{}, false)
+	delete(owners, name)
+	if err := writeHeldOwners(dir, owners); err != nil {
+		return false, err
+	}
+	return true, markHeld(dir, name, time.Time{}, false)
 }
 
 // SeedConfigs copies the config files the enabled packages ship into the profile (seedConfigs), so a package's
