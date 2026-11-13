@@ -2,9 +2,10 @@ package profile
 
 import (
 	"io/fs"
-	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 // A package moved to win a file must lay its copy out even when the loser's copy has the same size: a recompiled DLL
@@ -40,7 +41,7 @@ func TestAPackageMadeToWinAFileReplacesALoserOfTheSameSize(t *testing.T) {
 	var got []string
 	_ = filepath.WalkDir(dir, func(path string, d fs.DirEntry, _ error) error {
 		if d != nil && d.Name() == "same.package" && d.Type().IsRegular() {
-			b, _ := os.ReadFile(path)
+			b, _ := safefs.ReadFile(path)
 			got = append(got, string(b))
 		}
 		return nil
