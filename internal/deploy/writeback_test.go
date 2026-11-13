@@ -411,3 +411,39 @@ func TestAKeptPlayOwningANewFolderLeavesThePlayersFilesInIt(t *testing.T) {
 		t.Fatalf("the player's file was adopted into the profile: %v", err)
 	}
 }
+
+// A kept file whose mod left the profile, changed since the last Play, stays in the shared folder and the player hears
+// about it.
+func TestAKeptFileOfARemovedModWithChangesIsNoted(t *testing.T) {
+	t.Parallel()
+	rr := newRootRig(t)
+	d := Place{Mode: Mode{Reuse: ReuseStat}}
+	play := func() {
+		t.Helper()
+		p, err := d.Plan(rr.view, rr.install, rr.files)
+		if err != nil {
+			t.Fatal(err)
+		}
+		m, err := d.Apply(t.Context(), p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := d.Purge(t.Context(), m); err != nil {
+			t.Fatal(err)
+		}
+	}
+	play()
+	cfg := filepath.Join(rr.shared, "mc", "mc_settings.cfg")
+	write(t, cfg, "saved outside Mortar")
+	if err := os.RemoveAll(filepath.Join(rr.profile, "mc")); err != nil {
+		t.Fatal(err)
+	}
+	rr.files = slices.DeleteFunc(rr.files, func(f launchplan.PlanFile) bool { return filepath.Dir(f.Dst) == "mc" })
+	play()
+	if got := read(cfg); got != "saved outside Mortar" {
+		t.Fatalf("the changed file = %q", got)
+	}
+	if notes := Notes(rr.view.JournalDir); len(notes) != 1 || notes[0].Path != cfg || notes[0].Kind != NoteRescued {
+		t.Fatalf("notes = %+v", notes)
+	}
+}

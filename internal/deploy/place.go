@@ -130,7 +130,7 @@ func (p Place) Apply(ctx context.Context, q Plan) (Manifest, error) {
 		m.notes = prev.notes
 		// A file the previous Play placed that this plan no longer wants leaves now; the record naming it survives the
 		// removals, so a crash in between is recovered by the previous journal as it always was.
-		if err := p.drop(prev, q); err != nil {
+		if err := p.drop(&m, prev, q); err != nil {
 			return Manifest{}, err
 		}
 	}
@@ -430,8 +430,8 @@ func (p Place) Purge(ctx context.Context, m Manifest) error {
 }
 
 // drop takes back the files the previous Play placed that this plan no longer wants, before this Play's record replaces
-// the previous one.
-func (p Place) drop(prev Manifest, q Plan) error {
+// the previous one; what it leaves for the player to hear about goes on m's notes.
+func (p Place) drop(m *Manifest, prev Manifest, q Plan) error {
 	wanted := make(map[string]bool, len(q.Ops))
 	for _, op := range q.Ops {
 		wanted[safefs.FoldCase(op.Dst)] = true
@@ -440,7 +440,7 @@ func (p Place) drop(prev Manifest, q Plan) error {
 		if o.Undone || wanted[safefs.FoldCase(o.Dst)] {
 			continue
 		}
-		if err := undoDst(&prev, o, i, nil); err != nil {
+		if err := undoDst(m, o, i, nil); err != nil {
 			return err
 		}
 	}
