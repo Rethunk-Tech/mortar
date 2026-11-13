@@ -308,3 +308,28 @@ func TestACrashAtAnyPlayRescueStepKeepsTheChangedBytes(t *testing.T) {
 		}
 	}
 }
+
+// A kept file changed again after an earlier rescue keeps both edits: the second rescue never lands on the first.
+func TestASecondRescueOfAKeptFileKeepsTheFirst(t *testing.T) {
+	t.Parallel()
+	r := newRig(t)
+	mode := Mode{Reuse: ReuseStat}
+	ini := filepath.Join(r.install, "doorstop_config.ini")
+	if err := r.play(t, mode); err != nil {
+		t.Fatal(err)
+	}
+	for _, edit := range []string{"first edit outside Mortar", "second edit outside Mortar"} {
+		write(t, ini, edit)
+		if err := r.play(t, mode); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var kept []string
+	for _, n := range Notes(r.view.JournalDir) {
+		kept = append(kept, read(n.Path))
+	}
+	slices.Sort(kept)
+	if len(kept) != 2 || kept[0] != "first edit outside Mortar" || kept[1] != "second edit outside Mortar" {
+		t.Fatalf("rescued = %q, want both edits", kept)
+	}
+}

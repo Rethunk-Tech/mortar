@@ -345,7 +345,7 @@ func rescueChanged(m *Manifest, prev Placed, n string, l *opLog) error {
 	if h, err := safefs.HashFile(prev.Dst, sha256.New()); err != nil || h == prev.Hash {
 		return err
 	}
-	rescue := RescueName(prev.Dst)
+	rescue := freeRescueName(prev.Dst)
 	if err := l.add(step{R: rescue}, true); err != nil {
 		return err
 	}
@@ -611,7 +611,7 @@ func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
 	if err != nil || wrote {
 		return err
 	}
-	rescue := RescueName(o.Dst)
+	rescue := freeRescueName(o.Dst)
 	if err := l.add(step{R: rescue}, true); err != nil {
 		return err
 	}
@@ -627,6 +627,15 @@ func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
 
 // RescueName is where the bytes of a changed file are kept when its profile is gone.
 func RescueName(dst string) string { return dst + ".mortar-rescued" }
+
+// freeRescueName is the first rescue name for dst that holds no earlier rescue, which a rename would overwrite.
+func freeRescueName(dst string) string {
+	name := RescueName(dst)
+	for n := 2; datadir.Exists(name); n++ {
+		name = fmt.Sprintf("%s.%d", RescueName(dst), n)
+	}
+	return name
+}
 
 // writeBackFile copies Dst over Src through a temp file and a rename, so the bytes are in both places until Dst is
 // removed. It reports false, leaving Dst alone, when the profile's folder is gone.
