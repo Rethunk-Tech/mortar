@@ -104,5 +104,9 @@ func setManifestVersion(path string, uniqueID mod.ID, version string) error {
 		return err
 	}
 	// Writing a new file breaks any reflink to the store copy, which is rewritten the same way.
-	return safefs.WriteFileAtomic(path, out, info.Mode().Perm())
+	if err := safefs.WriteFileAtomic(path, out, info.Mode().Perm()); err != nil {
+		return err
+	}
+	// The umask narrows a new file's mode; the manifest keeps the one it had.
+	return safefs.Chmod(path, info.Mode().Perm())
 }
