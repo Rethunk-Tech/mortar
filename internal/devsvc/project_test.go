@@ -342,8 +342,17 @@ func TestEditingOnlyTheIDPrefixDropsTheOldAssembly(t *testing.T) {
 // file still reading the old text shows the edit never wrote into it.
 func TestEditFileReplacesTheFileRatherThanWritingIntoIt(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "Mod.csproj")
-	if err := os.WriteFile(path, []byte("old"), 0o644); err != nil {
+	if err := os.WriteFile(path, []byte("old"), 0o600); err != nil {
 		t.Fatal(err)
+	}
+	root, err := os.OpenRoot(filepath.Dir(path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = root.Close() }()
+	read := func(name string) string {
+		b, _ := root.ReadFile(name)
+		return string(b)
 	}
 	link := path + ".before"
 	if err := os.Link(path, link); err != nil {
@@ -352,10 +361,10 @@ func TestEditFileReplacesTheFileRatherThanWritingIntoIt(t *testing.T) {
 	if err := editFile(path, func(string) string { return "new" }); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := os.ReadFile(path); string(b) != "new" {
+	if b := read("Mod.csproj"); b != "new" {
 		t.Fatalf("file = %q", b)
 	}
-	if b, _ := os.ReadFile(link); string(b) != "old" {
+	if b := read("Mod.csproj.before"); b != "old" {
 		t.Fatalf("the edit wrote into the original: %q", b)
 	}
 }

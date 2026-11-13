@@ -315,12 +315,19 @@ func TestADeletedSyncedProfileIsNotOfferedBack(t *testing.T) {
 }
 
 func TestAnOversizedPayloadInTheSyncFolderIsNeverRead(t *testing.T) {
-	folder, a, _, _, _ := twoMachines(t)
+	folder := t.TempDir()
+	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	a, _ := newMachine(t, folder, "Desktop", &clock)
 	dir := filepath.Join(folder, "stardew")
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	f, err := os.Create(filepath.Join(dir, "huge.mortar"))
+	root, err := os.OpenRoot(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = root.Close() }()
+	f, err := root.Create("huge.mortar")
 	if err != nil {
 		t.Fatal(err)
 	}

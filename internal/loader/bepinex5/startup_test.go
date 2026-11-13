@@ -38,7 +38,12 @@ func TestApplyConsoleReplacesBepInExCfgRatherThanWritingIntoIt(t *testing.T) {
 	if err := applyConsole(dir, true); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := os.ReadFile(link); string(b) != old {
+	root, err := os.OpenRoot(filepath.Dir(link))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = root.Close() }()
+	if b, _ := root.ReadFile(filepath.Base(link)); string(b) != old {
 		t.Fatalf("the switch wrote into the original: %q", b)
 	}
 }

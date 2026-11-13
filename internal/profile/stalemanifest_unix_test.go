@@ -19,7 +19,12 @@ func TestFixStaleManifestKeepsTheFilesModeUnderARestrictiveUmask(t *testing.T) {
 	if err := safefs.WriteFile(path, []byte(manifestJSON("X.A")), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.Chmod(path, 0o664); err != nil {
+	root, err := os.OpenRoot(filepath.Dir(path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = root.Close() }()
+	if err := root.Chmod("manifest.json", 0o664); err != nil {
 		t.Fatal(err)
 	}
 	if err := setManifestVersion(path, "smapi:x.a", "1.2.0"); err != nil {
