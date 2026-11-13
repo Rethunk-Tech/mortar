@@ -46,9 +46,9 @@ jobs:
           printf '%s\n' "$UPDATE_KEY" >"$key"
           GOTMPDIR=/var/tmp TMPDIR=/var/tmp MORTAR_UPDATE_KEY="$key" go run ./cmd/components
 
-      # A catalog the last two released versions cannot read leaves their users on the bundled copy, so it is not
-      # published.
-      - name: Check the last two releases read it
+      # A catalog a supported release cannot read, or reads without a game it read from the published one, leaves its
+      # users on the bundled copy or without that game, so it is not published.
+      - name: Check every supported release reads it
         env:
           GH_TOKEN: ${{ github.token }}
         run: GOTMPDIR=/var/tmp TMPDIR=/var/tmp scripts/catalog-compat.sh components.json
