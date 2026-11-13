@@ -237,9 +237,9 @@ func darwinAppName(marker string) (string, error) {
 		}
 		return base, nil
 	}
-	for _, seg := range strings.Split(marker, "/") {
-		if strings.HasSuffix(seg, ".app") {
-			return strings.TrimSuffix(seg, ".app"), nil
+	for seg := range strings.SplitSeq(marker, "/") {
+		if name, ok := strings.CutSuffix(seg, ".app"); ok {
+			return name, nil
 		}
 	}
 	return "", errors.New("no app")
