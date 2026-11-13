@@ -349,3 +349,31 @@ func TestALinkLeftWhereAPlacedFileWasIsRemovedNotWrittenBack(t *testing.T) {
 		t.Fatalf("the link's target changed: %q", got)
 	}
 }
+
+func TestAKeepPurgeNotesAChangedFileWithNoProfileToGoTo(t *testing.T) {
+	t.Parallel()
+	rr := newRootRig(t)
+	d := Place{Mode: Mode{Reuse: ReuseStat}}
+	p, err := d.Plan(rr.view, rr.install, rr.files)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m, err := d.Apply(t.Context(), p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := filepath.Join(rr.shared, "mc", "mc_settings.cfg")
+	write(t, cfg, "player=2")
+	if err := os.RemoveAll(filepath.Dir(rr.profile)); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Purge(t.Context(), m); err != nil {
+		t.Fatal(err)
+	}
+	if !Kept(rr.view.JournalDir) {
+		t.Fatal("the unchanged files were not kept")
+	}
+	if notes := Notes(rr.view.JournalDir); len(notes) != 1 || notes[0].Path != cfg || notes[0].Kind != NoteRescued {
+		t.Fatalf("notes = %+v", notes)
+	}
+}

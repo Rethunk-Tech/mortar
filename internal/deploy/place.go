@@ -481,7 +481,7 @@ func (p Place) keep(ctx context.Context, m *Manifest, log *opLog) error {
 	errs = append(errs, log.close())
 	// The keep log's indices name the pre-shortened ops; leaving it would mark the wrong files undone on the next Play.
 	_ = safefs.Remove(logPath(m.View.JournalDir))
-	errs = append(errs, persist(*m))
+	errs = append(errs, saveNotes(m.View.JournalDir, m.notes), persist(*m))
 	at("kept")
 	return errors.Join(errs...)
 }
