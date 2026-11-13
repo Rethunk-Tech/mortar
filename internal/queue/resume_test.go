@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -258,5 +259,20 @@ func TestSweepRemovesASidecarTempLeftByACrash(t *testing.T) {
 	left, _ := os.ReadDir(root)
 	if len(left) != 0 {
 		t.Fatalf("sweep left %d files", len(left))
+	}
+}
+
+func TestADownloadThatRedirectsOffHTTPSIsRefused(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "http://mirror.example.invalid/mod.zip", http.StatusFound)
+	}))
+	defer srv.Close()
+	s, err := New(Deps{HTTP: srv.Client(), Dir: t.TempDir()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = s.fetch(t.Context(), Item{ID: "x"}, srv.URL+"/mod.zip", filepath.Join(t.TempDir(), "mod.zip"))
+	if !errors.Is(err, errInsecureRedirect) {
+		t.Fatalf("a redirect to plain http was followed: %v", err)
 	}
 }

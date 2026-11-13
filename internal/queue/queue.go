@@ -42,6 +42,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -489,6 +490,9 @@ func downloadTransport(base http.RoundTripper) http.RoundTripper {
 	return tr
 }
 
+// errInsecureRedirect refuses a redirect off TLS: SecureDownload checks only the address a download starts at.
+var errInsecureRedirect = errors.New("the download redirected to an address that is not https, so Mortar will not follow it")
+
 // New reads the saved queue: what was under way is queued again so a partial file can resume, and a file
 // waiting for a click is clicked again once the user resumes a queue that holds Nexus files.
 func New(d Deps) (*Service, error) {
@@ -501,6 +505,21 @@ func New(d Deps) (*Service, error) {
 	if d.HTTP == nil {
 		d.HTTP = &http.Client{Transport: downloadTransport(http.DefaultTransport), Timeout: 30 * time.Minute}
 	}
+	hc := *d.HTTP
+	next := hc.CheckRedirect
+	hc.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if !source.SecureDownload(req.URL.String()) {
+			return errInsecureRedirect
+		}
+		if next != nil {
+			return next(req, via)
+		}
+		if len(via) >= 10 {
+			return errors.New("stopped after 10 redirects")
+		}
+		return nil
+	}
+	d.HTTP = &hc
 	s := &Service{
 		d: d, kick: make(chan struct{}, 1), cancels: map[string]context.CancelFunc{},
 		premiumFetch: make(chan struct{}, 3), freeFetch: make(chan struct{}, 1),
