@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io/fs"
+	"log/slog"
 	"maps"
 	"os"
 	"path"
@@ -20,6 +21,7 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/deploy"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -408,8 +410,13 @@ func (r *syncRun) place(rel string) error {
 			return err
 		}
 	case statErr == nil && changedSince(rec, dst):
-		// Still the package's file, with changes that stay; the record keeps it ownable when the package goes.
-		return nil
+		if rec.Key == "" || rec.Key == r.files[rel].key {
+			// Still the package's file, with changes that stay; the record keeps it ownable when the package goes.
+			return nil
+		}
+		if done, err := r.rescueBeaten(rel, dst); err != nil || done {
+			return err
+		}
 	case statErr == nil && r.current(rel, rec, dst):
 		if rec.Size < 0 {
 			var err error
@@ -443,6 +450,23 @@ func (r *syncRun) place(rel string) error {
 	}
 	r.next[rel], err = recordOf(h, dst)
 	return err
+}
+
+// rescueBeaten moves a changed copy of a file another entry now wins (a reorder, a roll back) to a rescue name beside
+// it, so the winner's file can go down as FileConflicts reports. A copy that already holds the winner's bytes is
+// recorded as placed instead, and done is true.
+func (r *syncRun) rescueBeaten(rel, dst string) (done bool, err error) {
+	h, err := r.hashOf(rel)
+	if err != nil {
+		return false, err
+	}
+	if mine, err := safefs.HashFile(dst, sha256.New()); err == nil && mine == h {
+		r.next[rel], err = recordOf(h, dst)
+		return true, err
+	}
+	rescue := deploy.FreeRescueName(dst)
+	slog.Warn("sync: a changed file another package now wins; its bytes are kept", "path", rel, "rescue", rescue)
+	return false, safefs.Rename(dst, rescue)
 }
 
 // current reports whether the copy at dst, unchanged since rec, is already the winning package's file. A store item never
