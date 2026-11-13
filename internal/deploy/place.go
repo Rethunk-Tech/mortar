@@ -448,10 +448,10 @@ func (p Place) drop(m *Manifest, prev Manifest, q Plan) error {
 }
 
 // keep is Purge for a Play that leaves its files in place: a file that still holds our bytes stays for the next Play,
-// and one the game or a mod rewrote is taken back as always and dropped from the record. A journal with nothing left to
+// and one the game or a mod rewrote is taken back as always and marked undone. A journal with nothing left to
 // keep goes, so the next Play starts clean.
 func (p Place) keep(ctx context.Context, m *Manifest, log *opLog) error {
-	var kept []Placed
+	kept := 0
 	var errs []error
 	for i, o := range m.Ops {
 		if err := ctx.Err(); err != nil {
@@ -461,7 +461,7 @@ func (p Place) keep(ctx context.Context, m *Manifest, log *opLog) error {
 			continue
 		}
 		if holdsOurBytes(o) {
-			kept = append(kept, o)
+			kept++
 			continue
 		}
 		if err := undoDst(m, o, i, log); err != nil {
@@ -469,20 +469,19 @@ func (p Place) keep(ctx context.Context, m *Manifest, log *opLog) error {
 		}
 		m.Ops[i].Undone = true
 		errs = append(errs, log.add(step{U: &i}, false))
+		at(fmt.Sprintf("kept-undone-logged:%d", i))
 	}
-	if len(kept) == 0 {
+	if kept == 0 {
 		// Nothing left to keep: the journal goes with the last file, and the next Play starts clean.
 		errs = append(errs, log.close())
 		at("journal")
 		return errors.Join(errors.Join(errs...), saveNotes(m.View.JournalDir, m.notes), safefs.RemoveAll(m.View.JournalDir))
 	}
-	m.Ops = kept
 	if err := adopt(m, log); err != nil {
 		return errors.Join(errors.Join(errs...), err, log.close())
 	}
 	errs = append(errs, log.close())
-	// The keep log's indices name the pre-shortened ops; leaving it would mark the wrong files undone on the next Play.
-	_ = safefs.Remove(logPath(m.View.JournalDir))
+	// The files taken back stay on the record, marked undone, so the log's indices name the same files before and after.
 	errs = append(errs, saveNotes(m.View.JournalDir, m.notes), persist(*m))
 	at("kept")
 	return errors.Join(errs...)

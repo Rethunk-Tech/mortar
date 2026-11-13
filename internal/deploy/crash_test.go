@@ -156,3 +156,45 @@ func TestRecoveryNeverDeletesAFileOfThePlayersThatWasNotPlaced(t *testing.T) {
 		t.Fatalf("the player's file = %q", got)
 	}
 }
+
+// A crash in a keep purge that gave the player's file back, then a startup recovery and another Play, still ends, once
+// the journal is taken back, with the player's file where it was and no rescue of it.
+func TestACrashInAKeepPurgeThatGaveThePlayersFileBackIsRecovered(t *testing.T) {
+	mode := Mode{Reuse: ReuseStat}
+	dll := func(r *rig) string { return filepath.Join(r.install, "winhttp.dll") }
+	play := func(r *rig) {
+		d := Place{Mode: mode}
+		p, err := d.Plan(r.view, r.install, r.files)
+		if err != nil {
+			t.Fatal(err)
+		}
+		m, err := d.Apply(t.Context(), p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		write(t, dll(r), "rewritten by the game")
+		_ = d.Purge(t.Context(), m)
+	}
+	steps := sequence(t, play)
+	from := slices.Index(steps, "logged:2") + 1
+	for i := from; i < len(steps); i++ {
+		r := crashRig(t)
+		start := testfs.Tree(t, r.install)
+		got, fired := crashAt(i, func() { play(r) })
+		if !fired {
+			t.Fatalf("the crash at step %d did not fire", i)
+		}
+		if err := (Place{}).Recover(t.Context(), r.view.JournalDir, nil); err != nil {
+			t.Fatalf("crash at %s: recover: %v", got[i], err)
+		}
+		if err := r.play(t, mode); err != nil {
+			t.Fatalf("crash at %s: next Play: %v", got[i], err)
+		}
+		if err := (Place{}).DiscardKept(t.Context(), r.view.JournalDir); err != nil {
+			t.Fatalf("crash at %s: discard: %v", got[i], err)
+		}
+		if tree := testfs.Tree(t, r.install); !maps.Equal(tree, start) {
+			t.Fatalf("crash at %s: tree differs:\n got %v\nwant %v", got[i], tree, start)
+		}
+	}
+}

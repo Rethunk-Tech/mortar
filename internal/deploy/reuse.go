@@ -18,8 +18,8 @@ const (
 	ReuseStat
 )
 
-// previous reads the journal of a Play that left its files in place: the record by folded destination, for the files
-// the next Play may keep.
+// previous reads the journal of a Play that left its files in place: the record of the files not taken back by folded
+// destination, for the files the next Play may keep.
 func previous(dir string) (Manifest, map[string]int, bool, error) {
 	var m Manifest
 	found, err := datadir.ReadJournal(journalPath(dir), nil, &m)
@@ -31,7 +31,10 @@ func previous(dir string) (Manifest, map[string]int, bool, error) {
 	}
 	byDst := make(map[string]int, len(m.Ops))
 	for i, o := range m.Ops {
-		byDst[safefs.FoldCase(o.Dst)] = i
+		// A file taken back is the player's or the game's again, whatever stands at its path now.
+		if !o.Undone {
+			byDst[safefs.FoldCase(o.Dst)] = i
+		}
 	}
 	return m, byDst, true, nil
 }
