@@ -101,17 +101,23 @@ func TestDarwinMarkersAreTheExecutablesSteamLaunchesOnMacOS(t *testing.T) {
 	}
 }
 
-func TestLinuxMarkerIsASlashPathBelowTheInstall(t *testing.T) {
-	g := GameInfo{ID: "x", Name: "x", Marker: "x.exe", LinuxMarker: "_linux/game.bin", Loaders: []GameLoader{{ID: "l"}}, Deploy: DeployProfile}
+func TestLinuxMarkerDirHoldsTheNativeBuild(t *testing.T) {
+	g := GameInfo{ID: "x", Name: "x", Marker: "x.exe", LinuxMarker: "game.bin", LinuxMarkerDir: "_linux", Loaders: []GameLoader{{ID: "l"}}, Deploy: DeployProfile}
 	if err := g.Validate(); err != nil {
-		t.Fatalf("valid linuxMarker rejected: %v", err)
+		t.Fatalf("valid linuxMarkerDir rejected: %v", err)
 	}
 	for _, bad := range []string{"../x", "/abs"} {
 		ng := g
-		ng.LinuxMarker = bad
+		ng.LinuxMarkerDir = bad
 		if ng.Validate() == nil {
-			t.Fatalf("linuxMarker %q validated", bad)
+			t.Fatalf("linuxMarkerDir %q validated", bad)
 		}
+	}
+	// Released builds skip a game whose linuxMarker holds a folder, so the catalog must never carry one.
+	ng := g
+	ng.LinuxMarker = "_linux/game.bin"
+	if ng.Validate() == nil {
+		t.Fatal("linuxMarker with a folder validated")
 	}
 	m, err := BundledManifest()
 	if err != nil {
@@ -127,8 +133,8 @@ func TestLinuxMarkerIsASlashPathBelowTheInstall(t *testing.T) {
 	if !ok {
 		t.Fatal("darkest-dungeon is not in the catalog")
 	}
-	if found.LinuxMarker != "_linux/darkest.bin.x86_64" {
-		t.Errorf("linuxMarker %q", found.LinuxMarker)
+	if found.LinuxMarkerPath() != "_linux/darkest.bin.x86_64" {
+		t.Errorf("linux marker path %q", found.LinuxMarkerPath())
 	}
 	if found.Paths["mods"].Linux != "{install}/mods" {
 		t.Errorf("linux mods path %q", found.Paths["mods"].Linux)

@@ -10777,7 +10777,8 @@
       },
       "marker": "Darkest.exe",
       "markerDir": "_windows/win64",
-      "linuxMarker": "_linux/darkest.bin.x86_64",
+      "linuxMarker": "darkest.bin.x86_64",
+      "linuxMarkerDir": "_linux",
       "metadata": [],
       "paths": {
         "mods": {

@@ -53,7 +53,7 @@ Sources: Vortex's `game-darkestdungeon` (`Nexus-Mods/vortex-games`, `index.js:12
 
 - Steam builds start `_windows/win64/Darkest.exe`; GOG (product `1450711444`) and Epic (AppName `36cbf259e631478eaac6ea244e55a709`) hold it at `_windowsnosteam/win64/Darkest.exe` (`index.js:18`, "Epic exe is same as GOG"). A store's `marker` in the catalog names the executable when it is not the game's own, for finding the install and for a direct start.
 - The GOG folder `Darkest Dungeon` is Minigalaxy's: the product title `Darkest Dungeon®` (`api.gog.com/products/1450711444`) with everything but letters, digits and spaces dropped (`get_install_directory_name`). No source names the folder GOG's own installer makes.
-- Steam's native launch entries are `_linux/darkest.bin.x86_64` (64-bit Linux) and `_osx/darkest.app` (macOS, a bundle whose inner executable no source names). The Linux build is catalogued as `linuxMarker` `_linux/darkest.bin.x86_64`.
+- Steam's native launch entries are `_linux/darkest.bin.x86_64` (64-bit Linux) and `_osx/darkest.app` (macOS, a bundle whose inner executable no source names). The Linux build is catalogued as `linuxMarker` `darkest.bin.x86_64` in `linuxMarkerDir` `_linux`.
 
 ## Starbound
 

@@ -45,7 +45,7 @@ func (g catalogOnly) GameProcesses() []string {
 		out = []string{info.Marker, stem}
 	}
 	if info.LinuxMarker != "" {
-		out = append(out, path.Base(info.LinuxMarker))
+		out = append(out, info.LinuxMarker)
 	}
 	if info.DarwinMarker != "" {
 		out = append(out, path.Base(info.DarwinMarker))
@@ -60,7 +60,7 @@ func (g catalogOnly) GameProcesses() []string {
 // Linux build's executable.
 func (g catalogOnly) ValidInstall(dir string) error {
 	info, _ := components.Game(string(g))
-	for _, m := range []string{info.MarkerPath(), filepath.FromSlash(info.LinuxMarker), filepath.FromSlash(info.DarwinMarker), info.Stores.StoreMarker("gog"), info.Stores.StoreMarker("epic"), info.Stores.StoreMarker("xbox")} {
+	for _, m := range []string{info.MarkerPath(), filepath.FromSlash(info.LinuxMarkerPath()), filepath.FromSlash(info.DarwinMarker), info.Stores.StoreMarker("gog"), info.Stores.StoreMarker("epic"), info.Stores.StoreMarker("xbox")} {
 		if m != "" && safefs.IsFile(filepath.Join(dir, m)) {
 			return nil
 		}

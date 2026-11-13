@@ -467,7 +467,7 @@ func directExe(inst Install, exe string) string {
 	if info, ok := components.Game(inst.Game); ok && exe == "" {
 		switch {
 		case inst.Platform == "linux" && info.LinuxMarker != "":
-			exe = filepath.Join(inst.Dir, filepath.FromSlash(cmp.Or(info.LinuxStart, info.LinuxMarker)))
+			exe = filepath.Join(inst.Dir, filepath.FromSlash(cmp.Or(info.LinuxStart, info.LinuxMarkerPath())))
 		case inst.Platform == "darwin" && info.DarwinMarker != "":
 			exe = filepath.Join(inst.Dir, filepath.FromSlash(info.DarwinMarker))
 		case strings.HasSuffix(strings.ToLower(info.Marker), ".exe"):

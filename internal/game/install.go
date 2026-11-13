@@ -80,7 +80,7 @@ func newInstall(info components.GameInfo, store, dir, prefix, origin string) Ins
 // platformOf is the OS the build in dir is for on host goos: the native Linux or macOS build when dir holds the
 // catalog's LinuxMarker or DarwinMarker and not its Marker, else the platform Marker implies.
 func platformOf(info components.GameInfo, dir, goos string) string {
-	native := map[string]string{"linux": info.LinuxMarker, "darwin": info.DarwinMarker}[goos]
+	native := map[string]string{"linux": info.LinuxMarkerPath(), "darwin": info.DarwinMarker}[goos]
 	if native != "" && !safefs.IsFile(filepath.Join(dir, filepath.FromSlash(info.MarkerPath()))) && safefs.IsFile(filepath.Join(dir, filepath.FromSlash(native))) {
 		return goos
 	}

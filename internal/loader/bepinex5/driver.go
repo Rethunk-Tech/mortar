@@ -174,7 +174,7 @@ func contributeLinux(plan *launchplan.Plan, p loader.ProfileView, m marker) erro
 	if err != nil {
 		return err
 	}
-	if err := plan.OverrideExe(ID, filepath.Join(p.InstallDir, filepath.FromSlash(g.LinuxMarker))); err != nil {
+	if err := plan.OverrideExe(ID, filepath.Join(p.InstallDir, filepath.FromSlash(g.LinuxMarkerPath()))); err != nil {
 		return err
 	}
 	plan.ForCopy = forCopy(p, false)
