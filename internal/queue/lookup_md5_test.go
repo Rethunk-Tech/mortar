@@ -47,8 +47,7 @@ func TestLookupMD5APIFailureIsATranslatableUserError(t *testing.T) {
 	if failureKind(err) != FailMD5List {
 		t.Fatalf("lookupMD5 kind %q, want %q", failureKind(err), FailMD5List)
 	}
-	var ue *usererr.Error
-	if !errors.As(err, &ue) {
+	if _, ok := errors.AsType[*usererr.Error](err); !ok {
 		t.Fatalf("lookupMD5 should wrap a translatable usererr, got %T %v", err, err)
 	}
 }
