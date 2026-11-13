@@ -79,7 +79,7 @@ func (s *Service) RemoveDependency(gameID, dir, pkg string) error {
 		if err != nil {
 			return err
 		}
-		if err := safefs.WriteFile(csproj, []byte(project), 0o644); err != nil {
+		if err := safefs.WriteFileAtomic(csproj, []byte(project), 0o644); err != nil {
 			return err
 		}
 		src := filepath.Dir(csproj)
@@ -158,5 +158,5 @@ func undeclareDependency(src, guid string) error {
 	if body == string(raw) {
 		return nil
 	}
-	return safefs.WriteFile(path, []byte(body), 0o644)
+	return safefs.WriteFileAtomic(path, []byte(body), 0o644)
 }

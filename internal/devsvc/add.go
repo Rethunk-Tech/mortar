@@ -170,7 +170,7 @@ func pinGameRoot(dir, gameDir string) error {
 	if root == "" && msbuild.Property(string(body), "GameRootDir") == "" {
 		return nil
 	}
-	return safefs.WriteFile(props, []byte(setProp(string(body), "GameRootDir", root)), 0o600)
+	return safefs.WriteFileAtomic(props, []byte(setProp(string(body), "GameRootDir", root)), 0o600)
 }
 
 // ParseRepo reads owner/name, or a github.com address (https or git@), as owner and name.

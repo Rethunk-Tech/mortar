@@ -835,5 +835,5 @@ func writeUserProps(dir, gameDir string) error {
 		return fmt.Errorf("the game folder %w", err)
 	}
 	body := "<Project>\n  <PropertyGroup>\n    <GameRootDir>" + msbuild.Escape(filepath.Clean(gameDir)+string(filepath.Separator)) + "</GameRootDir>\n  </PropertyGroup>\n</Project>\n"
-	return safefs.WriteFile(filepath.Join(dir, "Config.Build.user.props"), []byte(body), 0o600)
+	return safefs.WriteFileAtomic(filepath.Join(dir, "Config.Build.user.props"), []byte(body), 0o600)
 }

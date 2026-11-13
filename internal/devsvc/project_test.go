@@ -337,3 +337,25 @@ func TestEditingOnlyTheIDPrefixDropsTheOldAssembly(t *testing.T) {
 		t.Errorf("another file went: %v", err)
 	}
 }
+
+// Editing a project file replaces it whole, so a crash mid-write leaves the player's original: a hardlink to the old
+// file still reading the old text shows the edit never wrote into it.
+func TestEditFileReplacesTheFileRatherThanWritingIntoIt(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "Mod.csproj")
+	if err := os.WriteFile(path, []byte("old"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	link := path + ".before"
+	if err := os.Link(path, link); err != nil {
+		t.Skip("no hardlinks here:", err)
+	}
+	if err := editFile(path, func(string) string { return "new" }); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(path); string(b) != "new" {
+		t.Fatalf("file = %q", b)
+	}
+	if b, _ := os.ReadFile(link); string(b) != "old" {
+		t.Fatalf("the edit wrote into the original: %q", b)
+	}
+}

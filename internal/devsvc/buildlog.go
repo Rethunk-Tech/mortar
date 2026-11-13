@@ -60,7 +60,7 @@ func (s *Service) keepBuildLog(p settings.DevProject, args []string, out []byte,
 		slog.Warn("devsvc: keeping the build log", "err", err)
 		return
 	}
-	if err := safefs.WriteFile(filepath.Join(s.BuildLogDir, buildLogName(p.Name, p.Dir)), []byte(body), 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(filepath.Join(s.BuildLogDir, buildLogName(p.Name, p.Dir)), []byte(body), 0o600); err != nil {
 		slog.Warn("devsvc: keeping the build log", "err", err)
 	}
 }

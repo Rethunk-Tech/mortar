@@ -32,7 +32,7 @@ func (s *Service) applyLicense(ctx context.Context, dir, key string) error {
 	if err != nil {
 		return licenseTextErr(key, err)
 	}
-	return safefs.WriteFile(filepath.Join(dir, "LICENSE"), []byte(body), 0o644)
+	return safefs.WriteFileAtomic(filepath.Join(dir, "LICENSE"), []byte(body), 0o644)
 }
 
 func licenseTextErr(key string, err error) error {

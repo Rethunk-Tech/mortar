@@ -95,7 +95,7 @@ func (s *Service) withPDB(ctx context.Context, tool, path string) (string, error
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return "", err
 	}
-	if err := safefs.WriteFile(dll, body, 0o600); err != nil {
+	if err := safefs.WriteFileAtomic(dll, body, 0o600); err != nil {
 		return "", err
 	}
 	if _, err := s.run(ctx, dir, tool, "-r", filepath.Dir(path), "-genpdb", "-o", dir, dll); err != nil {

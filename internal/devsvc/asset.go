@@ -146,7 +146,7 @@ func writeTracked(dir, name string, body []byte) error {
 	if err := os.MkdirAll(filepath.Join(dir, ".mortar"), 0o750); err != nil {
 		return err
 	}
-	return safefs.WriteFile(filepath.Join(dir, ".mortar", name), body, 0o644)
+	return safefs.WriteFileAtomic(filepath.Join(dir, ".mortar", name), body, 0o644)
 }
 
 // assetKindOf is the catalog asset kind of the project in dir; empty for a code project, built from the template or
@@ -268,7 +268,7 @@ func writeFiles(dir string, files map[string][]byte) error {
 		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
 			return err
 		}
-		if err := safefs.WriteFile(p, body, 0o644); err != nil {
+		if err := safefs.WriteFileAtomic(p, body, 0o644); err != nil {
 			return err
 		}
 	}
@@ -355,7 +355,7 @@ func editManifest(dir string, edit func(raw map[string]any)) error {
 	if err != nil {
 		return err
 	}
-	return safefs.WriteFile(file, append(out, '\n'), 0o644)
+	return safefs.WriteFileAtomic(file, append(out, '\n'), 0o644)
 }
 
 // manifestDependencies lists manifest.json's dependencies as packages and versions, the loader left out.

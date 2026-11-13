@@ -51,7 +51,7 @@ func (s *Service) AddDependency(gameID, dir, pkg, version string, soft bool) err
 		return err
 	}
 	return s.wire(context.Background(), p, func() error {
-		if err := safefs.WriteFile(csproj, []byte(withDependency(string(raw), pkg, version, soft)), 0o644); err != nil {
+		if err := safefs.WriteFileAtomic(csproj, []byte(withDependency(string(raw), pkg, version, soft)), 0o644); err != nil {
 			return err
 		}
 		return s.syncDependencies(gameID, p)
@@ -187,7 +187,7 @@ func editUserProps(dir string, fn func(string) (string, error)) error {
 	if err != nil || out == string(raw) {
 		return err
 	}
-	return safefs.WriteFile(path, []byte(out), 0o600)
+	return safefs.WriteFileAtomic(path, []byte(out), 0o600)
 }
 
 // setUserDependency points pkg's folder property at folder and lists pkg as a MortarDependencyFolder, so the template
@@ -268,7 +268,7 @@ func (s *Service) syncDependencies(gameID string, p settings.DevProject) error {
 		}
 	}
 	if referenced != string(raw) {
-		if err := safefs.WriteFile(csproj, []byte(referenced), 0o644); err != nil {
+		if err := safefs.WriteFileAtomic(csproj, []byte(referenced), 0o644); err != nil {
 			return err
 		}
 	}

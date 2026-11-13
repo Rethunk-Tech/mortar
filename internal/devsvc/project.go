@@ -461,7 +461,7 @@ func editFile(path string, fn func(string) string) error {
 		return err
 	}
 	if next := fn(string(body)); next != string(body) {
-		return safefs.WriteFile(path, []byte(next), 0o644)
+		return safefs.WriteFileAtomic(path, []byte(next), 0o644)
 	}
 	return nil
 }
