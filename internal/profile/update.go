@@ -1,7 +1,7 @@
 package profile
 
 import (
-	"bytes"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -470,12 +470,12 @@ func sameFile(a, b string) (bool, error) {
 	if ia.Size() != ib.Size() {
 		return false, nil
 	}
-	ba, err := safefs.ReadFile(a)
+	ha, err := safefs.HashFile(a, sha256.New())
 	if err != nil {
 		return false, err
 	}
-	bb, err := safefs.ReadFile(b)
-	return bytes.Equal(ba, bb), err
+	hb, err := safefs.HashFile(b, sha256.New())
+	return ha == hb, err
 }
 
 func copyOver(src, dst string) error {

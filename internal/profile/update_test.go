@@ -554,3 +554,26 @@ func TestMovedKeysUsesEntryStoreKeys(t *testing.T) {
 		}
 	}
 }
+
+// Comparing two large copies streams them: an update carries over a mod folder whose files can be hundreds of MB.
+// Not parallel, because the allocation count is process-wide.
+func TestSameFileStreamsLargeFiles(t *testing.T) {
+	dir := t.TempDir()
+	body := strings.Repeat("x", 8<<20)
+	a, b := filepath.Join(dir, "a"), filepath.Join(dir, "b")
+	for _, p := range []string{a, b} {
+		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var before, after runtime.MemStats
+	runtime.ReadMemStats(&before)
+	same, err := sameFile(a, b)
+	runtime.ReadMemStats(&after)
+	if err != nil || !same {
+		t.Fatalf("sameFile = %v, %v", same, err)
+	}
+	if grew := after.TotalAlloc - before.TotalAlloc; grew > 1<<20 {
+		t.Fatalf("comparing two 8 MiB files allocated %d bytes", grew)
+	}
+}
