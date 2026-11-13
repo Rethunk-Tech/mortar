@@ -40,7 +40,7 @@ func signedManifest(t *testing.T, serial uint64, public ed25519.PrivateKey) ([]b
 	if err != nil {
 		t.Fatal(err)
 	}
-	return body, ed25519.Sign(public, body)
+	return body, Sign(ListCatalog, body, public)
 }
 
 func newKey(t *testing.T) (ed25519.PublicKey, ed25519.PrivateKey) {
@@ -71,16 +71,16 @@ func signedServer(t *testing.T, body, signature []byte) *Client {
 func TestVerifySignature(t *testing.T) {
 	public, private := newKey(t)
 	body, signature := signedManifest(t, 1, private)
-	if err := Verify(body, signature, public); err != nil {
+	if err := Verify(ListCatalog, body, signature, public); err != nil {
 		t.Fatalf("valid signature: %v", err)
 	}
 	tampered := append([]byte(nil), body...)
 	tampered[0] ^= 1
-	if err := Verify(tampered, signature, public); err == nil {
+	if err := Verify(ListCatalog, tampered, signature, public); err == nil {
 		t.Fatal("tampered manifest was accepted")
 	}
 	wrong, _ := newKey(t)
-	if err := Verify(body, signature, wrong); err == nil {
+	if err := Verify(ListCatalog, body, signature, wrong); err == nil {
 		t.Fatal("signature verified with the wrong key")
 	}
 }
@@ -397,7 +397,7 @@ func TestLoadRefusesManifestWithoutCatalogShape(t *testing.T) {
 	public, private := newKey(t)
 	base := bundledSerial(t)
 	body := []byte(`{"serial":` + strconv.FormatUint(base+1, 10) + `,"components":[],"games":[{"id":"stardew","name":"Stardew Valley","steamAppId":"413150","marker":"Stardew Valley.dll","loader":"SMAPI"}]}`)
-	signature := ed25519.Sign(private, body)
+	signature := Sign(ListCatalog, body, private)
 	client := signedServer(t, body, signature)
 	manifest, err := client.Load(t.Context(), nil, public)
 	if err == nil || manifest.Serial != base {

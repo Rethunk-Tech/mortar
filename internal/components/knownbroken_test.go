@@ -1,7 +1,6 @@
 package components
 
 import (
-	"crypto/ed25519"
 	"errors"
 	"fmt"
 	"net/http"
@@ -52,7 +51,7 @@ func TestLoadKnownBrokenVerifiesAndRefusesARollback(t *testing.T) {
 		return fmt.Appendf(nil, `{"game":"lc","serial":%d,"entries":[{"ids":{"thunderstore":"A-B"},"through":"1.0.0","reason":"r"}]}`, serial)
 	}
 	served := body(5)
-	sig := ed25519.Sign(private, served)
+	sig := Sign(ListKnownBroken, served, private)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/lc.json.sig" {
 			_, _ = w.Write(sig)
@@ -75,7 +74,7 @@ func TestLoadKnownBrokenVerifiesAndRefusesARollback(t *testing.T) {
 	}
 	// An older, validly signed list than the cached one is a rollback.
 	served = body(3)
-	sig = ed25519.Sign(private, served)
+	sig = Sign(ListKnownBroken, served, private)
 	cache.Now = func() time.Time { return time.Now().Add(48 * time.Hour) }
 	if l, err := c.LoadKnownBroken(t.Context(), cache, public, "lc"); err != nil || l.Serial != 5 {
 		t.Fatalf("after a rollback = %+v, %v (want the cached serial 5)", l, err)

@@ -1678,8 +1678,27 @@ func enableForSandbox(games []GameInfo) {
 	}
 }
 
-// Verify checks a detached Ed25519 signature without parsing the manifest.
-func Verify(manifest, signature, publicKey []byte) error {
+// Domain prefixes mixed into each signed list so a signature for one never verifies as another, even with the same key.
+const (
+	ListCatalog      = "mortar-catalog-v1\n"
+	ListKnownBroken  = "mortar-known-broken-v1\n"
+	ListSuppressions = "mortar-suppressions-v1\n"
+)
+
+func signedMessage(listType string, payload []byte) []byte {
+	msg := make([]byte, len(listType)+len(payload))
+	copy(msg, listType)
+	copy(msg[len(listType):], payload)
+	return msg
+}
+
+// Sign is the detached Ed25519 signature of listType and payload.
+func Sign(listType string, payload []byte, key ed25519.PrivateKey) []byte {
+	return ed25519.Sign(key, signedMessage(listType, payload))
+}
+
+// Verify checks a detached Ed25519 signature over listType and the payload without parsing it.
+func Verify(listType string, manifest, signature, publicKey []byte) error {
 	key, err := parsePublicKey(publicKey)
 	if err != nil {
 		return err
@@ -1688,7 +1707,7 @@ func Verify(manifest, signature, publicKey []byte) error {
 	if err != nil {
 		return err
 	}
-	if !ed25519.Verify(key, manifest, sig) {
+	if !ed25519.Verify(key, signedMessage(listType, manifest), sig) {
 		return errors.New("component manifest signature is invalid")
 	}
 	return nil
@@ -1898,7 +1917,7 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 	var fetchFailure error
 	fetch := func() (cachedManifest, error) {
 		_, manifest, signature, err := c.fetch(ctx, func(url string, manifest, signature []byte) error {
-			if err := Verify(manifest, signature, publicKey); err != nil {
+			if err := Verify(ListCatalog, manifest, signature, publicKey); err != nil {
 				return fmt.Errorf("%w: %s: %w", ErrBadSignature, url, err)
 			}
 			parsed, err := Decode(manifest)
@@ -1950,7 +1969,7 @@ func serialFloors(cache *meta.Client, bundled Manifest, publicKey []byte) (oldSe
 		oldSerial = max(oldSerial, floor)
 	}
 	if old, ok := diskcache.Peek[cachedManifest](cache.Cache(), cacheName); ok {
-		if err := Verify(old.Value.Manifest, old.Value.Signature, publicKey); err == nil {
+		if err := Verify(ListCatalog, old.Value.Manifest, old.Value.Signature, publicKey); err == nil {
 			if parsed, err := Decode(old.Value.Manifest); err == nil {
 				oldSerial = max(oldSerial, parsed.Serial)
 			}
@@ -1962,7 +1981,7 @@ func serialFloors(cache *meta.Client, bundled Manifest, publicKey []byte) (oldSe
 // checkCached verifies a cache entry. The cache answers a failed fetch with its last copy however old, so its serial is
 // checked here too: a blocked download must not bring back a catalog older than this build's.
 func checkCached(entry cachedManifest, bundled Manifest, floor uint64, publicKey []byte) (Manifest, error) {
-	if err := Verify(entry.Manifest, entry.Signature, publicKey); err != nil {
+	if err := Verify(ListCatalog, entry.Manifest, entry.Signature, publicKey); err != nil {
 		return Manifest{}, fmt.Errorf("%w: cached copy: %w", ErrBadSignature, err)
 	}
 	parsed, err := Decode(entry.Manifest)
@@ -1985,7 +2004,7 @@ func (c *Client) UseCached(cache *meta.Client, publicKey []byte) bool {
 	}
 	cached, ok := diskcache.Peek[cachedManifest](cache.Cache(), cacheName)
 	entry := cached.Value
-	if !ok || Verify(entry.Manifest, entry.Signature, publicKey) != nil {
+	if !ok || Verify(ListCatalog, entry.Manifest, entry.Signature, publicKey) != nil {
 		return false
 	}
 	parsed, err := Decode(entry.Manifest)

@@ -118,7 +118,7 @@ func run(ctx context.Context, o options) error {
 		if err != nil {
 			return err
 		}
-		signature := ed25519.Sign(private, body)
+		signature := components.Sign(components.ListCatalog, body, private)
 		if err := safefs.WriteFile(o.signature, signature, 0o600); err != nil {
 			return fmt.Errorf("write component signature: %w", err)
 		}
@@ -126,7 +126,7 @@ func run(ctx context.Context, o options) error {
 		if err != nil {
 			return fmt.Errorf("read component public key: %w", err)
 		}
-		if err := components.Verify(body, signature, public); err != nil {
+		if err := components.Verify(components.ListCatalog, body, signature, public); err != nil {
 			return fmt.Errorf("verify component manifest: %w", err)
 		}
 	}
