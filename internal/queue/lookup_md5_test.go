@@ -37,7 +37,7 @@ func TestLookupMD5FailsClosedWhenFilesAPIFails(t *testing.T) {
 func TestLookupMD5APIFailureIsATranslatableUserError(t *testing.T) {
 	t.Parallel()
 	apiErr := errors.New("502 bad gateway")
-	_, err := lookupMD5(context.Background(), failingFiles{err: apiErr}, nexusmods.Title{Domain: "stardewvalley"}, Item{ModID: 10, FileID: 20})
+	_, err := lookupMD5(t.Context(), failingFiles{err: apiErr}, nexusmods.Title{Domain: "stardewvalley"}, Item{ModID: 10, FileID: 20})
 	if err == nil {
 		t.Fatal("lookupMD5: Files API failure must fail the download")
 	}
@@ -76,7 +76,7 @@ func TestInstallAnywaySkipsVerificationForThatItem(t *testing.T) {
 		d:     Deps{VerifyNexusMD5: func() bool { return true }},
 		items: []*Item{{ID: "b", State: StateQueued, ModID: 10, FileID: 20}},
 	}
-	if _, err := other.wantedMD5(context.Background(), failingFiles{err: errors.New("502")}, nexusmods.Title{Domain: "stardewvalley"}, Item{ID: "b"}); err == nil {
+	if _, err := other.wantedMD5(t.Context(), failingFiles{err: errors.New("502")}, nexusmods.Title{Domain: "stardewvalley"}, Item{ID: "b"}); err == nil {
 		t.Fatal("other items must still fail closed")
 	}
 }
