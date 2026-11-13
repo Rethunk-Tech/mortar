@@ -93,7 +93,7 @@ jobs:
 
       - name: Setup Go
         if: steps.changes.outputs.code == 'true'
-        uses: Rethunk-Tech/gh-actions/setup-go@00f86ab1d379ecfb8d7d5b5cfa6e21a2722ac159 # v1.25
+        uses: Rethunk-Tech/gh-actions/setup-go@4c3240b9077c81a6f03f499dafaec6494220aad5 # v1.27
         with:
           cache-key-suffix: ${{ github.ref == 'refs/heads/main' && steps.day.outputs.date || '' }}
           go-version-file: go.mod
