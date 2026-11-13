@@ -964,6 +964,20 @@ func TestNexusMD5OfANamedFileIsLookedUpAndRetryRefetches(t *testing.T) {
 	f.wait("retried", f.item(StateDone))
 }
 
+func TestNexusMD5LookupOfAnUnknownFileFailsInstall(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	f.s.d.VerifyNexusMD5 = func() bool { return true }
+	f.start()
+	named := req(999)
+	named.FileName = "missing.zip"
+	f.add(named)
+	st := f.wait("unknown file", f.item(StateFailed))
+	if !strings.Contains(st.Items[0].Error, "no file 999") {
+		t.Fatalf("error %q", st.Items[0].Error)
+	}
+}
+
 func TestRouteGivesAClickedFileToAPendingUpdate(t *testing.T) {
 	t.Parallel()
 	f := newFixture(t)

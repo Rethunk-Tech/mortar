@@ -162,15 +162,19 @@ func retryBackoff(n int) time.Duration {
 func (s *Service) verifyMD5() bool { return s.d.VerifyNexusMD5 != nil && s.d.VerifyNexusMD5() }
 
 // lookupMD5 reads the md5 of a file the queue did not choose itself (a link or a share named it, so its list was never
-// read). It is one quota-held request; a failure leaves the download unchecked rather than failing it.
-func lookupMD5(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item) string {
+// read). It is one quota-held request; a failure to fetch the list leaves the download unchecked rather than failing it.
+func lookupMD5(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item) (string, error) {
 	files, err := c.Files(ctx, t, it.ModID)
 	if err != nil {
 		slog.Warn("nexus md5: no file list for the mod, installing the file unchecked", "mod", it.ModID, "err", err, "file", it.FileID)
-		return ""
+		return "", nil
+	}
+	file := nexus.FileByID(files, it.FileID)
+	if file.FileID == 0 {
+		return "", usererr.New(usererr.NotFound, fmt.Sprintf("Nexus has no file %d on mod %d", it.FileID, it.ModID))
 	}
 	slog.Info("nexus md5: looked up file of mod", "file", it.FileID, "mod", it.ModID)
-	return nexus.FileByID(files, it.FileID).MD5
+	return file.MD5, nil
 }
 
 func (s *Service) checkNexusMD5(path, want string) error {
@@ -596,7 +600,12 @@ func (s *Service) download(ctx context.Context, it Item) error {
 
 // completeDownload checks the fetched file at path, then parks it for a merge question or installs it.
 func (s *Service) completeDownload(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item, path string, im nexus.Mod) error {
-	if err := s.checkNexusMD5(path, s.wantedMD5(ctx, c, t, it)); err != nil {
+	want, err := s.wantedMD5(ctx, c, t, it)
+	if err != nil {
+		download.Remove(path)
+		return err
+	}
+	if err := s.checkNexusMD5(path, want); err != nil {
 		download.Remove(path)
 		return err
 	}
@@ -646,7 +655,7 @@ func (s *Service) usableKey(id string) (string, int64) {
 }
 
 // wantedMD5 is the md5 the download must match: the one the queue read, else a lookup when checking is on.
-func (s *Service) wantedMD5(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item) string {
+func (s *Service) wantedMD5(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item) (string, error) {
 	s.mu.Lock()
 	want := ""
 	if cur := s.find(it.ID); cur != nil {
@@ -656,7 +665,7 @@ func (s *Service) wantedMD5(ctx context.Context, c *nexusmods.Client, t nexusmod
 	if want == "" && s.verifyMD5() {
 		return lookupMD5(ctx, c, t, it)
 	}
-	return want
+	return want, nil
 }
 
 // modInfo is the Nexus page data shown on the item. The picture and name are nice to have: a page that cannot be
