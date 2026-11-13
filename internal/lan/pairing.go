@@ -356,9 +356,14 @@ func (s *Service) handlePairFinish(w http.ResponseWriter, r *http.Request) {
 	now, remote := time.Now(), quotaPeer(remotePeer(r))
 	h.mu.Lock()
 	sess, ok := h.sessions[req.Session]
+	if !ok || sess.remote != remote {
+		h.mu.Unlock()
+		http.Error(w, "pairing session expired", http.StatusForbidden)
+		return
+	}
 	delete(h.sessions, req.Session)
 	h.mu.Unlock()
-	if !ok || sess.remote != remote || now.After(sess.expires) {
+	if now.After(sess.expires) {
 		http.Error(w, "pairing session expired", http.StatusForbidden)
 		return
 	}

@@ -912,3 +912,48 @@ func TestHelloSlotsAreSharedAcrossAnIPv6Prefix(t *testing.T) {
 		t.Fatalf("hello from another /64: %d, want 200", code)
 	}
 }
+
+func TestAWrongAddressDoesNotSpendTheHandshakeNonce(t *testing.T) {
+	t.Parallel()
+	s := NewService(Deps{Dir: t.TempDir()})
+	nonce := "n1"
+	s.nonces[nonce] = nonceRecord{peer: "192.0.2.1", expires: time.Now().Add(time.Hour), callerID: "peer"}
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://mortar.test/share", nil)
+	req.RemoteAddr = "192.0.2.9:1"
+	req.Header.Set(nonceHeader, nonce)
+	req.Header.Set(senderHeader, "peer")
+	if _, _, _, err := s.resolveShare(req); err == nil {
+		t.Fatal("a share from another address was accepted")
+	}
+	if _, kept := s.nonces[nonce]; !kept {
+		t.Fatal("the handshake nonce was spent")
+	}
+	req.RemoteAddr = "192.0.2.1:1"
+	if _, _, _, err := s.resolveShare(req); err == nil {
+		t.Fatal("an unpaired share was accepted")
+	}
+	if _, kept := s.nonces[nonce]; kept {
+		t.Fatal("the handshake nonce was still held after the named address used it")
+	}
+}
+
+func TestAWrongAddressDoesNotSpendThePairingSession(t *testing.T) {
+	t.Parallel()
+	s := NewService(Deps{Dir: t.TempDir()})
+	s.pairing.code = "AAAAAAAA"
+	s.pairing.expires = time.Now().Add(time.Hour)
+	s.pairing.sessions = map[string]pairSession{
+		"sess": {remote: "192.0.2.1", expires: time.Now().Add(time.Hour)},
+	}
+	body, _ := json.Marshal(pairFinishRequest{Session: "sess", Confirm: base64.RawStdEncoding.EncodeToString([]byte("x"))})
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://mortar.test"+pairFinishPath, bytes.NewReader(body))
+	req.RemoteAddr = "192.0.2.9:1"
+	rec := httptest.NewRecorder()
+	s.handlePairFinish(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("finish from another address: %d, want 403", rec.Code)
+	}
+	if _, kept := s.pairing.sessions["sess"]; !kept {
+		t.Fatal("the pairing session was spent")
+	}
+}

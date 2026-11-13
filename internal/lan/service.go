@@ -1074,15 +1074,19 @@ func (s *Service) releaseShare() {
 }
 
 // resolveShare finds the session key of a sealed share from the handshake its nonce names. The nonce is spent
-// either way, and must have been handed to the address now asking.
+// only after the address now asking is the one it was handed to.
 func (s *Service) resolveShare(r *http.Request) ([]byte, string, *sealedPeer, error) {
 	id, nonce := r.Header.Get(senderHeader), r.Header.Get(nonceHeader)
 	s.mu.Lock()
 	record, ok := s.nonces[nonce]
+	if !ok || record.peer != remotePeer(r) {
+		s.mu.Unlock()
+		return nil, "", nil, errors.New("handshake not recognised")
+	}
 	delete(s.nonces, nonce)
 	s.mu.Unlock()
 	key := s.book.key(id)
-	if !ok || key == nil || record.peer != remotePeer(r) || time.Now().After(record.expires) || record.callerID != id {
+	if key == nil || time.Now().After(record.expires) || record.callerID != id {
 		return nil, "", nil, errors.New("handshake not recognised")
 	}
 	selfID, err := s.book.self()
