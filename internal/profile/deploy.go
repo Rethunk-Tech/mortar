@@ -393,7 +393,6 @@ func (r *syncRun) place(rel string) error {
 	if statErr == nil && info.IsDir() {
 		statErr = errors.New("a folder is in the way")
 	}
-	winner := r.files[rel].key
 	absent := statErr != nil && info == nil
 	switch {
 	case statErr == nil && !recorded:
@@ -412,17 +411,7 @@ func (r *syncRun) place(rel string) error {
 			return err
 		}
 	case statErr == nil && changedSince(rec, dst):
-		if rec.Key == "" || r.sameMod(rec.Key, winner) {
-			// Still the package's file (an update or roll back carries the player's changes), with changes that stay;
-			// the record keeps it ownable when the package goes.
-			return nil
-		}
-		if !slices.Contains(r.files[rel].beaten, rec.Key) {
-			// Its entry was switched off or removed: the copy waits for that entry, as when nothing else lays it out.
-			if err := holdChanged(r.dir, rel, rec.Key); err != nil {
-				return err
-			}
-		} else if done, err := r.rescueBeaten(rel, dst); err != nil || done {
+		if stands, err := r.clearChanged(rel, dst, rec); err != nil || stands {
 			return err
 		}
 		absent = true
@@ -438,14 +427,7 @@ func (r *syncRun) place(rel string) error {
 		return err
 	}
 	if absent {
-		restored, err := restoreChanged(r.dir, rel, func(held string) bool { return r.sameMod(held, winner) })
-		if err != nil {
-			return err
-		}
-		if restored {
-			// Recorded as a changed copy of the winner's file, so it stays and is held again when the winner goes.
-			h, err := r.hashOf(rel)
-			r.next[rel] = placedRec{Hash: h, Size: -1, Key: winner}
+		if restored, err := r.restoreHeld(rel); err != nil || restored {
 			return err
 		}
 	}
@@ -461,6 +443,33 @@ func (r *syncRun) place(rel string) error {
 	}
 	r.next[rel], err = recordOf(h, dst)
 	return err
+}
+
+// clearChanged moves a changed copy out of the way of the entry that now lays rel out, unless that entry is the copy's
+// own mod (an update or roll back carries the player's changes), when the copy stands; the record keeps it ownable
+// when the package goes. The copy of an entry switched off or removed waits for that entry, as when nothing else lays
+// it out; one an enabled entry still ships is rescued.
+func (r *syncRun) clearChanged(rel, dst string, rec placedRec) (stands bool, err error) {
+	if rec.Key == "" || r.sameMod(rec.Key, r.files[rel].key) {
+		return true, nil
+	}
+	if !slices.Contains(r.files[rel].beaten, rec.Key) {
+		return false, holdChanged(r.dir, rel, rec.Key)
+	}
+	return r.rescueBeaten(rel, dst)
+}
+
+// restoreHeld puts back the copy of rel held for the entry that lays it out, recorded as a changed copy of that
+// entry's file so it stays and is held again when the entry goes.
+func (r *syncRun) restoreHeld(rel string) (bool, error) {
+	winner := r.files[rel].key
+	restored, err := restoreChanged(r.dir, rel, func(held string) bool { return r.sameMod(held, winner) })
+	if err != nil || !restored {
+		return false, err
+	}
+	h, err := r.hashOf(rel)
+	r.next[rel] = placedRec{Hash: h, Size: -1, Key: winner}
+	return true, err
 }
 
 // rescueBeaten moves a changed copy of a file another entry now wins (a reorder, a history revert) to a rescue name beside
