@@ -102,7 +102,7 @@ func writeConfig(profileDir, text string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return err
 	}
-	return safefs.WriteFile(path, []byte(text), 0o600)
+	return safefs.WriteFileAtomic(path, []byte(text), 0o600)
 }
 
 func readConfig(profileDir string) (string, error) {

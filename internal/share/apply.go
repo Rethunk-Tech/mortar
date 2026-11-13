@@ -62,7 +62,7 @@ func applyToFolder(folder string, id mod.ID, configs []Config) (wrote bool, err 
 		if err := os.MkdirAll(filepath.Dir(dest), 0o750); err != nil {
 			return wrote, err
 		}
-		if err := safefs.WriteFile(dest, c.Data, configPerm); err != nil {
+		if err := safefs.WriteFileAtomic(dest, c.Data, configPerm); err != nil {
 			return wrote, err
 		}
 		wrote = true

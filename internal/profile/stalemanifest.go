@@ -104,5 +104,5 @@ func setManifestVersion(path string, uniqueID mod.ID, version string) error {
 		return err
 	}
 	// Writing a new file breaks any reflink to the store copy, which is rewritten the same way.
-	return safefs.WriteFile(path, out, info.Mode().Perm())
+	return safefs.WriteFileAtomic(path, out, info.Mode().Perm())
 }

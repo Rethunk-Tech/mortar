@@ -114,7 +114,7 @@ func rewriteLoadAfter(root string, e Entry, m Component, dropped []mod.ID) error
 	if err != nil {
 		return err
 	}
-	return safefs.WriteFile(path, rewritten, 0o644)
+	return safefs.WriteFileAtomic(path, rewritten, 0o644)
 }
 
 func componentManifest(root, folder string) string {
