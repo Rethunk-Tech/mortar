@@ -31,6 +31,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 
@@ -42,7 +43,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -493,19 +493,12 @@ func downloadTransport(base http.RoundTripper) http.RoundTripper {
 // errInsecureRedirect refuses a redirect off TLS: SecureDownload checks only the address a download starts at.
 var errInsecureRedirect = errors.New("the download redirected to an address that is not https, so Mortar will not follow it")
 
-// New reads the saved queue: what was under way is queued again so a partial file can resume, and a file
-// waiting for a click is clicked again once the user resumes a queue that holds Nexus files.
-func New(d Deps) (*Service, error) {
-	if d.Now == nil {
-		d.Now = time.Now
+// secureClient copies the download client (or builds the default) with a redirect policy that refuses non-https hops.
+func secureClient(base *http.Client) *http.Client {
+	if base == nil {
+		base = &http.Client{Transport: downloadTransport(http.DefaultTransport), Timeout: 30 * time.Minute}
 	}
-	if d.Premium == nil {
-		d.Premium = func() bool { return false }
-	}
-	if d.HTTP == nil {
-		d.HTTP = &http.Client{Transport: downloadTransport(http.DefaultTransport), Timeout: 30 * time.Minute}
-	}
-	hc := *d.HTTP
+	hc := *base
 	next := hc.CheckRedirect
 	hc.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		if !source.SecureDownload(req.URL.String()) {
@@ -519,7 +512,19 @@ func New(d Deps) (*Service, error) {
 		}
 		return nil
 	}
-	d.HTTP = &hc
+	return &hc
+}
+
+// New reads the saved queue: what was under way is queued again so a partial file can resume, and a file
+// waiting for a click is clicked again once the user resumes a queue that holds Nexus files.
+func New(d Deps) (*Service, error) {
+	if d.Now == nil {
+		d.Now = time.Now
+	}
+	if d.Premium == nil {
+		d.Premium = func() bool { return false }
+	}
+	d.HTTP = secureClient(d.HTTP)
 	s := &Service{
 		d: d, kick: make(chan struct{}, 1), cancels: map[string]context.CancelFunc{},
 		premiumFetch: make(chan struct{}, 3), freeFetch: make(chan struct{}, 1),
