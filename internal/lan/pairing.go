@@ -298,7 +298,7 @@ func (s *Service) handlePairBegin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	session := randomToken()
-	now, remote := time.Now(), remotePeer(r)
+	now, remote := time.Now(), quotaPeer(remotePeer(r))
 	h := &s.pairing
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -353,7 +353,7 @@ func (s *Service) handlePairFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h := &s.pairing
-	now, remote := time.Now(), remotePeer(r)
+	now, remote := time.Now(), quotaPeer(remotePeer(r))
 	h.mu.Lock()
 	sess, ok := h.sessions[req.Session]
 	delete(h.sessions, req.Session)

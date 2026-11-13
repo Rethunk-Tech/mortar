@@ -5,8 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"maps"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -315,6 +317,42 @@ func TestOneHostCannotHoldEveryPairingSession(t *testing.T) {
 	}
 	if codes[http.StatusOK] != maxSessionsPerPeer {
 		t.Fatalf("answers = %v, want %d sessions from one host", codes, maxSessionsPerPeer)
+	}
+}
+
+func pairBeginFrom(t *testing.T, s *Service, addr string) int {
+	t.Helper()
+	_, msg, err := pairConfig().NewJoiner("AAAAAAAA", "x", "x")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := json.Marshal(pairBeginRequest{Msg: base64.RawStdEncoding.EncodeToString(msg)})
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://mortar.test"+pairBeginPath, bytes.NewReader(body))
+	req.RemoteAddr = addr
+	rec := httptest.NewRecorder()
+	s.handlePairBegin(rec, req)
+	return rec.Code
+}
+
+func TestPairingSessionsAreSharedAcrossAnIPv6Prefix(t *testing.T) {
+	t.Parallel()
+	host, _ := pairedService(t, nil, nil)
+	if _, err := host.PairCode(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	for i := range maxSessionsPerPeer {
+		addr := net.JoinHostPort(fmt.Sprintf("2001:db8::%x", i+1), "1")
+		if code := pairBeginFrom(t, host, addr); code != http.StatusOK {
+			t.Fatalf("begin %d from %s: %d", i+1, addr, code)
+		}
+	}
+	same := net.JoinHostPort("2001:db8::ff", "1")
+	if code := pairBeginFrom(t, host, same); code != http.StatusTooManyRequests {
+		t.Fatalf("begin from another address in the same /64: %d, want 429", code)
+	}
+	other := net.JoinHostPort("2001:db8:1::1", "1")
+	if code := pairBeginFrom(t, host, other); code != http.StatusOK {
+		t.Fatalf("begin from another /64: %d, want 200", code)
 	}
 }
 

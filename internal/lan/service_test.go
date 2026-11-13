@@ -884,3 +884,31 @@ func TestUnpairedShareLargerThanTheUnpairedCapIsRefused(t *testing.T) {
 		t.Fatalf("status = %d, want 413", response.Code)
 	}
 }
+
+func helloFrom(t *testing.T, s *Service, addr string) int {
+	t.Helper()
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://mortar.test/hello", nil)
+	req.RemoteAddr = addr
+	rec := httptest.NewRecorder()
+	s.handleHello(rec, req)
+	return rec.Code
+}
+
+func TestHelloSlotsAreSharedAcrossAnIPv6Prefix(t *testing.T) {
+	t.Parallel()
+	s := NewService(Deps{Dir: t.TempDir()})
+	for i := range maxNoncesPerPeer {
+		addr := net.JoinHostPort(fmt.Sprintf("2001:db8::%x", i+1), "1")
+		if code := helloFrom(t, s, addr); code != http.StatusOK {
+			t.Fatalf("hello %d from %s: %d", i+1, addr, code)
+		}
+	}
+	same := net.JoinHostPort("2001:db8::ff", "1")
+	if code := helloFrom(t, s, same); code != http.StatusTooManyRequests {
+		t.Fatalf("hello from another address in the same /64: %d, want 429", code)
+	}
+	other := net.JoinHostPort("2001:db8:1::1", "1")
+	if code := helloFrom(t, s, other); code != http.StatusOK {
+		t.Fatalf("hello from another /64: %d, want 200", code)
+	}
+}

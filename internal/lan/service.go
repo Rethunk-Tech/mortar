@@ -858,6 +858,7 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 	nonce := randomToken()
 	now := time.Now()
 	peer := remotePeer(r)
+	quota := quotaPeer(peer)
 	query := r.URL.Query()
 	callerID, challenge := query.Get("id"), query.Get("challenge")
 	if len(callerID) > maxHelloField || len(challenge) > maxHelloField || len(r.Host) > maxHelloHost {
@@ -869,7 +870,7 @@ func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {
 	for value, record := range s.nonces {
 		if now.After(record.expires) {
 			delete(s.nonces, value)
-		} else if record.peer == peer {
+		} else if quotaPeer(record.peer) == quota {
 			fromPeer++
 		}
 	}
@@ -915,10 +916,11 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	peer := remotePeer(r)
+	quota := quotaPeer(peer)
 	// A peer inside its rate limit is refused whatever sender it names. Only a sealed request has proved it is paired,
 	// so any other is charged before its body is read: the sender header alone is unauthenticated.
 	charged := !isSealed
-	if s.receiveLimited(peer) || charged && !s.allowReceive(peer) {
+	if s.receiveLimited(quota) || charged && !s.allowReceive(quota) {
 		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
 		return
 	}
@@ -954,7 +956,7 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		request.SenderID, session = sealed.id, sealed.session
 		key, paired = s.book.key(sealed.id), true
 	}
-	if !paired && !charged && !s.allowReceive(peer) {
+	if !paired && !charged && !s.allowReceive(quota) {
 		http.Error(w, "profile shares from this peer are temporarily rate limited", http.StatusTooManyRequests)
 		return
 	}
@@ -1215,6 +1217,26 @@ func remotePeer(r *http.Request) string {
 		return "unknown"
 	}
 	return r.RemoteAddr
+}
+
+// quotaPeer is the rate-limit and slot key for host: an IPv4 address itself, an IPv6 address as its /64. Privacy
+// addresses on one LAN otherwise each get their own handshake, pairing and guess budget.
+func quotaPeer(host string) string {
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return host
+	}
+	if v4 := ip.To4(); v4 != nil {
+		return v4.String()
+	}
+	ip = ip.To16()
+	if ip == nil {
+		return host
+	}
+	masked := make(net.IP, net.IPv6len)
+	copy(masked, ip)
+	clear(masked[8:])
+	return masked.String()
 }
 
 // browse rediscovers peers every second while Peers was asked recently, and otherwise waits to be woken.
