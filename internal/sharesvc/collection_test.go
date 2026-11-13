@@ -124,7 +124,7 @@ func TestImportCollectionRecordsRefOnNewProfile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.Import(t.Context(), "stardew", pv.Session, "", nil, false)
+	res, err := s.Import(t.Context(), "stardew", pv.Session, "", nil, false, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -144,7 +144,7 @@ func TestImportCollectionRecordsRefOnExistingProfile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.Import(t.Context(), "stardew", pv.Session, p.ID, nil, false)
+	res, err := s.Import(t.Context(), "stardew", pv.Session, p.ID, nil, false, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -165,7 +165,7 @@ func TestImportCollectionRecordsRefOnExistingProfile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err = s.Import(t.Context(), "stardew", pv.Session, p.ID, nil, false)
+	res, err = s.Import(t.Context(), "stardew", pv.Session, p.ID, nil, false, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,7 +294,7 @@ func TestCollectionImportAppliesArchiveForPremiumOnly(t *testing.T) {
 		if len(fetched) != 0 {
 			t.Fatal("archive fetched before Import")
 		}
-		res, err := s.Import(t.Context(), "stardew", pv.Session, "", nil, false)
+		res, err := s.Import(t.Context(), "stardew", pv.Session, "", nil, false, false)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -1,10 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Box, Button, Checkbox, Link, Typography } from '@mui/material'
+import { Alert, Box, Button, Checkbox, FormControlLabel, Link, Typography } from '@mui/material'
 import { alpha, type Theme, useTheme } from '@mui/material/styles'
 import { useRef } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
-import { listNames } from '../i18n/list.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { formatAuthors } from '../mods/authorNormalize.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
@@ -255,21 +254,39 @@ export function Tiles({
   mods,
   excluded,
   onToggle,
+  codeFiles,
+  withCode,
+  onWithCode,
 }: {
   mods: Mod[]
   excluded: ReadonlySet<string>
   onToggle: (key: string) => void
+  codeFiles: readonly string[]
+  withCode: boolean
+  onWithCode: (on: boolean) => void
 }) {
   const { t } = useLingui()
-  // A code's own files are programs nobody reviewed: no mod site scanned or signed them, so the player decides first.
-  const carried = mods
-    .filter((m) => m.filesFrom === 'code' && !excluded.has(m.key))
-    .map((m) => m.name)
+  // A code's own files are programs nobody reviewed: no mod site scanned or signed them, so they install only on an
+  // explicit opt-in, and the mods that bring them are not tiles until then.
+  const hasCode = mods.some((m) => m.filesFrom === 'code')
   return (
     <>
-      {carried.length > 0 ? (
+      {hasCode ? (
         <Alert severity="warning" sx={{ mb: space.gap }}>
-          {t`${{ names: listNames(carried) }} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it.`}
+          <FormControlLabel
+            control={<Checkbox checked={withCode} onChange={(e) => onWithCode(e.target.checked)} />}
+            label={t`Install code (.dll) shipped inside this profile`}
+          />
+          <Typography variant="body2">
+            {withCode
+              ? t`These files come with the code rather than from a mod site. Untick the box unless you trust who sent it:`
+              : t`Left out: these files come with the code rather than from a mod site. Tick the box only if you trust who sent it:`}
+          </Typography>
+          <Box component="ul" sx={{ m: 0, pl: space.gap }}>
+            {codeFiles.map((f) => (
+              <li key={f}>{f}</li>
+            ))}
+          </Box>
         </Alert>
       ) : null}
       <Box
@@ -279,14 +296,16 @@ export function Tiles({
           gap: '6px',
         }}
       >
-        {mods.map((m) => (
-          <Tile
-            key={m.key}
-            mod={m}
-            checked={!excluded.has(m.key)}
-            onToggle={() => onToggle(m.key)}
-          />
-        ))}
+        {mods
+          .filter((m) => m.filesFrom !== 'code')
+          .map((m) => (
+            <Tile
+              key={m.key}
+              mod={m}
+              checked={!excluded.has(m.key)}
+              onToggle={() => onToggle(m.key)}
+            />
+          ))}
       </Box>
     </>
   )

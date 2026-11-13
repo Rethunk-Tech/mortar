@@ -269,6 +269,20 @@ function skipped(
   return [...excluded, ...deps]
 }
 
+// The plugin DLLs a code carries stay out until the player opts in; the backend enforces the same default.
+function useCodeOptIn(preview: ShownPreview | null, excluded: ReadonlySet<string>) {
+  // The opt-in belongs to the preview it was ticked on, so a new preview starts unticked.
+  const [opt, setOpt] = useState<{ on: boolean; for: ShownPreview | null }>({
+    on: false,
+    for: null,
+  })
+  const withCode = opt.on && opt.for === preview
+  const setWithCode = (on: boolean) => setOpt({ on, for: preview })
+  const code = (preview?.mods ?? []).filter((m) => m.filesFrom === 'code').map((m) => m.key)
+  const leftOut = withCode ? excluded : new Set([...excluded, ...code])
+  return { withCode, setWithCode, leftOut }
+}
+
 // The preview actions the dialog's controls call; the external and local ones also remember what was previewed, for
 // the sign-in detour and Back.
 function useRememberedPreviews(
@@ -324,6 +338,7 @@ export function useImportFlow(
   const [folder, setFolder] = useState('')
   const [preview, setPreview] = useState<ShownPreview | null>(null)
   const [excluded, setExcluded] = useState<ReadonlySet<string>>(new Set())
+  const { withCode, setWithCode, leftOut } = useCodeOptIn(preview, excluded)
   const [asIs, setAsIs] = useState(false)
   const [error, setError] = useState('')
   const [previewBusy, setPreviewBusy] = useState(false)
@@ -363,15 +378,15 @@ export function useImportFlow(
     const opened = useImportDialog.getState().request?.run
     try {
       const session = preview?.session ?? ''
-      const skip = skipped(preview, excluded, asIs)
+      const skip = skipped(preview, leftOut, asIs)
       // A share can bring mods from a site nobody moderates; the first download from it is warned about here too.
       const sites = (preview?.mods ?? []).filter((m) => !skip.includes(m.key)).map((m) => m.site)
       if (!(await warnUnmoderated(sites))) {
         return
       }
       const result = replace
-        ? await Replace(game, session, profileId, skip, asIs)
-        : await Import(game, session, intoOpen ? profileId : '', skip, asIs)
+        ? await Replace(game, session, profileId, skip, asIs, withCode)
+        : await Import(game, session, intoOpen ? profileId : '', skip, asIs, withCode)
       const lan = useImportDialog.getState().request?.lan
       if (lan) {
         rememberLanProfile(lan, result.profile.id)
@@ -413,9 +428,11 @@ export function useImportFlow(
     setText,
     path,
     preview,
-    excluded,
+    excluded: leftOut,
     asIs,
     setAsIs,
+    withCode,
+    setWithCode,
     error,
     busy: previewBusy || importBusy,
     ...sources,

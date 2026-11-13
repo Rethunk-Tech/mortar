@@ -18,7 +18,7 @@ func TestReplaceSignedOutKeepsTheProfilesMods(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = s.Replace(t.Context(), "stardew", pv.Session, prof.ID, nil, false)
+	_, err = s.Replace(t.Context(), "stardew", pv.Session, prof.ID, nil, false, false)
 	got, _ := s.find("stardew", prof.ID)
 	if err == nil || len(got.Entries) == 0 {
 		t.Fatalf("Replace err %v, entries %d: a refused replace must keep the profile mods", err, len(got.Entries))

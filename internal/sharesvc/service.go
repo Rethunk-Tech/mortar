@@ -642,7 +642,7 @@ func (s *Service) ImportData(ctx context.Context, game, encoded string) (Result,
 	if err != nil {
 		return Result{}, err
 	}
-	return s.Import(ctx, game, pv.Session, "", nil, false)
+	return s.Import(ctx, game, pv.Session, "", nil, false, false)
 }
 
 // ImportExternal imports another manager's profile as the import wizard does by default: every mod, into a new
@@ -654,7 +654,7 @@ func (s *Service) ImportExternal(ctx context.Context, game string, external migr
 	if err != nil {
 		return Result{}, err
 	}
-	return s.Import(ctx, game, pv.Session, "", nil, false)
+	return s.Import(ctx, game, pv.Session, "", nil, false, false)
 }
 
 // PreviewExternal resolves missing external mods through the normal import resolver and keeps staged folders local.
@@ -995,19 +995,20 @@ func (s *Service) applySharedEntryNotes(game, profileID string, refs []share.Ref
 // is empty. Mods the preview marked unavailable are listed in the new profile's notes. A .mortar file's config files
 // are written once their mods are installed, except for mods the profile already had, whose config is the user's.
 // A preview resolved against another profile than profileID is resolved again, so a new profile made from a preview
-// of the open one still gets the mods the open one has.
-func (s *Service) Import(ctx context.Context, game, session, profileID string, exclude []string, asIs bool) (Result, error) {
-	return s.importWithBatch(ctx, game, session, profileID, exclude, "", false, asIs)
+// of the open one still gets the mods the open one has. Plugin DLLs a profile code or file carries install only when
+// withCode is set: no mod site scanned or signed them.
+func (s *Service) Import(ctx context.Context, game, session, profileID string, exclude []string, asIs, withCode bool) (Result, error) {
+	return s.importWithBatch(ctx, game, session, profileID, exclude, "", false, asIs, withCode)
 }
 
 // replace makes the share's order the profile's: its mods keep the order they were shared in, wherever they land.
 // asIs installs the share's Thunderstore packages at exactly their versions and without dependencies it left out.
-func (s *Service) importWithBatch(ctx context.Context, game, session, profileID string, exclude []string, batchID string, replace, asIs bool) (res Result, err error) {
+func (s *Service) importWithBatch(ctx context.Context, game, session, profileID string, exclude []string, batchID string, replace, asIs, withCode bool) (res Result, err error) {
 	cur, err := s.takePreview(game, session)
 	if err != nil {
 		return Result{}, err
 	}
-	run := &importRun{s: s, cur: cur, game: game, profileID: profileID, batchID: batchID, replace: replace, asIs: asIs, batchOpen: batchID != ""}
+	run := &importRun{s: s, cur: cur, game: game, profileID: profileID, batchID: batchID, replace: replace, asIs: asIs, withCode: withCode, batchOpen: batchID != ""}
 	defer func() {
 		if err != nil {
 			err = run.undo(err)
@@ -1046,6 +1047,7 @@ type importRun struct {
 	batchID   string
 	replace   bool
 	asIs      bool
+	withCode  bool
 	// batchOpen and created are what undo reverts.
 	batchOpen bool
 	created   bool
@@ -1080,7 +1082,7 @@ func (r *importRun) prepare(ctx context.Context, exclude []string) error {
 		stored = rs.storedKeys
 	}
 	r.mods = mods
-	r.plan = planImport(game, cur, mods, stored, exclude, r.asIs)
+	r.plan = planImport(game, cur, mods, stored, exclude, r.asIs, r.withCode)
 	if slices.ContainsFunc(r.plan.reqs, func(q queue.Request) bool { return q.Repo == "" && q.Package == "" }) && !s.d.SignedIn() {
 		return ErrSignedOut
 	}
@@ -1242,7 +1244,7 @@ type importPlan struct {
 	carried   []pack.LocalMod
 }
 
-func planImport(game string, cur *session, mods []Mod, stored map[string]bool, exclude []string, asIs bool) importPlan {
+func planImport(game string, cur *session, mods []Mod, stored map[string]bool, exclude []string, asIs, withCode bool) importPlan {
 	var plan importPlan
 	external := make(map[string]migrate.ModPreview, len(cur.external))
 	for i, im := range cur.external {
@@ -1262,6 +1264,9 @@ func planImport(game string, cur *session, mods []Mod, stored map[string]bool, e
 			if im, ok := external[m.Key]; ok {
 				plan.local = append(plan.local, im)
 			} else if lm, ok := carriedByKey[m.Key]; ok {
+				if lm.Dir == "" && !withCode {
+					continue
+				}
 				plan.carried = append(plan.carried, lm)
 			} else if stored[m.Key] {
 				plan.fromStore = append(plan.fromStore, storedEntry{key: m.Key, source: profile.Source{Kind: profile.KindLocal, Name: m.Name}.WithDisabled(m.Disabled)})
@@ -1392,7 +1397,7 @@ func (s *Service) followShareOrder(game, profileID string, refs []share.Ref) ([]
 
 // Replace makes profileID match the preview: missing mods are queued as Import does, entries not in the share
 // are removed, and local-only mods not in the share are kept. profileID must be the preview's target.
-func (s *Service) Replace(ctx context.Context, game, session, profileID string, exclude []string, asIs bool) (Result, error) {
+func (s *Service) Replace(ctx context.Context, game, session, profileID string, exclude []string, asIs, withCode bool) (Result, error) {
 	if profileID == "" {
 		return Result{}, usererr.Wrap(usererr.Invalid, errors.New("replace needs a profile"))
 	}
@@ -1409,7 +1414,7 @@ func (s *Service) Replace(ctx context.Context, game, session, profileID string, 
 	if err := s.d.Profiles.OpenHistoryBatch(game, profileID, batchID); err != nil {
 		return Result{}, err
 	}
-	return s.importWithBatch(ctx, game, session, profileID, exclude, batchID, true, asIs)
+	return s.importWithBatch(ctx, game, session, profileID, exclude, batchID, true, asIs, withCode)
 }
 
 // --- Config files ---

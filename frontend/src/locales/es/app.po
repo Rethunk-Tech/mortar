@@ -2650,6 +2650,10 @@ msgstr ""
 msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 msgstr ""
 
+#: src/share/ImportPreview.tsx
+msgid "Install code (.dll) shipped inside this profile"
+msgstr ""
+
 #: src/develop/EditProjectDialog.tsx
 msgid "Identity"
 msgstr ""
@@ -3097,10 +3101,6 @@ msgstr ""
 
 #: src/share/Included.tsx
 msgid "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot be linked"
-msgstr ""
-
-#: src/share/ImportPreview.tsx
-msgid "{names} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it."
 msgstr ""
 
 #: src/share/DestinationPanel.tsx
@@ -5094,6 +5094,10 @@ msgstr ""
 msgid "Change"
 msgstr ""
 
+#: src/share/ImportPreview.tsx
+msgid "These files come with the code rather than from a mod site. Untick the box unless you trust who sent it:"
+msgstr ""
+
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
 msgid "Browse"
@@ -5947,6 +5951,10 @@ msgstr ""
 
 #: src/share/IncludeOptions.tsx
 msgid "A link has no room for it. Use a file or a nearby computer."
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Left out: these files come with the code rather than from a mod site. Tick the box only if you trust who sent it:"
 msgstr ""
 
 #: src/firstrun/GameSetup.tsx

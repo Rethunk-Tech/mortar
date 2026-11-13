@@ -158,12 +158,14 @@ type Preview struct {
 	// Settings), so the player sees what will be written beside the mods.
 	ChangedFiles []string `json:"changedFiles,omitempty"`
 	// SkippedPrograms lists the executable files a profile code or file carried, which Mortar never copies.
-	SkippedPrograms []string    `json:"skippedPrograms,omitempty"`
-	Mods            []Mod       `json:"mods"`
-	Problems        []Problem   `json:"problems"`
-	SignedIn        bool        `json:"signedIn"`
-	Premium         bool        `json:"premium"`
-	Replace         ReplacePlan `json:"replace"`
+	SkippedPrograms []string `json:"skippedPrograms,omitempty"`
+	// CodeFiles lists the plugin DLLs a profile code or file carries, as mod/path; Import installs them only when told to.
+	CodeFiles []string    `json:"codeFiles,omitempty"`
+	Mods      []Mod       `json:"mods"`
+	Problems  []Problem   `json:"problems"`
+	SignedIn  bool        `json:"signedIn"`
+	Premium   bool        `json:"premium"`
+	Replace   ReplacePlan `json:"replace"`
 	// Collection is set for a Nexus collection import.
 	Collection *CollectionInfo `json:"collection,omitempty"`
 }

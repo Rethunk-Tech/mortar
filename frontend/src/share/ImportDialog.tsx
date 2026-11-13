@@ -266,7 +266,14 @@ function Body({ request }: { request: ImportRequest }) {
           {preview.collection ? <CollectionNotes collection={preview.collection} /> : null}
           <Problems preview={preview} excluded={flow.excluded} onLeaveOut={flow.toggle} />
           {hasMods ? (
-            <Tiles mods={preview.mods} excluded={flow.excluded} onToggle={flow.toggle} />
+            <Tiles
+              mods={preview.mods}
+              excluded={flow.excluded}
+              onToggle={flow.toggle}
+              codeFiles={preview.codeFiles ?? []}
+              withCode={flow.withCode}
+              onWithCode={flow.setWithCode}
+            />
           ) : null}
         </Box>
       ) : (

@@ -2656,6 +2656,10 @@ msgstr "Where the profile comes from"
 msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 msgstr "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 
+#: src/share/ImportPreview.tsx
+msgid "Install code (.dll) shipped inside this profile"
+msgstr "Install code (.dll) shipped inside this profile"
+
 #: src/develop/EditProjectDialog.tsx
 msgid "Identity"
 msgstr "Identity"
@@ -3104,10 +3108,6 @@ msgstr "Could not upload"
 #: src/share/Included.tsx
 msgid "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot be linked"
 msgstr "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot be linked"
-
-#: src/share/ImportPreview.tsx
-msgid "{names} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it."
-msgstr "{names} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it."
 
 #: src/share/DestinationPanel.tsx
 msgid "A share link names this profile and where each mod comes from, not the files themselves."
@@ -5100,6 +5100,10 @@ msgstr "Manage tools"
 msgid "Change"
 msgstr "Change"
 
+#: src/share/ImportPreview.tsx
+msgid "These files come with the code rather than from a mod site. Untick the box unless you trust who sent it:"
+msgstr "These files come with the code rather than from a mod site. Untick the box unless you trust who sent it:"
+
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
 msgid "Browse"
@@ -5954,6 +5958,10 @@ msgstr "Maximise"
 #: src/share/IncludeOptions.tsx
 msgid "A link has no room for it. Use a file or a nearby computer."
 msgstr "A link has no room for it. Use a file or a nearby computer."
+
+#: src/share/ImportPreview.tsx
+msgid "Left out: these files come with the code rather than from a mod site. Tick the box only if you trust who sent it:"
+msgstr "Left out: these files come with the code rather than from a mod site. Tick the box only if you trust who sent it:"
 
 #: src/firstrun/GameSetup.tsx
 #: src/games/GameSelect.tsx

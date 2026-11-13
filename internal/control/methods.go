@@ -887,7 +887,7 @@ var coreProfile = map[string]profileMethod{
 				if err != nil {
 					return nil, err
 				}
-				return s.Shares.Import(ctx, p.Game, preview.Session, id, nil, false)
+				return s.Shares.Import(ctx, p.Game, preview.Session, id, nil, false, false)
 			})
 		}
 		return s.Shares.CollectionStatus(ctx, p.Game, id)

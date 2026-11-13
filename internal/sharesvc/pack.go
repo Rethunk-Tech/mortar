@@ -99,6 +99,7 @@ func (s *Service) previewDraft(ctx context.Context, game string, d pack.Draft, p
 	out.Game = game
 	out.Settings += len(files)
 	out.SkippedPrograms = skipped
+	out.CodeFiles = codeFiles(d.Local)
 	s.mu.Lock()
 	if s.current != nil && s.current.id == out.Session {
 		s.current.preview.Mods = out.Mods
@@ -106,6 +107,7 @@ func (s *Service) previewDraft(ctx context.Context, game string, d pack.Draft, p
 		s.current.preview.Game = game
 		s.current.preview.Settings = out.Settings
 		s.current.preview.SkippedPrograms = skipped
+		s.current.preview.CodeFiles = out.CodeFiles
 		s.current.packFiles = files
 		s.current.carried = d.Local
 		s.current.importedFrom = importedFrom
@@ -134,6 +136,19 @@ func adoptLocalPlugins(out *Preview, d *pack.Draft, importedFrom string) {
 	}
 	out.Mods = kept
 	out.Problems = slices.DeleteFunc(out.Problems, func(p Problem) bool { return adopted[p.Key] })
+}
+
+// codeFiles are the DLLs of the pack's local mods that came inside it.
+func codeFiles(local []pack.LocalMod) []string {
+	var out []string
+	for _, m := range local {
+		for _, f := range m.Files {
+			if strings.HasSuffix(strings.ToLower(strings.TrimSuffix(f.Path, ".old")), ".dll") {
+				out = append(out, m.Name+"/"+f.Path)
+			}
+		}
+	}
+	return out
 }
 
 func packKey(index int) string { return "pack:" + strconv.Itoa(index) }

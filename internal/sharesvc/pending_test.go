@@ -257,7 +257,7 @@ func TestSharedArrivalKeepsThePlayersReorder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.Replace(ctx, "stardew", pv.Session, prof.ID, nil, false)
+	res, err := s.Replace(ctx, "stardew", pv.Session, prof.ID, nil, false, false)
 	if err != nil {
 		t.Fatal(err)
 	}

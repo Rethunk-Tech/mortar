@@ -2650,6 +2650,10 @@ msgstr "配置的来源"
 msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 msgstr "此压缩包包含同一模组的多个变体。请选择要安装的变体；更新时会保留它。"
 
+#: src/share/ImportPreview.tsx
+msgid "Install code (.dll) shipped inside this profile"
+msgstr ""
+
 #: src/develop/EditProjectDialog.tsx
 msgid "Identity"
 msgstr "身份"
@@ -3098,10 +3102,6 @@ msgstr "无法上传"
 #: src/share/Included.tsx
 msgid "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot be linked"
 msgstr "{count, plural, one {# 个你从压缩包添加的模组} other {# 个你从压缩包添加的模组}}无法关联"
-
-#: src/share/ImportPreview.tsx
-msgid "{names} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it."
-msgstr "{names} 通过此代码带来程序文件，而非来自模组站点。除非你信任发送者，否则请将其排除。"
 
 #: src/share/DestinationPanel.tsx
 msgid "A share link names this profile and where each mod comes from, not the files themselves."
@@ -5094,6 +5094,10 @@ msgstr "管理工具"
 msgid "Change"
 msgstr "更改"
 
+#: src/share/ImportPreview.tsx
+msgid "These files come with the code rather than from a mod site. Untick the box unless you trust who sent it:"
+msgstr ""
+
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
 msgid "Browse"
@@ -5948,6 +5952,10 @@ msgstr "最大化"
 #: src/share/IncludeOptions.tsx
 msgid "A link has no room for it. Use a file or a nearby computer."
 msgstr "链接放不下它。请使用文件或附近的电脑。"
+
+#: src/share/ImportPreview.tsx
+msgid "Left out: these files come with the code rather than from a mod site. Tick the box only if you trust who sent it:"
+msgstr ""
 
 #: src/firstrun/GameSetup.tsx
 #: src/games/GameSelect.tsx

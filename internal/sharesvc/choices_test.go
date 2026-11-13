@@ -74,7 +74,7 @@ func TestProblemChoicesTravelInAFileAndApplyOnImport(t *testing.T) {
 	if err != nil || pv.Choices != 2 {
 		t.Fatalf("preview choices = %d, %v; want the dismissal and the win", pv.Choices, err)
 	}
-	res, err := s.Import(t.Context(), "stardew", pv.Session, "", nil, false)
+	res, err := s.Import(t.Context(), "stardew", pv.Session, "", nil, false, false)
 	if err != nil {
 		t.Fatal(err)
 	}
