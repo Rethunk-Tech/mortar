@@ -38,6 +38,7 @@ type fixture struct {
 	premium      atomic.Bool
 	keep         atomic.Bool
 	cdn          http.HandlerFunc
+	files        http.HandlerFunc
 	limitNow     atomic.Bool
 	clock        atomic.Int64
 	mu           sync.Mutex
@@ -70,7 +71,11 @@ func newFixture(t *testing.T) *fixture {
 	f.premium.Store(true)
 	var srv *httptest.Server
 	mux := http.NewServeMux()
-	mux.HandleFunc("/v1/games/stardewvalley/mods/1/files.json", func(w http.ResponseWriter, _ *http.Request) {
+	mux.HandleFunc("/v1/games/stardewvalley/mods/1/files.json", func(w http.ResponseWriter, r *http.Request) {
+		if f.files != nil {
+			f.files(w, r)
+			return
+		}
 		f.headers(w)
 		fmt.Fprint(w, `{"files":[
 			{"file_id":10,"file_name":"a-1.0.zip","version":"1.0","category_name":"MAIN","size_kb":3,"is_primary":true,"md5_hash":"785d887b432c6e90f8ac1ac31ba3d845"},

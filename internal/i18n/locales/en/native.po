@@ -107,6 +107,9 @@ msgstr "Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplug
 msgid "Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose {quit}, then start Mortar again, or choose here."
 msgstr "Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose {quit}, then start Mortar again, or choose here."
 
+msgid "Nexus file list request failed"
+msgstr "Nexus file list request failed"
+
 msgid "Open a profile export"
 msgstr "Open a profile export"
 

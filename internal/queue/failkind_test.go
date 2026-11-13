@@ -32,6 +32,7 @@ func TestFailureKind(t *testing.T) {
 		{fmt.Errorf("read: %w", io.ErrUnexpectedEOF), FailNetwork},
 		{fmt.Errorf("download: %w", download.ErrIdle), FailNetwork},
 		{fmt.Errorf("nexus: %w", &httpkit.StatusError{Code: 503}), FailNetwork},
+		{usererr.Wrap(usererr.Network, &md5ListError{err: errors.New("502")}), FailMD5List},
 		{fmt.Errorf("nexus: %w", &httpkit.StatusError{Code: 403}), FailOther},
 		{errors.New("hash mismatch"), FailOther},
 	}

@@ -23,6 +23,7 @@ const (
 	FailDisk    = "disk"
 	FailNoBase  = "nobase"
 	FailMalware = "malware"
+	FailMD5List = "md5list"
 	FailOther   = "other"
 )
 
@@ -30,6 +31,8 @@ const (
 func failureKind(err error) string {
 	var full *store.DiskFullError
 	switch {
+	case errors.As(err, new(*md5ListError)):
+		return FailMD5List
 	case errors.Is(err, nexusmods.ErrUnauthorized):
 		return FailAuth
 	case errors.Is(err, nexus.ErrQuarantined):

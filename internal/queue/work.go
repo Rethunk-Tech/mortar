@@ -21,6 +21,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -161,13 +162,24 @@ func retryBackoff(n int) time.Duration {
 
 func (s *Service) verifyMD5() bool { return s.d.VerifyNexusMD5 != nil && s.d.VerifyNexusMD5() }
 
+// md5ListError is a Nexus Files() failure while looking up the md5 of a named file; failureKind maps it so the
+// failed row can offer InstallAnyway instead of retrying as a generic network blip.
+type md5ListError struct{ err error }
+
+func (e *md5ListError) Error() string { return e.err.Error() }
+func (e *md5ListError) Unwrap() error { return e.err }
+
+type nexusFiles interface {
+	Files(ctx context.Context, t nexusmods.Title, modID int) ([]nexusmods.File, error)
+}
+
 // lookupMD5 reads the md5 of a file the queue did not choose itself (a link or a share named it, so its list was never
-// read). It is one quota-held request; a failure to fetch the list leaves the download unchecked rather than failing it.
-func lookupMD5(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item) (string, error) {
+// read). It is one quota-held request; a failure to fetch the list fails the download.
+func lookupMD5(ctx context.Context, c nexusFiles, t nexusmods.Title, it Item) (string, error) {
 	files, err := c.Files(ctx, t, it.ModID)
 	if err != nil {
-		slog.Warn("nexus md5: no file list for the mod, installing the file unchecked", "mod", it.ModID, "err", err, "file", it.FileID)
-		return "", nil
+		slog.Warn("nexus md5: file list request failed", "mod", it.ModID, "err", err, "file", it.FileID)
+		return "", usererr.Wrap(usererr.Network, &md5ListError{err: fmt.Errorf("%s: %w", i18n.T("Nexus file list request failed"), err)})
 	}
 	file := nexus.FileByID(files, it.FileID)
 	if file.FileID == 0 {
@@ -655,13 +667,18 @@ func (s *Service) usableKey(id string) (string, int64) {
 }
 
 // wantedMD5 is the md5 the download must match: the one the queue read, else a lookup when checking is on.
-func (s *Service) wantedMD5(ctx context.Context, c *nexusmods.Client, t nexusmods.Title, it Item) (string, error) {
+func (s *Service) wantedMD5(ctx context.Context, c nexusFiles, t nexusmods.Title, it Item) (string, error) {
 	s.mu.Lock()
 	want := ""
+	skip := false
 	if cur := s.find(it.ID); cur != nil {
 		want = cur.fileMD5
+		skip = cur.skipMD5
 	}
 	s.mu.Unlock()
+	if skip {
+		return "", nil
+	}
 	if want == "" && s.verifyMD5() {
 		return lookupMD5(ctx, c, t, it)
 	}
@@ -824,6 +841,9 @@ func (s *Service) finish(id string, err error, unverified bool, change string) e
 	s.recordHistory(rec, StateDone)
 	s.mu.Lock()
 	if cur := s.find(id); cur != nil {
+		if cur.skipMD5 {
+			unverified = true
+		}
 		cur.State, cur.Progress, cur.key, cur.staged, cur.Unverified, cur.Change = StateDone, 100, "", "", unverified, change
 	}
 	s.mu.Unlock()

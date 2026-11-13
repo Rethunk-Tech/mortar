@@ -171,9 +171,10 @@ type Item struct {
 	FromLink bool   `json:"fromLink,omitempty"`
 	Speed    int64  `json:"speed"`
 	Error    string `json:"error"`
-	// ErrorKind classes a failed item's Error: network, blocked, auth, disk, malware or other.
+	// ErrorKind classes a failed item's Error: network, blocked, auth, disk, malware, md5list or other.
 	ErrorKind string `json:"errorKind,omitempty"`
-	// Detection is what the antivirus flagged when the item failed on it; InstallAnyway answers it.
+	// Detection is what the antivirus flagged when the item failed on it; InstallAnyway answers it, and also a
+	// named file whose Nexus file list could not be fetched (ErrorKind md5list).
 	Detection *Detection `json:"detection,omitempty"`
 	// AutoResume marks a paused item that goes on by itself when a download slot frees (see Top).
 	AutoResume bool `json:"autoResume,omitempty"`
@@ -240,6 +241,9 @@ type Item struct {
 	// started is when this attempt left the queue for a fetch; it is not persisted.
 	started time.Time
 	fileMD5 string
+	// skipMD5 is the player's InstallAnyway for a named file whose Nexus file list could not be fetched; that one
+	// item installs without looking the md5 up again.
+	skipMD5 bool
 	// busy counts the source's busy answers in a row; Retry starts it over.
 	busy int
 }
@@ -1015,16 +1019,27 @@ type Detection struct {
 }
 
 // InstallAnyway answers a detection: the player's confirmed choice to install the item although the antivirus flagged
-// it. It is recorded in the profile's history and in the download history, and the item runs again unscanned.
+// it, recorded in the profile's history and in the download history, and the item runs again unscanned. It also
+// answers a named file whose Nexus file list could not be fetched, which then skips md5 verification for that item.
 func (s *Service) InstallAnyway(id string) error {
 	s.mu.Lock()
 	var it *Item
 	for _, cur := range s.items {
-		if cur.ID == id && cur.State == StateFailed && cur.Detection != nil && !cur.Detection.Removed {
+		if cur.ID == id && cur.State == StateFailed {
 			it = cur
 		}
 	}
-	if it == nil || s.d.AllowUnscanned == nil {
+	if it == nil {
+		s.mu.Unlock()
+		return errors.New("nothing to install anyway")
+	}
+	if it.ErrorKind == FailMD5List {
+		it.skipMD5 = true
+		s.mu.Unlock()
+		s.Retry(id)
+		return nil
+	}
+	if it.Detection == nil || it.Detection.Removed || s.d.AllowUnscanned == nil {
 		s.mu.Unlock()
 		return errors.New("nothing to install anyway")
 	}

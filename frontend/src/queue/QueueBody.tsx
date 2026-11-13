@@ -227,6 +227,11 @@ function Failed({ items }: { items: Item[] }) {
           }
           actions={
             <>
+              {i.errorKind === 'md5list' ? (
+                <Button size="small" onClick={() => InstallAnyway(i.id).catch(reportUnexpected)}>
+                  {t`Install anyway`}
+                </Button>
+              ) : null}
               {i.detection && !i.detection.removed ? <InstallAnywayButton item={i} /> : null}
               {i.errorKind === 'disk' ? (
                 <Button size="small" onClick={() => openSettings('storage')}>
@@ -253,6 +258,9 @@ function Failed({ items }: { items: Item[] }) {
 function FailureText({ item }: { item: Item }) {
   const { t } = useLingui()
   const det = item.detection
+  if (!det && item.errorKind === 'md5list') {
+    return errorDetails(item.error)
+  }
   if (!det && item.errorKind === 'network') {
     return t`Could not reach ${{ source: sourceLabel(siteOf(item)) }}`
   }
