@@ -56,16 +56,23 @@ func newKey(t *testing.T) (ed25519.PublicKey, ed25519.PrivateKey) {
 func signedServer(t *testing.T, body, signature []byte) *Client {
 	t.Helper()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/components.json.sig" {
-			_, _ = w.Write(signature)
-			return
-		}
-		_, _ = w.Write(body)
+		writeCatalogFiles(w, r, body, signature)
 	}))
 	t.Cleanup(server.Close)
 	client := NewClient(server.Client())
 	client.ManifestURL = server.URL + "/components.json"
 	return client
+}
+
+func writeCatalogFiles(w http.ResponseWriter, r *http.Request, body, signature []byte) {
+	switch r.URL.Path {
+	case "/components.json.sig":
+		_, _ = w.Write(signature)
+	case "/components.json":
+		_, _ = w.Write(body)
+	default:
+		http.NotFound(w, r)
+	}
 }
 
 func TestVerifySignature(t *testing.T) {
@@ -126,6 +133,10 @@ func TestLoadRefusesSerialRollbackAndKeepsCachedManifest(t *testing.T) {
 			} else {
 				_, _ = w.Write(signature)
 			}
+			return
+		}
+		if r.URL.Path != "/components.json" {
+			http.NotFound(w, r)
 			return
 		}
 		if serveRollback {
@@ -202,8 +213,10 @@ func TestLoadTellsABadSignatureFromAnUnavailableManifest(t *testing.T) {
 			http.NotFound(w, r)
 		case r.URL.Path == "/components.json.sig":
 			_, _ = w.Write(signature)
-		default:
+		case r.URL.Path == "/components.json":
 			_, _ = w.Write(body)
+		default:
+			http.NotFound(w, r)
 		}
 	}))
 	t.Cleanup(server.Close)
@@ -618,11 +631,7 @@ func TestLoadFetchesAgainAManifestCachedWithoutThisBuildsStamp(t *testing.T) {
 	oldBody, oldSignature := signedManifest(t, base+1, private)
 	body, signature := signedManifest(t, base+2, private)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/components.json.sig" {
-			_, _ = w.Write(signature)
-			return
-		}
-		_, _ = w.Write(body)
+		writeCatalogFiles(w, r, body, signature)
 	}))
 	t.Cleanup(server.Close)
 	dir := t.TempDir()

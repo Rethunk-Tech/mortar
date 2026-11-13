@@ -9,7 +9,7 @@ import (
 )
 
 // LogSuppressionsURL is where each game's signed list of log lines hidden by default is published
-// (Rethunk-Tech/mortar-log-suppressions, the rolling release "lists"): <game>.json and <game>.json.sig.
+// (Rethunk-Tech/mortar-log-suppressions, the rolling release "lists"): <game>.json, <game>.json.sig and <game>.json.v2.sig.
 const LogSuppressionsURL = "https://github.com/Rethunk-Tech/mortar-log-suppressions/releases/download/lists/"
 
 // LogSuppression is a source of game log lines hidden unless the player shows it again, as settings.HiddenLogSource
@@ -48,6 +48,7 @@ func DecodeLogSuppressions(body []byte, game string) (LogSuppressionList, error)
 var logSuppressions = signedList[LogSuppressionList]{
 	prefix: meta.LogSuppressionsPrefix,
 	url:    LogSuppressionsURL,
+	list:   ListSuppressions,
 	decode: func(body []byte, game string) (LogSuppressionList, uint64, error) {
 		l, err := DecodeLogSuppressions(body, game)
 		return l, l.Serial, err

@@ -122,12 +122,19 @@ func run(ctx context.Context, o options) error {
 		if err := safefs.WriteFile(o.signature, signature, 0o600); err != nil {
 			return fmt.Errorf("write component signature: %w", err)
 		}
+		v2Signature := components.SignV2(private, components.ListCatalog, body)
+		if err := safefs.WriteFile(strings.TrimSuffix(o.signature, ".sig")+".v2.sig", v2Signature, 0o600); err != nil {
+			return fmt.Errorf("write component v2 signature: %w", err)
+		}
 		public, err := safefs.ReadFile(o.public)
 		if err != nil {
 			return fmt.Errorf("read component public key: %w", err)
 		}
 		if err := components.Verify(body, signature, public); err != nil {
 			return fmt.Errorf("verify component manifest: %w", err)
+		}
+		if err := components.VerifyV2(body, v2Signature, public, components.ListCatalog); err != nil {
+			return fmt.Errorf("verify component v2 manifest: %w", err)
 		}
 	}
 	var bundled bytes.Buffer

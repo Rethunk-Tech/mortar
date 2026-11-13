@@ -54,11 +54,14 @@ func TestLoadKnownBrokenVerifiesAndRefusesARollback(t *testing.T) {
 	served := body(5)
 	sig := ed25519.Sign(private, served)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/lc.json.sig" {
+		switch r.URL.Path {
+		case "/lc.json.sig":
 			_, _ = w.Write(sig)
-			return
+		case "/lc.json":
+			_, _ = w.Write(served)
+		default:
+			http.NotFound(w, r)
 		}
-		_, _ = w.Write(served)
 	}))
 	t.Cleanup(server.Close)
 	c := &Client{HTTP: server.Client(), KnownBrokenURL: server.URL + "/"}

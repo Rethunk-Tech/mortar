@@ -17,7 +17,7 @@ import (
 )
 
 // KnownBrokenURL is where each game's signed known-broken list is published (Rethunk-Tech/mortar-known-broken, the
-// rolling release "lists"): <game>.json and <game>.json.sig.
+// rolling release "lists"): <game>.json, <game>.json.sig and <game>.json.v2.sig.
 const KnownBrokenURL = "https://github.com/Rethunk-Tech/mortar-known-broken/releases/download/lists/"
 
 // BrokenIDs names one mod on each site it is on; one is enough.
@@ -214,6 +214,7 @@ func DecodeBrokenList(body []byte, game string) (BrokenList, error) {
 var knownBroken = signedList[BrokenList]{
 	prefix: meta.KnownBrokenPrefix,
 	url:    KnownBrokenURL,
+	list:   ListKnownBroken,
 	decode: func(body []byte, game string) (BrokenList, uint64, error) {
 		l, err := DecodeBrokenList(body, game)
 		return l, l.Serial, err

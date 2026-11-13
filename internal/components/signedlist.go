@@ -17,11 +17,13 @@ const (
 	signedListTTL = 24 * time.Hour
 )
 
-// signedList is a kind of per-game list published apart from the catalog and signed with its key: <game>.json and
-// <game>.json.sig under url, cached under prefix. decode checks a list for a game and gives its serial.
+// signedList is a kind of per-game list published apart from the catalog and signed with its key: <game>.json,
+// <game>.json.sig and <game>.json.v2.sig under url, cached under prefix. decode checks a list for a game and gives
+// its serial. list is the v2 domain (ListKnownBroken or ListSuppressions).
 type signedList[T any] struct {
 	prefix string
 	url    string
+	list   string
 	decode func(body []byte, game string) (T, uint64, error)
 }
 
@@ -34,6 +36,7 @@ func (l signedList[T]) floorName(game string) string { return "serial-floor-" + 
 type cachedSignedList struct {
 	List      []byte `json:"list"`
 	Signature []byte `json:"signature"`
+	Form      string `json:"form,omitempty"`
 }
 
 // load fetches game's list from base (l.url when empty), cached a day; a list that fails its signature or is older
@@ -41,7 +44,7 @@ type cachedSignedList struct {
 func (l signedList[T]) load(ctx context.Context, c *Client, cache *meta.Client, publicKey []byte, base, game string) (T, error) {
 	var zero T
 	trusted := func(e cachedSignedList) (T, uint64, bool) {
-		if Verify(e.List, e.Signature, publicKey) != nil {
+		if verifyCached(e.List, e.Signature, publicKey, l.list, e.Form) != nil {
 			return zero, 0, false
 		}
 		v, serial, err := l.decode(e.List, game)
@@ -64,11 +67,11 @@ func (l signedList[T]) load(ctx context.Context, c *Client, cache *meta.Client, 
 		if err != nil {
 			return cachedSignedList{}, err
 		}
-		sig, err := c.get(ctx, url+".sig", maxSignature)
+		sig, form, err := c.getListSignature(ctx, url, list, l.list, publicKey)
 		if err != nil {
 			return cachedSignedList{}, err
 		}
-		e := cachedSignedList{List: list, Signature: sig}
+		e := cachedSignedList{List: list, Signature: sig, Form: form}
 		_, serial, ok := trusted(e)
 		if !ok {
 			return cachedSignedList{}, fmt.Errorf("%w: %s", ErrBadSignature, url)

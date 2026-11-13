@@ -37,6 +37,10 @@ func releasesServer(t *testing.T, files map[string][2][]byte, order ...string) *
 			_, _ = w.Write(f[1])
 			return
 		}
+		if parts[1] != "components.json" {
+			http.NotFound(w, r)
+			return
+		}
 		_, _ = w.Write(f[0])
 	}))
 	t.Cleanup(server.Close)

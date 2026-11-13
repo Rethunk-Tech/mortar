@@ -61,6 +61,7 @@ jobs:
           subject-path: |
             components.json
             components.json.sig
+            components.json.v2.sig
 
       # Published releases are immutable, so each signed manifest is its own components-v2-<serial> release, created
       # once with both files; Mortar reads the newest one. The prefix is the schema's: tagPrefix in internal/components.
@@ -75,4 +76,4 @@ jobs:
           cp -- "$BUNDLE" components.intoto.jsonl
           gh release create "components-v2-$serial" --repo "$REPOSITORY" --target "$GITHUB_SHA" --latest=false \
             --title "Components v2 $serial" --notes "Signed component manifest $serial" components.json \
-            components.json.sig components.intoto.jsonl
+            components.json.sig components.json.v2.sig components.intoto.jsonl

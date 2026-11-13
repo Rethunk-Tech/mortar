@@ -1766,6 +1766,8 @@ func BundledAccepted(game, loader string) string {
 type cachedManifest struct {
 	Manifest  []byte `json:"manifest"`
 	Signature []byte `json:"signature"`
+	// Form is sigFormV2 or sigFormLegacy. Empty is a cache written by an older Mortar (legacy only).
+	Form string `json:"form,omitempty"`
 }
 
 // Client loads the signed manifest and downloads assets named by it.
@@ -1897,10 +1899,7 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 	oldSerial, floor := serialFloors(cache, bundled, publicKey)
 	var fetchFailure error
 	fetch := func() (cachedManifest, error) {
-		_, manifest, signature, err := c.fetch(ctx, func(url string, manifest, signature []byte) error {
-			if err := Verify(manifest, signature, publicKey); err != nil {
-				return fmt.Errorf("%w: %s: %w", ErrBadSignature, url, err)
-			}
+		_, manifest, signature, form, err := c.fetch(ctx, publicKey, func(url string, manifest []byte) error {
 			parsed, err := Decode(manifest)
 			if err != nil {
 				return err
@@ -1917,7 +1916,7 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 			fetchFailure = err
 			return cachedManifest{}, err
 		}
-		return cachedManifest{Manifest: manifest, Signature: signature}, nil
+		return cachedManifest{Manifest: manifest, Signature: signature, Form: form}, nil
 	}
 
 	var entry cachedManifest
@@ -1950,7 +1949,7 @@ func serialFloors(cache *meta.Client, bundled Manifest, publicKey []byte) (oldSe
 		oldSerial = max(oldSerial, floor)
 	}
 	if old, ok := diskcache.Peek[cachedManifest](cache.Cache(), cacheName); ok {
-		if err := Verify(old.Value.Manifest, old.Value.Signature, publicKey); err == nil {
+		if err := verifyCached(old.Value.Manifest, old.Value.Signature, publicKey, ListCatalog, old.Value.Form); err == nil {
 			if parsed, err := Decode(old.Value.Manifest); err == nil {
 				oldSerial = max(oldSerial, parsed.Serial)
 			}
@@ -1962,7 +1961,7 @@ func serialFloors(cache *meta.Client, bundled Manifest, publicKey []byte) (oldSe
 // checkCached verifies a cache entry. The cache answers a failed fetch with its last copy however old, so its serial is
 // checked here too: a blocked download must not bring back a catalog older than this build's.
 func checkCached(entry cachedManifest, bundled Manifest, floor uint64, publicKey []byte) (Manifest, error) {
-	if err := Verify(entry.Manifest, entry.Signature, publicKey); err != nil {
+	if err := verifyCached(entry.Manifest, entry.Signature, publicKey, ListCatalog, entry.Form); err != nil {
 		return Manifest{}, fmt.Errorf("%w: cached copy: %w", ErrBadSignature, err)
 	}
 	parsed, err := Decode(entry.Manifest)
@@ -1985,7 +1984,7 @@ func (c *Client) UseCached(cache *meta.Client, publicKey []byte) bool {
 	}
 	cached, ok := diskcache.Peek[cachedManifest](cache.Cache(), cacheName)
 	entry := cached.Value
-	if !ok || Verify(entry.Manifest, entry.Signature, publicKey) != nil {
+	if !ok || verifyCached(entry.Manifest, entry.Signature, publicKey, ListCatalog, entry.Form) != nil {
 		return false
 	}
 	parsed, err := Decode(entry.Manifest)
@@ -1999,22 +1998,23 @@ func (c *Client) UseCached(cache *meta.Client, publicKey []byte) bool {
 // fetch returns the address, manifest and signature of the newest published catalog that accept takes. A release whose
 // manifest fails accept (a bad signature, a serial below the floor) is skipped for the next older one, so one bad
 // release does not block every refresh; with none accepted the newest one's failure is returned.
-func (c *Client) fetch(ctx context.Context, accept func(url string, manifest, signature []byte) error) (string, []byte, []byte, error) {
+func (c *Client) fetch(ctx context.Context, publicKey []byte, accept func(url string, manifest []byte) error) (string, []byte, []byte, string, error) {
 	urls, err := c.manifestURLs(ctx)
 	if err != nil {
-		return "", nil, nil, err
+		return "", nil, nil, "", err
 	}
 	var first error
 	var firstURL string
 	for _, url := range urls {
 		manifest, err := c.get(ctx, url, maxManifest)
 		var signature []byte
+		var form string
 		if err == nil {
-			signature, err = c.get(ctx, url+".sig", maxSignature)
+			signature, form, err = c.getListSignature(ctx, url, manifest, ListCatalog, publicKey)
 		}
 		if err == nil {
-			if err = accept(url, manifest, signature); err == nil {
-				return url, manifest, signature, nil
+			if err = accept(url, manifest); err == nil {
+				return url, manifest, signature, form, nil
 			}
 		}
 		if first == nil {
@@ -2024,7 +2024,35 @@ func (c *Client) fetch(ctx context.Context, accept func(url string, manifest, si
 			break
 		}
 	}
-	return firstURL, nil, nil, first
+	return firstURL, nil, nil, "", first
+}
+
+func signatureAbsent(err error) bool {
+	var se *httpkit.StatusError
+	return errors.As(err, &se) && se.Code == http.StatusNotFound
+}
+
+// getListSignature fetches url+".v2.sig" and verifies it under list's domain. A present v2 signature that
+// fails is refused; only HTTP 404 falls back to url+".sig" verified over the raw payload.
+func (c *Client) getListSignature(ctx context.Context, url string, payload []byte, list string, publicKey []byte) ([]byte, string, error) {
+	v2, err := c.get(ctx, url+".v2.sig", maxSignature)
+	if err == nil {
+		if err := VerifyV2(payload, v2, publicKey, list); err != nil {
+			return nil, "", fmt.Errorf("%w: %s: %w", ErrBadSignature, url, err)
+		}
+		return v2, sigFormV2, nil
+	}
+	if !signatureAbsent(err) {
+		return nil, "", err
+	}
+	sig, err := c.get(ctx, url+".sig", maxSignature)
+	if err != nil {
+		return nil, "", err
+	}
+	if err := Verify(payload, sig, publicKey); err != nil {
+		return nil, "", fmt.Errorf("%w: %s: %w", ErrBadSignature, url, err)
+	}
+	return sig, sigFormLegacy, nil
 }
 
 func (c *Client) get(ctx context.Context, address string, limit int64) ([]byte, error) {
