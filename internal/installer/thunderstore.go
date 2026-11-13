@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/melonloader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/thunderpack"
+	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 var _ = Register(thunderstoreRules{})
@@ -146,11 +147,12 @@ func (thunderstoreRules) Layout(a Archive, g Game, _ Choices) (Layout, error) {
 			continue
 		}
 		file := File{Src: f, Target: TargetProfile, Rel: dest}
-		if i, ok := at[strings.ToLower(dest)]; ok {
+		key := winname.Fold(dest)
+		if i, ok := at[key]; ok {
 			l.Files[i] = file
 			continue
 		}
-		at[strings.ToLower(dest)] = len(l.Files)
+		at[key] = len(l.Files)
 		l.Files = append(l.Files, file)
 	}
 	return l, validate(l, g)

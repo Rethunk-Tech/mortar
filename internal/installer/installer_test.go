@@ -134,6 +134,12 @@ func TestLayoutGoldens(t *testing.T) {
 			"profile:BepInEx/plugins/Ns-Spy/manifest.json<-manifest.json",
 		},
 		{
+			"Thunderstore files flattened onto names differing only by a case fold", bep, "Ns-Fold",
+			map[string]string{"manifest.json": `{"name":"Fold","version_number":"1.0.0"}`, "a/ς.dll": "1", "b/σ.dll": "2"},
+			nil, "thunderstore-rules",
+			"profile:BepInEx/plugins/Ns-Fold/manifest.json<-manifest.json profile:BepInEx/plugins/Ns-Fold/σ.dll<-b/σ.dll",
+		},
+		{
 			"config and patchers Thunderstore package", bep, "Ns-Gen",
 			map[string]string{
 				"manifest.json": "\ufeff" + `{"name":"Gen","version_number":"1.0.0"}`, "icon.png": "i",
