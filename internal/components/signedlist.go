@@ -22,7 +22,6 @@ const (
 type signedList[T any] struct {
 	prefix string
 	url    string
-	domain string
 	decode func(body []byte, game string) (T, uint64, error)
 }
 
@@ -42,7 +41,7 @@ type cachedSignedList struct {
 func (l signedList[T]) load(ctx context.Context, c *Client, cache *meta.Client, publicKey []byte, base, game string) (T, error) {
 	var zero T
 	trusted := func(e cachedSignedList) (T, uint64, bool) {
-		if Verify(l.domain, e.List, e.Signature, publicKey) != nil {
+		if Verify(e.List, e.Signature, publicKey) != nil {
 			return zero, 0, false
 		}
 		v, serial, err := l.decode(e.List, game)

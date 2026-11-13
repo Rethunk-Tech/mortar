@@ -214,7 +214,6 @@ func DecodeBrokenList(body []byte, game string) (BrokenList, error) {
 var knownBroken = signedList[BrokenList]{
 	prefix: meta.KnownBrokenPrefix,
 	url:    KnownBrokenURL,
-	domain: ListKnownBroken,
 	decode: func(body []byte, game string) (BrokenList, uint64, error) {
 		l, err := DecodeBrokenList(body, game)
 		return l, l.Serial, err

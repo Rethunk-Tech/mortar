@@ -15,8 +15,8 @@ func TestParsePublicKeyReadsBothSpellings(t *testing.T) {
 	t.Parallel()
 	public, private := newKey(t)
 	body := []byte("manifest")
-	sig := Sign(ListCatalog, body, private)
-	if err := Verify(ListCatalog, body, sig, public); err != nil {
+	sig := ed25519.Sign(private, body)
+	if err := Verify(body, sig, public); err != nil {
 		t.Fatalf("a raw key: %v", err)
 	}
 	der, err := x509.MarshalPKIXPublicKey(public)
@@ -24,7 +24,7 @@ func TestParsePublicKeyReadsBothSpellings(t *testing.T) {
 		t.Fatal(err)
 	}
 	pemKey := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: der})
-	if err := Verify(ListCatalog, body, sig, pemKey); err != nil {
+	if err := Verify(body, sig, pemKey); err != nil {
 		t.Fatalf("a PEM key: %v", err)
 	}
 	if _, err := parsePublicKey([]byte("not a key")); err == nil {

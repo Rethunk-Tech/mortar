@@ -48,7 +48,6 @@ func DecodeLogSuppressions(body []byte, game string) (LogSuppressionList, error)
 var logSuppressions = signedList[LogSuppressionList]{
 	prefix: meta.LogSuppressionsPrefix,
 	url:    LogSuppressionsURL,
-	domain: ListSuppressions,
 	decode: func(body []byte, game string) (LogSuppressionList, uint64, error) {
 		l, err := DecodeLogSuppressions(body, game)
 		return l, l.Serial, err
