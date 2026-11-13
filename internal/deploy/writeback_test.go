@@ -377,3 +377,37 @@ func TestAKeepPurgeNotesAChangedFileWithNoProfileToGoTo(t *testing.T) {
 		t.Fatalf("notes = %+v", notes)
 	}
 }
+
+// A Play that builds on a kept journal and owns a folder the first Play did not leaves the player's files already in
+// it in the shared folder: they are the player's own, as they would be for a Play that placed everything.
+func TestAKeptPlayOwningANewFolderLeavesThePlayersFilesInIt(t *testing.T) {
+	t.Parallel()
+	rr := newRootRig(t)
+	mine := filepath.Join(rr.shared, "other", "player.cfg")
+	write(t, mine, "the player's own")
+	d := Place{Mode: Mode{Reuse: ReuseStat}}
+	play := func() {
+		t.Helper()
+		p, err := d.Plan(rr.view, rr.install, rr.files)
+		if err != nil {
+			t.Fatal(err)
+		}
+		m, err := d.Apply(t.Context(), p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := d.Purge(t.Context(), m); err != nil {
+			t.Fatal(err)
+		}
+	}
+	play()
+	write(t, filepath.Join(rr.profile, "other", "x.cfg"), "x")
+	rr.files = append(rr.files, launchplan.PlanFile{Src: filepath.Join(rr.profile, "other", "x.cfg"), Dst: filepath.Join("other", "x.cfg"), Root: "mods"})
+	play()
+	if got := read(mine); got != "the player's own" {
+		t.Fatalf("the player's file in the shared folder = %q", got)
+	}
+	if _, err := os.Lstat(filepath.Join(rr.profile, "other", "player.cfg")); !os.IsNotExist(err) {
+		t.Fatalf("the player's file was adopted into the profile: %v", err)
+	}
+}

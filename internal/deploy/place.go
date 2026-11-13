@@ -122,8 +122,10 @@ func (p Place) Apply(ctx context.Context, q Plan) (Manifest, error) {
 	var kept []bool
 	var carried []*Placed
 	if reuse {
-		// The player's own files are the ones the first Play found; the kept copies in the owned folders are Mortar's.
-		m.Existing, m.Gen = prev.Existing, prev.Gen+1
+		// The player's own files are the ones the first Play found; the kept copies in the owned folders are Mortar's. A
+		// folder no earlier Play owned holds only the player's.
+		fresh := slices.DeleteFunc(slices.Clone(q.Owned), func(o Owned) bool { return slices.Contains(prev.Owned, o) })
+		m.Existing, m.Gen = slices.Concat(prev.Existing, listOwned(fresh)), prev.Gen+1
 		// Rescues a crashed Play logged are heard about once this Play's notes are saved; its log goes below.
 		m.notes = prev.notes
 		// A file the previous Play placed that this plan no longer wants leaves now; the record naming it survives the
