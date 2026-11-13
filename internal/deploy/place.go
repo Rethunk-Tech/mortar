@@ -119,10 +119,13 @@ func (p Place) Apply(ctx context.Context, q Plan) (Manifest, error) {
 		}
 	}
 	m := Manifest{Dir: q.Dir, View: q.View, Owned: q.Owned, Existing: listOwned(q.Owned), Keep: p.Mode.Reuse != ReuseNone}
-	var kept, carried []bool
+	var kept []bool
+	var carried []*Placed
 	if reuse {
 		// The player's own files are the ones the first Play found; the kept copies in the owned folders are Mortar's.
 		m.Existing, m.Gen = prev.Existing, prev.Gen+1
+		// Rescues a crashed Play logged are heard about once this Play's notes are saved; its log goes below.
+		m.notes = prev.notes
 		// A file the previous Play placed that this plan no longer wants leaves now; the record naming it survives the
 		// removals, so a crash in between is recovered by the previous journal as it always was.
 		if err := p.drop(prev, q); err != nil {
@@ -145,17 +148,19 @@ func (p Place) Apply(ctx context.Context, q Plan) (Manifest, error) {
 	}
 	placed, runErr := p.placeAll(ctx, &m, log, kept, carried)
 	commitErr := commitPlaced(&m, placed, log)
+	notesErr := saveNotes(q.View.JournalDir, m.notes)
 	if runErr != nil || commitErr != nil {
-		return m, errors.Join(runErr, commitErr, log.close())
+		return m, errors.Join(runErr, commitErr, notesErr, log.close())
 	}
-	return m, errors.Join(log.close(), persist(m))
+	return m, errors.Join(notesErr, log.close(), persist(m))
 }
 
 // record is the manifest's files: a file the previous Play left standing as it is, or one this Play puts down, with the
 // source hash and sizes a later Play judges it unchanged by.
-func (p Place) record(q Plan, prev Manifest, prevDst map[string]int) (ops []Placed, kept, carried []bool, err error) {
+// carried holds the previous record of a file this Play puts down over the previous Play's copy.
+func (p Place) record(q Plan, prev Manifest, prevDst map[string]int) (ops []Placed, kept []bool, carried []*Placed, err error) {
 	kept = make([]bool, len(q.Ops))
-	carried = make([]bool, len(q.Ops))
+	carried = make([]*Placed, len(q.Ops))
 	for i, op := range q.Ops {
 		prevOp, hadPrev := Placed{}, false
 		if j, ok := prevDst[safefs.FoldCase(op.Dst)]; ok {
@@ -175,7 +180,7 @@ func (p Place) record(q Plan, prev Manifest, prevDst map[string]int) (ops []Plac
 		if hadPrev {
 			// The bytes at Dst are the previous Play's copy, taken back before this one's goes down; the player's own
 			// file, if one was set aside at the first Play, stays where it is.
-			pl.Displaced, carried[i] = prevOp.Displaced, true
+			pl.Displaced, carried[i] = prevOp.Displaced, &prevOp
 		} else if _, err := os.Lstat(op.Dst); err == nil {
 			pl.Displaced = displacedPath(q.View.JournalDir, prev.Gen+1, i)
 		}
@@ -185,7 +190,7 @@ func (p Place) record(q Plan, prev Manifest, prevDst map[string]int) (ops []Plac
 }
 
 // placeAll writes the files the record says this Play puts down, reporting progress once per file.
-func (p Place) placeAll(ctx context.Context, m *Manifest, log *opLog, kept, carried []bool) ([]int, error) {
+func (p Place) placeAll(ctx context.Context, m *Manifest, log *opLog, kept []bool, carried []*Placed) ([]int, error) {
 	var placed []int
 	total := len(m.Ops)
 	for i := range m.Ops {
@@ -284,13 +289,16 @@ func recordPlaced(pl *Placed) {
 	pl.Size, pl.MTime = st.Size(), st.ModTime().UnixNano()
 }
 
-func (p Place) put(m *Manifest, i int, log *opLog, carry bool) error {
+func (p Place) put(m *Manifest, i int, log *opLog, prev *Placed) error {
 	pl := &m.Ops[i]
 	n := fmt.Sprint(i)
 	switch {
-	case carry:
+	case prev != nil:
 		// The previous Play's copy goes before this one's arrives; a backup the first Play took stays where it is.
 		if err := datadir.MkdirParent(pl.Dst); err != nil {
+			return err
+		}
+		if err := rescueChanged(m, *prev, n, log); err != nil {
 			return err
 		}
 		if err := safefs.Remove(pl.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -317,6 +325,37 @@ func (p Place) put(m *Manifest, i int, log *opLog, carry bool) error {
 		return err
 	}
 	at("copied:" + n)
+	return nil
+}
+
+// rescueChanged keeps a previous Play's copy that changed after that Play's purge kept it (settings a mod saved in a
+// launch outside Mortar) beside it under the rescue name, on the log first, before this Play's copy replaces it. Nothing
+// else holds those bytes: the purge that would have written them back already ran.
+func rescueChanged(m *Manifest, prev Placed, n string, l *opLog) error {
+	st, err := os.Lstat(prev.Dst)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+	// A link holds none of our bytes, and an empty file where an unlogged copy was is that copy cut short.
+	if !st.Mode().IsRegular() || st.Size() == prev.Size && st.ModTime().UnixNano() == prev.MTime || !prev.Done && st.Size() == 0 {
+		return nil
+	}
+	if h, err := safefs.HashFile(prev.Dst, sha256.New()); err != nil || h == prev.Hash {
+		return err
+	}
+	rescue := RescueName(prev.Dst)
+	if err := l.add(step{R: rescue}, true); err != nil {
+		return err
+	}
+	at("play-rescue-logged:" + n)
+	slog.Warn("deploy: a placed file changed after the last Play; its bytes are kept", "dst", prev.Dst, "rescue", rescue)
+	if err := safefs.Rename(prev.Dst, rescue); err != nil {
+		return err
+	}
+	at("play-rescued:" + n)
+	m.notes = append(m.notes, Note{Path: rescue, Kind: NoteRescued})
 	return nil
 }
 

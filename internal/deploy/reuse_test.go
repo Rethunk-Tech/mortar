@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -74,6 +76,36 @@ func TestAChangedPlacedFileIsPlacedAgain(t *testing.T) {
 	}
 	if got := read(ini); got != "ini" {
 		t.Fatalf("doorstop_config.ini = %q, want the profile's copy back", got)
+	}
+	// The bytes written after the last Play's purge are no one's copy but the game folder's, so they are kept beside it.
+	if got := read(RescueName(ini)); got != "the settings a mod wrote, much longer than the original" {
+		t.Fatalf("rescue = %q, want the mod's settings", got)
+	}
+	if notes := Notes(r.view.JournalDir); len(notes) != 1 || notes[0].Path != RescueName(ini) || notes[0].Kind != NoteRescued {
+		t.Fatalf("notes = %+v", notes)
+	}
+}
+
+func TestATouchedButUnchangedPlacedFileIsPlacedAgainWithoutARescue(t *testing.T) {
+	t.Parallel()
+	r := newRig(t)
+	mode := Mode{Reuse: ReuseStat}
+	if err := r.play(t, mode); err != nil {
+		t.Fatal(err)
+	}
+	ini := filepath.Join(r.install, "doorstop_config.ini")
+	later := time.Now().Add(time.Hour)
+	if err := os.Chtimes(ini, later, later); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.play(t, mode); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(ini); got != "ini" {
+		t.Fatalf("doorstop_config.ini = %q", got)
+	}
+	if _, err := os.Lstat(RescueName(ini)); !os.IsNotExist(err) {
+		t.Fatalf("a file with our bytes was rescued: %v", err)
 	}
 }
 
@@ -233,5 +265,46 @@ func stripKeepFields(t *testing.T, dir string) {
 	}
 	if err := os.WriteFile(p, out, 0o600); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// A crash at any step of the Play that rescues a changed kept file, then a startup recovery and another Play, ends with
+// the changed bytes in the rescue file, noted, and the profile's copy placed.
+func TestACrashAtAnyPlayRescueStepKeepsTheChangedBytes(t *testing.T) {
+	mode := Mode{Reuse: ReuseStat}
+	setup := func() (*rig, string) {
+		r := newRig(t)
+		if err := r.play(t, mode); err != nil {
+			t.Fatal(err)
+		}
+		ini := filepath.Join(r.install, "doorstop_config.ini")
+		write(t, ini, "settings saved outside Mortar")
+		return r, ini
+	}
+	r, _ := setup()
+	steps, _ := crashAt(-1, func() { _ = r.play(t, mode) })
+	// The steps before the rescue and after the copy are the crash tests' of any Play.
+	from, to := slices.Index(steps, "play-rescue-logged:0"), slices.Index(steps, "copied:0")
+	if from < 0 || to < from {
+		t.Fatalf("no rescue step: %v", steps)
+	}
+	for i := from; i <= to; i++ {
+		r, ini := setup()
+		got, fired := crashAt(i, func() { _ = r.play(t, mode) })
+		if !fired {
+			t.Fatalf("the crash at step %d did not fire", i)
+		}
+		if err := (Place{}).Recover(t.Context(), r.view.JournalDir, nil); err != nil {
+			t.Fatalf("crash at %s: %v", got[i], err)
+		}
+		if err := r.play(t, mode); err != nil {
+			t.Fatalf("crash at %s: next Play: %v", got[i], err)
+		}
+		if read(ini) != "ini" || read(RescueName(ini)) != "settings saved outside Mortar" {
+			t.Fatalf("crash at %s: placed %q, rescue %q", got[i], read(ini), read(RescueName(ini)))
+		}
+		if notes := Notes(r.view.JournalDir); len(notes) != 1 || notes[0].Path != RescueName(ini) {
+			t.Fatalf("crash at %s: notes = %+v", got[i], notes)
+		}
 	}
 }
