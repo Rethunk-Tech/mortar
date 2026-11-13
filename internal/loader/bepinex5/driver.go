@@ -200,8 +200,8 @@ func contributeLinux(plan *launchplan.Plan, p loader.ProfileView, m marker) erro
 // it, so nothing is placed in the game folder and the player must set the returned launch option in Steam. The
 // Doorstop flags are passed as on Linux, ignored by the game, so Owns can tell the profile's process.
 func contributeDarwin(plan *launchplan.Plan, p loader.ProfileView, m marker, g components.GameInfo) error {
-	app, _, ok := strings.Cut(g.DarwinMarker, "/")
-	if !ok || !strings.HasSuffix(app, ".app") {
+	app, err := darwinAppName(g.DarwinMarker)
+	if err != nil {
 		return errors.New(g.Name + " names no macOS app")
 	}
 	place := bepinex.PlacementFor(p.Dir, "darwin")
@@ -218,12 +218,31 @@ func contributeDarwin(plan *launchplan.Plan, p loader.ProfileView, m marker, g c
 	if err != nil {
 		return err
 	}
-	if err := safefs.WriteFile(script, bepinex.SetScriptExecutable(b, strings.TrimSuffix(app, ".app")), 0o755); err != nil {
+	if err := safefs.WriteFile(script, bepinex.SetScriptExecutable(b, app), 0o755); err != nil {
 		return err
 	}
 	plan.AddArgs(bepinex.LaunchArgs(p.Dir, m.Doorstop, false)...)
 	plan.SteamLaunchOption = place.LaunchOption
 	return nil
+}
+
+// darwinAppName is the name run_bepinex.sh wants as executable_name: the .app folder without its
+// suffix, or the CFBundleExecutable when the install folder is the bundle (a marker that starts at
+// Contents/).
+func darwinAppName(marker string) (string, error) {
+	if strings.HasPrefix(marker, "Contents/") {
+		base := marker[strings.LastIndex(marker, "/")+1:]
+		if base == "" || base == "Contents" || base == "MacOS" {
+			return "", errors.New("no app")
+		}
+		return base, nil
+	}
+	for _, seg := range strings.Split(marker, "/") {
+		if strings.HasSuffix(seg, ".app") {
+			return strings.TrimSuffix(seg, ".app"), nil
+		}
+	}
+	return "", errors.New("no app")
 }
 
 // linuxDoorstop is the pack's 64-bit Linux Doorstop library. Only a pack for a game with a native Linux build ships

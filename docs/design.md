@@ -21,12 +21,6 @@ A malicious mod is code in the game process, so it can read the player's `~/.ssh
 
 [TODO.md](../TODO.md#the-linux-game-sandbox-is-unproven-on-real-games)
 
-### From Later, picked 2026-11-01
-
-Each part goes in the repo that owns its concern; Mortar keeps the product side (wording, settings, findings, UI). A library change ships and is tagged before Mortar bumps to it.
-
-- **macOS, what is left after the Linux-testable parts** (darwin Steam roots, `clonefile`, `darwinMarker` support, BepInEx launch-script placement with the Steam launch option, SMAPI's app-bundle paths and mod deployment, a darwin vet in the gate, and a `darwinMarker` for every game whose Steam launch entry names its executable already exist): games Steam names only as a `.app` need the executable from a Mac install's `Info.plist`. [TODO.md](../TODO.md#catalog-darwin-markers-are-missing-for-bundles-steam-names-only-as-a-app)
-
 ### Lethal Company content packs under `mortar/<kind>/`
 
 Mortar's side is `internal/devsvc/content.go` and the catalog's `devTemplate.content`. The loaders are published on Thunderstore as team Mortar's Posters, Boombox and Television (`Mortar-Posters`, `Mortar-Boombox`, `Mortar-Television`), which the catalog names as each content folder's `dependency` (`internal/components/components.json:393`, `:417`, `:425`): New mod's tick recommends the folder's loader (`contentRecommends`, `internal/devsvc/content.go:83`), and a release flags a pack whose manifest does not depend on it (`internal/devsvc/content.go:206`).

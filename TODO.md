@@ -114,26 +114,6 @@ and macOS.
 - `bun run gate` stays clean. No seccomp, network namespace, Windows or macOS
   sandbox ships in this change.
 
-## Catalog darwin markers are missing for bundles Steam names only as a .app
-
-Steam's app info gives the inner executable for the games with a `darwinMarker` ([docs/games.md](docs/games.md#macos-markers)). Games whose macOS launch entry is just `<Name>.app`, and the layouts where the install folder is the bundle (Dome Keeper, Sun Haven), have none: the executable name is in the bundle's `Info.plist` (`CFBundleExecutable`), which only a Mac install shows. SMAPI's launch behaviour on macOS rests on its installer source, not a Mac run.
-
-The decided shape is to add each missing `darwinMarker` from a Mac install's `Info.plist`, and to let BepInEx's macOS placement read a marker that starts at `Contents/` (`contributeDarwin` in `internal/loader/bepinex5/driver.go`, which needs a first segment ending `.app`). Rejected: guessing the executable from the `.app` name, or treating this entry as the full macOS ship.
-
-### Read
-
-- `internal/loader/bepinex5/driver.go` `contributeDarwin` — the `.app` first-segment rule.
-- [docs/design.md](docs/design.md#from-later-picked-2026-11-01) — what is left after the Linux-testable parts.
-
-### Traps
-
-- **A `.app` name is not its executable's name** (`TotallyAccurateBattleSimulator.app` runs `Totally Accurate Battle Simulator`, `MacPlayer.app` runs `Project Gorgon`).
-
-### Acceptance
-
-- Each native-macOS catalog game that should locate on darwin has a cited `darwinMarker`.
-- `bun run gate` stays clean. This change does not ship a `.dmg` or notarisation.
-
 ## Scrap items cannot be authored without the Unity Editor
 
 A Lethal Company scrap bundle cannot be built outside the Unity Editor:

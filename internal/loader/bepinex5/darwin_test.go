@@ -64,6 +64,22 @@ func TestContributeDarwin(t *testing.T) {
 	}
 }
 
+func TestContributeDarwinContentsMarker(t *testing.T) {
+	dir := t.TempDir()
+	script := filepath.Join(dir, "run_bepinex.sh")
+	if err := safefs.WriteFile(script, []byte("executable_name=\"\"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	g := components.GameInfo{ID: "g", Name: "G", DarwinMarker: "Contents/MacOS/Sun Haven"}
+	plan := launchplan.New(launchplan.ModeProfile)
+	if err := contributeDarwin(plan, loader.ProfileView{Dir: dir, Platform: "darwin"}, marker{Doorstop: 4}, g); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := safefs.ReadFile(script); !strings.Contains(string(b), "executable_name='Sun Haven'") {
+		t.Errorf("script %q", b)
+	}
+}
+
 func TestOwnedFilesCoverDarwinPack(t *testing.T) {
 	got := strings.Join(Loader{}.ProfileFiles(), " ")
 	for _, f := range []string{"run_bepinex.sh", "libdoorstop.dylib"} {
