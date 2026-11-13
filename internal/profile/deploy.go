@@ -269,11 +269,11 @@ func (s *Store) syncPackages(gameID, id string, withDev bool) error {
 	}
 	run := &syncRun{dir: dir, files: files, prev: readPlaced(dir), srcHash: map[string]string{}}
 	run.next = maps.Clone(run.prev)
-	gone, err := run.dropStale(p, s.oldFilesMode(gameID))
+	gone, kept, err := run.dropStale(p, s.oldFilesMode(gameID))
 	if err != nil {
 		return err
 	}
-	if err := holdAdopted(dir, gone, files); err != nil {
+	if err := holdAdopted(dir, gone, kept, files); err != nil {
 		return err
 	}
 	s.expireHeldCopies(dir)
@@ -318,14 +318,15 @@ func (r *syncRun) hashOf(rel string) (string, error) {
 	return h, err
 }
 
-// dropStale takes away the placed files no enabled package ships any more and returns their paths.
-func (r *syncRun) dropStale(p Profile, mode string) ([]string, error) {
+// dropStale takes away the placed files no enabled package ships any more and returns their paths, and the paths of
+// the changed files it left in place because an update dropped them in Keep mode.
+func (r *syncRun) dropStale(p Profile, mode string) (gone []string, kept map[string]bool, err error) {
 	lays := map[string]bool{}
 	for _, f := range r.files {
 		lays[f.key] = true
 	}
 	succ := successors(p)
-	var gone []string
+	kept = map[string]bool{}
 	for rel, rec := range r.prev {
 		if _, keep := r.files[rel]; keep {
 			continue
@@ -339,15 +340,16 @@ func (r *syncRun) dropStale(p Profile, mode string) ([]string, error) {
 			switch {
 			case dropped && mode == settings.OldFilesKeep:
 				delete(r.next, rel)
+				kept[rel] = true
 				continue
 			case dropped && mode == settings.OldFilesDelete:
 			case dropped && asideKey(owner) != "":
 				if err := setAsideDropped(r.dir, asideKey(owner), rel); err != nil {
-					return nil, err
+					return nil, nil, err
 				}
 			default:
 				if err := holdChanged(r.dir, rel); err != nil {
-					return nil, err
+					return nil, nil, err
 				}
 			}
 		}
@@ -355,7 +357,7 @@ func (r *syncRun) dropStale(p Profile, mode string) ([]string, error) {
 		delete(r.next, rel)
 		gone = append(gone, rel)
 	}
-	return gone, nil
+	return gone, kept, nil
 }
 
 // nameAhead names every file this sync may place first, with the hash it will have, so one that stops part way is
@@ -465,8 +467,8 @@ func ownedFolder(rel string) string {
 }
 
 // holdAdopted holds the files in a folder no package lays out any more that no record names (adopted from play), so
-// they leave the profile with the package that owned the folder.
-func holdAdopted(dir string, gone []string, files map[string]packageFile) error {
+// they leave the profile with the package that owned the folder. The files kept stay where they are.
+func holdAdopted(dir string, gone []string, kept map[string]bool, files map[string]packageFile) error {
 	wanted := map[string]bool{}
 	for rel := range files {
 		wanted[ownedFolder(rel)] = true
@@ -482,7 +484,9 @@ func holdAdopted(dir string, gone []string, files map[string]packageFile) error 
 		var held []string
 		err := safefs.WalkRegular(root, func(path string, _ fs.DirEntry) error {
 			r, err := filepath.Rel(dir, path)
-			held = append(held, filepath.ToSlash(r))
+			if r = filepath.ToSlash(r); !kept[r] {
+				held = append(held, r)
+			}
 			return err
 		})
 		if err != nil {

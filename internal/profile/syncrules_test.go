@@ -306,3 +306,21 @@ func TestABackupAndRestoreRoundTripsChangedCopiesThroughRepeatedSyncs(t *testing
 		rr.want("Mods/mc/mc.ts4script", "s")
 	}
 }
+
+// With Keep, a changed file an update dropped stays where it is even when the update moved the mod to another folder,
+// so nothing else in the old folder is laid out any more.
+func TestAChangedFileAnUpdateDroppedStaysWithKeepWhenItsFolderEmpties(t *testing.T) {
+	t.Parallel()
+	r := newSyncRig(t)
+	r.e.OldFilesMode = func(string) string { return settings.OldFilesKeep }
+	r.install(cfSource(10), map[string]string{"mc/mc.ts4script": "s", "mc/old.cfg": "default"})
+	r.sync()
+	r.write("Mods/mc/old.cfg", "player=2")
+	r.install(cfSource(11).WithReplacing(10), map[string]string{"mc2/mc.ts4script": "s2"})
+	r.sync()
+	r.want("Mods/mc/old.cfg", "player=2")
+	r.absent("changed/Mods/mc/old.cfg")
+	r.absent("Mods/mc/mc.ts4script")
+	r.sync()
+	r.want("Mods/mc/old.cfg", "player=2")
+}
