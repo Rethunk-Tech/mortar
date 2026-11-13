@@ -36,22 +36,18 @@ func contentFolders(gameID string) []components.ContentFolder {
 	return tpl.Content.Folders
 }
 
-// superseded is an asset kind whose folder is a content folder's old layout, or the folder itself in a pack: the
-// content pack replaces it.
-func superseded(folders []components.ContentFolder, k components.AssetKind) bool {
-	return slices.ContainsFunc(folders, func(f components.ContentFolder) bool {
-		return slices.Contains(f.Legacy, k.Folder) || k.Folder == packContentRoot+"/"+f.Path()
-	})
-}
-
-// migrateKind is the kind a project recorded as kind reads as now: a superseded asset kind is the content pack.
+// migrateKind is the kind a project recorded as kind reads as now: a content-folder id, or a former
+// asset-kind id that is not a folder id, is the content pack.
 func migrateKind(gameID, kind string) string {
 	tpl, ok := Template(gameID)
 	if !ok || tpl.Content == nil {
 		return kind
 	}
-	i := slices.IndexFunc(tpl.AssetKinds, func(k components.AssetKind) bool { return k.ID == kind })
-	if i >= 0 && superseded(tpl.Content.Folders, tpl.AssetKinds[i]) {
+	// television was the asset kind; the content folder is tv.
+	if mapped, ok := map[string]string{"television": "tv"}[kind]; ok {
+		kind = mapped
+	}
+	if slices.ContainsFunc(tpl.Content.Folders, func(f components.ContentFolder) bool { return f.ID == kind }) {
 		return kindContent
 	}
 	return kind

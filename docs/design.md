@@ -32,9 +32,6 @@ Each part goes in the repo that owns its concern; Mortar keeps the product side 
 Mortar's side is `internal/devsvc/content.go` and the catalog's `devTemplate.content`. The loaders are published on Thunderstore as team Mortar's Posters, Boombox and Television (`Mortar-Posters`, `Mortar-Boombox`, `Mortar-Television`), which the catalog names as each content folder's `dependency` (`internal/components/components.json:393`, `:417`, `:425`): New mod's tick recommends the folder's loader (`contentRecommends`, `internal/devsvc/content.go:83`), and a release flags a pack whose manifest does not depend on it (`internal/devsvc/content.go:206`).
 
 - The known-broken redirects from LethalPosters and LethalPaintings to `Mortar-Posters`, Custom Boombox Music to `Mortar-Boombox` and TVLoader to `Mortar-Television` live in Rethunk-Tech/mortar-known-broken, the list Mortar reads through `internal/components/knownbroken.go`, not in this repo.
-- The per-kind `assetKinds` entries for posters, paintings, television, boombox, suits and sounds leave the catalog once no supported build predates the `content` entry's `minVersion` (`0.4.0`), so once the oldest supported tag is 0.4.0 or later.
-
-[TODO.md](../TODO.md#known-broken-lethal-company-content-loaders-still-point-at-the-old-packages)
 
 ## Later
 

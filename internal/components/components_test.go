@@ -914,7 +914,7 @@ func TestMinVersionIsCheckedAgainstTheRunningCatalogVersion(t *testing.T) {
 	}
 }
 
-// The content pack is left out of a build older than its minVersion, which keeps offering the asset kinds it supersedes.
+// The content pack is left out of a build older than its minVersion.
 func TestTheContentPackNeedsItsMinVersion(t *testing.T) {
 	t.Cleanup(func() { SetRunning("") })
 	content := func(running string) bool {
@@ -925,7 +925,7 @@ func TestTheContentPackNeedsItsMinVersion(t *testing.T) {
 		}
 		m, _ := withoutUnreadable(Manifest{Games: []GameInfo{g}})
 		t := m.Games[0].Loaders[0].DevTemplate
-		return t != nil && t.Content != nil && len(t.AssetKinds) == 6
+		return t != nil && t.Content != nil
 	}
 	if content("0.3.16") {
 		t.Error("0.3.16 offered the content pack")

@@ -41,8 +41,8 @@ func TestDetectFindsContentInTheNewAndOldLayouts(t *testing.T) {
 		})
 	}
 	kinds := svc.AssetKinds(contentGame)
-	if slices.ContainsFunc(kinds, func(k components.AssetKind) bool { return k.ID == "posters" || k.ID == "television" }) {
-		t.Errorf("a kind the content pack supersedes is still offered: %v", kinds)
+	if slices.ContainsFunc(kinds, func(k components.AssetKind) bool { return k.ID != kindContent }) {
+		t.Errorf("AssetKinds offered a kind besides the content pack: %v", kinds)
 	}
 }
 
@@ -77,7 +77,7 @@ func TestMovingOldLayoutContentKeepsWhatIsAlreadyMoved(t *testing.T) {
 
 func TestA038RecordOfASupersededKindOpensAsTheContentPack(t *testing.T) {
 	svc, _ := testService(t, testTemplate)
-	for _, old := range []string{"posters", "paintings", "television", "boombox"} {
+	for _, old := range []string{"suits", "sounds", "posters", "paintings", "television", "boombox"} {
 		t.Run(old, func(t *testing.T) {
 			dir := assetDir(t, `{"kind":"`+old+`","name":"Pack","team":"Ab"}`)
 			p, err := svc.Add(t.Context(), contentGame, dir, "")
@@ -88,10 +88,6 @@ func TestA038RecordOfASupersededKindOpensAsTheContentPack(t *testing.T) {
 				t.Errorf("detect = %+v, %v", a, err)
 			}
 		})
-	}
-	dir := assetDir(t, `{"kind":"sounds","name":"Quacks","team":"Ab"}`)
-	if p, err := svc.Add(t.Context(), contentGame, dir, ""); err != nil || assetKindOf(contentGame, p.Dir) != kindContent {
-		t.Errorf("sounds added as %+v, %v", p, err)
 	}
 }
 

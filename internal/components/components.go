@@ -579,10 +579,8 @@ type DevTemplate struct {
 	// DevHelper is the Thunderstore package Develop's Test adds to the profile, for this game only, so the test copies
 	// find each other; only its Package is read.
 	DevHelper *DevRecommend `json:"devHelper,omitempty"`
-	// AssetKinds are the mods made only of files a loader mod reads, which the New mod wizard offers beside code.
-	AssetKinds []AssetKind `json:"assetKinds,omitempty"`
 	// Content is the content pack: one package carrying any of its folders under mortar/, each read by its own mod.
-	// Builds before it ignore the field and keep offering the AssetKinds it supersedes.
+	// Builds before MinVersion ignore the field.
 	Content *ContentKind `json:"content,omitempty"`
 }
 
@@ -596,8 +594,7 @@ type ContentKind struct {
 // ContentFolder is a folder of a package, Folder below the content root (mortar/<ID> when empty): files matching
 // Patterns, read by Dependency. Files are starter files below the root, each body's {name} replaced by the package
 // name, and Needs are patterns below the root that must match a file for the folder to do anything. Legacy are the
-// folders, as slash paths in the package, that older packs used for the same files; its mod still reads them, and an
-// AssetKind whose Folder is one of them, or is the folder itself, is superseded by the content pack.
+// folders, as slash paths in the package, that older packs used for the same files; its mod still reads them.
 type ContentFolder struct {
 	ID         string   `json:"id"`
 	Label      string   `json:"label"`
@@ -1149,16 +1146,9 @@ func (g GameInfo) validateLoader(l GameLoader) error {
 			return fmt.Errorf("game %q recommends %q, which is not a Thunderstore package", g.ID, r.Package)
 		}
 	}
-	if t := l.DevTemplate; t != nil {
-		for _, k := range t.AssetKinds {
-			if err := k.validate(); err != nil {
-				return fmt.Errorf("game %q: %w", g.ID, err)
-			}
-		}
-		if t.Content != nil {
-			if err := t.Content.validate(); err != nil {
-				return fmt.Errorf("game %q: %w", g.ID, err)
-			}
+	if t := l.DevTemplate; t != nil && t.Content != nil {
+		if err := t.Content.validate(); err != nil {
+			return fmt.Errorf("game %q: %w", g.ID, err)
 		}
 	}
 	if l.PlaceDir != "" && unsafeRel(l.PlaceDir) {

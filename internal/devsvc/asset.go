@@ -170,38 +170,28 @@ func validCsproj(p string) bool {
 	return fs.ValidPath(p) && !strings.Contains(p, "\\") && strings.HasSuffix(strings.ToLower(p), ".csproj")
 }
 
-// AssetKinds are the mods made only of files that the game's catalog entry offers beside code: its asset kinds less
-// those the content pack supersedes, then the content pack (whose Recommends are its folders' mods).
+// AssetKinds is the content pack the game's catalog entry offers beside code, when it has one.
 func (s *Service) AssetKinds(gameID string) []components.AssetKind {
-	tpl, _ := Template(gameID)
 	folders := contentFolders(gameID)
-	out := []components.AssetKind{}
-	for _, k := range tpl.AssetKinds {
-		if !superseded(folders, k) {
-			out = append(out, k)
-		}
+	if len(folders) == 0 {
+		return []components.AssetKind{}
 	}
-	if len(folders) > 0 {
-		out = append(out, contentAssetKind(folders))
-	}
-	return out
+	return []components.AssetKind{contentAssetKind(folders)}
 }
 
-// assetKind is any kind a project may be recorded as, a superseded one included.
+// assetKind is the content pack or the generic kind a project may be recorded as.
 func (s *Service) assetKind(gameID, id string) (components.AssetKind, error) {
 	if id == kindGeneric {
 		return components.AssetKind{ID: kindGeneric}, nil
 	}
-	tpl, _ := Template(gameID)
-	all := tpl.AssetKinds
-	if folders := contentFolders(gameID); len(folders) > 0 {
-		all = append(slices.Clone(all), contentAssetKind(folders))
+	folders := contentFolders(gameID)
+	if len(folders) > 0 {
+		k := contentAssetKind(folders)
+		if id == k.ID {
+			return k, nil
+		}
 	}
-	i := slices.IndexFunc(all, func(k components.AssetKind) bool { return k.ID == id })
-	if i < 0 {
-		return components.AssetKind{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("%s has no %q kind of mod", gameID, id))
-	}
-	return all[i], nil
+	return components.AssetKind{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("%s has no %q kind of mod", gameID, id))
 }
 
 // createAsset starts a content pack: a package folder Mortar packs itself, so no SDK is needed. The ticked folders'
