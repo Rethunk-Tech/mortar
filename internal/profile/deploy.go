@@ -408,7 +408,7 @@ func (r *syncRun) place(rel string) error {
 	case statErr == nil && changedSince(rec, dst):
 		// Still the package's file, with changes that stay; the record keeps it ownable when the package goes.
 		return nil
-	case statErr == nil && placedCurrent(r.files[rel].src, dst):
+	case statErr == nil && r.current(rel, rec, dst):
 		if rec.Size < 0 {
 			var err error
 			r.next[rel], err = recordOf(rec.Hash, dst)
@@ -441,6 +441,17 @@ func (r *syncRun) place(rel string) error {
 	}
 	r.next[rel], err = recordOf(h, dst)
 	return err
+}
+
+// current reports whether the copy at dst, unchanged since rec, is already the winning package's file. A store item never
+// changes, so the copy the same entry laid out is judged by size and time; another entry's (a reorder, a roll back) by
+// hash, since a loser's copy laid out later is newer than the winner's store file and may have its size.
+func (r *syncRun) current(rel string, rec placedRec, dst string) bool {
+	if rec.Key == "" || rec.Key == r.files[rel].key {
+		return placedCurrent(r.files[rel].src, dst)
+	}
+	h, err := r.hashOf(rel)
+	return err == nil && h == rec.Hash
 }
 
 // ownedFolder is the entry's own folder below the content root of a file path (Mods/mc for Mods/mc/x.cfg), "" for a
