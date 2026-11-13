@@ -167,6 +167,15 @@ func (p Place) record(q Plan, prev Manifest, prevDst map[string]int) (ops []Plac
 		prevOp, hadPrev := Placed{}, false
 		if j, ok := prevDst[safefs.FoldCase(op.Dst)]; ok {
 			prevOp, hadPrev = prev.Ops[j], true
+			// With its backup gone the player's file is back at Dst (a purge cut short after returning it), unless Dst
+			// still holds our bytes, which then displaced nothing.
+			if prevOp.Displaced != "" && !datadir.Exists(prevOp.Displaced) {
+				if holdsOurBytes(prevOp) {
+					prevOp.Displaced = ""
+				} else {
+					prevOp, hadPrev = Placed{}, false
+				}
+			}
 		}
 		if hadPrev && op.Src == prevOp.Src && p.Mode.Reuse.stands(prevOp) {
 			prevOp.WriteBack = op.WriteBack
@@ -467,6 +476,7 @@ func (p Place) keep(ctx context.Context, m *Manifest, log *opLog) error {
 		if err := undoDst(m, o, i, log); err != nil {
 			return errors.Join(err, log.close())
 		}
+		at(fmt.Sprintf("kept-undone-file:%d", i))
 		m.Ops[i].Undone = true
 		errs = append(errs, log.add(step{U: &i}, false))
 		at(fmt.Sprintf("kept-undone-logged:%d", i))
