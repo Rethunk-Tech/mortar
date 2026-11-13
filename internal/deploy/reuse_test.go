@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"encoding/json"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -331,5 +332,25 @@ func TestASecondRescueOfAKeptFileKeepsTheFirst(t *testing.T) {
 	slices.Sort(kept)
 	if len(kept) != 2 || kept[0] != "first edit outside Mortar" || kept[1] != "second edit outside Mortar" {
 		t.Fatalf("rescued = %q, want both edits", kept)
+	}
+}
+
+// The folders the first Play made stay on the record of the Plays that build on it, so taking the journal back removes
+// them.
+func TestTheFoldersAKeptPlayMadeLeaveWithTheLastPlay(t *testing.T) {
+	t.Parallel()
+	r := crashRig(t)
+	start := testfs.Tree(t, r.install)
+	mode := Mode{Reuse: ReuseStat}
+	for range 2 {
+		if err := r.play(t, mode); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := (Place{}).DiscardKept(t.Context(), r.view.JournalDir); err != nil {
+		t.Fatal(err)
+	}
+	if got := testfs.Tree(t, r.install); !maps.Equal(got, start) {
+		t.Fatalf("tree differs:\n got %v\nwant %v", got, start)
 	}
 }
