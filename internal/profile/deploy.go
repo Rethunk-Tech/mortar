@@ -412,11 +412,12 @@ func (r *syncRun) place(rel string) error {
 			return err
 		}
 	case statErr == nil && changedSince(rec, dst):
-		if rec.Key == "" || rec.Key == winner {
-			// Still the package's file, with changes that stay; the record keeps it ownable when the package goes.
+		if rec.Key == "" || r.sameMod(rec.Key, winner) {
+			// Still the package's file (an update or roll back carries the player's changes), with changes that stay;
+			// the record keeps it ownable when the package goes.
 			return nil
 		}
-		if !slices.Contains(r.files[rel].beaten, rec.Key) && !r.sameMod(rec.Key, winner) {
+		if !slices.Contains(r.files[rel].beaten, rec.Key) {
 			// Its entry was switched off or removed: the copy waits for that entry, as when nothing else lays it out.
 			if err := holdChanged(r.dir, rel, rec.Key); err != nil {
 				return err
@@ -462,7 +463,7 @@ func (r *syncRun) place(rel string) error {
 	return err
 }
 
-// rescueBeaten moves a changed copy of a file another entry now wins (a reorder, a roll back) to a rescue name beside
+// rescueBeaten moves a changed copy of a file another entry now wins (a reorder, a history revert) to a rescue name beside
 // it, so the winner's file can go down as FileConflicts reports. A copy that already holds the winner's bytes is
 // recorded as placed instead, and done is true.
 func (r *syncRun) rescueBeaten(rel, dst string) (done bool, err error) {

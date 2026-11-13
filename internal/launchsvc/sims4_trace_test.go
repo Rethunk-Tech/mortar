@@ -92,7 +92,11 @@ func TestAModsSettingsFileAcrossLaunches(t *testing.T) {
 	})
 
 	// An update of the archive keeps the saved copy of a file it still ships.
-	w.install(t, 2, map[string]string{"mc/mc.ts4script": "script v2", "mc/mc_settings.cfg": "default=9"})
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "a.zip"), map[string]string{"mc/mc.ts4script": "script v2", "mc/mc_settings.cfg": "default=9"})
+	v2 := profile.Source{Kind: profile.KindCurseForge, Name: "7", FileID: 2}.WithReplacing(1)
+	if _, err := w.profiles.InstallSource(t.Context(), sims4, w.profileID, zip, v2); err != nil {
+		t.Fatal(err)
+	}
 	if err := w.profiles.SyncPackages(sims4, w.profileID); err != nil {
 		t.Fatal(err)
 	}
