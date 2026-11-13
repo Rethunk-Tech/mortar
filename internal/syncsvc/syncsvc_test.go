@@ -2,6 +2,9 @@ package syncsvc
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
 	"errors"
 	"os"
 	"path/filepath"
@@ -10,6 +13,8 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/share"
 )
 
 // machine is one machine's profiles: id to content.
@@ -306,5 +311,32 @@ func TestADeletedSyncedProfileIsNotOfferedBack(t *testing.T) {
 	}
 	if offers := scan(t, a); len(offers) != 0 {
 		t.Fatalf("offers after deleting here: %+v", offers)
+	}
+}
+
+func TestAnOversizedPayloadInTheSyncFolderIsNeverRead(t *testing.T) {
+	folder, a, _, _, _ := twoMachines(t)
+	dir := filepath.Join(folder, "stardew")
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	f, err := os.Create(filepath.Join(dir, "huge.mortar"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := f.Truncate(share.MaxFileBytes + 1); err != nil {
+		t.Fatal(err)
+	}
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		t.Fatal(err)
+	}
+	_ = f.Close()
+	meta := shared{Name: "Huge", Machine: "m", MachineName: "Other", Vector: Vector{"m": 1}, Payload: hex.EncodeToString(h.Sum(nil))}
+	if err := datadir.WriteJSONCompact(filepath.Join(dir, "huge.sync.json"), meta); err != nil {
+		t.Fatal(err)
+	}
+	if offers := scan(t, a); len(offers) != 0 {
+		t.Fatalf("an oversized payload was offered: %+v", offers)
 	}
 }

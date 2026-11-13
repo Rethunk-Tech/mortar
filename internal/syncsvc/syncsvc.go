@@ -219,15 +219,30 @@ func (s *Service) sharedPath(folder, game, remote string) string {
 
 func (s *Service) readShared(folder, game, remote string) (shared, bool) {
 	var sh shared
-	if found, err := datadir.ReadJSON(s.sharedPath(folder, game, remote), &sh); !found || err != nil || sh.Vector == nil {
+	b, err := readSynced(s.sharedPath(folder, game, remote), maxSharedBytes)
+	if err != nil || json.Unmarshal(b, &sh) != nil || sh.Vector == nil {
 		return shared{}, false
 	}
 	return sh, true
 }
 
+// maxSharedBytes bounds a version file: a name, two machine ids, a hash and one counter per machine.
+const maxSharedBytes = 64 << 10
+
+// readSynced reads a file another machine (or anything else that writes the sync folder) put there, refusing one
+// over limit before it is held in memory on every scan.
+func readSynced(path string, limit int64) ([]byte, error) {
+	f, err := safefs.OpenRegular(path)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = f.Close() }()
+	return safefs.ReadCapped(f, limit)
+}
+
 // payload reads the payload sh names, and reports whether it is that payload rather than one still on its way.
 func (s *Service) payload(folder, game, remote string, sh shared) ([]byte, bool) {
-	b, err := safefs.ReadFile(s.payloadPath(folder, game, remote))
+	b, err := readSynced(s.payloadPath(folder, game, remote), share.MaxFileBytes)
 	if err != nil {
 		return nil, false
 	}
@@ -637,7 +652,7 @@ func (s *Service) keepUnfetched(folder string, ref Ref, t *tracked, payload []by
 	if t.Applied == "" {
 		return payload, false
 	}
-	base, err := safefs.ReadFile(s.payloadPath(folder, ref.Game, t.Remote))
+	base, err := readSynced(s.payloadPath(folder, ref.Game, t.Remote), share.MaxFileBytes)
 	if err != nil || hashOf(base) != t.Applied {
 		t.Applied, t.Missing = "", nil
 		return payload, false

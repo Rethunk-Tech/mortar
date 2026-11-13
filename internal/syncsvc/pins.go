@@ -4,7 +4,6 @@ import (
 	"errors"
 	"slices"
 
-	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -74,7 +73,7 @@ func (s *Service) unpinned(folder string, ref Ref, t *tracked, local []byte) (pa
 	if t.Pins.empty() {
 		return local, false
 	}
-	head, err := safefs.ReadFile(s.payloadPath(folder, ref.Game, t.Remote))
+	head, err := readSynced(s.payloadPath(folder, ref.Game, t.Remote), share.MaxFileBytes)
 	if err != nil {
 		return local, false
 	}
