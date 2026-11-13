@@ -50,6 +50,11 @@ func writeMarker(profileDir string, m marker) error {
 
 func (Loader) ID() string { return ID }
 
+// DeniedArgs is the profile-folder flag Mortar always sets itself.
+func (Loader) DeniedArgs() []string {
+	return []string{baseDirFlag}
+}
+
 func (Loader) Formats() []string { return []string{"melon"} }
 
 // Status is installed when the profile holds the loader folder and its proxy.

@@ -69,6 +69,11 @@ func readMarker(profileDir string) marker {
 
 func (Loader) ID() string { return ID }
 
+// DeniedArgs are the Doorstop flags Mortar always sets itself.
+func (Loader) DeniedArgs() []string {
+	return []string{"--doorstop-enable", "--doorstop-enabled", "--doorstop-target", "--doorstop-target-assembly"}
+}
+
 // ModIDName is the GUID of a plugin's BepInPlugin attribute.
 func (Loader) ModIDName(string) string { return "GUID" }
 

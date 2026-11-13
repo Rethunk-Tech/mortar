@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -20,6 +21,23 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
+
+func TestDeniedArgsRefuseOverrides(t *testing.T) {
+	d, ok := any(Loader{}).(loader.DeniedArgs)
+	if !ok {
+		t.Fatal("DeniedArgs missing")
+	}
+	denied := d.DeniedArgs()
+	flag := "--melonloader.basedir"
+	if !slices.Contains(denied, flag) {
+		t.Errorf("%s not denied", flag)
+	}
+	for _, in := range []string{flag + " x", flag + "=x"} {
+		if _, err := launchplan.ParseArgs(in, denied); err == nil || !strings.Contains(err.Error(), "is set by Mortar") {
+			t.Errorf("%q: %v", in, err)
+		}
+	}
+}
 
 func TestRoute(t *testing.T) {
 	// r2modman's rules for BONELAB, cut down: a default route, a folder with sub-routes and extensions.

@@ -139,6 +139,11 @@ func (Loader) Owns(p loader.Process, prof loader.ProfileView) bool {
 // Formats are BepInEx's, like everything below: BepisLoader only starts it, on the same BepInEx.Core and log.
 func (Loader) Formats() []string { return bepinex5.Loader{}.Formats() }
 
+// DeniedArgs are the hookfxr, BepInEx-target and Doorstop flags Mortar always sets itself.
+func (Loader) DeniedArgs() []string {
+	return []string{"--hookfxr-enable", "--hookfxr-disable", "--bepinex-target", "--doorstop-enabled", "--doorstop-target-assembly"}
+}
+
 func (Loader) ModIDName(g string) string { return bepinex5.Loader{}.ModIDName(g) }
 
 func (Loader) Path(p loader.ProfileView) (string, error) { return bepinex5.Loader{}.Path(p) }

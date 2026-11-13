@@ -80,6 +80,24 @@ func view(dir, rt string) loader.ProfileView {
 	return loader.ProfileView{Game: "resonite", Dir: dir, Platform: "windows", Runtime: rt}
 }
 
+func TestDeniedArgsRefuseOverrides(t *testing.T) {
+	d, ok := any(Loader{}).(loader.DeniedArgs)
+	if !ok {
+		t.Fatal("DeniedArgs missing")
+	}
+	denied := d.DeniedArgs()
+	for _, flag := range []string{"--hookfxr-enable", "--hookfxr-disable", "--bepinex-target", "--doorstop-enabled", "--doorstop-target-assembly"} {
+		if !slices.Contains(denied, flag) {
+			t.Errorf("%s not denied", flag)
+		}
+		for _, in := range []string{flag + " x", flag + "=x"} {
+			if _, err := launchplan.ParseArgs(in, denied); err == nil || !strings.Contains(err.Error(), "is set by Mortar") {
+				t.Errorf("%q: %v", in, err)
+			}
+		}
+	}
+}
+
 func TestInstallLaysOutThePackAndAnUpdateReplacesIt(t *testing.T) {
 	l, dir := installed(t, realPack...)
 	st, err := l.Status(loader.Target{ProfileDir: dir})
