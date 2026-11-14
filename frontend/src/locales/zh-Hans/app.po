@@ -1,9 +1,9 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-10 12:51+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/app/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.12.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-15 14:51+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/app/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/saves/SavesTab.tsx
 msgid "No saves match"
-msgstr "没有匹配的存档"
+msgstr "没有匹配的保存"
 
 #: src/launch/SaveWarnDialog.tsx
 msgid "{name} ({path}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
@@ -1016,7 +1016,7 @@ msgstr "无法在开始游戏前更新模组"
 
 #: src/develop/SiteIds.tsx
 msgid "Release uploads to a site once its ids are set. Leave them empty to skip it."
-msgstr "站点设置好 ID 后，发布时会上传到该站点。留空则跳过。"
+msgstr "一旦设置了其ID，就会将发布上传到网站。留空可跳过此步骤。"
 
 #: src/toasts/report.ts
 msgid "Mortar does not have permission to do that."
@@ -1763,7 +1763,7 @@ msgstr "附加诊断信息（包含检查结果、日志和设置的 zip，已�
 
 #: src/develop/EditProjectDialog.tsx
 msgid "Plugin id"
-msgstr "插件 ID"
+msgstr "插件ID"
 
 #: src/game/detailStates.tsx
 msgid "A profile holds one set of mods for this game."
@@ -2106,7 +2106,7 @@ msgstr "此配置中已是最新"
 
 #: src/games/addWarning.ts
 msgid "The {store} edition is 32-bit. Mortar's {loader} pack does not cover it, so plugins will not load."
-msgstr ""
+msgstr "{store} 版本是 32 位的。Mortar 的 {loader} 包不支持它，所以插件无法加载。"
 
 #: src/QuitPrompt.tsx
 msgid "Quit Mortar?"
@@ -2657,7 +2657,7 @@ msgstr "此压缩包包含同一模组的多个变体。请选择要安装的变
 
 #: src/share/ImportPreview.tsx
 msgid "Install code (.dll) shipped inside this profile"
-msgstr ""
+msgstr "安装随此配置文件提供的代码（.dll）"
 
 #: src/develop/EditProjectDialog.tsx
 msgid "Identity"
@@ -5101,7 +5101,7 @@ msgstr "更改"
 
 #: src/share/ImportPreview.tsx
 msgid "These files come with the code rather than from a mod site. Untick the box unless you trust who sent it:"
-msgstr ""
+msgstr "这些文件随代码提供，而不是来自模组网站。除非您信任发送者，否则请取消选中该选框："
 
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
@@ -5960,7 +5960,7 @@ msgstr "链接放不下它。请使用文件或附近的电脑。"
 
 #: src/share/ImportPreview.tsx
 msgid "Left out: these files come with the code rather than from a mod site. Tick the box only if you trust who sent it:"
-msgstr ""
+msgstr "遗漏：这些文件随代码提供，而不是来自模组网站。仅在您信任发送者时勾选此框："
 
 #: src/firstrun/GameSetup.tsx
 #: src/games/GameSelect.tsx
@@ -6039,7 +6039,7 @@ msgstr "请让另一位 Mortar 用户开启附近分享。"
 
 #: src/launch/rescuedToast.ts
 msgid "Edits were restored"
-msgstr ""
+msgstr "编辑已恢复"
 
 #: src/toasts/EarlierChanges.tsx
 msgid "No changes yet"
@@ -6494,7 +6494,7 @@ msgstr "{shared}/{total} 个模组"
 
 #: src/develop/SiteIds.tsx
 msgid "{source} project id"
-msgstr "{source} 项目 ID"
+msgstr "{source} 项目编号"
 
 #: src/updates/WhatsNewDialog.tsx
 msgid "{count, plural, one {# new feature} other {# new features}}"
