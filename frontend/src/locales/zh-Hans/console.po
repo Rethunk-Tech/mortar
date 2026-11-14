@@ -1,5 +1,5 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-10 12:51+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/console/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.12.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-15 14:51+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/console/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/console/StartupSections.tsx
 msgid "What to do"
@@ -1094,7 +1094,7 @@ msgstr "此 {loader} Bridge 仅在测量启动时才在游戏内测量。请在�
 
 #: src/console/StartupTable.tsx
 msgid "Entry"
-msgstr "Entry"
+msgstr "进入"
 
 #: src/console/StartupTable.tsx
 msgid "Hide details"
