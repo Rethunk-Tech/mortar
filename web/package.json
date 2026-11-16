@@ -18,7 +18,7 @@
     "astro": "7.4.12",
     "brotli-dec-wasm": "2.3.2",
     "satori": "0.63.2",
-    "simple-icons": "16.37.0",
+    "simple-icons": "16.38.0",
     "typescript": "6.0.3"
   },
   "devDependencies": {
