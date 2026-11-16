@@ -476,7 +476,7 @@ games ship no macOS build, so the first targets are native-macOS games and,
 for Windows-only games, a CrossOver or Whisky prefix.
 
 The decided shape is full macOS support as specified in
-[docs/design.md](docs/design.md#macos-support). Catalog `darwin` path
+[docs/design.md](docs/design.md#later). Catalog `darwin` path
 templates and the macOS asset picker already exist; go-safefs already has a
 darwin `Clone` (`clonefile`). Rejected: shipping unsigned (Gatekeeper blocks
 it), adding billable macOS CI runners, or enabling MelonLoader on macOS (no
@@ -484,7 +484,7 @@ upstream macOS build; the driver already refuses Linux).
 
 ### Read
 
-- [docs/design.md](docs/design.md#macos-support) — scope, Wails, discovery,
+- [docs/design.md](docs/design.md#later) — scope, Wails, discovery,
   loaders, packaging, testing and done-when.
 - [docs/architecture.md](docs/architecture.md#stack) — the pinned Wails fork
   `wails3 build GOOS=darwin` runs on.
