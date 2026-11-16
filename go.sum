@@ -20,8 +20,8 @@ github.com/Rethunk-Tech/go-curseforge v0.4.0 h1:Nr9pRINnAK/yqhMlBOJul8Etc35UiYp7
 github.com/Rethunk-Tech/go-curseforge v0.4.0/go.mod h1:jC18Ee4y2zZpF4tM3DSWe6D8rTZsEURTvzKzAoQ8E9A=
 github.com/Rethunk-Tech/go-desktopenv v0.9.2 h1:TB7xeDfwzuWkqwmfwgp9YAAsQ5D9Kwxxn2NSWN49wjw=
 github.com/Rethunk-Tech/go-desktopenv v0.9.2/go.mod h1:feIU5D+BGJeb98h8IfQsr+wRp+v+5Jq8Ox7Lo955cRk=
-github.com/Rethunk-Tech/go-dotnet v0.3.0 h1://IlbmPNpbnm9jHpaMikSj8b2iC2cTBn08X56AOR8a8=
-github.com/Rethunk-Tech/go-dotnet v0.3.0/go.mod h1:lJSyQ5mtaPq4P0bsIiKAkZICS56mAHJrBvQESSuiCS0=
+github.com/Rethunk-Tech/go-dotnet v0.4.0 h1:K2+6ibpHyLkr2xzojEa54Ml+LOY02LP2gaaH6RPPgkI=
+github.com/Rethunk-Tech/go-dotnet v0.4.0/go.mod h1:WVRjxZdbFAjECguCaO5/D9xF26Ank8rfTjlG5cOl0A8=
 github.com/Rethunk-Tech/go-editorlocator v0.1.1 h1:DNzhcgLUVOWtOp2Xfo3/uErgCDNdz/chHfZ9TG6sUA0=
 github.com/Rethunk-Tech/go-editorlocator v0.1.1/go.mod h1:YpSH9+2yKVeci1WTjUkw6K4kEEPnUbUz6JWjf+f3zLQ=
 github.com/Rethunk-Tech/go-folderwatch v0.1.1 h1:7LMzSI9SkCsePqu/p4rbdNpI0S3G1cD1t3F8DhbIWEE=

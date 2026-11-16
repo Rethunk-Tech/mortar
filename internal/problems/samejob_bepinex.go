@@ -121,7 +121,7 @@ func packagePatchers(pkgs []profile.PackageRef, mods []framework.Mod) *patchInde
 						out.patches[patch.Method] = patchOwner{name, patch.Kind}
 					}
 				}
-				if mvid, symbols := dotnet.Identity(dll); mvid != "" {
+				if mvid, symbols, err := dotnet.Identity(dll); err == nil && mvid != "" {
 					if _, seen := out.modules[mvid]; !seen {
 						out.modules[mvid] = moduleOwner{dll, name, symbols}
 					}

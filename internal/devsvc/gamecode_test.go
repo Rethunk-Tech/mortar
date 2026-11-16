@@ -26,7 +26,10 @@ func TestGameCodeSearchesAndDecompilesTheGamesAssembly(t *testing.T) {
 		t.Fatal("searched without a game folder")
 	}
 	managed := gameWithModDLL(t, dir)
-	mvid, _ := dotnet.Identity(filepath.Join(managed, "Assembly-CSharp.dll"))
+	mvid, _, err := dotnet.Identity(filepath.Join(managed, "Assembly-CSharp.dll"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	if got, err := svc.FrameAssembly("lethal-company", dir, mvid); err != nil || got != filepath.Join(managed, "Assembly-CSharp.dll") {
 		t.Fatalf("FrameAssembly(%s) = %q, %v", mvid, got, err)
 	}

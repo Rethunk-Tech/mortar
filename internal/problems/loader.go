@@ -330,7 +330,9 @@ func explain(lf *LoadFailure, frames []dotnetstack.Frame, owners func() map[stri
 		case owner.symbols == dotnet.SymbolsPortable:
 			// The runtime printed no line although the DLL ships readable symbols: an older runtime that could not read
 			// them, or generated code they do not cover, which SourceLine finds no point for.
-			if lf.Source = dotnet.SourceLine(owner.dll, mod.Method, mod.Params, mod.IL); lf.Source == "" {
+			if src, err := dotnet.SourceLine(owner.dll, mod.Method, mod.Params, mod.IL); err == nil && src != "" {
+				lf.Source = src
+			} else {
 				lf.NoSource = NoSourceNoLine
 			}
 		default:

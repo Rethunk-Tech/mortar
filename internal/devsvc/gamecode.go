@@ -119,7 +119,7 @@ func (s *Service) FrameAssembly(gameID, dir, mvid string) (string, error) {
 		return "", err
 	}
 	for _, a := range all {
-		if id, _ := dotnet.Identity(a.Path); id == mvid {
+		if id, _, err := dotnet.Identity(a.Path); err == nil && id == mvid {
 			return a.Path, nil
 		}
 	}
