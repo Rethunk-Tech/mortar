@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 import {
   chmodSync,
   cpSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -15,7 +16,7 @@ function run(root: string, env: Record<string, string>) {
   const out = Bun.spawnSync(['bash', join(root, 'scripts/vulncheck.sh')], {
     env: { PATH: `${join(root, 'bin')}:${process.env.PATH}`, ...env },
   })
-  return { code: out.exitCode, text: out.stdout.toString() }
+  return { code: out.exitCode, text: out.stdout.toString(), err: out.stderr.toString() }
 }
 
 // A repo with go.mod, go.sum and a govulncheck that records each call and fails when told to.
@@ -77,6 +78,24 @@ test('a failing govulncheck leaves no stamp, so the next run checks again', () =
     expect(run(root, { FAIL_VULN: '1' }).code).toBe(1)
     expect(run(root, {}).code).toBe(0)
     expect(calls(root)).toBe(2)
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+// x/vuln reads its database with http.DefaultClient, which has no timeout: a stalled database once held CI's gate
+// silent for the rest of the job's 35 minutes.
+test('a govulncheck that never answers fails the step instead of hanging it', () => {
+  const root = repo()
+  writeFileSync(join(root, 'bin/govulncheck'), '#!/bin/sh\nexec sleep 60\n')
+  chmodSync(join(root, 'bin/govulncheck'), 0o755)
+  try {
+    const start = Date.now()
+    const out = run(root, { MORTAR_VULNCHECK_TIMEOUT: '1' })
+    expect(out.code).toBe(1)
+    expect(out.err).toContain('no answer within 1s')
+    expect(Date.now() - start).toBeLessThan(30_000)
+    expect(existsSync(join(root, 'tmp/gate/vulncheck.stamp'))).toBe(false)
   } finally {
     rmSync(root, { recursive: true, force: true })
   }

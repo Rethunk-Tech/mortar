@@ -45,7 +45,7 @@ source <(mortar completion bash)
 bun run gate    # scripts/gate.sh: bindings first, then every other check in parallel; prints each failing step's log
 ```
 
-- govulncheck reruns locally only when `go.mod` or `go.sum` changed since its last passing run (stamp in `tmp/gate/`); CI and `MORTAR_GATE_VULNCHECK=1` always run it.
+- govulncheck reruns locally only when `go.mod` or `go.sum` changed since its last passing run (stamp in `tmp/gate/`); CI and `MORTAR_GATE_VULNCHECK=1` always run it. A vulnerability database that stops answering fails the step after `MORTAR_VULNCHECK_TIMEOUT` seconds instead of holding the gate.
 - `main.go` embeds `frontend/dist`, so a fresh clone needs `bun run bindings && bun run --cwd frontend build` once before the gate, as CI's setup does.
 - The lefthook pre-push hook runs `gate` ([rethunk-gate-cli](https://github.com/Rethunk-Tech/rethunk-gate-cli)): these steps plus actionlint.
 - Where CI runs it: [AGENTS.md](AGENTS.md#verify). What each package's tests cover and the slow, fuzz and property runs: [docs/testing.md](docs/testing.md).

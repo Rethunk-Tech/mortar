@@ -41,6 +41,30 @@ gotmp=$base/.mg-go
 mkdir -p "$gotmp"
 find "$gotmp" -mindepth 1 -maxdepth 1 -mmin +60 -exec rm -rf -- {} +
 
+# The module cache is primed here, before any step starts and under a bounded wait: cmd/go fetches a module the cache
+# lacks through a client with no deadline, and a step writes its output to its own log until it ends, so a proxy that
+# takes the connection and then stalls leaves the whole gate silent with nothing to read. Primed, every step below
+# reads the cache instead of the network.
+modules=$logs/modules
+go mod download >"$modules" 2>&1 &
+dl=$!
+started=$SECONDS
+while kill -0 "$dl" 2>/dev/null; do
+  if [ $((SECONDS - started)) -ge 300 ]; then
+    kill "$dl" 2>/dev/null
+    wait "$dl" 2>/dev/null
+    cat "$modules"
+    echo "=== FAILED: go mod download (300s and no module arrived, so the module proxy is stalled)"
+    exit 1
+  fi
+  sleep 0.2
+done
+if ! wait "$dl"; then
+  cat "$modules"
+  echo "=== FAILED: go mod download"
+  exit 1
+fi
+
 declare -A pids
 step() {
   local name=$1

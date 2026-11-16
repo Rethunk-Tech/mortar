@@ -59,6 +59,10 @@ jobs:
 
       - name: Offline gate
         if: ${{ !cancelled() && steps.changes.outputs.code == 'true' }}
+        # Its own budget, well under the job's: the gate prints nothing until its slowest step ends, so a step waiting
+        # on something that never answers (govulncheck's database, a module proxy) would otherwise spend the job's
+        # whole 35 minutes in silence.
+        timeout-minutes: 20
         # The step times show where a runner's few cores go; a fast workstation hides it.
         run: bun run gate --profile
 
