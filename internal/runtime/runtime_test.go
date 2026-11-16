@@ -135,21 +135,14 @@ func TestCompatDataDirFindsOtherSteamLibrary(t *testing.T) {
 }
 
 // go-gamelocator refuses to search other libraries when appID is not filepath.IsLocal; Mortar used to walk them.
-func TestCompatDataDirNonLocalAppIDStaysInGameLibrary(t *testing.T) {
-	gameLib := t.TempDir()
-	dir := filepath.Join(gameLib, "steamapps", "common", "Game")
-	other := t.TempDir()
+func TestCompatDataDirRefusesNonNumericAppID(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "steamapps", "common", "Game")
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.MkdirAll(filepath.Join(other, "steamapps", "escaped"), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	inst := Install{Store: "steam", Dir: dir, AppID: "../escaped", Platform: "windows", Home: t.TempDir(), GOOS: "linux", SteamRoots: []string{other}}
-	got, ok := CompatDataDir(inst)
-	want := filepath.Join(gameLib, "steamapps", "escaped")
-	if !ok || got != want {
-		t.Fatalf("CompatDataDir = %q, %v; want %q", got, ok, want)
+	inst := Install{Store: "steam", Dir: dir, AppID: "../escaped", Platform: "windows", Home: t.TempDir(), GOOS: "linux"}
+	if got, ok := CompatDataDir(inst); !ok || got != "" {
+		t.Fatalf("CompatDataDir = %q, %v; want no path for a non-numeric app id", got, ok)
 	}
 }
 
