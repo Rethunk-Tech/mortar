@@ -168,8 +168,8 @@ func rewriteConfigJSON(data []byte) ([]byte, error) {
 	return node.Marshal()
 }
 
-// SetJSONValue writes one value at a dotted field path of a JSON config file the mod writes itself, keeping its key
-// order.
+// SetJSONValue writes one value at a dotted field path of a JSON config file the mod writes itself, keeping every other byte
+// as written.
 func SetJSONValue(raw []byte, field, value string) ([]byte, error) {
 	return applyConfigSet(raw, field, value, modconfig.Schema{}, "")
 }
@@ -226,7 +226,7 @@ func applyConfigSet(raw []byte, field, value string, schema modconfig.Schema, sh
 	if err != nil {
 		return nil, configJSONError(err, field, key)
 	}
-	next, err := jsonfile.Set(node, parts, child)
+	next, err := jsonfile.Set(string(raw), parts, child)
 	if err != nil {
 		head := parts[0]
 		switch {
@@ -237,7 +237,7 @@ func applyConfigSet(raw []byte, field, value string, schema modconfig.Schema, sh
 		}
 		return nil, configJSONError(err, field, head)
 	}
-	return next.Marshal()
+	return []byte(next), nil
 }
 
 // defaultKind is the JSON kind of the value at parts in the shipped config, or Null when it has none.
