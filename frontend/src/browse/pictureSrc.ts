@@ -9,7 +9,9 @@ const allowedHosts = new Set([
   'media.forgecdn.net',
   'avatars.githubusercontent.com',
   'img.itch.zone',
+  'thumb.modcdn.io',
   'moddbcdn.vintagestory.at',
+  'modscontent.paradox-interactive.com',
 ])
 
 // A card's thumbnail is read through Mortar's picture cache, which keeps it on disk and answers from there each time
