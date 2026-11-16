@@ -6,30 +6,30 @@ require (
 	github.com/Rethunk-Tech/go-archive v0.3.1
 	github.com/Rethunk-Tech/go-bannerlord v0.1.2
 	github.com/Rethunk-Tech/go-bepinex v0.2.2
-	github.com/Rethunk-Tech/go-cfgedit v0.4.1
+	github.com/Rethunk-Tech/go-cfgedit v0.4.2
 	github.com/Rethunk-Tech/go-contentpatcher v0.1.0
 	github.com/Rethunk-Tech/go-curseforge v0.4.0
-	github.com/Rethunk-Tech/go-desktopenv v0.9.1
+	github.com/Rethunk-Tech/go-desktopenv v0.9.2
 	github.com/Rethunk-Tech/go-dotnet v0.3.0
 	github.com/Rethunk-Tech/go-editorlocator v0.1.1
-	github.com/Rethunk-Tech/go-folderwatch v0.1.0
-	github.com/Rethunk-Tech/go-fomod v0.1.2
-	github.com/Rethunk-Tech/go-gamelocator v0.4.0
+	github.com/Rethunk-Tech/go-folderwatch v0.1.1
+	github.com/Rethunk-Tech/go-fomod v0.2.0
+	github.com/Rethunk-Tech/go-gamelocator v0.4.1
 	github.com/Rethunk-Tech/go-gameproc v0.1.2
 	github.com/Rethunk-Tech/go-github v0.3.0
-	github.com/Rethunk-Tech/go-httpkit v0.3.0
+	github.com/Rethunk-Tech/go-httpkit v0.3.1
 	github.com/Rethunk-Tech/go-itchio v0.1.0
 	github.com/Rethunk-Tech/go-larian v0.1.2
-	github.com/Rethunk-Tech/go-lenientjson v0.1.1
+	github.com/Rethunk-Tech/go-lenientjson v0.2.0
 	github.com/Rethunk-Tech/go-modio v0.1.1
 	github.com/Rethunk-Tech/go-modmanagers v0.3.0
 	github.com/Rethunk-Tech/go-modrinth v0.2.0
 	github.com/Rethunk-Tech/go-nettrace v0.2.0
 	github.com/Rethunk-Tech/go-nexusmods v0.6.0
 	github.com/Rethunk-Tech/go-paradoxmods v0.1.0
-	github.com/Rethunk-Tech/go-safefs v0.9.0
+	github.com/Rethunk-Tech/go-safefs v0.9.1
 	github.com/Rethunk-Tech/go-semverish v0.3.0
-	github.com/Rethunk-Tech/go-smapi v0.3.0
+	github.com/Rethunk-Tech/go-smapi v0.3.1
 	github.com/Rethunk-Tech/go-smapiweb v0.1.1
 	github.com/Rethunk-Tech/go-thunderstore v0.4.1
 	github.com/Rethunk-Tech/go-vintagestory v0.1.0
@@ -84,9 +84,9 @@ require (
 	golang.org/x/mod v0.43.0 // indirect
 	golang.org/x/term v0.48.0 // indirect
 	golang.org/x/text v0.44.0 // indirect
-	modernc.org/libc v1.81.0 // indirect
+	modernc.org/libc v1.81.2 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
-	modernc.org/memory v1.12.1 // indirect
+	modernc.org/memory v1.13.0 // indirect
 )
 
 replace github.com/wailsapp/wails/v3 => github.com/Rethunk-AI/wails/v3 v3.1.0-mortar.8
