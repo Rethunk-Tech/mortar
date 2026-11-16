@@ -61,6 +61,11 @@ func (s *Store) reuseFomod() bool {
 	return s.settings.Get().ReuseFomod()
 }
 
+// FOMOD fileDependency paths are slash-normalised and case-insensitive, as on Windows.
+func fomodFileKey(rel string) string {
+	return strings.ToLower(strings.ReplaceAll(filepath.ToSlash(rel), "\\", "/"))
+}
+
 func (s *Store) fileIndex(modsDir string) fomod.FileIndex {
 	states := map[string]string{}
 	// The walk starts at modsDir, so every path it yields is under it.
@@ -69,7 +74,7 @@ func (s *Store) fileIndex(modsDir string) fomod.FileIndex {
 			return err
 		}
 		rel := strings.TrimPrefix(filepath.Clean(p), filepath.Clean(modsDir)+string(os.PathSeparator))
-		name := filepath.Base(p)
+		key := fomodFileKey(rel)
 		inactive := false
 		for part := range strings.SplitSeq(filepath.ToSlash(rel), "/") {
 			if strings.HasPrefix(part, ".") {
@@ -77,21 +82,18 @@ func (s *Store) fileIndex(modsDir string) fomod.FileIndex {
 				break
 			}
 		}
-		prev := states[name]
+		prev := states[key]
 		if !inactive {
-			states[name] = fomod.FileActive
+			states[key] = fomod.FileActive
 			return nil
 		}
 		if prev != fomod.FileActive {
-			states[name] = fomod.FileInactive
+			states[key] = fomod.FileInactive
 		}
 		return nil
 	})
 	return func(name string) string {
-		if s := states[name]; s != "" {
-			return s
-		}
-		if s := states[filepath.Base(name)]; s != "" {
+		if s := states[fomodFileKey(name)]; s != "" {
 			return s
 		}
 		return fomod.FileMissing

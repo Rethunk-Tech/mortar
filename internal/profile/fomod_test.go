@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-fomod"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -381,5 +382,60 @@ func TestInstalledGameVersionWithAndWithoutAVersionFile(t *testing.T) {
 		"[14:00:00 INFO SMAPI] SMAPI 4.1.10 with Stardew Valley 1.6.15\n")
 	if got := e.installedGameVersion("stardew"); got != "1.6.15" {
 		t.Fatalf("with version file: %q", got)
+	}
+}
+
+func TestFileIndexMatchesExactRelativePath(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	writeFile(t, dir, "OtherFolder/unique-xyz.dll", "x")
+	writeFile(t, dir, ".hidden/unique-xyz.dll", "x")
+	idx := (&Store{}).fileIndex(dir)
+	for _, tc := range []struct {
+		file, want string
+	}{
+		{"DoesNotExist/unique-xyz.dll", fomod.FileMissing},
+		{"OtherFolder/unique-xyz.dll", fomod.FileActive},
+		{`OtherFolder\unique-xyz.dll`, fomod.FileActive},
+		{"otherfolder/UNIQUE-XYZ.DLL", fomod.FileActive},
+		{".hidden/unique-xyz.dll", fomod.FileInactive},
+		{`.hidden\unique-xyz.dll`, fomod.FileInactive},
+		{".HIDDEN/unique-xyz.dll", fomod.FileInactive},
+		{"OtherFolder/missing.dll", fomod.FileMissing},
+	} {
+		if got := idx(tc.file); got != tc.want {
+			t.Fatalf("%q: got %q, want %q", tc.file, got, tc.want)
+		}
+	}
+}
+
+func TestFomodHiddenStepIgnoresSameNamedFileInAnotherFolder(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "A")
+	xml := `<config><moduleName>Gate</moduleName><installSteps><installStep name="Hidden"><visible>` +
+		`<fileDependency file="DoesNotExist/unique-xyz.dll" state="Active"/>` +
+		`</visible><optionalFileGroups><group name="G" type="SelectAny"><plugins><plugin name="P">` +
+		`<description/><files/><typeDescriptor><type name="Optional"/></typeDescriptor>` +
+		`</plugin></plugins></group></optionalFileGroups></installStep></installSteps></config>`
+	e.item(t, "gated", map[string]string{
+		"fomod/ModuleConfig.xml": xml,
+		"alpha/manifest.json":    manifestJSON("A.Alpha"),
+	})
+	writeFile(t, e.mods(p.ID), "OtherFolder/unique-xyz.dll", "x")
+	ask, err := e.FomodPreview("stardew", p.ID, "gated", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(ask.Steps) != 0 {
+		t.Fatalf("same-named file showed hidden step: %+v", ask.Steps)
+	}
+	writeFile(t, e.mods(p.ID), "DoesNotExist/unique-xyz.dll", "x")
+	ask, err = e.FomodPreview("stardew", p.ID, "gated", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(ask.Steps) != 1 || ask.Steps[0].Name != "Hidden" {
+		t.Fatalf("exact path should show the step: %+v", ask.Steps)
 	}
 }
