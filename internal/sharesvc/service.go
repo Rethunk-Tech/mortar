@@ -165,9 +165,10 @@ func (s *Service) Close() {
 		s.retry = nil
 	}
 	s.mu.Unlock()
-	// applyMu is held for a whole apply, so this waits out one already under way; queueChanged refuses a later one.
+	// applyMu is held for a whole apply, so taking it waits out one already under way, and holding it through the
+	// layout wait keeps a new apply from starting meanwhile.
 	s.applyMu.Lock()
-	s.applyMu.Unlock()
+	defer s.applyMu.Unlock()
 	if s.d.Profiles != nil {
 		s.d.Profiles.WaitSyncs()
 	}
