@@ -114,22 +114,27 @@ func packagePatchers(pkgs []profile.PackageRef, mods []framework.Mod) *patchInde
 				continue
 			}
 			for _, dll := range plugins.DLLs(p.Dir) {
-				patches, _ := dotnet.Patches(dll)
-				for _, patch := range patches {
-					out.targets[patch.Target] = append(out.targets[patch.Target], name)
-					if _, seen := out.patches[patch.Method]; !seen && patch.Method != "" {
-						out.patches[patch.Method] = patchOwner{name, patch.Kind}
-					}
-				}
-				if mvid, symbols, err := dotnet.Identity(dll); err == nil && mvid != "" {
-					if _, seen := out.modules[mvid]; !seen {
-						out.modules[mvid] = moduleOwner{dll, name, symbols}
-					}
-				}
+				out.addDLL(dll, name)
 			}
 		}
 		return out
 	})}
+}
+
+// addDLL records one DLL's Harmony patches and, unless an earlier package shipped the same MVID, its module.
+func (out patchMaps) addDLL(dll, name string) {
+	patches, _ := dotnet.Patches(dll)
+	for _, patch := range patches {
+		out.targets[patch.Target] = append(out.targets[patch.Target], name)
+		if _, seen := out.patches[patch.Method]; !seen && patch.Method != "" {
+			out.patches[patch.Method] = patchOwner{name, patch.Kind}
+		}
+	}
+	if mvid, symbols, err := dotnet.Identity(dll); err == nil && mvid != "" {
+		if _, seen := out.modules[mvid]; !seen {
+			out.modules[mvid] = moduleOwner{dll, name, symbols}
+		}
+	}
 }
 
 // patchedBy returns, for a stack's methods, the enabled packages whose plugin DLLs declare a Harmony patch on one of
