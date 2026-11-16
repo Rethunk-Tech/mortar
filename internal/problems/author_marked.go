@@ -15,6 +15,9 @@ import (
 
 var authorStatusWord = regexp.MustCompile(`(?i)\b(obsolete|deprecated|depreciated)\b`)
 
+// \b treats '-' as a break, so "Non-Obsolete" would hit without this; skip a marker the same clause just negated.
+var negationBefore = regexp.MustCompile(`(?i)(?:\b(?:not|never|isn't|isn’t|no\s+longer)\s+|non-)$`)
+
 func authorMarkedMods(home, domain string, enabled []framework.Mod) []Broken {
 	var out []Broken
 	for _, im := range enabled {
@@ -95,13 +98,24 @@ var markedIn = map[string]string{
 
 func statusMatch(text string, name bool) string {
 	match := authorStatusWord.FindStringIndex(text)
-	if match == nil {
+	if match == nil || markerNegated(text, match[0], match[1]) {
 		return ""
 	}
 	if name || appliesToMod(text, match[0]) {
 		return quoteAround(text, match[0], match[1])
 	}
 	return ""
+}
+
+func markerNegated(text string, start, end int) bool {
+	if start > 0 && text[start-1] == '-' || end < len(text) && text[end] == '-' {
+		return true
+	}
+	clause := text[:start]
+	if i := strings.LastIndexAny(clause, ".!?\r\n"); i >= 0 {
+		clause = clause[i+1:]
+	}
+	return negationBefore.MatchString(clause)
 }
 
 func appliesToMod(text string, at int) bool {

@@ -57,6 +57,37 @@ func TestAuthorMarkedMods(t *testing.T) {
 	}
 }
 
+func TestObsoleteText(t *testing.T) {
+	tests := []struct {
+		name, summary string
+		want          bool
+	}{
+		{"[OBSOLETE] Better Crafting", "", true},
+		{"Tractor Mod (Deprecated)", "Buy a tractor.", true},
+		{"Some Mod", "Depreciated: use Other Mod instead.", true},
+		{"Some Mod", "This mod is obsolete since 1.6.", true},
+		{"Some Mod", "Intro text.\nOBSOLETE", true},
+		{"New Fishing", "Replaces the obsolete Old Fishing mod.", false},
+		{"Normal Mod", "A normal summary.", false},
+		{"Non-Obsolete Ore Textures", "", false},
+		{"Some Mod", "This mod is not obsolete", false},
+		{"Some Mod", "This mod is no longer obsolete", false},
+		{"Some Mod", "This mod isn't obsolete", false},
+		{"Some Mod", "This mod is never obsolete", false},
+	}
+	for _, tt := range tests {
+		if got := ObsoleteText(tt.name, tt.summary); got != tt.want {
+			t.Errorf("ObsoleteText(%q, %q) = %v, want %v", tt.name, tt.summary, got, tt.want)
+		}
+	}
+}
+
+func TestAuthorStatusWordMatchesExtension(t *testing.T) {
+	if got, want := authorStatusWord.String(), `(?i)\b(obsolete|deprecated|depreciated)\b`; got != want {
+		t.Fatalf("authorStatusWord = %s, want %s", got, want)
+	}
+}
+
 func TestAuthorMarkedManifestDescription(t *testing.T) {
 	var im framework.Mod
 	var fields map[string]string
