@@ -187,6 +187,17 @@ func TestPendingRetriesAfterInModsWriteError(t *testing.T) {
 	}
 }
 
+func TestCloseLeavesAPendingImportForTheNextRun(t *testing.T) {
+	s, prof := pendingService(t)
+	pendingConfigA(s, prof)
+	installA(t, s, prof)
+	s.Close()
+	s.QueueChanged(queue.State{Items: []queue.Item{{ID: "a", Game: "stardew", Profile: prof.ID, ModID: 100, FileID: 1, State: queue.StateDone}}})
+	if len(s.pending) != 1 || len(s.pending[0].Configs) != 1 {
+		t.Fatalf("a closed service applied a pending import: %+v", s.pending)
+	}
+}
+
 func TestPendingKeepsUnappliedConfigsAfterTheQueueDrains(t *testing.T) {
 	s, prof := pendingService(t)
 	s.pending = []*pending{{

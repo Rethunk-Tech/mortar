@@ -46,10 +46,13 @@ func newService(t *testing.T, signedIn bool) (*Service, *recorder) {
 		900: {nf(9, "1.2", "MAIN", true)},
 	}, nil)
 	rec := &recorder{}
-	return NewService(Deps{
+	s := NewService(Deps{
 		Profiles: profiles, Meta: r.meta, Files: r.files, SignedIn: func() bool { return signedIn }, Premium: func() bool { return true },
 		Env: func(string) problems.Environment { return stardewEnv }, Queue: rec,
-	}), rec
+	})
+	// The retry timer and the profile's background layouts write into the data folder, so they stop before it is removed.
+	t.Cleanup(s.Close)
+	return s, rec
 }
 
 func link(t *testing.T, name string, refs ...share.Ref) string {

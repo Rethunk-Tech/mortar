@@ -74,7 +74,7 @@ func packService(t *testing.T) (*Service, *recorder) {
 	_, profiles := testenv.Stores(t)
 	rec := &recorder{}
 	r := testResolver(nil, nil)
-	return NewService(Deps{
+	s := NewService(Deps{
 		Profiles: profiles, Queue: rec, Meta: r.meta, Files: r.files, PackCode: pack.Code{URL: srvURL},
 		SignedIn: func() bool { return true }, Premium: func() bool { return false },
 		Env: func(string) problems.Environment { return problems.Environment{} },
@@ -87,7 +87,10 @@ func packService(t *testing.T) (*Service, *recorder) {
 			}
 			return out, nil
 		},
-	}), rec
+	})
+	// A pending import's retry and the profile's background layouts outlive the test body; stop them with the data folder.
+	t.Cleanup(s.Close)
+	return s, rec
 }
 
 func packMods(pv Preview) map[string]Mod {

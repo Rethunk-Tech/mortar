@@ -139,6 +139,8 @@ type Service struct {
 	gen     int
 	pending []*pending
 	retry   *time.Timer
+	// closed stops armPendingRetry from starting a retry after Close, which no longer waits on one.
+	closed bool
 	// lastExport is the collection draft ExportCollection last wrote.
 	lastExport string
 	lastQ      queue.State
@@ -151,6 +153,24 @@ func NewService(d Deps) *Service {
 	s.pending = loadPending(d.Dir)
 	s.QueueChanged = s.queueChanged
 	return s
+}
+
+// Close stops the pending-import retry and waits for the applies and profile layouts it can have started, so no write
+// outlives the call.
+func (s *Service) Close() {
+	s.mu.Lock()
+	s.closed = true
+	if s.retry != nil {
+		s.retry.Stop()
+		s.retry = nil
+	}
+	s.mu.Unlock()
+	// applyMu is held for a whole apply, so this waits out one already under way; queueChanged refuses a later one.
+	s.applyMu.Lock()
+	s.applyMu.Unlock()
+	if s.d.Profiles != nil {
+		s.d.Profiles.WaitSyncs()
+	}
 }
 
 // session is the preview the dialog is showing, kept so Import acts on exactly what was shown.
@@ -1511,6 +1531,10 @@ func (s *Service) queueChanged(st queue.State) {
 	s.applyMu.Lock()
 	defer s.applyMu.Unlock()
 	s.mu.Lock()
+	if s.closed {
+		s.mu.Unlock()
+		return
+	}
 	todo := slices.Clone(s.pending)
 	s.mu.Unlock()
 	changed := false
@@ -1616,7 +1640,7 @@ func (s *Service) armPendingRetry(st queue.State) {
 	s.mu.Lock()
 	s.lastQ = st
 	waiting := slices.ContainsFunc(s.pending, func(p *pending) bool { return len(p.Configs) > 0 })
-	if !waiting {
+	if !waiting || s.closed {
 		if s.retry != nil {
 			s.retry.Stop()
 			s.retry = nil

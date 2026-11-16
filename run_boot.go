@@ -260,6 +260,9 @@ func (c *boot) newApp() error {
 		if c.lanSvc != nil {
 			c.lanSvc.Shutdown()
 		}
+		if c.shareSvc != nil {
+			c.shareSvc.Close()
+		}
 		desktopnotify.StopClicks()
 		slog.Info("shutdown", "clean", true)
 		_ = c.updates.ApplyOnQuit(context.Background())
