@@ -239,8 +239,8 @@ function overlayAlpha(color: ReturnType<typeof decomposeColor>): number {
   if (color.type !== 'rgba') {
     return 1
   }
-  const alpha = color.values[3]
-  return alpha === undefined ? 1 : alpha
+  const [, , , alpha = 1] = color.values
+  return alpha
 }
 
 function toHex(color: string): string {
