@@ -11817,7 +11817,14 @@
           ]
         }
       ],
-      "sources": [{ "id": "thunderstore", "key": "meccha-chameleon" }]
+      "sources": [
+        { "id": "thunderstore", "key": "meccha-chameleon" },
+        {
+          "id": "nexus",
+          "key": "mecchachameleon",
+          "gameId": 9505
+        }
+      ]
     },
     {
       "id": "minos",
@@ -13051,6 +13058,11 @@
         {
           "id": "thunderstore",
           "key": "return-from-core"
+        },
+        {
+          "id": "nexus",
+          "key": "returnfromcore",
+          "gameId": 7998
         }
       ]
     },
@@ -13487,6 +13499,11 @@
         {
           "id": "thunderstore",
           "key": "disco-elysium"
+        },
+        {
+          "id": "nexus",
+          "key": "discoelysium",
+          "gameId": 3027
         }
       ]
     },
