@@ -6,7 +6,7 @@ require (
 	github.com/Rethunk-Tech/go-archive v0.3.1
 	github.com/Rethunk-Tech/go-bannerlord v0.1.2
 	github.com/Rethunk-Tech/go-bepinex v0.2.2
-	github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261116191200-517d0d8561b0
+	github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261116224718-e3f12196a76c
 	github.com/Rethunk-Tech/go-contentpatcher v0.1.0
 	github.com/Rethunk-Tech/go-curseforge v0.4.0
 	github.com/Rethunk-Tech/go-desktopenv v0.9.2

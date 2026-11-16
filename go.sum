@@ -12,8 +12,8 @@ github.com/Rethunk-Tech/go-bannerlord v0.1.2 h1:WxbbbNKu/7QKFTq8iIS21DcvKdQ+jmfy
 github.com/Rethunk-Tech/go-bannerlord v0.1.2/go.mod h1:7B02zG3WSS8b9PFx85TRx8kphsjp6PRWpmUgH5VECM0=
 github.com/Rethunk-Tech/go-bepinex v0.2.2 h1:ehZfxOWmIS2FtCZDYmY7F6gd2chTcKr1LJbbp2vwdt8=
 github.com/Rethunk-Tech/go-bepinex v0.2.2/go.mod h1:CVyX5x266PIuT5FooacfUhTXC66XYXQNaCPu6KZ+3q8=
-github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261116191200-517d0d8561b0 h1:8O60uC9TOQdVgu+Tc+DLr2o70kFWDTvy5S1o9IrmQmU=
-github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261116191200-517d0d8561b0/go.mod h1:CuSifjSZHPTrvJ3U5VemhTywXKJ/OQHm7mceFTTvGb0=
+github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261116224718-e3f12196a76c h1:t1hje9lLa9eUKRqa4Mc6BDrQZPZ+WTkwAIa/2nsAKGo=
+github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261116224718-e3f12196a76c/go.mod h1:FWZ4LrrXCa1e8gzXHjVCgpJlc7V5WCCzXcHaAxx5mgE=
 github.com/Rethunk-Tech/go-contentpatcher v0.1.0 h1:27sOlKxEw1cVwUd0NgJ1VDVBvVm1TW4QzBRs3Uls5Xk=
 github.com/Rethunk-Tech/go-contentpatcher v0.1.0/go.mod h1:RSpiDkNgq+IwA2CRUHrwMBZDfhp0MbTcTTdKiVSoPsI=
 github.com/Rethunk-Tech/go-curseforge v0.4.0 h1:Nr9pRINnAK/yqhMlBOJul8Etc35UiYp7MvBiGMGusO8=
