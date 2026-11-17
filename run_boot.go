@@ -1183,7 +1183,8 @@ func (c *boot) windowSetup() error {
 		// Wayland gives an app no say over where a re-shown window goes, so closing to the tray
 		// destroys the window and showing builds a fresh one that the compositor places as new.
 		w.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
-			if c.store.Get().RememberWindow && !c.plays.PlayMode() {
+			// A minimised window reports the off-screen spot Windows parks it at, not where it will come back.
+			if c.store.Get().RememberWindow && !c.plays.PlayMode() && !w.IsMinimised() {
 				x, y := w.Position()
 				prev, havePrev := loadWindowGeom(c.dataDir, nil)
 				saveWindowGeom(c.dataDir, closingGeom(prev, havePrev, w.IsMaximised(), windowGeom{X: x, Y: y, W: w.Width(), H: w.Height()}))
