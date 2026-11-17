@@ -5,6 +5,9 @@
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
 export GORACE=atexit_sleep_ms=0
+# NODE_ENV=production from the caller loads React without act() and Lingui without its compiled catalogs, failing
+# bun test; each tool picks its own mode when it is unset.
+unset NODE_ENV
 
 profile=0
 if [[ "${1:-}" == --profile ]]; then
