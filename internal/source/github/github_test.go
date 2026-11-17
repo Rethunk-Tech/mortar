@@ -295,6 +295,31 @@ func TestSearchFallsBackToTheSearchPageAsMortar(t *testing.T) {
 	}
 }
 
+func TestSearchGraphQLRateLimitFallsBackToREST(t *testing.T) {
+	t.Parallel()
+	var paths []string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		if r.URL.Path == "/graphql" {
+			_, _ = w.Write([]byte(`{"errors":[{"type":"RATE_LIMITED","message":"wait"}]}`))
+			return
+		}
+		_, _ = w.Write([]byte(`{"total_count":1,"items":[{"full_name":"o/r","name":"r","html_url":"https://github.com/o/r","stargazers_count":1,"owner":{"login":"o"}}]}`))
+	}))
+	t.Cleanup(srv.Close)
+	d := &Driver{URL: srv.URL, LoggedIn: func(context.Context) bool { return true }, Topics: func(string) []string { return []string{"a"} }}
+	page, err := d.Search(t.Context(), source.Query{Key: "a", Page: 1})
+	if err != nil || len(page.Items) != 1 || page.Items[0].ID != "o/r" {
+		t.Fatalf("%+v %v", page, err)
+	}
+	if _, err := d.Search(t.Context(), source.Query{Key: "a", Page: 2}); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Count(strings.Join(paths, ","), "/graphql") != 1 {
+		t.Fatalf("asked GraphQL again after RATE_LIMITED: %v", paths)
+	}
+}
+
 func TestSearchAsksGraphQLOnceForEveryTopicAndCachesItsPages(t *testing.T) {
 	t.Parallel()
 	var asked []string
