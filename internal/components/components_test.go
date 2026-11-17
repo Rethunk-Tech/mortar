@@ -850,6 +850,33 @@ func TestBundledGamesAreTheSourcesGames(t *testing.T) {
 	}
 }
 
+// Nexus hosts these games for their loader; components:audit fails when the catalog has no nexus source for them.
+func TestNexusHostedLoaderGamesListANexusSource(t *testing.T) {
+	m, err := BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]struct {
+		key    string
+		gameID int
+	}{
+		"meccha-chameleon": {"mecchachameleon", 9505},
+		"return-from-core": {"returnfromcore", 7998},
+		"disco-elysium":    {"discoelysium", 3027},
+	}
+	for id, src := range want {
+		i := slices.IndexFunc(m.Games, func(g GameInfo) bool { return g.ID == id })
+		if i < 0 {
+			t.Errorf("bundled catalog lacks %s", id)
+			continue
+		}
+		got, has := m.Games[i].Source("nexus")
+		if !has || got.Key != src.key || got.GameID != src.gameID {
+			t.Errorf("%s nexus = %+v has %v", id, got, has)
+		}
+	}
+}
+
 func TestDedicatedServersShareTheirClientsSources(t *testing.T) {
 	m, err := BundledManifest()
 	if err != nil {
