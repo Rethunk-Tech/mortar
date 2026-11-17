@@ -3,6 +3,7 @@ package browse
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"slices"
 	"strings"
 
@@ -28,7 +29,9 @@ type Service struct {
 	// Installed reads the manifests of a profile's mods, whose update keys name the pages they came from; nil skips them.
 	Installed func(game, profileID string) ([]profile.Installed, error)
 	// Compat returns the game's compatibility list lookup, or nil when the game has none.
-	Compat func(game string) func(ctx context.Context) (smapiweb.CompatIndex, error)
+	Compat        func(game string) func(ctx context.Context) (smapiweb.CompatIndex, error)
+	translateHTTP *http.Client
+	translateURL  string
 }
 
 // HasCompat reports whether the game has a compatibility list or a known-broken list, so its mods can be marked

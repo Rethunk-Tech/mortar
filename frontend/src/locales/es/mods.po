@@ -2415,6 +2415,10 @@ msgstr ""
 msgid "Its folder is removed from this profile. You can undo this."
 msgstr ""
 
+#: src/mods/Translatable.tsx
+msgid "Show original"
+msgstr ""
+
 #: src/mods/updateReview/UpdateBar.tsx
 msgid "{count, plural, one {# update ready} other {# updates ready}}"
 msgstr ""
@@ -2811,6 +2815,10 @@ msgstr ""
 
 #: src/mods/storeGroups.ts
 msgid "Could not rename the group"
+msgstr ""
+
+#: src/mods/Translatable.tsx
+msgid "Translate"
 msgstr ""
 
 #: src/mods/OldFilesCallouts.tsx

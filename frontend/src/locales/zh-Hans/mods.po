@@ -2415,6 +2415,10 @@ msgstr "关于 {key}"
 msgid "Its folder is removed from this profile. You can undo this."
 msgstr "其文件夹已从此配置中移除。你可以撤销此操作。"
 
+#: src/mods/Translatable.tsx
+msgid "Show original"
+msgstr ""
+
 #: src/mods/updateReview/UpdateBar.tsx
 msgid "{count, plural, one {# update ready} other {# updates ready}}"
 msgstr "{count, plural, one {# 项更新就绪} other {# 项更新就绪}}"
@@ -2812,6 +2816,10 @@ msgstr "{names} 都提供插件 {guid}，而 {loader} 只加载一个。"
 #: src/mods/storeGroups.ts
 msgid "Could not rename the group"
 msgstr "无法重命名分组"
+
+#: src/mods/Translatable.tsx
+msgid "Translate"
+msgstr ""
 
 #: src/mods/OldFilesCallouts.tsx
 msgid "Could not keep the old files"

@@ -28,6 +28,7 @@ import {
 import { currentFiles, formatCount, isNewer, recentChangelogs } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark } from './nexusMark.ts'
 import { heading } from './paper.ts'
+import { Translatable } from './Translatable.tsx'
 
 const text = { fontSize: 'base.fontSize' } as const
 const muted = { fontSize: 'small.fontSize', color: 'text.secondary' } as const
@@ -225,7 +226,6 @@ function Loaded({
   const { t } = useLingui()
   const { page } = details
   const logs = details.changelogs ?? []
-  const description = page.description ? parseBBCode(page.description) : []
   const game = useProfiles((s) => s.game?.id ?? '')
   const looked = useLookedSnapshot(game, modId, details)
   return (
@@ -291,9 +291,11 @@ function Loaded({
           ))}
         </Fold>
       ) : null}
-      {description.length > 0 ? (
+      {page.description ? (
         <Fold title={t`Description`}>
-          <Rich blocks={description} />
+          <Translatable source={page.description}>
+            {(copy) => <Rich blocks={parseBBCode(copy)} />}
+          </Translatable>
         </Fold>
       ) : null}
     </Box>

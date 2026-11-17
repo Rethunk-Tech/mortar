@@ -16,6 +16,7 @@ import { DetailsHeader } from '../mods/DetailsHeader.tsx'
 import { type Dependency, nexusDependencies } from '../mods/dependencies.ts'
 import { MarkdownView } from '../mods/MarkdownView.tsx'
 import { Section } from '../mods/ModSections.tsx'
+import { Translatable } from '../mods/Translatable.tsx'
 import { openPage } from '../mods/menu.ts'
 import { Rich } from '../mods/NexusDetails.tsx'
 import { isFull, loadDetails, useNexusPartialEntry } from '../mods/nexusDetails.ts'
@@ -133,7 +134,11 @@ function PartialPage({ details }: { details: NexusDetails }) {
       <PageSections
         page={{
           categories: details.category ? [details.category] : [],
-          description: summary ? <Typography sx={text}>{summary}</Typography> : null,
+          description: summary ? (
+            <Translatable source={summary}>
+              {(copy) => <Typography sx={text}>{copy}</Typography>}
+            </Translatable>
+          ) : null,
           versions: version ? [version] : [],
           dependencies: nexusDependencies(requirements),
           changelog: null,
@@ -165,7 +170,9 @@ function NexusPage({ game, modId, summary }: { game: string; modId: number; summ
         {summary ? (
           <Box sx={{ opacity: SAVED_OPACITY }}>
             <Section title={t`Description`}>
-              <Typography sx={text}>{summary}</Typography>
+              <Translatable source={summary}>
+                {(copy) => <Typography sx={text}>{copy}</Typography>}
+              </Translatable>
             </Section>
           </Box>
         ) : null}
@@ -202,7 +209,11 @@ function NexusPage({ game, modId, summary }: { game: string; modId: number; summ
     <PageSections
       page={{
         categories: details.category ? [details.category] : [],
-        description: description ? <Rich blocks={parseBBCode(description)} /> : null,
+        description: description ? (
+          <Translatable source={description}>
+            {(copy) => <Rich blocks={parseBBCode(copy)} />}
+          </Translatable>
+        ) : null,
         versions,
         dependencies: nexusDependencies(details.page.requirements),
         changelog: changelogOf(details.changelogs),
@@ -252,10 +263,14 @@ function SitePage({ game, item }: { game: string; item: BrowseItem }) {
       page={{
         categories: details.categories ?? [],
         description: details.description ? (
-          <MarkdownView source={details.description} />
-        ) : (
-          <Typography sx={text}>{item.summary}</Typography>
-        ),
+          <Translatable source={details.description}>
+            {(copy) => <MarkdownView source={copy} />}
+          </Translatable>
+        ) : item.summary ? (
+          <Translatable source={item.summary}>
+            {(copy) => <Typography sx={text}>{copy}</Typography>}
+          </Translatable>
+        ) : null,
         versions: item.source === GITHUB ? logs.map((l) => l.version) : (details.versions ?? []),
         dependencies: (details.dependencies ?? []).map((name) => ({ name })),
         changelog: item.source === GITHUB ? changelogOf(logs) : changelog,

@@ -261,41 +261,6 @@ Steam, Vortex or OneDrive.
 - `bun run gate` stays clean. No production default changes without the
   maintainer's copied settings showing the value being replaced.
 
-## Mod descriptions stay in their original language
-
-Browse and listing copy is shown as the source wrote it. Players who do not
-read that language have to leave Mortar (StarModsManager already translates
-Stardew descriptions). The app's own translations are a separate Lingui
-catalog; mixing the two would grow the bundle with strings Mortar does not
-own.
-
-The decided shape is an optional per-description translation into the
-player's language, revisited together with the app's own translations.
-Rejected: translating every description unconditionally, or baking source
-descriptions into the Lingui catalogs.
-
-### Read
-
-- [docs/design.md](docs/design.md#later) — the StarModsManager precedent and
-  the "revisit together" rule.
-- Frontend Lingui load path — locale catalogs load per locale so the bundle
-  does not grow with each language.
-
-### Traps
-
-- **Do not put source-site copy in Lingui catalogs.** Those catalogs are
-  Mortar's UI; per-description translation is optional and live.
-- **Revisit with the app's own translations.** Shipping this first as a
-  one-off source-site toggle forks the locale story.
-
-### Acceptance
-
-- A player can translate a mod's description into their language, optional
-  and per description.
-- Unsigned-out saved listings still show, marked as saved.
-- `bun run gate` stays clean. Lingui catalogs do not contain source-site
-  description strings.
-
 ## Share links have no hosted short-code service
 
 Share links already name their game, but there is no hosted service for short

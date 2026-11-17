@@ -2421,6 +2421,10 @@ msgstr "About {key}"
 msgid "Its folder is removed from this profile. You can undo this."
 msgstr "Its folder is removed from this profile. You can undo this."
 
+#: src/mods/Translatable.tsx
+msgid "Show original"
+msgstr "Show original"
+
 #: src/mods/updateReview/UpdateBar.tsx
 msgid "{count, plural, one {# update ready} other {# updates ready}}"
 msgstr "{count, plural, one {# update ready} other {# updates ready}}"
@@ -2818,6 +2822,10 @@ msgstr "{names} both ship the plugin {guid}, and {loader} loads only one."
 #: src/mods/storeGroups.ts
 msgid "Could not rename the group"
 msgstr "Could not rename the group"
+
+#: src/mods/Translatable.tsx
+msgid "Translate"
+msgstr "Translate"
 
 #: src/mods/OldFilesCallouts.tsx
 msgid "Could not keep the old files"
