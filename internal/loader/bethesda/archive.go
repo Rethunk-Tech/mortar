@@ -4,9 +4,11 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"os"
+	"math"
 	"path/filepath"
 	"strings"
+
+	"github.com/Rethunk-Tech/go-safefs"
 )
 
 func listArchive(path string) ([]string, error) {
@@ -21,11 +23,11 @@ func listArchive(path string) ([]string, error) {
 }
 
 func listBSA(path string) ([]string, error) {
-	f, err := os.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	hdr := make([]byte, 36)
 	if _, err := io.ReadFull(f, hdr); err != nil {
 		return nil, err
@@ -47,7 +49,7 @@ func listBSA(path string) ([]string, error) {
 	}
 	// Folder names are length-prefixed; skip them and the per-folder file records
 	// until the concatenated file-name blob.
-	for i := uint32(0); i < folderCount; i++ {
+	for range folderCount {
 		var n [1]byte
 		if _, err := io.ReadFull(f, n[:]); err != nil {
 			return nil, err
@@ -64,23 +66,23 @@ func listBSA(path string) ([]string, error) {
 		return nil, err
 	}
 	var out []string
-	for _, n := range strings.Split(strings.TrimRight(string(names), "\x00"), "\x00") {
+	for n := range strings.SplitSeq(strings.TrimRight(string(names), "\x00"), "\x00") {
 		if n != "" {
 			out = append(out, n)
 		}
 	}
-	if uint32(len(out)) != fileCount && fileCount != 0 {
+	if len(out) != int(fileCount) && fileCount != 0 {
 		return nil, fmt.Errorf("%s name count %d, header %d", path, len(out), fileCount)
 	}
 	return out, nil
 }
 
 func listBA2(path string) ([]string, error) {
-	f, err := os.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	hdr := make([]byte, 24)
 	if _, err := io.ReadFull(f, hdr); err != nil {
 		return nil, err
@@ -90,11 +92,14 @@ func listBA2(path string) ([]string, error) {
 	}
 	fileCount := binary.LittleEndian.Uint32(hdr[12:16])
 	nameOff := binary.LittleEndian.Uint64(hdr[16:24])
+	if nameOff > math.MaxInt64 {
+		return nil, fmt.Errorf("%s name table offset out of range", path)
+	}
 	if _, err := f.Seek(int64(nameOff), io.SeekStart); err != nil {
 		return nil, err
 	}
 	out := make([]string, 0, fileCount)
-	for i := uint32(0); i < fileCount; i++ {
+	for range fileCount {
 		var n uint16
 		if err := binary.Read(f, binary.LittleEndian, &n); err != nil {
 			return nil, err

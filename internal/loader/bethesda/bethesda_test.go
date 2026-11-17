@@ -22,12 +22,12 @@ func tes4(t *testing.T, flags uint32, masters ...string) []byte {
 	for _, m := range masters {
 		mast := append([]byte(m), 0)
 		data.WriteString("MAST")
-		_ = binary.Write(&data, binary.LittleEndian, uint16(len(mast)))
+		_ = binary.Write(&data, binary.LittleEndian, uint16(len(mast))) //nolint:gosec // G115: fixture lengths are a few bytes
 		data.Write(mast)
 	}
 	var buf bytes.Buffer
 	buf.WriteString("TES4")
-	_ = binary.Write(&buf, binary.LittleEndian, uint32(data.Len()))
+	_ = binary.Write(&buf, binary.LittleEndian, uint32(data.Len())) //nolint:gosec // G115: fixture lengths are a few bytes
 	_ = binary.Write(&buf, binary.LittleEndian, flags)
 	buf.Write(make([]byte, 12))
 	buf.Write(data.Bytes())
@@ -145,13 +145,13 @@ func writeBSA(t *testing.T, file string) []byte {
 	_ = binary.Write(&buf, binary.LittleEndian, uint32(104))
 	_ = binary.Write(&buf, binary.LittleEndian, uint32(36))
 	_ = binary.Write(&buf, binary.LittleEndian, uint32(3))
-	_ = binary.Write(&buf, binary.LittleEndian, uint32(1)) // folders
-	_ = binary.Write(&buf, binary.LittleEndian, uint32(1)) // files
-	_ = binary.Write(&buf, binary.LittleEndian, uint32(len(folder)+1))
-	_ = binary.Write(&buf, binary.LittleEndian, uint32(len(names)))
+	_ = binary.Write(&buf, binary.LittleEndian, uint32(1))             // folders
+	_ = binary.Write(&buf, binary.LittleEndian, uint32(1))             // files
+	_ = binary.Write(&buf, binary.LittleEndian, uint32(len(folder)+1)) //nolint:gosec // G115: fixture lengths are a few bytes
+	_ = binary.Write(&buf, binary.LittleEndian, uint32(len(names)))    //nolint:gosec // G115: fixture lengths are a few bytes
 	_ = binary.Write(&buf, binary.LittleEndian, uint32(0))
 	buf.Write(make([]byte, 16))
-	buf.WriteByte(byte(len(folder) + 1))
+	buf.WriteByte(byte(len(folder) + 1)) //nolint:gosec // G115: fixture lengths are a few bytes
 	buf.Write(folder)
 	buf.WriteByte(0)
 	buf.Write(make([]byte, 16))
@@ -167,7 +167,7 @@ func writeBA2(t *testing.T, file string) []byte {
 	buf.WriteString("GNRL")
 	_ = binary.Write(&buf, binary.LittleEndian, uint32(1))
 	_ = binary.Write(&buf, binary.LittleEndian, uint64(24))
-	_ = binary.Write(&buf, binary.LittleEndian, uint16(len(file)))
+	_ = binary.Write(&buf, binary.LittleEndian, uint16(len(file))) //nolint:gosec // G115: fixture lengths are a few bytes
 	buf.WriteString(file)
 	return buf.Bytes()
 }

@@ -28,10 +28,10 @@ const (
 	markerFile = ".mortar-minecraft.json"
 )
 
-func init() {
-	loader.Register(Loader{Kind: Fabric})
-	loader.Register(Loader{Kind: Forge})
-	loader.Register(Loader{Kind: NeoForge})
+var _ = []bool{
+	loader.Register(Loader{Kind: Fabric}),
+	loader.Register(Loader{Kind: Forge}),
+	loader.Register(Loader{Kind: NeoForge}),
 }
 
 // Family reports whether loaders includes a Minecraft loader.
@@ -202,7 +202,7 @@ func (l Loader) get(ctx context.Context, url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("%s: %s", url, res.Status)
 	}

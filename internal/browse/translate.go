@@ -44,7 +44,7 @@ func (s *Service) TranslateDescription(ctx context.Context, text, locale string)
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	body, err := io.ReadAll(io.LimitReader(resp.Body, source.MaxBody+1))
 	if err != nil {
 		return "", err

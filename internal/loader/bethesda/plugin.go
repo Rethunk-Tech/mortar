@@ -5,9 +5,9 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
 
@@ -24,11 +24,11 @@ type plugin struct {
 }
 
 func parsePlugin(path string) (plugin, error) {
-	f, err := os.Open(path)
+	f, err := safefs.Open(path)
 	if err != nil {
 		return plugin{}, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	hdr := make([]byte, 24)
 	if _, err := io.ReadFull(f, hdr); err != nil {
 		return plugin{}, err
