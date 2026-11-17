@@ -27,4 +27,8 @@ func TestChangelogReadsFilesNewerThanInstalled(t *testing.T) {
 	if len(got) != 1 || got[0].Version != "Open 2.0" || got[0].Date != "2026-02-01" || got[0].Body != "Two\n\n• fix" {
 		t.Fatalf("notes = %+v", got)
 	}
+	got, err = d.Changelog(t.Context(), "", "10", "Open 1.0", "102", "")
+	if err != nil || len(got) != 1 || got[0].Version != "Open 2.0" {
+		t.Fatalf("latest file id = %+v, %v", got, err)
+	}
 }
