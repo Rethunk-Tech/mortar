@@ -11,11 +11,11 @@ package frosted
 import "C"
 import "unsafe"
 
-func nativeHost(handle unsafe.Pointer) Host {
+func bindNative(s *Session, handle unsafe.Pointer) {
 	if handle == nil {
-		return noopHost{}
+		return
 	}
-	return &waylandHost{win: handle}
+	s.host = &waylandHost{win: handle}
 }
 
 type waylandHost struct {
@@ -27,7 +27,7 @@ func (h *waylandHost) bind() {
 	if h.st != nil || h.win == nil {
 		return
 	}
-	h.st = unsafe.Pointer(C.frosted_bind(h.win))
+	h.st = C.frosted_bind(h.win)
 }
 
 func (h *waylandHost) SetBlur(width, height int) {

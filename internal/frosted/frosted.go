@@ -37,7 +37,8 @@ func New(host Host) *Session {
 
 // Attach binds the native GTK window (or a no-op host) and applies blur when translucent.
 func Attach(handle unsafe.Pointer, width, height int, translucent bool) *Session {
-	s := New(nativeHost(handle))
+	s := New(nil)
+	bindNative(s, handle)
 	s.Resize(width, height)
 	s.SetTranslucent(translucent)
 	return s

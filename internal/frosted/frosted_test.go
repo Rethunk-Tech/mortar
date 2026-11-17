@@ -2,12 +2,10 @@ package frosted
 
 import (
 	"testing"
-	"unsafe"
 )
 
 type fakeHost struct {
 	sets       [][2]int
-	clears     int
 	setCalls   int
 	clearCalls int
 }
@@ -53,10 +51,4 @@ func TestMissingProtocolStillStarts(t *testing.T) {
 	s := Attach(nil, 1280, 720, true)
 	s.Resize(640, 480)
 	s.SetTranslucent(false)
-}
-
-func TestAttachNilHandleIsNoop(t *testing.T) {
-	if nativeHost(unsafe.Pointer(nil)) == nil {
-		t.Fatal("nativeHost(nil) returned nil")
-	}
 }

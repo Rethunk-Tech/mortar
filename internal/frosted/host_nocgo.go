@@ -4,4 +4,4 @@ package frosted
 
 import "unsafe"
 
-func nativeHost(unsafe.Pointer) Host { return noopHost{} }
+func bindNative(*Session, unsafe.Pointer) {}
