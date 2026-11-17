@@ -25,7 +25,7 @@ const GENERIC = 'generic'
 // Every content kind fits in the old-layout note.
 const LEGACY_SHOWN = 6
 const CODE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/
-const MOD_NAME = /^[A-Z][A-Za-z0-9]{1,63}$/
+const MOD_NAME = /^[A-Za-z][A-Za-z0-9]{1,63}$/
 
 export function AdoptHost() {
   const asked = useAdopting((s) => s.asked)
@@ -102,7 +102,7 @@ function AdoptDialog({
     issue =
       kind === CODE
         ? t`The name holds letters, digits, dots, dashes and underscores.`
-        : t`The name starts with a capital letter and holds only letters and digits.`
+        : t`The name starts with a letter and holds only letters and digits.`
   }
   return (
     <FormDialog
@@ -151,8 +151,10 @@ function AdoptDialog({
   )
 }
 
-// A project of files is named like a mod: capitalised letters and digits.
+// A project of files is named like a mod: letters and digits, starting with a letter.
+const NOT_IN_NAME = /^[^A-Za-z]+|[^A-Za-z0-9]/g
+
 function suggestedName(name: string) {
-  const letters = name.replaceAll(/[^A-Za-z0-9]/g, '')
+  const letters = name.replaceAll(NOT_IN_NAME, '')
   return letters ? letters.charAt(0).toUpperCase() + letters.slice(1) : 'Mod'
 }

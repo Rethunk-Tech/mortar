@@ -322,7 +322,7 @@ func (e ProjectEdit) checkDetails() error {
 	oneLine := func(v string) bool { return strings.TrimSpace(v) != "" && !strings.ContainsAny(v, "\r\n") }
 	switch {
 	case !modName.MatchString(e.Name):
-		return bad("the mod name must start with a capital letter and hold only letters and digits")
+		return bad("the mod name must start with a letter and hold only letters and digits")
 	case !oneLine(e.Description) || len([]rune(e.Description)) > maxDescription:
 		return bad(fmt.Sprintf("describe the mod in one line of at most %d characters", maxDescription))
 	case !teamPattern.MatchString(e.Team):

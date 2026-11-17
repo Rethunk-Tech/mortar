@@ -328,6 +328,10 @@ msgstr "Unpair {name}?"
 msgid "Deleted profile"
 msgstr "Deleted profile"
 
+#: src/develop/AdoptDialog.tsx
+msgid "The name starts with a letter and holds only letters and digits."
+msgstr "The name starts with a letter and holds only letters and digits."
+
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "{count, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
 msgstr "{count, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
@@ -5980,10 +5984,6 @@ msgstr "{names} cannot be reached; nothing saved to show yet"
 #: src/launch/autoUpdate.ts
 msgid "the mod"
 msgstr "the mod"
-
-#: src/develop/AdoptDialog.tsx
-msgid "The name starts with a capital letter and holds only letters and digits."
-msgstr "The name starts with a capital letter and holds only letters and digits."
 
 #: src/browse/BrowseBody.tsx
 msgid "Searching…"

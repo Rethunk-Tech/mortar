@@ -45,7 +45,7 @@ const (
 )
 
 var (
-	modName = regexp.MustCompile(`^[A-Z][A-Za-z0-9]{1,63}$`)
+	modName = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9]{1,63}$`)
 	// codeName is an adopted C# project's name: its project file's, which need not follow the template's naming.
 	codeName  = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`)
 	repoName  = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$`)
@@ -413,7 +413,7 @@ func (m NewMod) check() error {
 	bad := func(what string) error { return usererr.Wrap(usererr.Invalid, errors.New(what)) }
 	switch {
 	case !modName.MatchString(m.Name):
-		return bad("the mod name must start with a capital letter and hold only letters and digits")
+		return bad("the mod name must start with a letter and hold only letters and digits")
 	case !repoName.MatchString(m.Repo):
 		return bad("the folder name holds only letters, digits, dots, dashes and underscores")
 	case !filepath.IsAbs(m.Parent):

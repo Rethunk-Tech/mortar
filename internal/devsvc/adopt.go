@@ -168,7 +168,7 @@ func (s *Service) Adopt(ctx context.Context, gameID, dir, profileID string, choi
 	case choice.Kind == kindCode && !codeName.MatchString(choice.Name):
 		return bad("the name holds letters, digits, dots, dashes and underscores")
 	case choice.Kind != kindCode && !modName.MatchString(choice.Name):
-		return bad("the mod name must start with a capital letter and hold only letters and digits")
+		return bad("the mod name must start with a letter and hold only letters and digits")
 	}
 	// The record says only what the files do not: the kind and name they give are left out, and so is the project file
 	// unless the tree holds several.

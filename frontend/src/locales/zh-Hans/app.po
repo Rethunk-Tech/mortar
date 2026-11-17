@@ -322,6 +322,10 @@ msgstr "取消配对 {name}？"
 msgid "Deleted profile"
 msgstr "已删除配置文件"
 
+#: src/develop/AdoptDialog.tsx
+msgid "The name starts with a letter and holds only letters and digits."
+msgstr "名称以字母开头，且只包含字母和数字。"
+
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "{count, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
 msgstr "{count, plural, one {已从 {name} 添加 # 个模组} other {已从 {name} 添加 # 个模组}}"
@@ -5974,10 +5978,6 @@ msgstr "无法访问 {names}；尚无已保存内容可显示"
 #: src/launch/autoUpdate.ts
 msgid "the mod"
 msgstr "该模组"
-
-#: src/develop/AdoptDialog.tsx
-msgid "The name starts with a capital letter and holds only letters and digits."
-msgstr "名称以大写字母开头，且只包含字母和数字。"
 
 #: src/browse/BrowseBody.tsx
 msgid "Searching…"

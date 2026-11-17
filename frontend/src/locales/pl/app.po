@@ -328,6 +328,10 @@ msgstr ""
 msgid "Deleted profile"
 msgstr ""
 
+#: src/develop/AdoptDialog.tsx
+msgid "The name starts with a letter and holds only letters and digits."
+msgstr ""
+
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "{count, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
 msgstr ""
@@ -5979,10 +5983,6 @@ msgstr ""
 
 #: src/launch/autoUpdate.ts
 msgid "the mod"
-msgstr ""
-
-#: src/develop/AdoptDialog.tsx
-msgid "The name starts with a capital letter and holds only letters and digits."
 msgstr ""
 
 #: src/browse/BrowseBody.tsx

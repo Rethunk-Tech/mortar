@@ -225,8 +225,12 @@ func TestNewModRefusesUnsafeNames(t *testing.T) {
 	if err := ok.check(); err != nil {
 		t.Fatal(err)
 	}
+	if lower := (NewMod{Name: "shopDrop", Parent: ok.Parent, Repo: "r"}); lower.check() != nil {
+		t.Error("a name starting with a small letter was refused")
+	}
 	for _, m := range []func(*NewMod){
 		func(m *NewMod) { m.Name = "shop drop" },
+		func(m *NewMod) { m.Name = "2Drop" },
 		func(m *NewMod) { m.Repo = ".." },
 		func(m *NewMod) { m.Repo = "a/b" },
 		func(m *NewMod) { m.Repo = "-c" },

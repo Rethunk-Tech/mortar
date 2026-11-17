@@ -177,7 +177,7 @@ func TestEditRefusesBadDetails(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, m := range []func(*ProjectEdit){
-		func(e *ProjectEdit) { e.Name = "shop" },
+		func(e *ProjectEdit) { e.Name = "2shop" },
 		func(e *ProjectEdit) { e.Description = "a\nb" },
 		func(e *ProjectEdit) { e.Author = " " },
 		func(e *ProjectEdit) { e.Team = "a b" },
