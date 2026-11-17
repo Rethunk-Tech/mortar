@@ -4,7 +4,22 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
+
+func TestWindowBackgroundIsTranslucent(t *testing.T) {
+	typ, colour, win := windowBackground()
+	if typ != application.BackgroundTypeTranslucent {
+		t.Fatalf("BackgroundType = %d, want Translucent so GTK setTransparent runs", typ)
+	}
+	if colour.Alpha != 0 {
+		t.Fatalf("alpha = %d, want 0", colour.Alpha)
+	}
+	if win.BackdropType != application.Acrylic {
+		t.Fatalf("Windows.BackdropType = %d, want Acrylic", win.BackdropType)
+	}
+}
 
 func TestClampWindowMovesOffscreenOntoAScreen(t *testing.T) {
 	screens := []screenRect{{X: 0, Y: 0, Width: 1920, Height: 1080}}

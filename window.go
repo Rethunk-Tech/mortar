@@ -21,6 +21,11 @@ const (
 	promptWindowHeight = 480
 )
 
+// Alpha is 0 so WebKitGTK's base colour does not cover the desktop after setTransparent().
+func windowBackground() (application.BackgroundType, application.RGBA, application.WindowsWindow) {
+	return application.BackgroundTypeTranslucent, application.NewRGBA(25, 25, 30, 0), application.WindowsWindow{BackdropType: application.Acrylic}
+}
+
 type windowGeom struct {
 	X int `json:"x"`
 	Y int `json:"y"`

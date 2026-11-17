@@ -5,6 +5,7 @@ The design system lives in code: `frontend/src/theme/` (palette, density, the MU
 ## Conventions
 
 - Dark is the lead theme: screenshots, the README and store listings show it.
+- The window is natively translucent. A fading or `backdrop-filter` full-window layer turns WebKitGTK opaque; stacked alphas compound toward opaque, so each image and overlay keeps its own alpha.
 - Dialog footers: Cancel or Close is a text button, leftmost; at most one contained primary, rightmost; a destructive primary is contained `color="error"`.
 - Spacing uses the `space` roles (`frontend/src/theme/density.ts`) and no hand-set pixels, so a Density change moves every page.
 - A trailing "…" only on a control that opens further input (a name, a choice, a file: a dialog or picker), never a bare confirmation; clicking it never starts the work, and the dialog's title has none.

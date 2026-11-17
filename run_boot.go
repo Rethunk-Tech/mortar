@@ -1152,6 +1152,7 @@ func (c *boot) windowSetup() error {
 
 	// Only the first window honours start-minimised and play mode; a rebuilt one is always asked for.
 	c.newWindow = func(hidden bool) *application.WebviewWindow {
+		bgType, bgColour, win := windowBackground()
 		opts := application.WebviewWindowOptions{
 			Title:            "Mortar",
 			Width:            defaultWindowWidth,
@@ -1159,8 +1160,9 @@ func (c *boot) windowSetup() error {
 			MinWidth:         minWindowWidth,
 			MinHeight:        minWindowHeight,
 			Frameless:        !c.store.Get().SystemTitleBar,
-			BackgroundType:   application.BackgroundTypeSolid,
-			BackgroundColour: application.NewRGBA(25, 25, 30, 255),
+			BackgroundType:   bgType,
+			BackgroundColour: bgColour,
+			Windows:          win,
 			EnableFileDrop:   true,
 			URL:              "/",
 			Hidden:           hidden,

@@ -114,42 +114,6 @@ and macOS.
 - `bun run gate` stays clean. No seccomp, network namespace, Windows or macOS
   sandbox ships in this change.
 
-## The window cannot be translucent
-
-The main window is a solid wallpaper-plus-tint surface. Upstream Wails #6197
-(the fork's GTK4 `setTransparent()` fix) is the decided way to make it
-translucent; until that is on and checked, the frameless window cannot show
-desktop content behind it.
-
-The decided shape is translucent through that GTK4 fix. Windows needs Acrylic
-with the frameless window. The AppImage is the GTK 3 build (RGBA visual) and
-needs the same check. Rejected: a fading or `backdrop-filter` full-window
-layer, which turns WebKitGTK's translucent window opaque.
-
-### Read
-
-- [docs/design.md](docs/design.md#later) — the #6197 pin and the AppImage GTK 3
-  check.
-- [docs/gui-design.md](docs/gui-design.md) — screens and styling this change
-  must still match.
-- The fork's GTK4 `setTransparent()` path (upstream #6197).
-
-### Traps
-
-- **A fading or `backdrop-filter` full-window layer turns WebKitGTK's
-  translucent window opaque.** Stacked alphas compound toward opaque, so
-  images and overlays each need their own alpha.
-- **The AppImage is GTK 3.** A GTK4-only check leaves the shipped Linux
-  package opaque (RGBA visual still has to be proven there).
-
-### Acceptance
-
-- The frameless window is translucent on GTK4 with `setTransparent()`, and
-  the AppImage GTK 3 build is checked the same way.
-- Windows uses Acrylic with the frameless window.
-- No full-window `backdrop-filter` or fading layer is introduced.
-- `bun run gate` stays clean.
-
 ## Linux has no frosted-glass backdrop
 
 Even with a translucent window, Linux has no blur behind Mortar. GNOME 51
