@@ -38,7 +38,7 @@ func fetchSharePayload(ctx context.Context, route shortRoute) (string, error) {
 	if err != nil {
 		return "", usererr.New(usererr.Network, "offline")
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusNotFound {
 		return "", usererr.New(usererr.NotFound, "unknown or expired share code")
 	}
