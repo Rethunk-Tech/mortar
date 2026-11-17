@@ -47,4 +47,9 @@ func TestOptInSchemeIsClaimedOnlyWhenChosen(t *testing.T) {
 	if !source.IsLink("ror2mm://v1/install/thunderstore.io/A/B/1.0.0/") || !source.IsLink("nxm://x/mods/1/files/2") {
 		t.Fatal("opted-in ror2mm and default nxm should both be claimed")
 	}
+	source.SetHandleLinks(nil)
+	source.SetHandleLink("thunderstore", true)
+	if !source.IsLink("ror2mm://v1/install/thunderstore.io/A/B/1.0.0/") {
+		t.Fatal("SetHandleLink must claim the scheme even when no map was stored")
+	}
 }
