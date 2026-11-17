@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config'
 import { og } from './scripts/og.ts'
 
 // Pages that are not for search: a shared profile, the Discord redirects and the 404.
-const unlisted = /\/(p|go(\/[^/]+)?|404)\/?$/
+const unlisted = /\/(p|s(\/[^/]+){0,2}|go(\/[^/]+)?|404)\/?$/
 
 export default defineConfig({
   site: 'https://mortar.rethunk.tech',
