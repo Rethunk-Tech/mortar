@@ -4,11 +4,22 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
+	"github.com/zalando/go-keyring"
+
+	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
+
+func TestMain(m *testing.M) {
+	if os.Getenv("MORTAR_LIVE_SOURCES") == "" {
+		keyring.MockInit()
+	}
+	os.Exit(m.Run())
+}
 
 func fake(t *testing.T) Driver {
 	t.Helper()
@@ -29,7 +40,7 @@ func fake(t *testing.T) Driver {
 			}
 			_, _ = w.Write([]byte(`{"games":[{"id":7,"title":"Cool Mod","short_text":"hi","url":"https://a.itch.io/cool","cover_url":"c.png","published_at":"2026-01-01","user":{"username":"a"}}]}`))
 		case "/games/7/uploads":
-			_, _ = w.Write([]byte(`{"uploads":[{"id":1,"filename":"demo.zip","demo":true},{"id":2,"filename":"cool.zip","size":9},{"id":3,"filename":"ost.zip","type":"soundtrack"}]}`))
+			_, _ = w.Write([]byte(`{"uploads":[{"id":3,"filename":"ost.zip","type":"soundtrack"},{"id":1,"filename":"demo.zip","demo":true},{"id":2,"filename":"cool.zip","size":9}]}`))
 		case "/uploads/2/download":
 			http.Redirect(w, r, "https://cdn/cool.zip", http.StatusFound)
 		default:
@@ -54,11 +65,20 @@ func TestSearchAndResolve(t *testing.T) {
 	if err != nil || r.UploadID != "2" || r.URL != "https://cdn/cool.zip" || r.Size != 9 {
 		t.Fatalf("%+v %v", r, err)
 	}
+	if r, err = d.Resolve(t.Context(), "7", "2"); err != nil || r.UploadID != "2" {
+		t.Fatalf("by id %+v %v", r, err)
+	}
+	if r, err = d.Resolve(t.Context(), "7", "cool.zip"); err != nil || r.FileName != "cool.zip" {
+		t.Fatalf("by name %+v %v", r, err)
+	}
 	if _, err := d.Resolve(t.Context(), "7", "nope.zip"); err == nil {
 		t.Fatal("unknown upload resolved")
 	}
 	if d.ModPageURL("", "7") != "https://itch.io/games/7" {
 		t.Fatal("link")
+	}
+	if d.ModPageURL("", "") != "" {
+		t.Fatal("empty id")
 	}
 }
 
@@ -77,6 +97,14 @@ func TestKeyHandling(t *testing.T) {
 	}
 	if _, err := none.Search(t.Context(), source.Query{Key: "x"}); !errors.Is(err, ErrNeedsKey) {
 		t.Fatalf("search without key: %v", err)
+	}
+	if err := secret.Set(keyName, "k1"); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = secret.Delete(keyName) })
+	ring := Driver{URL: d.URL}
+	if ring.Unavailable() != "" {
+		t.Fatal("keyring key should be enough")
 	}
 }
 
