@@ -64,6 +64,10 @@ func siteWith404(dir string) http.Handler {
 		if rel == "." {
 			rel = ""
 		}
+		if page, ok := sharePage(rel); ok && fileExists(root, page) {
+			http.ServeFileFS(w, r, root, page)
+			return
+		}
 		if rel == "" || fileExists(root, rel) || fileExists(root, path.Join(rel, "index.html")) {
 			files.ServeHTTP(w, r)
 			return
@@ -88,4 +92,14 @@ func fileExists(root fs.FS, name string) bool {
 	defer func() { _ = f.Close() }()
 	st, err := f.Stat()
 	return err == nil && !st.IsDir()
+}
+
+// sharePage maps /<game>/s/<code>[/<n>] to the one prerendered share page,
+// since static output cannot enumerate codes; app.js reads the code from the URL.
+func sharePage(rel string) (string, bool) {
+	parts := strings.Split(rel, "/")
+	if (len(parts) != 3 && len(parts) != 4) || parts[1] != "s" || parts[0] == "" || parts[2] == "" || parts[2] == "index.html" {
+		return "", false
+	}
+	return path.Join(parts[0], "s", "index.html"), true
 }

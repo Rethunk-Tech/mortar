@@ -2884,6 +2884,10 @@ msgstr "Set it in {launcher} for me"
 msgid "Add mods"
 msgstr "Add mods"
 
+#: src/share/HostedLink.tsx
+msgid "A short link stores the mod list on mortar.rethunk.tech. The long link keeps it private."
+msgstr "A short link stores the mod list on mortar.rethunk.tech. The long link keeps it private."
+
 #: src/develop/builds.ts
 msgid "Could not pack the mod"
 msgstr "Could not pack the mod"
@@ -2899,6 +2903,10 @@ msgstr "This profile matches {host}."
 #: src/develop/EditProjectDialog.tsx
 msgid "What players see on {source}."
 msgstr "What players see on {source}."
+
+#: src/share/HostedLink.tsx
+msgid "Could not get a short link"
+msgstr "Could not get a short link"
 
 #: src/games/GameMenu.tsx
 msgid "Choose a game"
@@ -2973,6 +2981,10 @@ msgstr "Could not add the saved group"
 #: src/share/Included.tsx
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "Added from an archive, so it only exists on this computer."
+
+#: src/share/HostedLink.tsx
+msgid "Could not update the short link"
+msgstr "Could not update the short link"
 
 #: src/browse/BrowseShow.tsx
 #: src/commandPalette/CommandPalette.tsx
@@ -4399,6 +4411,7 @@ msgid "Refresh"
 msgstr "Refresh"
 
 #: src/browse/stats.ts
+#: src/share/HostedLink.tsx
 msgid "Version {version}"
 msgstr "Version {version}"
 
@@ -4732,6 +4745,10 @@ msgstr "{manager} code"
 #: src/develop/LicenseChart.tsx
 msgid "Use your patents in it"
 msgstr "Use your patents in it"
+
+#: src/share/HostedLink.tsx
+msgid "Get short link"
+msgstr "Get short link"
 
 #: src/game/HomeNotes.tsx
 msgid "Notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods. Notes travel in a shared .mortar file, not in a share link."
@@ -5177,6 +5194,10 @@ msgstr "Spring"
 #: src/tools/ToolEditorDialog.tsx
 msgid "Arguments"
 msgstr "Arguments"
+
+#: src/share/HostedLink.tsx
+msgid "Update short link"
+msgstr "Update short link"
 
 #: src/launch/VanillaPlay.tsx
 msgid "Set default preset…"
@@ -6590,6 +6611,10 @@ msgstr "Mark known good"
 msgid "No archives to add"
 msgstr "No archives to add"
 
+#: src/share/HostedLink.tsx
+msgid "Short link copied"
+msgstr "Short link copied"
+
 #: src/lan/SendPanel.tsx
 msgid "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
 msgstr "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
@@ -7121,6 +7146,10 @@ msgstr "Start mod"
 #: src/develop/ProjectCard.tsx
 msgid "Measured {when}: {frame} ms a frame"
 msgstr "Measured {when}: {frame} ms a frame"
+
+#: src/share/HostedLink.tsx
+msgid "Short link"
+msgstr "Short link"
 
 #: src/browse/CardProgress.tsx
 msgid "Failed, retry"

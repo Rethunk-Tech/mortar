@@ -2884,6 +2884,10 @@ msgstr ""
 msgid "Add mods"
 msgstr ""
 
+#: src/share/HostedLink.tsx
+msgid "A short link stores the mod list on mortar.rethunk.tech. The long link keeps it private."
+msgstr ""
+
 #: src/develop/builds.ts
 msgid "Could not pack the mod"
 msgstr ""
@@ -2898,6 +2902,10 @@ msgstr ""
 
 #: src/develop/EditProjectDialog.tsx
 msgid "What players see on {source}."
+msgstr ""
+
+#: src/share/HostedLink.tsx
+msgid "Could not get a short link"
 msgstr ""
 
 #: src/games/GameMenu.tsx
@@ -2972,6 +2980,10 @@ msgstr ""
 
 #: src/share/Included.tsx
 msgid "Added from an archive, so it only exists on this computer."
+msgstr ""
+
+#: src/share/HostedLink.tsx
+msgid "Could not update the short link"
 msgstr ""
 
 #: src/browse/BrowseShow.tsx
@@ -4399,6 +4411,7 @@ msgid "Refresh"
 msgstr ""
 
 #: src/browse/stats.ts
+#: src/share/HostedLink.tsx
 msgid "Version {version}"
 msgstr ""
 
@@ -4731,6 +4744,10 @@ msgstr ""
 
 #: src/develop/LicenseChart.tsx
 msgid "Use your patents in it"
+msgstr ""
+
+#: src/share/HostedLink.tsx
+msgid "Get short link"
 msgstr ""
 
 #: src/game/HomeNotes.tsx
@@ -5176,6 +5193,10 @@ msgstr ""
 
 #: src/tools/ToolEditorDialog.tsx
 msgid "Arguments"
+msgstr ""
+
+#: src/share/HostedLink.tsx
+msgid "Update short link"
 msgstr ""
 
 #: src/launch/VanillaPlay.tsx
@@ -6590,6 +6611,10 @@ msgstr ""
 msgid "No archives to add"
 msgstr ""
 
+#: src/share/HostedLink.tsx
+msgid "Short link copied"
+msgstr ""
+
 #: src/lan/SendPanel.tsx
 msgid "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
 msgstr ""
@@ -7120,6 +7145,10 @@ msgstr ""
 
 #: src/develop/ProjectCard.tsx
 msgid "Measured {when}: {frame} ms a frame"
+msgstr ""
+
+#: src/share/HostedLink.tsx
+msgid "Short link"
 msgstr ""
 
 #: src/browse/CardProgress.tsx

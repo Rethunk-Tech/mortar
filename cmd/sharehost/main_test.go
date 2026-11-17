@@ -18,6 +18,12 @@ func TestMuxSitePackagesAPI(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(site, "404.html"), []byte("missing"), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	if err := os.MkdirAll(filepath.Join(site, "skyrim", "s"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(site, "skyrim", "s", "index.html"), []byte("share"), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	pkg := t.TempDir()
 	if err := os.WriteFile(filepath.Join(pkg, "foo.txt"), []byte("pkg"), 0o600); err != nil {
 		t.Fatal(err)
@@ -31,6 +37,8 @@ func TestMuxSitePackagesAPI(t *testing.T) {
 	}{
 		{"site index", "/", http.StatusOK, "home"},
 		{"site 404", "/no-such-page", http.StatusNotFound, "missing"},
+		{"share code", "/skyrim/s/AbCdEfGh12", http.StatusOK, "share"},
+		{"share version", "/skyrim/s/AbCdEfGh12/2", http.StatusOK, "share"},
 		{"packages", "/packages/foo.txt", http.StatusOK, "pkg"},
 	}
 	for _, tt := range tests {

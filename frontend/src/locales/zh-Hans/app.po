@@ -2878,6 +2878,10 @@ msgstr "替我在 {launcher} 中设置"
 msgid "Add mods"
 msgstr "添加模组"
 
+#: src/share/HostedLink.tsx
+msgid "A short link stores the mod list on mortar.rethunk.tech. The long link keeps it private."
+msgstr ""
+
 #: src/develop/builds.ts
 msgid "Could not pack the mod"
 msgstr "无法打包模组"
@@ -2893,6 +2897,10 @@ msgstr "此配置与 {host} 匹配。"
 #: src/develop/EditProjectDialog.tsx
 msgid "What players see on {source}."
 msgstr "玩家在 {source} 上看到的内容。"
+
+#: src/share/HostedLink.tsx
+msgid "Could not get a short link"
+msgstr ""
 
 #: src/games/GameMenu.tsx
 msgid "Choose a game"
@@ -2967,6 +2975,10 @@ msgstr "无法添加已保存的分组"
 #: src/share/Included.tsx
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "从压缩包添加，因此仅存在于这台电脑上。"
+
+#: src/share/HostedLink.tsx
+msgid "Could not update the short link"
+msgstr ""
 
 #: src/browse/BrowseShow.tsx
 #: src/commandPalette/CommandPalette.tsx
@@ -4393,6 +4405,7 @@ msgid "Refresh"
 msgstr "刷新"
 
 #: src/browse/stats.ts
+#: src/share/HostedLink.tsx
 msgid "Version {version}"
 msgstr "版本 {version}"
 
@@ -4726,6 +4739,10 @@ msgstr "{manager} 代码"
 #: src/develop/LicenseChart.tsx
 msgid "Use your patents in it"
 msgstr "在其中使用你的专利"
+
+#: src/share/HostedLink.tsx
+msgid "Get short link"
+msgstr ""
 
 #: src/game/HomeNotes.tsx
 msgid "Notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods. Notes travel in a shared .mortar file, not in a share link."
@@ -5171,6 +5188,10 @@ msgstr "春季"
 #: src/tools/ToolEditorDialog.tsx
 msgid "Arguments"
 msgstr "参数"
+
+#: src/share/HostedLink.tsx
+msgid "Update short link"
+msgstr ""
 
 #: src/launch/VanillaPlay.tsx
 msgid "Set default preset…"
@@ -6584,6 +6605,10 @@ msgstr "标记为已知良好"
 msgid "No archives to add"
 msgstr "没有可添加的压缩包"
 
+#: src/share/HostedLink.tsx
+msgid "Short link copied"
+msgstr ""
+
 #: src/lan/SendPanel.tsx
 msgid "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
 msgstr "配对两台电脑即可改为发送完整文件。配对需要一个一次性代码，在此处显示并在 {name} 上输入。"
@@ -7115,6 +7140,10 @@ msgstr "启动模组"
 #: src/develop/ProjectCard.tsx
 msgid "Measured {when}: {frame} ms a frame"
 msgstr "测量于 {when}：每帧 {frame} 毫秒"
+
+#: src/share/HostedLink.tsx
+msgid "Short link"
+msgstr ""
 
 #: src/browse/CardProgress.tsx
 msgid "Failed, retry"
