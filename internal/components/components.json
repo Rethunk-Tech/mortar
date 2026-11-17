@@ -15466,7 +15466,7 @@
         { "id": "mods", "root": "{profile}/Data", "keepWhole": ["bsa", "ba2", "esp", "esm", "esl"] }
       ],
       "stores": { "steam": { "appId": "489830" } },
-      "loaders": [{ "id": "folder" }],
+      "loaders": [{ "id": "folder", "name": "" }],
       "sources": [{ "id": "nexus", "key": "skyrimspecialedition" }]
     },
     {
@@ -15486,7 +15486,7 @@
       "deploy": "profile",
       "targets": [{ "id": "mods", "root": "{profile}/Data", "keepWhole": ["bsa", "esp", "esm"] }],
       "stores": { "steam": { "appId": "72850" } },
-      "loaders": [{ "id": "folder" }],
+      "loaders": [{ "id": "folder", "name": "" }],
       "sources": [{ "id": "nexus", "key": "skyrim" }]
     },
     {
@@ -15508,7 +15508,7 @@
         { "id": "mods", "root": "{profile}/Data", "keepWhole": ["bsa", "ba2", "esp", "esm", "esl"] }
       ],
       "stores": { "steam": { "appId": "377160" } },
-      "loaders": [{ "id": "folder" }],
+      "loaders": [{ "id": "folder", "name": "" }],
       "sources": [{ "id": "nexus", "key": "fallout4" }]
     },
     {
@@ -15528,7 +15528,7 @@
       "deploy": "profile",
       "targets": [{ "id": "mods", "root": "{profile}/Data", "keepWhole": ["bsa", "esp", "esm"] }],
       "stores": { "steam": { "appId": "22380" } },
-      "loaders": [{ "id": "folder" }],
+      "loaders": [{ "id": "folder", "name": "" }],
       "sources": [{ "id": "nexus", "key": "newvegas" }]
     },
     {
@@ -15550,7 +15550,7 @@
         { "id": "mods", "root": "{profile}/Data", "keepWhole": ["ba2", "esp", "esm", "esl"] }
       ],
       "stores": { "steam": { "appId": "1716740" } },
-      "loaders": [{ "id": "folder" }],
+      "loaders": [{ "id": "folder", "name": "" }],
       "sources": [{ "id": "nexus", "key": "starfield" }]
     },
     {

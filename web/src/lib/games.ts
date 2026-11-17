@@ -47,9 +47,26 @@ export const SOURCE_NAMES: Record<string, string> = {
 
 let playable: Game[] | undefined
 
+/**
+ * Fails on a loader the catalog left unnamed. Go decodes a missing `name` as "", so the catalog can carry such an
+ * entry, but the site lists loaders by name and would fail inside a template; name the game and loader instead.
+ */
+export function checkLoaderNames(games: Game[]): void {
+  for (const g of games) {
+    for (const l of g.loaders ?? []) {
+      if (typeof l.name !== 'string') {
+        throw new Error(
+          `site: game "${g.id}" has loader "${l.id}" with no name; add it to internal/components/components.json`,
+        )
+      }
+    }
+  }
+}
+
 export function playableGames(): Game[] {
   if (!playable) {
     const { games } = JSON.parse(readFileSync(CATALOG, 'utf8')) as { games: Game[] }
+    checkLoaderNames(games)
     playable = games.filter((g) => g.enabled && g.server === undefined)
   }
   return playable
