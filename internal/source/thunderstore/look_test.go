@@ -7,7 +7,26 @@ import (
 	"testing"
 
 	tstore "github.com/Rethunk-Tech/go-thunderstore"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
+
+func TestCategoryNamesUsesTheListingAndTitleCasesTheRest(t *testing.T) {
+	f := newFake(t)
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	if _, err := d.Search(t.Context(), source.Query{Key: "lethal-company", Page: 1, Version: "1.2.3"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := d.Categories(t.Context(), "lethal-company"); err != nil {
+		t.Fatal(err)
+	}
+	got := d.CategoryNames("lethal-company", []string{"it-ems", "client-side", "AI Generated"})
+	if !slices.Equal(got, []string{"Items", "Client Side", "AI Generated"}) {
+		t.Fatalf("got %v", got)
+	}
+	if got := d.CategoryNames("Not a key!", []string{"client-side"}); !slices.Equal(got, []string{"Client Side"}) {
+		t.Fatalf("invalid key %v", got)
+	}
+}
 
 func TestCategoryPrefersWhatThePackageIs(t *testing.T) {
 	for want, cats := range map[string][]string{

@@ -182,8 +182,20 @@ func TestChangedIndexRebuilds(t *testing.T) {
 	waitRefreshes()
 }
 
+func TestSearchExactNameOutranksAPrefix(t *testing.T) {
+	f := newFake(t)
+	f.chunk0 = append(f.chunk0, listing("Zed", "Company", "exact", 1, false, false), listing("Zed", "CompanyTools", "prefix", 99999, false, false))
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	p, err := d.Search(t.Context(), source.Query{Game: "lethal-company", Key: "lethal-company", Text: "company", Page: 1, Version: "1.2.3"})
+	if err != nil || len(p.Items) == 0 || p.Items[0].Name != "Company" {
+		t.Fatalf("exact name outranks a prefix with more downloads: %v %v", names(p), err)
+	}
+}
+
 func TestCategoryFilterSortAndList(t *testing.T) {
 	f := newFake(t)
+	f.chunk0[0]["rating_score"] = 1
+	f.chunk0[1]["rating_score"] = 9
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
 	q := source.Query{Game: "lethal-company", Key: "lethal-company", Page: 1, Version: "1.2.3", Categories: []string{"items"}, Sort: source.SortDownloads}
 	p, err := d.Search(t.Context(), q)
@@ -197,6 +209,10 @@ func TestCategoryFilterSortAndList(t *testing.T) {
 	q.Sort = source.SortNewest
 	if p, err = d.Search(t.Context(), q); err != nil || p.Items[0].Name != "Library" {
 		t.Fatalf("newest: %v %v", names(p), err)
+	}
+	q = source.Query{Game: "lethal-company", Key: "lethal-company", Page: 1, Version: "1.2.3", Sort: source.SortEndorsements}
+	if p, err = d.Search(t.Context(), q); err != nil || p.Items[0].Name != "Cheaty" {
+		t.Fatalf("endorsements: %v %v", names(p), err)
 	}
 	got, err := d.Categories(t.Context(), "lethal-company")
 	if err != nil || len(got) != 3 || got[0] != "Cheats" {
