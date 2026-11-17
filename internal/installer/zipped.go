@@ -9,6 +9,7 @@ import (
 	"slices"
 
 	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/mortar/internal/loader/minecraft"
 	"github.com/Rethunk-Tech/mortar/internal/loader/thunderpack"
 )
 
@@ -23,10 +24,16 @@ type zipped struct{}
 
 func (zipped) ID() string { return DriverZipped }
 
-func (zipped) Detect(_ Archive, g Game) bool { return thunderpack.Zipped(g.Loaders) }
+func (zipped) Detect(_ Archive, g Game) bool {
+	return thunderpack.Zipped(g.Loaders) || minecraft.Family(g.Loaders)
+}
 
 func (zipped) Layout(a Archive, g Game, _ Choices) (Layout, error) {
-	l := Layout{Files: []File{{Src: ".", Target: TargetMods, Rel: a.Key + ".zip", Zip: true}}}
+	ext := ".zip"
+	if minecraft.Family(g.Loaders) {
+		ext = ".jar"
+	}
+	l := Layout{Files: []File{{Src: ".", Target: TargetMods, Rel: a.Key + ext, Zip: true}}}
 	return l, validate(l, g)
 }
 

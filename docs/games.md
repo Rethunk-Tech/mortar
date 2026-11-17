@@ -68,6 +68,20 @@ Sources: Vortex's `game-starbound` (`index.js:4,10-14`) and Microsoft's display 
 - Stardew Valley is the bundle-is-the-install layout (`Contents/MacOS/StardewValley`, working folder `Contents/`). SMAPI's own scanner lists the game folders `/Applications/Stardew Valley.app/Contents/MacOS` and `~/Library/Application Support/Steam/steamapps/common/Stardew Valley/Contents/MacOS` (`Pathoschild/SMAPI` `src/SMAPI.Toolkit/Framework/GameScanning/GameScanner.cs:149-150`), so SMAPI's files go in `Contents/MacOS` below the install.
 - SMAPI's macOS installer is `internal/macOS/SMAPI.Installer`, started by `install on macOS.command` (`src/SMAPI.Installer/assets/install on macOS.command`; `build/scripts/prepare-install-package.ps1:94`), and it replaces `StardewValley` with its launcher as on Linux (`InteractiveInstaller.cs:112`), so the game's own launch entry starts SMAPI and macOS needs no Steam launch option.
 
+## Bethesda (Skyrim, Fallout 4, New Vegas, Starfield)
+
+Sources: Vortex's Skyrim SE extension (`Nexus-Mods/vortex-api` game id `skyrimse`; `plugins.txt` with `*` in `%LOCALAPPDATA%/Skyrim Special Edition`, Steam `489830`), Mod Organizer 2 `game_skyrimse.py` / `game_fallout4.py` / `game_falloutnv.py` / `game_starfield.py` (Data folder, script extenders `skse64_loader.exe` / `f4se_loader.exe` / `nvse_loader.exe` / `sfse_loader.exe`), LOOT's default order (official masters, ESM, ESL, ESP, then plugin `MAST` records). Nexus domains `skyrimspecialedition`, `skyrim`, `fallout4`, `newvegas`, `starfield`.
+
+- The folder loader places the profile's `Data` into the install's `Data` for the run. Archives `.bsa`/`.ba2` and plugins `.esp`/`.esm`/`.esl` stay whole (`keepWhole`). The Bethesda extension (`internal/loader/bethesda`, `plugins` path role) writes `plugins.txt` in that LOOT order and starts the script extender when its loader exe is in the install.
+- Only the Windows build is started, under Proton. Unverified until someone runs the game: Steam's launcher still seeing the extender, GOG/Xbox/Epic folder names, Creation Club plugins in the official Data folder, and a live LOOT masterlist (header sort only ships here).
+
+## Minecraft
+
+Sources: Prism Launcher instances (`PrismLauncher/PrismLauncher`, one folder per instance with `minecraft/` as the game dir, shared `versions`/`libraries`/`assets`), Fabric's meta API (`meta.fabricmc.net/v2/versions/loader`, main class `net.fabricmc.loader.impl.launch.knot.KnotClient`), Forge/NeoForge Maven metadata, Modrinth and CurseForge (game 432).
+
+- A Mortar profile is one Java instance (`newProfileSeparateSaves`). Fabric, Forge and NeoForge are the game's loaders. Play requires a Java binary on PATH (or tests inject one); mods are jars in the profile `mods` folder.
+- Unverified until someone runs the game: downloading Mojang version jars and libraries, running the Forge/NeoForge installer jar, and a Microsoft account login.
+
 ## Mount & Blade II: Bannerlord
 
 Sources: BUTR's Vortex extension (`BUTR/game-mount-and-blade2`, `packages/core/src/common.ts`: Steam app id `261550`, GOG ids `1802539526` and `1564781494`, the game executable in `bin/Win64_Shipping_Client`, a module found as `Modules/<Module>/SubModule.xml`; Nexus's own Vortex entry is only a stub), BUTR's `Bannerlord.BLSE` (its launcher manager source: `Documents/Mount and Blade II Bannerlord/Configs/LauncherData.xml`) and Nexus's `mountandblade2bannerlord`.

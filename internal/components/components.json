@@ -15446,6 +15446,157 @@
           "key": "resonite"
         }
       ]
+    },
+    {
+      "id": "skyrim-special-edition",
+      "name": "The Elder Scrolls V: Skyrim Special Edition",
+      "enabled": true,
+      "minVersion": "0.7.0",
+      "importIds": { "vortex": "skyrimse", "mo2": "Skyrim Special Edition" },
+      "marker": "SkyrimSE.exe",
+      "processes": ["skse64_loader.exe"],
+      "metadata": [],
+      "paths": {
+        "mods": { "windows": "{install}/Data" },
+        "plugins": { "windows": "{localAppData}/Skyrim Special Edition" },
+        "saves": { "windows": "{documents}/My Games/Skyrim Special Edition/Saves" }
+      },
+      "deploy": "profile",
+      "targets": [
+        { "id": "mods", "root": "{profile}/Data", "keepWhole": ["bsa", "ba2", "esp", "esm", "esl"] }
+      ],
+      "stores": { "steam": { "appId": "489830" } },
+      "loaders": [{ "id": "folder" }],
+      "sources": [{ "id": "nexus", "key": "skyrimspecialedition" }]
+    },
+    {
+      "id": "skyrim",
+      "name": "The Elder Scrolls V: Skyrim",
+      "enabled": true,
+      "minVersion": "0.7.0",
+      "importIds": { "vortex": "skyrim", "mo2": "Skyrim" },
+      "marker": "TESV.exe",
+      "processes": ["skse_loader.exe"],
+      "metadata": [],
+      "paths": {
+        "mods": { "windows": "{install}/Data" },
+        "plugins": { "windows": "{localAppData}/Skyrim" },
+        "saves": { "windows": "{documents}/My Games/Skyrim/Saves" }
+      },
+      "deploy": "profile",
+      "targets": [{ "id": "mods", "root": "{profile}/Data", "keepWhole": ["bsa", "esp", "esm"] }],
+      "stores": { "steam": { "appId": "72850" } },
+      "loaders": [{ "id": "folder" }],
+      "sources": [{ "id": "nexus", "key": "skyrim" }]
+    },
+    {
+      "id": "fallout-4",
+      "name": "Fallout 4",
+      "enabled": true,
+      "minVersion": "0.7.0",
+      "importIds": { "vortex": "fallout4", "mo2": "Fallout 4" },
+      "marker": "Fallout4.exe",
+      "processes": ["f4se_loader.exe"],
+      "metadata": [],
+      "paths": {
+        "mods": { "windows": "{install}/Data" },
+        "plugins": { "windows": "{localAppData}/Fallout4" },
+        "saves": { "windows": "{documents}/My Games/Fallout4/Saves" }
+      },
+      "deploy": "profile",
+      "targets": [
+        { "id": "mods", "root": "{profile}/Data", "keepWhole": ["bsa", "ba2", "esp", "esm", "esl"] }
+      ],
+      "stores": { "steam": { "appId": "377160" } },
+      "loaders": [{ "id": "folder" }],
+      "sources": [{ "id": "nexus", "key": "fallout4" }]
+    },
+    {
+      "id": "fallout-new-vegas",
+      "name": "Fallout: New Vegas",
+      "enabled": true,
+      "minVersion": "0.7.0",
+      "importIds": { "vortex": "falloutnv", "mo2": "New Vegas" },
+      "marker": "FalloutNV.exe",
+      "processes": ["nvse_loader.exe"],
+      "metadata": [],
+      "paths": {
+        "mods": { "windows": "{install}/Data" },
+        "plugins": { "windows": "{install}/Data" },
+        "saves": { "windows": "{documents}/My Games/FalloutNV/Saves" }
+      },
+      "deploy": "profile",
+      "targets": [{ "id": "mods", "root": "{profile}/Data", "keepWhole": ["bsa", "esp", "esm"] }],
+      "stores": { "steam": { "appId": "22380" } },
+      "loaders": [{ "id": "folder" }],
+      "sources": [{ "id": "nexus", "key": "newvegas" }]
+    },
+    {
+      "id": "starfield",
+      "name": "Starfield",
+      "enabled": true,
+      "minVersion": "0.7.0",
+      "importIds": { "vortex": "starfield", "mo2": "Starfield" },
+      "marker": "Starfield.exe",
+      "processes": ["sfse_loader.exe"],
+      "metadata": [],
+      "paths": {
+        "mods": { "windows": "{install}/Data" },
+        "plugins": { "windows": "{localAppData}/Starfield" },
+        "saves": { "windows": "{documents}/My Games/Starfield/Saves" }
+      },
+      "deploy": "profile",
+      "targets": [
+        { "id": "mods", "root": "{profile}/Data", "keepWhole": ["ba2", "esp", "esm", "esl"] }
+      ],
+      "stores": { "steam": { "appId": "1716740" } },
+      "loaders": [{ "id": "folder" }],
+      "sources": [{ "id": "nexus", "key": "starfield" }]
+    },
+    {
+      "id": "minecraft",
+      "name": "Minecraft",
+      "enabled": true,
+      "minVersion": "0.7.0",
+      "marker": "launcher_profiles.json",
+      "metadata": [],
+      "newProfileSeparateSaves": true,
+      "paths": {
+        "mods": {
+          "windows": "{appData}/.minecraft/mods",
+          "linux": "{home}/.minecraft/mods",
+          "darwin": "{home}/Library/Application Support/minecraft/mods"
+        },
+        "saves": {
+          "windows": "{appData}/.minecraft/saves",
+          "linux": "{home}/.minecraft/saves",
+          "darwin": "{home}/Library/Application Support/minecraft/saves"
+        }
+      },
+      "deploy": "profile",
+      "targets": [{ "id": "mods", "root": "{profile}/mods", "keepWhole": ["jar"] }],
+      "stores": {
+        "standalone": {
+          "folders": [
+            {
+              "windows": "{appData}/.minecraft",
+              "linux": "{home}/.minecraft",
+              "darwin": "{home}/Library/Application Support/minecraft"
+            }
+          ]
+        }
+      },
+      "manualFolder": true,
+      "loaders": [
+        { "id": "fabric", "name": "Fabric" },
+        { "id": "forge", "name": "Forge" },
+        { "id": "neoforge", "name": "NeoForge" }
+      ],
+      "sources": [
+        { "id": "modrinth", "loaders": ["fabric", "forge", "neoforge"] },
+        { "id": "curseforge", "key": "432", "gameId": 432 },
+        { "id": "nexus", "key": "minecraft" }
+      ]
     }
   ],
   "authors": [

@@ -670,6 +670,12 @@ var errNoPrefix = errors.New("the Proton prefix does not exist yet")
 // idempotent, so they are not journaled.
 func (s *Service) ensureRuntime(inst game.Install, reqs []launchplan.RuntimeReq, direct bool) error {
 	for _, r := range reqs {
+		if r.Kind == "java" {
+			if r.Value == "" || !safefs.IsFile(r.Value) {
+				return usererr.New(usererr.NotFound, "Java is not installed.")
+			}
+			continue
+		}
 		if r.Kind != "dll-override" {
 			continue
 		}

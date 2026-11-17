@@ -114,41 +114,6 @@ and macOS.
 - `bun run gate` stays clean. No seccomp, network namespace, Windows or macOS
   sandbox ships in this change.
 
-## Bethesda and Minecraft families have no loaders
-
-Mortar's catalog and loaders cover the games already in `mortar games`.
-Bethesda titles need plugin load order, LOOT, script extenders and BSAs;
-Minecraft needs Java instances plus Fabric, Forge and NeoForge. Neither
-family can be added as a catalog-only row.
-
-The decided shape is those loaders and game families, taken up when asked.
-Rejected: pretending a folder-game catalog row is enough for plugin-order or
-Java-instance games.
-
-### Read
-
-- [docs/design.md](docs/design.md#later) — the parked family list.
-- [docs/architecture.md](docs/architecture.md#games-and-the-catalog) — when a
-  game needs a driver versus a catalog row.
-- `internal/settings/registry.go` — a new loader honours every existing
-  setting that applies and adds a setting only for behaviour no existing one
-  covers.
-
-### Traps
-
-- **A game normally needs no code.** These families are the exception; do not
-  invent a parallel settings tree or a loader-specific launch flag.
-- **GUI work ranks above CLI parity.** End users are GUI-only.
-
-### Acceptance
-
-- Bethesda games install with plugin load order, LOOT, script extenders and
-  BSA handling; Minecraft installs as Java instances with Fabric, Forge and
-  NeoForge.
-- Every existing setting that applies is honoured; the registry test still
-  matches `settings.Defaults()`.
-- `bun run gate` stays clean.
-
 ## Several launch and import paths have never been run on real installs
 
 Unit and sandbox coverage cannot see a real GOG install, Flatpak Steam, a

@@ -49,6 +49,19 @@ func TestDeployPlacesLoaderFilesAndTakesThemBack(t *testing.T) {
 	}
 }
 
+func TestEnsureRuntimeNeedsTheJavaBinary(t *testing.T) {
+	svc := &Service{}
+	java := filepath.Join(t.TempDir(), "java")
+	req := []launchplan.RuntimeReq{{Kind: "java", Key: "17", Value: java}}
+	if err := svc.ensureRuntime(game.Install{}, req, true); err == nil {
+		t.Fatal("want missing java")
+	}
+	testfs.WriteAt(t, java, []byte("#!/bin/sh\n"))
+	if err := svc.ensureRuntime(game.Install{}, req, true); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestEnsureRuntimeEditsAnExistingProtonPrefix(t *testing.T) {
 	home := t.TempDir()
 	dir := filepath.Join(home, "steamapps", "common", "Lethal Company")
