@@ -476,7 +476,16 @@ async function main(): Promise<void> {
   }
 }
 
-if (import.meta.main) {
+// Bun.build reads NODE_ENV once at startup and prunes the dev-only branches it names, which drops notices, so a run
+// started with it set runs again without it.
+if (import.meta.main && process.env.NODE_ENV !== undefined) {
+  const { NODE_ENV: _, ...env } = process.env
+  const rerun = Bun.spawnSync([process.execPath, ...process.argv.slice(1)], {
+    env,
+    stdio: ['inherit', 'inherit', 'inherit'],
+  })
+  process.exit(rerun.exitCode ?? 1)
+} else if (import.meta.main) {
   await main()
 }
 
