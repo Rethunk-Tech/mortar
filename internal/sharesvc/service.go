@@ -545,6 +545,13 @@ func (s *Service) PreviewLink(ctx context.Context, game, text, profileID string)
 		}
 		return s.previewDraft(ctx, game, d, profileID, "")
 	}
+	if route, ok := parseShortRoute(text); ok {
+		payload, err := fetchSharePayload(ctx, route)
+		if err != nil {
+			return Preview{}, err
+		}
+		text = payload
+	}
 	shared, err := share.Parse(text)
 	if err != nil {
 		return Preview{}, unreadable(err)

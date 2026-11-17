@@ -1,7 +1,35 @@
 import { decodeShare, newer } from './share.js'
 
 const HASH = /^#/
+const SHORT_CODE = /^[A-Za-z0-9]{10}$/
+const SHORT_VERSION = /^[1-9][0-9]*$/
 const $ = (id) => document.getElementById(id)
+
+export function shortFromPath(pathname) {
+  const parts = pathname.split('/').filter(Boolean)
+  if (parts.length < 3 || parts.length > 4 || parts[1] !== 's' || !SHORT_CODE.test(parts[2])) {
+    return null
+  }
+  let version = 0
+  if (parts.length === 4) {
+    if (!SHORT_VERSION.test(parts[3])) {
+      return null
+    }
+    version = Number(parts[3])
+  }
+  return { game: parts[0], code: parts[2], version }
+}
+
+export function shortAPIPath(short) {
+  return short.version > 0
+    ? `/api/shares/${short.code}/${short.version}`
+    : `/api/shares/${short.code}`
+}
+
+export function shortAppLink(short) {
+  const n = short.version > 0 ? `/${short.version}` : ''
+  return `mortar://${short.game}/s/${short.code}${n}`
+}
 
 function show(message) {
   $('error').textContent = message
@@ -167,14 +195,45 @@ const ERRORS = {
   missing: 'This link has no profile in it. Ask the sender for the full link.',
   version: 'This profile was shared by a newer Mortar. Update Mortar, then open the link again.',
   bad: 'This link is damaged or too large to read. Ask the sender to share it again.',
+  unknown: 'This share code is unknown or has expired. Ask the sender for a new link.',
+  offline: 'Mortar cannot reach the share service. Check your connection and try again.',
+}
+
+async function loadPayload() {
+  const short = shortFromPath(location.pathname)
+  if (!short) {
+    return { payload: location.hash.replace(HASH, ''), short: null }
+  }
+  let res
+  try {
+    res = await fetch(shortAPIPath(short))
+  } catch {
+    const err = new Error(ERRORS.offline)
+    err.kind = 'offline'
+    throw err
+  }
+  if (res.status === 404) {
+    const err = new Error(ERRORS.unknown)
+    err.kind = 'unknown'
+    throw err
+  }
+  if (!res.ok) {
+    const err = new Error(ERRORS.offline)
+    err.kind = 'offline'
+    throw err
+  }
+  const body = await res.json()
+  return { payload: body.payload ?? '', short }
 }
 
 async function main() {
   const link = location.href
-  const payload = location.hash.replace(HASH, '')
+  let payload = ''
+  let short = null
   let share
   try {
-    share = await decodeShare(location.hash)
+    ;({ payload, short } = await loadPayload())
+    share = await decodeShare(`#${payload}`)
   } catch (err) {
     const kind = err.kind
     show(ERRORS[kind] ?? ERRORS.bad)
@@ -194,7 +253,7 @@ async function main() {
   $('versionRow').hidden = !share.entries.some((e) => e.min)
   markNeeds(share.gameVersion)
   $('profile').hidden = false
-  $('open').href = `mortar://${share.game}/p/${payload}`
+  $('open').href = short ? shortAppLink(short) : `mortar://${share.game}/p/${payload}`
   $('open').hidden = false
   // Counted with the game and the list's size only: the payload is the profile and never leaves the browser.
   $('open').addEventListener('click', () => {
@@ -216,4 +275,6 @@ async function main() {
   })
 }
 
-main().catch(() => show('Something went wrong reading this link.'))
+if (globalThis.document?.getElementById?.('open')) {
+  main().catch(() => show('Something went wrong reading this link.'))
+}
