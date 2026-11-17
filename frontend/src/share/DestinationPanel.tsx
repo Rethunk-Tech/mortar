@@ -57,6 +57,9 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
           include={include}
           onInclude={setInclude}
           onFile={() => setFormat('file')}
+          game={built.game}
+          profileId={built.profileId}
+          keys={built.keys}
         />
       ) : (
         <FilePane

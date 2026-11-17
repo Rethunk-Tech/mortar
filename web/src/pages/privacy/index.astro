@@ -78,13 +78,32 @@ import Page from '../../layouts/Page.astro'
           The profile, and its mod files when the computers are paired.
         </td>
       </tr>
+      <tr>
+        <td>mortar.rethunk.tech (hosted shares)</td>
+        <td>Only when you choose Get short link or Update short link</td>
+        <td>
+          The profile name, game, mod list and version. Last-read time is
+          stored with the share. Your IP is held in memory to rate-limit
+          creates, then dropped.
+        </td>
+      </tr>
     </tbody>
   </table>
 </div>
 <p>
-  A share link carries your profile in the part after <code>#</code>,
+  A long share link carries your profile in the part after <code>#</code>,
   which browsers never send to a server, so opening one on
   mortar.rethunk.tech does not reveal the profile to this site.
+</p>
+
+<h2>Hosted short links</h2>
+<p>
+  Get short link stores the share on mortar.rethunk.tech: the profile
+  name, the game, the mod list, a version number, and when it was last
+  read. Your IP address is held in memory only to limit how often one
+  computer can create links. A hosted share is deleted one year after it
+  was last read, or one year after it was created if nobody opened it. A
+  long # link sends nothing to this server.
 </p>
 
 <h2>What stays on your computer</h2>

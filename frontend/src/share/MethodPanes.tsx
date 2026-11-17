@@ -27,6 +27,7 @@ import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { copyText } from './copyText.ts'
+import { HostedLink } from './HostedLink.tsx'
 import { Included } from './Included.tsx'
 import { type MeterLevel, meter, type ShownInfo, suggestFile } from './logic.ts'
 import { ModpackDialog } from './ModpackDialog.tsx'
@@ -96,7 +97,10 @@ export function LinkPane({
   include,
   onInclude,
   onFile,
-}: IncludeProps & { onFile: () => void }) {
+  game,
+  profileId,
+  keys,
+}: IncludeProps & { onFile: () => void; game: string; profileId: string; keys: string[] }) {
   const { t } = useLingui()
   const large = suggestFile(info.count, info.tooLarge)
   return (
@@ -125,6 +129,9 @@ export function LinkPane({
             </Typography>
           </Box>
         </Field>
+      )}
+      {info.tooLarge ? null : (
+        <HostedLink game={game} profileId={profileId} keys={keys} include={include} info={info} />
       )}
       {large ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>

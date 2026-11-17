@@ -28,6 +28,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/sharehost"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -122,7 +123,8 @@ type Deps struct {
 
 // Service is the sharing service.
 type Service struct {
-	d Deps
+	d    Deps
+	host sharehost.Client
 	// App is set after application.New, for dialogs and the clipboard.
 	App winhost.Host
 	// QueueChanged writes a pending import's config files as its mods finish installing, and forgets the import
@@ -246,6 +248,8 @@ type Info struct {
 	TooLarge bool      `json:"tooLarge"`
 	Groups   []Group   `json:"groups"`
 	LeftOut  []Omitted `json:"leftOut"`
+	// Hosted is this profile's short link when one has been created on this computer.
+	Hosted *Hosted `json:"hosted,omitempty"`
 }
 
 func (s *Service) find(game, id string) (profile.Profile, error) {
@@ -319,6 +323,7 @@ func (s *Service) Share(game, profileID string, keys []string, include share.Inc
 		return Info{}, err
 	}
 	info.LeftOut = append(info.LeftOut, dev...)
+	info.Hosted = s.hostedRecord(game, profileID)
 	return info, nil
 }
 
