@@ -7,7 +7,9 @@ import (
 
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/frosted"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 const (
@@ -101,6 +103,22 @@ func windowVisible(x, y, w, h int, s screenRect) bool {
 	ox2 := min(x+w, s.X+s.Width)
 	oy2 := min(y+h, s.Y+s.Height)
 	return ox2-ox >= minVisible && oy2-oy >= minVisible
+}
+
+func attachFrosted(w *application.WebviewWindow, translucent bool) {
+	if w == nil {
+		return
+	}
+	var s *frosted.Session
+	w.OnWindowEvent(events.Common.WindowRuntimeReady, func(*application.WindowEvent) {
+		s = frosted.Attach(w.NativeWindow(), w.Width(), w.Height(), translucent)
+	})
+	w.OnWindowEvent(events.Common.WindowDidResize, func(*application.WindowEvent) {
+		if s == nil {
+			return
+		}
+		s.Resize(w.Width(), w.Height())
+	})
 }
 
 func screensOf(app *application.App) []screenRect {

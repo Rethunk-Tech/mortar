@@ -1176,6 +1176,7 @@ func (c *boot) windowSetup() error {
 			}
 		}
 		w := c.app.Window.NewWithOptions(opts)
+		attachFrosted(w, opts.BackgroundType == application.BackgroundTypeTranslucent)
 		w.OnWindowEvent(events.Common.WindowFilesDropped, func(e *application.WindowEvent) {
 			c.app.Event.Emit(picker.DroppedEvent, e.Context().DroppedFiles())
 		})

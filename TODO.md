@@ -114,44 +114,6 @@ and macOS.
 - `bun run gate` stays clean. No seccomp, network namespace, Windows or macOS
   sandbox ships in this change.
 
-## Linux has no frosted-glass backdrop
-
-Even with a translucent window, Linux has no blur behind Mortar. GNOME 51
-exposes `ext_background_effect_manager_v1`; without a bind in the Wails fork
-beside `setTransparent()`, the toplevel never gets a blur region.
-
-The decided shape: in the fork beside `setTransparent()`, bind Wayland
-`ext_background_effect_manager_v1` and set the toplevel surface's blur region
-to the whole window, updated on resize, only while the translucent window is
-on. The AppImage's GTK 3 build reaches the surface through
-`gdk_wayland_window_get_wl_surface`. Needs GNOME 51. Rejected: applying blur
-when the window is not translucent, or a compositor-specific non-ext protocol.
-
-### Read
-
-- [docs/design.md](docs/design.md#later) — the protocol and the GTK 3
-  `gdk_wayland_window_get_wl_surface` path.
-- The fork's `setTransparent()` work this bind sits beside.
-
-### Traps
-
-- **Blur only while the translucent window is on.** Leaving the region set
-  after transparency is turned off blurs a solid window.
-- **Resize must update the region.** A stale whole-window region from the
-  previous size clips or misses the new toplevel.
-- **GNOME 51 is the floor.** Older compositors without
-  `ext_background_effect_manager_v1` must keep the existing solid/translucent
-  behaviour, not fail to start.
-
-### Acceptance
-
-- On GNOME 51+, a translucent Mortar window has a whole-window blur region
-  that tracks resize.
-- Turning translucency off clears the blur. Compositors without the protocol
-  still start.
-- The AppImage GTK 3 build uses `gdk_wayland_window_get_wl_surface`.
-- `bun run gate` stays clean.
-
 ## Bethesda and Minecraft families have no loaders
 
 Mortar's catalog and loaders cover the games already in `mortar games`.
