@@ -1,5 +1,8 @@
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 
+// A caller's NODE_ENV=production would load React without act() and strip the messages Lingui's macro keeps for tests.
+process.env.NODE_ENV = 'test'
+
 // One DOM for the whole run: a file that registered and unregistered its own left the testing library's cached
 // `document` pointing at a closed window for every component test after it.
 GlobalRegistrator.register({ url: 'http://localhost/' })
