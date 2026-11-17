@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -14,9 +15,9 @@ import (
 )
 
 func TestDoJSON(t *testing.T) {
-	var gotUA, gotKey string
+	var gotUA, gotKey, gotQuery, gotMethod string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotUA, gotKey = r.UserAgent(), r.Header.Get("X-Key")
+		gotUA, gotKey, gotQuery, gotMethod = r.UserAgent(), r.Header.Get("X-Key"), r.URL.RawQuery, r.Method
 		switch r.URL.Path {
 		case "/ok":
 			_, _ = w.Write([]byte(`{"n":3}`))
@@ -47,6 +48,15 @@ func TestDoJSON(t *testing.T) {
 		}, out)
 	}
 	var out struct{ N int }
+	if err := DoJSON(t.Context(), Request{
+		Service: "Site", URL: srv.URL + "/ok", UserAgent: "Mortar/1",
+		Params: url.Values{"q": {"x"}}, Body: map[string]int{"n": 1}, Method: http.MethodPost,
+	}, &out); err != nil || out.N != 3 || gotQuery != "q=x" || gotMethod != http.MethodPost {
+		t.Fatalf("post: %+v %v query=%q method=%q", out, err, gotQuery, gotMethod)
+	}
+	if err := DoJSON(t.Context(), Request{Service: "Site", URL: srv.URL + "/ok", Body: make(chan int)}, &out); err == nil {
+		t.Fatal("a body that cannot be JSON must fail")
+	}
 	if err := call("/ok", &out); err != nil || out.N != 3 || gotUA != "Mortar/1" || gotKey != "k" {
 		t.Fatalf("ok: %+v %v ua=%q key=%q", out, err, gotUA, gotKey)
 	}
