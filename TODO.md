@@ -204,6 +204,21 @@ own computers remain the exception that carries files).
   from `main`; the service component needs its own deploy path and the Spaces
   key as an App Platform secret, never in the repo.
 
+### Remaining work
+
+1. Teach `.github/workflows/package-repo.yml` to build `cmd/sharehost` with
+   `Dockerfile`, copy the Astro `site/` output to `/site` and the packages
+   tree to `/packages` in the image (the Dockerfile ships the binary only),
+   and publish that image from the `packages` branch.
+2. Create a DigitalOcean Spaces bucket for `shares/` objects; do not commit
+   its name or keys.
+3. Set App Platform secrets `SHARE_S3_ENDPOINT`, `SHARE_S3_BUCKET`,
+   `SHARE_S3_KEY`, `SHARE_S3_SECRET` on the service (never in the repo or
+   logs).
+4. Swap the app spec to `build/sharehost/app.yaml` (one `basic-xxs` service
+   in place of the two static sites) and apply it; do not apply from this
+   change.
+
 ### Acceptance
 
 - A hosted short code resolves to a versioned share that names its game.

@@ -1,0 +1,33 @@
+# Draft App Platform spec. Do not apply; remaining deploy steps are in TODO.md.
+name: mortar-site
+services:
+  - name: sharehost
+    dockerfile_path: Dockerfile
+    github:
+      repo: Rethunk-Tech/mortar
+      branch: packages
+      deploy_on_push: true
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    http_port: 8080
+    routes:
+      - path: /
+    envs:
+      - key: SHARE_S3_ENDPOINT
+        type: SECRET
+        scope: RUN_TIME
+      - key: SHARE_S3_BUCKET
+        type: SECRET
+        scope: RUN_TIME
+      - key: SHARE_S3_KEY
+        type: SECRET
+        scope: RUN_TIME
+      - key: SHARE_S3_SECRET
+        type: SECRET
+        scope: RUN_TIME
+      - key: SITE_DIR
+        value: /site
+        scope: RUN_TIME
+      - key: PACKAGES_DIR
+        value: /packages
+        scope: RUN_TIME
