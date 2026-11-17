@@ -47,6 +47,13 @@ jobs:
           lint-tools: "true"
           frontend: "false"
 
+      - name: Setup Go
+        if: ${{ !cancelled() }}
+        uses: Rethunk-Tech/gh-actions/setup-go@71da648f666fb49a8e72d0576a4d8db97894ccaf # v1.29.1
+        with:
+          go-version-file: go.mod
+          run-govulncheck: "true"
+
       - name: Vulnerability check
         if: ${{ !cancelled() && steps.changes.outputs.code != 'true' }}
         run: scripts/vulncheck.sh
