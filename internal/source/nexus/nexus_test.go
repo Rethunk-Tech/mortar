@@ -1,6 +1,7 @@
 package nexus
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -169,6 +170,34 @@ func TestSearchAsksForTheQuerysPageSize(t *testing.T) {
 	}
 	if !strings.Contains(gotBody, "count: 80, offset: 80") {
 		t.Fatalf("body %s", gotBody)
+	}
+}
+
+func TestModPageURLNeedsANumericID(t *testing.T) {
+	t.Parallel()
+	if got := (Driver{}).ModPageURL("stardewvalley", "1348"); got != "https://www.nexusmods.com/stardewvalley/mods/1348" {
+		t.Fatalf("got %q", got)
+	}
+	if got := (Driver{}).ModPageURL("stardewvalley", "space-core"); got != "" {
+		t.Fatalf("non-numeric id built %q", got)
+	}
+}
+
+func TestCategoriesUseTheWiredLookup(t *testing.T) {
+	t.Cleanup(func() { CategoryNames = nil })
+	got, err := (Driver{}).Categories(t.Context(), "stardewvalley")
+	if err != nil || len(got) != 0 {
+		t.Fatalf("unwired = %v %v", got, err)
+	}
+	CategoryNames = func(_ context.Context, domain string) ([]string, error) {
+		if domain != "stardewvalley" {
+			t.Fatalf("domain %q", domain)
+		}
+		return []string{"Cheats", "", "cheats", "Maps"}, nil
+	}
+	got, err = (Driver{}).Categories(t.Context(), "stardewvalley")
+	if err != nil || strings.Join(got, ",") != "Cheats,Maps" {
+		t.Fatalf("wired = %v %v", got, err)
 	}
 }
 
