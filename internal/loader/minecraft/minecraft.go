@@ -175,7 +175,7 @@ func (l Loader) Fetch(ctx context.Context, _ components.GameInfo, version, dst s
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return err
 	}
-	return os.WriteFile(dst, []byte(version), 0o600)
+	return safefs.WriteFileAtomic(dst, []byte(version), 0o600)
 }
 
 func (l Loader) versionsURL() string {

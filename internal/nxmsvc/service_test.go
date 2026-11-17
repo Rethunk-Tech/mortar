@@ -195,7 +195,7 @@ func TestReceiveForwardsOtherGameLinks(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	link := "nxm://skyrim/mods/5/files/9?key=k&expires=1000600&user_id=42"
+	link := "nxm://oblivion/mods/5/files/9?key=k&expires=1000600&user_id=42"
 	if !s.Receive([]string{link}) {
 		t.Fatal("expected nxm link")
 	}
