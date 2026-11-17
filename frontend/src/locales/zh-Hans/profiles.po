@@ -1,5 +1,5 @@
 msgid ""
-msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.11.2.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-10 12:51+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/profiles/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
+msgstr "POT-Creation-Date: 2026-10-28 14:49-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.12.dev0\nLanguage: zh-Hans\nPO-Revision-Date: 2026-11-15 14:51+0000\nLast-Translator: MOXIAOLEQWQ <moxiaole@users.noreply.hosted.weblate.org>\nLanguage-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/mortar/profiles/zh_Hans/>\nPlural-Forms: nplurals=1; plural=0;\n"
 
 #: src/profiles/GameVersionRows.tsx
 msgid "This profile runs the game from this folder, an older copy, instead of the selected install."
@@ -572,7 +572,7 @@ msgstr "已复制到配置档中的预设会保留。"
 
 #: src/profiles/OlderVersionDialog.tsx
 msgid "Manifest id of the version"
-msgstr "该版本的清单 ID"
+msgstr "版本的清单 ID"
 
 #: src/profiles/HistoryTimeline.tsx
 msgid "Today"
@@ -666,7 +666,7 @@ msgstr "删除 {name}？"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "No profile holds a mod by that name or id."
-msgstr "没有配置档包含该名称或 ID 的模组。"
+msgstr "没有任何个人资料拥有该名称或ID的模组。"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "The fields above are the Standard preset. Play uses the default preset; the Play menu can launch with another one once. Templates are game-wide and copied in."
