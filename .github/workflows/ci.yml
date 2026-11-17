@@ -49,7 +49,7 @@ jobs:
 
       - name: Setup Go
         if: ${{ !cancelled() }}
-        uses: Rethunk-Tech/gh-actions/setup-go@71da648f666fb49a8e72d0576a4d8db97894ccaf # v1.29.1
+        uses: Rethunk-Tech/gh-actions/setup-go@d7c92df451d210ac9db9aa3d1fea9e8a1692e448 # v1.30
         with:
           go-version-file: go.mod
           run-govulncheck: "true"
@@ -104,7 +104,7 @@ jobs:
 
       - name: Setup Go
         if: steps.changes.outputs.code == 'true'
-        uses: Rethunk-Tech/gh-actions/setup-go@71da648f666fb49a8e72d0576a4d8db97894ccaf # v1.29.1
+        uses: Rethunk-Tech/gh-actions/setup-go@d7c92df451d210ac9db9aa3d1fea9e8a1692e448 # v1.30
         with:
           cache-key-suffix: ${{ github.ref == 'refs/heads/main' && steps.day.outputs.date || '' }}
           go-version-file: go.mod
