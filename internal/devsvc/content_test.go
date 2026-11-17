@@ -1,6 +1,8 @@
 package devsvc
 
 import (
+	"bytes"
+	"image/png"
 	"maps"
 	"path/filepath"
 	"slices"
@@ -145,5 +147,50 @@ func TestANewContentPackGetsATickedFolderEach(t *testing.T) {
 	form, err := svc.AssetForm(contentGame, kindContent)
 	if err != nil || !slices.ContainsFunc(form.Parameters, func(p Param) bool { return p.ID == contentParam && p.Required }) {
 		t.Errorf("form = %+v, %v", form, err)
+	}
+}
+
+func TestScrapItemKindWritesTheLoaderFolder(t *testing.T) {
+	folders := contentFolders(contentGame)
+	i := slices.IndexFunc(folders, func(f components.ContentFolder) bool { return f.ID == "scrap" })
+	if i < 0 {
+		t.Fatal("lethal-company content has no scrap folder")
+	}
+	f := folders[i]
+	if f.Dependency != "Mortar-Scrap" {
+		t.Fatalf("dependency %q", f.Dependency)
+	}
+	if slices.ContainsFunc(f.Patterns, func(p string) bool { return strings.Contains(strings.ToLower(p), "glb") }) {
+		t.Fatal("scrap patterns include a GLB mesh path")
+	}
+	files := contentStarters(packContentRoot, "Widget", []components.ContentFolder{f})
+	item := files["plugins/mortar/scrap/item.json"]
+	if !bytes.Contains(item, []byte(`"name": "Widget"`)) {
+		t.Errorf("item.json = %s", item)
+	}
+	for _, name := range []string{"texture.png", "icon.png"} {
+		if _, err := png.Decode(bytes.NewReader(files["plugins/mortar/scrap/"+name])); err != nil {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+	if _, ok := files["plugins/mortar/scrap/sounds/README.txt"]; !ok {
+		t.Error("missing sounds/")
+	}
+	for p := range files {
+		if strings.HasSuffix(strings.ToLower(p), ".glb") {
+			t.Errorf("wrote a GLB: %s", p)
+		}
+	}
+}
+
+func TestAGlbMeshInAScrapFolderIsUnread(t *testing.T) {
+	got := unreadContent(adoptFolder(t, "Pack", map[string]string{
+		"plugins/mortar/scrap/item.json":   `{"name":"x"}`,
+		"plugins/mortar/scrap/texture.png": "p",
+		"plugins/mortar/scrap/icon.png":    "p",
+		"plugins/mortar/scrap/mesh.glb":    "g",
+	}), packContentRoot, contentFolders(contentGame))
+	if !slices.ContainsFunc(got, func(s string) bool { return strings.Contains(s, "mesh.glb") }) {
+		t.Fatalf("unread = %q", got)
 	}
 }

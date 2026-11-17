@@ -114,47 +114,6 @@ and macOS.
 - `bun run gate` stays clean. No seccomp, network namespace, Windows or macOS
   sandbox ships in this change.
 
-## Scrap items cannot be authored without the Unity Editor
-
-A Lethal Company scrap bundle cannot be built outside the Unity Editor:
-AssetsTools.NET and UnityPy only patch existing bundles, and a new
-MonoBehaviour's script hash cannot be generated. Authors who want a scrap
-item are stuck in Unity, so Mortar's wizard cannot offer that kind.
-
-The decided shape is a runtime loader mod in mortar-mods on LethalLib:
-`NetworkPrefabs.CloneNetworkPrefab` (deterministic hash from assembly and
-name) of template prefabs built once in Unity, an `Item` from
-`ScriptableObject.CreateInstance` passed to `Items.RegisterScrap`, filled
-from a folder (`item.json`, `texture.png`, `icon.png`, sounds). Mortar's
-wizard gains a Scrap item kind that writes the folder. Sholiver-
-LethalCardLoader proves the PNG+JSON half. Arbitrary GLB meshes (glTFast
-with an HDRP material mapper copied from a vanilla scrap) come after and
-were rejected for the first ship: they risk the game's Burst/Collections
-versions and grip offsets.
-
-### Read
-
-- [docs/design.md](docs/design.md#later) — the LethalLib path and the GLB
-  deferral.
-- Mortar's New mod / content wizard (the kind list this Scrap item kind
-  joins) and [docs/games.md](docs/games.md#lethal-company).
-
-### Traps
-
-- **Do not generate a new MonoBehaviour script hash outside Unity.** That is
-  the reason the bundle path was rejected.
-- **GLB meshes are not part of this entry.** glTFast plus an HDRP mapper
-  fights Burst/Collections versions and grip offsets; they come after a
-  folder-based scrap ships.
-
-### Acceptance
-
-- A folder (`item.json`, `texture.png`, `icon.png`, sounds) written by Mortar's
-  Scrap item kind loads in Lethal Company through the LethalLib runtime loader
-  without a Unity Editor pass.
-- The first ship has no arbitrary GLB mesh path.
-- `bun run gate` stays clean.
-
 ## The window cannot be translucent
 
 The main window is a solid wallpaper-plus-tint surface. Upstream Wails #6197

@@ -121,6 +121,13 @@ func contentStarters(root, name string, ticked []components.ContentFolder) map[s
 		for file, body := range f.Files {
 			out[root+"/"+file] = []byte(strings.ReplaceAll(body, "{name}", name))
 		}
+		// Exact PNG names cannot live in catalog Files (text); the loader still needs real images.
+		for _, pat := range f.Patterns {
+			if !strings.HasSuffix(strings.ToLower(pat), ".png") || strings.ContainsAny(pat, "*?[") {
+				continue
+			}
+			out[root+"/"+f.Path()+"/"+pat] = placeholderIcon()
+		}
 	}
 	return out
 }

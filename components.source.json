@@ -483,6 +483,22 @@
                     "replacers/README.txt": "Each .json file here maps game sounds to files in sounds/. See https://soundapi.loaforc.me/soundpack-tutorials/guide/getting-started.html\n"
                   },
                   "needs": ["sound_pack.json", "replacers/*.json"]
+                },
+                {
+                  "id": "scrap",
+                  "label": "Scrap item",
+                  "patterns": ["item.json", "texture.png", "icon.png", "*.ogg", "*.wav"],
+                  "dependency": "Mortar-Scrap",
+                  "category": "items",
+                  "files": {
+                    "mortar/scrap/item.json": "{\n  \"name\": \"{name}\",\n  \"rarity\": 20,\n  \"minValue\": 10,\n  \"maxValue\": 40,\n  \"weight\": 10\n}\n",
+                    "mortar/scrap/sounds/README.txt": "Put grab, drop and pocket .ogg or .wav files here.\n"
+                  },
+                  "needs": [
+                    "mortar/scrap/item.json",
+                    "mortar/scrap/texture.png",
+                    "mortar/scrap/icon.png"
+                  ]
                 }
               ]
             }

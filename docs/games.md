@@ -100,6 +100,7 @@ Sources: Gale (`Kesomannen/gale`), r2modmanPlus (`ebkr/r2modmanPlus`), the Thund
 - **Load order** is BepInEx 5.4.23's: newest copy of each GUID, GUIDs sorted case-insensitively in a `SortedDictionary`, then `Utility.TopologicalSort` (`BepInEx/Bootstrap/Chainloader.cs` 312-366, `BepInEx/Utility.cs` 135-180). A cycle makes the sort throw and no plugin loads. `TestRealBepInExRun` checks the prediction against a real run.
 - **Game version:** Unity's `Application.version` is the unset `0.1`, so the bridge reports `GameNetworkManager.gameVersionNum`. MoreCompany adds 9950 to it in an `Awake` postfix, so the bridge reads it in a prefix.
 - **Intro skip:** the game reads no command-line argument but Doorstop's, and the Online or LAN choice and the cold-open cinematics live in encrypted `LCGeneralSaveData`, so no launch option or registry key skips them (`Assembly-CSharp`: `InitSceneLaunchOptions`, `InitializeGame`). Only `MORTAR_SKIP_INTRO=1` from `scripts/launch-guard.sh` does, through the bridge's `IntroSkip.cs`.
+- **Scrap items** are a catalog content folder (`mortar/scrap/`: `item.json`, `texture.png`, `icon.png`, `sounds/`), written by New mod and loaded by `Mortar-Scrap` (LethalLib clone of template prefabs) without a Unity Editor pass. Arbitrary GLB meshes are not offered.
 
 ## PEAK
 

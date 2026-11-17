@@ -8,6 +8,7 @@ import {
   Lightbulb,
   type LucideIcon,
   Music,
+  Package,
   Shirt,
   Tv,
   Volume2,
@@ -26,6 +27,7 @@ const ICONS: Record<string, LucideIcon> = {
   tv: Tv,
   suits: Shirt,
   sounds: Volume2,
+  scrap: Package,
 }
 
 const SELECTED_ALPHA = 0.16
