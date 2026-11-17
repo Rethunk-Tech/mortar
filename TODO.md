@@ -300,7 +300,7 @@ Steam, Vortex or OneDrive.
 - Import from Vortex against a long-lived Vortex folder is recorded.
 - Timings with the data folder under OneDrive are recorded.
 - `bun run gate` stays clean. No production default changes without the
-  maintainer's copied settings showing the old path.
+  maintainer's copied settings showing the value being replaced.
 
 ## Mod descriptions stay in their original language
 

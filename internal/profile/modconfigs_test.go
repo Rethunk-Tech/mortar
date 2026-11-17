@@ -331,7 +331,7 @@ func TestAProfileWithoutARecordKeepsItsConfigs(t *testing.T) {
 	}
 }
 
-// Issue #23: a theme pack (Wallet-OuterWildsMenu) ships config/Darkbrewery.Emblem.cfg to set up Emblem, the mod it
+// A theme pack (Wallet-OuterWildsMenu) ships config/Darkbrewery.Emblem.cfg to set up Emblem, the mod it
 // themes. Installed after Emblem has written its own config, the pack's copy takes over at the next sync, the replaced
 // one is kept, and an edit after that survives later syncs.
 func TestAThemePacksConfigForAnotherModAppliesOnInstall(t *testing.T) {

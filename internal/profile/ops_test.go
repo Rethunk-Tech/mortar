@@ -811,8 +811,8 @@ func TestSwitchingOffAModWhoseRecordedFolderIsGoneNamesTheFolder(t *testing.T) {
 	}
 }
 
-// A folder left under both names used to make a disable a silent no-op that still recorded the mod as off, so the
-// game kept loading it. The flip now refuses, so the profile never records a state the folder does not have.
+// A folder under both names must refuse disable: a silent no-op would still record the mod as off while the
+// game kept loading it, so the profile never records a state the folder does not have.
 func TestDisablingAModWhoseFolderExistsUnderBothNamesIsRefused(t *testing.T) {
 	t.Parallel()
 	e := envWithFolderAB(t)

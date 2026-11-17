@@ -134,7 +134,7 @@ func TestCompatDataDirFindsOtherSteamLibrary(t *testing.T) {
 	}
 }
 
-// go-gamelocator refuses to search other libraries when appID is not filepath.IsLocal; Mortar used to walk them.
+// go-gamelocator refuses to search other libraries when appID is not filepath.IsLocal.
 func TestCompatDataDirRefusesNonNumericAppID(t *testing.T) {
 	dir := filepath.Join(t.TempDir(), "steamapps", "common", "Game")
 	if err := os.MkdirAll(dir, 0o750); err != nil {

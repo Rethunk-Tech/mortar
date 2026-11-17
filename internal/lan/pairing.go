@@ -60,7 +60,7 @@ func pairConfig() codepair.Config {
 	}
 }
 
-// pairLibErr maps a library error to the message a player used to see: the wrapped cause, when the library added one.
+// pairLibErr returns the wrapped cause when the library added one, matching the message a player sees.
 func pairLibErr(err error) error {
 	if inner := errors.Unwrap(err); inner != nil {
 		return inner

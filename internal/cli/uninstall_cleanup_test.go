@@ -78,7 +78,7 @@ func TestRemoveSteamShortcutsDropsOnlyMortarsAndKeepsABackup(t *testing.T) {
 		}
 	}
 	root, shortcuts := steamWithShortcuts(t, exe, other)
-	// No backup is left over from building the library, so the one the removal takes is the one under test.
+	// Remove the backup building the library wrote, so the one the removal takes is the one under test.
 	if err := os.Remove(shortcuts + appversion.SteamBackupSuffix); err != nil {
 		t.Fatal(err)
 	}
