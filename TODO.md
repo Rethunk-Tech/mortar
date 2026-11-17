@@ -320,9 +320,6 @@ upstream macOS build; the driver already refuses Linux).
   `CFBundleURLTypes` replaces on darwin.
 - `internal/loader/thunderpack/thunderpack_test.go` — the `Platform: "darwin"`
   unit-test pattern for pure-Go parts on Linux.
-- `Taskfile.yml` — add `build/darwin/` (Taskfile, `Info.plist`, `icons.icns`)
-  and `darwin: ./build/darwin/Taskfile.yml` under `includes`, as
-  `build/windows/` and `build/linux/` do.
 - r2modman darwin Steam runner (`steam_osx -applaunch <id>`) and `macos_proxy`
   launch wrapper — Gale has no macOS code.
 

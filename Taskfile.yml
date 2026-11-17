@@ -22,6 +22,7 @@ includes:
   common: ./build/Taskfile.yml
   windows: ./build/windows/Taskfile.yml
   linux: ./build/linux/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
 
 tasks:
   build:
