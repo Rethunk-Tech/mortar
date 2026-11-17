@@ -1,9 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import { TranslateDescription } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
-import { inlineError, type InlineError } from '../toasts/report.ts'
+import { type InlineError, inlineError } from '../toasts/report.ts'
 
 /** Optional live translation of source-site copy into the player's language. Each instance is its own toggle. */
 export function Translatable({
@@ -13,33 +13,47 @@ export function Translatable({
   source: string
   children: (text: string) => ReactNode
 }) {
-  const { t, i18n } = useLingui()
-  const locale = i18n.locale
+  const { i18n } = useLingui()
+  return (
+    <TranslatableView key={`${source}\0${i18n.locale}`} source={source} locale={i18n.locale}>
+      {children}
+    </TranslatableView>
+  )
+}
+
+function TranslatableView({
+  source,
+  locale,
+  children,
+}: {
+  source: string
+  locale: string
+  children: (text: string) => ReactNode
+}) {
+  const { t } = useLingui()
   const [shown, setShown] = useState<'orig' | 'translated'>('orig')
   const [translated, setTranslated] = useState<string | null>(null)
   const [error, setError] = useState<InlineError | null>(null)
   const [busy, setBusy] = useState(false)
-  useEffect(() => {
-    setShown('orig')
-    setTranslated(null)
-    setError(null)
-  }, [source, locale])
   const showTranslated = shown === 'translated' && translated !== null
-  const run = async () => {
+  const run = () => {
     if (translated !== null) {
       setShown('translated')
       return
     }
     setBusy(true)
     setError(null)
-    try {
-      setTranslated(await TranslateDescription(source, locale))
-      setShown('translated')
-    } catch (e) {
-      setError(inlineError(e))
-    } finally {
-      setBusy(false)
-    }
+    TranslateDescription(source, locale)
+      .then((out) => {
+        setTranslated(out)
+        setShown('translated')
+      })
+      .catch((e: unknown) => {
+        setError(inlineError(e))
+      })
+      .finally(() => {
+        setBusy(false)
+      })
   }
   if (source === '') {
     return children(source)
@@ -54,13 +68,13 @@ export function Translatable({
             setShown('orig')
             return
           }
-          void run()
+          run()
         }}
         sx={{ alignSelf: 'flex-start', px: 0.5, fontSize: 'small.fontSize' }}
       >
         {showTranslated ? t`Show original` : t`Translate`}
       </Button>
-      {error ? <ErrorRetry error={error} onRetry={() => void run()} /> : null}
+      {error ? <ErrorRetry error={error} onRetry={run} /> : null}
       {children(showTranslated ? translated : source)}
     </Box>
   )

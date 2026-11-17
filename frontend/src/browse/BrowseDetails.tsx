@@ -16,11 +16,11 @@ import { DetailsHeader } from '../mods/DetailsHeader.tsx'
 import { type Dependency, nexusDependencies } from '../mods/dependencies.ts'
 import { MarkdownView } from '../mods/MarkdownView.tsx'
 import { Section } from '../mods/ModSections.tsx'
-import { Translatable } from '../mods/Translatable.tsx'
 import { openPage } from '../mods/menu.ts'
 import { Rich } from '../mods/NexusDetails.tsx'
 import { isFull, loadDetails, useNexusPartialEntry } from '../mods/nexusDetails.ts'
 import { useReleases } from '../mods/releases.ts'
+import { Translatable } from '../mods/Translatable.tsx'
 import { listsVersions } from '../mods/versionChoices.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
@@ -258,19 +258,25 @@ function SitePage({ game, item }: { game: string; item: BrowseItem }) {
   const { details } = state
   const logs = releases.state !== null && 'logs' in releases.state ? releases.state.logs : []
   const changelog = details.changelog ? <MarkdownView source={details.changelog} /> : null
+  let description: ReactNode = null
+  if (details.description) {
+    description = (
+      <Translatable source={details.description}>
+        {(copy) => <MarkdownView source={copy} />}
+      </Translatable>
+    )
+  } else if (item.summary) {
+    description = (
+      <Translatable source={item.summary}>
+        {(copy) => <Typography sx={text}>{copy}</Typography>}
+      </Translatable>
+    )
+  }
   return (
     <PageSections
       page={{
         categories: details.categories ?? [],
-        description: details.description ? (
-          <Translatable source={details.description}>
-            {(copy) => <MarkdownView source={copy} />}
-          </Translatable>
-        ) : item.summary ? (
-          <Translatable source={item.summary}>
-            {(copy) => <Typography sx={text}>{copy}</Typography>}
-          </Translatable>
-        ) : null,
+        description,
         versions: item.source === GITHUB ? logs.map((l) => l.version) : (details.versions ?? []),
         dependencies: (details.dependencies ?? []).map((name) => ({ name })),
         changelog: item.source === GITHUB ? changelogOf(logs) : changelog,
