@@ -6,7 +6,7 @@ require (
 	github.com/Rethunk-Tech/go-archive v0.3.1
 	github.com/Rethunk-Tech/go-bannerlord v0.1.2
 	github.com/Rethunk-Tech/go-bepinex v0.2.2
-	github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261117235335-5e82acc7937a
+	github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261118011116-b8bd6af8dc60
 	github.com/Rethunk-Tech/go-contentpatcher v0.1.0
 	github.com/Rethunk-Tech/go-curseforge v0.4.0
 	github.com/Rethunk-Tech/go-desktopenv v0.9.2
@@ -39,7 +39,7 @@ require (
 	github.com/Totative/go-keyring v0.3.0
 	github.com/andybalholm/brotli v1.3.0
 	github.com/godbus/dbus/v5 v5.2.4
-	github.com/google/pprof v0.0.0-20261111200114-fac431ef4d26
+	github.com/google/pprof v0.0.0-20261118010117-084b33a85f63
 	github.com/hashicorp/mdns v1.0.7
 	github.com/minio/minio-go/v7 v7.4.1
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d

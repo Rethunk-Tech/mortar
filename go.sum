@@ -12,8 +12,8 @@ github.com/Rethunk-Tech/go-bannerlord v0.1.2 h1:WxbbbNKu/7QKFTq8iIS21DcvKdQ+jmfy
 github.com/Rethunk-Tech/go-bannerlord v0.1.2/go.mod h1:7B02zG3WSS8b9PFx85TRx8kphsjp6PRWpmUgH5VECM0=
 github.com/Rethunk-Tech/go-bepinex v0.2.2 h1:ehZfxOWmIS2FtCZDYmY7F6gd2chTcKr1LJbbp2vwdt8=
 github.com/Rethunk-Tech/go-bepinex v0.2.2/go.mod h1:CVyX5x266PIuT5FooacfUhTXC66XYXQNaCPu6KZ+3q8=
-github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261117235335-5e82acc7937a h1:6jjFzvq5E7tik9T5S0LnA328DwbbCH/EOmt3H8wOwxY=
-github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261117235335-5e82acc7937a/go.mod h1:zXkCvGQAkr1LIifBkn1YmLeRNZHxYRo4x5GhqY7N+h4=
+github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261118011116-b8bd6af8dc60 h1:fzQbG1C+xIwicp6Yqn7yN68RzXModoJ8whD+smeCUTo=
+github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261118011116-b8bd6af8dc60/go.mod h1:zXkCvGQAkr1LIifBkn1YmLeRNZHxYRo4x5GhqY7N+h4=
 github.com/Rethunk-Tech/go-contentpatcher v0.1.0 h1:27sOlKxEw1cVwUd0NgJ1VDVBvVm1TW4QzBRs3Uls5Xk=
 github.com/Rethunk-Tech/go-contentpatcher v0.1.0/go.mod h1:RSpiDkNgq+IwA2CRUHrwMBZDfhp0MbTcTTdKiVSoPsI=
 github.com/Rethunk-Tech/go-curseforge v0.4.0 h1:Nr9pRINnAK/yqhMlBOJul8Etc35UiYp7MvBiGMGusO8=
@@ -130,8 +130,8 @@ github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMyw
 github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
-github.com/google/pprof v0.0.0-20261111200114-fac431ef4d26 h1:JOH9cRhIkOMmFMARaipDcB/qtsZdNjDYM6bAlMZwaFs=
-github.com/google/pprof v0.0.0-20261111200114-fac431ef4d26/go.mod h1:yUo1AMMpsPIDFGuwDK8nLcf8+vvAd5l2O6JDZ6hpwrM=
+github.com/google/pprof v0.0.0-20261118010117-084b33a85f63 h1:dTH7+vX2yD0Xq3wXeU6R1s5uUuJC8o9sDW8g2k4bAg4=
+github.com/google/pprof v0.0.0-20261118010117-084b33a85f63/go.mod h1:yUo1AMMpsPIDFGuwDK8nLcf8+vvAd5l2O6JDZ6hpwrM=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/gtank/ristretto255 v0.2.0 h1:LeOuWr6giplWkkMizx2emfG03SRPJqKt1nfIHLVHQ/0=

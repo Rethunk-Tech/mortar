@@ -1842,7 +1842,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-github.com/google/pprof@v0.0.0-20261111200114-fac431ef4d26
+github.com/google/pprof@v0.0.0-20261118010117-084b33a85f63
 licence: Apache-2.0
 https://github.com/google/pprof
 
@@ -3088,7 +3088,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-cfgedit@v0.4.3-0.20261117235335-5e82acc7937a
+github.com/Rethunk-Tech/go-cfgedit@v0.4.3-0.20261118011116-b8bd6af8dc60
 licence: MIT
 https://github.com/Rethunk-Tech/go-cfgedit
 
