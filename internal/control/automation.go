@@ -25,35 +25,50 @@ func (s *Services) queueAdd(ctx context.Context, p Params) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	req := queue.Request{Kind: queue.KindInstall, Game: p.Game, Profile: prof.ID, Name: p.ID, Version: p.Version}
+	req, err := queueRequestFromParams(p)
+	if err != nil {
+		return nil, err
+	}
+	req.Profile = prof.ID
+	if p.Source == "github" && p.File == "" {
+		// Automation has nobody to answer a choice later, so an ambiguous release fails now with the choices.
+		rel, assets, err := s.Queue.GitHubAsset(ctx, p.Game, p.ID, p.Version)
+		if err != nil {
+			return nil, err
+		}
+		if len(assets) > 1 {
+			names := make([]string, len(assets))
+			for i, a := range assets {
+				names[i] = a.Name
+			}
+			return nil, fmt.Errorf("release %s of %s has several assets (%s); choose one with --file <asset>",
+				rel.Tag, p.ID, strings.Join(names, ", "))
+		}
+		req.Tag, req.Asset, req.FileName = rel.Tag, assets[0].Name, assets[0].Name
+	}
+	if _, err := s.Queue.Add(ctx, []queue.Request{req}); err != nil {
+		return nil, err
+	}
+	return s.Queue.State(), nil
+}
+
+// queueRequestFromParams maps CLI params onto a queue request (except GitHub asset
+// resolution, which needs the live queue when --file is omitted).
+func queueRequestFromParams(p Params) (queue.Request, error) {
+	var err error
+	req := queue.Request{Kind: queue.KindInstall, Game: p.Game, Name: p.ID, Version: p.Version}
 	switch p.Source {
 	case "nexus":
 		if req.ModID, err = strconv.Atoi(p.ID); err != nil || req.ModID < 1 {
-			return nil, fmt.Errorf("nexus mod id %q is not a number", p.ID)
+			return queue.Request{}, fmt.Errorf("nexus mod id %q is not a number", p.ID)
 		}
 		if p.File != "" {
 			if req.FileID, err = strconv.Atoi(p.File); err != nil || req.FileID < 1 {
-				return nil, fmt.Errorf("nexus file id %q is not a number", p.File)
+				return queue.Request{}, fmt.Errorf("nexus file id %q is not a number", p.File)
 			}
 		}
 	case "github":
 		req.Repo, req.Tag, req.Asset, req.FileName = p.ID, p.Version, p.File, p.File
-		if p.File == "" {
-			// Automation has nobody to answer a choice later, so an ambiguous release fails now with the choices.
-			rel, assets, err := s.Queue.GitHubAsset(ctx, p.Game, p.ID, p.Version)
-			if err != nil {
-				return nil, err
-			}
-			if len(assets) > 1 {
-				names := make([]string, len(assets))
-				for i, a := range assets {
-					names[i] = a.Name
-				}
-				return nil, fmt.Errorf("release %s of %s has several assets (%s); choose one with --file <asset>",
-					rel.Tag, p.ID, strings.Join(names, ", "))
-			}
-			req.Tag, req.Asset, req.FileName = rel.Tag, assets[0].Name, assets[0].Name
-		}
 	case "thunderstore":
 		req.Package = p.ID
 	case "modrinth", "curseforge", "itch", "vsmoddb", "paradox", "modio":
@@ -62,12 +77,9 @@ func (s *Services) queueAdd(ctx context.Context, p Params) (any, error) {
 			req.Version = p.File
 		}
 	default:
-		return nil, fmt.Errorf("source %q cannot be queued; use nexus, github, thunderstore, modrinth, curseforge, itch, vsmoddb, paradox or modio", p.Source)
+		return queue.Request{}, fmt.Errorf("source %q cannot be queued; use nexus, github, thunderstore, modrinth, curseforge, itch, vsmoddb, paradox or modio", p.Source)
 	}
-	if _, err := s.Queue.Add(ctx, []queue.Request{req}); err != nil {
-		return nil, err
-	}
-	return s.Queue.State(), nil
+	return req, nil
 }
 
 // profileSet writes one scalar field of the profile; a key that is no field is a per-profile override of a game
