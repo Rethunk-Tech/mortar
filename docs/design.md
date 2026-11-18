@@ -32,7 +32,7 @@ Mortar's side is `internal/devsvc/content.go` and the catalog's `devTemplate.con
 Taken up when asked.
 
 - **Runs that need an outside tester:** a launch from a real GOG install and from Flatpak Steam; a Linux launch with Stardew's launch method set to Steam, confirming SMAPI loads the profile's mods; Import from Vortex against a long-lived Vortex folder; timings with the data folder under OneDrive. [TODO.md](../TODO.md#several-launch-and-import-paths-have-never-been-run-on-real-installs)
-- **Hosted share service** with short codes and share versioning. [TODO.md](../TODO.md#share-links-have-no-hosted-short-code-service)
+- **Hosted share service** not provisioned on App Platform. [TODO.md](../TODO.md#hosted-share-short-codes-are-not-provisioned)
 - **Add to Mortar** button on Nexus listing tiles, which needs Nexus's approval first ([nexus-application.md](nexus-application.md)). [TODO.md](../TODO.md#nexus-listing-tiles-have-no-add-to-mortar-button)
 - **Windows code signing** with Azure Trusted Signing. [TODO.md](../TODO.md#windows-builds-are-unsigned)
 - **GitHub topic-search fallback** (`internal/source/github/fallback.go`) into go-github, once a second consumer needs it. [TODO.md](../TODO.md#github-topic-search-fallback-lives-in-mortar-instead-of-go-github)
