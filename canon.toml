@@ -8,6 +8,9 @@ reconciled = "canon v0.1.0-poc"
 # Desktop packaging: dry-run workflow_dispatch, two-arch matrix, reuse of a prior dry run's
 # artefacts, SBOM, Flatpak/AUR/Windows. Canon's three-job v* tag template cannot express that.
 "patterns-release-00001" = "release.yml is a desktop packaging pipeline (dry-run dispatch, two-arch matrix, SBOM, Flatpak/AUR/Windows), not canon's three-job GitHub-Release-from-tag template"
+# Packaging is split across the matrix `release` job and `finalize`; there is no job named `build`.
+# `finalize` holds id-token and attestations write, and contents write only for the publish steps.
+"patterns-release-00003" = "no job named build: the matrix release job packages and finalize attests and publishes, so jobs.build.permissions is not a key this workflow has"
 # Root scripts interleave Go and bun steps (wails bindings before typecheck, go test -race beside bun test), which a turbo task graph over the two JS packages cannot express.
 "ts-patterns-workspace-turbo-00001" = "root scripts chain Go and bun steps (wails bindings, go test -race) that a turbo graph over frontend/ and web/ cannot model"
 # go.mod replaces github.com/wailsapp/wails/v3 with the Rethunk-AI fork (fixes offered upstream as wailsapp/wails#6200,
