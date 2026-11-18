@@ -14,3 +14,16 @@ func TestExpandPlaceholders(t *testing.T) {
 		t.Fatalf("saves")
 	}
 }
+
+func TestEmptyPlaceholderAndArgListStayEmpty(t *testing.T) {
+	ctx := Context{Game: "/g"}
+	if got := expand("", ctx); got != "" {
+		t.Fatalf("empty string = %q", got)
+	}
+	if got := expandArgs(nil, ctx); got != nil {
+		t.Fatalf("nil args = %#v", got)
+	}
+	if got := expandArgs([]string{}, ctx); got != nil {
+		t.Fatalf("empty args = %#v", got)
+	}
+}

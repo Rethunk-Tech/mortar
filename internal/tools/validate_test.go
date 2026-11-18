@@ -48,3 +48,12 @@ func TestValidateRefusesAWindowsProgramOnLinux(t *testing.T) {
 		t.Fatal(".exe accepted on Linux")
 	}
 }
+
+func TestBlankNameAndExecutableAreRefused(t *testing.T) {
+	if err := validateTool(Tool{Name: "  ", Executable: "x"}, Context{}); err == nil {
+		t.Fatal("blank name")
+	}
+	if err := validateTool(Tool{Name: "a", Executable: "  "}, Context{}); err == nil {
+		t.Fatal("blank executable")
+	}
+}

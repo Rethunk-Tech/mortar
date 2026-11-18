@@ -77,3 +77,41 @@ func TestLaunchUnknownToolIsNotFound(t *testing.T) {
 		t.Fatalf("Launch unknown id: %v", err)
 	}
 }
+
+func TestNullToolsFileReadsAsAnEmptyList(t *testing.T) {
+	t.Parallel()
+	st := &Store{root: t.TempDir()}
+	if err := os.WriteFile(filepath.Join(st.root, "stardew.json"), []byte(`{"tools":null}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got, err := st.List("stardew")
+	if err != nil || got == nil || len(got) != 0 {
+		t.Fatalf("null tools = %#v, %v", got, err)
+	}
+	if err := os.WriteFile(filepath.Join(st.root, "stardew.json"), []byte(`{`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.List("stardew"); err == nil {
+		t.Fatal("broken file")
+	}
+}
+
+func TestNilArgumentsBecomeAnEmptyList(t *testing.T) {
+	if got := NormalizeArguments(nil); got == nil || len(got) != 0 {
+		t.Fatalf("%#v", got)
+	}
+}
+
+func TestUnknownGameDoesNotCreateAToolsFile(t *testing.T) {
+	t.Parallel()
+	st := &Store{root: t.TempDir()}
+	if _, err := st.List("nope"); err == nil {
+		t.Fatal("list unknown game")
+	}
+	if _, err := st.Add("nope", Tool{Name: "x"}); err == nil {
+		t.Fatal("add unknown game")
+	}
+	if ents, err := os.ReadDir(st.root); err != nil || len(ents) != 0 {
+		t.Fatalf("wrote %v, %v", ents, err)
+	}
+}
