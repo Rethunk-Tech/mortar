@@ -6,7 +6,7 @@ require (
 	github.com/Rethunk-Tech/go-archive v0.3.1
 	github.com/Rethunk-Tech/go-bannerlord v0.1.2
 	github.com/Rethunk-Tech/go-bepinex v0.2.2
-	github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261118011116-b8bd6af8dc60
+	github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261118042448-b79fd515eb57
 	github.com/Rethunk-Tech/go-contentpatcher v0.1.0
 	github.com/Rethunk-Tech/go-curseforge v0.4.0
 	github.com/Rethunk-Tech/go-desktopenv v0.9.2
@@ -96,7 +96,7 @@ require (
 	golang.org/x/term v0.48.0 // indirect
 	golang.org/x/text v0.44.0 // indirect
 	gopkg.in/ini.v1 v1.68.0 // indirect
-	modernc.org/libc v1.81.2 // indirect
+	modernc.org/libc v1.82.2 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.13.0 // indirect
 )
