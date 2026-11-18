@@ -1,6 +1,10 @@
 reconciled = "canon v0.1.0-poc"
 
 [deviations]
+# The CodeQL artifact's matrix is Go and Actions; Mortar also holds JavaScript/TypeScript
+# and Python, so the matrix includes those (the rule: every language the repository holds).
+# C# stays out: its only sources are test fixtures against a game's Managed assemblies, which CI does not have.
+"patterns-repo-settings-00001" = "CodeQL matrix includes javascript-typescript and python (languages this repo holds) beyond the Go+Actions artifact; C# fixtures cannot resolve without game assemblies"
 # Root scripts interleave Go and bun steps (wails bindings before typecheck, go test -race beside bun test), which a turbo task graph over the two JS packages cannot express.
 "ts-patterns-workspace-turbo-00001" = "root scripts chain Go and bun steps (wails bindings, go test -race) that a turbo graph over frontend/ and web/ cannot model"
 # go.mod replaces github.com/wailsapp/wails/v3 with the Rethunk-AI fork (fixes offered upstream as wailsapp/wails#6200,
