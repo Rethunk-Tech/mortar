@@ -2,7 +2,9 @@
 FINDINGS.jsonl
 tmp/
 bin
-frontend/dist
+frontend/dist/*
+# main.go embeds frontend/dist, so a checkout that has not built the UI still needs one file there.
+!frontend/dist/.gitkeep
 node_modules
 frontend/bindings
 # Compiled from the .po catalogs by `bun run --cwd frontend catalogs` (and every build, dev server and gate).
