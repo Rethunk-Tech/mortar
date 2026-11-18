@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "packageManager": "bun@1.4.3",
+  "packageManager": "bun@1.4.4",
   "scripts": {
     "dev": "lingui compile --typescript && vite",
     "build:dev": "lingui compile --typescript && bun ../scripts/gen-credits.ts && tsc && vite build --minify false --mode development && mkdir -p dist && touch dist/.gitkeep",
