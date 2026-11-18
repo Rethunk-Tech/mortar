@@ -1,10 +1,6 @@
 reconciled = "canon v0.1.0-poc"
 
 [deviations]
-# The CodeQL artifact's matrix is Go and Actions; Mortar also holds JavaScript/TypeScript
-# and Python, so the matrix includes those (the rule: every language the repository holds).
-# C# stays out: its only sources are test fixtures against a game's Managed assemblies, which CI does not have.
-"patterns-repo-settings-00001" = "CodeQL matrix includes javascript-typescript and python (languages this repo holds) beyond the Go+Actions artifact; C# fixtures cannot resolve without game assemblies"
 # Desktop packaging: dry-run workflow_dispatch, two-arch matrix, reuse of a prior dry run's
 # artefacts, SBOM, Flatpak/AUR/Windows. Canon's three-job v* tag template cannot express that.
 "patterns-release-00001" = "release.yml is a desktop packaging pipeline (dry-run dispatch, two-arch matrix, SBOM, Flatpak/AUR/Windows), not canon's three-job GitHub-Release-from-tag template"
