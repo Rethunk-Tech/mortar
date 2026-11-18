@@ -340,6 +340,11 @@
     "url": "https://github.com/hashicorp/mdns"
   },
   {
+    "name": "github.com/minio/minio-go/v7",
+    "licence": "Apache-2.0",
+    "url": "https://github.com/minio/minio-go"
+  },
+  {
     "name": "github.com/syndtr/goleveldb",
     "licence": "BSD-2-Clause",
     "url": "https://github.com/syndtr/goleveldb"
