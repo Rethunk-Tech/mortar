@@ -68,6 +68,10 @@ func (s *Service) ClearLaunchOption(id string) (string, error) {
 // setLaunchOptions edits st's launch options for appID, telling the player what to do when Steam has none to edit yet.
 func setLaunchOptions(st steam.Steam, appID string, merge func(string) string) (string, error) {
 	out, err := st.SetLaunchOptions(appID, merge, steam.EditOptions{BackupSuffix: appversion.SteamBackupSuffix})
+	return annotateLaunchOptionsErr(out, err)
+}
+
+func annotateLaunchOptionsErr(out string, err error) (string, error) {
 	if errors.Is(err, steam.ErrNoAppsSection) {
 		err = fmt.Errorf("%w; launch the game from Steam once first", err)
 	}
