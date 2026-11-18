@@ -36,6 +36,17 @@ func NewS3Store(endpoint, bucket, accessKey, secretKey string) (*S3Store, error)
 	return &S3Store{client: client, bucket: bucket}, nil
 }
 
+func shareCodeFromObjectKey(key string) (string, bool) {
+	if !strings.HasSuffix(key, "/meta.json") {
+		return "", false
+	}
+	code := strings.TrimSuffix(strings.TrimPrefix(key, "shares/"), "/meta.json")
+	if code == "" || strings.Contains(code, "/") {
+		return "", false
+	}
+	return code, true
+}
+
 func metaKey(code string) string { return "shares/" + code + "/meta.json" }
 
 func verKey(code string, n int) string {
@@ -101,11 +112,8 @@ func (s *S3Store) Sweep(ctx context.Context, cutoff time.Time) (deleted, kept in
 		if obj.Err != nil {
 			return deleted, kept, obj.Err
 		}
-		if !strings.HasSuffix(obj.Key, "/meta.json") {
-			continue
-		}
-		code := strings.TrimSuffix(strings.TrimPrefix(obj.Key, "shares/"), "/meta.json")
-		if code == "" || strings.Contains(code, "/") {
+		code, ok := shareCodeFromObjectKey(obj.Key)
+		if !ok {
 			continue
 		}
 		codes[code] = struct{}{}
