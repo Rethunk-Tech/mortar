@@ -86,28 +86,31 @@ func TestServiceSettersPersist(t *testing.T) {
 func TestServiceExtraModsDevProjectsAndLaunchers(t *testing.T) {
 	store, _ := open(t)
 	svc := NewService(store)
-	p := DevProject{Dir: "/src", Name: "M", Profile: "dev", Output: "/out", Untrusted: true}
+	// The folders must be absolute on this OS: a game pref keeps only absolute extra mods folders, and drops the
+	// profile mapping of one it does not keep.
+	src, out := filepath.Join(t.TempDir(), "src"), filepath.Join(t.TempDir(), "out")
+	p := DevProject{Dir: src, Name: "M", Profile: "dev", Output: out, Untrusted: true}
 	if err := svc.AddDevProject("stardew", p); err != nil {
 		t.Fatal(err)
 	}
 	if err := errors.Join(
-		svc.SetExtraModsProfile("stardew", "/out", "p1"),
+		svc.SetExtraModsProfile("stardew", out, "p1"),
 		svc.SetDevProjectWatch("stardew", p.Dir, true),
 		svc.TrustDevProject("stardew", p.Dir),
 	); err != nil {
 		t.Fatal(err)
 	}
 	gp := svc.Get().GamePrefs("stardew")
-	if gp.ExtraModsProfiles["/out"] != "p1" || len(gp.DevProjects) != 1 || !gp.DevProjects[0].Watch || gp.DevProjects[0].Untrusted {
+	if gp.ExtraModsProfiles[out] != "p1" || len(gp.DevProjects) != 1 || !gp.DevProjects[0].Watch || gp.DevProjects[0].Untrusted {
 		t.Fatalf("game prefs = %+v", gp)
 	}
-	if err := svc.SetExtraModsProfile("stardew", "/out", ""); err != nil {
+	if err := svc.SetExtraModsProfile("stardew", out, ""); err != nil {
 		t.Fatal(err)
 	}
-	if _, ok := svc.Get().GamePrefs("stardew").ExtraModsProfiles["/out"]; ok {
+	if _, ok := svc.Get().GamePrefs("stardew").ExtraModsProfiles[out]; ok {
 		t.Fatal("empty profile should drop the extra-mods mapping")
 	}
-	if err := svc.ReplaceDevProject("stardew", p, DevProject{Dir: "/src2", Name: "N", Profile: "dev2", Output: "/out"}); err != nil {
+	if err := svc.ReplaceDevProject("stardew", p, DevProject{Dir: filepath.Join(t.TempDir(), "src2"), Name: "N", Profile: "dev2", Output: out}); err != nil {
 		t.Fatal(err)
 	}
 

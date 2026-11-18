@@ -8,6 +8,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	itemstore "github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -15,7 +16,7 @@ func TestNewService(t *testing.T) {
 	if _, err := NewService(t.TempDir(), nil, nil); err == nil {
 		t.Fatal("expected Open to refuse the real data dir")
 	}
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	testfs.DataHome(t)
 	s, err := NewService(t.TempDir(), nil, nil)
 	if err != nil {
 		t.Fatal(err)
