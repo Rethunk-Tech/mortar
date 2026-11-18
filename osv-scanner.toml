@@ -1,0 +1,6 @@
+# picomatch <= 4.0.7 has a ReDoS (GHSA-fc5q-39xc-vjpf) with no fixed release yet. It is only
+# reached through build and test globbing, never request input; the entry expires so a fix gets picked up.
+[[IgnoredVulns]]
+id = "GHSA-fc5q-39xc-vjpf"
+ignoreUntil = 2026-12-17T00:00:00Z
+reason = "No fixed picomatch release; reached only via build/test tooling globs."
