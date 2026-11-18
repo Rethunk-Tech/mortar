@@ -152,30 +152,12 @@ Steam, Vortex or OneDrive.
 - `bun run gate` stays clean. No production default changes without the
   maintainer's copied settings showing the value being replaced.
 
-## Share links have no hosted short-code service
+## Hosted share short codes are not provisioned
 
-Share links already name their game, but there is no hosted service for short
-codes or share versioning. Codes stay local, so a share cannot be versioned
-or retrieved by a short code from another machine except over LAN.
-
-The decided shape is a hosted share service with short codes and share
-versioning (NOMAD, 2026-11-17):
-
-- **Payload:** the existing share payload (`internal/share/share.go`, format
-  3), stored readable on the server under the code. A short link is
-  `https://mortar.rethunk.tech/<game id>/s/<code>`, about 10 characters of
-  code, and the app opens it as `mortar://<game id>/s/<code>`. Full `#`
-  links stay as they are and remain the private option.
-- **Hosting:** a small Go service added as a component of the existing
-  `mortar-site` DigitalOcean App Platform app, storing each version as an
-  object in a DigitalOcean Spaces bucket (`shares/<code>/<version>.json`
-  plus a small metadata object holding the owner-token hash and last read).
-- **Retention:** a share is deleted one year after its last read. Each version
-  is capped at 64 KB, and creates are rate-limited per client IP.
-- **Versioning:** creating a share returns an owner token that the sender's
-  Mortar keeps (alongside the profile) and the server stores only as a hash.
-  Only that token can publish a new version under the code; readers get the
-  latest version unless the link names one (`/s/<code>/<n>`).
+The hosted short-code service is in the tree, but it is not live: there is no
+Spaces bucket, App Platform secrets, or `packages`-branch image that runs
+`cmd/sharehost` beside the site. The privacy page must describe the hosted
+share data before that ships.
 
 Rejected: encrypting payloads in the app (NOMAD chose the shortest links over
 a server that cannot read shares), falling back to an unencrypted transfer,
@@ -221,9 +203,6 @@ own computers remain the exception that carries files).
 
 ### Acceptance
 
-- A hosted short code resolves to a versioned share that names its game.
-- Only the owner token publishes a new version; a share unread for a year is
-  gone; a payload over 64 KB and a create past the rate limit are refused.
 - The privacy page describes the hosted share data before the service ships.
 - Mod files are not re-hosted. LAN file-carrying sends still require matching
   protocol versions.
