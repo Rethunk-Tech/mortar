@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/saves"
 )
 
 // SaveCheck is how a save's last-played mod list compares to a profile.
@@ -44,6 +45,10 @@ func (s *Service) farmOf(ctx context.Context, gameID, folder string) string {
 	if err != nil {
 		return folder
 	}
+	return farmFrom(infos, folder)
+}
+
+func farmFrom(infos []saves.Info, folder string) string {
 	for _, in := range infos {
 		if in.Folder == folder {
 			if in.Farm != "" {
@@ -56,11 +61,18 @@ func (s *Service) farmOf(ctx context.Context, gameID, folder string) string {
 }
 
 func (s *Service) describeLacks(ctx context.Context, gameID string, lacks []Lack) []Lack {
+	return fillLackNames(lacks, s.describe(ctx, gameID, wantedIDs(lacks)))
+}
+
+func wantedIDs(lacks []Lack) map[mod.ID]bool {
 	wanted := map[mod.ID]bool{}
 	for _, l := range lacks {
 		wanted[l.ID] = true
 	}
-	names := s.describe(ctx, gameID, wanted)
+	return wanted
+}
+
+func fillLackNames(lacks []Lack, names map[mod.ID]described) []Lack {
 	for i := range lacks {
 		if d, ok := names[lacks[i].ID]; ok {
 			lacks[i].Name, lacks[i].Where = d.name, d.where
