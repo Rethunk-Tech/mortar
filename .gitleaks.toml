@@ -11,3 +11,22 @@ paths = [
   '''^[^/]+/(.+/)?build/''',
   '''^tmp/''',
 ]
+
+# Test fixtures use short fake key and token strings; they are not live credentials.
+[[allowlists]]
+paths = ['''_test\.go$''', '''\.test\.ts$''']
+
+# Demo recordings and their built site copies store UI field names like key/entryKey, not credentials.
+[[allowlists]]
+paths = ['''frontend/src/demo/generated/recording\.json$''', '''^site/demo/''']
+
+# Catalog component identifiers are public signed data, not API credentials.
+[[allowlists]]
+paths = [
+  '''^components\.source\.json$''',
+  '''^internal/components/components\.json$''',
+]
+
+# Flatpak metadata GPGKey values are public signing keys.
+[[allowlists]]
+paths = ['''^packages/flatpak/.*\.flatpak(ref|repo)$''']
