@@ -2,10 +2,14 @@ package launchsvc
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/bridge/bridgetest"
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -91,6 +95,83 @@ func TestSmapiOwnersReadTheInstalledListOncePerPeek(t *testing.T) {
 	}
 }
 
+func TestMeasureInGameRefusesALoaderOrCompanionThatCannotMeasure(t *testing.T) {
+	svc, p := startEnv(t)
+	if _, err := svc.MeasureInGame("no-such-game", p.ID, false); usererr.KindOf(err) != usererr.Invalid {
+		t.Fatalf("unknown game: %v", err)
+	}
+	if _, err := svc.PeekInGame("stardew", p.ID); err == nil {
+		t.Fatal("SMAPI without a companion must fail")
+	}
+	g := game.Find("stardew")
+	svc.mu.Lock()
+	svc.logs[keyOf(g)] = session{profile: p.ID, features: bridge.Features{bridge.FeatureConsole}}
+	svc.mu.Unlock()
+	if _, err := svc.MeasureInGame("stardew", p.ID, true); usererr.KindOf(err) != usererr.Invalid {
+		t.Fatalf("companion without perf: %v", err)
+	}
+}
+
+func TestPeekAndMeasureInGameReadTheCompanion(t *testing.T) {
+	set, ps := testenv.Env(t)
+	svc := NewService(t.TempDir(), set, ps)
+	const lc = "lethal-company"
+	p := testenv.Profile(t, ps, lc, "A")
+	dir, err := ps.ProfileDir(lc, p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	idle := bridgetest.FakeBridge(t, bridge.BepInEx, dir, `ok {"measured":false,"reason":"not launched","stoppable":true}`)
+	live, err := svc.PeekInGame(lc, p.ID)
+	if err != nil || live.Measured || live.Reason != "not launched" || !live.Stoppable || live.Rows == nil {
+		t.Fatalf("unmeasured: %+v %v", live, err)
+	}
+	if cmd := <-idle; cmd != "perf" {
+		t.Fatalf("peek sent %q", cmd)
+	}
+
+	start := bridgetest.FakeBridge(t, bridge.BepInEx, dir, `ok {"measured":true,"stoppable":true}`)
+	got, err := svc.MeasureInGame(lc, p.ID, true)
+	if err != nil || !got.Measured || !got.Stoppable || got.Report != nil {
+		t.Fatalf("start: %+v %v", got, err)
+	}
+	if cmd := <-start; cmd != "perf start" {
+		t.Fatalf("start sent %q", cmd)
+	}
+
+	empty := bridgetest.FakeBridge(t, bridge.BepInEx, dir, `ok {"measured":true,"plugins":[]}`)
+	if _, err := svc.MeasureInGame(lc, p.ID, false); err == nil {
+		t.Fatal("a measured game with no plugin times must say to start first")
+	}
+	<-empty
+
+	summary := `ok {"measured":true,"stoppable":true,"seconds":2,"frames":120,"fps":60,` +
+		`"frameMs":{"avg":16,"p50":16,"p95":20,"p99":30,"max":40},` +
+		`"monoUsedBytes":1,"monoHeapBytes":2,"gcCollections":3,` +
+		`"baseline":{"modsMs":1.5,"withoutModsMs":14.5},` +
+		`"plugins":[{"guid":"loose.plugin","msPerFrame":1.5,"p95Ms":2,"peakMs":4,"share":0.1,"callsPerFrame":1}]}`
+	ready := bridgetest.FakeBridge(t, bridge.BepInEx, dir, summary)
+	peek, err := svc.PeekInGame(lc, p.ID)
+	if err != nil || !peek.Measured || peek.Frame == nil || peek.Frame.FPS != 60 || len(peek.Rows) != 1 || peek.Rows[0].Name != "loose.plugin" {
+		t.Fatalf("peek live: %+v %v", peek, err)
+	}
+	<-ready
+
+	save := bridgetest.FakeBridge(t, bridge.BepInEx, dir, summary)
+	saved, err := svc.MeasureInGame(lc, p.ID, false)
+	if err != nil || saved.Report == nil || saved.Report.Frame == nil || saved.Report.Frame.ModsMs != 1.5 || len(saved.Report.Rows) != 1 {
+		t.Fatalf("save: %+v %v", saved, err)
+	}
+	<-save
+
+	bad := bridgetest.FakeBridge(t, bridge.BepInEx, dir, `ok []`)
+	if _, err := svc.PeekInGame(lc, p.ID); err == nil {
+		t.Fatal("a non-object perf reply must fail")
+	}
+	<-bad
+}
+
 func TestStopInGameNeedsALoaderWhoseCompanionCanStop(t *testing.T) {
 	set, ps := testenv.Env(t)
 	svc := NewService(t.TempDir(), set, ps)
@@ -111,6 +192,54 @@ func TestStopInGameNeedsALoaderWhoseCompanionCanStop(t *testing.T) {
 		t.Fatalf("StopInGame = %v, %v", measured, err)
 	}
 	if cmd := <-asked; cmd != "perf stop" {
+		t.Fatalf("the game was sent %q", cmd)
+	}
+
+	bad := bridgetest.FakeBridge(t, bridge.BepInEx, dir, `ok []`)
+	if _, err := svc.StopInGame(lc, p.ID); err == nil {
+		t.Fatal("a non-object stop reply must fail")
+	}
+	<-bad
+	nope := bridgetest.FakeBridge(t, bridge.BepInEx, dir, `error: nope`)
+	if _, err := svc.StopInGame(lc, p.ID); err == nil {
+		t.Fatal("a rejected stop must fail")
+	}
+	<-nope
+	if _, err := svc.StopInGame(lc, "missing"); err == nil {
+		t.Fatal("a missing profile must fail")
+	}
+}
+
+func TestPeekInGameNamesSMAPIModsByInstalledID(t *testing.T) {
+	datadirtest.Use(t, t.TempDir())
+	items, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, "stardew", "A")
+	svc := NewService(t.TempDir(), nil, profiles)
+	src := filepath.Join(t.TempDir(), "MortarSmapiBridge")
+	if err := os.MkdirAll(src, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	manifest := `{"Name":"Bridge","Author":"m","Version":"0.9.0","UniqueID":"Rethunk.MortarSmapiBridge","EntryDll":"B.dll"}`
+	if err := os.WriteFile(filepath.Join(src, "manifest.json"), []byte(manifest), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := items.AddDir(t.Context(), "stardew", "bridge-0.9.0", filepath.Dir(src)); err != nil {
+		t.Fatal(err)
+	}
+	if err := profiles.ApplyBundled("stardew", profile.Bundle{Key: "bridge-0.9.0", Source: profile.Source{Kind: profile.SourceMortar, Name: "Bridge"}}); err != nil {
+		t.Fatal(err)
+	}
+	modsDir, err := profiles.ModsDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(modsDir, "bridge-0.9.0", "MortarSmapiBridge")
+	asked := bridgetest.FakeBridge(t, bridge.SMAPI, dir, `ok {"measured":true,"plugins":[{"guid":"pack","msPerFrame":1,"callsPerFrame":1}]}`)
+	live, err := svc.PeekInGame("stardew", p.ID)
+	if err != nil || !live.Measured || len(live.Rows) != 1 || live.Rows[0].Name != "pack" {
+		t.Fatalf("peek: %+v %v", live, err)
+	}
+	if cmd := <-asked; cmd != "perf" {
 		t.Fatalf("the game was sent %q", cmd)
 	}
 }
