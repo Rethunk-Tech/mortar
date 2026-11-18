@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # cursor-agent runs this in each fresh `--worktree` checkout, with ROOT_WORKTREE_PATH naming the checkout it was
 # made from. Only what the gate cannot generate itself is missing there: node_modules (a worktree has none, and
-# `bun run --cwd frontend catalogs` needs @lingui/cli before the gate's own bindings step can run) and the Wails
-# bindings. frontend/dist is covered by the committed placeholder the embed needs.
+# every step below needs it), the Wails bindings and the Lingui catalogs (the gate's credits step runs beside the
+# bindings step and reads the catalogs, so it must not be the one to wait for them). frontend/dist is covered by
+# the committed placeholder the embed needs.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -20,3 +21,4 @@ for dir in node_modules frontend/node_modules web/node_modules; do
 done
 
 bun run bindings
+bun run --cwd frontend catalogs
