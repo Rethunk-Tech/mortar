@@ -3088,7 +3088,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-cfgedit@v0.4.3-0.20261118042448-b79fd515eb57
+github.com/Rethunk-Tech/go-cfgedit@v0.4.3-0.20261118195631-8933f34f0ef9
 licence: MIT
 https://github.com/Rethunk-Tech/go-cfgedit
 
@@ -5583,7 +5583,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-lucide-react@1.75.0
+lucide-react@1.76.0
 licence: MIT
 https://lucide.dev
 
