@@ -11,7 +11,8 @@ import (
 	"testing"
 )
 
-// A folder another program holds is not moved, and the error names that program.
+// A folder another program holds is not moved, and the error names that program. The system supplies the name and may
+// add a version to it.
 func TestTrashNamesTheProgramHoldingTheProject(t *testing.T) {
 	svc, dir := trashableProject(t)
 	file := filepath.Join(dir, "Held.cs")
@@ -39,7 +40,7 @@ func TestTrashNamesTheProgramHoldingTheProject(t *testing.T) {
 		_ = cmd.Wait()
 		t.Logf("%s\n  -> %v", script, err)
 		held, ok := errors.AsType[*inUseError](err)
-		if !ok || !slices.Contains(held.Holders, "Windows PowerShell") || len(svc.Projects("lethal-company")) != 1 {
+		if !ok || !slices.ContainsFunc(held.Holders, func(n string) bool { return strings.HasPrefix(n, "Windows PowerShell") }) || len(svc.Projects("lethal-company")) != 1 {
 			t.Fatalf("trash of a held project: %v, projects %d", err, len(svc.Projects("lethal-company")))
 		}
 	}
