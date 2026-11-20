@@ -10,16 +10,23 @@ import (
 
 // WalkCache remembers each project's folder walk for the folder watch, which re-reads its targets every couple of
 // seconds. A walk is reused until the watcher reports a change under its root, or the root's own modification time
-// moves (a folder made or removed directly in it, which no watch may cover), so a quiet tick walks nothing. A nil cache
+// moves or its direct entries change (a folder made or removed directly in it, which no watch may cover; the names
+// back the time up, since a coarse filesystem clock can leave it unmoved for two changes close together), so a quiet
+// tick walks nothing. A nil cache
 // walks every time.
 type WalkCache struct {
 	mu      sync.Mutex
 	entries map[string]walkEntry
 }
 
+type rootStamp struct {
+	mtime time.Time
+	names string
+}
+
 type walkEntry struct {
 	root  string
-	mtime time.Time
+	stamp rootStamp
 	dirs  []string
 }
 
@@ -42,11 +49,11 @@ func (c *WalkCache) walk(key, root string, walk func() []string) []string {
 	if c == nil {
 		return walk()
 	}
-	mtime := modTime(root)
+	stamp := stampOf(root)
 	c.mu.Lock()
 	e, ok := c.entries[key]
 	c.mu.Unlock()
-	if ok && e.mtime.Equal(mtime) {
+	if ok && e.stamp.mtime.Equal(stamp.mtime) && e.stamp.names == stamp.names {
 		return e.dirs
 	}
 	dirs := walk()
@@ -55,7 +62,7 @@ func (c *WalkCache) walk(key, root string, walk func() []string) []string {
 	if c.entries == nil {
 		c.entries = map[string]walkEntry{}
 	}
-	c.entries[key] = walkEntry{root: root, mtime: mtime, dirs: dirs}
+	c.entries[key] = walkEntry{root: root, stamp: stamp, dirs: dirs}
 	return dirs
 }
 
@@ -73,10 +80,16 @@ func (c *WalkCache) keep(prefix string, used map[string]bool) {
 	}
 }
 
-func modTime(path string) time.Time {
-	st, err := os.Stat(path)
+func stampOf(root string) rootStamp {
+	st, err := os.Stat(root)
 	if err != nil {
-		return time.Time{}
+		return rootStamp{}
 	}
-	return st.ModTime()
+	entries, _ := os.ReadDir(root)
+	var names strings.Builder
+	for _, e := range entries {
+		names.WriteString(e.Name())
+		names.WriteByte(0)
+	}
+	return rootStamp{mtime: st.ModTime(), names: names.String()}
 }
