@@ -2516,7 +2516,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/klauspost/compress@v1.20.4
+github.com/klauspost/compress@v1.20.5
 licence: Apache-2.0
 https://github.com/klauspost/compress
 
@@ -6789,7 +6789,7 @@ Bundled source icon (frontend/src/brand/vendor/modio.svg) from the mod.io SDK, s
 
 --------------------------------------------------------------------------------
 
-modernc.org/libc@v1.82.2
+modernc.org/libc@v1.82.8
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/libc
 
