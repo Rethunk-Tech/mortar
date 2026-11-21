@@ -9,7 +9,7 @@ require (
 	github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261121124538-86dcf5692272
 	github.com/Rethunk-Tech/go-contentpatcher v0.1.0
 	github.com/Rethunk-Tech/go-curseforge v0.4.0
-	github.com/Rethunk-Tech/go-desktopenv v0.9.2
+	github.com/Rethunk-Tech/go-desktopenv v0.9.3
 	github.com/Rethunk-Tech/go-dotnet v0.4.0
 	github.com/Rethunk-Tech/go-editorlocator v0.1.1
 	github.com/Rethunk-Tech/go-folderwatch v0.1.1
@@ -17,7 +17,7 @@ require (
 	github.com/Rethunk-Tech/go-gamelocator v0.4.1
 	github.com/Rethunk-Tech/go-gameproc v0.1.2
 	github.com/Rethunk-Tech/go-github v0.3.0
-	github.com/Rethunk-Tech/go-httpkit v0.3.1
+	github.com/Rethunk-Tech/go-httpkit v0.3.2
 	github.com/Rethunk-Tech/go-itchio v0.1.0
 	github.com/Rethunk-Tech/go-larian v0.1.3
 	github.com/Rethunk-Tech/go-lenientjson v0.2.0

@@ -3172,7 +3172,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-desktopenv@v0.9.2
+github.com/Rethunk-Tech/go-desktopenv@v0.9.3
 licence: MIT
 https://github.com/Rethunk-Tech/go-desktopenv
 
@@ -3396,7 +3396,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-httpkit@v0.3.1
+github.com/Rethunk-Tech/go-httpkit@v0.3.2
 licence: MIT
 https://github.com/Rethunk-Tech/go-httpkit
 
