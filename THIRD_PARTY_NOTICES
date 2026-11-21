@@ -3116,7 +3116,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-contentpatcher@v0.1.0
+github.com/Rethunk-Tech/go-contentpatcher@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-contentpatcher
 
@@ -3144,7 +3144,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-curseforge@v0.4.0
+github.com/Rethunk-Tech/go-curseforge@v0.4.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-curseforge
 
@@ -3228,7 +3228,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-editorlocator@v0.1.1
+github.com/Rethunk-Tech/go-editorlocator@v0.1.2
 licence: MIT
 https://github.com/Rethunk-Tech/go-editorlocator
 
@@ -3284,7 +3284,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-fomod@v0.2.0
+github.com/Rethunk-Tech/go-fomod@v0.2.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-fomod
 
@@ -3312,7 +3312,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-gamelocator@v0.4.1
+github.com/Rethunk-Tech/go-gamelocator@v0.4.2
 licence: MIT
 https://github.com/Rethunk-Tech/go-gamelocator
 
@@ -3340,7 +3340,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-gameproc@v0.1.2
+github.com/Rethunk-Tech/go-gameproc@v0.1.3
 licence: MIT
 https://github.com/Rethunk-Tech/go-gameproc
 
@@ -3368,7 +3368,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-github@v0.3.0
+github.com/Rethunk-Tech/go-github@v0.3.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-github
 
@@ -3424,7 +3424,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-itchio@v0.1.0
+github.com/Rethunk-Tech/go-itchio@v0.1.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-itchio
 
@@ -3536,7 +3536,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-modmanagers@v0.3.0
+github.com/Rethunk-Tech/go-modmanagers@v0.3.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-modmanagers
 
@@ -3564,7 +3564,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-modrinth@v0.2.0
+github.com/Rethunk-Tech/go-modrinth@v0.2.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-modrinth
 
@@ -3620,7 +3620,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-nexusmods@v0.6.0
+github.com/Rethunk-Tech/go-nexusmods@v0.7.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-nexusmods
 
@@ -3648,7 +3648,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-paradoxmods@v0.1.0
+github.com/Rethunk-Tech/go-paradoxmods@v0.1.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-paradoxmods
 
@@ -3732,7 +3732,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-smapi@v0.3.1
+github.com/Rethunk-Tech/go-smapi@v0.3.2
 licence: MIT
 https://github.com/Rethunk-Tech/go-smapi
 
@@ -3760,7 +3760,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-smapiweb@v0.1.1
+github.com/Rethunk-Tech/go-smapiweb@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-smapiweb
 
@@ -3788,7 +3788,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-thunderstore@v0.4.1
+github.com/Rethunk-Tech/go-thunderstore@v0.4.2
 licence: MIT
 https://github.com/Rethunk-Tech/go-thunderstore
 
@@ -3844,7 +3844,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-vintagestory@v0.1.0
+github.com/Rethunk-Tech/go-vintagestory@v0.1.1
 licence: MIT
 https://github.com/Rethunk-Tech/go-vintagestory
 

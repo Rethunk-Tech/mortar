@@ -7,32 +7,32 @@ require (
 	github.com/Rethunk-Tech/go-bannerlord v0.1.3
 	github.com/Rethunk-Tech/go-bepinex v0.2.2
 	github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261121124538-86dcf5692272
-	github.com/Rethunk-Tech/go-contentpatcher v0.1.0
-	github.com/Rethunk-Tech/go-curseforge v0.4.0
+	github.com/Rethunk-Tech/go-contentpatcher v0.2.0
+	github.com/Rethunk-Tech/go-curseforge v0.4.1
 	github.com/Rethunk-Tech/go-desktopenv v0.9.3
 	github.com/Rethunk-Tech/go-dotnet v0.4.0
-	github.com/Rethunk-Tech/go-editorlocator v0.1.1
+	github.com/Rethunk-Tech/go-editorlocator v0.1.2
 	github.com/Rethunk-Tech/go-folderwatch v0.1.1
-	github.com/Rethunk-Tech/go-fomod v0.2.0
-	github.com/Rethunk-Tech/go-gamelocator v0.4.1
-	github.com/Rethunk-Tech/go-gameproc v0.1.2
-	github.com/Rethunk-Tech/go-github v0.3.0
+	github.com/Rethunk-Tech/go-fomod v0.2.1
+	github.com/Rethunk-Tech/go-gamelocator v0.4.2
+	github.com/Rethunk-Tech/go-gameproc v0.1.3
+	github.com/Rethunk-Tech/go-github v0.3.1
 	github.com/Rethunk-Tech/go-httpkit v0.3.2
-	github.com/Rethunk-Tech/go-itchio v0.1.0
+	github.com/Rethunk-Tech/go-itchio v0.1.1
 	github.com/Rethunk-Tech/go-larian v0.1.3
 	github.com/Rethunk-Tech/go-lenientjson v0.2.0
 	github.com/Rethunk-Tech/go-modio v0.1.1
-	github.com/Rethunk-Tech/go-modmanagers v0.3.0
-	github.com/Rethunk-Tech/go-modrinth v0.2.0
+	github.com/Rethunk-Tech/go-modmanagers v0.3.1
+	github.com/Rethunk-Tech/go-modrinth v0.2.1
 	github.com/Rethunk-Tech/go-nettrace v0.2.1
-	github.com/Rethunk-Tech/go-nexusmods v0.6.0
-	github.com/Rethunk-Tech/go-paradoxmods v0.1.0
+	github.com/Rethunk-Tech/go-nexusmods v0.7.0
+	github.com/Rethunk-Tech/go-paradoxmods v0.1.1
 	github.com/Rethunk-Tech/go-safefs v0.10.0
 	github.com/Rethunk-Tech/go-semverish v0.3.1
-	github.com/Rethunk-Tech/go-smapi v0.3.1
-	github.com/Rethunk-Tech/go-smapiweb v0.1.1
-	github.com/Rethunk-Tech/go-thunderstore v0.4.1
-	github.com/Rethunk-Tech/go-vintagestory v0.1.0
+	github.com/Rethunk-Tech/go-smapi v0.3.2
+	github.com/Rethunk-Tech/go-smapiweb v0.2.0
+	github.com/Rethunk-Tech/go-thunderstore v0.4.2
+	github.com/Rethunk-Tech/go-vintagestory v0.1.1
 	github.com/Rethunk-Tech/go-winsym v0.2.2
 	github.com/Totative/go-avscan v0.4.0
 	github.com/Totative/go-codepair v0.3.0
