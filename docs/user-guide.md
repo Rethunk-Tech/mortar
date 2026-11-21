@@ -110,11 +110,13 @@ The extension is optional. It marks Nexus pages with what your profile already h
 
 Mods already in the profile show **Added**, whichever site they came from. A helper Mortar installs for a loader shows **Built in**.
 
-## Modrinth and itch.io
+## Modrinth, mod.io, Paradox Mods and itch.io
 
-A game whose catalog entry lists Modrinth or itch.io gets a chip for it beside **All sources**, and its results join the merged search.
+A game whose catalog entry lists Modrinth, mod.io, Paradox Mods or itch.io gets a chip for it beside **All sources**, and its results join the merged search.
 
 - **Modrinth** needs no account. **Add** installs the newest version with its required projects.
+- **mod.io** needs a read-only personal access token. Create one at mod.io/me/access, paste it into the mod.io entry in **Settings › Accounts** and choose **Test**. The token is kept in your system keyring. Until you add one, the chip is greyed out and a mod from mod.io says it needs your token.
+- **Paradox Mods** needs no account. **Add** downloads the mod and lays it out whole in the game's Paradox mods folder.
 - **itch.io** needs your own API key: create one in your itch.io account (**Settings › API keys**), paste it into **API key** in **Settings › Accounts** and choose **Test**. The key is kept in your system keyring; **Remove key** forgets it. Until you add one, the chip is greyed out. itch.io has no sort order or categories, and **Add** takes the game's first upload that is not a demo or soundtrack.
 
 ## Edit a mod's settings

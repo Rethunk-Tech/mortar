@@ -10,7 +10,7 @@
 
 Mortar is a desktop mod manager for several games. It finds your game, installs its mod loader, keeps each set of mods in its own profile and launches the game with the profile you pick. Share a profile as a link and whoever opens it gets the same mods, with anything missing installed or queued.
 
-The catalog covers Stardew Valley, Lethal Company, Valheim, Vintage Story, The Sims 4 and many Thunderstore games, with mods from Nexus Mods, GitHub, Thunderstore, CurseForge and the Vintage Story Mod DB. Mortar succeeds [Concrete](https://github.com/LethalModding/Concrete).
+The catalog covers Stardew Valley, Lethal Company, Valheim, Vintage Story, The Sims 4 and many Thunderstore games, with mods from Nexus Mods, GitHub, Thunderstore, CurseForge, Modrinth, mod.io, Paradox Mods and the Vintage Story Mod DB. Mortar succeeds [Concrete](https://github.com/LethalModding/Concrete).
 
 <p align="center"><img src="build/linux/screenshots/mods.png" alt="Mortar showing a Stardew Valley profile of 803 mods with cover art" width="900"></p>
 
@@ -36,7 +36,7 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 
 - Finds the catalog's games on Steam (including Flatpak Steam), GOG, Epic Games, the EA app, the Xbox app, Heroic, Minigalaxy, Lutris and Bottles, and installs each game's mod loader.
 - Keeps each set of mods in its own profile, with install, update, rollback and share as a link or `.mortar` file.
-- Downloads from Nexus Mods, Thunderstore, CurseForge, GitHub and the Vintage Story Mod DB where a game lists them, and records files saved from Patreon posts and itch.io pages. It never re-hosts mod files.
+- Downloads from Nexus Mods, Thunderstore, CurseForge, Modrinth, mod.io, Paradox Mods, GitHub and the Vintage Story Mod DB where a game lists them, and records files saved from Patreon posts and itch.io pages. It never re-hosts mod files.
 - Edits a mod's config as a typed form, can keep a profile's saves separate, and shares profiles between your computers through a sync folder.
 - A command line for the running app: `mortar games`, `mortar mods stardew "My Farm"`, `mortar conflicts ...`, with `--json` for scripts.
 - Installs the [Mortar SMAPI Bridge](https://github.com/Rethunk-Tech/mortar-smapi-bridge) into each profile (console commands, Generic Mod Config Menu settings, a stream overlay). BepInEx games get the [Mortar BepInEx Bridge](https://github.com/Rethunk-Tech/mortar-bepinex-bridge) instead, so Mortar can ask the running game which plugins it loaded.

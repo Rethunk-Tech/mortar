@@ -9,10 +9,10 @@ reconciled = "canon v0.1.0-poc"
 "patterns-gitleaks-00001" = "allowlists add test fixtures, demo recordings, signed catalog IDs and Flatpak public GPG keys on top of canon's generated-tree list; those paths trip keyword detectors without holding secrets"
 # Root scripts interleave Go and bun steps (wails bindings before typecheck, go test -race beside bun test), which a turbo task graph over the two JS packages cannot express.
 "ts-patterns-workspace-turbo-00001" = "root scripts chain Go and bun steps (wails bindings, go test -race) that a turbo graph over frontend/ and web/ cannot model"
-# go.mod replaces github.com/wailsapp/wails/v3 with the Rethunk-AI fork (fixes offered upstream as wailsapp/wails#6200,
-# #6201, #6202 and #6239; docs/design.md); gomoddirectives.replace-allow-list names it. A non-local replace is the only
-# way to consume that fork until those PRs ship in a tagged v3 beta; a local replace would mean vendoring Wails.
-"go-golangci-lint-00011" = "go.mod replaces wails/v3 with the Rethunk-AI fork until upstream PRs wailsapp/wails#6200, #6201, #6202 and #6239 ship in a tagged v3 beta"
+# go.mod replaces github.com/wailsapp/wails/v3 with the Rethunk-AI fork (TODO.md: "Mortar pins a Wails fork");
+# gomoddirectives.replace-allow-list names it. A non-local replace is the only way to consume that fork until an
+# upstream tag carries its hooks; a local replace would mean vendoring Wails.
+"go-golangci-lint-00011" = "go.mod replaces wails/v3 with the Rethunk-AI fork until TODO.md's Wails fork entry (its Acceptance list) drops the replace for an upstream tag"
 # The Astro site (web/) is English only and has no translation catalogue (translations are "not yet", AGENTS.md), so its
 # templates' copy stays literal; the app frontend routes every string through Lingui and keeps the rule.
 "ts-biome-00033" = "web/ is a single-language site with no i18n library; the Lingui frontend keeps noJsxLiterals on"

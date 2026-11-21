@@ -308,7 +308,7 @@ one external service may stand alone under 200 only when it is usage-agnostic.
 ## There is no macOS build
 
 Mortar does not ship darwin/arm64 or amd64. The Linux-testable parts (Steam
-roots, markers, loader branches) are under the earlier ready-to-build entry;
+roots, markers, loader branches) are listed under Read and the file list below;
 packaging, codesign, notarisation, Homebrew and a real Mac run are parked
 until the maintainer owns or borrows a Mac. Lethal Company and most BepInEx
 games ship no macOS build, so the first targets are native-macOS games and,

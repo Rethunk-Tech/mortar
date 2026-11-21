@@ -1,7 +1,7 @@
 name: CI
 
 # The offline gate on every pull request and every push to main. Packaging stays in release.yml; browser e2e is
-# opt-in locally (gate --e2e).
+# opt-in locally (`bun run --cwd frontend e2e`).
 on:
   pull_request:
   push:
@@ -73,7 +73,8 @@ jobs:
         # The step times show where a runner's few cores go; a fast workstation hides it.
         run: bun run gate --profile
 
-      # The site deploys from main by hand, so a change to its pages is checked against the live release here.
+      # The site deploys from the `packages` branch, which a release or Actions > Package repository publishes, so a change
+      # to its pages is checked against the live release here.
       - name: Site download links
         if: ${{ !cancelled() && steps.changes.outputs.site == 'true' }}
         env:
