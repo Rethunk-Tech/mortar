@@ -5,8 +5,8 @@ go 1.27.4
 require (
 	github.com/Rethunk-Tech/go-archive v0.3.2
 	github.com/Rethunk-Tech/go-bannerlord v0.1.3
-	github.com/Rethunk-Tech/go-bepinex v0.2.2
-	github.com/Rethunk-Tech/go-cfgedit v0.4.3-0.20261121124538-86dcf5692272
+	github.com/Rethunk-Tech/go-bepinex v0.3.0
+	github.com/Rethunk-Tech/go-cfgedit v0.5.0
 	github.com/Rethunk-Tech/go-contentpatcher v0.2.0
 	github.com/Rethunk-Tech/go-curseforge v0.4.1
 	github.com/Rethunk-Tech/go-desktopenv v0.9.3
@@ -21,7 +21,7 @@ require (
 	github.com/Rethunk-Tech/go-itchio v0.1.1
 	github.com/Rethunk-Tech/go-larian v0.1.3
 	github.com/Rethunk-Tech/go-lenientjson v0.2.0
-	github.com/Rethunk-Tech/go-modio v0.1.1
+	github.com/Rethunk-Tech/go-modio v0.2.0
 	github.com/Rethunk-Tech/go-modmanagers v0.3.1
 	github.com/Rethunk-Tech/go-modrinth v0.2.1
 	github.com/Rethunk-Tech/go-nettrace v0.2.1

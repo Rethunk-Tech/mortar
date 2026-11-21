@@ -3060,7 +3060,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-bepinex@v0.2.2
+github.com/Rethunk-Tech/go-bepinex@v0.3.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-bepinex
 
@@ -3088,7 +3088,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-cfgedit@v0.4.3-0.20261121124538-86dcf5692272
+github.com/Rethunk-Tech/go-cfgedit@v0.5.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-cfgedit
 
@@ -3508,7 +3508,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-modio@v0.1.1
+github.com/Rethunk-Tech/go-modio@v0.2.0
 licence: MIT
 https://github.com/Rethunk-Tech/go-modio
 
