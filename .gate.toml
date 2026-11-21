@@ -7,9 +7,50 @@ run = "go test -race ./..."
 timeout = "3m"
 
 # Its own gate, so it runs beside the race tests rather than after them.
+# The memory cap and GOGC are scripts/gate.sh's: an eighth of the machine's memory per golangci-lint. The second pass
+# is gate.sh's updatetest build tag, which the first never compiles.
 [gates.lint-go]
-run = "golangci-lint run --allow-parallel-runners"
+run = "export GOGC=400 GOMEMLIMIT=$(awk '/^MemTotal:/ { printf \"%dKiB\", $2 / 8 }' /proc/meminfo); golangci-lint run --allow-parallel-runners && golangci-lint run --allow-parallel-runners --build-tags updatetest ./internal/updatesvc/..."
 timeout = "3m"
+
+[gates.lint-go-windows]
+run = "export GOGC=400 GOMEMLIMIT=$(awk '/^MemTotal:/ { printf \"%dKiB\", $2 / 8 }' /proc/meminfo); GOOS=windows golangci-lint run --allow-parallel-runners"
+timeout = "3m"
+
+[gates.race-build]
+run = "go build -race ./..."
+timeout = "3m"
+
+[gates.vet-darwin]
+run = "env GOOS=darwin go vet ./internal/..."
+timeout = "3m"
+
+[gates.version]
+run = "go run ./cmd/version -check"
+timeout = "2m"
+
+[gates.i18n-dupes]
+run = "bun scripts/i18n-dupes.ts"
+timeout = "1m"
+
+# CI's form: the check fails when a dependency bump left the credits stale.
+[gates.credits]
+run = "bun scripts/gen-credits.ts --check"
+timeout = "1m"
+
+[gates.metainfo]
+run = "appstreamcli validate --strict --no-net build/linux/tech.rethunk.Mortar.metainfo.xml"
+timeout = "1m"
+
+# The site and its demo read the generated bindings, which a warm tree already has (as for the test gate above), so
+# they start at once beside typecheck's bindings-fresh.
+[gates.site]
+run = "bun run --silent site"
+timeout = "3m"
+
+[gates.site-types]
+run = "bun run --cwd web --silent check"
+timeout = "2m"
 
 # Bindings-fresh does not -clean, and a warm tree already has bindings and catalogs (HUMANS.md generates them
 # before a first gate), so tsc and the JS tests start at once beside it.
