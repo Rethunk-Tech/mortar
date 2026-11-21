@@ -65,6 +65,7 @@ jobs:
         run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - name: Offline gate
+        id: gate
         if: ${{ !cancelled() && steps.changes.outputs.code == 'true' }}
         # Its own budget, well under the job's: the gate prints nothing until its slowest step ends, so a step waiting
         # on something that never answers (govulncheck's database, a module proxy) would otherwise spend the job's
@@ -72,6 +73,26 @@ jobs:
         timeout-minutes: 20
         # The step times show where a runner's few cores go; a fast workstation hides it.
         run: bun run gate --profile
+
+      # setup-go saves the build cache in a post step only after a passing job, so a gate that fails on a new go.sum
+      # leaves every later run on it restoring the same stale fallback and compiling cold again. Same key as setup-go's.
+      - name: Go build cache key after a failed gate
+        id: go-key
+        if: ${{ failure() && steps.gate.outcome == 'failure' }}
+        run: |
+          suffix=""
+          [ "$GITHUB_REF" = refs/heads/main ] && suffix="-$(date -u +%F)"
+          v=$(go env GOVERSION)
+          echo "key=setup-go-${RUNNER_OS}-${RUNNER_ARCH}-go${v#go}-${SETUP_GO_DEPS_HASH}-${GITHUB_JOB}${suffix}" >>"$GITHUB_OUTPUT"
+
+      - name: Save the Go build cache after a failed gate
+        if: ${{ failure() && steps.go-key.outputs.key != '' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ${{ env.SETUP_GO_MOD_CACHE }}
+            ${{ env.SETUP_GO_BUILD_CACHE }}
+          key: ${{ steps.go-key.outputs.key }}
 
       # The site deploys from the `packages` branch, which a release or Actions > Package repository publishes, so a change
       # to its pages is checked against the live release here.
