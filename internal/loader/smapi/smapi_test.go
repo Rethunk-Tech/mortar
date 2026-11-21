@@ -123,8 +123,9 @@ func TestOrderNeverReportsAnOptionalDependencyMissing(t *testing.T) {
 
 func TestSMAPIMeasuresInGameThroughItsBridge(t *testing.T) {
 	var _ loader.InGamePerf = Loader{}
-	if _, stops := any(Loader{}).(loader.InGamePerfStop); stops {
-		t.Fatal("the SMAPI bridge's profiler has no stop")
+	var _ loader.InGamePerfStop = Loader{}
+	if _, err := (Loader{}).PerfStop(t.Context(), loader.ProfileView{}); err == nil {
+		t.Fatal("a profile with no bridge answered a perf stop")
 	}
 	if _, err := (Loader{}).Perf(t.Context(), loader.ProfileView{}, true); err == nil {
 		t.Fatal("a profile with no bridge answered a perf query")

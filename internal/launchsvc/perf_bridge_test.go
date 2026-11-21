@@ -178,8 +178,8 @@ func TestStopInGameNeedsALoaderWhoseCompanionCanStop(t *testing.T) {
 	set, ps := testenv.Env(t)
 	svc := NewService(t.TempDir(), set, ps)
 	sv := testenv.Profile(t, ps, "stardew", "A")
-	if _, err := svc.StopInGame("stardew", sv.ID); usererr.KindOf(err) != usererr.Invalid {
-		t.Fatalf("SMAPI has no stop verb, got %v", err)
+	if _, err := svc.StopInGame("stardew", sv.ID); err == nil {
+		t.Fatal("a profile with no bridge mod stopped a measurement")
 	}
 
 	const lc = "lethal-company"

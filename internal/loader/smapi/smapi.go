@@ -216,6 +216,15 @@ func (Loader) Perf(ctx context.Context, p loader.ProfileView, start bool) (json.
 	return bridge.Query(ctx, stateFile, what)
 }
 
+// PerfStop ends the bridge's measurement; a later perf query returns the last summary unchanged.
+func (Loader) PerfStop(ctx context.Context, p loader.ProfileView) (json.RawMessage, error) {
+	stateFile, err := stateFileOf(p)
+	if err != nil {
+		return nil, err
+	}
+	return bridge.Query(ctx, stateFile, "perf stop")
+}
+
 // RunningState is the bridge's status: the game version and the loaded mods, whose UniqueIDs it reports as plugin
 // GUIDs. It names no scene.
 func (Loader) RunningState(ctx context.Context, p loader.ProfileView) (loader.Live, error) {
