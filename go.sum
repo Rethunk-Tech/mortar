@@ -28,8 +28,8 @@ github.com/Rethunk-Tech/go-folderwatch v0.1.1 h1:7LMzSI9SkCsePqu/p4rbdNpI0S3G1cD
 github.com/Rethunk-Tech/go-folderwatch v0.1.1/go.mod h1:IjWCPjGoh33g0rcmp85m1gFkxvvcaK4PnBE84wo6Mr0=
 github.com/Rethunk-Tech/go-fomod v0.2.1 h1:6ruGuXJiEp9GAq0ZWNx3dRybH0zTFxOHoZ8VZRNHW8M=
 github.com/Rethunk-Tech/go-fomod v0.2.1/go.mod h1:xa+cykD0x8KZg7w1qzFz+gc4+Dlv5xN9RMQvwHkiWZI=
-github.com/Rethunk-Tech/go-gamelocator v0.4.2 h1:zpNHum1gLnBbkJw99IwDzCuAk6UUwGw254KH+hvkVn8=
-github.com/Rethunk-Tech/go-gamelocator v0.4.2/go.mod h1:wdJUqSYsuOP+OTU98gfA2Pq+dfB8qVoSj4BLcnwGrKg=
+github.com/Rethunk-Tech/go-gamelocator v0.4.3 h1:SlOZmW7R6otjZn6KyyvXsXrZ2vk8jC6FkXCMu4CoDvM=
+github.com/Rethunk-Tech/go-gamelocator v0.4.3/go.mod h1:WohrWyFVFbdbkvu/mx6F3A7u+WgVDs7nmU6qUDHuob8=
 github.com/Rethunk-Tech/go-gameproc v0.1.3 h1:fAW/y52YkJIbtsyC3ZmDF2fcDF8pglSKvDCGNCoRr6w=
 github.com/Rethunk-Tech/go-gameproc v0.1.3/go.mod h1:+1YNKTBJPMS0Em5WwQrcXruz+oZLTXsdj8q/ix50ZPo=
 github.com/Rethunk-Tech/go-github v0.3.1 h1:CxetCGpvrEqpxsEW9aeM5EHRYiV3v82Wh0HV+As6MFE=
@@ -70,8 +70,8 @@ github.com/Rethunk-Tech/go-vintagestory v0.1.1 h1:FeeH7eDAnS4I35BSGHBmXfUHaOI6B3
 github.com/Rethunk-Tech/go-vintagestory v0.1.1/go.mod h1:ApdiaUjWAU3DoH4RDl80bgTfgogjtmwOlDHQ8RnQPj8=
 github.com/Rethunk-Tech/go-winsym v0.2.2 h1:AeEyr+Uk3aKBN7+2YaPCuiwV5g5g8MBsAwnZ0gfFDFw=
 github.com/Rethunk-Tech/go-winsym v0.2.2/go.mod h1:UKnOGa9mUO3NsninIF+Rr7sA8pMZXaAP4/jzHE9kYHQ=
-github.com/Rethunk-Tech/vdf/v2 v2.1.0 h1:/7OQ4yK8FD4VTxd1ICFYt0S2M2LM5KeEBNyfFOG2xQw=
-github.com/Rethunk-Tech/vdf/v2 v2.1.0/go.mod h1:OBN36zQRuteUJTmSjV8JRSccMCP0Nf0AWJGaJLEhLPk=
+github.com/Rethunk-Tech/vdf/v2 v2.1.1 h1:+pfm//I9P5TVS0Qsq/x/MZuXbJ74uvZG7JEs5dutU+0=
+github.com/Rethunk-Tech/vdf/v2 v2.1.1/go.mod h1:++Bhv41jxA68m7vKEnNd7GLf6zBKzGaNZ+LDfGFW9lg=
 github.com/Totative/go-avscan v0.4.0 h1:2NhOS0rG165HLMykcRJYB2vYc/ivwWPUi6xrn1umaLg=
 github.com/Totative/go-avscan v0.4.0/go.mod h1:zqgiv69ms4amhFPPrx0gs8bWOsOtojLpY9s4Sh6rsq8=
 github.com/Totative/go-codepair v0.3.0 h1:27k4TDFtooxLbswKNMCpB7sab4S3NWj4mruMXCWkq/I=

@@ -14,7 +14,7 @@ require (
 	github.com/Rethunk-Tech/go-editorlocator v0.1.2
 	github.com/Rethunk-Tech/go-folderwatch v0.1.1
 	github.com/Rethunk-Tech/go-fomod v0.2.1
-	github.com/Rethunk-Tech/go-gamelocator v0.4.2
+	github.com/Rethunk-Tech/go-gamelocator v0.4.3
 	github.com/Rethunk-Tech/go-gameproc v0.1.3
 	github.com/Rethunk-Tech/go-github v0.3.1
 	github.com/Rethunk-Tech/go-httpkit v0.3.2
@@ -57,7 +57,7 @@ require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/Rethunk-Tech/go-tilemask v0.1.2 // indirect
-	github.com/Rethunk-Tech/vdf/v2 v2.1.0 // indirect
+	github.com/Rethunk-Tech/vdf/v2 v2.1.1 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/sevenzip v1.6.5 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect

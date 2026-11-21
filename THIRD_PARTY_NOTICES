@@ -3312,7 +3312,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/go-gamelocator@v0.4.2
+github.com/Rethunk-Tech/go-gamelocator@v0.4.3
 licence: MIT
 https://github.com/Rethunk-Tech/go-gamelocator
 
@@ -3900,7 +3900,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/Rethunk-Tech/vdf/v2@v2.1.0
+github.com/Rethunk-Tech/vdf/v2@v2.1.1
 licence: MIT
 https://github.com/Rethunk-Tech/vdf
 
