@@ -47,11 +47,13 @@ jobs:
           lint-tools: "true"
           frontend: "false"
 
+      # setup-mortar already restored the Go caches; a second restore here fails on files that exist.
       - name: Setup Go
         if: ${{ !cancelled() }}
         uses: Rethunk-Tech/gh-actions/setup-go@346d9d280f6dfd86c9db02310039c90e2a6ddca4 # v1.31
         with:
           go-version-file: go.mod
+          cache: "false"
           run-govulncheck: "true"
 
       - name: Vulnerability check
