@@ -2907,7 +2907,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-github.com/pierrec/lz4/v4@v4.1.33
+github.com/pierrec/lz4/v4@v4.1.34
 licence: BSD-3-Clause
 https://github.com/pierrec/lz4
 
@@ -6789,7 +6789,7 @@ Bundled source icon (frontend/src/brand/vendor/modio.svg) from the mod.io SDK, s
 
 --------------------------------------------------------------------------------
 
-modernc.org/libc@v1.82.8
+modernc.org/libc@v1.82.10
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/libc
 
