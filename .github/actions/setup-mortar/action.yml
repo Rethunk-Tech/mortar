@@ -76,7 +76,7 @@ runs:
 
     - name: Setup Go
       if: inputs.native == 'true'
-      uses: Rethunk-Tech/gh-actions/setup-go@346d9d280f6dfd86c9db02310039c90e2a6ddca4 # v1.31
+      uses: Rethunk-Tech/gh-actions/setup-go@80a029f46e75b86aab02c0a92512a7d83b15fac3 # v1.32
       with:
         go-version-file: go.mod
         cache-key-suffix: ${{ github.ref == 'refs/heads/main' && steps.day.outputs.date || '' }}
@@ -84,7 +84,7 @@ runs:
     # Without the app's compile there is no build cache worth restoring (1.4 GB), so only the module cache is kept.
     - name: Setup Go (no build cache)
       if: inputs.native != 'true'
-      uses: Rethunk-Tech/gh-actions/setup-go@346d9d280f6dfd86c9db02310039c90e2a6ddca4 # v1.31
+      uses: Rethunk-Tech/gh-actions/setup-go@80a029f46e75b86aab02c0a92512a7d83b15fac3 # v1.32
       with:
         go-version-file: go.mod
         cache-build: "false"
