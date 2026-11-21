@@ -54,6 +54,9 @@ func New(store Store, opts ...Option) *handler {
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /api/shares", h.create)
+	mux.HandleFunc("GET /api/shares/ready", func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, http.StatusOK, map[string]bool{"ready": true})
+	})
 	mux.HandleFunc("PUT /api/shares/{code}", h.update)
 	mux.HandleFunc("GET /api/shares/{code}", h.getLatest)
 	mux.HandleFunc("GET /api/shares/{code}/{n}", h.getVersion)

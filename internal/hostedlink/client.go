@@ -76,6 +76,24 @@ func (c *Client) Update(ctx context.Context, code, token, payload string) (Updat
 	return out, err
 }
 
+// Ready reports whether the share API answers. The site alone answers its own 404 page there, so a missing
+// service reads as not ready rather than as an error.
+func (c *Client) Ready(ctx context.Context) bool {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.base()+"/api/shares/ready", nil)
+	if err != nil {
+		return false
+	}
+	res, err := c.http().Do(req)
+	if err != nil {
+		return false
+	}
+	defer func() { _ = res.Body.Close() }()
+	var body struct {
+		Ready bool `json:"ready"`
+	}
+	return res.StatusCode == http.StatusOK && json.NewDecoder(io.LimitReader(res.Body, 1024)).Decode(&body) == nil && body.Ready
+}
+
 // ShortURL is the public page for a hosted share.
 func ShortURL(game, code string) string {
 	return DefaultBaseURL + "/" + game + "/s/" + code

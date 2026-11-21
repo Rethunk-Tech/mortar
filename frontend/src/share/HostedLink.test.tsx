@@ -32,7 +32,8 @@ function info(hosted: ShownInfo['hosted'] = null): ShownInfo {
   }
 }
 
-function mount(hosted: ShownInfo['hosted'] = null) {
+function mount(hosted: ShownInfo['hosted'] = null, ready = true) {
+  stubBinding(sharesvc, 'HostedSharesReady', () => ready)
   spyOn(Clipboard, 'SetText').mockImplementation(() => Promise.resolve() as never)
   return render(
     <I18nProvider i18n={i18n}>
@@ -55,7 +56,7 @@ test('Get short link posts the share and shows the hosted URL', async () => {
   }
   stubBinding(sharesvc, 'CreateHostedShare', () => created)
   mount()
-  expect(screen.getByRole('button', { name: 'Get short link' })).toBeTruthy()
+  expect(await screen.findByRole('button', { name: 'Get short link' })).toBeTruthy()
   expect(
     screen.getByText(
       'A short link stores the mod list on mortar.rethunk.tech. The long link keeps it private.',
@@ -80,9 +81,17 @@ test('Update short link is offered when the profile already has one', async () =
     version: 1,
     url: 'https://mortar.rethunk.tech/stardew/s/AbCdEfGh12',
   })
-  expect(screen.getByRole('button', { name: 'Update short link' })).toBeTruthy()
+  expect(await screen.findByRole('button', { name: 'Update short link' })).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: 'Update short link' }))
   await waitFor(() => {
     expect(screen.getByText('Version 2')).toBeTruthy()
   })
+})
+
+test('No short link is offered while the share service does not answer', async () => {
+  mount(null, false)
+  await waitFor(() => {
+    expect(screen.queryByRole('button', { name: 'Get short link' })).toBeNull()
+  })
+  expect(screen.queryByText(/A short link stores/)).toBeNull()
 })

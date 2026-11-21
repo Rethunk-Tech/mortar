@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import type { Hosted } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import {
   CreateHostedShare,
+  HostedSharesReady,
   UpdateHostedShare,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { Field } from '../shell/dialog/FormDialog.tsx'
@@ -38,10 +39,22 @@ export function HostedLink({
   const { t } = useLingui()
   const [hosted, setHosted] = useState<Hosted | null>(() => hostedOf(info))
   const [busy, run] = usePending()
+  const [ready, setReady] = useState(false)
   useEffect(() => {
     setHosted(hostedOf(info))
   }, [info])
-  if (info.tooLarge) {
+  useEffect(() => {
+    let live = true
+    HostedSharesReady().then(
+      (ok) => live && setReady(ok),
+      () => undefined,
+    )
+    return () => {
+      live = false
+    }
+  }, [])
+  // Short links need the share service; while it does not answer, Share offers only the long link.
+  if (info.tooLarge || !ready) {
     return null
   }
   const publish = (update: boolean) =>

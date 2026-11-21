@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-httpkit"
+
+	"github.com/Rethunk-Tech/mortar/internal/sharehost"
 )
 
 const testToken = "abcdefghijklmnopqrstuvwxyz0123456789ABCDE"
@@ -71,5 +73,22 @@ func TestShortURL(t *testing.T) {
 	t.Parallel()
 	if got := ShortURL("stardew", "AbCdEfGh12"); got != "https://mortar.rethunk.tech/stardew/s/AbCdEfGh12" {
 		t.Fatalf("ShortURL = %q", got)
+	}
+}
+
+func TestReadyOnlyWhenTheServiceAnswers(t *testing.T) {
+	api := httptest.NewServer(sharehost.New(sharehost.NewMemStore()))
+	t.Cleanup(api.Close)
+	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = io.WriteString(w, "<html>not found</html>")
+	}))
+	t.Cleanup(site.Close)
+	if !(&Client{BaseURL: api.URL}).Ready(t.Context()) {
+		t.Fatal("the share service reads as not ready")
+	}
+	if (&Client{BaseURL: site.URL}).Ready(t.Context()) {
+		t.Fatal("the site's 404 page reads as a ready service")
 	}
 }

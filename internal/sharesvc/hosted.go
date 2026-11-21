@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/Rethunk-Tech/go-httpkit"
 	"github.com/Rethunk-Tech/mortar/internal/hostedlink"
@@ -41,6 +42,13 @@ func (s *Service) hostedPayload(game, profileID string, keys []string, include s
 		return "", err
 	}
 	return res.Payload, nil
+}
+
+// HostedSharesReady reports whether short links can be made, so Share offers one only while the service runs.
+func (s *Service) HostedSharesReady(ctx context.Context) bool {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	return s.host.Ready(ctx)
 }
 
 // CreateHostedShare POSTs the profile's share payload and stores the owner token in the data dir.
