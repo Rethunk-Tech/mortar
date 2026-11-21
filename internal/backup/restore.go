@@ -107,6 +107,9 @@ func replace(src, dst string) error {
 	}
 	if _, err := os.Stat(dst); err == nil {
 		old := dst + ".mortar-restore"
+		if err := safefs.RemoveAll(old); err != nil {
+			return err
+		}
 		if err := safefs.Rename(dst, old); err != nil {
 			return err
 		}

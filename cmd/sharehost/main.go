@@ -29,7 +29,11 @@ func main() {
 	}
 	go sharehost.RunSweep(context.Background(), store, 24*time.Hour, time.Now)
 
-	h := newMux(os.Getenv("SITE_DIR"), os.Getenv("PACKAGES_DIR"), sharehost.New(store))
+	var opts []sharehost.Option
+	if os.Getenv("SHARE_TRUST_PROXY_IP") == "true" {
+		opts = append(opts, sharehost.WithTrustedProxyIP())
+	}
+	h := newMux(os.Getenv("SITE_DIR"), os.Getenv("PACKAGES_DIR"), sharehost.New(store, opts...))
 	addr := ":" + getenv("PORT", "8080")
 	srv := &http.Server{Addr: addr, Handler: h, ReadHeaderTimeout: 10 * time.Second}
 	log.Fatal(srv.ListenAndServe())

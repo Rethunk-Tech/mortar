@@ -31,3 +31,8 @@ services:
       - key: PACKAGES_DIR
         value: /packages
         scope: RUN_TIME
+      # App Platform overwrites Do-Connecting-Ip on every request, so the share rate limit may trust it. Leave unset
+      # anywhere else: a client could forge the header.
+      - key: SHARE_TRUST_PROXY_IP
+        value: "true"
+        scope: RUN_TIME

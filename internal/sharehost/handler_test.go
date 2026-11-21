@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -29,7 +31,7 @@ func TestShares(t *testing.T) {
 	payload2 := mustPayload(t, "lethal-company")
 
 	t.Run("create/get/versions", func(t *testing.T) {
-		h := New(NewMemStore())
+		h := New(NewMemStore(), WithTrustedProxyIP())
 		code, token := postShare(t, h, payload, "10.0.0.1")
 		got := getShare(t, h, "/api/shares/"+code)
 		if got.Code != code || got.Game != "stardew-valley" || got.Payload != payload || got.Version != 1 {
@@ -60,7 +62,7 @@ func TestShares(t *testing.T) {
 	})
 
 	t.Run("wrong token 403", func(t *testing.T) {
-		h := New(NewMemStore())
+		h := New(NewMemStore(), WithTrustedProxyIP())
 		code, _ := postShare(t, h, payload, "10.0.0.2")
 		rec := do(t, h, http.MethodPut, "/api/shares/"+code, `{"payload":`+jsonStr(payload)+`}`, "not-the-token-value-at-all-0123456789abc", "10.0.0.2")
 		if rec.Code != http.StatusForbidden {
@@ -73,7 +75,7 @@ func TestShares(t *testing.T) {
 	})
 
 	t.Run("oversize 413", func(t *testing.T) {
-		h := New(NewMemStore())
+		h := New(NewMemStore(), WithTrustedProxyIP())
 		big := strings.Repeat("a", maxPayload+1)
 		rec := do(t, h, http.MethodPost, "/api/shares", `{"payload":"`+big+`"}`, "", "10.0.0.3")
 		if rec.Code != http.StatusRequestEntityTooLarge {
@@ -82,7 +84,7 @@ func TestShares(t *testing.T) {
 	})
 
 	t.Run("rate limit 429", func(t *testing.T) {
-		h := New(NewMemStore())
+		h := New(NewMemStore(), WithTrustedProxyIP())
 		for range createsPerHour {
 			rec := do(t, h, http.MethodPost, "/api/shares", `{"payload":`+jsonStr(payload)+`}`, "", "10.0.0.4")
 			if rec.Code != http.StatusCreated {
@@ -100,7 +102,7 @@ func TestShares(t *testing.T) {
 	})
 
 	t.Run("bad payload 400", func(t *testing.T) {
-		h := New(NewMemStore())
+		h := New(NewMemStore(), WithTrustedProxyIP())
 		rec := do(t, h, http.MethodPost, "/api/shares", `{"payload":"not-a-share"}`, "", "10.0.0.6")
 		if rec.Code != http.StatusBadRequest {
 			t.Fatalf("got %d", rec.Code)
@@ -139,7 +141,7 @@ func TestShares(t *testing.T) {
 
 	t.Run("lastRead throttling", func(t *testing.T) {
 		st := NewMemStore()
-		h := New(st)
+		h := New(st, WithTrustedProxyIP())
 		t0 := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
 		h.now = func() time.Time { return t0 }
 		code, _ := postShare(t, h, payload, "10.0.0.7")
@@ -250,4 +252,51 @@ func mustPayload(t *testing.T, game string) string {
 		t.Fatalf("parsed game %q", s.Game)
 	}
 	return p
+}
+
+func TestReadsNeverRollBackLatest(t *testing.T) {
+	payload := mustPayload(t, "stardew-valley")
+	h := New(NewMemStore())
+	var tick atomic.Int64
+	h.now = func() time.Time { return time.Unix(0, 0).Add(time.Duration(tick.Add(1)) * 24 * time.Hour) }
+	code, token := postShare(t, h, payload, "")
+	stop := make(chan struct{})
+	var wg sync.WaitGroup
+	for range 4 {
+		wg.Go(func() {
+			for {
+				select {
+				case <-stop:
+					return
+				default:
+					do(t, h, http.MethodGet, "/api/shares/"+code, "", "", "")
+				}
+			}
+		})
+	}
+	const puts = 30
+	for range puts {
+		if rec := do(t, h, http.MethodPut, "/api/shares/"+code, `{"payload":`+jsonStr(payload)+`}`, token, ""); rec.Code != http.StatusOK {
+			t.Fatalf("put %d", rec.Code)
+		}
+	}
+	close(stop)
+	wg.Wait()
+	if got := getShare(t, h, "/api/shares/"+code); got.Version != puts+1 {
+		t.Fatalf("latest rolled back to %d, want %d", got.Version, puts+1)
+	}
+}
+
+func TestForgedClientIPHeaderIgnoredByDefault(t *testing.T) {
+	payload := mustPayload(t, "stardew-valley")
+	h := New(NewMemStore())
+	limited := false
+	for i := range createsPerHour + 1 {
+		if do(t, h, http.MethodPost, "/api/shares", `{"payload":`+jsonStr(payload)+`}`, "", fmt.Sprintf("10.0.%d.1", i)).Code == http.StatusTooManyRequests {
+			limited = true
+		}
+	}
+	if !limited {
+		t.Fatal("rotating Do-Connecting-Ip evaded the limit")
+	}
 }

@@ -31,13 +31,26 @@ type handler struct {
 	now   func() time.Time
 	limit *ipLimiter
 	mux   http.Handler
+	// trustProxyIP lets the Do-Connecting-Ip header name the client. Only safe behind a proxy that overwrites it.
+	trustProxyIP bool
+	locks        [64]sync.Mutex
 }
 
-func New(store Store) *handler {
+// Option configures the handler.
+type Option func(*handler)
+
+// WithTrustedProxyIP takes the client address for rate limiting from the Do-Connecting-Ip header, which DigitalOcean
+// App Platform sets and overwrites on every request. Without a proxy that does so, a client can forge it.
+func WithTrustedProxyIP() Option { return func(h *handler) { h.trustProxyIP = true } }
+
+func New(store Store, opts ...Option) *handler {
 	h := &handler{
 		store: store,
 		now:   func() time.Time { return time.Now().UTC() },
 		limit: newIPLimiter(createsPerHour, time.Hour),
+	}
+	for _, o := range opts {
+		o(h)
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /api/shares", h.create)
@@ -61,7 +74,7 @@ func (h *handler) create(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	if !h.limit.allow(clientIP(r), h.now()) {
+	if !h.limit.allow(h.clientIP(r), h.now()) {
 		w.WriteHeader(http.StatusTooManyRequests)
 		return
 	}
@@ -98,12 +111,21 @@ func (h *handler) create(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
+// lock serialises writers of one code's meta so a read's LastRead write cannot roll back a newer Latest.
+func (h *handler) lock(code string) func() {
+	sum := sha256.Sum256([]byte(code))
+	mu := &h.locks[int(sum[0])%len(h.locks)]
+	mu.Lock()
+	return mu.Unlock
+}
+
 func (h *handler) update(w http.ResponseWriter, r *http.Request) {
 	code := r.PathValue("code")
 	if !validCode(code) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+	defer h.lock(code)()
 	meta, err := h.store.Meta(r.Context(), code)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -173,8 +195,7 @@ func (h *handler) get(w http.ResponseWriter, r *http.Request, n int) {
 	}
 	now := h.now()
 	if meta.LastRead.IsZero() || now.Sub(meta.LastRead) >= lastReadGap {
-		meta.LastRead = now
-		_ = h.store.SaveMeta(r.Context(), code, meta)
+		h.touch(r.Context(), code, now)
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"code":    code,
@@ -182,6 +203,17 @@ func (h *handler) get(w http.ResponseWriter, r *http.Request, n int) {
 		"game":    ver.Game,
 		"payload": ver.Payload,
 	})
+}
+
+// touch records a read on the current meta, re-read under the lock.
+func (h *handler) touch(ctx context.Context, code string, now time.Time) {
+	defer h.lock(code)()
+	meta, err := h.store.Meta(ctx, code)
+	if err != nil {
+		return
+	}
+	meta.LastRead = now
+	_ = h.store.SaveMeta(ctx, code, meta)
 }
 
 func readPayload(w http.ResponseWriter, r *http.Request) (payloadBody, bool) {
@@ -210,9 +242,11 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	_ = json.NewEncoder(w).Encode(v)
 }
 
-func clientIP(r *http.Request) string {
-	if ip := strings.TrimSpace(r.Header.Get("Do-Connecting-Ip")); ip != "" {
-		return ip
+func (h *handler) clientIP(r *http.Request) string {
+	if h.trustProxyIP {
+		if ip := strings.TrimSpace(r.Header.Get("Do-Connecting-Ip")); ip != "" {
+			return ip
+		}
 	}
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
@@ -311,6 +345,9 @@ func (l *ipLimiter) allow(ip string, now time.Time) bool {
 		i++
 	}
 	q = q[i:]
+	if len(q) == 0 {
+		delete(l.hits, ip)
+	}
 	if len(q) >= l.max {
 		l.hits[ip] = q
 		return false

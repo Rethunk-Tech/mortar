@@ -202,3 +202,19 @@ func editSave(t *testing.T, saves, folder, body string, at time.Time) {
 		t.Fatal(err)
 	}
 }
+
+func TestReplaceSurvivesStaleRestoreLeftover(t *testing.T) {
+	dir := t.TempDir()
+	src, dst := filepath.Join(dir, "src"), filepath.Join(dir, "save")
+	for p, c := range map[string]string{src: "new", dst: "cur", dst + ".mortar-restore": "stale"} {
+		if err := os.WriteFile(p, []byte(c), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := replace(src, dst); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(dst); string(b) != "new" {
+		t.Fatalf("dst = %q", b)
+	}
+}
