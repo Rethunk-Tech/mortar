@@ -110,13 +110,16 @@ step() {
 ) >"$logs/bindings" 2>&1 &
 bindings_pid=$!
 
+lintmem=$(awk '/^MemTotal:/ { printf "%dKiB", $2 / 8 }' /proc/meminfo)
 step shellcheck bash -c "set -o pipefail; git ls-files -co --exclude-standard -z '*.sh' | xargs -0 -r shellcheck -x"
 # The race build, linux lint, govulncheck and the race tests all start at once and share GOCACHE: GOFLAGS=-race
 # makes lint and govulncheck load packages from the same instrumented compile the tests link, so the Wails cgo
 # step and sqlite compile once, not once per tool. Waiting for the build first stacked the test-binary compile
 # after that compile. The windows lint cannot share it (another GOOS), so it starts at once beside this chain.
 # golangci-lint spends a quarter of its CPU in GC at the default GOGC, and a cold gate is CPU-bound, so lint trades
-# memory for it. The updatetest pass runs after the linux one so it reuses that pass's cache for every dependency.
+# memory for it, but only up to an eighth of the machine's memory each: unbounded, two cold lints beside the race
+# tests need more memory than a 16 GB CI runner has. The updatetest pass runs after the linux one so it reuses that
+# pass's cache for every dependency.
 {
   rc=0
   (
@@ -129,7 +132,7 @@ step shellcheck bash -c "set -o pipefail; git ls-files -co --exclude-standard -z
   build_pid=$!
   (
     t=$(date +%s%N)
-    export GOFLAGS=-race GOGC=400
+    export GOFLAGS=-race GOGC=400 GOMEMLIMIT=$lintmem
     golangci-lint run --allow-parallel-runners
     a=$?
     golangci-lint run --allow-parallel-runners --build-tags updatetest ./internal/updatesvc/...
@@ -171,7 +174,7 @@ step shellcheck bash -c "set -o pipefail; git ls-files -co --exclude-standard -z
   exit "$rc"
 } >"$logs/racechain" 2>&1 &
 pids[racechain]=$!
-step golangci-windows env GOGC=400 GOOS=windows golangci-lint run --allow-parallel-runners
+step golangci-windows env GOGC=400 GOMEMLIMIT="$lintmem" GOOS=windows golangci-lint run --allow-parallel-runners
 step vet-darwin env GOOS=darwin go vet ./internal/...
 step version go run ./cmd/version -check
 step i18n-dupes bun scripts/i18n-dupes.ts
