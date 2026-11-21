@@ -207,8 +207,8 @@ async function loadPayload() {
   let res
   try {
     res = await fetch(shortAPIPath(short))
-  } catch {
-    const err = new Error(ERRORS.offline)
+  } catch (cause) {
+    const err = new Error(ERRORS.offline, { cause })
     err.kind = 'offline'
     throw err
   }
