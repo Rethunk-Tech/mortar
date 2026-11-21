@@ -152,7 +152,11 @@ step shellcheck bash -c "set -o pipefail; git ls-files -co --exclude-standard -z
   (
     t=$(date +%s%N)
     mapfile -t pkgs < <(go list ./...)
-    printf '%s\0' "${pkgs[@]}" | xargs -0 -n 16 -P 8 env TMPDIR="$gotmp" GOTMPDIR="$gotmp" go test -race
+    # One shard per core, up to 8: each shard holds race-instrumented test binaries in memory, and a runner with few
+    # cores has little memory too.
+    shards=$(nproc)
+    [ "$shards" -le 8 ] || shards=8
+    printf '%s\0' "${pkgs[@]}" | xargs -0 -n 16 -P "$shards" env TMPDIR="$gotmp" GOTMPDIR="$gotmp" go test -race
     a=$?
     profile_log go-test "$t" "$a"
     exit "$a"
