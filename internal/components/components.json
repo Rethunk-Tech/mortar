@@ -1,5 +1,5 @@
 {
-  "serial": 1794872398,
+  "serial": 1795294193,
   "components": [
     {
       "game": "melonloader",
@@ -53,10 +53,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-smapi-bridge"
       },
-      "tag": "v0.3.0",
-      "asset": "MortarSmapiBridge-0.3.0.zip",
-      "version": "0.3.0",
-      "sha256": "805dee34b61e5f550c1b958ec3256716e1e6edf44b149c632dd54bbc44d28a95"
+      "tag": "v0.4.0",
+      "asset": "MortarSmapiBridge-0.4.0.zip",
+      "version": "0.4.0",
+      "sha256": "7156db2eae8b2f40936971eb5cae5111308c19b7c63b5b67ff5508a6b832ffaf"
     },
     {
       "game": "stardew",
@@ -95,10 +95,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.7.0",
-      "asset": "MortarBepInExBridge-0.7.0.zip",
-      "version": "0.7.0",
-      "sha256": "0e6c5accbd6f7298c2ee6e27d216d80a64d68771fff72d126cbd396242a60883"
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
     },
     {
       "game": "lethal-company",
@@ -137,10 +137,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.7.0",
-      "asset": "MortarBepInExBridge-0.7.0.zip",
-      "version": "0.7.0",
-      "sha256": "0e6c5accbd6f7298c2ee6e27d216d80a64d68771fff72d126cbd396242a60883"
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
     },
     {
       "game": "core-keeper",
@@ -165,10 +165,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.7.0",
-      "asset": "MortarBepInExBridge_IL2CPP-0.7.0.zip",
-      "version": "0.7.0",
-      "sha256": "78bed2d899ef2d7eeb2fc2ef5c33e3d38903557aa90a6e85545d5b6e8ed87ec4"
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge_IL2CPP-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "685abcdbdc1e954eeab055e53ea9d34ae987daec48829cf827da4704b7a89046"
     },
     {
       "game": "repo",
@@ -193,10 +193,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.7.0",
-      "asset": "MortarBepInExBridge-0.7.0.zip",
-      "version": "0.7.0",
-      "sha256": "0e6c5accbd6f7298c2ee6e27d216d80a64d68771fff72d126cbd396242a60883"
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
     },
     {
       "game": "peak",
@@ -221,10 +221,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.7.0",
-      "asset": "MortarBepInExBridge-0.7.0.zip",
-      "version": "0.7.0",
-      "sha256": "0e6c5accbd6f7298c2ee6e27d216d80a64d68771fff72d126cbd396242a60883"
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
     },
     {
       "game": "riskofrain2",
@@ -249,10 +249,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.7.0",
-      "asset": "MortarBepInExBridge-0.7.0.zip",
-      "version": "0.7.0",
-      "sha256": "0e6c5accbd6f7298c2ee6e27d216d80a64d68771fff72d126cbd396242a60883"
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
     },
     {
       "game": "content-warning",
@@ -277,10 +277,738 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.7.0",
-      "asset": "MortarBepInExBridge-0.7.0.zip",
-      "version": "0.7.0",
-      "sha256": "0e6c5accbd6f7298c2ee6e27d216d80a64d68771fff72d126cbd396242a60883"
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "inscryption",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "cult-of-the-lamb",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "sun-haven",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "potion-craft",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "across-the-obelisk",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "against-the-storm",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "atlyss",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "bomb-rush-cyberfunk",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "bopl-battle",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "burglin-gnomes",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "chrono-ark",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "distance",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "enter-the-gungeon",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "erenshor",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "gamble-with-your-friends",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "how-to-fish",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "lethal-league-blaze",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "mage-arena",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "monster-train-2",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "muck",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "mycopunk",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "nine-sols",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "old-market-simulator",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "outward",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "receiver-2",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "rounds",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "sailwind",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "skul-the-hero-slayer",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "straftat",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "super-battle-golf",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "supermarket-together",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "talespire",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "techtonica",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "totally-accurate-battle-simulator",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "touhou-lost-branch-of-legend",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "trombone-champ",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "ultimate-chicken-horse",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "void-crew",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "white-knuckle",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "yapyap",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "20-minutes-till-dawn",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "stick-fight-the-game",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "rogue-tower",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "h3vr",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "ultrakill",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "nasb",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "subnautica",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "subnautica-below-zero",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "timberborn",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "against",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "a-gentlemens-dispute",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
+    },
+    {
+      "game": "mine-mogul",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.7.1",
+      "asset": "MortarBepInExBridge-0.7.1.zip",
+      "version": "0.7.1",
+      "sha256": "78f3bd40b0e4503e92ac8f1bf11aa88f96baa80f5dc1dd5025b67dea87506e5a"
     }
   ],
   "games": [
@@ -15452,106 +16180,245 @@
       "name": "The Elder Scrolls V: Skyrim Special Edition",
       "enabled": true,
       "minVersion": "0.7.0",
-      "importIds": { "vortex": "skyrimse", "mo2": "Skyrim Special Edition" },
+      "importIds": {
+        "vortex": "skyrimse",
+        "mo2": "Skyrim Special Edition"
+      },
       "marker": "SkyrimSE.exe",
       "processes": ["skse64_loader.exe"],
       "metadata": [],
       "paths": {
-        "mods": { "windows": "{install}/Data" },
-        "plugins": { "windows": "{localAppData}/Skyrim Special Edition" },
-        "saves": { "windows": "{documents}/My Games/Skyrim Special Edition/Saves" }
+        "mods": {
+          "windows": "{install}/Data"
+        },
+        "plugins": {
+          "windows": "{localAppData}/Skyrim Special Edition"
+        },
+        "saves": {
+          "windows": "{documents}/My Games/Skyrim Special Edition/Saves"
+        }
       },
       "deploy": "profile",
       "targets": [
-        { "id": "mods", "root": "{profile}/Data", "keepWhole": ["bsa", "ba2", "esp", "esm", "esl"] }
+        {
+          "id": "mods",
+          "root": "{profile}/Data",
+          "keepWhole": ["bsa", "ba2", "esp", "esm", "esl"]
+        }
       ],
-      "stores": { "steam": { "appId": "489830" } },
-      "loaders": [{ "id": "folder", "name": "" }],
-      "sources": [{ "id": "nexus", "key": "skyrimspecialedition" }]
+      "stores": {
+        "steam": {
+          "appId": "489830"
+        }
+      },
+      "loaders": [
+        {
+          "id": "folder",
+          "name": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "nexus",
+          "key": "skyrimspecialedition"
+        }
+      ]
     },
     {
       "id": "skyrim",
       "name": "The Elder Scrolls V: Skyrim",
       "enabled": true,
       "minVersion": "0.7.0",
-      "importIds": { "vortex": "skyrim", "mo2": "Skyrim" },
+      "importIds": {
+        "vortex": "skyrim",
+        "mo2": "Skyrim"
+      },
       "marker": "TESV.exe",
       "processes": ["skse_loader.exe"],
       "metadata": [],
       "paths": {
-        "mods": { "windows": "{install}/Data" },
-        "plugins": { "windows": "{localAppData}/Skyrim" },
-        "saves": { "windows": "{documents}/My Games/Skyrim/Saves" }
+        "mods": {
+          "windows": "{install}/Data"
+        },
+        "plugins": {
+          "windows": "{localAppData}/Skyrim"
+        },
+        "saves": {
+          "windows": "{documents}/My Games/Skyrim/Saves"
+        }
       },
       "deploy": "profile",
-      "targets": [{ "id": "mods", "root": "{profile}/Data", "keepWhole": ["bsa", "esp", "esm"] }],
-      "stores": { "steam": { "appId": "72850" } },
-      "loaders": [{ "id": "folder", "name": "" }],
-      "sources": [{ "id": "nexus", "key": "skyrim" }]
+      "targets": [
+        {
+          "id": "mods",
+          "root": "{profile}/Data",
+          "keepWhole": ["bsa", "esp", "esm"]
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "72850"
+        }
+      },
+      "loaders": [
+        {
+          "id": "folder",
+          "name": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "nexus",
+          "key": "skyrim"
+        }
+      ]
     },
     {
       "id": "fallout-4",
       "name": "Fallout 4",
       "enabled": true,
       "minVersion": "0.7.0",
-      "importIds": { "vortex": "fallout4", "mo2": "Fallout 4" },
+      "importIds": {
+        "vortex": "fallout4",
+        "mo2": "Fallout 4"
+      },
       "marker": "Fallout4.exe",
       "processes": ["f4se_loader.exe"],
       "metadata": [],
       "paths": {
-        "mods": { "windows": "{install}/Data" },
-        "plugins": { "windows": "{localAppData}/Fallout4" },
-        "saves": { "windows": "{documents}/My Games/Fallout4/Saves" }
+        "mods": {
+          "windows": "{install}/Data"
+        },
+        "plugins": {
+          "windows": "{localAppData}/Fallout4"
+        },
+        "saves": {
+          "windows": "{documents}/My Games/Fallout4/Saves"
+        }
       },
       "deploy": "profile",
       "targets": [
-        { "id": "mods", "root": "{profile}/Data", "keepWhole": ["bsa", "ba2", "esp", "esm", "esl"] }
+        {
+          "id": "mods",
+          "root": "{profile}/Data",
+          "keepWhole": ["bsa", "ba2", "esp", "esm", "esl"]
+        }
       ],
-      "stores": { "steam": { "appId": "377160" } },
-      "loaders": [{ "id": "folder", "name": "" }],
-      "sources": [{ "id": "nexus", "key": "fallout4" }]
+      "stores": {
+        "steam": {
+          "appId": "377160"
+        }
+      },
+      "loaders": [
+        {
+          "id": "folder",
+          "name": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "nexus",
+          "key": "fallout4"
+        }
+      ]
     },
     {
       "id": "fallout-new-vegas",
       "name": "Fallout: New Vegas",
       "enabled": true,
       "minVersion": "0.7.0",
-      "importIds": { "vortex": "falloutnv", "mo2": "New Vegas" },
+      "importIds": {
+        "vortex": "falloutnv",
+        "mo2": "New Vegas"
+      },
       "marker": "FalloutNV.exe",
       "processes": ["nvse_loader.exe"],
       "metadata": [],
       "paths": {
-        "mods": { "windows": "{install}/Data" },
-        "plugins": { "windows": "{install}/Data" },
-        "saves": { "windows": "{documents}/My Games/FalloutNV/Saves" }
+        "mods": {
+          "windows": "{install}/Data"
+        },
+        "plugins": {
+          "windows": "{install}/Data"
+        },
+        "saves": {
+          "windows": "{documents}/My Games/FalloutNV/Saves"
+        }
       },
       "deploy": "profile",
-      "targets": [{ "id": "mods", "root": "{profile}/Data", "keepWhole": ["bsa", "esp", "esm"] }],
-      "stores": { "steam": { "appId": "22380" } },
-      "loaders": [{ "id": "folder", "name": "" }],
-      "sources": [{ "id": "nexus", "key": "newvegas" }]
+      "targets": [
+        {
+          "id": "mods",
+          "root": "{profile}/Data",
+          "keepWhole": ["bsa", "esp", "esm"]
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "22380"
+        }
+      },
+      "loaders": [
+        {
+          "id": "folder",
+          "name": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "nexus",
+          "key": "newvegas"
+        }
+      ]
     },
     {
       "id": "starfield",
       "name": "Starfield",
       "enabled": true,
       "minVersion": "0.7.0",
-      "importIds": { "vortex": "starfield", "mo2": "Starfield" },
+      "importIds": {
+        "vortex": "starfield",
+        "mo2": "Starfield"
+      },
       "marker": "Starfield.exe",
       "processes": ["sfse_loader.exe"],
       "metadata": [],
       "paths": {
-        "mods": { "windows": "{install}/Data" },
-        "plugins": { "windows": "{localAppData}/Starfield" },
-        "saves": { "windows": "{documents}/My Games/Starfield/Saves" }
+        "mods": {
+          "windows": "{install}/Data"
+        },
+        "plugins": {
+          "windows": "{localAppData}/Starfield"
+        },
+        "saves": {
+          "windows": "{documents}/My Games/Starfield/Saves"
+        }
       },
       "deploy": "profile",
       "targets": [
-        { "id": "mods", "root": "{profile}/Data", "keepWhole": ["ba2", "esp", "esm", "esl"] }
+        {
+          "id": "mods",
+          "root": "{profile}/Data",
+          "keepWhole": ["ba2", "esp", "esm", "esl"]
+        }
       ],
-      "stores": { "steam": { "appId": "1716740" } },
-      "loaders": [{ "id": "folder", "name": "" }],
-      "sources": [{ "id": "nexus", "key": "starfield" }]
+      "stores": {
+        "steam": {
+          "appId": "1716740"
+        }
+      },
+      "loaders": [
+        {
+          "id": "folder",
+          "name": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "nexus",
+          "key": "starfield"
+        }
+      ]
     },
     {
       "id": "minecraft",
@@ -15574,7 +16441,13 @@
         }
       },
       "deploy": "profile",
-      "targets": [{ "id": "mods", "root": "{profile}/mods", "keepWhole": ["jar"] }],
+      "targets": [
+        {
+          "id": "mods",
+          "root": "{profile}/mods",
+          "keepWhole": ["jar"]
+        }
+      ],
       "stores": {
         "standalone": {
           "folders": [
@@ -15588,14 +16461,33 @@
       },
       "manualFolder": true,
       "loaders": [
-        { "id": "fabric", "name": "Fabric" },
-        { "id": "forge", "name": "Forge" },
-        { "id": "neoforge", "name": "NeoForge" }
+        {
+          "id": "fabric",
+          "name": "Fabric"
+        },
+        {
+          "id": "forge",
+          "name": "Forge"
+        },
+        {
+          "id": "neoforge",
+          "name": "NeoForge"
+        }
       ],
       "sources": [
-        { "id": "modrinth", "loaders": ["fabric", "forge", "neoforge"] },
-        { "id": "curseforge", "key": "432", "gameId": 432 },
-        { "id": "nexus", "key": "minecraft" }
+        {
+          "id": "modrinth",
+          "loaders": ["fabric", "forge", "neoforge"]
+        },
+        {
+          "id": "curseforge",
+          "key": "432",
+          "gameId": 432
+        },
+        {
+          "id": "nexus",
+          "key": "minecraft"
+        }
       ]
     }
   ],

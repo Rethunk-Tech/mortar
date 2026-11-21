@@ -236,6 +236,422 @@
       },
       "asset": "MortarBepInExBridge-{version}.zip",
       "version": "latest"
+    },
+    {
+      "game": "inscryption",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "cult-of-the-lamb",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "sun-haven",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "potion-craft",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "across-the-obelisk",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "against-the-storm",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "atlyss",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "bomb-rush-cyberfunk",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "bopl-battle",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "burglin-gnomes",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "chrono-ark",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "distance",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "enter-the-gungeon",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "erenshor",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "gamble-with-your-friends",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "how-to-fish",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "lethal-league-blaze",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "mage-arena",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "monster-train-2",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "muck",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "mycopunk",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "nine-sols",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "old-market-simulator",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "outward",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "receiver-2",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "rounds",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "sailwind",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "skul-the-hero-slayer",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "straftat",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "super-battle-golf",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "supermarket-together",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "talespire",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "techtonica",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "totally-accurate-battle-simulator",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "touhou-lost-branch-of-legend",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "trombone-champ",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "ultimate-chicken-horse",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "void-crew",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "white-knuckle",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "yapyap",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "20-minutes-till-dawn",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "stick-fight-the-game",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "rogue-tower",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "h3vr",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "ultrakill",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "nasb",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "subnautica",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "subnautica-below-zero",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "timberborn",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "against",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "a-gentlemens-dispute",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
+    },
+    {
+      "game": "mine-mogul",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": { "host": "github.com", "owner": "Rethunk-Tech", "repo": "mortar-bepinex-bridge" },
+      "asset": "MortarBepInExBridge-{version}.zip",
+      "version": "latest"
     }
   ],
   "games": [
