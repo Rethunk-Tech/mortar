@@ -33,7 +33,29 @@ for old in "$base"/.mg-*; do
 done
 logs=$base/.mg-$$
 mkdir -p "$logs"
-trap 'rm -rf "$logs"' EXIT
+# The steps run in the background, so a gate that is itself killed (a CI step timeout, Ctrl-C, a stopped runner)
+# would leave them running, and on CI holding the runner until the job's own timeout. Its exit ends every process
+# it started, listed by parent before any is signalled.
+# shellcheck disable=SC2329 # called by cleanup
+descendants() {
+  local c
+  for c in $(pgrep -P "$1"); do
+    [ "$c" = "$BASHPID" ] && continue
+    descendants "$c"
+    echo "$c"
+  done
+}
+# shellcheck disable=SC2329 # run by the EXIT trap
+cleanup() {
+  local left=()
+  mapfile -t left < <(descendants "$$")
+  [ ${#left[@]} -eq 0 ] || kill "${left[@]}" 2>/dev/null
+  rm -rf "$logs"
+}
+trap cleanup EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
 export TMPDIR=$logs GOTMPDIR=$logs
 # go test caches a result only while the TMPDIR and GOTMPDIR it ran under stay the same, so the race tests get one
 # fixed folder; what a killed run leaves in it is reaped once it is an hour old.
