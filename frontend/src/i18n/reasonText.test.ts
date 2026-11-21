@@ -18,6 +18,7 @@ test('every reason code Go sends has a message', () => {
   const codes = new Set<string>()
   for (const file of [
     'loader/bepinex5/analyze.go',
+    'loader/bepinex5/order.go',
     'loader/thunderpack/logs.go',
     'problems/loader.go',
     'problems/plugindeps.go',

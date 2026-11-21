@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { MONO_RUNTIME, SMAPI, UNITY, WINDOWS } from '../brand/productNames.ts'
+import { BEPINEX, MONO_RUNTIME, SMAPI, UNITY, WINDOWS } from '../brand/productNames.ts'
 
 type Params = { [_ in string]?: string } | null | undefined
 
@@ -38,6 +38,8 @@ export function useReasonText(): ReasonText {
         return t`requires ${{ other: p.other ?? '' }} ${{ detail: p.detail ?? '' }}`
       case 'moduleIncompatible':
         return t`is incompatible with ${{ other: p.other ?? '' }}`
+      case 'skipped':
+        return t`${{ loader: BEPINEX }} won't load this: ${message}`
       case 'moduleDuplicate':
         return t`is installed more than once`
       case 'moduleCycle':

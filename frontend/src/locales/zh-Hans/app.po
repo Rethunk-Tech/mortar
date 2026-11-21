@@ -7432,6 +7432,10 @@ msgstr "打开 {source} 设置"
 msgid "Checking for updates…"
 msgstr "正在检查更新…"
 
+#: src/i18n/reasonText.ts
+msgid "{loader} won't load this: {message}"
+msgstr ""
+
 #: src/toasts/report.ts
 msgid "The game is already running."
 msgstr "游戏已在运行。"

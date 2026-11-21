@@ -7438,6 +7438,10 @@ msgstr "Open {source} settings"
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
 
+#: src/i18n/reasonText.ts
+msgid "{loader} won't load this: {message}"
+msgstr "{loader} won't load this: {message}"
+
 #: src/toasts/report.ts
 msgid "The game is already running."
 msgstr "The game is already running."

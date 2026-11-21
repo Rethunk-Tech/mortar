@@ -7432,6 +7432,10 @@ msgstr ""
 msgid "Checking for updates…"
 msgstr ""
 
+#: src/i18n/reasonText.ts
+msgid "{loader} won't load this: {message}"
+msgstr ""
+
 #: src/toasts/report.ts
 msgid "The game is already running."
 msgstr ""

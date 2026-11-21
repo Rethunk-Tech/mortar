@@ -108,6 +108,15 @@ export const loadOrderStub = () => {
         issues: [{ code: 'moduleMissing', message: 'requires Gone', params: { other: 'Gone' } }],
       }),
       row(4, 'Hand-added override'),
+      row(0, 'Bad Version', {
+        issues: [
+          {
+            code: 'skipped',
+            message: 'version is invalid',
+            params: { reason: 'version is invalid' },
+          },
+        ],
+      }),
     ],
   })
 }
