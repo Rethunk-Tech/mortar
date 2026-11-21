@@ -35,7 +35,7 @@ jobs:
         if: steps.changes.outputs.code == 'true'
         uses: ./.github/actions/setup-mortar
         with:
-          apt-packages: appstream strace
+          apt-packages: appstream
           lint-tools: "true"
 
       # The vulnerability database moves without a code change, so every push still checks; loading the Wails cgo
@@ -71,27 +71,7 @@ jobs:
         # whole 35 minutes in silence.
         timeout-minutes: 20
         # The step times show where a runner's few cores go; a fast workstation hides it.
-        # A signal that stops the gate leaves no trace in its silent output, so strace records every exec and every
-        # SIGTERM, SIGINT or SIGHUP a gate process receives, with the sender's pid. Only those stop the tracee, so the
-        # gate runs at its usual pace.
-        run: >-
-          strace -f --seccomp-bpf -qq -s 200 -o "$RUNNER_TEMP/gate-signals"
-          -e trace=execve,kill,pidfd_send_signal -e signal=SIGTERM,SIGINT,SIGHUP
-          bun run gate --profile
-
-      # Names who signalled the gate: each received signal, then the command line its sender ran. A sender missing from
-      # the trace is outside the gate (the runner, or the system under memory pressure).
-      - name: Signals the gate received
-        if: ${{ failure() && steps.changes.outputs.code == 'true' }}
-        run: |
-          trace=$RUNNER_TEMP/gate-signals
-          grep -E -e '--- SIG(TERM|INT|HUP) ' -e 'killed by' "$trace" | head -40 || true
-          grep -oE 'si_pid=[0-9]+' "$trace" | cut -d= -f2 | sort -u | while read -r pid; do
-            ran=$(grep -E "^$pid execve" "$trace" | tail -1)
-            echo "sender $pid: ${ran:-not in the gate}"
-          done
-          free -m
-          sudo dmesg | grep -i -E 'out of memory|oom-kill|killed process' | tail -20 || true
+        run: bun run gate --profile
 
       # The site deploys from the `packages` branch, which a release or Actions > Package repository publishes, so a change
       # to its pages is checked against the live release here.
