@@ -286,7 +286,10 @@ export function thunderstoreVisit(
 /** On a full page, Escape in a settings search clears the text first and leaves the page only on the next press, so a case that typed a search is cleared here instead. */
 async function clearSearch(page: Page) {
   const search = page.getByRole('textbox', { name: /^Search/ }).first()
-  if ((await search.isVisible()) && (await search.inputValue()) !== '') {
+  if (
+    (await search.isVisible()) &&
+    (await search.inputValue({ timeout: 1000 }).catch(() => '')) !== ''
+  ) {
     await search.fill('')
   }
 }

@@ -26,7 +26,10 @@ export function modsView(
     await tab(page, 'Mods')
     // A filter typed by an earlier case persists per profile and would leave a grid with fewer cards than a case clicks.
     const filter = page.getByRole('textbox', { name: /^Filter/ }).first()
-    if ((await filter.isVisible()) && (await filter.inputValue()) !== '') {
+    if (
+      (await filter.isVisible()) &&
+      (await filter.inputValue({ timeout: 1000 }).catch(() => '')) !== ''
+    ) {
       await filter.fill('')
     }
     const button = page.getByRole('button', { name: which })
