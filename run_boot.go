@@ -311,12 +311,7 @@ func (c *boot) newApp() error {
 			},
 		},
 	})
-	c.openSvc = &opener.Service{Open: func(u string) error {
-		if serverBuild {
-			return opener.ErrOpenInPage
-		}
-		return c.app.Browser.OpenURL(u)
-	}}
+	c.openSvc = &opener.Service{Open: func(u string) error { return openSystem(c.app, u) }}
 	if pid, ok := otherInstance(c.dataDir); ok {
 		return fmt.Errorf("mortar (pid %d) is already running with the data folder %s", pid, c.dataDir)
 	}

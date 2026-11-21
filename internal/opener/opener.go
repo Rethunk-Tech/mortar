@@ -55,7 +55,7 @@ func SteamValidate(appID string) (string, error) {
 	return "steam://validate/" + appID, nil
 }
 
-// Service is the opener the window calls. Open is the system handler (Wails' Browser.OpenURL).
+// Service is the opener the window calls. Open is the system handler (openSystem in package main).
 type Service struct {
 	Open func(string) error
 }

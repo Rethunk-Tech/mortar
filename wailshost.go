@@ -3,9 +3,12 @@ package main
 import (
 	"context"
 	"log/slog"
+	"os/exec"
+	"runtime"
 	"time"
 
 	"github.com/Rethunk-Tech/go-desktopenv/flatpak"
+	"github.com/Rethunk-Tech/go-desktopenv/hostenv"
 	"github.com/Rethunk-Tech/go-desktopenv/portal"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
@@ -51,10 +54,26 @@ func (h wailsHost) ClipboardText() (string, bool) { return h.app.Clipboard.Text(
 
 // OpenURL refuses in a server build like the opener service does, so nothing reaches the host's own browser.
 func (h wailsHost) OpenURL(url string) error {
+	return openSystem(h.app, url)
+}
+
+// openSystem hands an address to the system handler. On Linux it runs xdg-open as Wails does, but with the host's
+// environment: inside the AppImage the inherited LD_LIBRARY_PATH would load the bundle's GTK, GLib and SQLite into the
+// browser xdg-open starts, which then fails to open (LibreWolf on KDE does).
+func openSystem(app *application.App, url string) error {
 	if serverBuild {
 		return opener.ErrOpenInPage
 	}
-	return h.app.Browser.OpenURL(url)
+	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
+		return app.Browser.OpenURL(url)
+	}
+	cmd := exec.CommandContext(context.Background(), "xdg-open", url) //nolint:gosec // G204: every caller passes a checked address
+	cmd.Env = hostenv.Environ()
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	go func() { _ = cmd.Wait() }()
+	return nil
 }
 
 // wailsNotifier adapts the Wails notifications service to desktopnotify.Notifier.
