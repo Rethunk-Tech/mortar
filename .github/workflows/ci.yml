@@ -50,7 +50,7 @@ jobs:
       # setup-mortar already restored the Go caches; a second restore here fails on files that exist.
       - name: Setup Go
         if: ${{ !cancelled() }}
-        uses: Rethunk-Tech/gh-actions/setup-go@80a029f46e75b86aab02c0a92512a7d83b15fac3 # v1.32
+        uses: Rethunk-Tech/gh-actions/setup-go@97aa05d5253c1a2b871079b1b271e20304e25270 # v1.33
         with:
           go-version-file: go.mod
           cache: "false"
@@ -88,7 +88,7 @@ jobs:
           suffix=""
           [ "$GITHUB_REF" = refs/heads/main ] && suffix="-$(date -u +%F)"
           v=$(go env GOVERSION)
-          echo "key=setup-go-${RUNNER_OS}-${RUNNER_ARCH}-go${v#go}-${GITHUB_JOB}-${SETUP_GO_DEPS_HASH}${suffix}" >>"$GITHUB_OUTPUT"
+          echo "key=setup-go-${RUNNER_OS}-${RUNNER_ARCH}-go${v#go}-${GITHUB_JOB}.${SETUP_GO_DEPS_HASH}${suffix}" >>"$GITHUB_OUTPUT"
 
       - name: Save the Go build cache after a failed gate
         if: ${{ failure() && steps.go-key.outputs.key != '' }}
@@ -131,7 +131,7 @@ jobs:
 
       - name: Setup Go
         if: steps.changes.outputs.code == 'true'
-        uses: Rethunk-Tech/gh-actions/setup-go@80a029f46e75b86aab02c0a92512a7d83b15fac3 # v1.32
+        uses: Rethunk-Tech/gh-actions/setup-go@97aa05d5253c1a2b871079b1b271e20304e25270 # v1.33
         with:
           cache-key-suffix: ${{ github.ref == 'refs/heads/main' && steps.day.outputs.date || '' }}
           go-version-file: go.mod

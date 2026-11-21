@@ -30,7 +30,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Go
-        uses: Rethunk-Tech/gh-actions/setup-go@80a029f46e75b86aab02c0a92512a7d83b15fac3 # v1.32
+        uses: Rethunk-Tech/gh-actions/setup-go@97aa05d5253c1a2b871079b1b271e20304e25270 # v1.33
         with:
           go-version-file: go.mod
 

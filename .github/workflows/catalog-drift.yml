@@ -28,7 +28,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Bun
-        uses: Rethunk-Tech/gh-actions/setup-bun@346d9d280f6dfd86c9db02310039c90e2a6ddca4 # v1.31
+        uses: Rethunk-Tech/gh-actions/setup-bun@97aa05d5253c1a2b871079b1b271e20304e25270 # v1.33
         with:
           run-audit: "true"
 
