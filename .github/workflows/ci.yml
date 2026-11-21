@@ -71,8 +71,11 @@ jobs:
         # on something that never answers (govulncheck's database, a module proxy) would otherwise spend the job's
         # whole 35 minutes in silence.
         timeout-minutes: 20
-        # The step times show where a runner's few cores go; a fast workstation hides it.
-        run: bun run gate --profile
+        # The step times show where a runner's few cores go; a fast workstation hides it. A runner out of memory stops
+        # the job with SIGTERM and runs no later step, so a kernel OOM kill is printed as it happens.
+        run: |
+          sudo dmesg --follow --notime | grep --line-buffered -i -E 'out of memory|oom-kill' &
+          bun run gate --profile
 
       # setup-go saves the build cache in a post step only after a passing job, so a gate that fails on a new go.sum
       # leaves every later run on it restoring the same stale fallback and compiling cold again. Same key as setup-go's.
