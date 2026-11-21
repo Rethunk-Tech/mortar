@@ -568,3 +568,23 @@ jobs:
       tag: ${{ github.ref_name }}
     secrets:
       DISCORD_RELEASES_WEBHOOK: ${{ secrets.DISCORD_RELEASES_WEBHOOK }}
+
+  # Wakes the package updaters so the tap and bucket follow this release now, not at their next cron. Skips until the
+  # PACKAGERS_DISPATCH_TOKEN secret (a fine-grained PAT with Actions: write on those repos) exists.
+  notify-packagers:
+    needs: finalize
+    if: ${{ !cancelled() && needs.finalize.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Dispatch package updaters
+        env:
+          GH_TOKEN: ${{ secrets.PACKAGERS_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::notice::PACKAGERS_DISPATCH_TOKEN is not set; the package updaters run on their schedule"
+            exit 0
+          fi
+          gh workflow run update.yml -R Rethunk-Tech/homebrew-tap
+          gh workflow run update.yml -R Rethunk-Tech/scoop-bucket
