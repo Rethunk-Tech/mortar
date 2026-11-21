@@ -101,7 +101,7 @@ func TestRealBepInExRun(t *testing.T) {
 			t.Errorf("Mortar found %s (%s %s), which BepInEx neither loaded nor skipped", p.GUID, p.Name, p.Version)
 		}
 	}
-	order := plugins.LoadOrder(plugins.ScanEach(filepath.Join(dir, "BepInEx", "plugins")))
+	order, _ := plugins.LoadOrder(plugins.ScanEach(filepath.Join(dir, "BepInEx", "plugins")))
 	var predicted []runPlugin
 	for _, p := range order {
 		if in(loaded, p.Plugin) {

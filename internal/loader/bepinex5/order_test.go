@@ -48,3 +48,11 @@ func TestLastRunOrderHoldsForThePluginsItLoaded(t *testing.T) {
 		t.Fatalf("b %+v, a %+v", b, rows[3])
 	}
 }
+
+func TestSkippedPluginsReachTheLoadOrder(t *testing.T) {
+	got := skippedRows([]plugins.Skipped{{GUID: "bad", Name: "Bad", Version: "x", Reason: "version is invalid"}})
+	if len(got) != 1 || got[0].ID != mod.NewID(mod.FormatBepInEx, "bad") || got[0].Position != 0 ||
+		len(got[0].Issues) != 1 || got[0].Issues[0].Code != "skipped" || got[0].Issues[0].Message != "version is invalid" {
+		t.Fatalf("skipped rows %+v", got)
+	}
+}

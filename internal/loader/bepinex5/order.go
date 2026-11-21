@@ -24,11 +24,25 @@ func (l Loader) Order(p loader.ProfileView) ([]loadorder.Row, error) {
 	for _, dir := range p.Enabled {
 		asms = append(asms, plugins.ScanEach(dir)...)
 	}
-	order := plugins.LoadOrder(asms)
+	order, skipped := plugins.LoadOrder(asms)
 	path, _ := l.Path(p)
 	raw, _ := safefs.ReadFile(path)
 	moved := asLastRun(order, string(raw))
-	return rows(order, moved), nil
+	return append(rows(order, moved), skippedRows(skipped)...), nil
+}
+
+// skippedRows lists the plugins BepInEx would not load, unplaced (Position 0) and carrying why as an issue.
+func skippedRows(skipped []plugins.Skipped) []loadorder.Row {
+	var out []loadorder.Row
+	for _, s := range skipped {
+		out = append(out, loadorder.Row{
+			ID:      mod.NewID(mod.FormatBepInEx, s.GUID),
+			Name:    s.Name,
+			Version: s.Version,
+			Issues:  []loadorder.Issue{{Code: "skipped", Message: s.Reason, Params: map[string]string{"reason": s.Reason}}},
+		})
+	}
+	return out
 }
 
 // asLastRun reorders, in place, the plugins the log loaded into the order it loaded them, keeping every other plugin
