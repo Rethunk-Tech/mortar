@@ -31,6 +31,7 @@ func TestGaleProfileDatabase(t *testing.T) {
 			{"enabled":true,"fullName":"BepInEx-BepInExPack-5.4.2100","packageUuid":"u","versionUuid":"v"},
 			{"enabled":false,"fullName":"Alice-MoreCompany-1.2.3"},
 			{"enabled":true,"name":"Mine","uuid":"x"}]')`,
+		// Outside the data folder, so Profiles leaves it out.
 		`INSERT INTO profiles (name, path, game_slug, mods) VALUES ('Other', '/elsewhere', 'risk-of-rain-2', '[]')`,
 		// Recorded at a host path this process cannot reach, as a Flatpak sees a data folder opened through the portal.
 		`INSERT INTO profiles (name, path, game_slug, mods) VALUES ('Moved', '/mnt/gone/lethal-company/profiles/Moved', 'lethal-company', '[]')`,
@@ -63,7 +64,7 @@ func TestGaleProfileDatabase(t *testing.T) {
 		t.Fatal(err)
 	}
 	all, err := GaleProfiles(t.Context(), dbFile)
-	if err != nil || len(all) != 3 || all[2].Path != moved || all[1].Path != "/elsewhere" {
+	if err != nil || len(all) != 2 || all[1].Path != moved {
 		t.Fatalf("profiles = %v, %v", all, err)
 	}
 }
