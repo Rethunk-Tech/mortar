@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Card, Typography, useMediaQuery } from '@mui/material'
 import { useWidth } from '@rethunk/react-load-hooks'
-import { memo, useMemo, useRef } from 'react'
+import { memo, useCallback, useMemo, useRef } from 'react'
 import type {
   Mod,
   Profile,
@@ -349,7 +349,15 @@ function CardsPane({
     gridLanePx(laneCompact) +
     (cardSize === 'large' ? LARGE_LANE_EXTRA : 0) +
     (statsLine ? STATS_LINE_PX : 0)
-  const [parentRef, width] = useWidth<HTMLDivElement>()
+  const [widthRef, width] = useWidth<HTMLDivElement>()
+  const parentRef = useRef<HTMLDivElement | null>(null)
+  const setParent = useCallback(
+    (el: HTMLDivElement | null) => {
+      parentRef.current = el
+      widthRef(el)
+    },
+    [widthRef],
+  )
   const columns = gridColumnCount(width)
   const columnsRef = useRef(columns)
   columnsRef.current = columns
@@ -380,7 +388,7 @@ function CardsPane({
   })
   return (
     <Box
-      ref={parentRef}
+      ref={setParent}
       tabIndex={0}
       sx={{
         minHeight: 0,
