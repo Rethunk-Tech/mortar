@@ -415,3 +415,41 @@ func TestSandboxedProcessSeesNeitherSSHNorARealHomeCanary(t *testing.T) {
 		t.Skipf("bwrap cannot run here: %v %s", err, out)
 	}
 }
+
+func TestSecretsRefusedThroughSymlinkedHomeAndForMoreFolders(t *testing.T) {
+	root := t.TempDir()
+	real := filepath.Join(root, "var", "home", "me")
+	alias := filepath.Join(root, "home")
+	data := filepath.Join(root, "data")
+	t.Setenv("XDG_DATA_HOME", data)
+	for _, d := range []string{".var/app/x", ".config/discord", ".local/share/Steam/config", ".config/microsoft-edge", ".config/mod"} {
+		if err := os.MkdirAll(filepath.Join(real, d), 0o750); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.MkdirAll(filepath.Join(data, "mortar"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(root, "var", "home"), filepath.Join(root, "alias")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(real, alias); err != nil {
+		t.Fatal(err)
+	}
+	for _, d := range []string{".var/app/x", ".config/discord", ".local/share/Steam/config", ".config/microsoft-edge"} {
+		for _, home := range []string{real, alias, filepath.Join(root, "alias", "me")} {
+			if got := Allowable(filepath.Join(real, d), home); got != "" {
+				t.Fatalf("%s offered %q with home %s", d, got, home)
+			}
+			if got := Allowable(filepath.Join(alias, d), real); got != "" {
+				t.Fatalf("%s via alias offered %q", d, got)
+			}
+		}
+	}
+	if got := Allowable(filepath.Join(data, "mortar"), real); got != "" {
+		t.Fatalf("Mortar's data folder offered %q", got)
+	}
+	if got := Allowable(filepath.Join(alias, ".config", "mod"), real); got == "" {
+		t.Fatal("a mod's own folder must stay offerable")
+	}
+}
