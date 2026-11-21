@@ -1,7 +1,7 @@
 name: CI
 
 # The offline gate on every pull request and every push to main. Packaging stays in release.yml; browser e2e is
-# opt-in locally (`bun run --cwd frontend e2e`).
+# opt-in locally (gate --e2e).
 on:
   pull_request:
   push:

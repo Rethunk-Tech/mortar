@@ -214,7 +214,7 @@ func TestReplaceSurvivesStaleRestoreLeftover(t *testing.T) {
 	if err := replace(src, dst); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := os.ReadFile(dst); string(b) != "new" {
+	if b, _ := os.ReadFile(filepath.Clean(dst)); string(b) != "new" {
 		t.Fatalf("dst = %q", b)
 	}
 }
