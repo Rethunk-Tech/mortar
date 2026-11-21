@@ -39,7 +39,7 @@ export function useReasonText(): ReasonText {
       case 'moduleIncompatible':
         return t`is incompatible with ${{ other: p.other ?? '' }}`
       case 'skipped':
-        return t`${{ loader: BEPINEX }} won't load this: ${message}`
+        return t`${{ loader: BEPINEX }} will not load this: ${message}`
       case 'moduleDuplicate':
         return t`is installed more than once`
       case 'moduleCycle':

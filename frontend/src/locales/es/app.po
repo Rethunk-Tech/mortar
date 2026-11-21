@@ -3500,6 +3500,10 @@ msgstr ""
 msgid "This save has no SaveGameInfo date, so Mortar cannot tell when it is in the game."
 msgstr ""
 
+#: src/i18n/reasonText.ts
+msgid "{loader} will not load this: {message}"
+msgstr ""
+
 #: src/share/ManagerPane.tsx
 msgid "Imported"
 msgstr ""
@@ -7430,10 +7434,6 @@ msgstr ""
 
 #: src/shell/checkForUpdates.ts
 msgid "Checking for updates…"
-msgstr ""
-
-#: src/i18n/reasonText.ts
-msgid "{loader} won't load this: {message}"
 msgstr ""
 
 #: src/toasts/report.ts

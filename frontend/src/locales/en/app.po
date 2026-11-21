@@ -3506,6 +3506,10 @@ msgstr "Freeze this profile"
 msgid "This save has no SaveGameInfo date, so Mortar cannot tell when it is in the game."
 msgstr "This save has no SaveGameInfo date, so Mortar cannot tell when it is in the game."
 
+#: src/i18n/reasonText.ts
+msgid "{loader} will not load this: {message}"
+msgstr "{loader} will not load this: {message}"
+
 #: src/share/ManagerPane.tsx
 msgid "Imported"
 msgstr "Imported"
@@ -7437,10 +7441,6 @@ msgstr "Open {source} settings"
 #: src/shell/checkForUpdates.ts
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
-
-#: src/i18n/reasonText.ts
-msgid "{loader} won't load this: {message}"
-msgstr "{loader} won't load this: {message}"
 
 #: src/toasts/report.ts
 msgid "The game is already running."

@@ -3500,6 +3500,10 @@ msgstr "冻结此配置"
 msgid "This save has no SaveGameInfo date, so Mortar cannot tell when it is in the game."
 msgstr "此存档没有 SaveGameInfo 日期，因此 Mortar 无法判断它在游戏中的时间。"
 
+#: src/i18n/reasonText.ts
+msgid "{loader} will not load this: {message}"
+msgstr ""
+
 #: src/share/ManagerPane.tsx
 msgid "Imported"
 msgstr "已导入"
@@ -7431,10 +7435,6 @@ msgstr "打开 {source} 设置"
 #: src/shell/checkForUpdates.ts
 msgid "Checking for updates…"
 msgstr "正在检查更新…"
-
-#: src/i18n/reasonText.ts
-msgid "{loader} won't load this: {message}"
-msgstr ""
 
 #: src/toasts/report.ts
 msgid "The game is already running."

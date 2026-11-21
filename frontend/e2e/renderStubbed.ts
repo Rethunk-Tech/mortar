@@ -129,7 +129,7 @@ function loadOrderCase(tab: (page: Page, name: string) => Promise<void>): Case {
     run: async (p: Page) => {
       await tab(p, 'Load order')
       await p.getByText('Party Limit Begone', { exact: true }).waitFor()
-      const worded = p.getByText(/won't load this/)
+      const worded = p.getByText(/will not load this/)
       await worded.first().waitFor()
       console.log(
         `load-order-bg3 skipped row renders: ${JSON.stringify(await worded.first().textContent())}`,
