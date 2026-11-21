@@ -29,7 +29,7 @@ require (
 	github.com/Rethunk-Tech/go-paradoxmods v0.1.1
 	github.com/Rethunk-Tech/go-safefs v0.10.0
 	github.com/Rethunk-Tech/go-semverish v0.3.1
-	github.com/Rethunk-Tech/go-smapi v0.3.2
+	github.com/Rethunk-Tech/go-smapi v0.3.3
 	github.com/Rethunk-Tech/go-smapiweb v0.2.0
 	github.com/Rethunk-Tech/go-thunderstore v0.4.2
 	github.com/Rethunk-Tech/go-vintagestory v0.1.1
