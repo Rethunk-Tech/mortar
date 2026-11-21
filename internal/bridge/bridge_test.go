@@ -2,6 +2,7 @@ package bridge
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -86,6 +87,28 @@ func TestSendTimeout(t *testing.T) {
 	start := time.Now()
 	if _, err := send(t.Context(), state(port), "x"); err == nil || time.Since(start) > 2*timeout {
 		t.Fatalf("err = %v after %v", err, time.Since(start))
+	}
+}
+
+func TestSendWaitsAsLongAsTheCallersDeadline(t *testing.T) {
+	timeout = 50 * time.Millisecond
+	t.Cleanup(func() { timeout = 3 * time.Second })
+	ln, port := listen(t)
+	t.Cleanup(func() { _ = ln.Close() })
+	go func() {
+		c, err := ln.Accept()
+		if err != nil {
+			return
+		}
+		defer func() { _ = c.Close() }()
+		_, _ = bufio.NewReader(c).ReadString('\n')
+		time.Sleep(300 * time.Millisecond)
+		_, _ = fmt.Fprint(c, "ok reloaded 1\n")
+	}()
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+	if reply, err := send(ctx, state(port), "config reload x"); err != nil || reply != "reloaded 1" {
+		t.Fatalf("reply = %q, err = %v", reply, err)
 	}
 }
 

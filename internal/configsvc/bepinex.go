@@ -165,9 +165,14 @@ func (s *Service) reloadInGame(ctx context.Context, game, profileID string, f Co
 	}
 	ctx, cancel := context.WithTimeout(ctx, reloadWait)
 	defer cancel()
-	err = bridge.Send(ctx, bridge.BepInEx.StatePath(dir), "config reload "+f.Name)
+	reply, err := bridge.SendReply(ctx, bridge.BepInEx.StatePath(dir), "config reload "+f.Name)
 	if err != nil && !errors.Is(err, bridge.ErrNotRunning) && !errors.Is(err, bridge.ErrNotReady) {
 		slog.Warn("config: the game did not reload", "file", f.Name, "err", err)
+		return
+	}
+	// `reloaded 0` means no plugin owns the file; `reloaded N, failed M: ...` means some plugin's reload threw.
+	if err == nil && (reply == "reloaded 0" || strings.Contains(reply, "failed")) {
+		slog.Warn("config: the game reloaded the file only in part", "file", f.Name, "reply", reply)
 	}
 }
 

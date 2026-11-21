@@ -113,16 +113,21 @@ func validToken(t string) bool {
 
 // Send runs command in the game whose companion wrote stateFile.
 func Send(ctx context.Context, stateFile, command string) error {
-	st, err := ReadState(stateFile)
-	if err != nil {
-		return err
-	}
-	_, err = send(ctx, st, command)
+	_, err := SendReply(ctx, stateFile, command)
 	return err
 }
 
+// SendReply is Send that also returns the text after `ok`, for a command whose answer says how it went.
+func SendReply(ctx context.Context, stateFile, command string) (string, error) {
+	st, err := ReadState(stateFile)
+	if err != nil {
+		return "", err
+	}
+	return send(ctx, st, command)
+}
+
 // Query asks the game a question and returns the JSON the companion answers with. what is status, plugins, perf,
-// perf start, perf stop or configsync; only the BepInEx bridge answers perf stop and configsync.
+// perf start, perf stop or configsync; both bridges answer perf stop; only the BepInEx bridge answers configsync.
 func Query(ctx context.Context, stateFile, what string) (json.RawMessage, error) {
 	if what != "status" && what != "plugins" && what != "perf" && what != "perf start" && what != "perf stop" && what != "configsync" {
 		return nil, fmt.Errorf("unknown query %q", what)
@@ -162,8 +167,9 @@ const (
 	FeatureOverlay    = "overlay"
 	FeatureConsole    = "console"
 	FeaturePerf       = "perf"
-	FeatureIntroSkip  = "intro"
-	FeatureStartup    = "startup"
+	FeatureIntroSkip  = "introskip"
+	FeatureStartup    = "patcher"
+	FeatureLogTags    = "logtags"
 	FeatureConfigSync = "configsync"
 )
 
@@ -180,7 +186,7 @@ func (f Features) Serves(feature string) bool {
 }
 
 // Features05 is the set a companion that advertises none still serves: everything the 0.5.x bridges did.
-var Features05 = Features{FeatureOverlay, FeatureConsole, FeaturePerf, FeatureIntroSkip, FeatureStartup, FeatureConfigSync}
+var Features05 = Features{FeatureOverlay, FeatureConsole, FeaturePerf, FeatureIntroSkip, FeatureStartup, FeatureLogTags, FeatureConfigSync}
 
 // send returns the JSON after `ok`, "" for a bare `ok`.
 func send(ctx context.Context, st State, command string) (string, error) {
@@ -194,7 +200,12 @@ func send(ctx context.Context, st State, command string) (string, error) {
 		return "", fmt.Errorf("%w: %w", ErrNotRunning, err)
 	}
 	defer func() { _ = conn.Close() }()
-	if err := conn.SetDeadline(time.Now().Add(timeout)); err != nil {
+	// A caller's own deadline (the config reload waits longer than a query) outranks the default.
+	deadline, ok := ctx.Deadline()
+	if !ok {
+		deadline = time.Now().Add(timeout)
+	}
+	if err := conn.SetDeadline(deadline); err != nil {
 		return "", err
 	}
 	if _, err := io.WriteString(conn, st.Token+"\n"+command+"\n"); err != nil {
