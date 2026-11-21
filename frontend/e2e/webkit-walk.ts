@@ -18,10 +18,11 @@ export interface Walk {
   only: string[]
 }
 
-const tab = (name: string): Step[] => [{ role: 'tab', name: `^${name}` }]
+// A tab's label carries its badge count (Mods3), so tabs match by prefix.
+const tab = (name: string): Step[] => [{ role: 'tab', name, prefix: true }]
 const OPEN_SETTINGS: Step[] = [
-  { role: 'button', name: '^Mortar menu$' },
-  { role: 'menuitem', name: '^Mortar settings' },
+  { role: 'button', name: 'Mortar menu' },
+  { role: 'menuitem', name: 'Mortar settings', prefix: true },
 ]
 const SECTIONS = [
   'General',
@@ -36,7 +37,7 @@ const SECTIONS = [
   'Shortcuts',
   'About',
 ]
-const view = (which: string): Step => ({ role: 'button', name: `^${which} view$` })
+const view = (which: string): Step => ({ role: 'button', name: `${which} view` })
 const SCREENS: Screen[] = [
   { name: 'home', steps: tab('Home') },
   { name: 'mods-grid', steps: [...tab('Mods'), view('Grid')] },
@@ -53,15 +54,16 @@ const SCREENS: Screen[] = [
     name: `settings-${s.toLowerCase().replaceAll(' ', '-')}`,
     steps: [
       ...(i === 0 ? OPEN_SETTINGS : []),
-      { role: 'button' as const, name: `^${s}$`, within: '[aria-label="Settings sections"]' },
+      { role: 'button' as const, name: s, within: '[aria-label="Settings sections"]' },
     ],
     from: OPEN_SETTINGS,
   })),
   {
     name: 'game-select',
     steps: [
-      { role: 'button', name: '^(Switch game|Choose a game)' },
-      { role: 'menuitem', name: '^All games' },
+      // The walk runs with a game open, so the switcher reads "Switch game: <game>".
+      { role: 'button', name: 'Switch game', prefix: true },
+      { role: 'menuitem', name: 'All games', prefix: true },
     ],
   },
 ]
