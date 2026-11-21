@@ -90,7 +90,7 @@ function releaseEverywhereCase({ developTab, pick }: ReturnType<typeof dialogKit
 }
 
 /** The Load order tab as Baldur's Gate 3 shows it: GustavX, then paks in the profile's order, one with an issue. */
-export const loadOrderStub = () => {
+export const loadOrderStub = (withSkipped = false) => {
   const row = (position: number, name: string, over: Record<string, unknown> = {}) => ({
     position,
     id: `folder:uuid-${position}`,
@@ -98,6 +98,11 @@ export const loadOrderStub = () => {
     version: '1.0.0.0',
     detail: `${name}.pak`,
     ...over,
+  })
+  const skipped = row(0, 'Bad Version', {
+    issues: [
+      { code: 'skipped', message: 'version is invalid', params: { reason: 'version is invalid' } },
+    ],
   })
   return stubCalls({
     [LOAD_ORDER]: [
@@ -108,21 +113,13 @@ export const loadOrderStub = () => {
         issues: [{ code: 'moduleMissing', message: 'requires Gone', params: { other: 'Gone' } }],
       }),
       row(4, 'Hand-added override'),
-      row(0, 'Bad Version', {
-        issues: [
-          {
-            code: 'skipped',
-            message: 'version is invalid',
-            params: { reason: 'version is invalid' },
-          },
-        ],
-      }),
+      ...(withSkipped ? [skipped] : []),
     ],
   })
 }
 
 function loadOrderCase(tab: (page: Page, name: string) => Promise<void>): Case {
-  const stub = loadOrderStub()
+  const stub = loadOrderStub(true)
   return {
     name: 'load-order-bg3',
     setup: async (p: Page) => {
@@ -132,6 +129,11 @@ function loadOrderCase(tab: (page: Page, name: string) => Promise<void>): Case {
     run: async (p: Page) => {
       await tab(p, 'Load order')
       await p.getByText('Party Limit Begone', { exact: true }).waitFor()
+      const worded = p.getByText(/won't load this/)
+      await worded.first().waitFor()
+      console.log(
+        `load-order-bg3 skipped row renders: ${JSON.stringify(await worded.first().textContent())}`,
+      )
     },
     teardown: (p: Page) => p.unroute('**/wails/runtime', stub),
   }
