@@ -2,6 +2,7 @@ package paradox
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -152,5 +153,17 @@ func TestChangelogStopsAtTheInstalledVersion(t *testing.T) {
 	got, err := fake(t, nil).Changelog(t.Context(), "", "74604", "1.7.9", "1.8.0", "")
 	if err != nil || len(got) != 2 || got[0].Version != "1.8.0" || got[0].Date != "2026-09-15" || got[1].Version != "1.7.10" {
 		t.Fatalf("notes = %+v, %v", got, err)
+	}
+}
+
+func TestRateLimitedAnswerIsBusyWithItsReset(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Retry-After", "5")
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	t.Cleanup(srv.Close)
+	_, err := Driver{HTTP: srv.Client(), URL: srv.URL}.Resolve(t.Context(), "3", "")
+	if busy, ok := errors.AsType[*source.BusyError](err); !ok || busy.Reset.IsZero() {
+		t.Fatalf("err = %v, want a BusyError carrying the Retry-After reset", err)
 	}
 }

@@ -59,8 +59,8 @@ func apiErr(err error) error {
 	if err == nil {
 		return nil
 	}
-	if errors.Is(err, httpkit.ErrRateLimited) {
-		return &source.BusyError{Source: "Modrinth"}
+	if rl, ok := errors.AsType[*httpkit.RateLimitError](err); ok {
+		return &source.BusyError{Source: "Modrinth", Reset: rl.Reset}
 	}
 	if se, ok := errors.AsType[*httpkit.StatusError](err); ok {
 		return &source.StatusError{Service: "Modrinth", Code: se.Code, Status: se.Status}

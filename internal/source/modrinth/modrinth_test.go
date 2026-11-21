@@ -155,6 +155,9 @@ func TestLatestSaysBusyWhenRateLimited(t *testing.T) {
 	if !errors.Is(err, source.ErrBusy) {
 		t.Fatalf("err = %v, want ErrBusy", err)
 	}
+	if busy, ok := errors.AsType[*source.BusyError](err); !ok || busy.Reset.IsZero() {
+		t.Fatalf("err = %v, want a BusyError carrying the Retry-After reset", err)
+	}
 }
 
 func TestLatestAsksNothingWithoutLoaders(t *testing.T) {
