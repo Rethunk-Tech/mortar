@@ -52,6 +52,38 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.8.0" date="2026-11-21">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Skyrim Special Edition, Skyrim, Fallout 4, Fallout: New Vegas and Starfield: Mortar writes the plugin list in LOOT's default order, keeps archives and plugins whole, and starts the script extender when it is installed</li>
+          <li>Minecraft profiles are Java instances with Fabric, Forge or NeoForge</li>
+          <li>Mortar's window is translucent and shows the desktop through it; on GNOME 51 and later it also blurs what is behind it</li>
+          <li>A mod's description in Browse has a Translate button that shows it in your language</li>
+          <li>Develop can start a Lethal Company scrap item</li>
+          <li>The load order lists BepInEx plugins that will not load, with the reason</li>
+          <li>Stopping an in-game measurement in Stardew Valley ends it in the game too</li>
+          <li>Planet Zoo, Graveyard Keeper and Hogwarts Legacy are found on Epic, Darkest Dungeon on GOG and Epic, and Starbound on Xbox</li>
+          <li>52 more BepInEx 5 games get Mortar's companion mod</li>
+          <li>Mortar warns that the GOG copy of Graveyard Keeper cannot load plugins</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>A profile code that carries DLL files installs them only when you tick the option to</li>
+          <li>Pairing computers over the LAN uses a new exchange: update Mortar on both computers to pair or send</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>The AppImage opens your browser for Nexus sign-in and links on desktops where it failed silently, such as KDE Plasma with LibreWolf</li>
+          <li>A file you edited in the game folder is kept when its mod updates or rolls back, and set aside only when another mod takes it over</li>
+          <li>A Nexus download is refused when its file list cannot be checked, instead of installing unchecked</li>
+          <li>A download that redirects off https is refused</li>
+          <li>Changing a setting in a mod's config.json keeps the rest of the file as you wrote it</li>
+          <li>Mortar no longer reopens at a minimised window's off-screen position</li>
+          <li>Modrinth's wait time shows when it is busy</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.7.0" date="2026-11-10">
       <description>
         <p>New</p>
