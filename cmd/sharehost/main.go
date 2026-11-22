@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/sharehost"
 )
 
@@ -78,7 +79,7 @@ func siteWith404(dir string) http.Handler {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusNotFound)
-		b, err := os.ReadFile(notFound) //nolint:gosec // SITE_DIR is the operator-configured document root
+		b, err := safefs.ReadFile(notFound)
 		if err == nil {
 			_, _ = w.Write(b)
 		}
