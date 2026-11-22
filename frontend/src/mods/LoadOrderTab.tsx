@@ -87,7 +87,7 @@ const OrderRowBody = memo(function OrderRowContent({
           fontVariantNumeric: 'tabular-nums',
         }}
       >
-        {row.position}
+        {row.position > 0 ? row.position : null}
       </Typography>
       <Box sx={{ minWidth: 0, flex: 1 }}>
         <Box
