@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { loadOrderStub, releaseEverywhereGoodRun } from './renderStubbed.ts'
+import { loadOrderStub, releaseEverywhereGoodRun, skippedPluginPatch } from './renderStubbed.ts'
 
 interface Helpers {
   click: (
@@ -20,8 +20,8 @@ interface Helpers {
 }
 
 /** The news posts' scenes: 0.3.13's Change version, Add a game and Multiplayer mod list, and 0.3.14's Develop tab and
- * Preferred source, 0.5.0's mod.io sign-in, Load order and Release everywhere, 0.6.0's Manual sort, and 0.7.0's
- * Notifications and mod details. */
+ * Preferred source, 0.5.0's mod.io sign-in, Load order and Release everywhere, 0.6.0's Manual sort, 0.7.0's
+ * Notifications and mod details, and 0.8.0's Translate and skipped load-order row. */
 // Asks every site once, so each row of the picture shows the site answering.
 async function testEveryAccount(page: Page, stepMs: number) {
   const main = page.getByRole('main')
@@ -126,6 +126,34 @@ const modDetailsScene = (h: Helpers) => ({
       .nth(5)
       .click({ timeout: h.stepMs })
     await page.getByRole('button', { name: /^Change version…/u }).waitFor({ timeout: h.stepMs })
+  },
+})
+
+// A listing's description in Browse with its Translate button.
+const translateScene = (h: Helpers) => ({
+  name: 'translate',
+  file: 'translate-0-8-0.png',
+  ...h.desk,
+  profile: h.profile,
+  steps: async (page: Page) => {
+    await h.click(page, 'tab', 'Browse')
+    await page.locator('[data-hit]').first().click({ timeout: 20_000 })
+    await page.getByRole('button', { name: 'Translate', exact: true }).waitFor({ timeout: 20_000 })
+  },
+})
+
+// A BepInEx plugin that will not load, with the reason on its row, in the Lethal Company profile's load order.
+const skippedLoadOrderScene = (h: Helpers) => ({
+  name: 'load-order-skipped',
+  file: 'load-order-0-8-0.png',
+  ...h.desk,
+  profile: h.developing,
+  steps: async (page: Page) => {
+    await page.route('**/wails/runtime', skippedPluginPatch())
+    await h.click(page, 'tab', 'Load order')
+    await page
+      .getByText('Ship Lights', { exact: true })
+      .scrollIntoViewIfNeeded({ timeout: h.stepMs })
   },
 })
 
@@ -237,6 +265,8 @@ export const releaseScenes = (h: Helpers) => [
   manualSortScene(h),
   notificationsScene(h),
   modDetailsScene(h),
+  translateScene(h),
+  skippedLoadOrderScene(h),
   {
     name: 'load-order',
     file: 'load-order-0-5-0.png',

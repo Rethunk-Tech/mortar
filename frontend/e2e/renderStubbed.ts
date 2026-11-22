@@ -1,5 +1,6 @@
 import type { Page, Route } from '@playwright/test'
 import type { Case } from './render-budget.ts'
+import { patchCalls } from './renderCoverage.ts'
 import type { dialogKit } from './renderDialogs.ts'
 
 // Backend answers the render data may not produce on its own (a Steam install, a project out of step, a GitHub origin).
@@ -88,6 +89,26 @@ function releaseEverywhereCase({ developTab, pick }: ReturnType<typeof dialogKit
     teardown: (p: Page) => p.unroute('**/wails/runtime', stub),
   }
 }
+
+/** The start of a BepInEx profile's own load order with one plugin BepInEx would skip for a missing dependency, unplaced. */
+export const skippedPluginPatch = () =>
+  // The first rows only, so the unplaced row, listed after every placed one, fits in the picture.
+  patchCalls<Record<string, unknown>[]>([LOAD_ORDER], (rows) => [
+    ...rows.slice(0, 9),
+    {
+      position: 0,
+      id: 'bepinex:ShipLights',
+      name: 'Ship Lights',
+      version: '1.2.0',
+      issues: [
+        {
+          code: 'skipped',
+          message: 'missing dependency LightCore',
+          params: { reason: 'missing dependency LightCore' },
+        },
+      ],
+    },
+  ])
 
 /** The Load order tab as Baldur's Gate 3 shows it: GustavX, then paks in the profile's order, one with an issue. */
 export const loadOrderStub = (withSkipped = false) => {
