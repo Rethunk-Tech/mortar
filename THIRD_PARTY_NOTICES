@@ -944,7 +944,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@tanstack/react-virtual@3.14.26
+@tanstack/react-virtual@3.14.28
 licence: MIT
 https://tanstack.com/virtual
 
@@ -972,7 +972,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@tanstack/virtual-core@3.19.11
+@tanstack/virtual-core@3.19.13
 licence: MIT
 https://tanstack.com/virtual
 
@@ -6789,7 +6789,7 @@ Bundled source icon (frontend/src/brand/vendor/modio.svg) from the mod.io SDK, s
 
 --------------------------------------------------------------------------------
 
-modernc.org/libc@v1.82.10
+modernc.org/libc@v1.82.12
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/libc
 
@@ -6891,7 +6891,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-modernc.org/sqlite@v1.62.0
+modernc.org/sqlite@v1.63.0
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/sqlite
 
