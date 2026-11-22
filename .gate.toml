@@ -43,10 +43,12 @@ run = "appstreamcli validate --strict --no-net build/linux/tech.rethunk.Mortar.m
 timeout = "1m"
 
 # The site and its demo read the generated bindings, which a warm tree already has (as for the test gate above), so
-# they start at once beside typecheck's bindings-fresh.
+# they start at once beside typecheck's bindings-fresh. The build empties and rewrites site/, and every `./...` gate
+# walks into it and fails on a folder that vanished mid-walk, so the site waits for those gates.
 [gates.site]
 run = "bun run --silent site"
 timeout = "3m"
+needs = ["build", "go", "vuln", "lint-go", "lint-go-windows", "race-build"]
 
 [gates.site-types]
 run = "bun run --cwd web --silent check"
