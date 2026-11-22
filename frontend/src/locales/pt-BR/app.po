@@ -1,158 +1,152 @@
 msgid ""
-msgstr ""
-"POT-Creation-Date: 2026-10-22 10:43-0700\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"X-Generator: @lingui/cli\n"
-"Language: pt-BR\n"
+msgstr "POT-Creation-Date: 2026-10-22 10:43-0700\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nX-Generator: Weblate 2026.12.dev0\nLanguage: pt-BR\nPO-Revision-Date: 2026-11-23 01:12+0000\nLast-Translator: Wallet <walletrid@users.noreply.hosted.weblate.org>\nLanguage-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/mortar/app/pt_BR/>\nPlural-Forms: nplurals=2; plural=n > 1;\n"
 
 #: src/saves/SavesTab.tsx
 msgid "No saves match"
-msgstr ""
+msgstr "Nenhum save corresponde"
 
 #: src/launch/SaveWarnDialog.tsx
 msgid "{name} ({path}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
-msgstr ""
+msgstr "{name} ({path}) foi jogado anteriormente com mods que nesse perfil estão desativados ou não presentes. Jogar sem eles pode perder os itens ou quebrar o save."
 
 #: src/game/Sidebar.tsx
 msgid "Performance"
-msgstr ""
+msgstr "Performance"
 
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
 msgid "Open profile folder"
-msgstr ""
+msgstr "Abrir pasta do perfil"
 
 #: src/browse/ResultCard.tsx
 msgid "Possibly a re-upload of {reuploadOf}"
-msgstr ""
+msgstr "Possivelmente uma republicação de {reuploadOf}"
 
 #: src/share/IncludeOptions.tsx
 msgid "Include mod notes"
-msgstr ""
+msgstr "Incluir notas de mods"
 
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "Template"
-msgstr ""
+msgstr "Modelo pronto"
 
 #: src/develop/ProjectCard.tsx
 #: src/develop/ProjectMenu.tsx
 msgid "Could not open the folder"
-msgstr ""
+msgstr "Não foi possível abrir a pasta"
 
 #: src/toasts/EarlierChanges.tsx
 msgid "These changes will be reverted too:"
-msgstr ""
+msgstr "Essas mudanças também serão revertidas:"
 
 #: src/develop/CloneDialog.tsx
 #: src/develop/NewModDialog.tsx
 msgid "Choose…"
-msgstr ""
+msgstr "Escolha…"
 
 #: src/develop/UploadDialog.tsx
 msgid "Could not save the token"
-msgstr ""
+msgstr "Não foi possível salvar o token"
 
 #: src/commandPalette/paletteLabels.ts
 #: src/develop/DevelopTab.tsx
 msgid "Open profile"
-msgstr ""
+msgstr "Abrir perfil"
 
 #: src/develop/Outcome.tsx
 msgid "Could not open the file"
-msgstr ""
+msgstr "Não foi possível abrir o arquivo"
 
 #: src/sync/store.ts
 #: src/sync/SyncOffers.tsx
 msgid "{name} was changed on {machine}"
-msgstr ""
+msgstr "{name} foi modificado em {machine}"
 
 #: src/queue/QueueBody.tsx
 msgid "Press Mod Manager Download on {source}. Mortar picks it up and opens the next page."
-msgstr ""
+msgstr "Aperte Mod Manager Download em {source}. Mortar o receberá e abrirá a próxima página."
 
 #: src/queue/LargeDownloadDialog.tsx
 msgid "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive."
-msgstr ""
+msgstr "Esse download é {size}, muito maior que um mod normalmente é. Ele demorará um longo tempo e ocupará bastante do seu disco."
 
 #: src/share/importCompletion.ts
 msgid "Show failed"
-msgstr ""
+msgstr "Mostrar falhou"
 
 #: src/launchers/LauncherList.tsx
 msgid "{os} only. On this computer its games come in through {launcher}, {otherLauncher} or {thirdLauncher}."
-msgstr ""
+msgstr "Somente {os}. Nesse computador os jogos vem por {launcher}, {otherLauncher} or {thirdLauncher}."
 
 #: src/game/FarmMenuItem.tsx
 msgid "This profile matches that list."
-msgstr ""
+msgstr "Esse perfil corresponde a essa lista."
 
 #: src/install/NeedsRootCallout.tsx
 msgid "This optional file replaces files of {baseLabel}. Pick where its files go."
-msgstr ""
+msgstr "Esse arquivo opicional substitui os arquivos de {baseLabel}. Escolha para onde seus arquivos vão."
 
 #: src/game/FarmMenuItem.tsx
 msgid "Could not read that file"
-msgstr ""
+msgstr "Não foi possível ler esse arquivo"
 
 #: src/share/MethodPanes.tsx
 msgid "This uploads the profile to {source} and gives a public code."
-msgstr ""
+msgstr "Isso envia o perfil para {source} e devolve um código público."
 
 #: src/share/ImportFooter.tsx
 msgid "Local-only mods kept ({count})"
-msgstr ""
+msgstr "Mods somente locais manteram ({count})"
 
 #: src/develop/ownParams.ts
 msgid "The team the mod is published under."
-msgstr ""
+msgstr "O time que o mod é publicado por."
 
 #: src/firstrunTour/TourPopover.tsx
 msgid "Launch the game with this profile's mods. Mortar applies your list before the game starts."
-msgstr ""
+msgstr "Iniciar o jogo com os mods desse perfil. Mortar aplica sua lista antes do jogo começar."
 
 #: src/templates/TemplateDialogs.tsx
 msgid "Choose Save as template… from a profile's menu."
-msgstr ""
+msgstr "Escolha salvar como modelo pronto... pelo menu de um perfil."
 
 #: src/saves/SaveBackupsButton.tsx
 msgid "Allow cleanup"
-msgstr ""
+msgstr "Permitir limpa"
 
 #: src/queue/QueueSheet.tsx
 msgid "{installing} installing"
-msgstr ""
+msgstr "{installing} instalando"
 
 #: src/develop/NewModDialog.tsx
 msgid "New profile: {name}"
-msgstr ""
+msgstr "Novo perfil: {name}"
 
 #: src/queue/QueueBody.tsx
 msgid "Skip this profile"
-msgstr ""
+msgstr "Pular esse perfil"
 
 #: src/queue/store.ts
 msgid "{source} rejected your sign-in"
-msgstr ""
+msgstr "{source} rejeitou seu login"
 
 #: src/queue/QueueBody.tsx
 #: src/queue/store.ts
 #: src/toasts/report.ts
 msgid "Open storage settings"
-msgstr ""
+msgstr "Abrir configurações de armazenamento"
 
 #: src/game/LaunchMenu.tsx
 msgid "Manage tools…"
-msgstr ""
+msgstr "Gerenciar ferramentas…"
 
 #: src/install/OverlayPlaceDialog.tsx
 msgid "This optional file has no manifest and replaces files of {baseLabel}. Mortar could not tell where they go: pick the folder to take from it and the main mod folder it goes into."
-msgstr ""
+msgstr "Esse arquivo opicional não tem manifest e substitui arquivos de {baseLabel}. Mortar não conseguiu concluir para onde eles vão: escolha a pasta para tirar dele e a pasta do mod principal que ela irá para."
 
 #: src/game/HeroGlance.tsx
 msgid "Updated"
-msgstr ""
+msgstr "Atualizado"
 
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "{added}; {rest}"
@@ -160,57 +154,57 @@ msgstr ""
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Delete profile"
-msgstr ""
+msgstr "Deletar perfil"
 
 #: src/templates/TemplateDialogs.tsx
 msgid "Could not delete the template"
-msgstr ""
+msgstr "Não foi possível deletar o modelo pronto"
 
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "Different version {count} (kept as is)"
-msgstr ""
+msgstr "Versão diferente {count} (Mantido como está)"
 
 #: src/game/Hero.tsx
 msgid "revision {review} is out"
-msgstr ""
+msgstr "Revisão {review} está liberada"
 
 #: src/game/FarmMenuItem.tsx
 msgid "Could not queue the downloads"
-msgstr ""
+msgstr "Não foi possível enfileirar os downloads"
 
 #: src/toasts/history.ts
 msgid "That profile is gone."
-msgstr ""
+msgstr "Esse perfil não está mais presente."
 
 #: src/queue/QueueBody.tsx
 msgid "Up next: {names}"
-msgstr ""
+msgstr "Próximo: {names}"
 
 #: src/develop/TestWith.tsx
 msgid "Test with"
-msgstr ""
+msgstr "Teste com"
 
 #: src/develop/draft.ts
 msgid "{name}: cannot start with a dash."
-msgstr ""
+msgstr "{name}: não pode começar com um travessão."
 
 #: src/share/CollectionNotes.tsx
 msgid "These come from outside {source}, so Mortar does not download them."
-msgstr ""
+msgstr "Esses vem de fora de {source}, então Mortar não os baixa."
 
 #: src/game/HomeNotes.tsx
 msgid "Edit notes"
-msgstr ""
+msgstr "Editar notas"
 
 #: src/updates/WhatsNewDialog.tsx
 msgid "No notes for this release."
-msgstr ""
+msgstr "Sem notas para esse lançamento."
 
 #: src/share/ListFormat.tsx
 #: src/share/MethodPanes.tsx
 #: src/share/useShareBuild.ts
 msgid "Could not save the file"
-msgstr ""
+msgstr "Não foi possível salvar o arquivo"
 
 #: src/shell/dragAnnouncements.ts
 msgid "Dropped {name} at {place}."
@@ -218,23 +212,23 @@ msgstr ""
 
 #: src/saves/lackChipActions.tsx
 msgid "Enable {name} in this profile"
-msgstr ""
+msgstr "Ativar {name} nesse perfil"
 
 #: src/games/AddGameDialog.tsx
 msgid "Choose the game's program first."
-msgstr ""
+msgstr "Escolha o programa do jogo primeiro."
 
 #: src/templates/TemplateDialogs.tsx
 msgid "A template with this name already exists."
-msgstr ""
+msgstr "Um modelo pronto com esse nome já existe."
 
 #: src/launchers/LauncherList.tsx
 msgid "Found, with no supported games yet"
-msgstr ""
+msgstr "Encontrado, ainda sem jogos suportados"
 
 #: src/lan/IncomingPrompt.tsx
 msgid "Copying mod files"
-msgstr ""
+msgstr "Copiando arquivos do(s) mod(s)"
 
 #: src/games/ProfileCards.tsx
 msgid "Open {game} ({count, plural, one {# more profile} other {# more profiles}})"
@@ -242,31 +236,31 @@ msgstr ""
 
 #: src/share/ImportProblems.tsx
 msgid "{name} is broken for {detail}"
-msgstr ""
+msgstr "{name} está quebrado por {detail}"
 
 #: src/saves/SaveBackupsButton.tsx
 msgid "Kept by the game"
-msgstr ""
+msgstr "Mantido pelo jogo"
 
 #: src/firstrunTour/TourPopover.tsx
 msgid "Switch game"
-msgstr ""
+msgstr "Trocar jogo"
 
 #: src/queue/store.ts
 msgid "{name} needs its main file first"
-msgstr ""
+msgstr "{name} precisa do seu arquivo principal primeiro"
 
 #: src/share/ImportProblems.tsx
 msgid "{name} needs {detail}, which Mortar cannot install"
-msgstr ""
+msgstr "{name} precisa de {detail}, que Mortar não pode instalar"
 
 #: src/tidy/report.ts
 msgid "Removed a leftover mod folder"
-msgstr ""
+msgstr "Pasta esquecida de um mod removida"
 
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Your antivirus ({scanner}) reports {name}{where}. Mod loaders and their DLLs often trip heuristics, but a real detection can harm your computer. Install only a file you trust. Mortar records this choice in the profile's history."
-msgstr ""
+msgstr "Seu antivírus ({scanner}) reportou {name}{where}. Carregadoes de mods e suas DLLs frequentemente são pegos como falso-positivos, mas uma detecção real pode danificar seu computado. Instale apenas um arquivo que você confia. Mortar grava sua escolha no histórico do perfil."
 
 #: src/groups/applied.ts
 msgid "{count, plural, one {# mod added} other {# mods added}}"
