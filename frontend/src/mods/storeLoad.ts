@@ -19,6 +19,7 @@ import { getLast, peekLast, putLast } from '../shell/lastGood.ts'
 import { type InlineError, inlineError, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useBadges } from './badges.ts'
 import { groupConflicts } from './fileConflicts.ts'
+import { shortFileNames } from './fileNames.ts'
 import { loadCollapsed, persistCollapsed } from './group.ts'
 import { missingCount, modId, problemCount } from './lookup.ts'
 import { openTarget } from './storeView.ts'
@@ -191,8 +192,9 @@ export async function loadMods(
     if (current()) {
       const same = get().modsFor === target.id
       const prevPages = get().pages
+      const named = shortFileNames(mods ?? [])
       set({
-        mods: same ? keepUnchanged(get().mods, mods ?? [], modId) : (mods ?? []),
+        mods: same ? keepUnchanged(get().mods, named, modId) : named,
         pages: same && sameValue(prevPages, pages ?? {}) ? prevPages : (pages ?? {}),
         loaded: true,
         modsFor: target.id,
