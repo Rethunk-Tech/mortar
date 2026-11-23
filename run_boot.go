@@ -470,6 +470,7 @@ func (c *boot) startLaunches() error {
 	c.gamesSvc.Running = c.launches.Busy
 	c.profiles.Running = c.launches.Running
 	c.profiles.GameRunning = c.launches.Busy
+	c.profiles.REDmodReady = c.launches.REDmodInstalled
 	c.bisectSvc = bisect.NewService(c.profiles, c.launches)
 	c.modMeta = &meta.Client{CacheDir: c.cacheDir(), Version: version}
 	c.launches.Meta = c.modMeta

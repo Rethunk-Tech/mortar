@@ -64,3 +64,9 @@ func (s *Service) deployREDmods(ctx context.Context, gameID string, inst game.In
 	}
 	return nil
 }
+
+// REDmodInstalled reports whether the profile's game install has the REDmod DLC, which a converted mod needs to load.
+func (s *Service) REDmodInstalled(gameID, profileID string) bool {
+	inst, err := game.ResolveInstall(s.home, s.currentSettings(), gameID, s.profiles.InstallOf(gameID, profileID))
+	return err == nil && redmod.Installed(inst.Dir)
+}

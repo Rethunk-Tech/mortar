@@ -46,44 +46,73 @@ func (s *Store) packageFilesWith(gameID, id string, withDev bool) (files map[str
 	if err != nil {
 		return nil, nil, err
 	}
-	ginfo := installerGame(gameID)
-	files, wins = map[string]packageFile{}, map[string]int{}
-	byFold := map[string]string{}
+	set := packageSet{files: map[string]packageFile{}, wins: map[string]int{}, byFold: map[string]string{}}
 	for _, e := range p.Entries {
 		if e.IsOverlay() || !e.HasPackageEnabled() || e.isTrayEntry() || (e.DevOnly && !withDev) {
 			continue
 		}
-		arch, l, _, err := s.layoutOf(gameID, id, e.StoreKey(), e.Fomod)
-		if err != nil {
+		if err := s.addEntryFiles(&set, info, dir, gameID, id, e); err != nil {
 			return nil, nil, fmt.Errorf("%s: %w", entryLabel(e), err)
 		}
-		for _, f := range l.Files {
-			if (e.File != "" && f.Rel != e.File) || ginfo.IsShared(f.Target) {
-				continue
+	}
+	return set.files, set.wins, nil
+}
+
+// packageSet is the files laid out so far by the entries before the one being added.
+type packageSet struct {
+	files  map[string]packageFile
+	wins   map[string]int
+	byFold map[string]string
+}
+
+// add lays rel out from src for the entry key; a file the entries before it laid out is replaced.
+func (ps *packageSet) add(key, rel, src string) error {
+	if !isLocalRel(rel) {
+		return fmt.Errorf("%s leaves the profile", rel)
+	}
+	// A later entry's file replaces an earlier one that differs only in case: both are one file on Windows.
+	fold := safefs.FoldCase(rel)
+	var beaten []string
+	if prev, taken := ps.byFold[fold]; taken {
+		beaten = append(slices.Clone(ps.files[prev].beaten), ps.files[prev].key)
+		delete(ps.files, prev)
+		ps.wins[key]++
+	}
+	ps.byFold[fold] = rel
+	ps.files[rel] = packageFile{src: src, key: key, beaten: beaten}
+	return nil
+}
+
+// addEntryFiles lays out the files of the entry e, converted to a REDmod when it was.
+func (s *Store) addEntryFiles(set *packageSet, info components.GameInfo, dir, gameID, id string, e Entry) error {
+	arch, l, _, err := s.layoutOf(gameID, id, e.StoreKey(), e.Fomod)
+	if err != nil {
+		return err
+	}
+	ginfo := installerGame(gameID)
+	layoutFiles, generated := s.convertedLayout(gameID, e, l.Files)
+	for _, f := range layoutFiles {
+		if (e.File != "" && f.Rel != e.File) || ginfo.IsShared(f.Target) {
+			continue
+		}
+		src := filepath.Join(arch.Dir, filepath.FromSlash(f.Src))
+		if f.Zip {
+			if src, err = zipCached(dir, e.StoreKey(), src); err != nil {
+				return err
 			}
-			rel := path.Join(targetPrefix(info, f.Target), path.Clean(f.Rel))
-			if !isLocalRel(rel) {
-				return nil, nil, fmt.Errorf("%s: %s leaves the profile", entryLabel(e), f.Rel)
-			}
-			// A later entry's file replaces an earlier one that differs only in case: both are one file on Windows.
-			fold := safefs.FoldCase(rel)
-			var beaten []string
-			if prev, taken := byFold[fold]; taken {
-				beaten = append(slices.Clone(files[prev].beaten), files[prev].key)
-				delete(files, prev)
-				wins[e.Key]++
-			}
-			byFold[fold] = rel
-			src := filepath.Join(arch.Dir, filepath.FromSlash(f.Src))
-			if f.Zip {
-				if src, err = zipCached(dir, e.StoreKey(), src); err != nil {
-					return nil, nil, fmt.Errorf("%s: %w", entryLabel(e), err)
-				}
-			}
-			files[rel] = packageFile{src: src, key: e.Key, beaten: beaten}
+		}
+		if err := set.add(e.Key, path.Join(targetPrefix(info, f.Target), path.Clean(f.Rel)), src); err != nil {
+			return err
 		}
 	}
-	return files, wins, nil
+	if generated == nil {
+		return nil
+	}
+	src, err := writeGenerated(dir, e.Key, generated.Info)
+	if err != nil {
+		return err
+	}
+	return set.add(e.Key, path.Join(targetPrefix(info, installer.TargetMods), generated.InfoRel), src)
 }
 
 // zipsDir holds, in the profile's root, the zips built from the store items of the mods a zip-only loader reads, which

@@ -207,6 +207,9 @@ type Entry struct {
 	DisplayVersion string `json:"displayVersion,omitempty"`
 	// CategoryOverride is the primary category for grouping: a custom category id or a Nexus category name.
 	CategoryOverride string `json:"categoryOverride,omitempty"`
+	// REDmod is the module folder name a Cyberpunk 2077 archive mod was converted to a REDmod under; empty for a mod
+	// that was not converted.
+	REDmod string `json:"redmod,omitempty"`
 	// Fomod is the chosen plugin names per install step and group, replayed on update and roll back.
 	Fomod map[string]map[string][]string `json:"fomod,omitempty"`
 	// ExtraStoreKeys are further store items from the same Nexus page, each copied to mods/<key>/<extra>/.
@@ -382,8 +385,10 @@ type Store struct {
 	OldFilesMode func(game string) string
 	// UnknownLayoutMode returns the game's unknownLayout setting; nil means place as packed.
 	UnknownLayoutMode func(game string) string
-	layoutOK          layoutAllowed
-	historyKind       string
+	// REDmodReady reports whether the profile's game install has the REDmod DLC; nil means it does.
+	REDmodReady func(game, id string) bool
+	layoutOK    layoutAllowed
+	historyKind string
 	// historyNote words the pending event when the change itself does not say what it was.
 	historyNote HistoryEvent
 	// historyConfigs are the entries whose config.json the pending event's change rewrote.

@@ -788,6 +788,10 @@ msgstr "No update checks, and it cannot go in a share link."
 msgid "No groups yet"
 msgstr "No groups yet"
 
+#: src/mods/REDmodItems.tsx
+msgid "{done, plural, one {Converted # mod to a REDmod} other {Converted # mods to REDmods}}"
+msgstr "{done, plural, one {Converted # mod to a REDmod} other {Converted # mods to REDmods}}"
+
 #: src/mods/DuplicateDialog.tsx
 msgid "Bundled with {loader}"
 msgstr "Bundled with {loader}"
@@ -1092,6 +1096,10 @@ msgstr "Discard"
 #: src/mods/problemText.ts
 msgid "Needs a newer loader"
 msgstr "Needs a newer loader"
+
+#: src/mods/REDmodItems.tsx
+msgid "{done, plural, one {Reverted # mod to an archive mod} other {Reverted # mods to archive mods}}"
+msgstr "{done, plural, one {Reverted # mod to an archive mod} other {Reverted # mods to archive mods}}"
 
 #: src/mods/describe.ts
 msgid "{who} both load {target}.{winner}"
@@ -1838,6 +1846,10 @@ msgstr "Optional files"
 #: src/mods/SlowStartupSection.tsx
 msgid "{name} adds {time} to startup (through {framework})"
 msgstr "{name} adds {time} to startup (through {framework})"
+
+#: src/mods/REDmodItems.tsx
+msgid "It loads with the archive mods again."
+msgstr "It loads with the archive mods again."
 
 #: src/mods/LoadOrderTab.tsx
 msgid "Could not read load order"
@@ -2978,6 +2990,10 @@ msgstr " {name} wins by load order; {losers} overridden."
 msgid "Unhide"
 msgstr "Unhide"
 
+#: src/mods/REDmodItems.tsx
+msgid "It loads through REDmod now, after the archive mods. Check its place in the order."
+msgstr "It loads through REDmod now, after the archive mods. Check its place in the order."
+
 #: src/mods/LoadOrderTab.tsx
 msgid "Filter load order"
 msgstr "Filter load order"
@@ -3271,6 +3287,10 @@ msgstr "This can be at least {min}."
 msgid "Save"
 msgstr "Save"
 
+#: src/mods/REDmodItems.tsx
+msgid "Convert to REDmod"
+msgstr "Convert to REDmod"
+
 #: src/mods/ChangeVersionDialog.tsx
 msgid "Its versions come from your account on the site."
 msgstr "Its versions come from your account on the site."
@@ -3427,6 +3447,10 @@ msgstr "Pinned: Mortar offers no update for this mod until you unpin it."
 #: src/mods/problemFix/BrokenFix.tsx
 msgid "Open replacement"
 msgstr "Open replacement"
+
+#: src/mods/REDmodItems.tsx
+msgid "Revert to archive mod"
+msgstr "Revert to archive mod"
 
 #: src/mods/SlowStartupSection.tsx
 msgid "Checked {when}"

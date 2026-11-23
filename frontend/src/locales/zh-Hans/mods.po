@@ -782,6 +782,10 @@ msgstr "不检查更新，且无法放入分享链接。"
 msgid "No groups yet"
 msgstr "尚无分组"
 
+#: src/mods/REDmodItems.tsx
+msgid "{done, plural, one {Converted # mod to a REDmod} other {Converted # mods to REDmods}}"
+msgstr ""
+
 #: src/mods/DuplicateDialog.tsx
 msgid "Bundled with {loader}"
 msgstr "随 {loader} 捆绑"
@@ -1086,6 +1090,10 @@ msgstr "放弃"
 #: src/mods/problemText.ts
 msgid "Needs a newer loader"
 msgstr "需要更新的加载器"
+
+#: src/mods/REDmodItems.tsx
+msgid "{done, plural, one {Reverted # mod to an archive mod} other {Reverted # mods to archive mods}}"
+msgstr ""
 
 #: src/mods/describe.ts
 msgid "{who} both load {target}.{winner}"
@@ -1832,6 +1840,10 @@ msgstr "可选文件"
 #: src/mods/SlowStartupSection.tsx
 msgid "{name} adds {time} to startup (through {framework})"
 msgstr "{name} 为启动增加 {time}（通过 {framework}）"
+
+#: src/mods/REDmodItems.tsx
+msgid "It loads with the archive mods again."
+msgstr ""
 
 #: src/mods/LoadOrderTab.tsx
 msgid "Could not read load order"
@@ -2972,6 +2984,10 @@ msgstr " {name} 按加载顺序胜出；{losers} 被覆盖。"
 msgid "Unhide"
 msgstr "取消隐藏"
 
+#: src/mods/REDmodItems.tsx
+msgid "It loads through REDmod now, after the archive mods. Check its place in the order."
+msgstr ""
+
 #: src/mods/LoadOrderTab.tsx
 msgid "Filter load order"
 msgstr "筛选加载顺序"
@@ -3265,6 +3281,10 @@ msgstr "这至少可以是 {min}。"
 msgid "Save"
 msgstr "保存"
 
+#: src/mods/REDmodItems.tsx
+msgid "Convert to REDmod"
+msgstr ""
+
 #: src/mods/ChangeVersionDialog.tsx
 msgid "Its versions come from your account on the site."
 msgstr "其版本来自你在该站点上的账户。"
@@ -3421,6 +3441,10 @@ msgstr "已固定：在你取消固定之前，Mortar 不会为此模组提供�
 #: src/mods/problemFix/BrokenFix.tsx
 msgid "Open replacement"
 msgstr "打开替代项"
+
+#: src/mods/REDmodItems.tsx
+msgid "Revert to archive mod"
+msgstr ""
 
 #: src/mods/SlowStartupSection.tsx
 msgid "Checked {when}"

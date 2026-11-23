@@ -64,6 +64,7 @@ import { type ModAction, modActions, openPageLabel } from './modActions.ts'
 import { siteCategory } from './modSearch.ts'
 import { nexusEntryOf, useGameNexusDetails, useNexusDetails } from './nexusDetails.ts'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
+import { REDmodItems } from './REDmodItems.tsx'
 import { NexusPageMenuItem } from './SetNexusPageDialog.tsx'
 import { SplitCombineItems } from './SplitCombineItems.tsx'
 import { useSelection } from './selection.ts'
@@ -380,6 +381,7 @@ function ModActionMenu({
                 onAdd={() => setDialog('group')}
               />,
               <PackageMoveItems key="package-move" mod={mod} close={onClose} />,
+              <REDmodItems key="redmod" mods={actingMods(mod)} close={onClose} />,
               <OnlyHereMenuItem
                 key="only-here"
                 game={game}

@@ -788,6 +788,10 @@ msgstr ""
 msgid "No groups yet"
 msgstr ""
 
+#: src/mods/REDmodItems.tsx
+msgid "{done, plural, one {Converted # mod to a REDmod} other {Converted # mods to REDmods}}"
+msgstr ""
+
 #: src/mods/DuplicateDialog.tsx
 msgid "Bundled with {loader}"
 msgstr ""
@@ -1091,6 +1095,10 @@ msgstr ""
 
 #: src/mods/problemText.ts
 msgid "Needs a newer loader"
+msgstr ""
+
+#: src/mods/REDmodItems.tsx
+msgid "{done, plural, one {Reverted # mod to an archive mod} other {Reverted # mods to archive mods}}"
 msgstr ""
 
 #: src/mods/describe.ts
@@ -1837,6 +1845,10 @@ msgstr ""
 #: src/mods/problemReport.ts
 #: src/mods/SlowStartupSection.tsx
 msgid "{name} adds {time} to startup (through {framework})"
+msgstr ""
+
+#: src/mods/REDmodItems.tsx
+msgid "It loads with the archive mods again."
 msgstr ""
 
 #: src/mods/LoadOrderTab.tsx
@@ -2978,6 +2990,10 @@ msgstr ""
 msgid "Unhide"
 msgstr ""
 
+#: src/mods/REDmodItems.tsx
+msgid "It loads through REDmod now, after the archive mods. Check its place in the order."
+msgstr ""
+
 #: src/mods/LoadOrderTab.tsx
 msgid "Filter load order"
 msgstr ""
@@ -3271,6 +3287,10 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
+#: src/mods/REDmodItems.tsx
+msgid "Convert to REDmod"
+msgstr ""
+
 #: src/mods/ChangeVersionDialog.tsx
 msgid "Its versions come from your account on the site."
 msgstr ""
@@ -3426,6 +3446,10 @@ msgstr ""
 
 #: src/mods/problemFix/BrokenFix.tsx
 msgid "Open replacement"
+msgstr ""
+
+#: src/mods/REDmodItems.tsx
+msgid "Revert to archive mod"
 msgstr ""
 
 #: src/mods/SlowStartupSection.tsx

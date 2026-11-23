@@ -35,6 +35,7 @@ import { partKey, supportParts } from './installReason.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { entryOf } from './lookup.ts'
 import { markImplicit } from './markImplicit.ts'
+import { REDmodItems } from './REDmodItems.tsx'
 import type { SourceGroups } from './skipSources.ts'
 import { useMods } from './store.ts'
 
@@ -259,6 +260,7 @@ export function SelectionBarActions({
         <MenuRule />
         <MenuHeading>{t`Organise`}</MenuHeading>
         {organise.map(row)}
+        <REDmodItems mods={selected} close={hideMenu} />
         <MenuRule />
         {row({ label: t`Also add to…`, icon: <CopyPlus size={16} />, run: openAlso, edits: true })}
         <MenuRule />

@@ -69,3 +69,52 @@ func TestAnUnrecognisedLayoutFollowsTheUnknownLayoutSetting(t *testing.T) {
 		t.Fatalf("install places it as packed: %v", err)
 	}
 }
+
+func TestAnArchiveModConvertsToAREDmodAndBack(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("cyberpunk-2077", "S")
+	if err != nil {
+		t.Fatal(err)
+	}
+	install := func(name string, files map[string]string, n int) string {
+		t.Helper()
+		res, err := e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zipOf(t, name+".zip", files), cfSource(60+n))
+		if err != nil || len(res.Profile.Entries) == 0 {
+			t.Fatal(err)
+		}
+		return res.Profile.Entries[len(res.Profile.Entries)-1].Key
+	}
+	pure := install("Pure Mod", map[string]string{"archive/pc/mod/pure.archive": "p"}, 0)
+	mixed := install("Mixed Mod", map[string]string{"archive/pc/mod/m.archive": "m", "r6/scripts/m.reds": "r"}, 1)
+	if got, err := e.REDmodChoice("cyberpunk-2077", p.ID, pure); err != nil || got != "convert" {
+		t.Fatalf("choice = %q, %v", got, err)
+	}
+	if got, err := e.REDmodChoice("cyberpunk-2077", p.ID, mixed); err != nil || got != "" {
+		t.Fatalf("a mod with more than archives is offered nothing: %q, %v", got, err)
+	}
+	res, err := e.ConvertToREDmod("cyberpunk-2077", p.ID, []string{pure, mixed})
+	if err != nil || len(res.Skipped) != 1 || res.Skipped[0].Key != mixed {
+		t.Fatalf("convert = %+v, %v", res, err)
+	}
+	folders, err := e.REDmodFolders("cyberpunk-2077", p.ID)
+	if err != nil || len(folders) != 1 {
+		t.Fatalf("folders = %v, %v", folders, err)
+	}
+	owners, err := e.PackageFileOwners("cyberpunk-2077", p.ID)
+	if err != nil || owners["Mods/mods/"+folders[0]+"/archives/pure.archive"] != pure {
+		t.Fatalf("owners = %v, %v", owners, err)
+	}
+	if order, _ := e.ArchiveOrder("cyberpunk-2077", p.ID); slices.Contains(order, "pure.archive") {
+		t.Fatalf("a REDmod's archive is in the archive modlist: %v", order)
+	}
+	if got, err := e.REDmodChoice("cyberpunk-2077", p.ID, pure); err != nil || got != "revert" {
+		t.Fatalf("choice after = %q, %v", got, err)
+	}
+	if _, err := e.RevertREDmod("cyberpunk-2077", p.ID, []string{pure}); err != nil {
+		t.Fatal(err)
+	}
+	if folders, _ := e.REDmodFolders("cyberpunk-2077", p.ID); len(folders) != 0 {
+		t.Fatalf("folders after revert = %v", folders)
+	}
+}
