@@ -11763,7 +11763,7 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "keepWhole": ["archive", "xl", "reds"]
+          "keepWhole": ["archive", "xl", "reds", "lua", "dll", "asi", "json", "yaml", "yml", "ini", "tweak", "script"]
         }
       ],
       "stores": {
