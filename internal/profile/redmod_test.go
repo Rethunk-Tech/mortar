@@ -4,6 +4,8 @@ import (
 	"errors"
 	"slices"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/installer"
 )
 
 func TestREDmodFoldersLeadWithTheEntryThatWins(t *testing.T) {
@@ -58,10 +60,21 @@ func TestAnUnrecognisedLayoutFollowsTheUnknownLayoutSetting(t *testing.T) {
 	if _, err := e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zip, src); err != nil {
 		t.Fatalf("an allowed install places it as packed: %v", err)
 	}
+	dir, err := e.ProfileDir("cyberpunk-2077", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if notes := installer.ReadNotes(dir); len(notes) != 1 || notes[0].Folder != unknown.Key || notes[0].Code != installer.NoteUnrecognised {
+		t.Fatalf("notes = %+v", notes)
+	}
 	mode = "refuse"
 	zip = zipOf(t, "odd2.zip", map[string]string{"weird2/thing.dat": "x"})
 	if _, err = e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zip, cfSource(41)); !errors.As(err, &unknown) || unknown.Overridable {
 		t.Fatalf("refuse offers no override: %v", err)
+	}
+	protected := zipOf(t, "cfg.zip", map[string]string{"engine/config/giweights.json": "{}"})
+	if _, err = e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, protected, cfSource(42)); !errors.As(err, &unknown) || unknown.Reason != ReasonProtectedPaths || !unknown.Overridable {
+		t.Fatalf("a mod that writes protected config is asked about even where refuse stops unknown layouts: %v", err)
 	}
 	mode = "install"
 	zip = zipOf(t, "odd3.zip", map[string]string{"weird3/thing.dat": "x"})

@@ -9,6 +9,8 @@ import { useToasts } from '../toasts/store.ts'
 export interface UnknownLayout {
   game: string
   key: string
+  /** What stopped it: `unrecognised`, `deprecatedCore` or `protectedPaths` (profile.UnknownLayoutError). */
+  reason: string
   files: string[]
   /** The player may place it as packed anyway; false when Settings refuses such archives. */
   overridable: boolean
@@ -19,6 +21,7 @@ const isUnknownLayout = (d: unknown): d is UnknownLayout =>
   d !== null &&
   typeof (d as Record<string, unknown>).game === 'string' &&
   typeof (d as Record<string, unknown>).key === 'string' &&
+  typeof (d as Record<string, unknown>).reason === 'string' &&
   Array.isArray((d as Record<string, unknown>).files) &&
   typeof (d as Record<string, unknown>).overridable === 'boolean'
 
@@ -51,6 +54,24 @@ export const useLayoutAsk = create<{
 /** Makes "place as packed" the game's answer from now on, as Vortex's "Install And Don't Ask Again" does. */
 export const stopAsking = (game: string) => SetByKey('unknownLayout', 'install', game)
 
+/** What the player is told when an install stopped for `reason`. */
+export function layoutQuestion(reason: string, overridable: boolean): string {
+  switch (reason) {
+    case 'deprecatedCore':
+      return i18n._(
+        msg`This is an old version of a core mod. It can still be installed, but its page may have a newer one.`,
+      )
+    case 'protectedPaths':
+      return i18n._(
+        msg`This mod writes to files that other mods or you may have changed, such as config files. Back them up first.`,
+      )
+    default:
+      return overridable
+        ? i18n._(msg`Mortar has no layout for this mod, so it would place every file as packed.`)
+        : i18n._(msg`Mortar has no layout for this mod, and Settings refuses mods like that.`)
+  }
+}
+
 /** The error toast of a refused install; where the player may overrule it the action asks first. */
 export function offerUnknownLayout(o: {
   title: string
@@ -60,9 +81,7 @@ export function offerUnknownLayout(o: {
   install: () => Promise<unknown>
 }) {
   const { title, name, layout, profile, install } = o
-  const body = layout.overridable
-    ? i18n._(msg`Mortar has no layout for this mod, so it would place every file as packed.`)
-    : i18n._(msg`Mortar has no layout for this mod, and Settings refuses mods like that.`)
+  const body = layoutQuestion(layout.reason, layout.overridable)
   useToasts.getState().push({
     kind: 'error',
     title,

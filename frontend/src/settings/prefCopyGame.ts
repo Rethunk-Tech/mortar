@@ -26,7 +26,9 @@ function updateAndInstallCopy(i18n: I18n): Record<string, PrefCopy> {
         {
           value: 'ask',
           label: i18n._(msg`Ask`),
-          hint: i18n._(msg`Stop and show the files, and offer to place the mod as packed.`),
+          hint: i18n._(
+            msg`Stop and show the files, and offer to place the mod as packed. An old core mod and a mod that writes to config files ask too.`,
+          ),
         },
         {
           value: 'install',
@@ -36,7 +38,7 @@ function updateAndInstallCopy(i18n: I18n): Record<string, PrefCopy> {
         {
           value: 'refuse',
           label: i18n._(msg`Refuse`),
-          hint: i18n._(msg`Do not install it.`),
+          hint: i18n._(msg`Do not install a mod with no layout. The others still ask.`),
         },
       ],
     },

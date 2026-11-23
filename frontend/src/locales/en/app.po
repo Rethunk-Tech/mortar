@@ -3587,6 +3587,10 @@ msgstr "Choose mod folder"
 msgid "Create"
 msgstr "Create"
 
+#: src/install/unknownLayout.ts
+msgid "This is an old version of a core mod. It can still be installed, but its page may have a newer one."
+msgstr "This is an old version of a core mod. It can still be installed, but its page may have a newer one."
+
 #: src/share/ImportInput.tsx
 msgid "Paste"
 msgstr "Paste"
@@ -4079,6 +4083,10 @@ msgstr "Open saves"
 msgid "Run with this profile"
 msgstr "Run with this profile"
 
+#: src/install/unknownLayout.ts
+msgid "This mod writes to files that other mods or you may have changed, such as config files. Back them up first."
+msgstr "This mod writes to files that other mods or you may have changed, such as config files. Back them up first."
+
 #: src/updates/WhatsNewDialog.tsx
 msgid "Also in Mortar {version}"
 msgstr "Also in Mortar {version}"
@@ -4514,6 +4522,10 @@ msgstr "Could not check the game version"
 msgid "Choose an option in {invalidGroup}."
 msgstr "Choose an option in {invalidGroup}."
 
+#: src/launch/LaunchScreen.tsx
+msgid "Compiling REDmods, which can take a few minutes"
+msgstr "Compiling REDmods, which can take a few minutes"
+
 #: src/launch/LaunchLayer.tsx
 msgid "Mortar can start {name} directly instead, without the {launcher} overlay or {launcher}'s playtime tracking."
 msgstr "Mortar can start {name} directly instead, without the {launcher} overlay or {launcher}'s playtime tracking."
@@ -4683,10 +4695,6 @@ msgstr "Could not build the mod"
 #: src/i18n/reasonText.ts
 msgid "requires {other} {detail}"
 msgstr "requires {other} {detail}"
-
-#: src/install/UnknownLayoutDialog.tsx
-msgid "Mortar could not tell where this mod's files go. Installing it places every file where the archive has it, so check the mod's page for where it belongs before you play."
-msgstr "Mortar could not tell where this mod's files go. Installing it places every file where the archive has it, so check the mod's page for where it belongs before you play."
 
 #: src/share/ListFormat.tsx
 msgid "Save mod list"
@@ -7455,6 +7463,10 @@ msgstr "Choose the mod project's folder"
 #: src/share/arrivals.ts
 msgid "{name} is not in {profile}"
 msgstr "{name} is not in {profile}"
+
+#: src/install/UnknownLayoutDialog.tsx
+msgid "Installing it places the files as the archive has them, so check the mod's page before you play."
+msgstr "Installing it places the files as the archive has them, so check the mod's page before you play."
 
 #: src/launch/LaunchScreen.tsx
 msgid "Handed off"

@@ -3581,6 +3581,10 @@ msgstr "选择模组文件夹"
 msgid "Create"
 msgstr "创建"
 
+#: src/install/unknownLayout.ts
+msgid "This is an old version of a core mod. It can still be installed, but its page may have a newer one."
+msgstr ""
+
 #: src/share/ImportInput.tsx
 msgid "Paste"
 msgstr "粘贴"
@@ -4073,6 +4077,10 @@ msgstr "打开存档"
 msgid "Run with this profile"
 msgstr "使用此配置运行"
 
+#: src/install/unknownLayout.ts
+msgid "This mod writes to files that other mods or you may have changed, such as config files. Back them up first."
+msgstr ""
+
 #: src/updates/WhatsNewDialog.tsx
 msgid "Also in Mortar {version}"
 msgstr "Mortar {version} 中也有"
@@ -4508,6 +4516,10 @@ msgstr "无法检查游戏版本"
 msgid "Choose an option in {invalidGroup}."
 msgstr "请在 {invalidGroup} 中选择一个选项。"
 
+#: src/launch/LaunchScreen.tsx
+msgid "Compiling REDmods, which can take a few minutes"
+msgstr ""
+
 #: src/launch/LaunchLayer.tsx
 msgid "Mortar can start {name} directly instead, without the {launcher} overlay or {launcher}'s playtime tracking."
 msgstr "Mortar 可以改为直接启动 {name}，不使用 {launcher} 覆盖层，也不统计 {launcher} 的游戏时长。"
@@ -4677,10 +4689,6 @@ msgstr "无法构建该模组"
 #: src/i18n/reasonText.ts
 msgid "requires {other} {detail}"
 msgstr "需要 {other} {detail}"
-
-#: src/install/UnknownLayoutDialog.tsx
-msgid "Mortar could not tell where this mod's files go. Installing it places every file where the archive has it, so check the mod's page for where it belongs before you play."
-msgstr ""
 
 #: src/share/ListFormat.tsx
 msgid "Save mod list"
@@ -7449,6 +7457,10 @@ msgstr "选择模组项目的文件夹"
 #: src/share/arrivals.ts
 msgid "{name} is not in {profile}"
 msgstr "{name} 不在 {profile} 中"
+
+#: src/install/UnknownLayoutDialog.tsx
+msgid "Installing it places the files as the archive has them, so check the mod's page before you play."
+msgstr ""
 
 #: src/launch/LaunchScreen.tsx
 msgid "Handed off"

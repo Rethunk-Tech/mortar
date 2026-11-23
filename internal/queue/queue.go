@@ -1026,8 +1026,9 @@ type Detection struct {
 
 // UnknownLayout is an archive no layout of its game took, with the store key it was refused under.
 type UnknownLayout struct {
-	Key   string   `json:"key"`
-	Files []string `json:"files"`
+	Key    string   `json:"key"`
+	Reason string   `json:"reason"`
+	Files  []string `json:"files"`
 	// Ask is set when the player may place it as packed anyway.
 	Ask bool `json:"ask"`
 }

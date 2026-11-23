@@ -375,6 +375,10 @@ msgstr "Move the data folder?"
 msgid "Fishing skill"
 msgstr "Fishing skill"
 
+#: src/settings/prefCopyGame.ts
+msgid "Stop and show the files, and offer to place the mod as packed. An old core mod and a mod that writes to config files ask too."
+msgstr "Stop and show the files, and offer to place the mod as packed. An old core mod and a mod that writes to config files ask too."
+
 #: src/settings/sections/GameSettings.tsx
 msgid "Enable scheduled save backups first."
 msgstr "Enable scheduled save backups first."
@@ -520,10 +524,6 @@ msgstr "Not connected yet"
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Copied"
 msgstr "Copied"
-
-#: src/settings/prefCopyGame.ts
-msgid "Stop and show the files, and offer to place the mod as packed."
-msgstr "Stop and show the files, and offer to place the mod as packed."
 
 #: src/settings/prefCopy.ts
 msgid "Name"
@@ -855,6 +855,10 @@ msgstr "Sky"
 #: src/settings/sections/DataUsage.tsx
 msgid "Shared by every game"
 msgstr "Shared by every game"
+
+#: src/settings/prefCopyGame.ts
+msgid "Do not install a mod with no layout. The others still ask."
+msgstr "Do not install a mod with no layout. The others still ask."
 
 #: src/settings/nexus.ts
 msgid "{source} API requests are running low"
@@ -1539,10 +1543,6 @@ msgstr "Cosmetic overlaps on the Problems tab"
 #: src/settings/sections/NexusMods.tsx
 msgid "Signed out of {source}"
 msgstr "Signed out of {source}"
-
-#: src/settings/prefCopyGame.ts
-msgid "Do not install it."
-msgstr "Do not install it."
 
 #: src/settings/sections/Appearance.tsx
 msgid "Lavender"

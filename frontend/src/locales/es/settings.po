@@ -369,6 +369,10 @@ msgstr ""
 msgid "Fishing skill"
 msgstr ""
 
+#: src/settings/prefCopyGame.ts
+msgid "Stop and show the files, and offer to place the mod as packed. An old core mod and a mod that writes to config files ask too."
+msgstr ""
+
 #: src/settings/sections/GameSettings.tsx
 msgid "Enable scheduled save backups first."
 msgstr ""
@@ -513,10 +517,6 @@ msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Copied"
-msgstr ""
-
-#: src/settings/prefCopyGame.ts
-msgid "Stop and show the files, and offer to place the mod as packed."
 msgstr ""
 
 #: src/settings/prefCopy.ts
@@ -848,6 +848,10 @@ msgstr ""
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Shared by every game"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Do not install a mod with no layout. The others still ask."
 msgstr ""
 
 #: src/settings/nexus.ts
@@ -1532,10 +1536,6 @@ msgstr ""
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Signed out of {source}"
-msgstr ""
-
-#: src/settings/prefCopyGame.ts
-msgid "Do not install it."
 msgstr ""
 
 #: src/settings/sections/Appearance.tsx

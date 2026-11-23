@@ -369,6 +369,10 @@ msgstr "移动数据文件夹？"
 msgid "Fishing skill"
 msgstr "钓鱼技能"
 
+#: src/settings/prefCopyGame.ts
+msgid "Stop and show the files, and offer to place the mod as packed. An old core mod and a mod that writes to config files ask too."
+msgstr ""
+
 #: src/settings/sections/GameSettings.tsx
 msgid "Enable scheduled save backups first."
 msgstr "请先启用定时存档备份。"
@@ -514,10 +518,6 @@ msgstr "尚未连接"
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Copied"
 msgstr "已复制"
-
-#: src/settings/prefCopyGame.ts
-msgid "Stop and show the files, and offer to place the mod as packed."
-msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Name"
@@ -849,6 +849,10 @@ msgstr "天空"
 #: src/settings/sections/DataUsage.tsx
 msgid "Shared by every game"
 msgstr "所有游戏共享"
+
+#: src/settings/prefCopyGame.ts
+msgid "Do not install a mod with no layout. The others still ask."
+msgstr ""
 
 #: src/settings/nexus.ts
 msgid "{source} API requests are running low"
@@ -1533,10 +1537,6 @@ msgstr "“问题”标签页中的外观重叠"
 #: src/settings/sections/NexusMods.tsx
 msgid "Signed out of {source}"
 msgstr "已退出 {source}"
-
-#: src/settings/prefCopyGame.ts
-msgid "Do not install it."
-msgstr ""
 
 #: src/settings/sections/Appearance.tsx
 msgid "Lavender"

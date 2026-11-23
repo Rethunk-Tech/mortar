@@ -3,7 +3,7 @@ import { Box, Typography } from '@mui/material'
 import { useState } from 'react'
 import { ConfirmationDialog } from '../shell/dialog/ConfirmationDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
-import { stopAsking, useLayoutAsk } from './unknownLayout.ts'
+import { layoutQuestion, stopAsking, useLayoutAsk } from './unknownLayout.ts'
 
 const SHOWN_FILES = 40
 
@@ -19,7 +19,7 @@ export function UnknownLayoutDialog() {
       open={asking !== null}
       tone="warning"
       title={t`Install ${{ name: asking?.title ?? '' }} anyway?`}
-      body={t`Mortar could not tell where this mod's files go. Installing it places every file where the archive has it, so check the mod's page for where it belongs before you play.`}
+      body={`${layoutQuestion(asking?.layout.reason ?? '', true)} ${t`Installing it places the files as the archive has them, so check the mod's page before you play.`}`}
       confirmLabel={t`Install anyway`}
       checkbox={{ label: t`Don't ask again for this game`, checked: always, onChange: setAlways }}
       onCancel={() => {

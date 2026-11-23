@@ -542,7 +542,13 @@ function PlaceAsPackedButton({ item }: { item: Item }) {
       onClick={() =>
         useLayoutAsk.getState().ask({
           title: displayName(item),
-          layout: { game: item.game, key: odd.key, files: odd.files ?? [], overridable: true },
+          layout: {
+            game: item.game,
+            key: odd.key,
+            reason: odd.reason,
+            files: odd.files ?? [],
+            overridable: true,
+          },
           confirm: () => InstallAnyway(item.id),
         })
       }

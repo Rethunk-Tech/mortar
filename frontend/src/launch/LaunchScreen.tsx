@@ -139,6 +139,9 @@ function Panel({ children, error }: { children: ReactNode; error?: boolean }) {
 
 function gameText(p: Progress): string {
   const up = p.up >= p.copies || p.loaderStarted
+  if (p.deploying) {
+    return i18n._(msg`Compiling REDmods, which can take a few minutes`)
+  }
   if ((p.placeTotal ?? 0) > 0 && !up) {
     return i18n._(
       msg`Placing mods: ${{ placed: p.placed ?? 0 }} of ${{ total: p.placeTotal ?? 0 }}`,

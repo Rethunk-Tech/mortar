@@ -3581,6 +3581,10 @@ msgstr ""
 msgid "Create"
 msgstr ""
 
+#: src/install/unknownLayout.ts
+msgid "This is an old version of a core mod. It can still be installed, but its page may have a newer one."
+msgstr ""
+
 #: src/share/ImportInput.tsx
 msgid "Paste"
 msgstr ""
@@ -4073,6 +4077,10 @@ msgstr ""
 msgid "Run with this profile"
 msgstr ""
 
+#: src/install/unknownLayout.ts
+msgid "This mod writes to files that other mods or you may have changed, such as config files. Back them up first."
+msgstr ""
+
 #: src/updates/WhatsNewDialog.tsx
 msgid "Also in Mortar {version}"
 msgstr ""
@@ -4508,6 +4516,10 @@ msgstr ""
 msgid "Choose an option in {invalidGroup}."
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Compiling REDmods, which can take a few minutes"
+msgstr ""
+
 #: src/launch/LaunchLayer.tsx
 msgid "Mortar can start {name} directly instead, without the {launcher} overlay or {launcher}'s playtime tracking."
 msgstr ""
@@ -4676,10 +4688,6 @@ msgstr ""
 
 #: src/i18n/reasonText.ts
 msgid "requires {other} {detail}"
-msgstr ""
-
-#: src/install/UnknownLayoutDialog.tsx
-msgid "Mortar could not tell where this mod's files go. Installing it places every file where the archive has it, so check the mod's page for where it belongs before you play."
 msgstr ""
 
 #: src/share/ListFormat.tsx
@@ -7448,6 +7456,10 @@ msgstr ""
 
 #: src/share/arrivals.ts
 msgid "{name} is not in {profile}"
+msgstr ""
+
+#: src/install/UnknownLayoutDialog.tsx
+msgid "Installing it places the files as the archive has them, so check the mod's page before you play."
 msgstr ""
 
 #: src/launch/LaunchScreen.tsx

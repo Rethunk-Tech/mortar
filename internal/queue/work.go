@@ -430,7 +430,7 @@ func (s *Service) settle(id string, err error) {
 		it.Detection = &Detection{Name: detected.Name, File: detected.File, Scanner: detected.Scanner, Key: detected.Key, Removed: detected.Removed}
 	case errors.As(err, &odd):
 		it.State, it.Error = StateFailed, odd.Error()
-		it.UnknownLayout = &UnknownLayout{Key: odd.Key, Files: odd.Files, Ask: odd.Overridable}
+		it.UnknownLayout = &UnknownLayout{Key: odd.Key, Reason: odd.Reason, Files: odd.Files, Ask: odd.Overridable}
 	default:
 		it.State, it.Error = StateFailed, err.Error()
 	}
