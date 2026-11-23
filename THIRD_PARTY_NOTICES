@@ -721,7 +721,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@mui/material@9.5.0
+@mui/material@9.6.0
 licence: MIT
 https://mui.com/material-ui/
 
@@ -749,7 +749,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@mui/private-theming@9.5.0
+@mui/private-theming@9.6.0
 licence: MIT
 https://github.com/mui/material-ui/tree/master/packages/mui-private-theming
 
@@ -777,7 +777,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@mui/styled-engine@9.5.0
+@mui/styled-engine@9.6.0
 licence: MIT
 https://mui.com/system/styled/
 
@@ -805,7 +805,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@mui/system@9.5.0
+@mui/system@9.6.0
 licence: MIT
 https://mui.com/system/getting-started/
 
@@ -833,7 +833,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@mui/utils@9.5.0
+@mui/utils@9.6.0
 licence: MIT
 https://github.com/mui/material-ui/tree/master/packages/mui-utils
 
@@ -916,7 +916,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@rethunk/react-load-hooks@0.6.0
+@rethunk/react-load-hooks@0.7.0
 licence: MIT
 https://github.com/Rethunk-Tech/react-load-hooks
 
@@ -5583,7 +5583,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-lucide-react@1.77.0
+lucide-react@1.78.0
 licence: MIT
 https://lucide.dev
 
@@ -6789,7 +6789,7 @@ Bundled source icon (frontend/src/brand/vendor/modio.svg) from the mod.io SDK, s
 
 --------------------------------------------------------------------------------
 
-modernc.org/libc@v1.82.12
+modernc.org/libc@v1.82.13
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/libc
 
