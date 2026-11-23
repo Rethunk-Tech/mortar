@@ -38,7 +38,7 @@ func GameOf(gameID string) Game {
 		g.Routes = append(g.Routes, l.Routes...)
 	}
 	for _, t := range info.Targets {
-		g.Targets = append(g.Targets, Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth, KeepWhole: t.KeepWhole, ModRoot: t.ModRoot, Extensions: t.Extensions, Shared: t.Role != "", Role: t.Role, Sources: t.Sources})
+		g.Targets = append(g.Targets, Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth, KeepWhole: t.KeepWhole, ModRoot: t.ModRoot, Extensions: t.Extensions, Shared: t.Role != "", Role: t.Role, Sources: t.Sources, REDmod: t.REDmod})
 	}
 	return g
 }
@@ -67,6 +67,8 @@ type Target struct {
 	Role string
 	// Sources are the source ids whose archives this target takes whole (components.TargetDef.Sources).
 	Sources []string
+	// REDmod marks Cyberpunk 2077's mods target (components.TargetDef.REDmod).
+	REDmod bool
 }
 
 // RoleOf is the path role the shared target id places into, "" for a target that is not shared.
@@ -136,7 +138,7 @@ type Installer interface {
 }
 
 // detectionOrder is the order drivers are asked: the most specific shape first, plain last because it takes anything.
-var detectionOrder = []string{"source-target", "zipped", "fomod", "thunderstore-rules", "plain"}
+var detectionOrder = []string{"source-target", "zipped", "fomod", "thunderstore-rules", "redmod", "plain"}
 
 var (
 	mu       sync.RWMutex

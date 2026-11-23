@@ -11763,6 +11763,7 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
+          "redmod": true,
           "keepWhole": ["archive", "xl", "reds", "lua", "dll", "asi", "json", "yaml", "yml", "ini", "tweak", "script"]
         }
       ],
