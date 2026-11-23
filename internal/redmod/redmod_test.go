@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -117,7 +118,7 @@ func TestInstalledNeedsToolAndLauncher(t *testing.T) {
 func TestFindingWhenREDmodsAreHereButTheToolIsNot(t *testing.T) {
 	profile := t.TempDir()
 	game := t.TempDir()
-	testfs.WriteAt(t, filepath.Join(profile, "Mods", "mods", "m", "info.json"), []byte("{}"))
+	testfs.WriteAt(t, filepath.Join(profile, "Mods", "entry", "mods", "m", "info.json"), []byte("{}"))
 	view := loader.ProfileView{Game: "cyberpunk-2077", Dir: profile, InstallDir: game}
 	if f := (extension{}).Findings(view); len(f) != 1 || f[0].Code != CodeMissing {
 		t.Fatalf("findings = %+v", f)
@@ -126,5 +127,27 @@ func TestFindingWhenREDmodsAreHereButTheToolIsNot(t *testing.T) {
 	testfs.WriteAt(t, Tool(game), []byte("x"))
 	if f := (extension{}).Findings(view); len(f) != 0 {
 		t.Fatalf("installed: %+v", f)
+	}
+}
+
+func TestFindingsCarryWhatTheInstallerNoted(t *testing.T) {
+	profile := t.TempDir()
+	testfs.WriteAt(t, filepath.Join(profile, "Mods", "entry", "a.txt"), []byte("x"))
+	notes := []installer.Note{{Code: installer.NoteUnrecognised, Message: "placed as packed", Files: []string{"a.txt"}}}
+	if err := installer.RecordNotes(profile, "entry", notes); err != nil {
+		t.Fatal(err)
+	}
+	if err := installer.RecordNotes(profile, "removed", notes); err != nil {
+		t.Fatal(err)
+	}
+	f := (extension{}).Findings(loader.ProfileView{Game: "cyberpunk-2077", Dir: profile})
+	if len(f) != 1 || f[0].Plugin != "entry" || f[0].Code != installer.NoteUnrecognised || f[0].Params["count"] != "1" {
+		t.Fatalf("findings = %+v", f)
+	}
+	if err := installer.RecordNotes(profile, "entry", nil); err != nil {
+		t.Fatal(err)
+	}
+	if f := (extension{}).Findings(loader.ProfileView{Game: "cyberpunk-2077", Dir: profile}); len(f) != 0 {
+		t.Fatalf("after clearing: %+v", f)
 	}
 }

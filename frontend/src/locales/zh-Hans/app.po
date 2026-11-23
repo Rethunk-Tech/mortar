@@ -3386,6 +3386,10 @@ msgstr "{paused} 个已暂停"
 msgid "Copy"
 msgstr "复制"
 
+#: src/i18n/reasonText.ts
+msgid "This mod writes to config files that other mods or you may have changed."
+msgstr ""
+
 #: src/develop/TraceSteps.tsx
 msgid "Next frame"
 msgstr "下一帧"
@@ -4245,6 +4249,10 @@ msgstr "用逗号分隔。"
 #: src/launchers/LauncherList.tsx
 msgid "Not found"
 msgstr "未找到"
+
+#: src/i18n/reasonText.ts
+msgid "The archives may need a manual check: {count} files ({files})."
+msgstr ""
 
 #: src/develop/AdoptDialog.tsx
 msgid "Kind"
@@ -5638,6 +5646,10 @@ msgstr "{name}（已禁用）"
 msgid "Wait for the running build to finish"
 msgstr "等待正在运行的构建完成"
 
+#: src/i18n/reasonText.ts
+msgid "Documentation and pictures in this mod were put in the extra files folder."
+msgstr ""
+
 #: src/develop/EditProjectDialog.tsx
 msgid "Sites"
 msgstr "站点"
@@ -5658,6 +5670,10 @@ msgstr "复制的文本"
 #: src/queue/QueueBody.tsx
 msgid "Nothing downloading"
 msgstr "没有正在下载的内容"
+
+#: src/i18n/reasonText.ts
+msgid "REDmod mods are installed, but the REDmod DLC is not: the game starts without them"
+msgstr ""
 
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "{left, plural, one {# mod still to download} other {# mods still to download}}"
@@ -5726,6 +5742,10 @@ msgstr "重试所有失败项"
 #: src/share/arrivals.ts
 msgid "Add it"
 msgstr "添加"
+
+#: src/i18n/reasonText.ts
+msgid "The archives in this REDmod may need a manual check: more than one archive, or archives in subfolders."
+msgstr ""
 
 #: src/develop/ProjectCard.tsx
 msgid "Not built yet"
@@ -6524,6 +6544,10 @@ msgstr "{source} 项目编号"
 #: src/updates/WhatsNewDialog.tsx
 msgid "{count, plural, one {# new feature} other {# new features}}"
 msgstr "{count, plural, one {# 项新功能} other {# 项新功能}}"
+
+#: src/i18n/reasonText.ts
+msgid "This mod does not match a layout Mortar knows, so every file is placed as packed."
+msgstr ""
 
 #: src/saves/saveName.ts
 msgid "Extra slot added by a mod"
@@ -7682,6 +7706,10 @@ msgstr "{name} 不在 {source} 上"
 #: src/develop/DevelopTab.tsx
 msgid "Show all projects"
 msgstr "显示所有项目"
+
+#: src/i18n/reasonText.ts
+msgid "This is an old version of a core mod: update it from the mod's page."
+msgstr ""
 
 #: src/saves/BackupsDialog.tsx
 #: src/saves/SaveBackupsButton.tsx

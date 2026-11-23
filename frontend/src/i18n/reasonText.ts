@@ -92,6 +92,20 @@ export function useReasonText(): ReasonText {
         return t`${{ app: UNITY }} crashed (${module}), not a mod's code.`
       case 'monoCrash':
         return t`The ${{ app: MONO_RUNTIME }} runtime crashed (${module}), not a mod's code.`
+      case 'redmodMissing':
+        return t`REDmod mods are installed, but the REDmod DLC is not: the game starts without them`
+      case 'deprecatedCore':
+        return t`This is an old version of a core mod: update it from the mod's page.`
+      case 'protectedPaths':
+        return t`This mod writes to config files that other mods or you may have changed.`
+      case 'unrecognisedLayout':
+        return t`This mod does not match a layout Mortar knows, so every file is placed as packed.`
+      case 'archiveReview':
+        return t`The archives may need a manual check: ${{ count: p.count ?? '' }} files (${{ files: p.files ?? '' }}).`
+      case 'redmodArchiveReview':
+        return t`The archives in this REDmod may need a manual check: more than one archive, or archives in subfolders.`
+      case 'extraFilesMoved':
+        return t`Documentation and pictures in this mod were put in the extra files folder.`
       default:
         return fallback
     }

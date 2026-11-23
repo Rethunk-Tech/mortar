@@ -3392,6 +3392,10 @@ msgstr ""
 msgid "Copy"
 msgstr ""
 
+#: src/i18n/reasonText.ts
+msgid "This mod writes to config files that other mods or you may have changed."
+msgstr ""
+
 #: src/develop/TraceSteps.tsx
 msgid "Next frame"
 msgstr ""
@@ -4250,6 +4254,10 @@ msgstr ""
 #: src/firstrun/FindStep.tsx
 #: src/launchers/LauncherList.tsx
 msgid "Not found"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "The archives may need a manual check: {count} files ({files})."
 msgstr ""
 
 #: src/develop/AdoptDialog.tsx
@@ -5644,6 +5652,10 @@ msgstr ""
 msgid "Wait for the running build to finish"
 msgstr ""
 
+#: src/i18n/reasonText.ts
+msgid "Documentation and pictures in this mod were put in the extra files folder."
+msgstr ""
+
 #: src/develop/EditProjectDialog.tsx
 msgid "Sites"
 msgstr ""
@@ -5663,6 +5675,10 @@ msgstr ""
 
 #: src/queue/QueueBody.tsx
 msgid "Nothing downloading"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "REDmod mods are installed, but the REDmod DLC is not: the game starts without them"
 msgstr ""
 
 #: src/templates/ApplyTemplateDialog.tsx
@@ -5731,6 +5747,10 @@ msgstr ""
 
 #: src/share/arrivals.ts
 msgid "Add it"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "The archives in this REDmod may need a manual check: more than one archive, or archives in subfolders."
 msgstr ""
 
 #: src/develop/ProjectCard.tsx
@@ -6529,6 +6549,10 @@ msgstr ""
 
 #: src/updates/WhatsNewDialog.tsx
 msgid "{count, plural, one {# new feature} other {# new features}}"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "This mod does not match a layout Mortar knows, so every file is placed as packed."
 msgstr ""
 
 #: src/saves/saveName.ts
@@ -7687,6 +7711,10 @@ msgstr ""
 
 #: src/develop/DevelopTab.tsx
 msgid "Show all projects"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "This is an old version of a core mod: update it from the mod's page."
 msgstr ""
 
 #: src/saves/BackupsDialog.tsx

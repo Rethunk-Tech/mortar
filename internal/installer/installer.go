@@ -131,9 +131,9 @@ type File struct {
 
 // Note is something a driver saw in an archive that the player should hear of: Problems shows it.
 type Note struct {
-	Code    string
-	Message string
-	Files   []string
+	Code    string   `json:"code"`
+	Message string   `json:"message"`
+	Files   []string `json:"files,omitempty"`
 }
 
 // Layout is where an archive's files go.

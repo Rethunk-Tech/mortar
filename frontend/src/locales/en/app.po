@@ -3392,6 +3392,10 @@ msgstr "{paused} paused"
 msgid "Copy"
 msgstr "Copy"
 
+#: src/i18n/reasonText.ts
+msgid "This mod writes to config files that other mods or you may have changed."
+msgstr "This mod writes to config files that other mods or you may have changed."
+
 #: src/develop/TraceSteps.tsx
 msgid "Next frame"
 msgstr "Next frame"
@@ -4251,6 +4255,10 @@ msgstr "Separated by commas."
 #: src/launchers/LauncherList.tsx
 msgid "Not found"
 msgstr "Not found"
+
+#: src/i18n/reasonText.ts
+msgid "The archives may need a manual check: {count} files ({files})."
+msgstr "The archives may need a manual check: {count} files ({files})."
 
 #: src/develop/AdoptDialog.tsx
 msgid "Kind"
@@ -5644,6 +5652,10 @@ msgstr "{name} (disabled)"
 msgid "Wait for the running build to finish"
 msgstr "Wait for the running build to finish"
 
+#: src/i18n/reasonText.ts
+msgid "Documentation and pictures in this mod were put in the extra files folder."
+msgstr "Documentation and pictures in this mod were put in the extra files folder."
+
 #: src/develop/EditProjectDialog.tsx
 msgid "Sites"
 msgstr "Sites"
@@ -5664,6 +5676,10 @@ msgstr "The text that is copied"
 #: src/queue/QueueBody.tsx
 msgid "Nothing downloading"
 msgstr "Nothing downloading"
+
+#: src/i18n/reasonText.ts
+msgid "REDmod mods are installed, but the REDmod DLC is not: the game starts without them"
+msgstr "REDmod mods are installed, but the REDmod DLC is not: the game starts without them"
 
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "{left, plural, one {# mod still to download} other {# mods still to download}}"
@@ -5732,6 +5748,10 @@ msgstr "Retry all failed"
 #: src/share/arrivals.ts
 msgid "Add it"
 msgstr "Add it"
+
+#: src/i18n/reasonText.ts
+msgid "The archives in this REDmod may need a manual check: more than one archive, or archives in subfolders."
+msgstr "The archives in this REDmod may need a manual check: more than one archive, or archives in subfolders."
 
 #: src/develop/ProjectCard.tsx
 msgid "Not built yet"
@@ -6530,6 +6550,10 @@ msgstr "{source} project id"
 #: src/updates/WhatsNewDialog.tsx
 msgid "{count, plural, one {# new feature} other {# new features}}"
 msgstr "{count, plural, one {# new feature} other {# new features}}"
+
+#: src/i18n/reasonText.ts
+msgid "This mod does not match a layout Mortar knows, so every file is placed as packed."
+msgstr "This mod does not match a layout Mortar knows, so every file is placed as packed."
 
 #: src/saves/saveName.ts
 msgid "Extra slot added by a mod"
@@ -7688,6 +7712,10 @@ msgstr "{name} is not on {source}"
 #: src/develop/DevelopTab.tsx
 msgid "Show all projects"
 msgstr "Show all projects"
+
+#: src/i18n/reasonText.ts
+msgid "This is an old version of a core mod: update it from the mod's page."
+msgstr "This is an old version of a core mod: update it from the mod's page."
 
 #: src/saves/BackupsDialog.tsx
 #: src/saves/SaveBackupsButton.tsx
