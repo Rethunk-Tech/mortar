@@ -104,6 +104,19 @@ export function launchScreenCases(): Case[] {
       teardown: end,
     },
     {
+      name: 'launch-screen-deploying',
+      budget: ticking,
+      run: async (p) => {
+        const { game, profile } = ids()
+        await emit(p, [
+          status(game, profile, 'launching'),
+          progress(game, profile, { deploying: true }),
+        ])
+        await p.getByText('Compiling REDmods, which can take a few minutes').waitFor()
+      },
+      teardown: end,
+    },
+    {
       name: 'launch-screen-failed',
       run: async (p) => {
         const { game, profile } = ids()

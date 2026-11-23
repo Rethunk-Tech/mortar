@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { openGameSelect, openSettings } from './app.ts'
+import { cyberpunkCases } from './cyberpunkCases.ts'
 import { largeDownloadCases } from './largeDownloadCase.ts'
 import { launchScreenCases } from './launchScreenCase.ts'
 import { pausedDownloadCases } from './pausedDownloadCase.ts'
@@ -62,6 +63,7 @@ export function newCases(h: Helpers): Case[] {
     ...largeDownloadCases(),
     ...pausedDownloadCases(),
     ...launchScreenCases(),
+    ...cyberpunkCases(h),
     {
       name: 'change-version',
       setup: async (p) => {
