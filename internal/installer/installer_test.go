@@ -328,12 +328,21 @@ func TestREDmodArchivePackedWithoutModsFolderLandsBelowMods(t *testing.T) {
 		files map[string]string
 		want  string
 	}{
-		{"named folder", map[string]string{"MyMod/info.json": `{"name":"My.Mod"}`, "MyMod/archives/a.archive": "x", "readme.txt": "x"},
-			"mods:mods/My_Mod/archives/a.archive<-MyMod/archives/a.archive mods:mods/My_Mod/info.json<-MyMod/info.json"},
-		{"folder name when info.json names nothing", map[string]string{"MyMod/info.json": `{}`, "MyMod/scripts/a.script": "x"},
-			"mods:mods/MyMod/info.json<-MyMod/info.json mods:mods/MyMod/scripts/a.script<-MyMod/scripts/a.script"},
-		{"top level", map[string]string{"info.json": `{"name":"Top"}`, "tweaks/a.tweak": "x"},
-			"mods:mods/Top/info.json<-info.json mods:mods/Top/tweaks/a.tweak<-tweaks/a.tweak"},
+		{
+			"named folder",
+			map[string]string{"MyMod/info.json": `{"name":"My.Mod"}`, "MyMod/archives/a.archive": "x", "readme.txt": "x"},
+			"mods:mods/My_Mod/archives/a.archive<-MyMod/archives/a.archive mods:mods/My_Mod/info.json<-MyMod/info.json",
+		},
+		{
+			"folder name when info.json names nothing",
+			map[string]string{"MyMod/info.json": `{}`, "MyMod/scripts/a.script": "x"},
+			"mods:mods/MyMod/info.json<-MyMod/info.json mods:mods/MyMod/scripts/a.script<-MyMod/scripts/a.script",
+		},
+		{
+			"top level",
+			map[string]string{"info.json": `{"name":"Top"}`, "tweaks/a.tweak": "x"},
+			"mods:mods/Top/info.json<-info.json mods:mods/Top/tweaks/a.tweak<-tweaks/a.tweak",
+		},
 	}
 	for _, c := range cases {
 		a := extracted(t, "k", c.files)

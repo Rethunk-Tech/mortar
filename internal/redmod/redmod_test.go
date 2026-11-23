@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -22,19 +23,18 @@ func install(t *testing.T, out string, code int) string {
 	}
 	dir := t.TempDir()
 	testfs.WriteAt(t, filepath.Join(dir, launcherPath), []byte("x"))
-	script := "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$0.args\"\ncat \"${6#-modlist=}\" > \"$0.modlist\"\nprintf '%s' '" + out + "'\nexit " + string(rune('0'+code)) + "\n"
+	script := "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$0.args\"\ncat \"${6#-modlist=}\" > \"$0.modlist\"\nprintf '%s' '" + out + "'\nexit " + strconv.Itoa(code) + "\n"
 	tool := Tool(dir)
 	testfs.WriteAt(t, tool, []byte(script))
-	if err := os.Chmod(tool, 0o755); err != nil {
+	if err := os.Chmod(tool, 0o700); err != nil { //nolint:gosec // G302: the stand-in tool must be executable, in the test's own temp folder
 		t.Fatal(err)
 	}
 	return dir
 }
 
 func run(ctx context.Context, exe string, args []string) (int, string, error) {
-	out, err := exec.CommandContext(ctx, exe, args...).CombinedOutput()
-	var x *exec.ExitError
-	if errors.As(err, &x) {
+	out, err := exec.CommandContext(ctx, exe, args...).CombinedOutput() //nolint:gosec // G204: the test's own stand-in tool under t.TempDir(), arguments built by Args
+	if x, ok := errors.AsType[*exec.ExitError](err); ok {
 		return x.ExitCode(), string(out), nil
 	}
 	return 0, string(out), err

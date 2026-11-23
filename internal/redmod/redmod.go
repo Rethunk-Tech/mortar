@@ -5,7 +5,6 @@ package redmod
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -32,6 +31,8 @@ const (
 	stagePrefix = "[DEPLOY]"
 	// interrupted is STATUS_CONTROL_C_EXIT: the console was closed or interrupted.
 	interrupted = 0xC000013A
+	// interruptedSigned is the same code as a 32-bit signed exit status reads it.
+	interruptedSigned = -1073741510
 )
 
 // Installed reports whether the install has the REDmod DLC's tool and launcher, the one answer to "can this install
@@ -55,7 +56,7 @@ func Args(installDir string, path func(string) string) []string {
 
 // FailureReason is why a failed deploy failed: the last line the tool printed before it reported the failure.
 func FailureReason(exitCode int, output string) string {
-	if uint32(exitCode) == interrupted {
+	if exitCode == interrupted || exitCode == interruptedSigned {
 		return "REDmod was interrupted"
 	}
 	lines := strings.Split(strings.ReplaceAll(output, "\r\n", "\n"), "\n")
@@ -80,7 +81,7 @@ func FailureReason(exitCode int, output string) string {
 func WriteModList(installDir string, names []string) error {
 	file := filepath.Join(installDir, filepath.FromSlash(modListPath))
 	previous, readErr := readModList(file)
-	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(file), 0o750); err != nil {
 		return err
 	}
 	if err := safefs.WriteFileAtomic(file, []byte(strings.Join(names, "\r\n")), 0o644); err != nil {
@@ -89,19 +90,16 @@ func WriteModList(installDir string, names []string) error {
 	// An unreadable list leaves the deployed order unknown.
 	if readErr != nil || reordered(previous, names) {
 		dir := filepath.Join(installDir, filepath.FromSlash(generatedPath))
-		if err := os.RemoveAll(dir); err != nil {
+		if err := safefs.RemoveAll(dir); err != nil {
 			return fmt.Errorf("clear the deployed REDmod files: %w", err)
 		}
-		return os.MkdirAll(dir, 0o755)
+		return os.MkdirAll(dir, 0o750)
 	}
 	return nil
 }
 
 func readModList(file string) ([]string, error) {
-	b, err := os.ReadFile(file)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil, nil
-	}
+	b, _, err := safefs.ReadFileIfExists(file)
 	if err != nil {
 		return nil, err
 	}

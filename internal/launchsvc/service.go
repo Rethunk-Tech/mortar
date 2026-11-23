@@ -1168,18 +1168,10 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 			return err
 		}
 	}
-	if err := s.ensureRuntime(inst, plan.RuntimeReqs, env.Direct || plan.Exe != ""); err != nil {
-		err = runtimeError(g, err)
+	if err := s.prepareRuntime(ctx, g, inst, profileID, plan, env, vanilla); err != nil {
 		dep.unwind(ctx)
 		s.restoreOrReport(g, profileID, restore)
 		return err
-	}
-	if !vanilla && profileID != "" {
-		if err := s.deployREDmods(ctx, gameID, inst, profileID, plan, env); err != nil {
-			dep.unwind(ctx)
-			s.restoreOrReport(g, profileID, restore)
-			return err
-		}
 	}
 	runCtx, cancel := context.WithCancel(ctx)
 	logCap, _ := strconv.Atoi(settings.ResolveAt(s.settings.Get(), "consoleLogCap", settings.Scope{Game: gameID, Profile: profileID}, launchOverrides(s.profiles, gameID, profileID)))
@@ -1219,6 +1211,18 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	}
 	go s.run(runCtx, g, profileID, launchRun{inst: inst, plan: plan, env: env, vanilla: vanilla}, buf)
 	return nil
+}
+
+// prepareRuntime readies what the game runs under once its files are placed: the runtime's prefix and libraries, then
+// the profile's REDmods. On an error the caller takes the placed files back.
+func (s *Service) prepareRuntime(ctx context.Context, g game.Game, inst game.Install, profileID string, plan *launchplan.Plan, env game.StartEnv, vanilla bool) error {
+	if err := s.ensureRuntime(inst, plan.RuntimeReqs, env.Direct || plan.Exe != ""); err != nil {
+		return runtimeError(g, err)
+	}
+	if vanilla || profileID == "" {
+		return nil
+	}
+	return s.deployREDmods(ctx, g.ID(), inst, profileID, plan, env)
 }
 
 func runtimeError(g game.Game, err error) error {

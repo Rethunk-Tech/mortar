@@ -17,8 +17,7 @@ func RunTool(ctx context.Context, env []string, dir, name string, args ...string
 	cmd.Env = commandEnv(dir, env)
 	gameproc.PrepareTree(cmd, true)
 	out, err := cmd.CombinedOutput()
-	var exit *exec.ExitError
-	if errors.As(err, &exit) {
+	if exit, ok := errors.AsType[*exec.ExitError](err); ok {
 		return exit.ExitCode(), string(out), nil
 	}
 	return 0, string(out), err
