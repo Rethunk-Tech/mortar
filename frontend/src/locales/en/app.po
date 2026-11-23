@@ -1143,6 +1143,10 @@ msgstr "Paired computers"
 msgid "Failed"
 msgstr "Failed"
 
+#: src/game/LaunchMenu.tsx
+msgid "Running {name}…"
+msgstr "Running {name}…"
+
 #: src/sync/SyncOffers.tsx
 msgid "Adds {name}"
 msgstr "Adds {name}"

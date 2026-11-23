@@ -11798,6 +11798,31 @@
           "name": ""
         }
       ],
+      "tools": [
+        {
+          "id": "redlauncher",
+          "name": "REDLauncher",
+          "exe": "REDprelauncher.exe",
+          "args": ["-modded"],
+          "requires": ["REDprelauncher.exe", "tools/redmod/bin/redMod.exe"],
+          "deploys": true
+        },
+        {
+          "id": "redeploy",
+          "name": "REDmod Deploy Latest Load Order",
+          "action": "deployREDmods",
+          "requires": ["REDprelauncher.exe", "tools/redmod/bin/redMod.exe"]
+        },
+        {
+          "id": "cybercat",
+          "name": "CyberCAT Save Editor",
+          "exe": "CyberCAT/CP2077SaveEditor.exe",
+          "requires": [
+            "CyberCAT/CP2077SaveEditor.exe",
+            "CyberCAT/licenses/CyberCAT.Core.LICENSE.txt"
+          ]
+        }
+      ],
       "sources": [
         {
           "id": "nexus",

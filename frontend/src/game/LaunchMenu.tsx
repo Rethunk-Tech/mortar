@@ -6,6 +6,7 @@ import type { Tool } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { MenuAction, MenuNote } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { useTools } from '../tools/store.ts'
 import { ToolsManageDialog } from '../tools/ToolsManageDialog.tsx'
 import { HomeMenuButton } from './HomeButton.tsx'
@@ -35,6 +36,10 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
         onClick={() => {
           close()
           const start = (): void => {
+            // A game's own tool can compile REDmods first, which takes minutes with nothing else on screen.
+            if (tool.builtin) {
+              useToasts.getState().push({ kind: 'info', title: t`Running ${{ name: tool.name }}…` })
+            }
             launch(game, profile.id, tool.id).catch(
               reportError(t`Could not start ${{ name: tool.name }}`, start),
             )

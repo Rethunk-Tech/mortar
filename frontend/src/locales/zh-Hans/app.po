@@ -1137,6 +1137,10 @@ msgstr "已配对的电脑"
 msgid "Failed"
 msgstr "失败"
 
+#: src/game/LaunchMenu.tsx
+msgid "Running {name}…"
+msgstr ""
+
 #: src/sync/SyncOffers.tsx
 msgid "Adds {name}"
 msgstr "添加 {name}"

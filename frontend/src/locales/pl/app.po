@@ -1143,6 +1143,10 @@ msgstr ""
 msgid "Failed"
 msgstr ""
 
+#: src/game/LaunchMenu.tsx
+msgid "Running {name}…"
+msgstr ""
+
 #: src/sync/SyncOffers.tsx
 msgid "Adds {name}"
 msgstr ""

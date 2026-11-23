@@ -837,6 +837,7 @@ func (c *boot) quitWiring() error {
 	if err != nil {
 		return err
 	}
+	c.toolsSvc.Catalog = c.launches
 
 	c.intents = &UIIntentService{emit: func(name string, data any) { c.app.Event.Emit(name, data) }}
 	c.quitSvc = &QuitService{

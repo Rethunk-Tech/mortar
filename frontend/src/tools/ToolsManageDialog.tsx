@@ -21,7 +21,9 @@ export function ToolsManageDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  const tools = useTools((s) => s.tools)
+  const all = useTools((s) => s.tools)
+  // The game's own tools are not the player's to edit or remove.
+  const tools = useMemo(() => all.filter((tool) => !tool.builtin), [all])
   const remove = useTools((s) => s.remove)
   const update = useTools((s) => s.update)
   const add = useTools((s) => s.add)

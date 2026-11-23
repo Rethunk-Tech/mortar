@@ -187,6 +187,9 @@ type GameInfo struct {
 	// Caches are rebuildable cache files or folders the game rebuilds on launch, which Mortar deletes once after a
 	// profile's mod set changes.
 	Caches []CachePath `json:"caches,omitempty"`
+	// Tools are programs and actions of the game's own install that the game's Tools menu offers once every file they
+	// require is there. An older Mortar ignores the field.
+	Tools []GameTool `json:"tools,omitempty"`
 	// TitleScene is the Unity scene of the game's main menu, where a BepInEx startup measurement ends; without it the
 	// first scene ends it.
 	TitleScene string `json:"titleScene,omitempty"`
@@ -383,6 +386,25 @@ const (
 
 // LayoutCyberpunk is the Layout of Cyberpunk 2077's mods target.
 const LayoutCyberpunk = "cyberpunk"
+
+// ToolDeployREDmods is the GameTool action that compiles the profile's REDmods without starting the game.
+const ToolDeployREDmods = "deployREDmods"
+
+// GameTool is a program or an action the game's install offers. Requires are slash paths below the install folder that
+// must all exist for the tool to be listed, as Vortex's supported tools list requiredFiles.
+type GameTool struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	// Exe is the program's slash path below the install folder, run under the install's own runtime (Proton on Linux).
+	Exe  string   `json:"exe,omitempty"`
+	Args []string `json:"args,omitempty"`
+	// Action names what Mortar does itself instead of starting a program: ToolDeployREDmods.
+	Action   string   `json:"action,omitempty"`
+	Requires []string `json:"requires"`
+	// Deploys places the profile's files and compiles its REDmods before the program starts, for a program that starts
+	// the game; the files stay placed until the next Play takes them back.
+	Deploys bool `json:"deploys,omitempty"`
+}
 
 // TargetDef is a content target: a named place mod files go. Root is where it lives in the profile: {profileMods}
 // (the profile's mods folder), {profile} (the profile's root) or a folder below {profile}. MaxDepth caps, per
@@ -1257,6 +1279,11 @@ func (g GameInfo) validatePaths() error {
 			if n == "" || n == "." || n == ".." || strings.ContainsAny(n, "/\\") {
 				return fmt.Errorf("game %q has an unusable folder name %q", g.ID, n)
 			}
+		}
+	}
+	for _, tool := range g.Tools {
+		if err := tool.validate(g.ID); err != nil {
+			return err
 		}
 	}
 	for _, cp := range g.Caches {
@@ -2145,4 +2172,19 @@ func (g GameInfo) HasMetadata(name string) bool { return slices.Contains(g.Metad
 // unsafeRel reports a path that is not a local slash path.
 func unsafeRel(p string) bool {
 	return strings.Contains(p, "\\") || !fs.ValidPath(p) || p == "."
+}
+
+func (t GameTool) validate(game string) error {
+	if t.ID == "" || t.Name == "" || (t.Exe == "") == (t.Action == "") {
+		return fmt.Errorf("game %q has a tool without an id and a name, or with both or neither of an exe and an action", game)
+	}
+	if t.Action != "" && t.Action != ToolDeployREDmods {
+		return fmt.Errorf("game %q tool %q has the unknown action %q", game, t.ID, t.Action)
+	}
+	for _, p := range append([]string{t.Exe}, t.Requires...) {
+		if p != "" && unsafeRel(p) {
+			return fmt.Errorf("game %q tool %q names %q, which is not a local slash path", game, t.ID, p)
+		}
+	}
+	return nil
 }

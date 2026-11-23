@@ -1,13 +1,26 @@
 package tools
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
+	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
+
+// Catalog runs the tools of a game's catalog entry, which need the launch pipeline: nil means the game's tools are the
+// player's own only.
+type Catalog interface {
+	GameToolPresent(gameID, profileID string, t components.GameTool) bool
+	RunGameTool(ctx context.Context, gameID, profileID string, t components.GameTool) error
+}
+
+// catalogPrefix starts the id of a catalog tool, which no tool the player adds can start with.
+const catalogPrefix = "game:"
 
 // Service exposes per-game external tools to the frontend.
 type Service struct {
@@ -15,6 +28,8 @@ type Service struct {
 	home     string
 	settings *settings.Store
 	profiles *profile.Store
+	// Catalog is set once the launch service exists.
+	Catalog Catalog
 }
 
 func NewService(home string, settings *settings.Store, profiles *profile.Store) (*Service, error) {
@@ -25,8 +40,27 @@ func NewService(home string, settings *settings.Store, profiles *profile.Store) 
 	return &Service{store: store, home: home, settings: settings, profiles: profiles}, nil
 }
 
+// List is the catalog's tools of the game that are in its install, then the player's own.
 func (s *Service) List(game string) ([]Tool, error) {
-	return s.store.List(game)
+	own, err := s.store.List(game)
+	if err != nil {
+		return nil, err
+	}
+	return append(s.catalogTools(game, ""), own...), nil
+}
+
+func (s *Service) catalogTools(gameID, profileID string) []Tool {
+	info, ok := components.Game(gameID)
+	if !ok || s.Catalog == nil {
+		return nil
+	}
+	var out []Tool
+	for _, t := range info.Tools {
+		if s.Catalog.GameToolPresent(gameID, profileID, t) {
+			out = append(out, Tool{ID: catalogPrefix + t.ID, Name: t.Name, Executable: t.Exe, Arguments: t.Args, Builtin: true})
+		}
+	}
+	return out
 }
 
 func (s *Service) Add(game string, t Tool) (Tool, error) {
@@ -66,6 +100,9 @@ func (s *Service) Remove(game, id string) error {
 }
 
 func (s *Service) Launch(game, profileID, id string) error {
+	if catalogID, ok := strings.CutPrefix(id, catalogPrefix); ok {
+		return s.launchCatalog(game, profileID, catalogID)
+	}
 	tools, err := s.store.load(game)
 	if err != nil {
 		return err
@@ -85,6 +122,16 @@ func (s *Service) Launch(game, profileID, id string) error {
 		return err
 	}
 	return launchTool(t, ctx)
+}
+
+func (s *Service) launchCatalog(gameID, profileID, id string) error {
+	info, _ := components.Game(gameID)
+	for _, t := range info.Tools {
+		if t.ID == id && s.Catalog != nil {
+			return s.Catalog.RunGameTool(context.Background(), gameID, profileID, t)
+		}
+	}
+	return errToolNotFound()
 }
 
 func (s *Service) context(gameID, profileID string) (Context, error) {
