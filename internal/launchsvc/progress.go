@@ -39,6 +39,9 @@ type Progress struct {
 	// Play still has to copy (files the last Play left standing are not counted).
 	Placed     int `json:"placed,omitempty"`
 	PlaceTotal int `json:"placeTotal,omitempty"`
+	// Deploying is set while the game's REDmod tool compiles the profile's REDmods, which recompiles the game's scripts
+	// and can take minutes.
+	Deploying bool `json:"deploying,omitempty"`
 	// UsualMs is how long this profile's recent launches took to be ready, zero without any.
 	UsualMs int64 `json:"usualMs"`
 }

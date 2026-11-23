@@ -42,12 +42,16 @@ func (s *Service) deployREDmods(ctx context.Context, gameID string, inst game.In
 	if runtime.GOOS != "windows" {
 		path = wineoverride.ZPath
 	}
-	if len(names) == 0 {
+	if len(names) == 0 && !redmod.Deployed(inst.Dir) {
 		// Vortex starts the game modded whether or not REDmods are deployed, so a REDmod put there by hand loads too.
 		if !slices.Contains(plan.Args, redmod.Arg) {
 			plan.AddArgs(redmod.Arg)
 		}
 		return nil
+	}
+	if g := game.Find(gameID); g != nil {
+		s.updateProgress(g, nil, func(p *Progress) { p.Deploying = true })
+		defer s.updateProgress(g, nil, func(p *Progress) { p.Deploying = false })
 	}
 	err = redmod.Deploy(ctx, inst.Dir, names, path, func(ctx context.Context, exe string, args []string) (int, string, error) {
 		cmd, err := game.ToolCommand(runtime.GOOS, inst, env, plan.Env, exe, args)

@@ -21,6 +21,7 @@ const (
 	metadataPath  = "tools/redmod/metadata.json"
 	modListPath   = "V2077/modlist.txt"
 	generatedPath = "r6/cache/modded"
+	redmodDir     = "mods"
 )
 
 // Arg is the argument that makes the game load what Deploy compiled.
@@ -74,6 +75,13 @@ func FailureReason(exitCode int, output string) string {
 		return fmt.Sprintf("REDmod exited with code %d", exitCode)
 	}
 	return reason
+}
+
+// Deployed reports whether an earlier deploy left REDmods behind: its modlist names some. Deploying again with none
+// left is what clears them, which Vortex does on every start.
+func Deployed(installDir string) bool {
+	previous, err := readModList(filepath.Join(installDir, filepath.FromSlash(modListPath)))
+	return err == nil && len(previous) > 0
 }
 
 // WriteModList writes names, one folder per line with Windows line endings (the only ones the tool reads), and clears
@@ -133,6 +141,12 @@ func (e *FailedError) Error() string { return "REDmod could not deploy the mods:
 func Deploy(ctx context.Context, installDir string, names []string, path func(string) string, run Runner) error {
 	if err := WriteModList(installDir, names); err != nil {
 		return err
+	}
+	// The tool compiles into these and reads the mods from the first, which a profile with none has not created.
+	for _, dir := range []string{redmodDir, generatedPath} {
+		if err := os.MkdirAll(filepath.Join(installDir, filepath.FromSlash(dir)), 0o750); err != nil {
+			return err
+		}
 	}
 	code, out, err := run(ctx, Tool(installDir), Args(installDir, path))
 	if err != nil {
