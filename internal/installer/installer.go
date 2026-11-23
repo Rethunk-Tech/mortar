@@ -25,6 +25,9 @@ type Archive struct {
 	Key string
 	// Source and Package are the site the archive came from and its id there, when the store knows them.
 	Source, Package string
+	// Name is the name of the mod the archive is, for a driver that puts a folder of that name in the game (Cyberpunk
+	// 2077's redscript and RED4ext folders); empty takes one from the archive's own contents.
+	Name string
 	// Eval is what a FOMOD's conditions read: the files already installed and the game's version.
 	Eval fomod.EvalContext
 }
@@ -38,7 +41,7 @@ func GameOf(gameID string) Game {
 		g.Routes = append(g.Routes, l.Routes...)
 	}
 	for _, t := range info.Targets {
-		g.Targets = append(g.Targets, Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth, KeepWhole: t.KeepWhole, ModRoot: t.ModRoot, Extensions: t.Extensions, Shared: t.Role != "", Role: t.Role, Sources: t.Sources, REDmod: t.REDmod})
+		g.Targets = append(g.Targets, Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth, KeepWhole: t.KeepWhole, ModRoot: t.ModRoot, Extensions: t.Extensions, Shared: t.Role != "", Role: t.Role, Sources: t.Sources, Layout: t.Layout})
 	}
 	return g
 }
@@ -67,8 +70,8 @@ type Target struct {
 	Role string
 	// Sources are the source ids whose archives this target takes whole (components.TargetDef.Sources).
 	Sources []string
-	// REDmod marks Cyberpunk 2077's mods target (components.TargetDef.REDmod).
-	REDmod bool
+	// Layout names the game-specific driver the target's archives go through (components.TargetDef.Layout).
+	Layout string
 }
 
 // RoleOf is the path role the shared target id places into, "" for a target that is not shared.
@@ -126,8 +129,22 @@ type File struct {
 	Zip bool
 }
 
+// Note is something a driver saw in an archive that the player should hear of: Problems shows it.
+type Note struct {
+	Code    string
+	Message string
+	Files   []string
+}
+
 // Layout is where an archive's files go.
-type Layout struct{ Files []File }
+type Layout struct {
+	Files []File
+	// Kind names the layout the driver found, for the drivers that tell several apart.
+	Kind  string
+	Notes []Note
+	// Unrecognised is an archive no known layout took, which was laid out as packed.
+	Unrecognised bool
+}
 
 // Installer is one archive shape.
 type Installer interface {
@@ -138,7 +155,7 @@ type Installer interface {
 }
 
 // detectionOrder is the order drivers are asked: the most specific shape first, plain last because it takes anything.
-var detectionOrder = []string{"source-target", "zipped", "fomod", "thunderstore-rules", "redmod", "plain"}
+var detectionOrder = []string{"source-target", "zipped", "fomod", "thunderstore-rules", DriverCyberpunk, "plain"}
 
 var (
 	mu       sync.RWMutex

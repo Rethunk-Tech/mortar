@@ -15,7 +15,7 @@ import (
 // which wins here, comes first. A game whose mods target is not a REDmod one has none.
 func (s *Store) REDmodFolders(game, id string) ([]string, error) {
 	info, ok := components.Game(game)
-	if t, has := info.Target(installer.TargetMods); !ok || !has || !t.REDmod {
+	if t, has := info.Target(installer.TargetMods); !ok || !has || t.Layout != components.LayoutCyberpunk {
 		return nil, nil
 	}
 	owners, err := s.PackageFileOwners(game, id)

@@ -11326,7 +11326,7 @@
         {
           "id": "mods",
           "root": "{profile}/Mods",
-          "redmod": true,
+          "layout": "cyberpunk",
           "keepWhole": [
             "archive",
             "xl",

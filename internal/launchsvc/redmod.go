@@ -22,7 +22,7 @@ import (
 // starts as it is; a deploy the tool reports as failed stops the launch with the tool's reason.
 func (s *Service) deployREDmods(ctx context.Context, gameID string, inst game.Install, profileID string, plan *launchplan.Plan, env game.StartEnv) error {
 	info, _ := components.Game(gameID)
-	if t, ok := info.Target(installer.TargetMods); !ok || !t.REDmod {
+	if t, ok := info.Target(installer.TargetMods); !ok || t.Layout != components.LayoutCyberpunk {
 		return nil
 	}
 	names, err := s.profiles.REDmodFolders(gameID, profileID)

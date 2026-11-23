@@ -13,9 +13,9 @@ func TestREDmodFoldersLeadWithTheEntryThatWins(t *testing.T) {
 		t.Fatal(err)
 	}
 	pack := func(name, dir string) map[string]string {
-		return map[string]string{dir + "/info.json": `{"name":"` + name + `"}`, dir + "/archives/a.archive": name}
+		return map[string]string{dir + "/info.json": `{"name":"` + name + `","version":"1"}`, dir + "/archives/a.archive": name}
 	}
-	for i, z := range []map[string]string{pack("First", "First"), pack("Second", "Second"), {"mods/Third/info.json": "{}", "mods/Third/archives/t.archive": "t"}} {
+	for i, z := range []map[string]string{pack("First", "First"), pack("Second", "Second"), {"mods/Third/info.json": `{"name":"Third","version":"1"}`, "mods/Third/archives/t.archive": "t"}} {
 		if _, err := e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zipOf(t, "m.zip", z), cfSource(20+i)); err != nil {
 			t.Fatal(err)
 		}

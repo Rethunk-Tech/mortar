@@ -381,6 +381,9 @@ const (
 	DeployProfile  = "profile"
 )
 
+// LayoutCyberpunk is the Layout of Cyberpunk 2077's mods target.
+const LayoutCyberpunk = "cyberpunk"
+
 // TargetDef is a content target: a named place mod files go. Root is where it lives in the profile: {profileMods}
 // (the profile's mods folder), {profile} (the profile's root) or a folder below {profile}. MaxDepth caps, per
 // lower-case file extension, how many folders deep a file may sit below the target.
@@ -396,11 +399,10 @@ type TargetDef struct {
 	// modinfo.json): the folder holding it is laid out whole as one folder below the target, and the archive is one
 	// entry. An archive without it is laid out as loose files.
 	ModRoot string `json:"modRoot,omitempty"`
-	// REDmod marks Cyberpunk 2077's mods target: an archive packed as a REDmod folder (info.json beside archives/,
-	// customSounds/, scripts/ or tweaks/) lays out below the install's mods folder, and Mortar deploys the profile's
-	// REDmods with the game's own REDmod tool before each launch. An older Mortar ignores the field and lays the
+	// Layout names a game-specific installer for the target's archives. "cyberpunk" is Cyberpunk 2077's: its archive
+	// shapes, and the REDmod deploy Mortar runs before each launch. An older Mortar ignores the field and lays an
 	// archive out as packed.
-	REDmod bool `json:"redmod,omitempty"`
+	Layout string `json:"layout,omitempty"`
 	// Role names a path role instead of a profile folder: the target's files are placed at install in that folder of
 	// the game, shared by every profile, and Mortar records which it placed. Root is empty then.
 	Role string `json:"role,omitempty"`

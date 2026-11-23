@@ -20,7 +20,7 @@ type extension struct{}
 
 func (extension) Applies(info components.GameInfo) bool {
 	t, ok := info.Target(folder.TargetID)
-	return ok && t.REDmod
+	return ok && t.Layout == components.LayoutCyberpunk
 }
 
 func (extension) Role() string { return "" }
