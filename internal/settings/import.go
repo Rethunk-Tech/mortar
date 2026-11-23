@@ -25,7 +25,7 @@ var importSections = []string{
 var sectionFields = map[string][]string{
 	SectionAppearance: {
 		"accent", "font", "background", "theme", "density", "uiScale", "gridCardSize", "showAuthorOnCards", "centerConfigControls", "browseCardStats", "reduceMotion", "touchRipples", "profileHero",
-		"listColumns", "listSortColumn", "listSortDir", "listGroupBy", "defaultModsView", "implicitModsView", "profileOrder", "sidebarBadges",
+		"listColumns", "listSortColumn", "listSortDir", "listGroupBy", "defaultModsView", "implicitModsView", "modPartsView", "profileOrder", "sidebarBadges",
 	},
 	SectionNotifications: {
 		"notifyModUpdates", "notifyDownloadFinished", "notifyDownloadFailed", "notifyRunCrashed", "notifySuccess",

@@ -354,6 +354,7 @@ export function Appearance() {
             'markLocalMods',
             'listGroupBy',
             'implicitModsView',
+            'modPartsView',
           ]}
         />
         <DefaultSort />

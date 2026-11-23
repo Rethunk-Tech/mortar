@@ -81,6 +81,7 @@ const defaults: Settings = {
   storeRetentionDays: 30,
   defaultModsView: 'grid',
   implicitModsView: 'nested',
+  modPartsView: 'shown',
   confirmRemovals: true,
   backgroundBadgeChecks: true,
   startScreen: 'last',

@@ -22,6 +22,16 @@ export function modsViewPrefs(i18n: I18n): Record<string, PrefCopy> {
         { value: 'hidden', label: i18n._(msg`Hidden`) },
       ],
     },
+    modPartsView: {
+      label: i18n._(msg`Mod parts`),
+      description: i18n._(
+        msg`Whether the extra mods a download brings beside its main mod appear in the mod list`,
+      ),
+      options: [
+        { value: 'shown', label: i18n._(msg`Shown`) },
+        { value: 'hidden', label: i18n._(msg`Hidden`) },
+      ],
+    },
     gridCardSize: {
       label: i18n._(msg`Grid card size`),
       options: [

@@ -453,6 +453,10 @@ msgstr "{name} 现在会打开 {source} 的“使用模组管理器安装”链�
 msgid "Looking for launchers…"
 msgstr "正在查找启动器…"
 
+#: src/settings/prefCopyModsView.ts
+msgid "Whether the extra mods a download brings beside its main mod appear in the mod list"
+msgstr ""
+
 #: src/settings/sections/DataHistory.tsx
 msgid "Trimmed {profile}'s history, freed {size}"
 msgstr "已裁剪 {profile} 的历史记录，释放了 {size}"
@@ -1380,6 +1384,10 @@ msgstr "游戏运行时暂停下载"
 #: src/settings/SettingsShell.tsx
 msgid "Try another word, or clear the search."
 msgstr "请尝试其他词，或清除搜索。"
+
+#: src/settings/prefCopyModsView.ts
+msgid "Mod parts"
+msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Automatic tries {source}'s hosts in turn when one fails or stalls; choosing one uses only that host."
@@ -3588,6 +3596,10 @@ msgstr "Mortar 全局文件夹"
 #: src/settings/sections/Appearance.tsx
 msgid "Display"
 msgstr "显示"
+
+#: src/settings/prefCopyModsView.ts
+msgid "Shown"
+msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Show adult mods in browse"

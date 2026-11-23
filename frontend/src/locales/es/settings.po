@@ -453,6 +453,10 @@ msgstr ""
 msgid "Looking for launchers…"
 msgstr ""
 
+#: src/settings/prefCopyModsView.ts
+msgid "Whether the extra mods a download brings beside its main mod appear in the mod list"
+msgstr ""
+
 #: src/settings/sections/DataHistory.tsx
 msgid "Trimmed {profile}'s history, freed {size}"
 msgstr ""
@@ -1379,6 +1383,10 @@ msgstr ""
 
 #: src/settings/SettingsShell.tsx
 msgid "Try another word, or clear the search."
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Mod parts"
 msgstr ""
 
 #: src/settings/prefCopy.ts
@@ -3587,6 +3595,10 @@ msgstr ""
 
 #: src/settings/sections/Appearance.tsx
 msgid "Display"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Shown"
 msgstr ""
 
 #: src/settings/prefCopy.ts

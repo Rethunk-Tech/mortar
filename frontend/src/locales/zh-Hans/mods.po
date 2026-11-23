@@ -1621,6 +1621,10 @@ msgstr "编辑配置"
 msgid "Other values"
 msgstr "其他值"
 
+#: src/mods/Toolbar.tsx
+msgid "Mod parts"
+msgstr ""
+
 #: src/mods/NewFoldersCallout.tsx
 msgid "Do not ask about these"
 msgstr "不要再询问这些"
@@ -3782,6 +3786,10 @@ msgstr "{count, plural, one {将 # 个标记为隐式} other {将 # 个标记为
 #: src/mods/updateReview/EverywhereDialog.tsx
 msgid "this version skipped"
 msgstr "已跳过此版本"
+
+#: src/mods/Toolbar.tsx
+msgid "Shown"
+msgstr ""
 
 #: src/mods/ChangeVersionDialog.tsx
 msgid "Install a version of {name}"

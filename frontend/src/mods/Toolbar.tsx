@@ -24,10 +24,7 @@ import {
   UserCheck,
 } from 'lucide-react'
 import { memo, useEffect, useRef, useState } from 'react'
-import {
-  SetByKey,
-  SetListGroupBy,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { SetListGroupBy } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { compactQuery, iconWhenCompact, searchFieldOpen } from '../game/compact.ts'
 import { useTab } from '../game/tab.ts'
 import { useInstall } from '../install/store.ts'
@@ -41,7 +38,7 @@ import { useKeptWhileClosed } from '../shell/keptWhileClosed.ts'
 import { MenuAction, MenuCheck } from '../shell/MenuAction.tsx'
 import { MenuButton } from '../shell/MenuButton.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
-import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -58,6 +55,7 @@ import { lockedHint } from './lockedHint.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 import { FOLDER_LOADER, useListGroupBy } from './useModGroups.ts'
+import { ViewItems } from './ViewItems.tsx'
 
 const FILTERS: readonly {
   id: Exclude<ModFilter, 'all'>
@@ -71,11 +69,6 @@ const FILTERS: readonly {
   { id: 'local', label: (i18n) => i18n._(msg`Local`) },
   { id: 'recent', label: (i18n) => i18n._(msg`Added this week`) },
 ]
-
-function persistImplicitView(view: string) {
-  useSettings.setState({ implicitModsView: view })
-  SetByKey('implicitModsView', view, '').catch(reportUnexpected)
-}
 
 function persistGroupBy(by: GroupBy) {
   useSettings.setState({ listGroupBy: by })
@@ -120,30 +113,6 @@ function TagChips({
   )
 }
 
-// How implicit mods appear in the list, kept as the implicitModsView setting.
-function ImplicitViewItems() {
-  const { t } = useLingui()
-  const view = useSettings((s) => s.implicitModsView)
-  return (
-    <>
-      <MenuHeading>{t`Implicit mods`}</MenuHeading>
-      {[
-        { id: 'shown', label: t`Always shown` },
-        { id: 'nested', label: t`Nested` },
-        { id: 'hidden', label: t`Hidden` },
-      ].map((item) => (
-        <MenuCheck
-          key={item.id}
-          radio={true}
-          checked={view === item.id}
-          label={item.label}
-          onClick={() => persistImplicitView(item.id)}
-        />
-      ))}
-    </>
-  )
-}
-
 const ShowFilterControl = memo(function ShowFilterMenu({
   filter,
   onFilter,
@@ -180,7 +149,26 @@ const ShowFilterControl = memo(function ShowFilterMenu({
       />
     )),
     <MenuRule key="rule" />,
-    <ImplicitViewItems key="implicit" />,
+    <ViewItems
+      key="implicit"
+      setting="implicitModsView"
+      heading={t`Implicit mods`}
+      options={[
+        { id: 'shown', label: t`Always shown` },
+        { id: 'nested', label: t`Nested` },
+        { id: 'hidden', label: t`Hidden` },
+      ]}
+    />,
+    <MenuRule key="parts-rule" />,
+    <ViewItems
+      key="parts"
+      setting="modPartsView"
+      heading={t`Mod parts`}
+      options={[
+        { id: 'shown', label: t`Shown` },
+        { id: 'hidden', label: t`Hidden` },
+      ]}
+    />,
     ...(tags.length > 0
       ? [
           <MenuRule key="tags-rule" />,

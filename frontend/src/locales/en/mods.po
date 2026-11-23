@@ -1627,6 +1627,10 @@ msgstr "Edit config"
 msgid "Other values"
 msgstr "Other values"
 
+#: src/mods/Toolbar.tsx
+msgid "Mod parts"
+msgstr "Mod parts"
+
 #: src/mods/NewFoldersCallout.tsx
 msgid "Do not ask about these"
 msgstr "Do not ask about these"
@@ -3788,6 +3792,10 @@ msgstr "{count, plural, one {Mark # implicit} other {Mark # implicit}}"
 #: src/mods/updateReview/EverywhereDialog.tsx
 msgid "this version skipped"
 msgstr "this version skipped"
+
+#: src/mods/Toolbar.tsx
+msgid "Shown"
+msgstr "Shown"
 
 #: src/mods/ChangeVersionDialog.tsx
 msgid "Install a version of {name}"

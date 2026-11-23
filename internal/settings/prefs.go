@@ -44,6 +44,9 @@ const (
 	ImplicitModsShown  = "shown"
 	ImplicitModsNested = "nested"
 	ImplicitModsHidden = "hidden"
+	// Whether the Mods list shows the extra mods a download brought beside its main mod.
+	ModPartsShown  = "shown"
+	ModPartsHidden = "hidden"
 
 	DensityComfortable = "comfortable"
 	DensityCompact     = "compact"
@@ -184,6 +187,7 @@ func defaultPrefs() Settings {
 		StoreRetentionDays:         DefaultStoreRetentionDays,
 		DefaultModsView:            ModsViewGrid,
 		ImplicitModsView:           ImplicitModsNested,
+		ModPartsView:               ModPartsShown,
 		ConfirmRemovals:            on(),
 		BackgroundBadgeChecks:      on(),
 		StartScreen:                StartScreenLast,
@@ -299,6 +303,7 @@ func normStrings(s *Settings) []normString {
 		{&s.OnPlay, onPlayValues, OnPlayStay},
 		{&s.DefaultModsView, modsViewValues, ModsViewGrid},
 		{&s.ImplicitModsView, implicitModsValues, ImplicitModsNested},
+		{&s.ModPartsView, modPartsValues, ModPartsShown},
 		{&s.StartScreen, startScreenValues, StartScreenLast},
 		{&s.Antivirus, antivirusValues, AntivirusAutomatic},
 		{&s.Dates, datesValues, DatesRelative},
@@ -399,6 +404,7 @@ func prefChecks(s Settings) []prefCheck {
 		rangeCheck(s.StoreRetentionDays, MinStoreRetentionDays, MaxStoreRetentionDays, "store retention days", ""),
 		enumCheck(s.DefaultModsView, modsViewValues, "default mods view must be grid or list"),
 		enumCheck(s.ImplicitModsView, implicitModsValues, "implicit mods view must be shown, nested or hidden"),
+		enumCheck(s.ModPartsView, modPartsValues, "mod parts view must be shown or hidden"),
 		enumCheck(s.StartScreen, startScreenValues, "start screen must be last or gameselect"),
 		enumCheck(s.Antivirus, antivirusValues, "antivirus must be automatic, clamd, command or off"),
 		enumCheck(s.Dates, datesValues, "dates must be relative or absolute"),
@@ -429,6 +435,7 @@ var (
 	graphicsValues            = []string{GraphicsAutomatic, GraphicsSmooth, GraphicsCompatible}
 	modsViewValues            = []string{ModsViewGrid, ModsViewList}
 	implicitModsValues        = []string{ImplicitModsShown, ImplicitModsNested, ImplicitModsHidden}
+	modPartsValues            = []string{ModPartsShown, ModPartsHidden}
 	densityValues             = []string{DensityComfortable, DensityCompact}
 	themeValues               = []string{ThemeDark, ThemeLight, ThemeSystem}
 	gridCardValues            = []string{GridCardSmall, GridCardMedium, GridCardLarge}

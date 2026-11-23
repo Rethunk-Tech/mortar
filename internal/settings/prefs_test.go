@@ -108,7 +108,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"updateModsBeforePlayDefault": "true", "runsKept": "10", "consoleLogCap": "5000",
 		"parallelDownloads": "4", "downloadSpeedLimit": "5", "pauseDownloadsWhilePlaying": "true", "sandboxLaunch": "true", "sandboxExtraFolders": "/tmp", "updateCheckIntervalMinutes": "30", "checkModUpdatesOnStart": "false",
 		"notifyModUpdates": "true", "keepDownloadArchives": "true", "storeRetentionDays": "7",
-		"nxmDefaultProfile": "abc", "defaultModsView": "list", "implicitModsView": "nested", "listGroupBy": "author",
+		"nxmDefaultProfile": "abc", "defaultModsView": "list", "implicitModsView": "nested", "modPartsView": "hidden", "listGroupBy": "author",
 		"listSortColumn": "version", "listSortDir": "desc", "confirmRemovals": "false",
 		"cosmeticConflicts": "hidden", "backgroundBadgeChecks": "false", "startScreen": "gameselect", "antivirus": "clamd", "antivirusSocket": "/var/tmp/clamd.sock", "antivirusCommand": "scan {path}",
 		"dates": "absolute", "graphics": "smooth", "trashRetentionDays": "10", "historyEventsKept": "50",

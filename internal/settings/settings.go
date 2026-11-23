@@ -167,6 +167,7 @@ type Settings struct {
 	StoreRetentionDays int    `json:"storeRetentionDays"`
 	DefaultModsView    string `json:"defaultModsView"`
 	ImplicitModsView   string `json:"implicitModsView"`
+	ModPartsView       string `json:"modPartsView"`
 	// ConfirmRemovals asks before removing mods. Nil means on.
 	ConfirmRemovals *bool `json:"confirmRemovals"`
 	// BackgroundBadgeChecks fills sidebar badges for other profiles. Nil means on.

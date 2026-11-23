@@ -1627,6 +1627,10 @@ msgstr ""
 msgid "Other values"
 msgstr ""
 
+#: src/mods/Toolbar.tsx
+msgid "Mod parts"
+msgstr ""
+
 #: src/mods/NewFoldersCallout.tsx
 msgid "Do not ask about these"
 msgstr ""
@@ -3787,6 +3791,10 @@ msgstr ""
 
 #: src/mods/updateReview/EverywhereDialog.tsx
 msgid "this version skipped"
+msgstr ""
+
+#: src/mods/Toolbar.tsx
+msgid "Shown"
 msgstr ""
 
 #: src/mods/ChangeVersionDialog.tsx

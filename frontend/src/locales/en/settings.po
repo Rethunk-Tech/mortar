@@ -459,6 +459,10 @@ msgstr "{name} now opens {source} \"Install with Mod Manager\" links."
 msgid "Looking for launchers…"
 msgstr "Looking for launchers…"
 
+#: src/settings/prefCopyModsView.ts
+msgid "Whether the extra mods a download brings beside its main mod appear in the mod list"
+msgstr "Whether the extra mods a download brings beside its main mod appear in the mod list"
+
 #: src/settings/sections/DataHistory.tsx
 msgid "Trimmed {profile}'s history, freed {size}"
 msgstr "Trimmed {profile}'s history, freed {size}"
@@ -1386,6 +1390,10 @@ msgstr "Pause downloads while the game runs"
 #: src/settings/SettingsShell.tsx
 msgid "Try another word, or clear the search."
 msgstr "Try another word, or clear the search."
+
+#: src/settings/prefCopyModsView.ts
+msgid "Mod parts"
+msgstr "Mod parts"
 
 #: src/settings/prefCopy.ts
 msgid "Automatic tries {source}'s hosts in turn when one fails or stalls; choosing one uses only that host."
@@ -3594,6 +3602,10 @@ msgstr "Mortar-wide folder"
 #: src/settings/sections/Appearance.tsx
 msgid "Display"
 msgstr "Display"
+
+#: src/settings/prefCopyModsView.ts
+msgid "Shown"
+msgstr "Shown"
 
 #: src/settings/prefCopy.ts
 msgid "Show adult mods in browse"

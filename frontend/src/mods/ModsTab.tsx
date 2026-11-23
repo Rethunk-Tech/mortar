@@ -233,6 +233,7 @@ function FilteredMods({ profile }: { profile: Profile }) {
   const filter = useMods((s) => s.filters[profile.id]) ?? storedFilter(profile.id)
   const setFilter = useMods((s) => s.setFilter)
   const implicitView = useSettings((s) => s.implicitModsView)
+  const partsView = useSettings((s) => s.modPartsView)
   const selectedTags = useSelectedTags(profile.id)
   const setTagFilter = useMods((s) => s.setTagFilter)
   const q = useSettledQuery(query)
@@ -270,11 +271,12 @@ function FilteredMods({ profile }: { profile: Profile }) {
   const filtered = useMemo(() => {
     const customById = customCategoryById(customCategories)
     const parts = supportParts(mods)
-    // Hidden implicit mods still show when the search asks for them.
+    // Hidden implicit mods and parts still show when the search asks for them.
     const hideImplicit = implicitView === 'hidden' && q === ''
+    const hideParts = partsView === 'hidden' && q === ''
     return mods.filter((m) => {
       const entry = entryOf(profile, m.key)
-      if (hideImplicit && (Boolean(entry?.implicit) || parts.has(partKey(m)))) {
+      if ((hideImplicit && entry?.implicit) || (hideParts && parts.has(partKey(m)))) {
         return false
       }
       const searchable = searchFields(m, entry, nexusById, {
@@ -296,6 +298,7 @@ function FilteredMods({ profile }: { profile: Profile }) {
     q,
     filter,
     implicitView,
+    partsView,
     selectedTags,
     nexusById,
     customCategories,
