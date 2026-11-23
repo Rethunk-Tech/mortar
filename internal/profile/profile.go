@@ -380,7 +380,10 @@ type Store struct {
 	NewModsEnabled func() bool
 	// OldFilesMode returns the game's oldFilesOnUpdate setting; nil means ask.
 	OldFilesMode func(game string) string
-	historyKind  string
+	// UnknownLayoutMode returns the game's unknownLayout setting; nil means place as packed.
+	UnknownLayoutMode func(game string) string
+	layoutOK          layoutAllowed
+	historyKind       string
 	// historyNote words the pending event when the change itself does not say what it was.
 	historyNote HistoryEvent
 	// historyConfigs are the entries whose config.json the pending event's change rewrote.

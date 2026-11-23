@@ -36,6 +36,8 @@ type GameInfo struct {
 	HasOptions bool `json:"hasOptions"`
 	// HasCaches is true when the catalog lists rebuildable cache files Mortar clears after a profile's mod set changes.
 	HasCaches bool `json:"hasCaches"`
+	// Layout is the game-specific installer its mods target names (components.TargetDef.Layout), empty for none.
+	Layout string `json:"layout"`
 	// HasScreenshots is true when the game has a screenshots folder of its own or Steam keeps its screenshots.
 	HasScreenshots bool   `json:"hasScreenshots"`
 	Loader         string `json:"loader"`
@@ -254,6 +256,9 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 	for _, c := range catalog {
 		info := GameInfo{ID: c.ID, Name: c.Name, Deploy: c.Deploy, AppID: c.SteamAppID(), HasSaves: HasSaves(c.ID), StartupSettings: HasStartupSettings(c.ID), HasOptions: HasPath(c.ID, "options"), HasCaches: len(c.Caches) > 0, HasScreenshots: HasScreenshots(c.ID), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: c.SourceKeys(), FindSources: FindSourceSites(c), Graphics: c.Graphics}
 		info.Loader, info.LoaderID = c.Loaders[0].Name, c.Loaders[0].ID
+		if t, ok := c.Target("mods"); ok {
+			info.Layout = t.Layout
+		}
 		for i, src := range c.Sources {
 			info.Sources[i] = src.ID
 		}

@@ -15,6 +15,55 @@ function keepPlacedCopy(i18n: I18n): Record<string, PrefCopy> {
   }
 }
 
+function updateAndInstallCopy(i18n: I18n): Record<string, PrefCopy> {
+  return {
+    unknownLayout: {
+      label: i18n._(msg`Mods with no known layout`),
+      description: i18n._(
+        msg`What installing a mod does when the game's installer cannot tell where its files go`,
+      ),
+      options: [
+        {
+          value: 'ask',
+          label: i18n._(msg`Ask`),
+          hint: i18n._(msg`Stop and show the files, and offer to place the mod as packed.`),
+        },
+        {
+          value: 'install',
+          label: i18n._(msg`Place as packed`),
+          hint: i18n._(msg`Place every file as the archive has it and note it in Problems.`),
+        },
+        {
+          value: 'refuse',
+          label: i18n._(msg`Refuse`),
+          hint: i18n._(msg`Do not install it.`),
+        },
+      ],
+    },
+    oldFilesOnUpdate: {
+      label: i18n._(msg`Files an update no longer includes`),
+      description: i18n._(msg`What happens to files the new version of a mod leaves out`),
+      options: [
+        {
+          value: 'ask',
+          label: i18n._(msg`Ask`),
+          hint: i18n._(msg`Set them aside and ask whether to keep or delete them.`),
+        },
+        {
+          value: 'delete',
+          label: i18n._(msg`Delete`),
+          hint: i18n._(msg`Delete them; rolling back still restores the old version.`),
+        },
+        {
+          value: 'keep',
+          label: i18n._(msg`Keep`),
+          hint: i18n._(msg`Carry them into the new version's folder.`),
+        },
+      ],
+    },
+  }
+}
+
 export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
   return {
     gameSettingsMode: {
@@ -102,31 +151,11 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
       label: i18n._(msg`Sync folder for this game`),
       description: i18n._(msg`The folder this game's profiles sync into`),
     },
-    oldFilesOnUpdate: {
-      label: i18n._(msg`Files an update no longer includes`),
-      description: i18n._(msg`What happens to files the new version of a mod leaves out`),
-      options: [
-        {
-          value: 'ask',
-          label: i18n._(msg`Ask`),
-          hint: i18n._(msg`Set them aside and ask whether to keep or delete them.`),
-        },
-        {
-          value: 'delete',
-          label: i18n._(msg`Delete`),
-          hint: i18n._(msg`Delete them; rolling back still restores the old version.`),
-        },
-        {
-          value: 'keep',
-          label: i18n._(msg`Keep`),
-          hint: i18n._(msg`Carry them into the new version's folder.`),
-        },
-      ],
-    },
     skipPlayCheck: {
       label: i18n._(msg`Skip pre-Play check`),
     },
     ...keepPlacedCopy(i18n),
+    ...updateAndInstallCopy(i18n),
     sandboxLaunch: {
       label: i18n._(msg`Sandbox the game`),
       description: i18n._(

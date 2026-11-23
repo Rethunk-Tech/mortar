@@ -521,6 +521,10 @@ msgstr "Not connected yet"
 msgid "Copied"
 msgstr "Copied"
 
+#: src/settings/prefCopyGame.ts
+msgid "Stop and show the files, and offer to place the mod as packed."
+msgstr "Stop and show the files, and offer to place the mod as packed."
+
 #: src/settings/prefCopy.ts
 msgid "Name"
 msgstr "Name"
@@ -745,6 +749,10 @@ msgstr "Downloading and verifying Mortar {version}…"
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Load a save to see values"
 msgstr "Load a save to see values"
+
+#: src/settings/prefCopyGame.ts
+msgid "Place as packed"
+msgstr "Place as packed"
 
 #: src/settings/sections/General.tsx
 msgid "Nearby computers cannot reach Mortar. Set the network to Private in {os} network settings."
@@ -1387,6 +1395,10 @@ msgstr "Untrack all…"
 msgid "Pause downloads while the game runs"
 msgstr "Pause downloads while the game runs"
 
+#: src/settings/prefCopyGame.ts
+msgid "What installing a mod does when the game's installer cannot tell where its files go"
+msgstr "What installing a mod does when the game's installer cannot tell where its files go"
+
 #: src/settings/SettingsShell.tsx
 msgid "Try another word, or clear the search."
 msgstr "Try another word, or clear the search."
@@ -1527,6 +1539,10 @@ msgstr "Cosmetic overlaps on the Problems tab"
 #: src/settings/sections/NexusMods.tsx
 msgid "Signed out of {source}"
 msgstr "Signed out of {source}"
+
+#: src/settings/prefCopyGame.ts
+msgid "Do not install it."
+msgstr "Do not install it."
 
 #: src/settings/sections/Appearance.tsx
 msgid "Lavender"
@@ -2158,6 +2174,10 @@ msgstr "resets {when}"
 msgid "Group"
 msgstr "Group"
 
+#: src/settings/prefCopyGame.ts
+msgid "Mods with no known layout"
+msgstr "Mods with no known layout"
+
 #: src/settings/sections/About.tsx
 msgid "Version {version}"
 msgstr "Version {version}"
@@ -2643,6 +2663,10 @@ msgstr "Switch to Performance"
 #: src/settings/sections/checkDetail.ts
 msgid "{count} settings temporary or copy files are present"
 msgstr "{count} settings temporary or copy files are present"
+
+#: src/settings/prefCopyGame.ts
+msgid "Refuse"
+msgstr "Refuse"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Report copied"
@@ -3530,6 +3554,10 @@ msgstr "Back up saves before Play"
 #: src/settings/prefCopy.ts
 msgid "Run crashed"
 msgstr "Run crashed"
+
+#: src/settings/prefCopyGame.ts
+msgid "Place every file as the archive has it and note it in Problems."
+msgstr "Place every file as the archive has it and note it in Problems."
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Leave them"

@@ -38,6 +38,7 @@ import { downloadInstaller } from './handoff.ts'
 import { type MissingOffer, offersFor, wantsOf } from './missingDeps.ts'
 import { offerInstallAnyway } from './offerInstallAnyway.ts'
 import { undoEntryInstall } from './undoEntryInstall.ts'
+import { offerUnknownLayout, unknownLayoutOf } from './unknownLayout.ts'
 
 function dropInstallGate(hasRoute: boolean, hasTarget: boolean, locked: boolean) {
   if (!(hasRoute && hasTarget)) {
@@ -278,8 +279,17 @@ async function runInstalls(
     } catch (e) {
       failed += 1
       const flagged = detectionOf(e)
+      const oddLayout = unknownLayoutOf(e)
       const title = i18n._(msg`Could not add ${{ name: baseName(item) }}`)
-      if (flagged) {
+      if (oddLayout) {
+        offerUnknownLayout({
+          title,
+          name: baseName(item),
+          layout: oddLayout,
+          profile: profile.id,
+          install: retryAlone,
+        })
+      } else if (flagged) {
         offerInstallAnyway({
           title,
           name: baseName(item),

@@ -366,6 +366,10 @@ msgstr "可同时搜索所有模组网站，或选择一个网站；不输入任
 msgid "Remove {name} from {group}"
 msgstr "从 {group} 中移除 {name}"
 
+#: src/install/unknownLayout.ts
+msgid "Mortar has no layout for this mod, and Settings refuses mods like that."
+msgstr ""
+
 #: src/game/HomeNotes.tsx
 #: src/share/ImportProblems.tsx
 #: src/share/Included.tsx
@@ -1242,6 +1246,7 @@ msgid "This game has no compatibility list, so no mod is known to be broken."
 msgstr "此游戏没有兼容性列表，因此没有已知损坏的模组。"
 
 #: src/install/offerInstallAnyway.ts
+#: src/install/unknownLayout.ts
 msgid "Install anyway…"
 msgstr "仍然安装…"
 
@@ -2714,6 +2719,7 @@ msgstr "{count, plural, one {# 个模组更新} other {# 个模组更新}}"
 msgid "Duplicate"
 msgstr "复制"
 
+#: src/install/UnknownLayoutDialog.tsx
 #: src/launch/PrePlayDialog.tsx
 #: src/share/Included.tsx
 msgid "and {count} more"
@@ -2941,6 +2947,10 @@ msgstr "按配置筛选"
 #: src/toasts/report.ts
 msgid "That data could not be read."
 msgstr "无法读取该数据。"
+
+#: src/install/UnknownLayoutDialog.tsx
+msgid "Don't ask again for this game"
+msgstr ""
 
 #: src/game/ProfileDialogHost.tsx
 #: src/groups/SavedGroupsSection.tsx
@@ -3712,6 +3722,7 @@ msgstr "在编辑器中打开"
 msgid "The mod depends on nothing but the loader."
 msgstr "该模组除加载器外不依赖任何内容。"
 
+#: src/install/UnknownLayoutDialog.tsx
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install {name} anyway?"
 msgstr "仍然安装 {name}？"
@@ -4662,6 +4673,10 @@ msgstr "无法构建该模组"
 #: src/i18n/reasonText.ts
 msgid "requires {other} {detail}"
 msgstr "需要 {other} {detail}"
+
+#: src/install/UnknownLayoutDialog.tsx
+msgid "Mortar could not tell where this mod's files go. Installing it places every file where the archive has it, so check the mod's page for where it belongs before you play."
+msgstr ""
 
 #: src/share/ListFormat.tsx
 msgid "Save mod list"
@@ -7679,6 +7694,10 @@ msgstr "{name} {version} 已安装"
 msgid "Suggested by your answer: {answer}"
 msgstr "根据你的回答建议：{answer}"
 
+#: src/install/unknownLayout.ts
+msgid "Mortar has no layout for this mod, so it would place every file as packed."
+msgstr ""
+
 #: src/saves/backups.ts
 msgid "Before a restore"
 msgstr "恢复之前"
@@ -7835,6 +7854,7 @@ msgid "Default folder"
 msgstr "默认文件夹"
 
 #: src/browse/useCardAction.tsx
+#: src/install/UnknownLayoutDialog.tsx
 #: src/queue/QueueBody.tsx
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install anyway"

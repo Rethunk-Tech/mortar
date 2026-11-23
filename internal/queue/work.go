@@ -396,6 +396,7 @@ func (s *Service) settle(id string, err error) {
 	var full *store.DiskFullError
 	var noSpace *NoSpaceError
 	var detected *store.DetectedError
+	var odd *profile.UnknownLayoutError
 	switch {
 	case errors.Is(err, context.Canceled):
 		// Cancel already set the state; a shutdown leaves the item to start over next time.
@@ -427,6 +428,9 @@ func (s *Service) settle(id string, err error) {
 	case errors.As(err, &detected):
 		it.State, it.Error = StateFailed, detectedText(detected)
 		it.Detection = &Detection{Name: detected.Name, File: detected.File, Scanner: detected.Scanner, Key: detected.Key, Removed: detected.Removed}
+	case errors.As(err, &odd):
+		it.State, it.Error = StateFailed, odd.Error()
+		it.UnknownLayout = &UnknownLayout{Key: odd.Key, Files: odd.Files, Ask: odd.Overridable}
 	default:
 		it.State, it.Error = StateFailed, err.Error()
 	}

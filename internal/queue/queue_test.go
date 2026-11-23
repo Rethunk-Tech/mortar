@@ -149,6 +149,11 @@ func newFixture(t *testing.T) *fixture {
 			f.mu.Unlock()
 			return nil
 		},
+		AllowUnknownLayout: func(game, profileID, key string) {
+			f.mu.Lock()
+			f.allowed = append(f.allowed, "layout|"+game+"|"+profileID+"|"+key)
+			f.mu.Unlock()
+		},
 		Newest:       func(_, _ string, _, _ int) int { return int(f.newest.Load()) },
 		KeepArchives: f.keep.Load,
 		SamePage: func(game, profileID string, in profile.IncomingFile) (profile.MergeAsk, int, bool) {

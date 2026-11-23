@@ -96,6 +96,7 @@ beforeEach(() => {
         hasSaves: false,
         hasOptions: false,
         hasCaches: false,
+        layout: '',
         hasScreenshots: false,
         findSources: [],
         startupSettings: false,

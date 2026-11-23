@@ -23,6 +23,7 @@ import { formatBytes, formatKb } from '../i18n/bytes.ts'
 import { listNames } from '../i18n/list.ts'
 import { QueueNeedsMerge } from '../install/QueueNeedsMerge.tsx'
 import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
+import { useLayoutAsk } from '../install/unknownLayout.ts'
 import { LetterTile } from '../mods/LetterTile.tsx'
 import { openSettings } from '../nav/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -233,6 +234,7 @@ function Failed({ items }: { items: Item[] }) {
                 </Button>
               ) : null}
               {i.detection && !i.detection.removed ? <InstallAnywayButton item={i} /> : null}
+              {i.unknownLayout?.ask ? <PlaceAsPackedButton item={i} /> : null}
               {i.errorKind === 'disk' ? (
                 <Button size="small" onClick={() => openSettings('storage')}>
                   {t`Open storage settings`}
@@ -524,5 +526,28 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
       ) : null}
       <Skipped items={dropped} />
     </>
+  )
+}
+
+// The game's installer has no layout for this download; placing it as packed is the player's call, behind a confirm.
+function PlaceAsPackedButton({ item }: { item: Item }) {
+  const { t } = useLingui()
+  const odd = item.unknownLayout
+  if (!odd) {
+    return null
+  }
+  return (
+    <Button
+      size="small"
+      onClick={() =>
+        useLayoutAsk.getState().ask({
+          title: displayName(item),
+          layout: { game: item.game, key: odd.key, files: odd.files ?? [], overridable: true },
+          confirm: () => InstallAnyway(item.id),
+        })
+      }
+    >
+      {t`Install anyway`}
+    </Button>
   )
 }

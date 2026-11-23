@@ -21,6 +21,9 @@ func (s *Store) folderEntries(game, id, key string, source Source, whole []Compo
 	if err != nil {
 		return nil, nil, arch, err
 	}
+	if err := s.checkUnknownLayout(game, id, key, l); err != nil {
+		return nil, nil, arch, err
+	}
 	g := installerGame(game)
 	var mods installer.Layout
 	for _, f := range l.Files {

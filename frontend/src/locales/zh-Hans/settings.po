@@ -515,6 +515,10 @@ msgstr "尚未连接"
 msgid "Copied"
 msgstr "已复制"
 
+#: src/settings/prefCopyGame.ts
+msgid "Stop and show the files, and offer to place the mod as packed."
+msgstr ""
+
 #: src/settings/prefCopy.ts
 msgid "Name"
 msgstr "名称"
@@ -739,6 +743,10 @@ msgstr "正在下载并验证 Mortar {version}…"
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Load a save to see values"
 msgstr "加载存档以查看数值"
+
+#: src/settings/prefCopyGame.ts
+msgid "Place as packed"
+msgstr ""
 
 #: src/settings/sections/General.tsx
 msgid "Nearby computers cannot reach Mortar. Set the network to Private in {os} network settings."
@@ -1381,6 +1389,10 @@ msgstr "全部取消跟踪…"
 msgid "Pause downloads while the game runs"
 msgstr "游戏运行时暂停下载"
 
+#: src/settings/prefCopyGame.ts
+msgid "What installing a mod does when the game's installer cannot tell where its files go"
+msgstr ""
+
 #: src/settings/SettingsShell.tsx
 msgid "Try another word, or clear the search."
 msgstr "请尝试其他词，或清除搜索。"
@@ -1521,6 +1533,10 @@ msgstr "“问题”标签页中的外观重叠"
 #: src/settings/sections/NexusMods.tsx
 msgid "Signed out of {source}"
 msgstr "已退出 {source}"
+
+#: src/settings/prefCopyGame.ts
+msgid "Do not install it."
+msgstr ""
 
 #: src/settings/sections/Appearance.tsx
 msgid "Lavender"
@@ -2152,6 +2168,10 @@ msgstr "于 {when} 重置"
 msgid "Group"
 msgstr "分组"
 
+#: src/settings/prefCopyGame.ts
+msgid "Mods with no known layout"
+msgstr ""
+
 #: src/settings/sections/About.tsx
 msgid "Version {version}"
 msgstr "版本 {version}"
@@ -2637,6 +2657,10 @@ msgstr "切换到性能"
 #: src/settings/sections/checkDetail.ts
 msgid "{count} settings temporary or copy files are present"
 msgstr "存在 {count} 个设置临时文件或副本文件"
+
+#: src/settings/prefCopyGame.ts
+msgid "Refuse"
+msgstr ""
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Report copied"
@@ -3524,6 +3548,10 @@ msgstr "游玩前备份存档"
 #: src/settings/prefCopy.ts
 msgid "Run crashed"
 msgstr "运行崩溃"
+
+#: src/settings/prefCopyGame.ts
+msgid "Place every file as the archive has it and note it in Problems."
+msgstr ""
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Leave them"

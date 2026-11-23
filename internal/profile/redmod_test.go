@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"errors"
 	"slices"
 	"testing"
 )
@@ -35,5 +36,36 @@ func TestREDmodFoldersLeadWithTheEntryThatWins(t *testing.T) {
 	}
 	if none, err := e.REDmodFolders(folderGame, "x"); err != nil || none != nil {
 		t.Fatalf("a game without REDmods: %v, %v", none, err)
+	}
+}
+
+func TestAnUnrecognisedLayoutFollowsTheUnknownLayoutSetting(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("cyberpunk-2077", "S")
+	if err != nil {
+		t.Fatal(err)
+	}
+	mode := "ask"
+	e.UnknownLayoutMode = func(string) string { return mode }
+	zip, src := zipOf(t, "odd.zip", map[string]string{"weird/thing.dat": "x", "weird/other.dat": "y"}), cfSource(40)
+	_, err = e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zip, src)
+	var unknown *UnknownLayoutError
+	if !errors.As(err, &unknown) || !unknown.Overridable || len(unknown.Files) != 2 {
+		t.Fatalf("ask stops with the files: %v", err)
+	}
+	e.AllowUnknownLayout("cyberpunk-2077", p.ID, unknown.Key)
+	if _, err := e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zip, src); err != nil {
+		t.Fatalf("an allowed install places it as packed: %v", err)
+	}
+	mode = "refuse"
+	zip = zipOf(t, "odd2.zip", map[string]string{"weird2/thing.dat": "x"})
+	if _, err = e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zip, cfSource(41)); !errors.As(err, &unknown) || unknown.Overridable {
+		t.Fatalf("refuse offers no override: %v", err)
+	}
+	mode = "install"
+	zip = zipOf(t, "odd3.zip", map[string]string{"weird3/thing.dat": "x"})
+	if _, err = e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zip, cfSource(50)); err != nil {
+		t.Fatalf("install places it as packed: %v", err)
 	}
 }

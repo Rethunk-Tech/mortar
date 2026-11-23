@@ -131,6 +131,10 @@ const (
 	OldFilesDelete = "delete"
 	OldFilesKeep   = "keep"
 
+	UnknownLayoutAsk     = "ask"
+	UnknownLayoutInstall = "install"
+	UnknownLayoutRefuse  = "refuse"
+
 	DefaultRunsKept                   = 20
 	DefaultConsoleLogCap              = 20000
 	DefaultParallelDownloads          = 3
@@ -454,6 +458,7 @@ var (
 	conflictScanValues        = []string{ConflictScanFull, ConflictScanSkipImages}
 	extensionConnectionValues = []string{ExtensionAllow, ExtensionOff}
 	oldFilesValues            = []string{OldFilesAsk, OldFilesDelete, OldFilesKeep}
+	unknownLayoutValues       = []string{UnknownLayoutAsk, UnknownLayoutInstall, UnknownLayoutRefuse}
 	gameSettingsModeValues    = []string{GameSettingsEdit, GameSettingsWarn}
 	cacheClearingValues       = []string{CacheClearingAuto, CacheClearingOff}
 	syncModeValues            = []string{SyncFollow, SyncOwn, SyncOff}

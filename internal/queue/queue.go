@@ -171,11 +171,14 @@ type Item struct {
 	FromLink bool   `json:"fromLink,omitempty"`
 	Speed    int64  `json:"speed"`
 	Error    string `json:"error"`
-	// ErrorKind classes a failed item's Error: network, blocked, auth, disk, malware, md5list or other.
+	// ErrorKind classes a failed item's Error: network, blocked, auth, disk, malware, layout, md5list or other.
 	ErrorKind string `json:"errorKind,omitempty"`
 	// Detection is what the antivirus flagged when the item failed on it; InstallAnyway answers it, and also a
 	// named file whose Nexus file list could not be fetched (ErrorKind md5list).
 	Detection *Detection `json:"detection,omitempty"`
+	// UnknownLayout is what the install stopped on when the game's installer had no layout for the download
+	// (ErrorKind layout); InstallAnyway answers it where Ask is set.
+	UnknownLayout *UnknownLayout `json:"unknownLayout,omitempty"`
 	// AutoResume marks a paused item that goes on by itself when a download slot frees (see Top).
 	AutoResume bool `json:"autoResume,omitempty"`
 	// Partial is the bytes already on disk of a paused or failed download that Download can continue.
@@ -394,6 +397,9 @@ type Deps struct {
 	// AllowUnscanned records the player's choice to install key although the antivirus flagged it (the profile's
 	// history says so) and lets the next install of it skip the scan; nil means the choice is not offered.
 	AllowUnscanned func(game, profileID, key, name, detection string) error
+	// AllowUnknownLayout lets the next install of key place an archive the game has no layout for as packed; nil means
+	// the choice is not offered.
+	AllowUnknownLayout func(game, profileID, key string)
 	// Direct resolves a Modrinth project or itch.io game to its file and required dependencies; nil refuses them.
 	Direct  func(ctx context.Context, source, id, version string, gs components.GameSource) (DirectFile, error)
 	GitHub  *github.Client
@@ -1018,6 +1024,14 @@ type Detection struct {
 	Removed bool `json:"removed"`
 }
 
+// UnknownLayout is an archive no layout of its game took, with the store key it was refused under.
+type UnknownLayout struct {
+	Key   string   `json:"key"`
+	Files []string `json:"files"`
+	// Ask is set when the player may place it as packed anyway.
+	Ask bool `json:"ask"`
+}
+
 // InstallAnyway answers a detection: the player's confirmed choice to install the item although the antivirus flagged
 // it, recorded in the profile's history and in the download history, and the item runs again unscanned. It also
 // answers a named file whose Nexus file list could not be fetched, which then skips md5 verification for that item.
@@ -1036,6 +1050,14 @@ func (s *Service) InstallAnyway(id string) error {
 	if it.ErrorKind == FailMD5List {
 		it.skipMD5 = true
 		s.mu.Unlock()
+		s.Retry(id)
+		return nil
+	}
+	if odd := it.UnknownLayout; it.ErrorKind == FailLayout && odd != nil && odd.Ask && s.d.AllowUnknownLayout != nil {
+		game, profileID, key := it.Game, it.Profile, odd.Key
+		it.UnknownLayout = nil
+		s.mu.Unlock()
+		s.d.AllowUnknownLayout(game, profileID, key)
 		s.Retry(id)
 		return nil
 	}

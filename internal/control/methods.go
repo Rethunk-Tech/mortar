@@ -1164,7 +1164,7 @@ var coreProfile = map[string]profileMethod{
 		return s.modsGroup(p, prof, id)
 	},
 	"install": func(s *Services, ctx context.Context, p Params, _ profile.Profile, id string) (any, error) {
-		return s.changed(p.Game, func() (any, error) { return s.install(ctx, p.Game, id, p.Path, p.Unscanned) })
+		return s.changed(p.Game, func() (any, error) { return s.install(ctx, p.Game, id, p.Path, p.Unscanned, p.UnknownLayout) })
 	},
 	"conflicts": func(s *Services, ctx context.Context, p Params, _ profile.Profile, id string) (any, error) {
 		res, err := s.Problems.ProblemsWithEvidence(ctx, p.Game, id)
@@ -1540,7 +1540,7 @@ func (s *Services) remove(gameID, id string, p profile.Profile, keys []string) (
 	return out, nil
 }
 
-func (s *Services) install(ctx context.Context, gameID, id, path string, unscanned bool) (InstallOutcome, error) {
+func (s *Services) install(ctx context.Context, gameID, id, path string, unscanned, unknownLayout bool) (InstallOutcome, error) {
 	if _, err := os.Stat(path); err != nil {
 		return InstallOutcome{}, err
 	}
@@ -1549,6 +1549,10 @@ func (s *Services) install(ctx context.Context, gameID, id, path string, unscann
 		if err = s.Profiles.AllowUnscanned(gameID, id, det.Key, filepath.Base(path), det.Name); err == nil {
 			res, err = s.Profiles.InstallArchive(ctx, gameID, id, path)
 		}
+	}
+	if odd, ok := errors.AsType[*profile.UnknownLayoutError](err); ok && unknownLayout && odd.Overridable {
+		s.Profiles.AllowUnknownLayout(gameID, id, odd.Key)
+		res, err = s.Profiles.InstallArchive(ctx, gameID, id, path)
 	}
 	if err != nil {
 		if _, ok := errors.AsType[*profile.NeedChoicesError](err); ok {

@@ -47,6 +47,7 @@ func NewService(store *Store, home string, settings *settings.Store) *Service {
 	if settings != nil {
 		store.NewModsEnabled = func() bool { return settings.Get().NewModsEnabled() }
 		store.OldFilesMode = func(game string) string { return settings.Get().GamePrefs(game).OldFilesOnUpdate }
+		store.UnknownLayoutMode = func(game string) string { return settings.Get().GamePrefs(game).UnknownLayout }
 		store.TrayFolder = func(id, role string) (string, error) { return game.PathFor(home, settings.Get(), id, "", role) }
 	}
 	store.home, store.settings = home, settings

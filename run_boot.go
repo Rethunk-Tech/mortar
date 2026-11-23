@@ -599,12 +599,13 @@ func (c *boot) openQueue() error {
 			_, err := c.items.Path(game, key)
 			return err == nil
 		},
-		SourcesOf:      c.profiles.SourcesOf,
-		StoredOverlay:  c.profiles.StoredOverlay,
-		AllowUnscanned: c.profiles.AllowUnscanned,
-		Stage:          c.profiles.StageGitHub,
-		InstallStaged:  c.profiles.InstallStaged,
-		InstallRemap:   c.profiles.InstallRemap,
+		SourcesOf:          c.profiles.SourcesOf,
+		StoredOverlay:      c.profiles.StoredOverlay,
+		AllowUnscanned:     c.profiles.AllowUnscanned,
+		AllowUnknownLayout: c.profiles.AllowUnknownLayout,
+		Stage:              c.profiles.StageGitHub,
+		InstallStaged:      c.profiles.InstallStaged,
+		InstallRemap:       c.profiles.InstallRemap,
 		Newest: func(game, profileID string, modID, current int) int {
 			p, err := c.profiles.Get(game, profileID)
 			if err != nil {

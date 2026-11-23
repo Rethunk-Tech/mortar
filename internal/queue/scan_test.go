@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -66,5 +67,34 @@ func TestAFileTheAntivirusRemovedFromStagingFailsAsMalwareWithNoInstallAnyway(t 
 	}
 	if err := f.s.InstallAnyway(it.ID); err == nil {
 		t.Fatal("install anyway was offered for a file that is gone")
+	}
+}
+
+func TestAnArchiveWithNoLayoutFailsTheItemAndInstallAnywayAllowsIt(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	var odd atomic.Bool
+	odd.Store(true)
+	f.installErr = func() error {
+		if odd.Load() {
+			return usererr.Wrap(usererr.Invalid, &profile.UnknownLayoutError{Game: "stardew", Key: "nexus-1-10", Files: []string{"a/b.dat"}, Overridable: true})
+		}
+		return nil
+	}
+	f.start()
+	f.add(req(10))
+	it := f.wait("no layout", f.item(StateFailed)).Items[0]
+	if it.ErrorKind != FailLayout || it.UnknownLayout == nil || !it.UnknownLayout.Ask || it.UnknownLayout.Files[0] != "a/b.dat" {
+		t.Fatalf("item = %+v", it)
+	}
+	odd.Store(false)
+	if err := f.s.InstallAnyway(it.ID); err != nil {
+		t.Fatal(err)
+	}
+	f.wait("done after install anyway", f.item(StateDone))
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if len(f.allowed) != 1 || !strings.HasSuffix(f.allowed[0], "|nexus-1-10") || !strings.HasPrefix(f.allowed[0], "layout|") {
+		t.Fatalf("allowed = %v", f.allowed)
 	}
 }

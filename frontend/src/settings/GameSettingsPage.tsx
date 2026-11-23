@@ -46,7 +46,9 @@ import { setSettingsQuery } from './useSettingsSearch.ts'
 type GamePage = 'install' | 'loader' | 'play' | 'mods' | 'backups' | 'console' | 'streaming'
 
 function modsPrefKeys(
-  info: { hasOptions: boolean; hasCaches: boolean; sources: string[] | null } | undefined,
+  info:
+    | { hasOptions: boolean; hasCaches: boolean; layout: string; sources: string[] | null }
+    | undefined,
   loader: { id: string; builtin: boolean; assets: boolean } | undefined,
 ): string[] {
   const loaderId = loader?.id
@@ -59,6 +61,8 @@ function modsPrefKeys(
     ...(loader?.assets ? ['cosmeticConflicts', 'conflictScanDepth'] : []),
     'offerNewDownloads',
     'oldFilesOnUpdate',
+    // Only a game whose installer picks among archive layouts can find none.
+    ...(info?.layout ? ['unknownLayout'] : []),
     ...(info?.sources?.includes('thunderstore') ? ['dependencyVersions'] : []),
     ...(info?.hasOptions ? ['gameSettingsMode'] : []),
     ...(info?.hasCaches ? ['cacheClearing'] : []),

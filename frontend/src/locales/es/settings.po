@@ -515,6 +515,10 @@ msgstr ""
 msgid "Copied"
 msgstr ""
 
+#: src/settings/prefCopyGame.ts
+msgid "Stop and show the files, and offer to place the mod as packed."
+msgstr ""
+
 #: src/settings/prefCopy.ts
 msgid "Name"
 msgstr ""
@@ -738,6 +742,10 @@ msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Load a save to see values"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Place as packed"
 msgstr ""
 
 #: src/settings/sections/General.tsx
@@ -1381,6 +1389,10 @@ msgstr ""
 msgid "Pause downloads while the game runs"
 msgstr ""
 
+#: src/settings/prefCopyGame.ts
+msgid "What installing a mod does when the game's installer cannot tell where its files go"
+msgstr ""
+
 #: src/settings/SettingsShell.tsx
 msgid "Try another word, or clear the search."
 msgstr ""
@@ -1520,6 +1532,10 @@ msgstr ""
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Signed out of {source}"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Do not install it."
 msgstr ""
 
 #: src/settings/sections/Appearance.tsx
@@ -2152,6 +2168,10 @@ msgstr ""
 msgid "Group"
 msgstr ""
 
+#: src/settings/prefCopyGame.ts
+msgid "Mods with no known layout"
+msgstr ""
+
 #: src/settings/sections/About.tsx
 msgid "Version {version}"
 msgstr ""
@@ -2636,6 +2656,10 @@ msgstr ""
 
 #: src/settings/sections/checkDetail.ts
 msgid "{count} settings temporary or copy files are present"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Refuse"
 msgstr ""
 
 #: src/settings/sections/AboutDiagnostics.tsx
@@ -3523,6 +3547,10 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Run crashed"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Place every file as the archive has it and note it in Problems."
 msgstr ""
 
 #: src/settings/sections/NxmReclaim.tsx

@@ -366,6 +366,10 @@ msgstr "Busca todos los lugares de mods a la ves, elige uno; sin nada escrito po
 msgid "Remove {name} from {group}"
 msgstr "Remove {name} de {group}"
 
+#: src/install/unknownLayout.ts
+msgid "Mortar has no layout for this mod, and Settings refuses mods like that."
+msgstr ""
+
 #: src/game/HomeNotes.tsx
 #: src/share/ImportProblems.tsx
 #: src/share/Included.tsx
@@ -1242,6 +1246,7 @@ msgid "This game has no compatibility list, so no mod is known to be broken."
 msgstr ""
 
 #: src/install/offerInstallAnyway.ts
+#: src/install/unknownLayout.ts
 msgid "Install anyway…"
 msgstr ""
 
@@ -2714,6 +2719,7 @@ msgstr ""
 msgid "Duplicate"
 msgstr ""
 
+#: src/install/UnknownLayoutDialog.tsx
 #: src/launch/PrePlayDialog.tsx
 #: src/share/Included.tsx
 msgid "and {count} more"
@@ -2940,6 +2946,10 @@ msgstr ""
 
 #: src/toasts/report.ts
 msgid "That data could not be read."
+msgstr ""
+
+#: src/install/UnknownLayoutDialog.tsx
+msgid "Don't ask again for this game"
 msgstr ""
 
 #: src/game/ProfileDialogHost.tsx
@@ -3712,6 +3722,7 @@ msgstr ""
 msgid "The mod depends on nothing but the loader."
 msgstr ""
 
+#: src/install/UnknownLayoutDialog.tsx
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install {name} anyway?"
 msgstr ""
@@ -4661,6 +4672,10 @@ msgstr ""
 
 #: src/i18n/reasonText.ts
 msgid "requires {other} {detail}"
+msgstr ""
+
+#: src/install/UnknownLayoutDialog.tsx
+msgid "Mortar could not tell where this mod's files go. Installing it places every file where the archive has it, so check the mod's page for where it belongs before you play."
 msgstr ""
 
 #: src/share/ListFormat.tsx
@@ -7679,6 +7694,10 @@ msgstr ""
 msgid "Suggested by your answer: {answer}"
 msgstr ""
 
+#: src/install/unknownLayout.ts
+msgid "Mortar has no layout for this mod, so it would place every file as packed."
+msgstr ""
+
 #: src/saves/backups.ts
 msgid "Before a restore"
 msgstr ""
@@ -7835,6 +7854,7 @@ msgid "Default folder"
 msgstr ""
 
 #: src/browse/useCardAction.tsx
+#: src/install/UnknownLayoutDialog.tsx
 #: src/queue/QueueBody.tsx
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install anyway"

@@ -372,6 +372,10 @@ msgstr "Search every mod site at once or pick one; with nothing typed you see th
 msgid "Remove {name} from {group}"
 msgstr "Remove {name} from {group}"
 
+#: src/install/unknownLayout.ts
+msgid "Mortar has no layout for this mod, and Settings refuses mods like that."
+msgstr "Mortar has no layout for this mod, and Settings refuses mods like that."
+
 #: src/game/HomeNotes.tsx
 #: src/share/ImportProblems.tsx
 #: src/share/Included.tsx
@@ -1248,6 +1252,7 @@ msgid "This game has no compatibility list, so no mod is known to be broken."
 msgstr "This game has no compatibility list, so no mod is known to be broken."
 
 #: src/install/offerInstallAnyway.ts
+#: src/install/unknownLayout.ts
 msgid "Install anyway…"
 msgstr "Install anyway…"
 
@@ -2720,6 +2725,7 @@ msgstr "{count, plural, one {# mod update} other {# mod updates}}"
 msgid "Duplicate"
 msgstr "Duplicate"
 
+#: src/install/UnknownLayoutDialog.tsx
 #: src/launch/PrePlayDialog.tsx
 #: src/share/Included.tsx
 msgid "and {count} more"
@@ -2947,6 +2953,10 @@ msgstr "Filter by profile"
 #: src/toasts/report.ts
 msgid "That data could not be read."
 msgstr "That data could not be read."
+
+#: src/install/UnknownLayoutDialog.tsx
+msgid "Don't ask again for this game"
+msgstr "Don't ask again for this game"
 
 #: src/game/ProfileDialogHost.tsx
 #: src/groups/SavedGroupsSection.tsx
@@ -3718,6 +3728,7 @@ msgstr "Open in editor"
 msgid "The mod depends on nothing but the loader."
 msgstr "The mod depends on nothing but the loader."
 
+#: src/install/UnknownLayoutDialog.tsx
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install {name} anyway?"
 msgstr "Install {name} anyway?"
@@ -4668,6 +4679,10 @@ msgstr "Could not build the mod"
 #: src/i18n/reasonText.ts
 msgid "requires {other} {detail}"
 msgstr "requires {other} {detail}"
+
+#: src/install/UnknownLayoutDialog.tsx
+msgid "Mortar could not tell where this mod's files go. Installing it places every file where the archive has it, so check the mod's page for where it belongs before you play."
+msgstr "Mortar could not tell where this mod's files go. Installing it places every file where the archive has it, so check the mod's page for where it belongs before you play."
 
 #: src/share/ListFormat.tsx
 msgid "Save mod list"
@@ -7685,6 +7700,10 @@ msgstr "{name} {version} is installed"
 msgid "Suggested by your answer: {answer}"
 msgstr "Suggested by your answer: {answer}"
 
+#: src/install/unknownLayout.ts
+msgid "Mortar has no layout for this mod, so it would place every file as packed."
+msgstr "Mortar has no layout for this mod, so it would place every file as packed."
+
 #: src/saves/backups.ts
 msgid "Before a restore"
 msgstr "Before a restore"
@@ -7841,6 +7860,7 @@ msgid "Default folder"
 msgstr "Default folder"
 
 #: src/browse/useCardAction.tsx
+#: src/install/UnknownLayoutDialog.tsx
 #: src/queue/QueueBody.tsx
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Install anyway"

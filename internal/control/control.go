@@ -58,15 +58,17 @@ type Params struct {
 	Sub    string   `json:"sub,omitempty"`
 	Force  bool     `json:"force,omitempty"`
 	// Unscanned is "Install anyway" for an install the antivirus flagged.
-	Unscanned bool   `json:"unscanned,omitempty"`
-	Key       string `json:"key,omitempty"`
-	Value     string `json:"value,omitempty"`
-	Remove    bool   `json:"remove,omitempty"`
-	Set       bool   `json:"set,omitempty"`
-	Clear     bool   `json:"clear,omitempty"`
-	Unlink    bool   `json:"unlink,omitempty"`
-	Keep      int    `json:"keep,omitempty"`
-	Preset    string `json:"preset,omitempty"`
+	Unscanned bool `json:"unscanned,omitempty"`
+	// UnknownLayout is "Install anyway" for an archive the game's installer has no layout for.
+	UnknownLayout bool   `json:"unknownLayout,omitempty"`
+	Key           string `json:"key,omitempty"`
+	Value         string `json:"value,omitempty"`
+	Remove        bool   `json:"remove,omitempty"`
+	Set           bool   `json:"set,omitempty"`
+	Clear         bool   `json:"clear,omitempty"`
+	Unlink        bool   `json:"unlink,omitempty"`
+	Keep          int    `json:"keep,omitempty"`
+	Preset        string `json:"preset,omitempty"`
 	// Loader names one of the game's loaders; empty means the catalog's first.
 	Loader string `json:"loader,omitempty"`
 }

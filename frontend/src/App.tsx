@@ -13,6 +13,7 @@ import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
 import { DownloadsDialog } from './install/DownloadsDialog.tsx'
 import { HandoffDialog } from './install/HandoffDialog.tsx'
+import { UnknownLayoutDialog } from './install/UnknownLayoutDialog.tsx'
 import { LaunchLayer } from './launch/LaunchLayer.tsx'
 import { usePlayMode } from './launch/playModeState.ts'
 import { overlayGame, useLaunch } from './launch/store.ts'
@@ -114,6 +115,7 @@ export function App() {
       <FomodDialog />
       <CommandPalette />
       <AvOverrideDialog />
+      <UnknownLayoutDialog />
       <LargeDownloadDialog />
       <HandoffDialog />
       <UnmoderatedDialog />

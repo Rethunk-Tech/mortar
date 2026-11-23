@@ -99,6 +99,7 @@ type cmd struct {
 	yesFlag        bool
 	force          bool
 	allowUnscanned bool
+	allowUnknown   bool
 	presetFlag     string
 	wait           bool
 	vanilla        bool
@@ -260,7 +261,7 @@ func (c *cmd) parse(args []string) error {
 	bools := map[string]*bool{
 		"--json": &c.json, "-v": &c.verbose, "--verbose": &c.verbose, "--all": &c.all,
 		"--unused": &c.unused, "--missing": &c.missing, "--by-mod": &c.byMod, "--yes": &c.yesFlag,
-		"--force": &c.force, "--allow-unscanned": &c.allowUnscanned, "--mark": &c.mark,
+		"--force": &c.force, "--allow-unscanned": &c.allowUnscanned, "--allow-unknown-layout": &c.allowUnknown, "--mark": &c.mark,
 		"--restore": &c.restore, "--check": &c.check, "--wait": &c.wait, "--vanilla": &c.vanilla,
 		"--update": &c.updateFlag, "--unlink": &c.unlinkFlag, "--undo": &c.undoFlag,
 		"--changelog": &c.changelogFlag, "--everywhere": &c.everywhere, "--remove": &c.removeFlag,
@@ -418,7 +419,7 @@ func (c *cmd) dispatch() error {
 	if err != nil {
 		return err
 	}
-	p := control.Params{Game: a[0], Profile: a[1], All: c.all, Run: c.run, Force: c.force, Unscanned: c.allowUnscanned, Preset: c.presetFlag, Install: c.installFlag}
+	p := control.Params{Game: a[0], Profile: a[1], All: c.all, Run: c.run, Force: c.force, Unscanned: c.allowUnscanned, UnknownLayout: c.allowUnknown, Preset: c.presetFlag, Install: c.installFlag}
 	return c.dispatchProfiled(verb, a, p)
 }
 
@@ -2536,8 +2537,9 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
   mods by-author <game> <author>            mods installed in any profile for this author
   mod <game> <profile> <mod id>           one mod: dependencies, dependents, conflicts, settings
                                           (mod id is the SMAPI id)
-  install <game> <profile> <archive> [--allow-unscanned]
-                                       install a local archive; --allow-unscanned installs it although the antivirus flagged it
+  install <game> <profile> <archive> [--allow-unscanned] [--allow-unknown-layout]
+                                       install a local archive; --allow-unscanned installs it although the antivirus flagged it,
+                                       --allow-unknown-layout places an archive the game has no layout for as packed
   conflicts <game> <profile> [--all]      asset conflicts (--all includes cosmetic ones)
   conflicts map <game> <profile> [--filter x]
                                           every touched asset, with who writes it

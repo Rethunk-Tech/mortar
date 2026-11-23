@@ -23,6 +23,7 @@ const (
 	FailDisk    = "disk"
 	FailNoBase  = "nobase"
 	FailMalware = "malware"
+	FailLayout  = "layout"
 	FailMD5List = "md5list"
 	FailOther   = "other"
 )
@@ -39,6 +40,8 @@ func failureKind(err error) string {
 		return FailBlocked
 	case errors.As(err, new(*store.DetectedError)):
 		return FailMalware
+	case errors.As(err, new(*profile.UnknownLayoutError)):
+		return FailLayout
 	// Windows reports an antivirus holding a file Mortar just wrote as access denied; store.RealTimeBlock has
 	// already turned its explicit virus errors into a detection.
 	case runtime.GOOS == "windows" && usererr.KindOf(err) == usererr.Permission:

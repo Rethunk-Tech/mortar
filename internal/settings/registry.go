@@ -82,12 +82,15 @@ type GameSettings struct {
 	// installs into the open profile.
 	ExtraModsProfiles map[string]string `json:"extraModsProfiles,omitempty"`
 	// DevProjects are the mods the player develops for the game in the Develop tab.
-	DevProjects        []DevProject `json:"devProjects,omitempty"`
-	ShowDotHiddenMods  bool         `json:"showDotHiddenMods,omitempty"`
-	OldFilesOnUpdate   string       `json:"oldFilesOnUpdate,omitempty"`
-	GameSettingsMode   string       `json:"gameSettingsMode,omitempty"`
-	CacheClearing      string       `json:"cacheClearing,omitempty"`
-	DependencyVersions string       `json:"dependencyVersions,omitempty"`
+	DevProjects       []DevProject `json:"devProjects,omitempty"`
+	ShowDotHiddenMods bool         `json:"showDotHiddenMods,omitempty"`
+	OldFilesOnUpdate  string       `json:"oldFilesOnUpdate,omitempty"`
+	// UnknownLayout is what installing an archive the game's installer has no layout for does: ask (stop, and offer to
+	// place it as packed), install (place it as packed, with a note in Problems) or refuse.
+	UnknownLayout      string `json:"unknownLayout,omitempty"`
+	GameSettingsMode   string `json:"gameSettingsMode,omitempty"`
+	CacheClearing      string `json:"cacheClearing,omitempty"`
+	DependencyVersions string `json:"dependencyVersions,omitempty"`
 	// SyncMode is whether the game's profiles sync into the Mortar-wide sync folder, into SyncOwnFolder, or not at all.
 	SyncMode      string `json:"syncMode,omitempty"`
 	SyncOwnFolder string `json:"syncOwnFolder,omitempty"`
@@ -294,6 +297,7 @@ var registry = withDefaults([]pref{
 	gameEnum("syncMode", syncModeValues, func(g *GameSettings) *string { return &g.SyncMode }),
 	gameStr("syncOwnFolder", func(g *GameSettings) *string { return &g.SyncOwnFolder }),
 	gameEnum("oldFilesOnUpdate", oldFilesValues, func(g *GameSettings) *string { return &g.OldFilesOnUpdate }),
+	gameEnum("unknownLayout", unknownLayoutValues, func(g *GameSettings) *string { return &g.UnknownLayout }),
 })
 
 // gameLaunchDefaults are the games whose default launch method is not Steam's.
@@ -355,6 +359,7 @@ func defaultGameSettings() GameSettings {
 		OfferNewDownloads:           on(),
 		TellWhenLoaderOut:           on(),
 		OldFilesOnUpdate:            OldFilesAsk,
+		UnknownLayout:               UnknownLayoutAsk,
 		GameSettingsMode:            GameSettingsEdit,
 		CacheClearing:               CacheClearingAuto,
 		DependencyVersions:          DependencyNewest,
@@ -532,6 +537,9 @@ func mergeGameTail(dst *GameSettings, src GameSettings) {
 	if src.OldFilesOnUpdate != "" {
 		dst.OldFilesOnUpdate = src.OldFilesOnUpdate
 	}
+	if src.UnknownLayout != "" {
+		dst.UnknownLayout = src.UnknownLayout
+	}
 	if src.GameSettingsMode != "" {
 		dst.GameSettingsMode = src.GameSettingsMode
 	}
@@ -621,6 +629,9 @@ func normalizeGameTail(g *GameSettings, d GameSettings) {
 	if !slices.Contains(oldFilesValues, g.OldFilesOnUpdate) {
 		g.OldFilesOnUpdate = d.OldFilesOnUpdate
 	}
+	if !slices.Contains(unknownLayoutValues, g.UnknownLayout) {
+		g.UnknownLayout = d.UnknownLayout
+	}
 	if !slices.Contains(cacheClearingValues, g.CacheClearing) {
 		g.CacheClearing = d.CacheClearing
 	}
@@ -683,6 +694,9 @@ func validateGame(g GameSettings) error {
 	}
 	if !slices.Contains(oldFilesValues, g.OldFilesOnUpdate) {
 		return fmt.Errorf("old files on update must be ask, delete or keep, got %q", g.OldFilesOnUpdate)
+	}
+	if !slices.Contains(unknownLayoutValues, g.UnknownLayout) {
+		return fmt.Errorf("unknown layout must be ask, install or refuse, got %q", g.UnknownLayout)
 	}
 	if !slices.Contains(cacheClearingValues, g.CacheClearing) {
 		return fmt.Errorf("cache clearing must be auto or off, got %q", g.CacheClearing)
