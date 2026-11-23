@@ -151,3 +151,20 @@ func TestFindingsCarryWhatTheInstallerNoted(t *testing.T) {
 		t.Fatalf("after clearing: %+v", f)
 	}
 }
+
+func TestArchiveModListIsOnlyWrittenWhenTheNameOrderDiffers(t *testing.T) {
+	game := t.TempDir()
+	path := filepath.Join(game, filepath.FromSlash(ArchiveModListPath))
+	if err := WriteArchiveModList(game, []string{"b.archive", "a.archive"}); err != nil {
+		t.Fatal(err)
+	}
+	if b, err := safefs.ReadFile(path); err != nil || string(b) != "b.archive\r\na.archive" {
+		t.Fatalf("modlist = %q, %v", b, err)
+	}
+	if err := WriteArchiveModList(game, []string{"a.archive", "b.archive"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		t.Fatalf("the default order needs no modlist: %v", err)
+	}
+}

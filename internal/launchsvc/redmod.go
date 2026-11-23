@@ -17,7 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
-// deployREDmods compiles the profile's REDmods with the game's own REDmod tool once they are placed in the install,
+// deployREDmods writes the archive modlist, then compiles the profile's REDmods with the game's own REDmod tool once they are placed in the install,
 // and starts the game with -modded so it loads them (Vortex's tools.redmodding.ts). An install without the REDmod DLC
 // starts as it is; a deploy the tool reports as failed stops the launch with the tool's reason.
 func (s *Service) deployREDmods(ctx context.Context, gameID string, inst game.Install, profileID string, plan *launchplan.Plan, env game.StartEnv) error {
@@ -25,17 +25,29 @@ func (s *Service) deployREDmods(ctx context.Context, gameID string, inst game.In
 	if t, ok := info.Target(installer.TargetMods); !ok || t.Layout != components.LayoutCyberpunk {
 		return nil
 	}
-	names, err := s.profiles.REDmodFolders(gameID, profileID)
-	if err != nil || len(names) == 0 {
-		return err
+	if archives, err := s.profiles.ArchiveOrder(gameID, profileID); err != nil {
+		slog.Warn("could not work out the archive load order", "game", gameID, "error", err)
+	} else if err := redmod.WriteArchiveModList(inst.Dir, archives); err != nil {
+		slog.Warn("could not write the archive modlist", "game", gameID, "error", err)
 	}
 	if !redmod.Installed(inst.Dir) {
 		slog.Info("REDmod is not installed, launching without deploying", "game", gameID, "dir", inst.Dir)
 		return nil
 	}
+	names, err := s.profiles.REDmodFolders(gameID, profileID)
+	if err != nil {
+		return err
+	}
 	path := func(p string) string { return p }
 	if runtime.GOOS != "windows" {
 		path = wineoverride.ZPath
+	}
+	if len(names) == 0 {
+		// Vortex starts the game modded whether or not REDmods are deployed, so a REDmod put there by hand loads too.
+		if !slices.Contains(plan.Args, redmod.Arg) {
+			plan.AddArgs(redmod.Arg)
+		}
+		return nil
 	}
 	err = redmod.Deploy(ctx, inst.Dir, names, path, func(ctx context.Context, exe string, args []string) (int, string, error) {
 		cmd, err := game.ToolCommand(runtime.GOOS, inst, env, plan.Env, exe, args)

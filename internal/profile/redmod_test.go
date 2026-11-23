@@ -24,6 +24,15 @@ func TestREDmodFoldersLeadWithTheEntryThatWins(t *testing.T) {
 	if err != nil || !slices.Equal(got, []string{"Third", "Second", "First"}) {
 		t.Fatalf("folders = %v, %v", got, err)
 	}
+	if _, err := e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zipOf(t, "a.zip", map[string]string{"archive/pc/mod/z.archive": "z", "archive/pc/mod/m.archive": "m"}), cfSource(30)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zipOf(t, "b.zip", map[string]string{"archive/pc/mod/a.archive": "a"}), cfSource(31)); err != nil {
+		t.Fatal(err)
+	}
+	if order, err := e.ArchiveOrder("cyberpunk-2077", p.ID); err != nil || !slices.Equal(order, []string{"m.archive", "z.archive", "a.archive"}) {
+		t.Fatalf("archive order = %v, %v", order, err)
+	}
 	if none, err := e.REDmodFolders(folderGame, "x"); err != nil || none != nil {
 		t.Fatalf("a game without REDmods: %v, %v", none, err)
 	}
