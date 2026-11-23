@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
