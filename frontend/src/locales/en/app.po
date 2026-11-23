@@ -2958,10 +2958,6 @@ msgstr "Filter by profile"
 msgid "That data could not be read."
 msgstr "That data could not be read."
 
-#: src/install/UnknownLayoutDialog.tsx
-msgid "Don't ask again for this game"
-msgstr "Don't ask again for this game"
-
 #: src/game/ProfileDialogHost.tsx
 #: src/groups/SavedGroupsSection.tsx
 msgid "Delete {name}?"
@@ -4888,6 +4884,10 @@ msgstr "Undo all"
 #: src/game/HomeNotes.tsx
 msgid "Notes for {name}"
 msgstr "Notes for {name}"
+
+#: src/install/UnknownLayoutDialog.tsx
+msgid "Do not ask again for this game"
+msgstr "Do not ask again for this game"
 
 #: src/browse/CardAction.tsx
 #: src/queue/UnmoderatedDialog.tsx

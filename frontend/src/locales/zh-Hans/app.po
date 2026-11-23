@@ -2952,10 +2952,6 @@ msgstr "按配置筛选"
 msgid "That data could not be read."
 msgstr "无法读取该数据。"
 
-#: src/install/UnknownLayoutDialog.tsx
-msgid "Don't ask again for this game"
-msgstr ""
-
 #: src/game/ProfileDialogHost.tsx
 #: src/groups/SavedGroupsSection.tsx
 msgid "Delete {name}?"
@@ -4882,6 +4878,10 @@ msgstr "全部撤销"
 #: src/game/HomeNotes.tsx
 msgid "Notes for {name}"
 msgstr "{name} 的备注"
+
+#: src/install/UnknownLayoutDialog.tsx
+msgid "Do not ask again for this game"
+msgstr ""
 
 #: src/browse/CardAction.tsx
 #: src/queue/UnmoderatedDialog.tsx

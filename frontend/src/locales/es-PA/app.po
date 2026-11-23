@@ -2958,10 +2958,6 @@ msgstr ""
 msgid "That data could not be read."
 msgstr ""
 
-#: src/install/UnknownLayoutDialog.tsx
-msgid "Don't ask again for this game"
-msgstr ""
-
 #: src/game/ProfileDialogHost.tsx
 #: src/groups/SavedGroupsSection.tsx
 msgid "Delete {name}?"
@@ -4887,6 +4883,10 @@ msgstr ""
 
 #: src/game/HomeNotes.tsx
 msgid "Notes for {name}"
+msgstr ""
+
+#: src/install/UnknownLayoutDialog.tsx
+msgid "Do not ask again for this game"
 msgstr ""
 
 #: src/browse/CardAction.tsx

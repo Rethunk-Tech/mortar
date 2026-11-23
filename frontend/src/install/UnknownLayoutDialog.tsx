@@ -21,7 +21,7 @@ export function UnknownLayoutDialog() {
       title={t`Install ${{ name: asking?.title ?? '' }} anyway?`}
       body={`${layoutQuestion(asking?.layout.reason ?? '', true)} ${t`Installing it places the files as the archive has them, so check the mod's page before you play.`}`}
       confirmLabel={t`Install anyway`}
-      checkbox={{ label: t`Don't ask again for this game`, checked: always, onChange: setAlways }}
+      checkbox={{ label: t`Do not ask again for this game`, checked: always, onChange: setAlways }}
       onCancel={() => {
         setAlways(false)
         close()
