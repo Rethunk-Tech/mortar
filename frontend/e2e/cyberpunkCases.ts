@@ -14,6 +14,19 @@ const GB = 1024 ** 3
 const failedDownload = {
   items: [
     {
+      id: 'render-active',
+      kind: 'install',
+      game: 'stardew',
+      profileId: '',
+      name: 'Render Active Pack',
+      fileName: 'active.zip',
+      state: 'downloading',
+      sizeKb: 1024,
+      progress: 40,
+      speed: 1_000_000,
+      error: '',
+    },
+    {
       id: 'render-no-layout',
       kind: 'install',
       game: 'stardew',
