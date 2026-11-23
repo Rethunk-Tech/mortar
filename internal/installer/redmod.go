@@ -18,7 +18,10 @@ var redmodSubdirs = []string{"archives", "customSounds", "scripts", "tweaks"}
 // and top-level layouts). One packed as mods/<name>/info.json is the plain driver's as it stands.
 type redmod struct{}
 
-func (redmod) ID() string { return "redmod" }
+// DriverREDmod is the id of the driver that lays a REDmod out below mods/.
+const DriverREDmod = "redmod"
+
+func (redmod) ID() string { return DriverREDmod }
 
 func (redmod) Detect(a Archive, g Game) bool {
 	i := slices.IndexFunc(g.Targets, func(t Target) bool { return t.ID == TargetMods && t.REDmod })

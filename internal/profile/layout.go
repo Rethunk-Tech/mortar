@@ -173,7 +173,7 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 	if err == nil && inst.ID() == installer.DriverSourceTarget {
 		return []Component{{ID: mod.NewID(mod.FormatFolder, key), Name: cmp.Or(title, key), Folder: "."}}, true, nil
 	}
-	if err == nil && inst.ID() == "plain" && slices.Contains(g.Loaders, folderLoader) {
+	if err == nil && (inst.ID() == "plain" || inst.ID() == installer.DriverREDmod) && slices.Contains(g.Loaders, folderLoader) {
 		c := Component{ID: mod.NewID(mod.FormatFolder, key), Name: cmp.Or(title, key), Folder: "."}
 		if file, ok := installer.ModRootFile(arch, g); ok {
 			if b, rerr := safefs.ReadFile(filepath.Join(arch.Dir, filepath.FromSlash(file))); rerr == nil {

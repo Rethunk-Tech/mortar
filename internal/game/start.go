@@ -461,6 +461,12 @@ func directCommand(goos string, inst Install, plan *launchplan.Plan, env StartEn
 	return launch.Command{Dir: inst.Dir, Name: name, Args: args, Env: cmdEnv}, nil
 }
 
+// ToolCommand is the start of a program of the install (a helper that ships with the game, such as REDmod's tool) under
+// the install's runtime, in the environment launchEnv gives the game.
+func ToolCommand(goos string, inst Install, env StartEnv, launchEnv map[string]string, exe string, args []string) (launch.Command, error) {
+	return directCommand(goos, inst, &launchplan.Plan{Mode: launchplan.ModeProfile, Exe: exe, Args: args, Env: launchEnv}, env, "")
+}
+
 // directExe is the executable to start: exe when the plan names one, else the game's own from the catalog.
 func directExe(inst Install, exe string) string {
 	// A loader that injects into the game (BepInEx) names no executable of its own: the game's is the start.

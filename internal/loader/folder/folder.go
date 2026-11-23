@@ -54,6 +54,11 @@ type Orderer interface {
 	Order(p loader.ProfileView) ([]loadorder.Row, error)
 }
 
+// Applicable is an Extension that picks its games by the catalog entry rather than by a path role.
+type Applicable interface {
+	Applies(info components.GameInfo) bool
+}
+
 var extensions []Extension
 
 // Extend adds an extension and reports true, for a driver package's blank variable like loader.Register.
@@ -69,7 +74,11 @@ func extensionsOf(gameID string) []Extension {
 	}
 	var out []Extension
 	for _, e := range extensions {
-		if _, has := info.Paths[e.Role()]; has {
+		if a, ok := e.(Applicable); ok {
+			if a.Applies(info) {
+				out = append(out, e)
+			}
+		} else if _, has := info.Paths[e.Role()]; has {
 			out = append(out, e)
 		}
 	}

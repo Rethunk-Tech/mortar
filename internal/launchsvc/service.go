@@ -1174,6 +1174,13 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		s.restoreOrReport(g, profileID, restore)
 		return err
 	}
+	if !vanilla && profileID != "" {
+		if err := s.deployREDmods(ctx, gameID, inst, profileID, plan, env); err != nil {
+			dep.unwind(ctx)
+			s.restoreOrReport(g, profileID, restore)
+			return err
+		}
+	}
 	runCtx, cancel := context.WithCancel(ctx)
 	logCap, _ := strconv.Atoi(settings.ResolveAt(s.settings.Get(), "consoleLogCap", settings.Scope{Game: gameID, Profile: profileID}, launchOverrides(s.profiles, gameID, profileID)))
 	buf := &launch.Buffer{Cap: logCap}
