@@ -26,6 +26,9 @@ type ProfileView struct {
 	// Companion is the folder of the loader's companion mod in the profile (a loader whose companion is not a mod folder
 	// of its own leaves it empty).
 	Companion string
+	// Files are the files the profile's enabled packages lay out, as slash paths below the profile's folder, and
+	// EntryKeys the keys and store items of the profile's entries; a folder-loader game's findings read these.
+	Files, EntryKeys []string
 }
 
 // Target is where a loader installs: the game's install and the profile's folder.

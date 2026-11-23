@@ -117,13 +117,16 @@ func TestInstalledNeedsToolAndLauncher(t *testing.T) {
 }
 
 func TestFindingWhenREDmodsAreHereButTheToolIsNot(t *testing.T) {
-	profile := t.TempDir()
 	game := t.TempDir()
-	testfs.WriteAt(t, filepath.Join(profile, "Mods", "entry", "mods", "m", "info.json"), []byte("{}"))
-	view := loader.ProfileView{Game: "cyberpunk-2077", Dir: profile, InstallDir: game}
+	view := loader.ProfileView{Game: "cyberpunk-2077", Dir: t.TempDir(), InstallDir: game, Files: []string{"Mods/mods/M/info.json", "Mods/archive/pc/mod/a.archive"}}
 	if f := (extension{}).Findings(view); len(f) != 1 || f[0].Code != CodeMissing {
 		t.Fatalf("findings = %+v", f)
 	}
+	view.Files = []string{"Mods/archive/pc/mod/a.archive", "Mods/other/info.json"}
+	if f := (extension{}).Findings(view); len(f) != 0 {
+		t.Fatalf("no REDmod in the profile: %+v", f)
+	}
+	view.Files = []string{"Mods/mods/M/info.json"}
 	testfs.WriteAt(t, filepath.Join(game, launcherPath), []byte("x"))
 	testfs.WriteAt(t, Tool(game), []byte("x"))
 	if f := (extension{}).Findings(view); len(f) != 0 {
@@ -133,22 +136,22 @@ func TestFindingWhenREDmodsAreHereButTheToolIsNot(t *testing.T) {
 
 func TestFindingsCarryWhatTheInstallerNoted(t *testing.T) {
 	profile := t.TempDir()
-	testfs.WriteAt(t, filepath.Join(profile, "Mods", "entry", "a.txt"), []byte("x"))
 	notes := []installer.Note{{Code: installer.NoteUnrecognised, Message: "placed as packed", Files: []string{"a.txt"}}}
-	if err := installer.RecordNotes(profile, "entry", notes); err != nil {
+	if err := installer.RecordNotes(profile, "nexus-1-2", "Some Mod", notes); err != nil {
 		t.Fatal(err)
 	}
-	if err := installer.RecordNotes(profile, "removed", notes); err != nil {
+	if err := installer.RecordNotes(profile, "removed", "Gone", notes); err != nil {
 		t.Fatal(err)
 	}
-	f := (extension{}).Findings(loader.ProfileView{Game: "cyberpunk-2077", Dir: profile})
-	if len(f) != 1 || f[0].Plugin != "entry" || f[0].Code != installer.NoteUnrecognised || f[0].Params["count"] != "1" {
+	view := loader.ProfileView{Game: "cyberpunk-2077", Dir: profile, EntryKeys: []string{"nexus-1-2"}}
+	f := (extension{}).Findings(view)
+	if len(f) != 1 || f[0].Plugin != "Some Mod" || f[0].Code != installer.NoteUnrecognised || f[0].Params["count"] != "1" {
 		t.Fatalf("findings = %+v", f)
 	}
-	if err := installer.RecordNotes(profile, "entry", nil); err != nil {
+	if err := installer.RecordNotes(profile, "nexus-1-2", "Some Mod", nil); err != nil {
 		t.Fatal(err)
 	}
-	if f := (extension{}).Findings(loader.ProfileView{Game: "cyberpunk-2077", Dir: profile}); len(f) != 0 {
+	if f := (extension{}).Findings(view); len(f) != 0 {
 		t.Fatalf("after clearing: %+v", f)
 	}
 }
@@ -167,5 +170,21 @@ func TestArchiveModListIsOnlyWrittenWhenTheNameOrderDiffers(t *testing.T) {
 	}
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		t.Fatalf("the default order needs no modlist: %v", err)
+	}
+}
+
+func TestDeployedIsWhetherAnEarlierDeployLeftREDmods(t *testing.T) {
+	dir := install(t, "", 0)
+	if Deployed(dir) {
+		t.Fatal("a game that never deployed has REDmods")
+	}
+	if err := Deploy(t.Context(), dir, []string{"a"}, same, run); err != nil || !Deployed(dir) {
+		t.Fatalf("after deploying a: %v, deployed %v", err, Deployed(dir))
+	}
+	if err := Deploy(t.Context(), dir, nil, same, run); err != nil || Deployed(dir) {
+		t.Fatalf("after deploying none: %v, deployed %v", err, Deployed(dir))
+	}
+	if _, err := os.Stat(filepath.Join(dir, "mods")); err != nil {
+		t.Fatalf("the tool's mods folder was not made: %v", err)
 	}
 }

@@ -201,7 +201,7 @@ func (s *Store) placeStaged(game, modsDir string, e Entry, stage func(final stri
 		return "", errors.Join(err, safefs.RemoveAll(scratch))
 	}
 	if driver == installer.DriverCyberpunk {
-		if err := installer.RecordNotes(filepath.Dir(modsDir), final, l.Notes); err != nil {
+		if err := installer.RecordNotes(filepath.Dir(modsDir), e.StoreKey(), entryLabel(e), l.Notes); err != nil {
 			slog.Warn("could not record the install notes", "mod", final, "error", err)
 		}
 	}

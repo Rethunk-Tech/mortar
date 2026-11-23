@@ -235,3 +235,20 @@ func (s *Service) RevertREDmod(game, id string, keys []string) (REDmodResult, er
 func (s *Service) REDmodChoice(game, id, key string) (string, error) {
 	return s.store.REDmodChoice(game, id, key)
 }
+
+// recordInstallNotes keeps what the Cyberpunk installer noted about key for Problems, which shows it while the mod is
+// in the profile.
+func (s *Store) recordInstallNotes(game, id, key string, whole []Component, l installer.Layout) error {
+	if l.Kind == "" && len(l.Notes) == 0 || !s.isCyberpunk(game) {
+		return nil
+	}
+	dir, err := s.ProfileDir(game, id)
+	if err != nil {
+		return err
+	}
+	name := key
+	if len(whole) > 0 && whole[0].Name != "" {
+		name = whole[0].Name
+	}
+	return installer.RecordNotes(dir, key, name, l.Notes)
+}

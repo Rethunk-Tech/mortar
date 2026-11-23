@@ -1115,7 +1115,16 @@ func (s *Service) extensionFailures(gameID, id string, l loader.Loader) []LoadFa
 	if err != nil {
 		return nil
 	}
-	found := folder.Findings(loader.ProfileView{Game: gameID, Dir: dir, InstallDir: install})
+	view := loader.ProfileView{Game: gameID, Dir: dir, InstallDir: install}
+	if owners, err := s.profiles.PackageFileOwners(gameID, id); err == nil {
+		view.Files = slices.Collect(maps.Keys(owners))
+	}
+	if p, err := s.profiles.Get(gameID, id); err == nil {
+		for _, e := range p.Entries {
+			view.EntryKeys = append(view.EntryKeys, e.Key, e.Item)
+		}
+	}
+	found := folder.Findings(view)
 	out := make([]LoadFailure, len(found))
 	for i, f := range found {
 		out[i] = LoadFailure{Plugin: f.Plugin, Kind: f.Kind, Message: f.Message, Code: f.Code, Params: f.Params, Dependency: f.Dependency}

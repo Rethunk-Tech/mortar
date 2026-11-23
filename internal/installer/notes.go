@@ -11,9 +11,10 @@ import (
 // and outside the mods folder, so none of it is deployed into the game.
 const NotesFile = "install-notes.json"
 
-// ModNote is a Note and the mod folder it was made for.
+// ModNote is a Note and the store item key of the mod it was made for, with the mod's name for Problems to show.
 type ModNote struct {
 	Folder string `json:"folder"`
+	Name   string `json:"name,omitempty"`
 	Note
 }
 
@@ -24,11 +25,11 @@ func ReadNotes(profileDir string) []ModNote {
 	return all
 }
 
-// RecordNotes replaces the notes of one mod folder; no notes removes its old ones.
-func RecordNotes(profileDir, folder string, notes []Note) error {
+// RecordNotes replaces the notes of one mod, by its store item key; no notes removes its old ones.
+func RecordNotes(profileDir, folder, name string, notes []Note) error {
 	all := slices.DeleteFunc(ReadNotes(profileDir), func(n ModNote) bool { return n.Folder == folder })
 	for _, n := range notes {
-		all = append(all, ModNote{Folder: folder, Note: n})
+		all = append(all, ModNote{Folder: folder, Name: name, Note: n})
 	}
 	path := filepath.Join(profileDir, NotesFile)
 	if len(all) == 0 && !datadir.Exists(path) {

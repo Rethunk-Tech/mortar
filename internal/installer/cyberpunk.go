@@ -236,7 +236,7 @@ func (c *cpCtx) layout() (Layout, error) {
 			c.note(NoteExtraFiles, "documentation and pictures in this mod are in "+ExtraFilesBase+"/"+c.name)
 		}
 	}
-	if len(moves) < total {
+	if len(moves) < total || o.kind == "fallback" {
 		c.note(NoteUnrecognised, "this mod does not match a layout Mortar knows, so every file is placed as packed", c.t.files...)
 		o = outcome{kind: "fallback"}
 		moves = same(c.t.files)
