@@ -37,24 +37,30 @@ export function SettingsSection({
   const h3 = (
     <Box
       component="h3"
-      sx={{ m: 0, ...(action ? { flex: 1 } : { mt: 1.5, mb: 0.5 }), fontSize: 18, fontWeight: 600 }}
+      sx={{
+        m: 0,
+        ...(action !== undefined ? { flex: 1 } : { mt: 1.5, mb: 0.5 }),
+        fontSize: 18,
+        fontWeight: 600,
+      }}
     >
       {title}
     </Box>
   )
   let heading: ReactNode = null
-  if (title) {
-    heading = action ? (
-      <Box
-        className="settings-heading"
-        sx={{ display: 'flex', alignItems: 'center', gap: space.pad, mt: 1.5, mb: 0.5 }}
-      >
-        {h3}
-        {action}
-      </Box>
-    ) : (
-      h3
-    )
+  if (title !== undefined) {
+    heading =
+      action !== undefined ? (
+        <Box
+          className="settings-heading"
+          sx={{ display: 'flex', alignItems: 'center', gap: space.pad, mt: 1.5, mb: 0.5 }}
+        >
+          {h3}
+          {action}
+        </Box>
+      ) : (
+        h3
+      )
   }
   return (
     <Box
@@ -76,7 +82,7 @@ export function SettingsSection({
       }}
     >
       {heading}
-      {description ? (
+      {description !== undefined ? (
         <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>{description}</Box>
       ) : null}
       {tiles ? (
@@ -178,7 +184,7 @@ export function SettingRow({
       }}
     >
       {/* With nothing to show, the label box leaves the layout entirely, so a stacked row gets no gap above it. */}
-      <Box sx={hideTitle && !description ? visuallyHidden : { flex: 1, minWidth: 0 }}>
+      <Box sx={hideTitle && description === undefined ? visuallyHidden : { flex: 1, minWidth: 0 }}>
         <Box
           data-setting-label={true}
           sx={hideTitle ? visuallyHidden : { fontSize: 'large.fontSize' }}
@@ -186,7 +192,7 @@ export function SettingRow({
           {label}
           {mark}
         </Box>
-        {description ? (
+        {description !== undefined ? (
           <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary', mt: 0.25 }}>
             {description}
           </Box>

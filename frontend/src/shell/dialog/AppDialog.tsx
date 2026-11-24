@@ -177,7 +177,11 @@ export function AppDialog({
       }}
     >
       <div
-        className={children && !tabs ? 'app-dialog-header app-dialog-ruled' : 'app-dialog-header'}
+        className={
+          children !== undefined && tabs === undefined
+            ? 'app-dialog-header app-dialog-ruled'
+            : 'app-dialog-header'
+        }
       >
         {onBack ? (
           <IconButton aria-label={t`Back`} onClick={onBack} size="small" sx={{ ml: -1 }}>
@@ -189,7 +193,7 @@ export function AppDialog({
           <h2 id={titleId} className="app-dialog-title">
             {title}
           </h2>
-          {subtitle ? <p className="app-dialog-subtitle">{subtitle}</p> : null}
+          {subtitle !== undefined ? <p className="app-dialog-subtitle">{subtitle}</p> : null}
         </div>
         {actions}
         {closable && closeButton ? (
@@ -198,8 +202,8 @@ export function AppDialog({
           </IconButton>
         ) : null}
       </div>
-      {tabs ? <div className="app-dialog-tabs">{tabs}</div> : null}
-      {children ? (
+      {tabs !== undefined ? <div className="app-dialog-tabs">{tabs}</div> : null}
+      {children !== undefined ? (
         <div className={flush ? 'app-dialog-body app-dialog-flush' : 'app-dialog-body'}>
           {children}
         </div>

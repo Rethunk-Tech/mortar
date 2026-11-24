@@ -112,9 +112,9 @@ export function MenuCheck({
       <span className="menu-action-icon">{icon ?? tick}</span>
       <span className="menu-action-text">
         {label}
-        {detail ? <span className="menu-action-detail">{detail}</span> : null}
+        {detail !== undefined ? <span className="menu-action-detail">{detail}</span> : null}
       </span>
-      {icon ? <span className="menu-action-end">{tick}</span> : null}
+      {icon !== undefined ? <span className="menu-action-end">{tick}</span> : null}
     </MenuItem>
   )
   return hint ? (
