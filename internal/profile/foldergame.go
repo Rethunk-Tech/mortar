@@ -7,6 +7,8 @@ import (
 	"slices"
 	"time"
 
+	ga "github.com/Rethunk-Tech/go-archive"
+
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -44,7 +46,7 @@ func (s *Store) folderEntries(game, id, key string, source Source, whole []Compo
 		// A file of the player's own has no page to take a name from, and its store key is a hash.
 		if source.Kind == KindLocal && source.Name != "" && len(whole) == 1 && whole[0].Name == key {
 			whole = []Component{whole[0]}
-			whole[0].Name = source.Name
+			whole[0].Name = ga.StripExtension(source.Name)
 		}
 		return []Entry{{Key: key, Source: source, Mods: whole, Disabled: []mod.ID{}, Added: now, Package: true, Implicit: source.startsImplicit()}}, tray, arch, nil
 	}

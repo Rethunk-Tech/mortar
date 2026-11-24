@@ -92,6 +92,20 @@ func TestFolderGameKeepsAScriptArchiveWhole(t *testing.T) {
 	}
 }
 
+func TestFolderGameNamesThePlayersOwnArchiveWithoutItsExtension(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	zip := zipOf(t, "Rain Puddles.zip", map[string]string{"m.ts4script": "s", "a.package": "1"})
+	res, err := e.InstallArchive(t.Context(), folderGame, p.ID, zip)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m := res.Profile.Entries[0].Mods; len(m) != 1 || m[0].Name != "Rain Puddles" {
+		t.Fatalf("mods = %+v", m)
+	}
+}
+
 func TestFolderGameUpdateReplacesTheArchiveAndRemovalTakesOneFile(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
