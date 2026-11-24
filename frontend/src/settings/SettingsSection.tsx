@@ -39,7 +39,7 @@ export function SettingsSection({
       component="h3"
       sx={{
         m: 0,
-        ...(action !== undefined ? { flex: 1 } : { mt: 1.5, mb: 0.5 }),
+        ...(action === undefined ? { mt: 1.5, mb: 0.5 } : { flex: 1 }),
         fontSize: 18,
         fontWeight: 600,
       }}
@@ -50,7 +50,9 @@ export function SettingsSection({
   let heading: ReactNode = null
   if (title !== undefined) {
     heading =
-      action !== undefined ? (
+      action === undefined ? (
+        h3
+      ) : (
         <Box
           className="settings-heading"
           sx={{ display: 'flex', alignItems: 'center', gap: space.pad, mt: 1.5, mb: 0.5 }}
@@ -58,8 +60,6 @@ export function SettingsSection({
           {h3}
           {action}
         </Box>
-      ) : (
-        h3
       )
   }
   return (
@@ -82,9 +82,9 @@ export function SettingsSection({
       }}
     >
       {heading}
-      {description !== undefined ? (
+      {description === undefined ? null : (
         <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary' }}>{description}</Box>
-      ) : null}
+      )}
       {tiles ? (
         <Box
           className="settings-tiles"
@@ -192,11 +192,11 @@ export function SettingRow({
           {label}
           {mark}
         </Box>
-        {description !== undefined ? (
+        {description === undefined ? null : (
           <Box sx={{ fontSize: 'medium.fontSize', color: 'text.secondary', mt: 0.25 }}>
             {description}
           </Box>
-        ) : null}
+        )}
       </Box>
       {block ? (
         children

@@ -178,9 +178,9 @@ export function AppDialog({
     >
       <div
         className={
-          children !== undefined && tabs === undefined
-            ? 'app-dialog-header app-dialog-ruled'
-            : 'app-dialog-header'
+          children === undefined || tabs !== undefined
+            ? 'app-dialog-header'
+            : 'app-dialog-header app-dialog-ruled'
         }
       >
         {onBack ? (
@@ -193,7 +193,7 @@ export function AppDialog({
           <h2 id={titleId} className="app-dialog-title">
             {title}
           </h2>
-          {subtitle !== undefined ? <p className="app-dialog-subtitle">{subtitle}</p> : null}
+          {subtitle === undefined ? null : <p className="app-dialog-subtitle">{subtitle}</p>}
         </div>
         {actions}
         {closable && closeButton ? (
@@ -202,12 +202,12 @@ export function AppDialog({
           </IconButton>
         ) : null}
       </div>
-      {tabs !== undefined ? <div className="app-dialog-tabs">{tabs}</div> : null}
-      {children !== undefined ? (
+      {tabs === undefined ? null : <div className="app-dialog-tabs">{tabs}</div>}
+      {children === undefined ? null : (
         <div className={flush ? 'app-dialog-body app-dialog-flush' : 'app-dialog-body'}>
           {children}
         </div>
-      ) : null}
+      )}
       {footer}
     </Dialog>
   )
