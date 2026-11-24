@@ -52,6 +52,26 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.9.0" date="2026-11-24">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Cyberpunk 2077: Mortar lays out each download the way Vortex does, from Cyber Engine Tweaks, RED4ext and redscript to REDmods and plain archives, and keeps their files together</li>
+          <li>Cyberpunk 2077 loads archive mods in your profile's order, compiles REDmods before the game starts, and always starts the game modded</li>
+          <li>A mod's menu can turn an archive mod into a REDmod, and back</li>
+          <li>The Tools menu runs a game's own tools with your profile: REDLauncher, REDmod deploy and CyberCAT for Cyberpunk 2077</li>
+          <li>A download Mortar has no layout for shows its files and asks whether to install it as packed</li>
+          <li>Installing an old core mod, or files that overwrite a game's config, asks first, as Vortex does</li>
+          <li>Show › Mod parts hides the extra mods a download carries</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>A missing requirement in a game other than Stardew Valley no longer names an unrelated Stardew Valley mod, and a mod added under that name gets its own name back</li>
+          <li>The launch screen no longer cuts off a step's longer captions</li>
+          <li>A mod added from your own archive in a game like Cyberpunk 2077 or The Sims 4 is named without the archive's .zip ending</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.8.0" date="2026-11-21">
       <description>
         <p>New</p>

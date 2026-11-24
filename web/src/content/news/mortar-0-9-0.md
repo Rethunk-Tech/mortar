@@ -3,6 +3,15 @@ kind: release
 version: 0.9.0
 title: "Cyberpunk 2077, REDmods and the game's own tools"
 summary: "Mortar lays out Cyberpunk 2077 mods the way Vortex does, loads archive mods in your profile's order, compiles REDmods before the game starts, and runs REDLauncher, REDmod deploy and CyberCAT from the Tools menu."
+highlights:
+  - area: Tools
+    title: The game's own tools, with your profile
+    text: The Tools menu runs REDLauncher, REDmod deploy and the CyberCAT save editor with the profile you have open.
+    image: /img/game-tools-0-9-0.webp
+  - area: Mods
+    title: Turn an archive mod into a REDmod
+    text: An archive mod's menu has Convert to REDmod, and a converted mod has Revert to archive mod to go back.
+    image: /img/convert-redmod-0-9-0.webp
 ---
 
 Mortar now sets up Cyberpunk 2077 mods. Each download goes where the game wants it, whether it's Cyber Engine Tweaks, RED4ext, redscript, a REDmod or a plain archive, following the same rules Vortex uses. Archive mods load in your profile's order, REDmods compile before the game starts, and the game always starts modded.
