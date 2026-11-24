@@ -161,6 +161,13 @@ h1.words em > span:nth-child(3) {
     box-shadow 0.25s;
 }
 
+.metrics a {
+  display: block;
+  padding: 26px 22px 24px;
+  border-right: 1px solid var(--line);
+  transition: background 0.2s ease;
+}
+
 .track a:hover {
   transform: scale(1.04);
   box-shadow:
@@ -190,13 +197,6 @@ h1.words em > span:nth-child(3) {
   top: -1px;
   width: 96px;
   border-top: 3px solid var(--sand);
-}
-
-.metrics a {
-  display: block;
-  padding: 26px 22px 24px;
-  border-right: 1px solid var(--line);
-  transition: background 0.2s ease;
 }
 
 .metrics a:last-child {

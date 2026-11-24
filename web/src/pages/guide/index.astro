@@ -142,6 +142,13 @@ if (loose.length > 0) {
       border-color 0.2s,
       transform 0.2s;
   }
+  .group a {
+    display: grid;
+    gap: 2px;
+    padding: 12px 10px;
+    margin: 0 -10px;
+    border-radius: 10px;
+  }
   .start a:hover {
     border-color: var(--sand);
     transform: translateY(-3px);
@@ -196,13 +203,6 @@ if (loose.length > 0) {
   }
   .group li + li {
     border-top: 1px solid var(--line);
-  }
-  .group a {
-    display: grid;
-    gap: 2px;
-    padding: 12px 10px;
-    margin: 0 -10px;
-    border-radius: 10px;
   }
   .group b {
     font-size: 16px;

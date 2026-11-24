@@ -25,6 +25,40 @@
   font-size: 15px;
 }
 
+.post-list a {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr;
+  gap: 4px 22px;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--raised);
+  transition: border-color 0.2s;
+}
+
+.toc a {
+  display: block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: var(--dim);
+  border-left: 2px solid transparent;
+}
+
+.pager a {
+  display: grid;
+  gap: 2px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.banner .crumbs,
+.banner .crumbs a {
+  color: rgb(225, 225, 232);
+}
+
 .crumbs a:hover {
   color: var(--sand);
 }
@@ -158,8 +192,9 @@
   color: var(--dim);
 }
 
-.table-wrap tr:last-child td {
-  border-bottom: 0;
+.table-wrap td:first-child {
+  color: var(--ink);
+  font-weight: 500;
 }
 
 .table-wrap th {
@@ -167,9 +202,8 @@
   font-weight: 700;
 }
 
-.table-wrap td:first-child {
-  color: var(--ink);
-  font-weight: 500;
+.table-wrap tr:last-child td {
+  border-bottom: 0;
 }
 
 /* The stronger side of a "Why Mortar?" comparison row. */
@@ -368,40 +402,6 @@ a.fact-icon:hover {
   margin: 0;
   color: rgb(225, 225, 232);
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
-}
-
-.post-list a {
-  display: grid;
-  grid-template-columns: 8.5rem 1fr;
-  gap: 4px 22px;
-  padding: 20px 22px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--raised);
-  transition: border-color 0.2s;
-}
-
-.toc a {
-  display: block;
-  padding: 6px 12px;
-  border-radius: 8px;
-  color: var(--dim);
-  border-left: 2px solid transparent;
-}
-
-.pager a {
-  display: grid;
-  gap: 2px;
-  padding: 14px 18px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  text-decoration: none;
-  color: var(--ink);
-}
-
-.banner .crumbs,
-.banner .crumbs a {
-  color: rgb(225, 225, 232);
 }
 
 .banner .cta {

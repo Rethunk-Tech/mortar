@@ -320,6 +320,11 @@ html.js .dl .panel[hidden] {
   transition: border-color 0.2s;
 }
 
+.file span {
+  color: var(--dim);
+  font-size: 14px;
+}
+
 .file > :not(.fileicon) {
   grid-column: 2;
 }
@@ -338,11 +343,6 @@ html.js .dl .panel[hidden] {
 .file.primary {
   border-color: var(--sand);
   box-shadow: 0 0 0 1px var(--sand) inset;
-}
-
-.file span {
-  color: var(--dim);
-  font-size: 14px;
 }
 
 .file .size {

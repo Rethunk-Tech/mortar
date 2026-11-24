@@ -300,17 +300,17 @@
   font-size: 15px;
 }
 
-.search-status:empty,
-.search-results:empty {
-  display: none;
-}
-
 .search-results {
   margin: 8px 0 0;
   padding: 0;
   max-height: 60vh;
   overflow-y: auto;
   list-style: none;
+}
+
+.search-status:empty,
+.search-results:empty {
+  display: none;
 }
 
 .search-results span {
