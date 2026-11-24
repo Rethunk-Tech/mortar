@@ -20,26 +20,35 @@ export interface Helpers {
 
 const DRAG_SETTLE_MS = 300
 
-/** Moves the handle at `from` one place up by keyboard and checks it landed there, then moves it back. Each key waits
- * for the spoken announcement. */
+/** Moves the handle at `from` one place up by keyboard and checks it passed the row above, then moves that row back
+ * above it. Each key waits for the spoken announcement. */
 export async function keyboardDragUp(p: Page, handles: Locator, from: number) {
   const said = (text: RegExp) => p.getByText(text).last().waitFor({ state: 'attached' })
-  const move = async (at: number, key: 'ArrowUp' | 'ArrowDown') => {
+  const moveUp = async (at: number) => {
     await handles.nth(at).focus()
     await p.keyboard.press('Space')
     await said(/^Picked up /)
     // The sensor starts listening a moment after the pick-up is announced, and drops an arrow pressed before.
     await p.waitForTimeout(DRAG_SETTLE_MS)
-    await p.keyboard.press(key)
+    await p.keyboard.press('ArrowUp')
     await said(/ is over /)
     await p.keyboard.press('Space')
     await said(/^Dropped /)
   }
+  // Rows compare by name, not position: a saved order seats each download's parts beside each other, so rows that sat
+  // apart in name order close up after the first drop.
+  const index = (label: string | null) =>
+    handles.evaluateAll((els, l) => els.findIndex((e) => e.getAttribute('aria-label') === l), label)
+  const precedes = async (a: string | null, b: string | null) => {
+    const [ia, ib] = [await index(a), await index(b)]
+    return ia >= 0 && ib >= 0 && ia < ib
+  }
   const name = await handles.nth(from).getAttribute('aria-label')
-  await move(from, 'ArrowUp')
-  await expect(handles.nth(from - 1)).toHaveAttribute('aria-label', name ?? '')
-  await move(from - 1, 'ArrowDown')
-  await expect(handles.nth(from)).toHaveAttribute('aria-label', name ?? '')
+  const above = await handles.nth(from - 1).getAttribute('aria-label')
+  await moveUp(from)
+  await expect.poll(() => precedes(name, above)).toBe(true)
+  await moveUp(await index(above))
+  await expect.poll(() => precedes(above, name)).toBe(true)
 }
 
 /** Cases for the dialogs and screens added with the version picker, modpack form, profile folder, custom games, co-op
