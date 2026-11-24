@@ -12,6 +12,7 @@
 #   scripts/selftest.sh destroy               stop the server and everything running from the sandbox, then delete it
 #   scripts/selftest.sh reap [--hours N] [--yes]  list (and with --yes delete) idle sandboxes under the base dir
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
+#   scripts/selftest.sh seed-cyberpunk        a Night City profile of three archive mods in the fake Cyberpunk 2077 install (fake-install first)
 #   scripts/selftest.sh prep-shots            ready the running sandbox for product screenshots: the maintainer's Nexus, itch.io and mod.io keys, no update notices
 #   scripts/selftest.sh sims4-install         add only the stand-in The Sims 4 (see sims4_install) to the sandbox (before start)
 #   scripts/selftest.sh ea-fixture FOLDER MARKER  add a fake Bottles bottle holding an EA App install of FOLDER (discovery only)
@@ -580,6 +581,26 @@ json.dump(capture, open(os.path.join(root, "gmcm", "Seed.Beta.json"), "w"), inde
 json.dump({"schema": 1, "edits": [edit]}, open(os.path.join(root, "gmcm-pending", "Seed.Beta.json"), "w"), indent=2)
 json.dump({"schema": 1, "applied": [{**edit, "value": 4}], "skipped": []}, open(os.path.join(root, "gmcm-pending", "Seed.Beta.result.json"), "w"), indent=2)
 PY
+}
+
+seed_cyberpunk() {
+  [ -n "$(listener || true)" ] || {
+    echo "start the server first" >&2
+    exit 1
+  }
+  if cli profiles cyberpunk-2077 --json | grep -q '"Night City"'; then
+    echo "Night City already seeded; leaving it"
+    return
+  fi
+  local fx=$ROOT/seed-cyberpunk m
+  mkdir -p "$fx"
+  cli profile create cyberpunk-2077 "Night City" >/dev/null
+  for m in "Neon Signs" "Rain Puddles" "Street Lights"; do
+    mkdir -p "$fx/$m/archive/pc/mod"
+    printf 'RDAR fake archive\n' >"$fx/$m/archive/pc/mod/${m// /}.archive"
+    (cd "$fx/$m" && python3 -m zipfile -c "$fx/$m.zip" archive)
+    cli install cyberpunk-2077 "Night City" "$fx/$m.zip"
+  done
 }
 
 seed() {
@@ -2185,6 +2206,7 @@ sims4-install)
   ;;
 ea-fixture) ea_fixture "${2:-}" "${3:-}" ;;
 seed) seed ;;
+seed-cyberpunk) seed_cyberpunk ;;
 prep-shots) prep_shots ;;
 stop) stop ;;
 destroy) destroy ;;
