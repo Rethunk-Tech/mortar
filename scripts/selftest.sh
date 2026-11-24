@@ -1452,6 +1452,7 @@ fake_game() {
   dome-keeper) echo "1637320|Dome Keeper|domekeeper.exe|" ;;
   baldurs-gate-3) echo "1086940|Baldurs Gate 3|bg3.exe|" ;;
   mount-and-blade-2-bannerlord) echo "261550|Mount & Blade II Bannerlord|Bannerlord.exe|" ;;
+  cyberpunk-2077) echo "1091500|Cyberpunk 2077|bin/x64/Cyberpunk2077.exe|" ;;
   *) return 1 ;;
   esac
 }
@@ -1474,8 +1475,16 @@ fake_install() {
   IFS="|" read -r app folder marker bepinex <<<"$spec"
   local game="$SANDBOX_STEAM/steamapps/common/$folder" compat="$SANDBOX_STEAM/steamapps/compatdata/$app"
   mkdir -p "$SANDBOX_STEAM/config" "$SANDBOX_STEAM/steamapps/common" "$game" "$compat/pfx/drive_c/users/steamuser/AppData/LocalLow"
+  mkdir -p "$(dirname "$game/$marker")"
   printf 'MZ fake executable for a Mortar regress; it is never run\n' >"$game/$marker"
   mkdir -p "$game/${marker%.exe}_Data"
+  # The files the catalog's tools require, so the Tools menu lists them.
+  if [ "$id" = cyberpunk-2077 ]; then
+    mkdir -p "$game/tools/redmod/bin" "$game/CyberCAT/licenses"
+    for f in REDprelauncher.exe tools/redmod/bin/redMod.exe CyberCAT/CP2077SaveEditor.exe CyberCAT/licenses/CyberCAT.Core.LICENSE.txt; do
+      printf 'fake\n' >"$game/$f"
+    done
+  fi
   printf '"AppState"\n{\n\t"appid"\t\t"%s"\n\t"installdir"\t\t"%s"\n\t"StateFlags"\t\t"4"\n}\n' "$app" "$folder" >"$SANDBOX_STEAM/steamapps/appmanifest_$app.acf"
   [ -f "$STEAM/config/loginusers.vdf" ] && cp "$STEAM/config/loginusers.vdf" "$SANDBOX_STEAM/config/"
   printf 'WINE REGISTRY Version 2\n;; All keys relative to \\\\User\\\\S-1-5-21-0-0-0-1000\n\n#arch=win64\n' >"$compat/pfx/user.reg"
