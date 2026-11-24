@@ -293,9 +293,17 @@ function Label({ mark, shown }: { mark: StageMark; shown: Shown }) {
         {mark.name}
       </Typography>
       <Typography
-        noWrap={true}
         title={mark.text}
-        sx={{ fontSize: 12.5, maxWidth: '100%', color: textColour[shown] }}
+        sx={{
+          fontSize: 12.5,
+          maxWidth: '100%',
+          color: textColour[shown],
+          textAlign: 'center',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}
       >
         {mark.text}
       </Typography>
