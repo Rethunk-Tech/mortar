@@ -41,6 +41,11 @@
   font-size: 20px;
 }
 
+.file span {
+  color: var(--dim);
+  font-size: 14px;
+}
+
 .oscard > span:not(.iconwrap) {
   color: var(--dim);
   font-size: 14px;
@@ -318,11 +323,6 @@ html.js .dl .panel[hidden] {
   border-radius: 14px;
   background: var(--raised);
   transition: border-color 0.2s;
-}
-
-.file span {
-  color: var(--dim);
-  font-size: 14px;
 }
 
 .file > :not(.fileicon) {
