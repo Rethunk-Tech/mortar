@@ -437,6 +437,7 @@ func (s *Service) runCheck(ctx context.Context, j checkJob) Result {
 	enabledMods := slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool { return !x.Enabled })
 	r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, enabledMods)...)
 	flagged, flagsFailed := s.sourceFlagged(ctx, gameID, env.Nexus.Domain, enabledMods)
+	s.renameDatasetNamed(gameID, id, env.Nexus.Domain)
 	r.Broken = append(r.Broken, flagged...)
 	r.Unknown = r.Unknown || flagsFailed
 	s.addLoaderFailures(&r, j, owners)

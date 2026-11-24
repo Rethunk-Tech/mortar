@@ -58,3 +58,23 @@ func (s *Store) SetSources(game, id string, found map[string]Source) (Profile, e
 		return nil
 	})
 }
+
+// RenameEntries gives each entry of names that name, on its source and on every component that carried the old one.
+func (s *Store) RenameEntries(game, id string, names map[string]string) (Profile, error) {
+	return s.update(game, id, func(p *Profile, _ string) error {
+		for i := range p.Entries {
+			e := &p.Entries[i]
+			name, ok := names[e.Key]
+			if !ok {
+				continue
+			}
+			for j := range e.Mods {
+				if e.Mods[j].Name == e.Source.ModName {
+					e.Mods[j].Name = name
+				}
+			}
+			e.Source.ModName = name
+		}
+		return nil
+	})
+}

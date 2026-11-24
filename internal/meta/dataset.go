@@ -61,6 +61,11 @@ func (c *Client) Page(ctx context.Context, id int) (smapiweb.Page, error) {
 	return p, err
 }
 
+// DatasetPageName is the cache file Page keeps the dataset's page for a Stardew Valley Nexus mod id in.
+func DatasetPageName(id int) string {
+	return DatasetPrefix + "nexus-" + strconv.Itoa(id) + ".json"
+}
+
 func (c *Client) page(ctx context.Context, id int) (smapiweb.Page, error) {
 	return diskcache.Cached(c.Cache(), DatasetPrefix+"nexus-"+strconv.Itoa(id)+".json", datasetTTL, func() (smapiweb.Page, error) {
 		return c.web().Page(ctx, id)

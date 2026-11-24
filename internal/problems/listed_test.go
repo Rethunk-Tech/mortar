@@ -9,12 +9,15 @@ import (
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 type listedFakeMeta struct {
@@ -382,5 +385,32 @@ func TestListedRequirementOutsideStardewIgnoresDatasetPage(t *testing.T) {
 
 	if len(result.Missing) != 1 || result.Missing[0].Where == nil || result.Missing[0].Where.PageName != "Cyber Engine Tweaks" {
 		t.Fatalf("Missing = %#v, want Cyber Engine Tweaks named from the Nexus requirement", result.Missing)
+	}
+}
+
+func TestDatasetNamedEntriesTakeTheirOwnPagesName(t *testing.T) {
+	cl := &meta.Client{CacheDir: t.TempDir()}
+	for _, err := range []error{
+		diskcache.Put(cl.Cache(), meta.DatasetPageName(107), smapiweb.Page{ID: 107, Name: "Matching Pierre Sprite"}),
+		diskcache.Put(cl.Cache(), nexussvc.PageName("cyberpunk2077", 107), nexussvc.Details{Page: nexusmods.Page{Name: "Cyber Engine Tweaks"}}),
+		diskcache.Put(cl.Cache(), nexussvc.PageName("cyberpunk2077", 2380), nexussvc.Details{Page: nexusmods.Page{Name: "RED4ext"}}),
+	} {
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	nexus := func(key string, modID int, name string) profile.Entry {
+		return profile.Entry{Key: key, Source: profile.Source{Kind: profile.KindNexus, ModID: modID, ModName: name}}
+	}
+	entries := []profile.Entry{
+		nexus("cet", 107, "Matching Pierre Sprite"),
+		nexus("red4ext", 2380, "RED4ext"),
+		nexus("renamed", 107, "CET"),
+	}
+
+	got := datasetNamed(cl, "cyberpunk2077", entries)
+
+	if len(got) != 1 || got["cet"] != "Cyber Engine Tweaks" {
+		t.Fatalf("datasetNamed = %v, want only cet renamed to Cyber Engine Tweaks", got)
 	}
 }

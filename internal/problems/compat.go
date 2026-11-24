@@ -2,8 +2,11 @@ package problems
 
 import (
 	"context"
+	"log/slog"
+	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -11,6 +14,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 
 	"github.com/Rethunk-Tech/go-semverish"
 )
@@ -142,4 +147,43 @@ func (m gatedMeta) Lookup(ctx context.Context, uniqueID string) ([]smapiweb.Ref,
 		return nil, nil
 	}
 	return m.Meta.Lookup(ctx, uniqueID)
+}
+
+// renameDatasetNamed renames the Nexus entries of a game without the Stardew dataset that were saved under the
+// dataset's name for their mod id, which another game's ids collide with, to their own page's name.
+func (s *Service) renameDatasetNamed(gameID, id, domain string) {
+	if info, _ := components.Game(gameID); domain == "" || info.HasMetadata(components.MetaStardewDataset) {
+		return
+	}
+	p, err := s.profiles.Get(gameID, id)
+	if err != nil {
+		return
+	}
+	names := datasetNamed(&meta.Client{CacheDir: filepath.Join(s.home, "cache")}, domain, p.Entries)
+	if len(names) == 0 {
+		return
+	}
+	if _, err := s.profiles.RenameEntries(gameID, id, names); err != nil {
+		slog.Warn("problems: rename entries named from the Stardew dataset", "game", gameID, "err", err)
+	}
+}
+
+// datasetNamed maps each Nexus entry whose name is the Stardew dataset's for its mod id to the name its own page in
+// domain gives, from the caches alone.
+func datasetNamed(cl *meta.Client, domain string, entries []profile.Entry) map[string]string {
+	out := map[string]string{}
+	for _, e := range entries {
+		src := e.Source
+		if src.Kind != profile.KindNexus || src.ModID <= 0 || src.ModName == "" {
+			continue
+		}
+		wrong, ok := diskcache.Peek[smapiweb.Page](cl.Cache(), meta.DatasetPageName(src.ModID))
+		if !ok || wrong.Value.Name != src.ModName {
+			continue
+		}
+		if d, ok := nexussvc.PeekDetails(cl, domain, src.ModID); ok && d.Page.Name != "" && d.Page.Name != src.ModName {
+			out[e.Key] = d.Page.Name
+		}
+	}
+	return out
 }
