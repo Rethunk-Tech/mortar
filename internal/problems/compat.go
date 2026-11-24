@@ -128,6 +128,15 @@ func (m gatedMeta) CheckUpdates(ctx context.Context, req meta.UpdateRequest) []s
 	return m.Meta.CheckUpdates(ctx, req)
 }
 
+// Page answers an empty page outside Stardew: the dataset is keyed by Stardew's Nexus ids, which another game's ids
+// collide with.
+func (m gatedMeta) Page(ctx context.Context, id int) (smapiweb.Page, error) {
+	if !m.info.HasMetadata(components.MetaStardewDataset) {
+		return smapiweb.Page{}, nil
+	}
+	return m.Meta.Page(ctx, id)
+}
+
 func (m gatedMeta) Lookup(ctx context.Context, uniqueID string) ([]smapiweb.Ref, error) {
 	if !m.info.HasMetadata(components.MetaStardewDataset) {
 		return nil, nil

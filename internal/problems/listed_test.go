@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/go-smapiweb"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -363,4 +364,23 @@ func TestCheckRunsTheAnalyzersWhileTheRequirementsAreFetched(t *testing.T) {
 		return map[int][]nexusmods.Requirement{}, nil
 	}
 	Check(t.Context(), fake, testEnv, []framework.Mod{probe}, reqs)
+}
+
+func TestListedRequirementOutsideStardewIgnoresDatasetPage(t *testing.T) {
+	info, ok := components.Game("cyberpunk-2077")
+	if !ok {
+		t.Fatal("cyberpunk-2077 missing from the catalog")
+	}
+	fake := listedFakeMeta{
+		requirements: map[int][]nexusmods.Requirement{520: {{ModID: 107, Name: "Cyber Engine Tweaks"}}},
+		pages:        map[int]smapiweb.Page{107: {ID: 107, Name: "Matching Pierre Sprite"}},
+	}
+	env := Environment{Nexus: nexusmods.Title{Domain: "cyberpunk2077"}}
+	calls := 0
+
+	result := Check(t.Context(), gatedMeta{Meta: fake, info: info}, env, []framework.Mod{listedDependent()}, fake.reqs(&calls))
+
+	if len(result.Missing) != 1 || result.Missing[0].Where == nil || result.Missing[0].Where.PageName != "Cyber Engine Tweaks" {
+		t.Fatalf("Missing = %#v, want Cyber Engine Tweaks named from the Nexus requirement", result.Missing)
+	}
 }
