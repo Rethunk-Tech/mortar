@@ -15,13 +15,15 @@ interface Helpers {
   developing: { game: string; name: string }
   baldurs: { game: string; name: string }
   coreKeeper: { game: string; name: string }
+  cyberpunk: { game: string; name: string }
   settings: (page: Page, section: string) => Promise<void>
   stepMs: number
 }
 
 /** The news posts' scenes: 0.3.13's Change version, Add a game and Multiplayer mod list, and 0.3.14's Develop tab and
  * Preferred source, 0.5.0's mod.io sign-in, Load order and Release everywhere, 0.6.0's Manual sort, 0.7.0's
- * Notifications and mod details, and 0.8.0's Translate and skipped load-order row. */
+ * Notifications and mod details, 0.8.0's Translate and skipped load-order row, and 0.9.0's Cyberpunk 2077 tools and
+ * Convert to REDmod. */
 // Asks every site once, so each row of the picture shows the site answering.
 async function testEveryAccount(page: Page, stepMs: number) {
   const main = page.getByRole('main')
@@ -157,6 +159,35 @@ const skippedLoadOrderScene = (h: Helpers) => ({
   },
 })
 
+// Cyberpunk 2077's own tools in the profile's Tools menu (selftest.sh fake-install and seed-cyberpunk).
+const gameToolsScene = (h: Helpers) => ({
+  name: 'game-tools',
+  file: 'game-tools-0-9-0.png',
+  ...h.desk,
+  profile: h.cyberpunk,
+  steps: async (page: Page) => {
+    await h.click(page, 'tab', 'Home')
+    await h.click(page, 'button', 'Tools')
+    await page.getByRole('menuitem', { name: 'REDLauncher' }).waitFor({ timeout: h.stepMs })
+  },
+})
+
+// An archive mod's menu in the Cyberpunk 2077 profile, with Convert to REDmod.
+const convertRedmodScene = (h: Helpers) => ({
+  name: 'convert-redmod',
+  file: 'convert-redmod-0-9-0.png',
+  ...h.desk,
+  profile: h.cyberpunk,
+  steps: async (page: Page) => {
+    await h.click(page, 'tab', 'Mods')
+    await page
+      .getByText('Rain Puddles', { exact: true })
+      .first()
+      .click({ button: 'right', timeout: h.stepMs })
+    await page.getByRole('menuitem', { name: 'Convert to REDmod' }).waitFor({ timeout: h.stepMs })
+  },
+})
+
 // The rows are stubbed and the profile empty, so the counts are told to match what the picture shows.
 const showStubbedModCount = (page: Page) =>
   page.evaluate(() => {
@@ -267,6 +298,8 @@ export const releaseScenes = (h: Helpers) => [
   modDetailsScene(h),
   translateScene(h),
   skippedLoadOrderScene(h),
+  gameToolsScene(h),
+  convertRedmodScene(h),
   {
     name: 'load-order',
     file: 'load-order-0-5-0.png',

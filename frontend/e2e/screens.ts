@@ -350,6 +350,7 @@ const SITE: Scene[] = [
     developing: LETHAL,
     baldurs: { game: "Baldur's Gate 3", name: 'Main' },
     coreKeeper: { game: 'Core Keeper', name: 'Main' },
+    cyberpunk: { game: 'Cyberpunk 2077', name: 'Night City' },
     settings,
     stepMs: STEP_MS,
   }),
