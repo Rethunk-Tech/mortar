@@ -120,6 +120,7 @@ function profileName(rollback: UpdateRollback): string {
 
 async function erroredMods(game: string, profile: string): Promise<string> {
   const issues = await LastRunIssues(game, profile).catch(() => null)
+  // biome-ignore lint/nursery/noUnnecessaryConditions: a Promise subclass's catch<TResult = never> default is used instead of inferring null from () => null; upstream report pending
   const names = (issues?.mods ?? []).filter((m) => m.errors > 0).map((m) => m.name)
   return listNames(names)
 }

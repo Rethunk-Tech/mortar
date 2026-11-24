@@ -230,6 +230,7 @@ const primeDetails = async (game: string, ids: number[]) => {
   // Only an answer settles an id: one the request could not fetch (offline, rate limited) is asked again, here or
   // when Nexus is reachable again. What did arrive is kept either way.
   const got = await PrimeDetails(game, unknown).catch(() => null)
+  // biome-ignore lint/nursery/noUnnecessaryConditions: a Promise subclass's catch<TResult = never> default is used instead of inferring null from () => null; upstream report pending
   const found = got?.details ?? {}
   for (const id of unknown) {
     primeInFlight.delete(nexusKey(game, id))
