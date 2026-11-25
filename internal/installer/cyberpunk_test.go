@@ -113,3 +113,30 @@ func fmtPairs(ps [][2]string) string {
 }
 
 var _ = errors.Is
+
+func TestCyberpunkLaysOutAnUppercaseArchiveAndASlashInAREDmodName(t *testing.T) {
+	t.Parallel()
+	g := GameOf("cyberpunk-2077")
+	for _, c := range []struct {
+		files []string
+		want  string
+	}{
+		{[]string{"Archive/pc/mod/MyMod.ARCHIVE"}, "archive/pc/mod/MyMod.ARCHIVE"},
+		{[]string{"MyMod.ARCHIVE"}, "archive/pc/mod/MyMod.ARCHIVE"},
+		{[]string{"mods/x/info.json", "mods/x/archives/a.archive"}, "mods/Cool_Mod/archives/a.archive"},
+	} {
+		dir := t.TempDir()
+		for _, f := range c.files {
+			testfs.WriteAt(t, filepath.Join(dir, filepath.FromSlash(f)), []byte(`{"name":"Cool/Mod","version":"1"}`))
+		}
+		a := Open(dir, "key")
+		a.Name = "Some Mod"
+		l, err := (cyberpunk{}).Layout(a, g, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !slices.ContainsFunc(l.Files, func(f File) bool { return strings.EqualFold(f.Rel, c.want) }) {
+			t.Fatalf("%v laid out to %v, want %s", c.files, render(l), c.want)
+		}
+	}
+}

@@ -305,7 +305,7 @@ func archiveInstaller(c *cpCtx) (outcome, bool, error) {
 	if len(c.t.filesIn(archivePrefix, isXL)) == 0 {
 		var archives, others []string
 		for _, f := range c.t.files {
-			if path.Ext(f) == ".archive" {
+			if isArchive(f) {
 				archives = append(archives, f)
 			} else {
 				others = append(others, f)

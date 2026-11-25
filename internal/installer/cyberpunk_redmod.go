@@ -127,7 +127,11 @@ func redmodOne(c *cpCtx, src string) ([]move, error) {
 	if err != nil {
 		return nil, refuse("REDmod: error decoding %s: %v", path.Join(src, redmodInfoFile), err)
 	}
-	dst := path.Join(redmodBase, strings.ReplaceAll(info.Name, ".", "_"))
+	module, err := REDmodModuleName(info.Name)
+	if err != nil {
+		return nil, refuse("REDmod: %v", err)
+	}
+	dst := path.Join(redmodBase, module)
 	var out []move
 	for _, step := range []func(*cpCtx, string, string, redmodInfo) ([]move, error){redmodArchives, redmodSounds, redmodScripts, redmodTweaks} {
 		ms, err := step(c, src, dst, info)
