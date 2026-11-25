@@ -24,3 +24,9 @@ export function knownCount(n: number | undefined, label: string): string | undef
 export function joinSummary(parts: Array<string | undefined>): string {
   return parts.filter((p): p is string => p !== undefined && p !== '').join(' · ')
 }
+
+// A profile's problems as the header chip and the sidebar badge count them: the missing mods are part of the total,
+// though the badge store keeps them in their own field.
+export const problemTotal = (
+  badge: { problems: number; missing: number } | undefined,
+): number | undefined => badge && badge.problems + badge.missing

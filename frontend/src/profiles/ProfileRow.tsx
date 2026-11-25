@@ -23,7 +23,7 @@ import { chosenModCount, userModCount } from './count.ts'
 import { HealthCheckBadge } from './HealthCheckBadge.tsx'
 import { ProfileMark } from './ProfileMark.tsx'
 import { useProfiles } from './store.ts'
-import { joinSummary, knownCount, originLine } from './summary.ts'
+import { joinSummary, knownCount, originLine, problemTotal } from './summary.ts'
 
 const DRAG_TINT_ALPHA = 0.24
 const panelSx = { bgcolor: 'var(--mortar-paper-78)', borderRadius: '6px' }
@@ -90,11 +90,12 @@ function useRowSummary(profile: Profile): string {
   const modsText = chosen < mods ? `${modsLabel(mods)} · ${t`${chosen} chosen`}` : modsLabel(mods)
   const badge = useBadges((s) => s.byProfile[profile.id])
   const updatesText = updatesLabel(badge?.updates ?? 0)
-  const problemsText = problemsLabel(badge?.problems ?? 0)
+  const problems = problemTotal(badge)
+  const problemsText = problemsLabel(problems ?? 0)
   return joinSummary([
     modsText,
     knownCount(badge?.updates, updatesText),
-    knownCount(badge?.problems, problemsText),
+    knownCount(problems, problemsText),
     originLine(profile.origin, profile.copyOf, {
       link: t`imported from a link`,
       mortar: t`imported from a .mortar file`,

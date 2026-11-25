@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { joinSummary, knownCount, originLine } from './summary.ts'
+import { joinSummary, knownCount, originLine, problemTotal } from './summary.ts'
 
 const labels = {
   link: 'imported from a link',
@@ -37,4 +37,9 @@ test('the row summary joins the parts the mock shows', () => {
     ]),
   ).toBe('42 mods · 3 updates · 1 problem · imported from a link')
   expect(joinSummary(['2 mods', knownCount(undefined, '1 update')])).toBe('2 mods')
+})
+
+test('the row counts missing mods in its problems, as the header chip does', () => {
+  expect(problemTotal(undefined)).toBeUndefined()
+  expect(problemTotal({ problems: 16, missing: 1 })).toBe(17)
 })
