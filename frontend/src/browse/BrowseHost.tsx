@@ -1,3 +1,4 @@
+import { Box } from '@mui/material'
 import { useLoaded } from '@rethunk/react-load-hooks'
 import {
   Categories,
@@ -9,9 +10,12 @@ import {
 import { openPage } from '../mods/menu.ts'
 import { download } from '../queue/actions.ts'
 import { useNexus } from '../settings/nexus.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { BrowseSkeleton } from './BrowseBody.tsx'
 import { BrowsePage } from './BrowsePage.tsx'
 import type { BrowseSearch, BrowseSource } from './browseTypes.ts'
+import { useBrowseView } from './view.ts'
 
 const KIND_INSTALL = 'install'
 const NO_SOURCES: BrowseSource[] = []
@@ -71,8 +75,22 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
     null,
     reportUnexpected,
   )
+  const view = useBrowseView((s) => s.view)
   if (loading) {
-    return null
+    return (
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          px: space.gutter,
+          py: space.gap,
+        }}
+      >
+        <BrowseSkeleton view={view} />
+      </Box>
+    )
   }
   const [sources, hasCompat] = data ?? [null, false]
   return (

@@ -48,7 +48,8 @@ interface BrowseBodyProps {
   onPage: (page: number) => void
 }
 
-// Fills the results area with placeholders in the results' own grid, so nothing moves when they arrive.
+// Fills the results area with placeholders in the results' own grid, so nothing moves when they arrive. Browse is live
+// online data, so they show at once rather than after the short delay a tab with data at hand waits.
 function BrowseSkeleton({ view }: { view: string }) {
   const { t } = useLingui()
   const box = useRef<HTMLDivElement>(null)
@@ -59,6 +60,7 @@ function BrowseSkeleton({ view }: { view: string }) {
     <Box ref={box} sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
       <SkeletonRows
         label={t`Searching…`}
+        immediate={true}
         count={skeletonCount({ ...size, grid: isGrid, rowPx })}
         height={rowPx}
         sx={isGrid ? grid : list}
@@ -174,4 +176,4 @@ const BrowseBody = memo(function BrowseBodyView(props: BrowseBodyProps) {
   )
 })
 
-export { BrowseBody, ResultFooter }
+export { BrowseBody, BrowseSkeleton, ResultFooter }
