@@ -189,6 +189,9 @@ func (s *Store) StageGitHub(ctx context.Context, game string, source Source, pat
 	if err := s.items.Describe(game, key, KindGitHub, source.Repo, source.Tag, source.Asset); err != nil {
 		return "", nil, installError(err)
 	}
+	if err := s.items.SetName(game, key, cmp.Or(source.ModName, repo)); err != nil {
+		return "", nil, installError(err)
+	}
 	if err := s.namePackage(game, key, source.Asset, owner); err != nil {
 		return "", nil, installError(err)
 	}

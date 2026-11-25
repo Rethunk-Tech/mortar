@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"slices"
 	"strings"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	"github.com/Rethunk-Tech/go-nexusmods"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -377,6 +379,9 @@ func (s *Store) InstallNexusExtra(ctx context.Context, game, id, entryKey, path 
 	}
 	key := store.NexusKey(source.ModID, source.FileID)
 	if err := s.items.AddArchiveKey(ctx, game, key, path); err != nil {
+		return InstallResult{}, installError(err)
+	}
+	if err := s.items.SetName(game, key, cmp.Or(source.ModName, ga.StripExtension(source.Name))); err != nil {
 		return InstallResult{}, installError(err)
 	}
 	if over, err := s.isOverlayItem(game, key, source); err != nil {

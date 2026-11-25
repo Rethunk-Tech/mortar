@@ -156,7 +156,19 @@ func TestCyberpunkLooseScriptsAreFolderedByTheirModsName(t *testing.T) {
 			dsts = append(dsts, f.Rel)
 		}
 	}
-	if !slices.Contains(dsts, "r6/scripts/Mod A/utils.reds") || !slices.Contains(dsts, "r6/scripts/Mod B/utils.reds") {
+	gh := Source{Kind: KindGitHub, Name: "c.zip", Version: "1", Repo: "Me/Mod C", Tag: "v1", Asset: "c.zip"}
+	key, _, err := e.StageGitHub(t.Context(), "cyberpunk-2077", gh, zipOf(t, "c.zip", map[string]string{"utils.reds": "c"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, l, _, err := e.layoutOf("cyberpunk-2077", p.ID, key, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range l.Files {
+		dsts = append(dsts, f.Rel)
+	}
+	if !slices.Contains(dsts, "r6/scripts/Mod A/utils.reds") || !slices.Contains(dsts, "r6/scripts/Mod B/utils.reds") || !slices.Contains(dsts, "r6/scripts/Mod C/utils.reds") {
 		t.Fatalf("laid out to %q", dsts)
 	}
 }
