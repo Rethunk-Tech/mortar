@@ -1540,16 +1540,19 @@ start_fake() {
   stop
   start
   cli settings set --game "$id" defaultLaunchMethod direct >/dev/null
-  for _ in $(seq 1 30); do
-    cli loader install "$id" "$bepinex" >"$ROOT/loader.txt" 2>&1 && break
-    grep -q 'already running' "$ROOT/loader.txt" || break
-    sleep 2
-  done
-  grep -q "^Installed loader $bepinex" "$ROOT/loader.txt" || {
-    echo "BepInEx $bepinex did not install: $(head -c 300 "$ROOT/loader.txt")" >&2
-    exit 1
-  }
-  cli loader pin "$id" "$bepinex" >/dev/null
+  # A game modded without BepInEx (Cyberpunk 2077) names no pack.
+  if [ -n "$bepinex" ]; then
+    for _ in $(seq 1 30); do
+      cli loader install "$id" "$bepinex" >"$ROOT/loader.txt" 2>&1 && break
+      grep -q 'already running' "$ROOT/loader.txt" || break
+      sleep 2
+    done
+    grep -q "^Installed loader $bepinex" "$ROOT/loader.txt" || {
+      echo "BepInEx $bepinex did not install: $(head -c 300 "$ROOT/loader.txt")" >&2
+      exit 1
+    }
+    cli loader pin "$id" "$bepinex" >/dev/null
+  fi
   profile=$(cli profile create "$id" "Fake $id" | cut -f1)
   cli profile set "$id" "$profile" launchPrefix "$ROOT/run-fake.sh" >/dev/null
   echo "fake $id install and profile $profile ready; destroy with: MORTAR_SELFTEST_DIR=$ROOT $0 destroy"
