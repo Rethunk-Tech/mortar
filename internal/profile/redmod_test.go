@@ -3,6 +3,7 @@ package profile
 import (
 	"errors"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/installer"
@@ -170,5 +171,43 @@ func TestCyberpunkLooseScriptsAreFolderedByTheirModsName(t *testing.T) {
 	}
 	if !slices.Contains(dsts, "r6/scripts/Mod A/utils.reds") || !slices.Contains(dsts, "r6/scripts/Mod B/utils.reds") || !slices.Contains(dsts, "r6/scripts/Mod C/utils.reds") {
 		t.Fatalf("laid out to %q", dsts)
+	}
+}
+
+func TestConvertingKeepsAModuleNameASwitchedOffREDmodHolds(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("cyberpunk-2077", "S")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var keys []string
+	for i := range 2 {
+		src := cfSource(70 + i)
+		src.ModName = "Cool Mod"
+		res, err := e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zipOf(t, "c.zip", map[string]string{"archive/pc/mod/c" + string(rune('a'+i)) + ".archive": "c"}), src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		keys = append(keys, res.Profile.Entries[len(res.Profile.Entries)-1].Key)
+	}
+	if _, err := e.ConvertToREDmod("cyberpunk-2077", p.ID, keys[:1]); err != nil {
+		t.Fatal(err)
+	}
+	cur, _ := e.Get("cyberpunk-2077", p.ID)
+	first := cur.Entries[slices.IndexFunc(cur.Entries, func(en Entry) bool { return en.Key == keys[0] })]
+	if _, err := e.SetModEnabled("cyberpunk-2077", p.ID, first.Key, first.Mods[0].ID, false); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.ConvertToREDmod("cyberpunk-2077", p.ID, keys[1:]); err != nil {
+		t.Fatal(err)
+	}
+	cur, _ = e.Get("cyberpunk-2077", p.ID)
+	var modules []string
+	for _, en := range cur.Entries {
+		modules = append(modules, strings.ToLower(en.REDmod))
+	}
+	if len(modules) != 2 || modules[0] == "" || modules[0] == modules[1] {
+		t.Fatalf("modules = %q, want two different folders", modules)
 	}
 }

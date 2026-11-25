@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -155,6 +156,12 @@ func (s *Store) ConvertToREDmod(game, id string, keys []string) (REDmodResult, e
 	taken, err := s.REDmodFolders(game, id)
 	if err != nil {
 		return REDmodResult{}, err
+	}
+	// A converted mod switched off is not laid out, but switching it back on needs its folder free.
+	for _, e := range p.Entries {
+		if e.REDmod != "" && !slices.Contains(taken, e.REDmod) {
+			taken = append(taken, e.REDmod)
+		}
 	}
 	var skipped []REDmodSkip
 	modules := map[string]string{}
