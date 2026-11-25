@@ -211,3 +211,39 @@ func TestConvertingKeepsAModuleNameASwitchedOffREDmodHolds(t *testing.T) {
 		t.Fatalf("modules = %q, want two different folders", modules)
 	}
 }
+
+// A download installed before the layout question existed is laid out again without asking it.
+func TestRepairLaysOutAnUnrecognisedDownloadWithoutTheLayoutQuestion(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("cyberpunk-2077", "S")
+	if err != nil {
+		t.Fatal(err)
+	}
+	mode := "install"
+	e.UnknownLayoutMode = func(string) string { return mode }
+	res, err := e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zipOf(t, "odd.zip", map[string]string{"weird/thing.dat": "x", "weird/other.dat": "y"}), cfSource(40))
+	if err != nil || len(res.Profile.Entries) != 2 || res.Profile.Entries[0].File == "" {
+		t.Fatalf("install = %+v, %v", res.Profile.Entries, err)
+	}
+	want := res.Profile.Entries[0].File
+	if _, err := e.update("cyberpunk-2077", p.ID, func(p *Profile, _ string) error {
+		for i := range p.Entries {
+			p.Entries[i].File = "Old/" + p.Entries[i].File
+			p.Entries[i].Key = p.Entries[i].Item + fileKeySep + p.Entries[i].File
+		}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	mode = "ask"
+	if changed, err := e.RepairFolderEntries("cyberpunk-2077", p.ID); err != nil || !changed {
+		t.Fatalf("repair = %v, %v", changed, err)
+	}
+	if got, _ := e.Get("cyberpunk-2077", p.ID); got.Entries[0].File != want {
+		t.Fatalf("entries = %+v, want %s laid out again", got.Entries, want)
+	}
+	if e.layoutOK.take("cyberpunk-2077", p.ID, res.Profile.Entries[0].Item) {
+		t.Fatal("the repair left the layout allowance behind")
+	}
+}

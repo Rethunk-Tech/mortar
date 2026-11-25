@@ -322,7 +322,10 @@ func (s *Store) RepairFolderEntries(game, id string) (bool, error) {
 		if err != nil {
 			continue
 		}
+		// The download is already installed, so the question a new install of an odd layout asks is not asked again.
+		s.layoutOK.allow(game, id, key)
 		fresh, _, _, err := s.folderEntries(game, id, key, parts[0].Source, mods)
+		s.layoutOK.take(game, id, key)
 		if err != nil || len(fresh) == 0 || stillLaidOut(parts, fresh) {
 			continue
 		}
