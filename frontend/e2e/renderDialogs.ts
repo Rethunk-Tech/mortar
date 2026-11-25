@@ -15,6 +15,8 @@ import { refreshFailedCases, swrCases } from './swrCases.ts'
 import { uploadDialogCases } from './uploadDialogCase.ts'
 
 const ADOPT_PARENT = '/var/tmp/render-adopt'
+// Binding method id of the devsvc Tools call the New mod dialog makes when it opens.
+const NEW_MOD_TOOLS = '"methodID":542138650'
 const WIZARD_BUDGET = { updates: 3000 }
 const TYPING_BUDGET = { updates: 2000 }
 
@@ -108,7 +110,11 @@ export function dialogKit(h: Helpers) {
   // so the case measures only stepping into the step it names.
   const newModTo = async (p: Page, steps: number) => {
     await developTab(p)
+    // Opening the dialog asks for the machine's tools (a slow call), whose answer re-renders the wizard; wait for it so it
+    // lands before the measured step, not in its idle watch.
+    const tools = p.waitForResponse((r) => r.request().postData()?.includes(NEW_MOD_TOOLS) ?? false)
     await button(p, /^New mod…/)
+    await tools
     const box = (name: string) =>
       p.getByRole('dialog').last().getByRole('textbox', { name }).first()
     await box('Mod name').fill('RenderCheck')
