@@ -1558,7 +1558,9 @@ start_fake() {
     }
     cli loader pin "$id" "$bepinex" >/dev/null
   fi
-  profile=$(cli profile create "$id" "Fake $id" | cut -f1)
+  # A rerun keeps the profile the first run made.
+  profile=$(cli profiles "$id" --json | jq -r --arg n "Fake $id" '[.[] | select(.name == $n) | .id][0] // empty')
+  [ -n "$profile" ] || profile=$(cli profile create "$id" "Fake $id" | cut -f1)
   cli profile set "$id" "$profile" launchPrefix "$ROOT/run-fake.sh" >/dev/null
   echo "fake $id install and profile $profile ready; destroy with: MORTAR_SELFTEST_DIR=$ROOT $0 destroy"
 }
