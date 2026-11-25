@@ -64,7 +64,10 @@ export function Row({
         <Title item={item} size={14} />
         {sub}
       </Box>
-      {actions}
+      {/* The buttons keep their width; a long reason beside them is cut short instead. */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: ROW.gap, flexShrink: 0 }}>
+        {actions}
+      </Box>
     </Box>
   )
 }

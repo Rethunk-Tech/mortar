@@ -262,7 +262,7 @@ function Failed({ items }: { items: Item[] }) {
 function FailureText({ item }: { item: Item }) {
   const { t } = useLingui()
   const det = item.detection
-  if (!det && item.errorKind === 'md5list') {
+  if (!det && (item.errorKind === 'md5list' || item.errorKind === 'layout')) {
     return errorDetails(item.error)
   }
   if (!det && item.errorKind === 'network') {

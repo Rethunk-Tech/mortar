@@ -95,6 +95,11 @@ export function cyberpunkCases(h: Helpers): Case[] {
           w._wails.dispatchWailsEvent({ name: 'queue:changed', data: state })
         }, failedDownload)
         await p.getByRole('button', { name: /^Downloads:/ }).click()
+        // The failed row says why it offers Install anyway.
+        await p
+          .getByText('Mortar has no layout for this mod (3 files)', { exact: false })
+          .first()
+          .waitFor()
         await p.getByRole('button', { name: 'Install anyway' }).click()
         await p.getByRole('dialog').last().getByText('weird/thing.dat').waitFor()
       },
