@@ -52,6 +52,10 @@ BASE=${MORTAR_SELFTEST_BASE:-/var/tmp}
 ROOT=${MORTAR_SELFTEST_DIR:-$BASE/mortar-selftest}
 MARKER=.mortar-selftest
 PORT=${MORTAR_SELFTEST_PORT:-9455}
+# A sandbox started on a port of its own (start --fake) records it, so every later subcommand reaches that server.
+if [ -z "${MORTAR_SELFTEST_PORT:-}" ] && [ -f "$ROOT/port" ]; then
+  PORT=$(<"$ROOT/port")
+fi
 STEAM=${MORTAR_SELFTEST_STEAM:-$HOME/.local/share/Steam}
 APP_ID=413150
 GAME_FOLDER="Stardew Valley"
@@ -1535,6 +1539,7 @@ start_fake() {
   IFS="|" read -r app folder marker bepinex <<<"$spec"
   need_zenity
   mark
+  echo "$PORT" >"$ROOT/port"
   fake_install "$id"
   build
   stop
@@ -2157,7 +2162,11 @@ if [ "${1:-}" = start ] && [ "${2:-}" = --fake ]; then
     SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
   fi
   if [ -z "${MORTAR_SELFTEST_PORT:-}" ]; then
-    pick_port
+    if [ -f "$ROOT/port" ]; then
+      PORT=$(<"$ROOT/port")
+    else
+      pick_port
+    fi
   fi
   export MORTAR_ENABLE_GAMES=$3
 fi
