@@ -28,6 +28,7 @@ import {
   prepareRunSandbox,
   sandboxPort,
   selftest,
+  startRenderServer,
 } from './sandbox.ts'
 import { webkitWalk } from './webkit-walk.ts'
 
@@ -471,10 +472,7 @@ async function main(): Promise<number> {
       for (const id of STAND_IN_GAMES) {
         selftest(dir, 'fake-install', id)
       }
-      selftest(dir, 'start', ...(seeded ? [] : ['--copy-data']))
-      if (seeded) {
-        selftest(dir, 'seed')
-      }
+      startRenderServer(dir, seeded)
       ;({ results, breaks } = await walk(`http://127.0.0.1:${sandboxPort()}`, dir, chosen, shots))
     } finally {
       keepServerLogs(dir, `${out}/sandbox-server`)

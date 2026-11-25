@@ -240,6 +240,21 @@ const createProfile = (cli: (...args: string[]) => string, game: string, name: s
 const dataDirOf = (env: Record<string, string | undefined>) =>
   `${env.XDG_DATA_HOME || `${env.HOME ?? ''}/.local/share`}/mortar`
 
+/**
+ * Starts the render run's server with update notices off: a check answering mid-case raises a toast whose commits would
+ * land in the case's idle window. A copy of the maintainer's settings brings their own notice setting along.
+ */
+function startRenderServer(dir: string, seeded: boolean) {
+  selftest(dir, 'start', ...(seeded ? [] : ['--copy-data']))
+  sandboxCli(
+    () => dir,
+    () => serverEnv(dir),
+  )('settings', 'set', 'notifyModUpdates', 'false')
+  if (seeded) {
+    selftest(dir, 'seed')
+  }
+}
+
 export {
   createProfile,
   dataDirOf,
@@ -251,4 +266,5 @@ export {
   sandboxPort,
   selftest,
   serverEnv,
+  startRenderServer,
 }
