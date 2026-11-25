@@ -52,6 +52,27 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.9.1" date="2026-11-25">
+      <description>
+        <p>Fixed</p>
+        <ul>
+          <li>Shares, packs, collections and saves in games other than Stardew Valley no longer name or add Stardew Valley mods as requirements, and a mod already saved under a Stardew Valley name gets its own name back, even offline</li>
+          <li>Mods an earlier release split into one entry per file are joined back together, so their XML, presets and sounds load again</li>
+          <li>Updating a mod keeps its note, tags, pin, REDmod conversion and whether it is switched off</li>
+          <li>Cyberpunk 2077: two mods with loose scripts of the same name no longer overwrite each other</li>
+          <li>Cyberpunk 2077: a modlist.txt you or another manager wrote is set aside and put back, never deleted or overwritten</li>
+          <li>Cyberpunk 2077: the game no longer starts with an old archive order when Mortar cannot write the new one; the launch stops and says why</li>
+          <li>Cyberpunk 2077: archives ending in .ARCHIVE install, and so does a REDmod with a slash in its name</li>
+          <li>The Tools menu and the REDmod check use the game install your profile runs</li>
+          <li>Mods their Nexus authors marked obsolete or deprecated are flagged on Problems, even offline</li>
+          <li>A download stopped to ask about its layout says so on its row</li>
+          <li>The Config page names the mod whose settings it shows, even when the filter hides that mod</li>
+          <li>A profile's row on the Profiles page counts missing mods as problems, as the header does</li>
+          <li>Browse shows its placeholder at once, and Problems says it is still checking instead of "No problems found" while it loads</li>
+          <li>The launch screen marks the game with its first letter when its Steam icon is missing</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.9.0" date="2026-11-24">
       <description>
         <p>New</p>

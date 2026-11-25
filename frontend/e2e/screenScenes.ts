@@ -188,6 +188,22 @@ const convertRedmodScene = (h: Helpers) => ({
   },
 })
 
+// The Config page filtered so the chosen mod's row is hidden, its settings still open under its name.
+const configNamedScene = (h: Helpers) => ({
+  name: 'config-named',
+  file: 'config-named-0-9-1.png',
+  ...h.desk,
+  profile: h.profile,
+  steps: async (page: Page) => {
+    await h.click(page, 'tab', 'Config')
+    const pane = page.getByRole('region', { name: /^Config of / })
+    await pane.waitFor({ timeout: h.stepMs })
+    await page.getByRole('textbox', { name: /^Filter mods/ }).fill('speed')
+    const name = ((await pane.getAttribute('aria-label')) ?? '').replace(/^Config of /, '')
+    await pane.getByText(name, { exact: true }).first().waitFor({ timeout: h.stepMs })
+  },
+})
+
 // The rows are stubbed and the profile empty, so the counts are told to match what the picture shows.
 const showStubbedModCount = (page: Page) =>
   page.evaluate(() => {
@@ -300,6 +316,7 @@ export const releaseScenes = (h: Helpers) => [
   skippedLoadOrderScene(h),
   gameToolsScene(h),
   convertRedmodScene(h),
+  configNamedScene(h),
   {
     name: 'load-order',
     file: 'load-order-0-5-0.png',
