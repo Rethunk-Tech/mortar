@@ -110,14 +110,18 @@ export function launchScreenCases(): Case[] {
       budget: ticking,
       // Only a Cyberpunk game deploys REDmods, so the open game is named and drawn as one.
       setup: async (p) => {
-        cyberpunk = await routeGameAs(p, 'cyberpunk-2077', { layout: 'cyberpunk' })
+        cyberpunk = await routeGameAs(p, 'cyberpunk-2077', {
+          layout: 'cyberpunk',
+          loader: '',
+          loaderId: 'folder',
+        })
         await p.reload()
       },
       run: async (p) => {
         const { game, profile } = ids()
         await emit(p, [
           status(game, profile, 'launching'),
-          progress(game, profile, { deploying: true }),
+          progress(game, profile, { deploying: true, loader: 'folder' }),
         ])
         await p.getByText('Compiling REDmods, which can take a few minutes').waitFor()
       },
