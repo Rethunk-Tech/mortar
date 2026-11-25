@@ -748,3 +748,74 @@ func TestFolderGameRepairDropsTheEndingAnOlderReleaseNamedAnOwnArchiveWith(t *te
 		t.Fatalf("name = %q, want My Mod", name)
 	}
 }
+
+func TestFolderGameUpdateKeepsWhatThePlayerSetOnTheEntry(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	if _, err := e.InstallSource(t.Context(), folderGame, p.ID, zipOf(t, "a.zip", map[string]string{"m.ts4script": "1"}), cfSource(10)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.update(folderGame, p.ID, func(p *Profile, _ string) error {
+		en := &p.Entries[0]
+		en.Note, en.Pinned, en.Tags, en.DisplayName, en.REDmod = "mine", true, []string{"t"}, "Shown", "folder"
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	res, err := e.InstallSource(t.Context(), folderGame, p.ID, zipOf(t, "b.zip", map[string]string{"m.ts4script": "2"}), cfSource(12).WithReplacing(10))
+	if err != nil || !res.Updated || len(res.Profile.Entries) != 1 {
+		t.Fatalf("update = %v, %v, %v", res.Updated, keysOf(res.Profile), err)
+	}
+	en := res.Profile.Entries[0]
+	if en.Source.FileID != 12 || en.Note != "mine" || !en.Pinned || !slices.Equal(en.Tags, []string{"t"}) || en.DisplayName != "Shown" || en.REDmod != "folder" {
+		t.Fatalf("entry = %+v", en)
+	}
+}
+
+// A download 0.8 split under the plain layout names files the Cyberpunk layout no longer lays out, so it is laid
+// out again; one whose parts all still lay out stays as the player left it, removed parts and all.
+func TestCyberpunkRepairLaysOutAgainOnlyWhatNoLongerDeploys(t *testing.T) {
+	t.Parallel()
+	const game = "cyberpunk-2077"
+	e := newEnv(t)
+	p, err := e.Create(game, "S")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := e.InstallSource(t.Context(), game, p.ID, zipOf(t, "x.zip", map[string]string{"My Mod/r6/input/keys.xml": "k", "My Mod/r6/input/more.xml": "m"}), cfSource(40))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fresh := res.Profile.Entries
+	if len(fresh) != 2 || fresh[0].File == "" {
+		t.Fatalf("install = %+v", fresh)
+	}
+	if changed, err := e.RepairFolderEntries(game, p.ID); err != nil || changed {
+		t.Fatalf("repair of a current install = %v, %v", changed, err)
+	}
+	if _, err := e.update(game, p.ID, func(p *Profile, _ string) error {
+		p.Entries = p.Entries[:1]
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if changed, err := e.RepairFolderEntries(game, p.ID); err != nil || changed {
+		t.Fatalf("repair of a trimmed download = %v, %v", changed, err)
+	}
+	if _, err := e.update(game, p.ID, func(p *Profile, _ string) error {
+		old := "My Mod/" + p.Entries[0].File
+		p.Entries[0].Key, p.Entries[0].File, p.Entries[0].Note = p.Entries[0].Item+fileKeySep+old, old, "kept"
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if changed, err := e.RepairFolderEntries(game, p.ID); err != nil || !changed {
+		t.Fatalf("repair = %v, %v", changed, err)
+	}
+	got, _ := e.Get(game, p.ID)
+	if len(got.Entries) != 2 || got.Entries[0].File != fresh[0].File || got.Entries[1].File != fresh[1].File || got.Entries[0].Note != "kept" {
+		t.Fatalf("entries = %+v, want %s and %s laid out again", got.Entries, fresh[0].File, fresh[1].File)
+	}
+}

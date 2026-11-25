@@ -108,6 +108,7 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 			fresh = append(fresh, trayHoldEntry(key, source, held))
 		}
 		disableFresh(fresh, off, source)
+		carryPlayerState(fresh, old)
 		if len(old) > 0 && len(fresh) > 0 {
 			fresh[0].Replaced = packReplaced(old)
 		}
@@ -284,9 +285,11 @@ func (s *Store) placeRestoredTray(game, id string, p *Profile, restored, current
 }
 
 // RepairFolderEntries brings a folder-loader game's entries that older releases saved up to how an install records
-// them now. Each download an older catalog split into one entry per file, and the current catalog keeps whole since
-// its files only work beside their siblings, is joined back into one entry that takes the first part's place, flags
-// and note and stays enabled while any part was. A player's own archive named with its file ending loses it.
+// them now. A download split one entry per file whose files no longer match what the game's catalog lays out (the
+// catalog now keeps it whole, or its layout driver moved its files) is laid out again, the way an update would, keeping
+// what the player set on its parts and switched off only when every part it replaces was. A split download whose
+// parts all still lay out is left as it is, even with some removed. A player's own archive named with its file ending
+// loses it.
 func (s *Store) RepairFolderEntries(game, id string) (bool, error) {
 	g := installerGame(game)
 	ti := slices.IndexFunc(g.Targets, func(t installer.Target) bool { return t.ID == installer.TargetMods })
@@ -297,7 +300,7 @@ func (s *Store) RepairFolderEntries(game, id string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	keys := keptWholeItems(p.Entries, g.Targets[ti])
+	keys := staleSplitItems(p.Entries, g.Targets[ti])
 	if len(keys) == 0 && !slices.ContainsFunc(p.Entries, namedWithEnding) {
 		return false, nil
 	}
@@ -305,23 +308,24 @@ func (s *Store) RepairFolderEntries(game, id string) (bool, error) {
 		return false, err
 	}
 	defer s.mu.Unlock()
-	whole := map[string]Entry{}
+	relaid := map[string][]Entry{}
 	for _, key := range keys {
-		src := p.Entries[slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Item == key && e.File != "" })].Source
-		mods, _, err := s.packageMods(game, key, src.ModName)
+		parts := splitParts(p.Entries, key)
+		mods, _, err := s.packageMods(game, key, parts[0].Source.ModName)
 		if err != nil {
 			continue
 		}
-		fresh, _, _, err := s.folderEntries(game, id, key, src, mods)
-		if err == nil && len(fresh) == 1 && fresh[0].File == "" {
-			whole[key] = fresh[0]
+		fresh, _, _, err := s.folderEntries(game, id, key, parts[0].Source, mods)
+		if err != nil || len(fresh) == 0 || stillLaidOut(parts, fresh) {
+			continue
 		}
+		relaid[key] = fresh
 	}
-	if len(whole) == 0 && !slices.ContainsFunc(p.Entries, namedWithEnding) {
+	if len(relaid) == 0 && !slices.ContainsFunc(p.Entries, namedWithEnding) {
 		return false, nil
 	}
 	_, err = s.updateLocked(game, id, func(p *Profile, _ string) error {
-		p.Entries = rejoined(p.Entries, whole)
+		p.Entries = relaidEntries(p.Entries, relaid)
 		for i := range p.Entries {
 			if namedWithEnding(p.Entries[i]) {
 				p.Entries[i].Mods = slices.Clone(p.Entries[i].Mods)
@@ -339,49 +343,107 @@ func namedWithEnding(e Entry) bool {
 		e.Mods[0].Name == e.Source.Name && ga.StripExtension(e.Source.Name) != e.Source.Name
 }
 
-// keptWholeItems are the store keys of split downloads holding a file the mods target now keeps whole.
-func keptWholeItems(entries []Entry, t installer.Target) []string {
+// staleSplitItems are the store keys of split downloads that may no longer match their layout: every one under a
+// layout driver, which can move files between releases, and any holding a file the mods target now keeps whole.
+func staleSplitItems(entries []Entry, t installer.Target) []string {
 	var keys []string
 	for _, e := range entries {
 		if e.Item == "" || e.File == "" || e.IsOverlay() || slices.Contains(keys, e.Item) {
 			continue
 		}
 		ext := strings.ToLower(strings.TrimPrefix(path.Ext(e.File), "."))
-		if slices.Contains(t.KeepWhole, ext) || t.ModRoot != "" && strings.EqualFold(path.Base(e.File), t.ModRoot) {
+		if t.Layout != "" || slices.Contains(t.KeepWhole, ext) || t.ModRoot != "" && strings.EqualFold(path.Base(e.File), t.ModRoot) {
 			keys = append(keys, e.Item)
 		}
 	}
 	return keys
 }
 
-// rejoined is entries with the parts of each download in whole replaced by its one entry, at the first part's place.
-func rejoined(entries []Entry, whole map[string]Entry) []Entry {
-	out := make([]Entry, 0, len(entries))
-	parts := map[string][]Entry{}
+// splitParts are the per-file entries of store item key, in profile order.
+func splitParts(entries []Entry, key string) []Entry {
+	var out []Entry
 	for _, e := range entries {
-		if _, ok := whole[e.Item]; ok && e.File != "" && !e.IsOverlay() {
-			parts[e.Item] = append(parts[e.Item], e)
+		if e.Item == key && e.File != "" && !e.IsOverlay() {
+			out = append(out, e)
 		}
 	}
+	return out
+}
+
+// stillLaidOut reports split parts that each name a file the fresh layout still splits out.
+func stillLaidOut(parts, fresh []Entry) bool {
+	return !slices.ContainsFunc(parts, func(p Entry) bool {
+		return !slices.ContainsFunc(fresh, func(f Entry) bool { return f.File != "" && f.File == p.File })
+	})
+}
+
+// relaidEntries is entries with the parts of each download in relaid replaced by its fresh entries, at the first
+// part's place.
+func relaidEntries(entries []Entry, relaid map[string][]Entry) []Entry {
+	out := make([]Entry, 0, len(entries))
+	done := map[string]bool{}
 	for _, e := range entries {
-		w, ok := whole[e.Item]
+		fresh, ok := relaid[e.Item]
 		if !ok || e.File == "" || e.IsOverlay() {
 			out = append(out, e)
 			continue
 		}
-		if parts[e.Item] == nil {
+		if done[e.Item] {
 			continue
 		}
-		joined := e
-		joined.Key, joined.Item, joined.File, joined.Mods, joined.SwitchedOff = w.Key, "", "", w.Mods, nil
-		joined.Disabled = []mod.ID{}
-		if !slices.ContainsFunc(parts[e.Item], Entry.HasPackageEnabled) {
-			for _, m := range w.Mods {
-				joined.Disabled = append(joined.Disabled, m.ID)
+		done[e.Item] = true
+		parts := splitParts(entries, e.Item)
+		fresh = slices.Clone(fresh)
+		carryPlayerState(fresh, parts)
+		for i := range fresh {
+			if !slices.ContainsFunc(partsFor(fresh[i], parts), Entry.HasPackageEnabled) {
+				for _, m := range fresh[i].Mods {
+					fresh[i].Disabled = append(fresh[i].Disabled, m.ID)
+				}
 			}
 		}
-		out = append(out, joined)
-		parts[e.Item] = nil
+		out = append(out, fresh...)
 	}
 	return out
+}
+
+// partsFor are the old entries a fresh one replaces: those laying out its file, else all of them.
+func partsFor(fresh Entry, old []Entry) []Entry {
+	same := slices.DeleteFunc(slices.Clone(old), func(o Entry) bool { return o.File != fresh.File })
+	if len(same) == 0 {
+		return old
+	}
+	return same
+}
+
+// carryPlayerState gives each fresh entry what the player set on the old entries it replaces (partsFor), merged so
+// a flag any of them had is kept and the first text set wins.
+func carryPlayerState(fresh, old []Entry) {
+	for i := range fresh {
+		d := &fresh[i]
+		for _, o := range partsFor(*d, old) {
+			d.Pinned, d.IgnoreUpdates, d.DevOnly = d.Pinned || o.Pinned, d.IgnoreUpdates || o.IgnoreUpdates, d.DevOnly || o.DevOnly
+			d.PinReason, d.Note, d.UpdateChannel = cmp.Or(d.PinReason, o.PinReason), cmp.Or(d.Note, o.Note), cmp.Or(d.UpdateChannel, o.UpdateChannel)
+			d.DisplayName, d.DisplayAuthor = cmp.Or(d.DisplayName, o.DisplayName), cmp.Or(d.DisplayAuthor, o.DisplayAuthor)
+			d.DisplayVersion, d.CategoryOverride = cmp.Or(d.DisplayVersion, o.DisplayVersion), cmp.Or(d.CategoryOverride, o.CategoryOverride)
+			d.REDmod = cmp.Or(d.REDmod, o.REDmod)
+			d.Tags = appendMissing(d.Tags, o.Tags)
+			d.SkipSources = appendMissing(d.SkipSources, o.SkipSources)
+			if d.Fomod == nil {
+				d.Fomod = o.Fomod
+			}
+			if !o.Added.IsZero() && (d.Added.IsZero() || o.Added.Before(d.Added)) {
+				d.Added = o.Added
+			}
+		}
+	}
+}
+
+func appendMissing(to, from []string) []string {
+	for _, v := range from {
+		if !slices.Contains(to, v) {
+			to = append(to, v)
+		}
+	}
+	return to
 }
