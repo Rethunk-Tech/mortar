@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -157,15 +156,15 @@ func (m gatedMeta) Lookup(ctx context.Context, uniqueID string) ([]smapiweb.Ref,
 
 // renameDatasetNamed renames the Nexus entries of a game without the Stardew dataset that were saved under the
 // dataset's name for their mod id, which another game's ids collide with, to their own page's name.
-func (s *Service) renameDatasetNamed(gameID, id, domain string) {
-	if info, _ := components.Game(gameID); domain == "" || info.HasMetadata(components.MetaStardewDataset) {
+func (s *Service) renameDatasetNamed(ctx context.Context, gameID, id, domain string) {
+	if info, _ := components.Game(gameID); domain == "" || s.meta == nil || info.HasMetadata(components.MetaStardewDataset) {
 		return
 	}
 	p, err := s.profiles.Get(gameID, id)
 	if err != nil {
 		return
 	}
-	names := datasetNamed(&meta.Client{CacheDir: filepath.Join(s.home, "cache")}, domain, p.Entries)
+	names := datasetNamed(ctx, s.meta, s.ownPageNames(ctx, gameID, domain, p.Entries), p.Entries)
 	if len(names) == 0 {
 		return
 	}
@@ -174,21 +173,49 @@ func (s *Service) renameDatasetNamed(gameID, id, domain string) {
 	}
 }
 
-// datasetNamed maps each Nexus entry whose name is the Stardew dataset's for its mod id to the name its own page in
-// domain gives, from the caches alone.
-func datasetNamed(cl *meta.Client, domain string, entries []profile.Entry) map[string]string {
+// ownPageNames is the name of each Nexus entry's page in the game's own domain: the batched lookup, else the cache.
+func (s *Service) ownPageNames(ctx context.Context, gameID, domain string, entries []profile.Entry) map[int]string {
+	var ids []int
+	for _, e := range entries {
+		if e.Source.Kind == profile.KindNexus && e.Source.ModID > 0 && e.Source.ModName != "" {
+			ids = append(ids, e.Source.ModID)
+		}
+	}
+	out := map[int]string{}
+	if len(ids) == 0 {
+		return out
+	}
+	if s.NexusPages != nil {
+		// A lookup cut short still returns the pages it got; the cache fills the rest.
+		pages, _ := s.NexusPages(ctx, gameID, ids)
+		for id, page := range pages {
+			out[id] = page.Name
+		}
+	}
+	cl := &meta.Client{CacheDir: filepath.Join(s.home, "cache")}
+	for _, id := range ids {
+		if out[id] != "" {
+			continue
+		}
+		if d, ok := nexussvc.PeekDetails(cl, domain, id); ok {
+			out[id] = d.Page.Name
+		}
+	}
+	return out
+}
+
+// datasetNamed maps each Nexus entry whose name is not its own page's but the Stardew dataset's for the same mod id
+// to its own page's name. The dataset is asked only about those mismatches.
+func datasetNamed(ctx context.Context, dataset Meta, own map[int]string, entries []profile.Entry) map[string]string {
 	out := map[string]string{}
 	for _, e := range entries {
 		src := e.Source
-		if src.Kind != profile.KindNexus || src.ModID <= 0 || src.ModName == "" {
+		name := own[src.ModID]
+		if src.Kind != profile.KindNexus || src.ModID <= 0 || src.ModName == "" || name == "" || name == src.ModName {
 			continue
 		}
-		wrong, ok := diskcache.Peek[smapiweb.Page](cl.Cache(), meta.DatasetPageName(src.ModID))
-		if !ok || wrong.Value.Name != src.ModName {
-			continue
-		}
-		if d, ok := nexussvc.PeekDetails(cl, domain, src.ModID); ok && d.Page.Name != "" && d.Page.Name != src.ModName {
-			out[e.Key] = d.Page.Name
+		if wrong, err := dataset.Page(ctx, src.ModID); err == nil && wrong.Name == src.ModName {
+			out[e.Key] = name
 		}
 	}
 	return out

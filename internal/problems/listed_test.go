@@ -9,14 +9,12 @@ import (
 
 	"github.com/Rethunk-Tech/go-nexusmods"
 
-	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/go-smapiweb"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -389,16 +387,8 @@ func TestListedRequirementOutsideStardewIgnoresDatasetPage(t *testing.T) {
 }
 
 func TestDatasetNamedEntriesTakeTheirOwnPagesName(t *testing.T) {
-	cl := &meta.Client{CacheDir: t.TempDir()}
-	for _, err := range []error{
-		diskcache.Put(cl.Cache(), meta.DatasetPageName(107), smapiweb.Page{ID: 107, Name: "Matching Pierre Sprite"}),
-		diskcache.Put(cl.Cache(), nexussvc.PageName("cyberpunk2077", 107), nexussvc.Details{Page: nexusmods.Page{Name: "Cyber Engine Tweaks"}}),
-		diskcache.Put(cl.Cache(), nexussvc.PageName("cyberpunk2077", 2380), nexussvc.Details{Page: nexusmods.Page{Name: "RED4ext"}}),
-	} {
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
+	dataset := listedFakeMeta{pages: map[int]smapiweb.Page{107: {ID: 107, Name: "Matching Pierre Sprite"}, 2380: {ID: 2380, Name: "Toothless"}}}
+	own := map[int]string{107: "Cyber Engine Tweaks", 2380: "RED4ext"}
 	nexus := func(key string, modID int, name string) profile.Entry {
 		return profile.Entry{Key: key, Source: profile.Source{Kind: profile.KindNexus, ModID: modID, ModName: name}}
 	}
@@ -406,9 +396,10 @@ func TestDatasetNamedEntriesTakeTheirOwnPagesName(t *testing.T) {
 		nexus("cet", 107, "Matching Pierre Sprite"),
 		nexus("red4ext", 2380, "RED4ext"),
 		nexus("renamed", 107, "CET"),
+		nexus("unknown", 999, "Something"),
 	}
 
-	got := datasetNamed(cl, "cyberpunk2077", entries)
+	got := datasetNamed(t.Context(), dataset, own, entries)
 
 	if len(got) != 1 || got["cet"] != "Cyber Engine Tweaks" {
 		t.Fatalf("datasetNamed = %v, want only cet renamed to Cyber Engine Tweaks", got)
