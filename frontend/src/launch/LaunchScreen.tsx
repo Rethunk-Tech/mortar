@@ -30,6 +30,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { Buttons } from './LaunchButtons.tsx'
 import { LaunchStages, type StageMark } from './LaunchStages.tsx'
 import { launchLogLines } from './logLines.ts'
+import { nodeArt } from './nodeArt.ts'
 import { type Phase, useLaunchView } from './progress.ts'
 import { launchStages, type StageId } from './stages.ts'
 import { useLaunch } from './store.ts'
@@ -69,27 +70,42 @@ const launcherNames: Record<string, string> = {
 }
 
 // Art is the first of srcs that loads, else fallback.
-function Art({ srcs, fallback }: { srcs: string[]; fallback: ReactNode }) {
+function Art({
+  srcs,
+  fallback,
+  markOverLater,
+}: {
+  srcs: string[]
+  fallback: ReactNode
+  markOverLater?: boolean
+}) {
   const [failed, setFailed] = useState(0)
-  const src = srcs.filter(Boolean)[failed]
+  const { src, mark } = nodeArt(srcs, failed, markOverLater === true)
   if (src === undefined) {
     return <Box sx={{ display: 'grid', placeItems: 'center' }}>{fallback}</Box>
   }
   return (
-    <Box
-      component="img"
-      key={src}
-      src={src}
-      alt=""
-      onError={() => setFailed((n) => n + 1)}
-      sx={{
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover',
-        borderRadius: '10px',
-        imageRendering: 'pixelated',
-      }}
-    />
+    <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
+      <Box
+        component="img"
+        key={src}
+        src={src}
+        alt=""
+        onError={() => setFailed((n) => n + 1)}
+        sx={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          borderRadius: '10px',
+          imageRendering: 'pixelated',
+        }}
+      />
+      {mark ? (
+        <Box sx={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
+          {fallback}
+        </Box>
+      ) : null}
+    </Box>
   )
 }
 
@@ -196,6 +212,7 @@ function marksFor(
       art: (
         <Art
           srcs={[info?.iconUrl ?? '', gameArt(info, ART)]}
+          markOverLater={true}
           fallback={
             <Typography sx={{ fontSize: 28, fontWeight: 700 }}>
               {(info?.name ?? '?').slice(0, 1)}
