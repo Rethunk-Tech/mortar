@@ -6,7 +6,13 @@ import type { Result } from '../bindings/github.com/Rethunk-Tech/mortar/internal
 import { openSettings } from './app.ts'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
-import { openGame, otherGameIds, returnToMainGame } from './renderProfile.ts'
+import {
+  biggestProfileIds,
+  openGame,
+  otherGameIds,
+  renderDataDir,
+  returnToMainGame,
+} from './renderProfile.ts'
 
 const SEARCHABLE_SOURCES = 2_448_717_962
 const PROBLEMS = 2_301_867_050
@@ -64,6 +70,34 @@ export function patchCalls<T>(ids: number[], edit: (answer: T) => T) {
     const real = await route.fetch()
     await route.fulfill({ response: real, json: edit((await real.json()) as T) })
   }
+}
+
+const GAME_LIST = 2_813_804_068
+
+/**
+ * Names and draws the game open now (and the run's main game, which launch events name) as `target` in the game list,
+ * for a case that stubs that game's screens. Returns the route handler to unroute afterwards.
+ */
+export async function routeGameAs(p: Page, target: string, extra: Record<string, unknown> = {}) {
+  // A reload from an earlier case's teardown may still be loading, so the title bar is read after a fresh one.
+  await p.reload()
+  const switcher = p.getByRole('button', { name: /^Switch game: / })
+  await switcher.waitFor({ timeout: 30_000 })
+  const label = await switcher.getAttribute('aria-label')
+  const openName = label?.replace(/^Switch game: /, '')
+  const main = biggestProfileIds(renderDataDir())?.game
+  const handler = patchCalls<Record<string, unknown>[] | null>([GAME_LIST], (games) => {
+    const art = games?.find((g) => g.id === target)
+    if (!(games && art)) {
+      return games
+    }
+    const { name, artUrl, iconUrl } = art
+    return games.map((g) =>
+      g.id === main || g.name === openName ? { ...g, name, artUrl, iconUrl, ...extra } : g,
+    )
+  })
+  await p.route('**/wails/runtime', handler)
+  return handler
 }
 
 /** Runs `edit` on the page's calls for as long as the case's screen is up. */

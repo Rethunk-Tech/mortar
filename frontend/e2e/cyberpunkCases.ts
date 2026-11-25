@@ -1,23 +1,24 @@
 import type { Page } from '@playwright/test'
 import type { Case } from './render-budget.ts'
 import type { Helpers } from './renderCases.ts'
-import { patchCalls } from './renderCoverage.ts'
-import { stubCalls } from './renderStubbed.ts'
+import { routeGameAs } from './renderCoverage.ts'
+import { dropFakeQueue } from './renderMeter.ts'
+import { biggestProfileIds, renderDataDir } from './renderProfile.ts'
+import { type Stub, stubCalls } from './renderStubbed.ts'
 
 // Binding method ids of the calls the Cyberpunk 2077 screens make (frontend/bindings).
-const GAME_LIST = 2_813_804_068
 const TOOLS_LIST = 903_228_865
 const REDMOD_CHOICE = 749_032_213
 
 const GB = 1024 ** 3
 
-const failedDownload = {
+const failedDownload = (profileId: string) => ({
   items: [
     {
       id: 'render-active',
       kind: 'install',
       game: 'stardew',
-      profileId: '',
+      profileId,
       name: 'Render Active Pack',
       fileName: 'active.zip',
       state: 'downloading',
@@ -30,7 +31,7 @@ const failedDownload = {
       id: 'render-no-layout',
       kind: 'install',
       game: 'stardew',
-      profileId: '',
+      profileId,
       name: 'Render Odd Mod',
       fileName: 'odd.zip',
       state: 'failed',
@@ -50,7 +51,7 @@ const failedDownload = {
   ],
   paused: false,
   limitedUntil: 0,
-}
+})
 
 const tool = (id: string, name: string) => ({
   id: `game:${id}`,
@@ -73,14 +74,17 @@ export function cyberpunkCases(h: Helpers): Case[] {
   })
   // The open game answers as Cyberpunk 2077's layout would, so its mod menu offers the conversion, which the copied data's
   // game has no archive mod to offer it for.
-  const cyberpunk = patchCalls<Record<string, unknown>[]>([GAME_LIST], (games) =>
-    games.map((g) => ({ ...g, layout: 'cyberpunk' })),
-  )
   const convertStub = stubCalls({ [REDMOD_CHOICE]: 'convert' })
-  const stubs = [toolsStub, cyberpunk, convertStub]
+  let cyberpunk: Stub | undefined
+  const asCyberpunk = async (p: Page) => {
+    cyberpunk = await routeGameAs(p, 'cyberpunk-2077', { layout: 'cyberpunk' })
+  }
+  const profile = () => biggestProfileIds(renderDataDir())?.profile ?? ''
   const unroute = async (p: Page) => {
-    for (const s of stubs) {
-      await p.unroute('**/wails/runtime', s)
+    for (const s of [toolsStub, cyberpunk, convertStub]) {
+      if (s) {
+        await p.unroute('**/wails/runtime', s)
+      }
     }
   }
   return [
@@ -93,7 +97,7 @@ export function cyberpunkCases(h: Helpers): Case[] {
             _wails: { dispatchWailsEvent: (e: { name: string; data: unknown }) => void }
           }
           w._wails.dispatchWailsEvent({ name: 'queue:changed', data: state })
-        }, failedDownload)
+        }, failedDownload(profile()))
         await p.getByRole('button', { name: /^Downloads:/ }).click()
         // The failed row says why it offers Install anyway.
         await p
@@ -103,15 +107,19 @@ export function cyberpunkCases(h: Helpers): Case[] {
         await p.getByRole('button', { name: 'Install anyway' }).click()
         await p.getByRole('dialog').last().getByText('weird/thing.dat').waitFor()
       },
+      // The fake queue's failure toast and rows must not outlive the case.
       teardown: async (p) => {
         await p.getByRole('dialog').last().getByRole('button', { name: 'Cancel' }).click()
         await p.keyboard.press('Escape')
+        await dropFakeQueue(p, 'dialog-unknown-layout teardown')
       },
     },
     {
       name: 'tools-menu-game-tools',
       setup: async (p) => {
         await p.route('**/wails/runtime', toolsStub)
+        await asCyberpunk(p)
+        await p.reload()
         await tab(p, 'Home')
       },
       run: async (p) => {
@@ -120,13 +128,14 @@ export function cyberpunkCases(h: Helpers): Case[] {
       },
       teardown: async (p) => {
         await p.keyboard.press('Escape')
-        await p.unroute('**/wails/runtime', toolsStub)
+        await unroute(p)
+        await p.reload()
       },
     },
     {
       name: 'mods-menu-convert-redmod',
       setup: async (p) => {
-        await p.route('**/wails/runtime', cyberpunk)
+        await asCyberpunk(p)
         await p.route('**/wails/runtime', convertStub)
         await p.reload()
         await view(p, 'List view')

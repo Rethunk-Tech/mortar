@@ -68,6 +68,28 @@ export async function quietToasts(page: Page, name: string) {
   }
 }
 
+/** Empties the download queue a case faked and dismisses the toasts it raised, so later pictures do not show them. */
+export async function dropFakeQueue(page: Page, name: string) {
+  await page.evaluate(() => {
+    const w = globalThis as unknown as {
+      _wails: { dispatchWailsEvent: (e: { name: string; data: unknown }) => void }
+    }
+    w._wails.dispatchWailsEvent({
+      name: 'queue:changed',
+      data: { items: [], paused: false, limitedUntil: 0 },
+    })
+  })
+  // Toasts raised while the Downloads sheet is open show only once it closes.
+  await page.keyboard.press('Escape')
+  await page
+    .getByRole('region', { name: 'Notifications' })
+    .getByRole('button', { name: 'Dismiss' })
+    .first()
+    .waitFor({ timeout: 1500 })
+    .catch(() => undefined)
+  await quietToasts(page, name)
+}
+
 /** A piece of text on a render's picture, in CSS pixels of the screenshot. A label is an aria-label, title, placeholder or
  * alt that the picture does not show, such as an icon button's tooltip; its box is the element that carries it. */
 interface ShotText {

@@ -1,5 +1,6 @@
-import type { Page } from '@playwright/test'
+import type { Page, Route } from '@playwright/test'
 import type { Case } from './render-budget.ts'
+import { routeGameAs } from './renderCoverage.ts'
 import { biggestProfileIds, renderDataDir } from './renderProfile.ts'
 
 interface Wails {
@@ -68,6 +69,7 @@ export function launchScreenCases(): Case[] {
     }
     await p.getByRole('dialog', { name: /Launching|did not start/u }).waitFor({ state: 'detached' })
   }
+  let cyberpunk: ((route: Route) => Promise<void>) | undefined
   // The marks' arcs and the elapsed clock tick while a launch waits, so its idle watch is never quiet.
   const ticking = { idleUpdates: 5500, idleCommits: 25 }
   return [
@@ -106,6 +108,11 @@ export function launchScreenCases(): Case[] {
     {
       name: 'launch-screen-deploying',
       budget: ticking,
+      // Only a Cyberpunk game deploys REDmods, so the open game is named and drawn as one.
+      setup: async (p) => {
+        cyberpunk = await routeGameAs(p, 'cyberpunk-2077', { layout: 'cyberpunk' })
+        await p.reload()
+      },
       run: async (p) => {
         const { game, profile } = ids()
         await emit(p, [
@@ -114,7 +121,13 @@ export function launchScreenCases(): Case[] {
         ])
         await p.getByText('Compiling REDmods, which can take a few minutes').waitFor()
       },
-      teardown: end,
+      teardown: async (p) => {
+        await end(p)
+        if (cyberpunk) {
+          await p.unroute('**/wails/runtime', cyberpunk)
+        }
+        await p.reload()
+      },
     },
     {
       name: 'launch-screen-failed',

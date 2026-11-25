@@ -1,6 +1,6 @@
 import type { Page, Route } from '@playwright/test'
 import type { Case } from './render-budget.ts'
-import { patchCalls } from './renderCoverage.ts'
+import { patchCalls, routeGameAs } from './renderCoverage.ts'
 import type { dialogKit } from './renderDialogs.ts'
 
 // Backend answers the render data may not produce on its own (a Steam install, a project out of step, a GitHub origin).
@@ -141,10 +141,13 @@ export const loadOrderStub = (withSkipped = false) => {
 
 function loadOrderCase(tab: (page: Page, name: string) => Promise<void>): Case {
   const stub = loadOrderStub(true)
+  let bg3: Stub | undefined
   return {
     name: 'load-order-bg3',
     setup: async (p: Page) => {
       await p.route('**/wails/runtime', stub)
+      bg3 = await routeGameAs(p, 'baldurs-gate-3')
+      await p.reload()
       await tab(p, 'Home')
     },
     run: async (p: Page) => {
@@ -156,7 +159,13 @@ function loadOrderCase(tab: (page: Page, name: string) => Promise<void>): Case {
         `load-order-bg3 skipped row renders: ${JSON.stringify(await worded.first().textContent())}`,
       )
     },
-    teardown: (p: Page) => p.unroute('**/wails/runtime', stub),
+    teardown: async (p: Page) => {
+      await p.unroute('**/wails/runtime', stub)
+      if (bg3) {
+        await p.unroute('**/wails/runtime', bg3)
+      }
+      await p.reload()
+    },
   }
 }
 
@@ -234,6 +243,8 @@ function updateReadyCase(): Case {
       await p.getByRole('button', { name: 'Mortar menu' }).click()
       await p.getByRole('menuitem', { name: /^Check mods and Mortar for updates/ }).click()
       await p.getByRole('button', { name: 'Restart now' }).first().waitFor()
+      // The click left the pointer over a tab, which lights it.
+      await p.mouse.move(0, 0)
       const overflow = await p.evaluate(() => {
         const page = document.querySelector('main')?.lastElementChild
         return page ? page.getBoundingClientRect().bottom - window.innerHeight : 0
