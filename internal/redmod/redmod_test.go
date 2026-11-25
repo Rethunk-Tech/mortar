@@ -188,3 +188,27 @@ func TestDeployedIsWhetherAnEarlierDeployLeftREDmods(t *testing.T) {
 		t.Fatalf("the tool's mods folder was not made: %v", err)
 	}
 }
+
+func TestAPlayersOwnArchiveModListIsSetAsideAndGivenBack(t *testing.T) {
+	game := t.TempDir()
+	path := filepath.Join(game, filepath.FromSlash(ArchiveModListPath))
+	testfs.WriteAt(t, path, []byte("mine.archive"))
+	if err := WriteArchiveModList(game, []string{"a.archive"}); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := safefs.ReadFile(path); string(b) != "mine.archive" {
+		t.Fatalf("a list Mortar does not need replaced the player's: %q", b)
+	}
+	if err := WriteArchiveModList(game, []string{"b.archive", "a.archive"}); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := safefs.ReadFile(path); string(b) != "b.archive\r\na.archive" {
+		t.Fatalf("modlist = %q", b)
+	}
+	if err := WriteArchiveModList(game, []string{"a.archive", "b.archive"}); err != nil {
+		t.Fatal(err)
+	}
+	if b, err := safefs.ReadFile(path); err != nil || string(b) != "mine.archive" {
+		t.Fatalf("the player's modlist did not come back: %q, %v", b, err)
+	}
+}
