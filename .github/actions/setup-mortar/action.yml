@@ -80,6 +80,8 @@ runs:
       with:
         go-version-file: go.mod
         cache-key-suffix: ${{ github.ref == 'refs/heads/main' && steps.day.outputs.date || '' }}
+        # The gate scans with govulncheck itself (lint-tools); setup-go's own scan needs GTK headers a job may lack.
+        run-govulncheck: "false"
 
     # Without the app's compile there is no build cache worth restoring (1.4 GB), so only the module cache is kept.
     - name: Setup Go (no build cache)
@@ -88,6 +90,7 @@ runs:
       with:
         go-version-file: go.mod
         cache-build: "false"
+        run-govulncheck: "false"
 
     - name: Go cache paths
       shell: bash
