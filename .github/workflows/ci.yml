@@ -50,7 +50,7 @@ jobs:
       # setup-mortar already restored the Go caches; a second restore here fails on files that exist.
       - name: Setup Go
         if: ${{ !cancelled() }}
-        uses: Rethunk-Tech/gh-actions/setup-go@97aa05d5253c1a2b871079b1b271e20304e25270 # v1.33
+        uses: Rethunk-Tech/gh-actions/setup-go@ed6afe0e127f69c7da2c8178521fa0d049176a00 # v1.36
         with:
           go-version-file: go.mod
           cache: "false"
@@ -131,7 +131,7 @@ jobs:
 
       - name: Setup Go
         if: steps.changes.outputs.code == 'true'
-        uses: Rethunk-Tech/gh-actions/setup-go@97aa05d5253c1a2b871079b1b271e20304e25270 # v1.33
+        uses: Rethunk-Tech/gh-actions/setup-go@ed6afe0e127f69c7da2c8178521fa0d049176a00 # v1.36
         with:
           cache-build: false
           cache-key-suffix: ${{ github.ref == 'refs/heads/main' && steps.day.outputs.date || '' }}
