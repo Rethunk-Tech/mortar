@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	ga "github.com/Rethunk-Tech/go-archive"
 	gh "github.com/Rethunk-Tech/go-github"
 	"github.com/Rethunk-Tech/go-safefs"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
@@ -60,6 +62,9 @@ func (s *Store) InstallSaved(ctx context.Context, game, id, path string, source 
 	}
 	key, err := s.items.AddArchive(ctx, game, path)
 	if err != nil {
+		return InstallResult{}, installError(err)
+	}
+	if err := s.items.SetName(game, key, cmp.Or(source.ModName, ga.StripExtension(filepath.Base(path)))); err != nil {
 		return InstallResult{}, installError(err)
 	}
 	if err := s.namePackage(game, key, filepath.Base(path), ""); err != nil {
@@ -160,6 +165,9 @@ func (s *Store) InstallSource(ctx context.Context, game, id, path string, source
 		return InstallResult{}, installError(fmt.Errorf("cannot install a %q archive", source.Kind))
 	}
 	if err := s.items.AddArchiveKey(ctx, game, key, path); err != nil {
+		return InstallResult{}, installError(err)
+	}
+	if err := s.items.SetName(game, key, cmp.Or(source.ModName, ga.StripExtension(source.Name))); err != nil {
 		return InstallResult{}, installError(err)
 	}
 	if source.Kind != KindNexus {

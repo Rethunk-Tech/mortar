@@ -131,3 +131,32 @@ func TestAnArchiveModConvertsToAREDmodAndBack(t *testing.T) {
 		t.Fatalf("folders after revert = %v", folders)
 	}
 }
+
+// Loose redscript files are foldered by the mod's own name, so two mods with the same file names do not collide.
+func TestCyberpunkLooseScriptsAreFolderedByTheirModsName(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("cyberpunk-2077", "S")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var dsts []string
+	for i, name := range []string{"Mod A", "Mod B"} {
+		src := cfSource(50 + i)
+		src.ModName = name
+		res, err := e.InstallSource(t.Context(), "cyberpunk-2077", p.ID, zipOf(t, "m.zip", map[string]string{"utils.reds": name, "other.reds": name}), src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, l, _, err := e.layoutOf("cyberpunk-2077", p.ID, res.Profile.Entries[len(res.Profile.Entries)-1].Key, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, f := range l.Files {
+			dsts = append(dsts, f.Rel)
+		}
+	}
+	if !slices.Contains(dsts, "r6/scripts/Mod A/utils.reds") || !slices.Contains(dsts, "r6/scripts/Mod B/utils.reds") {
+		t.Fatalf("laid out to %q", dsts)
+	}
+}

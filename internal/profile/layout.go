@@ -39,6 +39,7 @@ func (s *Store) pick(game, key string) (installer.Archive, installer.Game, insta
 	}
 	arch := installer.Open(root, key).PackageRoot()
 	arch.Source, arch.Package, _, _ = s.items.Meta(game, key)
+	arch.Name = s.items.Name(game, key)
 	g := installerGame(game)
 	inst, _ := installer.Pick(arch, g)
 	if _, statErr := os.Stat(filepath.Join(arch.Dir, "manifest.json")); inst.ID() == driverThunderstore && statErr == nil {

@@ -706,8 +706,11 @@ type record struct {
 	Package string `json:"package,omitempty"`
 	Version string `json:"version,omitempty"`
 	// Asset is the release asset name of a GitHub item, which its key hashes.
-	Asset string    `json:"asset,omitempty"`
-	Used  time.Time `json:"used"`
+	Asset string `json:"asset,omitempty"`
+	// Name is the mod's name when the item was added (its page's, else its download's file name without the
+	// ending), for a layout that names the mod's folder; it never changes, so the layout stays where it was deployed.
+	Name string    `json:"name,omitempty"`
+	Used time.Time `json:"used"`
 	// FromBackup marks an item a profile backup or a LAN peer supplied: the hash that vouched for it came from the same
 	// sender, so nothing else may rely on it, and the next verified add under the key replaces it.
 	FromBackup bool `json:"fromBackup,omitempty"`
@@ -882,6 +885,40 @@ func (s *Store) Describe(game, key, source, pkg, version, asset string) error {
 	r.Source, r.Package, r.Version, r.Asset = source, pkg, version, asset
 	idx[game][key] = r
 	return s.saveIndex(idx)
+}
+
+// SetName records name as the item's mod name unless it already has one.
+func (s *Store) SetName(game, key, name string) error {
+	if err := checkKey(game, key); err != nil || name == "" {
+		return err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	idx, err := s.loadIndex()
+	if err != nil {
+		return err
+	}
+	r, ok := idx[game][key]
+	if !ok {
+		return usererr.Wrap(usererr.NotFound, &Error{Game: game, Key: key, Err: ErrNotFound})
+	}
+	if r.Name != "" {
+		return nil
+	}
+	r.Name = name
+	idx[game][key] = r
+	return s.saveIndex(idx)
+}
+
+// Name is the mod name recorded for the item (SetName), or "".
+func (s *Store) Name(game, key string) string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	idx, err := s.viewIndex()
+	if err != nil {
+		return ""
+	}
+	return idx[game][key].Name
 }
 
 // Entry is a key with the folder it names and when it was last used.
