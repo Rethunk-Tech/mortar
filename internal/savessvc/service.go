@@ -298,6 +298,7 @@ func (s *Service) describe(ctx context.Context, gameID string, ids map[mod.ID]bo
 	defer cancel()
 	t, _ := game.NexusTitle(gameID)
 	domain := t.Domain
+	dataset := problems.ForGame(gameID, s.meta)
 	var mu sync.Mutex
 	out := map[mod.ID]described{}
 	var wg sync.WaitGroup
@@ -313,7 +314,7 @@ func (s *Service) describe(ctx context.Context, gameID string, ids map[mod.ID]bo
 				mu.Unlock()
 				return
 			}
-			d := s.describeNexus(ctx, domain, id)
+			d := s.describeNexus(ctx, dataset, domain, id)
 			mu.Lock()
 			out[id] = d
 			mu.Unlock()
@@ -324,13 +325,13 @@ func (s *Service) describe(ctx context.Context, gameID string, ids map[mod.ID]bo
 }
 
 // describeNexus names a mod from its Nexus page, falling back to the id when the page cannot be read.
-func (s *Service) describeNexus(ctx context.Context, domain string, id mod.ID) described {
-	where, _ := problems.Locate(ctx, s.meta, domain, id, "", nil)
+func (s *Service) describeNexus(ctx context.Context, dataset problems.Meta, domain string, id mod.ID) described {
+	where, _ := problems.Locate(ctx, dataset, domain, id, "", nil)
 	d := described{name: id.Local(), where: where}
 	if where == nil || where.Site != "Nexus" {
 		return d
 	}
-	page, err := s.meta.Page(ctx, where.PageID)
+	page, err := dataset.Page(ctx, where.PageID)
 	if err != nil {
 		return d
 	}
