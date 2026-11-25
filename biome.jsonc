@@ -399,7 +399,8 @@
         "web/src/lib/**",
         "web/src/pages/**",
         "web/src/content.config.ts",
-        "build/linux/flathub/app-packages.ts"
+        "build/linux/flathub/app-packages.ts",
+        "build/linux/flathub/yarn-lock.ts"
       ],
       "linter": { "rules": { "correctness": { "noNodejsModules": "off" } } }
     }

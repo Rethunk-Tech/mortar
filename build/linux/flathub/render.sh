@@ -69,7 +69,7 @@ gomod="$work/gomod"
 ) | jq -s . >"$out/go-sources.json"
 
 # flatpak-node-generator reads npm, yarn and pnpm lockfiles, not bun's, so bun writes the same resolution as a yarn v1
-# lockfile. Yarn has no lock entry for a workspace, and the build runs no install scripts, so only the package
+# lockfile (yarn-lock.ts pins the overridden packages' patterns). Yarn has no lock entry for a workspace, and the build runs no install scripts, so only the package
 # tarballs are kept (the generator also adds node headers for install scripts).
 mkdir -p "$work/node/frontend"
 cp "$root/package.json" "$root/bun.lock" "$work/node/"
@@ -77,5 +77,6 @@ cp "$root/frontend/package.json" "$work/node/frontend/"
 # The trim drops packages from the lock, so bun rewrites it rather than installing it frozen.
 (cd "$work/node" && bun "$here/app-packages.ts" && bun install --ignore-scripts --yarn >/dev/null)
 awk 'BEGIN { RS = ""; ORS = "\n\n" } !/resolved "workspace:/' "$work/node/yarn.lock" >"$out/yarn.lock"
+(cd "$work/node" && bun "$here/yarn-lock.ts" "$out/yarn.lock")
 uvx --from "$node_generator" flatpak-node-generator yarn "$out/yarn.lock" -o "$work/node-sources.json" >/dev/null
 jq '[.[] | select(.type == "file")]' "$work/node-sources.json" >"$out/node-sources.json"
