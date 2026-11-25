@@ -2,7 +2,6 @@ package problems
 
 import (
 	"fmt"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -18,11 +17,11 @@ var authorStatusWord = regexp.MustCompile(`(?i)\b(obsolete|deprecated|depreciate
 // \b treats '-' as a break, so "Non-Obsolete" would hit without this; skip a marker the same clause just negated.
 var negationBefore = regexp.MustCompile(`(?i)(?:\b(?:not|never|isn't|isn’t|no\s+longer)\s+|non-)$`)
 
-func authorMarkedMods(home, domain string, enabled []framework.Mod) []Broken {
+func authorMarkedMods(cache *diskcache.Cache, domain string, enabled []framework.Mod) []Broken {
 	var out []Broken
 	for _, im := range enabled {
 		if pageID, fileID, ok := nexusFile(im.Key); ok {
-			details, ok := readCachedNexusDetails(home, domain, pageID)
+			details, ok := readCachedNexusDetails(cache, domain, pageID)
 			if !ok {
 				continue
 			}
@@ -46,11 +45,11 @@ func authorMarkedMods(home, domain string, enabled []framework.Mod) []Broken {
 }
 
 // readCachedNexusDetails reads the details Nexus pages left in the cache, never fetching.
-func readCachedNexusDetails(home, domain string, pageID int) (nexussvc.Details, bool) {
-	if home == "" {
+func readCachedNexusDetails(cache *diskcache.Cache, domain string, pageID int) (nexussvc.Details, bool) {
+	if cache == nil {
 		return nexussvc.Details{}, false
 	}
-	e, ok := diskcache.Peek[nexussvc.Details](&diskcache.Cache{Dir: filepath.Join(home, "cache")}, nexussvc.DetailsName(domain, pageID))
+	e, ok := diskcache.Peek[nexussvc.Details](cache, nexussvc.DetailsName(domain, pageID))
 	return e.Value, ok
 }
 

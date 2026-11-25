@@ -3,7 +3,6 @@ package problems
 import (
 	"context"
 	"log/slog"
-	"path/filepath"
 	"strings"
 
 	"github.com/Rethunk-Tech/go-smapiweb"
@@ -193,12 +192,11 @@ func (s *Service) ownPageNames(ctx context.Context, gameID, domain string, entri
 			out[id] = page.Name
 		}
 	}
-	cl := &meta.Client{CacheDir: filepath.Join(s.home, "cache")}
 	for _, id := range ids {
-		if out[id] != "" {
+		if out[id] != "" || s.nexusCache == nil {
 			continue
 		}
-		if d, ok := nexussvc.PeekDetails(cl, domain, id); ok {
+		if d, ok := nexussvc.PeekDetailsIn(s.nexusCache, domain, id); ok {
 			out[id] = d.Page.Name
 		}
 	}

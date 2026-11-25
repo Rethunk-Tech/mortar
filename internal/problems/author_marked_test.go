@@ -13,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func TestAuthorMarkedMods(t *testing.T) {
@@ -42,7 +43,7 @@ func TestAuthorMarkedMods(t *testing.T) {
 		{Key: "local-replaces", Enabled: true, Name: "Replacer", UniqueID: "replacer", Description: "Replaces the obsolete vanilla menu"},
 		{Key: "local-spelling", Enabled: true, Name: "Spelling", UniqueID: "spelling", Description: "This mod was depreciated by its author"},
 	}
-	got := authorMarkedMods(home, "stardewvalley", mods)
+	got := authorMarkedMods(&diskcache.Cache{Dir: filepath.Join(home, "cache")}, "stardewvalley", mods)
 	if len(got) != 4 {
 		t.Fatalf("got %d marked mods: %+v", len(got), got)
 	}
@@ -98,8 +99,26 @@ func TestAuthorMarkedManifestDescription(t *testing.T) {
 	for name, text := range fields {
 		value.FieldByName(name).SetString(text)
 	}
-	got := authorMarkedMods(t.TempDir(), "stardewvalley", []framework.Mod{im})
+	got := authorMarkedMods(&diskcache.Cache{Dir: t.TempDir()}, "stardewvalley", []framework.Mod{im})
 	if len(got) != 1 || got[0].Status != "deprecated" {
 		t.Fatalf("got %+v", got)
+	}
+}
+
+// The data folder, where Nexus details are cached, is not the home folder the service is given.
+func TestServiceReadsNexusDetailsFromTheDataFolderCache(t *testing.T) {
+	data := &meta.Client{CacheDir: t.TempDir()}
+	if _, err := diskcache.Cached(data.Cache(), nexussvc.DetailsName("cyberpunk2077", 107), time.Hour, func() (nexussvc.Details, error) {
+		return nexussvc.Details{Page: nexusmods.Page{Name: "Cyber Engine Tweaks", Summary: "Deprecated, use the new one"}}, nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	s := NewService(t.TempDir(), nil, nil, data)
+	entries := []profile.Entry{{Key: "cet", Source: profile.Source{Kind: profile.KindNexus, ModID: 107, ModName: "Matching Pierre Sprite"}}}
+	if got := s.ownPageNames(t.Context(), "cyberpunk-2077", "cyberpunk2077", entries); got[107] != "Cyber Engine Tweaks" {
+		t.Fatalf("own page names = %v", got)
+	}
+	if got := authorMarkedMods(s.nexusCache, "cyberpunk2077", []framework.Mod{{Key: "nexus-107-1", Enabled: true, Name: "CET"}}); len(got) != 1 {
+		t.Fatalf("author marked = %+v", got)
 	}
 }

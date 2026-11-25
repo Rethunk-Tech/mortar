@@ -18,6 +18,7 @@ import (
 
 	cp "github.com/Rethunk-Tech/go-contentpatcher"
 	"github.com/Rethunk-Tech/go-dotnet"
+	"github.com/Rethunk-Tech/go-safefs/diskcache"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -40,7 +41,9 @@ type Service struct {
 	settings *settings.Store
 	profiles *profile.Store
 	meta     Meta
-	Runs     RunReader
+	// nexusCache is where Nexus page details are cached (the data folder's, not the home folder's).
+	nexusCache *diskcache.Cache
+	Runs       RunReader
 	// Damage lists the game's store items whose files failed verification; nil means none.
 	Damage func(game string) map[string]store.Damage
 	// NexusFiles, when set, confirms flagged updates against Nexus's live file lists in one call.
@@ -142,7 +145,11 @@ func (c cached) fresh(fp string, now time.Time) bool {
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store, m *meta.Client) *Service {
-	return &Service{home: home, settings: s, profiles: profiles, meta: m, drift: map[string]driftScan{}, cache: map[string]cached{}, updates: map[string]cachedUpdates{}, checks: map[string]*problemCall{}, assets: map[string]cachedIndex{}, orphans: map[string]map[string]bool{}, long: map[string]*longPathWalk{}}
+	var nexusCache *diskcache.Cache
+	if m != nil {
+		nexusCache = m.Cache()
+	}
+	return &Service{home: home, settings: s, profiles: profiles, meta: m, nexusCache: nexusCache, drift: map[string]driftScan{}, cache: map[string]cached{}, updates: map[string]cachedUpdates{}, checks: map[string]*problemCall{}, assets: map[string]cachedIndex{}, orphans: map[string]map[string]bool{}, long: map[string]*longPathWalk{}}
 }
 
 func platform() string {
@@ -440,7 +447,7 @@ func (s *Service) runCheck(ctx context.Context, j checkJob) Result {
 	r := Check(ctx, s.metaFor(gameID), env, mods, s.NexusPages.Requirements(gameID))
 	owners := sync.OnceValue(func() map[string]framework.Mod { return pluginOwners(mods) })
 	enabledMods := slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool { return !x.Enabled })
-	r.Broken = append(r.Broken, authorMarkedMods(s.home, env.Nexus.Domain, enabledMods)...)
+	r.Broken = append(r.Broken, authorMarkedMods(s.nexusCache, env.Nexus.Domain, enabledMods)...)
 	flagged, flagsFailed := s.sourceFlagged(ctx, gameID, env.Nexus.Domain, enabledMods)
 	renameUnsure := s.renameDatasetNamed(ctx, gameID, id, env.Nexus.Domain)
 	r.Broken = append(r.Broken, flagged...)
