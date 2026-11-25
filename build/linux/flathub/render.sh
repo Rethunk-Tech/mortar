@@ -18,6 +18,7 @@ root="$(cd "$here/../../.." && pwd)"
 version="$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' "$root/build/config.yml")"
 node_generator="git+https://github.com/flatpak/flatpak-builder-tools@74697c75b630d7330e77250fc13cb5ea688d9479#subdirectory=node"
 mkdir -p "$out"
+out="$(cd "$out" && pwd)"
 work="$(mktemp -d "${TMPDIR:-/var/tmp}/mortar-flathub.XXXXXX")"
 cleanup() {
   case "$work" in
