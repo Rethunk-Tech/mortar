@@ -126,6 +126,12 @@ func (s *Service) metaFor(gameID string) gatedMeta {
 	return gatedMeta{Meta: s.meta, info: info}
 }
 
+// ForGame is m answering only the lookups gameID's catalog entry names.
+func ForGame(gameID string, m Meta) Meta {
+	info, _ := components.Game(gameID)
+	return gatedMeta{Meta: m, info: info}
+}
+
 func (m gatedMeta) CheckUpdates(ctx context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult {
 	if !m.info.HasMetadata(components.MetaSMAPIUpdates) {
 		return nil
