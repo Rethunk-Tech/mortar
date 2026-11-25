@@ -379,7 +379,7 @@ func TestListedRequirementOutsideStardewIgnoresDatasetPage(t *testing.T) {
 	env := Environment{Nexus: nexusmods.Title{Domain: "cyberpunk2077"}}
 	calls := 0
 
-	result := Check(t.Context(), gatedMeta{Meta: fake, info: info}, env, []framework.Mod{listedDependent()}, fake.reqs(&calls))
+	result := Check(t.Context(), GameMeta{Meta: fake, info: info}, env, []framework.Mod{listedDependent()}, fake.reqs(&calls))
 
 	if len(result.Missing) != 1 || result.Missing[0].Where == nil || result.Missing[0].Where.PageName != "Cyber Engine Tweaks" {
 		t.Fatalf("Missing = %#v, want Cyber Engine Tweaks named from the Nexus requirement", result.Missing)

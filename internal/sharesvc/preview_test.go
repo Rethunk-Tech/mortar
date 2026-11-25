@@ -181,7 +181,7 @@ func TestResolveOtherGameIgnoresStardewDataset(t *testing.T) {
 	r := testResolver(map[int][]nexusmods.File{100: {nf(1, "1.0", "MAIN", true)}}, nil)
 	r.meta = problems.ForGame("cyberpunk-2077", r.meta)
 	r.env.Nexus = nexusmods.Title{Domain: "cyberpunk2077", ID: 3333}
-	mods, _ := r.resolve(context.Background(), []share.Ref{{ModID: 100, FileID: 1}})
+	mods, _ := r.resolve(t.Context(), []share.Ref{{ModID: 100, FileID: 1}})
 	if len(mods) != 1 || mods[0].Name == "Main Mod" {
 		t.Fatalf("mods = %+v, want only mod 100 without the dataset's name", mods)
 	}

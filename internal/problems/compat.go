@@ -114,24 +114,24 @@ func nexusIDOf(m framework.Mod) int {
 	return smapimanifest.FirstNexusID(m.UpdateKeys)
 }
 
-// gatedMeta answers only the lookups the game's catalog entry names; a game that names none asks nothing.
-type gatedMeta struct {
+// GameMeta is a Meta that answers only the lookups the game's catalog entry names; a game that names none asks nothing.
+type GameMeta struct {
 	Meta
 	info components.GameInfo
 }
 
-func (s *Service) metaFor(gameID string) gatedMeta {
+func (s *Service) metaFor(gameID string) GameMeta {
 	info, _ := components.Game(gameID)
-	return gatedMeta{Meta: s.meta, info: info}
+	return GameMeta{Meta: s.meta, info: info}
 }
 
 // ForGame is m answering only the lookups gameID's catalog entry names.
-func ForGame(gameID string, m Meta) Meta {
+func ForGame(gameID string, m Meta) GameMeta {
 	info, _ := components.Game(gameID)
-	return gatedMeta{Meta: m, info: info}
+	return GameMeta{Meta: m, info: info}
 }
 
-func (m gatedMeta) CheckUpdates(ctx context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult {
+func (m GameMeta) CheckUpdates(ctx context.Context, req meta.UpdateRequest) []smapiweb.UpdateResult {
 	if !m.info.HasMetadata(components.MetaSMAPIUpdates) {
 		return nil
 	}
@@ -140,14 +140,14 @@ func (m gatedMeta) CheckUpdates(ctx context.Context, req meta.UpdateRequest) []s
 
 // Page answers an empty page outside Stardew: the dataset is keyed by Stardew's Nexus ids, which another game's ids
 // collide with.
-func (m gatedMeta) Page(ctx context.Context, id int) (smapiweb.Page, error) {
+func (m GameMeta) Page(ctx context.Context, id int) (smapiweb.Page, error) {
 	if !m.info.HasMetadata(components.MetaStardewDataset) {
 		return smapiweb.Page{}, nil
 	}
 	return m.Meta.Page(ctx, id)
 }
 
-func (m gatedMeta) Lookup(ctx context.Context, uniqueID string) ([]smapiweb.Ref, error) {
+func (m GameMeta) Lookup(ctx context.Context, uniqueID string) ([]smapiweb.Ref, error) {
 	if !m.info.HasMetadata(components.MetaStardewDataset) {
 		return nil, nil
 	}
