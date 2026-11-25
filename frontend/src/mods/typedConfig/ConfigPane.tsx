@@ -191,6 +191,7 @@ function SyncIcon({ level }: { level: 'hostEnforced' | 'hostRecommended' }) {
 type PaneFile = ReturnType<typeof useTypedConfig.getState>['files'][number]
 
 function Toolbar({
+  modName,
   target,
   file,
   files,
@@ -202,6 +203,7 @@ function Toolbar({
   onReset,
   onDelete,
 }: {
+  modName: string
   target: Target
   file: PaneFile | undefined
   files: PaneFile[]
@@ -233,6 +235,16 @@ function Toolbar({
         '& .MuiButton-root': { height: space.control },
       }}
     >
+      {/* The list's filter can hide the chosen mod, so the pane names what it edits. */}
+      {modName ? (
+        <Typography
+          noWrap={true}
+          title={modName}
+          sx={{ fontWeight: 600, flexShrink: 1, minWidth: 0 }}
+        >
+          {modName}
+        </Typography>
+      ) : null}
       <Box sx={{ flex: 1, minWidth: 0 }}>
         {single ? (
           <Typography
@@ -464,6 +476,7 @@ export function ConfigPane({
       sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
     >
       <Toolbar
+        modName={target.key ? name : ''}
         target={target}
         file={file}
         files={files}
