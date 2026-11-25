@@ -910,7 +910,7 @@ func (s *Service) knownSources(reqs []Request) []profile.Source {
 // joinExisting folds a request for a file already waiting in the queue into that item.
 func joinExisting(it *Item, r Request) {
 	if it.State == StateFailed {
-		it.State, it.Error, it.ErrorKind = StateQueued, "", ""
+		it.State, it.Error, it.ErrorKind, it.UnknownLayout = StateQueued, "", "", nil
 	}
 	if r.key != "" {
 		it.key, it.expires = r.key, r.expires
@@ -1089,7 +1089,7 @@ func (s *Service) retry(match func(*Item) bool) int {
 	s.mu.Lock()
 	for _, it := range s.items {
 		if (it.State == StateFailed || it.State == StateSkipped) && match(it) {
-			it.State, it.Error, it.ErrorKind, it.busy = StateQueued, "", "", 0
+			it.State, it.Error, it.ErrorKind, it.UnknownLayout, it.busy = StateQueued, "", "", nil, 0
 			n++
 		}
 	}
@@ -1165,7 +1165,7 @@ func (s *Service) RestoreProfile(game, profileID string) {
 	s.mu.Lock()
 	for _, it := range s.items {
 		if it.Game == game && it.Profile == profileID && it.State == StateSkipped && it.Error == "profile deleted" {
-			it.State, it.Error, it.ErrorKind, it.busy = StateQueued, "", "", 0
+			it.State, it.Error, it.ErrorKind, it.UnknownLayout, it.busy = StateQueued, "", "", nil, 0
 		}
 	}
 	s.mu.Unlock()

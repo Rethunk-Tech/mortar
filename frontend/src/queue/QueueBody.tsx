@@ -234,7 +234,9 @@ function Failed({ items }: { items: Item[] }) {
                 </Button>
               ) : null}
               {i.detection && !i.detection.removed ? <InstallAnywayButton item={i} /> : null}
-              {i.unknownLayout?.ask ? <PlaceAsPackedButton item={i} /> : null}
+              {i.errorKind === 'layout' && i.unknownLayout?.ask ? (
+                <PlaceAsPackedButton item={i} />
+              ) : null}
               {i.errorKind === 'disk' ? (
                 <Button size="small" onClick={() => openSettings('storage')}>
                   {t`Open storage settings`}

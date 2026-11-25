@@ -104,3 +104,20 @@ func TestAWantJoiningAFailedItemTakesItsBatch(t *testing.T) {
 		t.Fatalf("joined item = batch %q, state %s", items[0].BatchID, items[0].State)
 	}
 }
+
+// A retried item answers its new failure, not the layout question of an earlier one.
+func TestARetryDropsTheEarlierLayoutQuestion(t *testing.T) {
+	t.Parallel()
+	f := newFixture(t)
+	f.s.Pause()
+	f.add(req(10))
+	f.s.mu.Lock()
+	f.s.items[0].State, f.s.items[0].ErrorKind, f.s.items[0].UnknownLayout = StateFailed, FailLayout, &UnknownLayout{Key: "k", Ask: true}
+	f.s.mu.Unlock()
+	f.s.retry(func(*Item) bool { return true })
+	f.s.mu.Lock()
+	defer f.s.mu.Unlock()
+	if f.s.items[0].UnknownLayout != nil {
+		t.Fatalf("retried item still asks about %+v", f.s.items[0].UnknownLayout)
+	}
+}
