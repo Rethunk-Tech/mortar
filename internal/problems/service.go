@@ -1124,11 +1124,11 @@ func (s *Service) extensionFailures(gameID, id string, l loader.Loader) []LoadFa
 	if err != nil {
 		return nil
 	}
-	install, err := game.InstallDir(s.home, s.settings.Get(), gameID)
+	inst, err := game.ResolveInstall(s.home, s.settings.Get(), gameID, s.profiles.InstallOf(gameID, id))
 	if err != nil {
 		return nil
 	}
-	view := loader.ProfileView{Game: gameID, Dir: dir, InstallDir: install}
+	view := loader.ProfileView{Game: gameID, Dir: dir, InstallDir: inst.Dir}
 	if owners, err := s.profiles.PackageFileOwners(gameID, id); err == nil {
 		view.Files = slices.Collect(maps.Keys(owners))
 	}
