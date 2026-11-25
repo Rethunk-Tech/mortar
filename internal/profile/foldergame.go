@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"path"
 	"slices"
 	"strings"
@@ -149,9 +150,15 @@ func trayHoldEntry(key string, source Source, held []TrayFile) Entry {
 
 // disableFresh switches off the new components of a file that was off before the update, or that the source says is off.
 func disableFresh(fresh []Entry, off map[string]bool, source Source) {
+	allOff := len(off) > 0 && !slices.Contains(slices.Collect(maps.Values(off)), false)
 	for i := range fresh {
+		// A file the old version did not have is off when the player had switched the whole download off.
+		wasOff, known := off[fresh[i].File]
+		if !known {
+			wasOff = allOff
+		}
 		for _, m := range fresh[i].Mods {
-			if off[fresh[i].File] || (source.disabled != nil && hasID(source.disabled.ids, m.ID)) {
+			if wasOff || (source.disabled != nil && hasID(source.disabled.ids, m.ID)) {
 				fresh[i].Disabled = append(fresh[i].Disabled, m.ID)
 			}
 		}

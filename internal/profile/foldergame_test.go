@@ -819,3 +819,24 @@ func TestCyberpunkRepairLaysOutAgainOnlyWhatNoLongerDeploys(t *testing.T) {
 		t.Fatalf("entries = %+v, want %s and %s laid out again", got.Entries, fresh[0].File, fresh[1].File)
 	}
 }
+
+func TestFolderGameUpdateKeepsASwitchedOffDownloadOffWhenItsFilesAreRenamed(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	res, err := e.InstallSource(t.Context(), folderGame, p.ID, zipOf(t, "a.zip", map[string]string{"one.package": "1"}), cfSource(10))
+	if err != nil {
+		t.Fatal(err)
+	}
+	en := res.Profile.Entries[0]
+	if _, err := e.SetModEnabled(folderGame, p.ID, en.Key, en.Mods[0].ID, false); err != nil {
+		t.Fatal(err)
+	}
+	res, err = e.InstallSource(t.Context(), folderGame, p.ID, zipOf(t, "b.zip", map[string]string{"renamed.package": "2"}), cfSource(12).WithReplacing(10))
+	if err != nil || !res.Updated {
+		t.Fatalf("update = %v, %v", res.Updated, err)
+	}
+	if slices.ContainsFunc(res.Profile.Entries, Entry.HasPackageEnabled) {
+		t.Fatalf("entries = %+v, want the renamed file still off", res.Profile.Entries)
+	}
+}
