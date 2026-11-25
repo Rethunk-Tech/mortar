@@ -25,7 +25,7 @@ import { usePending } from '../toasts/usePending.ts'
 import { AssetMapDialog } from './AssetMapDialog.tsx'
 import { CleanupSection } from './CleanupSection.tsx'
 import { CompatSection } from './CompatSection.tsx'
-import { useFileConflicts } from './fileConflicts.ts'
+import { useFileConflicts, useFileConflictsState } from './fileConflicts.ts'
 import { LockedNote } from './LockedNote.tsx'
 import { FooterLinks, ProblemGroup, type ProblemTab, type SectionAction } from './ProblemGroup.tsx'
 import { ProblemRows } from './ProblemRows.tsx'
@@ -140,11 +140,11 @@ function installableMissing(sections: ReturnType<typeof problemSections>) {
 function useProblemTabs(
   result: NonNullable<ReturnType<typeof useOpenProblems>>,
   [addingAll, runAddAll]: ReturnType<typeof usePending>,
-): ProblemTab[] {
+): { tabs: ProblemTab[]; checking: boolean } {
   const { t } = useLingui()
   const sectionTitle = useSectionTitle()
   const slowRows = useSlowStartups()
-  const fileConflicts = useFileConflicts()
+  const { groups: fileConflicts, loading: checking } = useFileConflictsState()
   const cosmeticConflicts = useOpenOverride(
     'cosmeticConflicts',
     useSettings((s) => gamePrefs(s).cosmeticConflicts),
@@ -183,7 +183,7 @@ function useProblemTabs(
           },
         }
       : undefined
-  return [
+  const tabs = [
     ...sections
       .filter((s) => !(s.id === 'cosmetic' && cosmeticConflicts === 'hidden'))
       .map((s) => ({
@@ -249,6 +249,7 @@ function useProblemTabs(
       body: <ReplacedSection files={replaced} />,
     },
   ].filter((tab: ProblemTab) => tab.count > 0 || tab.keep === true)
+  return { tabs, checking }
 }
 
 function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof useOpenProblems>> }) {
@@ -258,7 +259,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
   const openId = useProfiles((s) => s.openId)
   const opened = useProblemFooter((s) => s.byProfile[openId])
   const toggle = useProblemFooter((s) => s.toggle)
-  const tabs = useProblemTabs(result, addAll)
+  const { tabs, checking } = useProblemTabs(result, addAll)
   const listed = tabs.filter((tab) => !FOOTER_SECTIONS.has(tab.id))
   const footer = tabs.filter((tab) => FOOTER_SECTIONS.has(tab.id))
   const openFooter = footer.find((tab) => tab.id === opened)
@@ -279,7 +280,8 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
           gap: space.pad,
         }}
       >
-        {listed.length === 0 ? (
+        {listed.length === 0 && checking ? <CheckingLine /> : null}
+        {listed.length === 0 && !checking ? (
           <EmptyState
             icon={<ShieldCheck size={40} aria-hidden={true} />}
             title={t`No problems found`}

@@ -31,10 +31,15 @@ const NO_GROUPS: ConflictGroup[] = []
 
 /** The open profile's package file conflicts, read again whenever the profile changes. */
 export function useFileConflicts(): ConflictGroup[] {
+  return useFileConflictsState().groups
+}
+
+/** The same list, and whether its first answer is still to come. */
+export function useFileConflictsState(): { groups: ConflictGroup[]; loading: boolean } {
   const game = useProfiles((s) => s.game?.id ?? '')
   const openId = useProfiles((s) => openProfileOf(s)?.id ?? '')
   const updated = useProfiles((s) => openProfileOf(s)?.updated)
-  const { data, reload } = useLoaded(
+  const { data, loading, reload } = useLoaded(
     game && openId
       ? () => FileConflicts(game, openId).then((got) => groupConflicts(got ?? []))
       : null,
@@ -51,5 +56,5 @@ export function useFileConflicts(): ConflictGroup[] {
       reload()
     }
   }, [openId, updated, reload])
-  return data
+  return { groups: data, loading }
 }
