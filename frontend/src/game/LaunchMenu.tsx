@@ -22,9 +22,9 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
   const launch = useTools((s) => s.launch)
   useEffect(() => {
     if (game) {
-      load(game).catch(reportUnexpected)
+      load(game, profile.id).catch(reportUnexpected)
     }
-  }, [game, load])
+  }, [game, profile.id, load])
   const items = (close: () => void) => [
     <MenuHeading key="run">{t`Run with this profile`}</MenuHeading>,
     tools.length === 0 ? <MenuNote key="none">{t`No tools yet`}</MenuNote> : null,
@@ -75,7 +75,7 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
         // Read again as the menu opens, so a tool added from the command line is listed.
         onOpen={() => {
           if (game) {
-            load(game).catch(reportUnexpected)
+            load(game, profile.id).catch(reportUnexpected)
           }
         }}
       />

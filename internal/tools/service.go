@@ -40,13 +40,14 @@ func NewService(home string, settings *settings.Store, profiles *profile.Store) 
 	return &Service{store: store, home: home, settings: settings, profiles: profiles}, nil
 }
 
-// List is the catalog's tools of the game that are in its install, then the player's own.
-func (s *Service) List(game string) ([]Tool, error) {
+// List is the catalog's tools of the game that are in the install profileID runs ("" for the game's own), then the
+// player's own.
+func (s *Service) List(game, profileID string) ([]Tool, error) {
 	own, err := s.store.List(game)
 	if err != nil {
 		return nil, err
 	}
-	return append(s.catalogTools(game, ""), own...), nil
+	return append(s.catalogTools(game, profileID), own...), nil
 }
 
 func (s *Service) catalogTools(gameID, profileID string) []Tool {

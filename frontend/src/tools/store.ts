@@ -11,23 +11,24 @@ import {
 interface State {
   tools: Tool[]
   loadedGame: string
-  load: (game: string) => Promise<void>
+  load: (game: string, profileID: string) => Promise<void>
   add: (game: string, tool: Tool) => Promise<Tool>
   update: (game: string, tool: Tool) => Promise<void>
   remove: (game: string, id: string) => Promise<void>
   launch: (game: string, profileID: string, id: string) => Promise<void>
 }
 
-// The game of the newest load, so a slow list for a game since left never replaces the current one.
+// The game and profile of the newest load, so a slow list for one since left never replaces the current one.
 let wanted = ''
 
 export const useTools = create<State>((set, get) => ({
   tools: [],
   loadedGame: '',
-  load: async (game) => {
-    wanted = game
-    const listed = await List(game)
-    if (wanted !== game) {
+  load: async (game, profileID) => {
+    const key = `${game}\n${profileID}`
+    wanted = key
+    const listed = await List(game, profileID)
+    if (wanted !== key) {
       return
     }
     set({ tools: listed ?? [], loadedGame: game })

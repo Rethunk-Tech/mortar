@@ -11,9 +11,11 @@ import (
 type fakeCatalog struct {
 	present map[string]bool
 	ran     []string
+	asked   []string
 }
 
-func (f *fakeCatalog) GameToolPresent(_, _ string, t components.GameTool) bool {
+func (f *fakeCatalog) GameToolPresent(_, profileID string, t components.GameTool) bool {
+	f.asked = append(f.asked, profileID)
 	return f.present[t.ID]
 }
 
@@ -26,9 +28,12 @@ func TestACatalogToolIsListedWhenItsFilesAreThereAndLaunchedThroughTheCatalog(t 
 	t.Parallel()
 	cat := &fakeCatalog{present: map[string]bool{"redeploy": true, "cybercat": true}}
 	s := &Service{store: &Store{root: t.TempDir()}, Catalog: cat}
-	got, err := s.List("cyberpunk-2077")
+	got, err := s.List("cyberpunk-2077", "p")
 	if err != nil {
 		t.Fatal(err)
+	}
+	if len(cat.asked) == 0 || slices.ContainsFunc(cat.asked, func(id string) bool { return id != "p" }) {
+		t.Fatalf("presence asked for profiles %q, want the listing profile's install", cat.asked)
 	}
 	var ids []string
 	for _, tool := range got {

@@ -28,7 +28,7 @@ func TestNewService(t *testing.T) {
 
 func TestServiceListLaunchRemove(t *testing.T) {
 	s := &Service{store: &Store{root: t.TempDir()}}
-	got, err := s.List("stardew")
+	got, err := s.List("stardew", "")
 	if err != nil || len(got) != 0 {
 		t.Fatalf("List = %#v, %v", got, err)
 	}

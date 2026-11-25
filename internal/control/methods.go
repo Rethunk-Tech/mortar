@@ -526,7 +526,15 @@ var coreGlobal = map[string]globalMethod{
 		if s.Tools == nil {
 			return nil, errors.New("tools are unavailable")
 		}
-		return s.Tools.List(p.Game)
+		var profileID string
+		if p.Profile != "" {
+			prof, err := s.resolve(p.Game, p.Profile)
+			if err != nil {
+				return nil, err
+			}
+			profileID = prof.ID
+		}
+		return s.Tools.List(p.Game, profileID)
 	},
 	"tools.run": func(s *Services, _ context.Context, p Params) (any, error) {
 		if s.Tools == nil {
