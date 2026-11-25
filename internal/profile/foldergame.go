@@ -4,7 +4,9 @@ import (
 	"cmp"
 	"encoding/json"
 	"fmt"
+	"path"
 	"slices"
+	"strings"
 	"time"
 
 	ga "github.com/Rethunk-Tech/go-archive"
@@ -279,4 +281,94 @@ func (s *Store) placeRestoredTray(game, id string, p *Profile, restored, current
 		}
 	}
 	return nil
+}
+
+// RejoinSplit joins back into one entry each download that an older catalog split into one entry per file and the
+// current catalog keeps whole, since its files only work beside their siblings. The joined entry takes the first
+// part's place, flags and note, and stays enabled while any part was.
+func (s *Store) RejoinSplit(game, id string) (bool, error) {
+	g := installerGame(game)
+	ti := slices.IndexFunc(g.Targets, func(t installer.Target) bool { return t.ID == installer.TargetMods })
+	if !slices.Contains(g.Loaders, folderLoader) || ti < 0 {
+		return false, nil
+	}
+	p, err := s.Get(game, id)
+	if err != nil {
+		return false, err
+	}
+	keys := keptWholeItems(p.Entries, g.Targets[ti])
+	if len(keys) == 0 {
+		return false, nil
+	}
+	if err := s.lockUnlocked(game, id); err != nil {
+		return false, err
+	}
+	defer s.mu.Unlock()
+	whole := map[string]Entry{}
+	for _, key := range keys {
+		src := p.Entries[slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Item == key && e.File != "" })].Source
+		mods, _, err := s.packageMods(game, key, src.ModName)
+		if err != nil {
+			continue
+		}
+		fresh, _, _, err := s.folderEntries(game, id, key, src, mods)
+		if err == nil && len(fresh) == 1 && fresh[0].File == "" {
+			whole[key] = fresh[0]
+		}
+	}
+	if len(whole) == 0 {
+		return false, nil
+	}
+	_, err = s.updateLocked(game, id, func(p *Profile, _ string) error {
+		p.Entries = rejoined(p.Entries, whole)
+		return nil
+	})
+	return err == nil, err
+}
+
+// keptWholeItems are the store keys of split downloads holding a file the mods target now keeps whole.
+func keptWholeItems(entries []Entry, t installer.Target) []string {
+	var keys []string
+	for _, e := range entries {
+		if e.Item == "" || e.File == "" || e.IsOverlay() || slices.Contains(keys, e.Item) {
+			continue
+		}
+		ext := strings.ToLower(strings.TrimPrefix(path.Ext(e.File), "."))
+		if slices.Contains(t.KeepWhole, ext) || t.ModRoot != "" && strings.EqualFold(path.Base(e.File), t.ModRoot) {
+			keys = append(keys, e.Item)
+		}
+	}
+	return keys
+}
+
+// rejoined is entries with the parts of each download in whole replaced by its one entry, at the first part's place.
+func rejoined(entries []Entry, whole map[string]Entry) []Entry {
+	out := make([]Entry, 0, len(entries))
+	parts := map[string][]Entry{}
+	for _, e := range entries {
+		if _, ok := whole[e.Item]; ok && e.File != "" && !e.IsOverlay() {
+			parts[e.Item] = append(parts[e.Item], e)
+		}
+	}
+	for _, e := range entries {
+		w, ok := whole[e.Item]
+		if !ok || e.File == "" || e.IsOverlay() {
+			out = append(out, e)
+			continue
+		}
+		if parts[e.Item] == nil {
+			continue
+		}
+		joined := e
+		joined.Key, joined.Item, joined.File, joined.Mods, joined.SwitchedOff = w.Key, "", "", w.Mods, nil
+		joined.Disabled = []mod.ID{}
+		if !slices.ContainsFunc(parts[e.Item], Entry.HasPackageEnabled) {
+			for _, m := range w.Mods {
+				joined.Disabled = append(joined.Disabled, m.ID)
+			}
+		}
+		out = append(out, joined)
+		parts[e.Item] = nil
+	}
+	return out
 }

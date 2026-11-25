@@ -678,3 +678,49 @@ func TestFolderGameMovesThePlayersModsFolderInWhereEachFileSat(t *testing.T) {
 		t.Fatalf("a move left %v in the game's folder", leftNames)
 	}
 }
+
+func TestFolderGameRejoinsADownloadAnOlderCatalogSplit(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	whole, err := e.InstallSource(t.Context(), folderGame, p.ID, zipOf(t, "m.zip", map[string]string{"m.ts4script": "s", "a.package": "1"}), cfSource(11))
+	if err != nil {
+		t.Fatal(err)
+	}
+	split, err := e.InstallSource(t.Context(), folderGame, p.ID, zipOf(t, "s.zip", map[string]string{"x.package": "1", "y.package": "2"}), Source{Kind: KindCurseForge, Name: "Other", ModID: 8, FileID: 12})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(whole.Profile.Entries) != 1 || len(split.Profile.Entries) != 3 {
+		t.Fatalf("entries = %v", keysOf(split.Profile))
+	}
+	w := whole.Profile.Entries[0]
+	if _, err := e.update(folderGame, p.ID, func(p *Profile, _ string) error {
+		var parts []Entry
+		for _, f := range []string{"m.ts4script", "a.package"} {
+			k := w.Key + fileKeySep + f
+			parts = append(parts, Entry{
+				Key: k, Item: w.Key, File: f, Source: w.Source, Package: true, Added: w.Added, Note: "kept",
+				Mods: []Component{{ID: mod.NewID(mod.FormatFolder, k), Name: f, Folder: "."}}, Disabled: []mod.ID{},
+			})
+		}
+		parts[1].Disabled = []mod.ID{parts[1].Mods[0].ID}
+		p.Entries = append(parts, p.Entries[1:]...)
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	changed, err := e.RejoinSplit(folderGame, p.ID)
+	if err != nil || !changed {
+		t.Fatalf("RejoinSplit = %v, %v", changed, err)
+	}
+	got, _ := e.Get(folderGame, p.ID)
+	if len(got.Entries) != 3 || got.Entries[0].Key != w.Key || got.Entries[0].File != "" || got.Entries[0].Note != "kept" ||
+		len(got.Entries[0].Mods) != len(w.Mods) || got.Entries[0].Mods[0].ID != w.Mods[0].ID || !got.Entries[0].HasPackageEnabled() {
+		t.Fatalf("entries = %+v, want %s joined first and the script-free download still split", got.Entries, w.Key)
+	}
+	if again, err := e.RejoinSplit(folderGame, p.ID); err != nil || again {
+		t.Fatalf("second RejoinSplit = %v, %v", again, err)
+	}
+}
