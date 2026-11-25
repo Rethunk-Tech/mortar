@@ -156,21 +156,22 @@ func (m GameMeta) Lookup(ctx context.Context, uniqueID string) ([]smapiweb.Ref, 
 
 // renameDatasetNamed renames the Nexus entries of a game without the Stardew dataset that were saved under the
 // dataset's name for their mod id, which another game's ids collide with, to their own page's name.
-func (s *Service) renameDatasetNamed(ctx context.Context, gameID, id, domain string) {
+func (s *Service) renameDatasetNamed(ctx context.Context, gameID, id, domain string) (unsure bool) {
 	if info, _ := components.Game(gameID); domain == "" || s.meta == nil || info.HasMetadata(components.MetaStardewDataset) {
-		return
+		return false
 	}
 	p, err := s.profiles.Get(gameID, id)
 	if err != nil {
-		return
+		return false
 	}
-	names := datasetNamed(ctx, s.meta, s.ownPageNames(ctx, gameID, domain, p.Entries), p.Entries)
+	names, unsure := datasetNamed(ctx, s.meta, s.ownPageNames(ctx, gameID, domain, p.Entries), p.Entries)
 	if len(names) == 0 {
-		return
+		return unsure
 	}
 	if _, err := s.profiles.RenameEntries(gameID, id, names); err != nil {
 		slog.Warn("problems: rename entries named from the Stardew dataset", "game", gameID, "err", err)
 	}
+	return unsure
 }
 
 // ownPageNames is the name of each Nexus entry's page in the game's own domain: the batched lookup, else the cache.
@@ -206,17 +207,23 @@ func (s *Service) ownPageNames(ctx context.Context, gameID, domain string, entri
 
 // datasetNamed maps each Nexus entry whose name is not its own page's but the Stardew dataset's for the same mod id
 // to its own page's name. The dataset is asked only about those mismatches.
-func datasetNamed(ctx context.Context, dataset Meta, own map[int]string, entries []profile.Entry) map[string]string {
-	out := map[string]string{}
+// unsure reports an entry the dataset names but whose own page name could not be read (offline, signed out), so
+// the check is retried.
+func datasetNamed(ctx context.Context, dataset Meta, own map[int]string, entries []profile.Entry) (out map[string]string, unsure bool) {
+	out = map[string]string{}
 	for _, e := range entries {
 		src := e.Source
 		name := own[src.ModID]
-		if src.Kind != profile.KindNexus || src.ModID <= 0 || src.ModName == "" || name == "" || name == src.ModName {
+		if src.Kind != profile.KindNexus || src.ModID <= 0 || src.ModName == "" || name == src.ModName {
 			continue
 		}
 		if wrong, err := dataset.Page(ctx, src.ModID); err == nil && wrong.Name == src.ModName {
-			out[e.Key] = name
+			if name == "" {
+				unsure = true
+			} else {
+				out[e.Key] = name
+			}
 		}
 	}
-	return out
+	return out, unsure
 }

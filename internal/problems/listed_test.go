@@ -399,9 +399,13 @@ func TestDatasetNamedEntriesTakeTheirOwnPagesName(t *testing.T) {
 		nexus("unknown", 999, "Something"),
 	}
 
-	got := datasetNamed(t.Context(), dataset, own, entries)
+	got, unsure := datasetNamed(t.Context(), dataset, own, entries)
 
-	if len(got) != 1 || got["cet"] != "Cyber Engine Tweaks" {
-		t.Fatalf("datasetNamed = %v, want only cet renamed to Cyber Engine Tweaks", got)
+	if len(got) != 1 || got["cet"] != "Cyber Engine Tweaks" || unsure {
+		t.Fatalf("datasetNamed = %v, %v, want only cet renamed to Cyber Engine Tweaks", got, unsure)
+	}
+	// Offline, the own page name is missing: nothing is renamed and the check is retried.
+	if got, unsure := datasetNamed(t.Context(), dataset, map[int]string{}, entries); len(got) != 0 || !unsure {
+		t.Fatalf("offline datasetNamed = %v, %v, want nothing renamed and unsure", got, unsure)
 	}
 }
