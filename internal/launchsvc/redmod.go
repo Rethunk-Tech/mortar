@@ -2,6 +2,7 @@ package launchsvc
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"path/filepath"
 	"runtime"
@@ -25,10 +26,13 @@ func (s *Service) deployREDmods(ctx context.Context, gameID string, inst game.In
 	if t, ok := info.Target(installer.TargetMods); !ok || t.Layout != components.LayoutCyberpunk {
 		return nil
 	}
-	if archives, err := s.profiles.ArchiveOrder(gameID, profileID); err != nil {
-		slog.Warn("could not work out the archive load order", "game", gameID, "error", err)
-	} else if err := redmod.WriteArchiveModList(inst.Dir, archives); err != nil {
-		slog.Warn("could not write the archive modlist", "game", gameID, "error", err)
+	// Starting anyway would load the archives in whatever order the last launch, maybe of another profile, wrote.
+	archives, err := s.profiles.ArchiveOrder(gameID, profileID)
+	if err != nil {
+		return fmt.Errorf("work out the archive load order: %w", err)
+	}
+	if err := redmod.WriteArchiveModList(inst.Dir, archives); err != nil {
+		return fmt.Errorf("write the archive load order: %w", err)
 	}
 	if !redmod.Installed(inst.Dir) {
 		slog.Info("REDmod is not installed, launching without deploying", "game", gameID, "dir", inst.Dir)
