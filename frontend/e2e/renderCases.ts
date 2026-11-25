@@ -129,7 +129,13 @@ export function newCases(h: Helpers): Case[] {
     {
       name: 'config-search',
       setup: (p) => tab(p, 'Config'),
-      run: (p) => typeInto(p, /^Filter mods/, 'speed'),
+      run: async (p) => {
+        await typeInto(p, /^Filter mods/, 'speed')
+        // The filter hides the chosen mod, so its pane has to say whose settings it shows.
+        const pane = p.getByRole('region', { name: /^Config of / })
+        const name = ((await pane.getAttribute('aria-label')) ?? '').replace(/^Config of /, '')
+        await pane.getByText(name, { exact: true }).first().waitFor()
+      },
     },
     {
       name: 'freeze',
