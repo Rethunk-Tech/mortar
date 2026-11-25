@@ -711,16 +711,40 @@ func TestFolderGameRejoinsADownloadAnOlderCatalogSplit(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	changed, err := e.RejoinSplit(folderGame, p.ID)
+	changed, err := e.RepairFolderEntries(folderGame, p.ID)
 	if err != nil || !changed {
-		t.Fatalf("RejoinSplit = %v, %v", changed, err)
+		t.Fatalf("RepairFolderEntries = %v, %v", changed, err)
 	}
 	got, _ := e.Get(folderGame, p.ID)
 	if len(got.Entries) != 3 || got.Entries[0].Key != w.Key || got.Entries[0].File != "" || got.Entries[0].Note != "kept" ||
 		len(got.Entries[0].Mods) != len(w.Mods) || got.Entries[0].Mods[0].ID != w.Mods[0].ID || !got.Entries[0].HasPackageEnabled() {
 		t.Fatalf("entries = %+v, want %s joined first and the script-free download still split", got.Entries, w.Key)
 	}
-	if again, err := e.RejoinSplit(folderGame, p.ID); err != nil || again {
-		t.Fatalf("second RejoinSplit = %v, %v", again, err)
+	if again, err := e.RepairFolderEntries(folderGame, p.ID); err != nil || again {
+		t.Fatalf("second RepairFolderEntries = %v, %v", again, err)
+	}
+}
+
+func TestFolderGameRepairDropsTheEndingAnOlderReleaseNamedAnOwnArchiveWith(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	res, err := e.InstallArchive(t.Context(), folderGame, p.ID, zipOf(t, "My Mod.zip", map[string]string{"m.ts4script": "s"}))
+	if err != nil || len(res.Profile.Entries) != 1 {
+		t.Fatalf("install = %v, %v", keysOf(res.Profile), err)
+	}
+	if _, err := e.update(folderGame, p.ID, func(p *Profile, _ string) error {
+		p.Entries[0].Mods[0].Name = p.Entries[0].Source.Name
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if changed, err := e.RepairFolderEntries(folderGame, p.ID); err != nil || !changed {
+		t.Fatalf("RepairFolderEntries = %v, %v", changed, err)
+	}
+	got, _ := e.Get(folderGame, p.ID)
+	if name := got.Entries[0].Mods[0].Name; name != "My Mod" {
+		t.Fatalf("name = %q, want My Mod", name)
 	}
 }

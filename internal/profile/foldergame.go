@@ -283,10 +283,11 @@ func (s *Store) placeRestoredTray(game, id string, p *Profile, restored, current
 	return nil
 }
 
-// RejoinSplit joins back into one entry each download that an older catalog split into one entry per file and the
-// current catalog keeps whole, since its files only work beside their siblings. The joined entry takes the first
-// part's place, flags and note, and stays enabled while any part was.
-func (s *Store) RejoinSplit(game, id string) (bool, error) {
+// RepairFolderEntries brings a folder-loader game's entries that older releases saved up to how an install records
+// them now. Each download an older catalog split into one entry per file, and the current catalog keeps whole since
+// its files only work beside their siblings, is joined back into one entry that takes the first part's place, flags
+// and note and stays enabled while any part was. A player's own archive named with its file ending loses it.
+func (s *Store) RepairFolderEntries(game, id string) (bool, error) {
 	g := installerGame(game)
 	ti := slices.IndexFunc(g.Targets, func(t installer.Target) bool { return t.ID == installer.TargetMods })
 	if !slices.Contains(g.Loaders, folderLoader) || ti < 0 {
@@ -297,7 +298,7 @@ func (s *Store) RejoinSplit(game, id string) (bool, error) {
 		return false, err
 	}
 	keys := keptWholeItems(p.Entries, g.Targets[ti])
-	if len(keys) == 0 {
+	if len(keys) == 0 && !slices.ContainsFunc(p.Entries, namedWithEnding) {
 		return false, nil
 	}
 	if err := s.lockUnlocked(game, id); err != nil {
@@ -316,14 +317,26 @@ func (s *Store) RejoinSplit(game, id string) (bool, error) {
 			whole[key] = fresh[0]
 		}
 	}
-	if len(whole) == 0 {
+	if len(whole) == 0 && !slices.ContainsFunc(p.Entries, namedWithEnding) {
 		return false, nil
 	}
 	_, err = s.updateLocked(game, id, func(p *Profile, _ string) error {
 		p.Entries = rejoined(p.Entries, whole)
+		for i := range p.Entries {
+			if namedWithEnding(p.Entries[i]) {
+				p.Entries[i].Mods = slices.Clone(p.Entries[i].Mods)
+				p.Entries[i].Mods[0].Name = ga.StripExtension(p.Entries[i].Source.Name)
+			}
+		}
 		return nil
 	})
 	return err == nil, err
+}
+
+// namedWithEnding reports a whole entry of the player's own archive whose mod is named for the file, ending and all.
+func namedWithEnding(e Entry) bool {
+	return e.Source.Kind == KindLocal && e.Package && e.File == "" && !e.IsOverlay() && len(e.Mods) == 1 &&
+		e.Mods[0].Name == e.Source.Name && ga.StripExtension(e.Source.Name) != e.Source.Name
 }
 
 // keptWholeItems are the store keys of split downloads holding a file the mods target now keeps whole.

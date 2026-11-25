@@ -346,8 +346,8 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 // problems is ProblemsWithEvidence, waiting for the paths-too-long walk only when wait is set.
 func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (Result, error) {
 	if s.Installing == nil || !s.Installing(gameID, id) {
-		if _, err := s.profiles.RejoinSplit(gameID, id); err != nil {
-			slog.Warn("problems: rejoin split downloads", "game", gameID, "profile", id, "err", err)
+		if _, err := s.profiles.RepairFolderEntries(gameID, id); err != nil {
+			slog.Warn("problems: repair folder entries", "game", gameID, "profile", id, "err", err)
 		}
 	}
 	mods, err := s.installed(gameID, id)
