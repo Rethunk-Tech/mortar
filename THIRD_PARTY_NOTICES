@@ -6789,7 +6789,7 @@ Bundled source icon (frontend/src/brand/vendor/modio.svg) from the mod.io SDK, s
 
 --------------------------------------------------------------------------------
 
-modernc.org/libc@v1.82.13
+modernc.org/libc@v1.82.14
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/libc
 
@@ -6857,7 +6857,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-modernc.org/memory@v1.13.0
+modernc.org/memory@v1.13.1
 licence: BSD-3-Clause
 https://pkg.go.dev/modernc.org/memory
 
